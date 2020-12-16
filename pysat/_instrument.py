@@ -2074,123 +2074,133 @@ class Instrument(object):
                                               self.custom_kwargs,
                                               self.custom_kind):
                 if not self.empty:
+
+                    # Add method. Apply custom functions to an Instrument copy.
+                    # Take the returned data and add it to self.
                     if kind == 'add':
-                        # apply custom functions that add data to the
-                        # instrument object
                         tempd = self.copy()
-                        newData = func(tempd, *arg, **kwarg)
+                        new_data = func(tempd, *arg, **kwarg)
                         del tempd
 
-                        # process different types of data returned by the
-                        # function if a dict is returned, data in 'data'
-                        if isinstance(newData, dict):
-                            # if DataFrame returned, add Frame to existing
-                            # frame
-                            if isinstance(newData['data'], pds.DataFrame):
-                                self[newData['data'].columns] = newData
-                            # if a series is returned, add it as a column
-                            elif isinstance(newData['data'], pds.Series):
-                                # Look if name is provided as part of dict
-                                # returned from function first
-                                if 'name' in newData.keys():
-                                    name = newData.pop('name')
-                                    self[name] = newData
-                                # look for name attached to Series second
-                                elif newData['data'].name is not None:
-                                    self[newData['data'].name] = newData
-                                # couldn't find name information
+                        # Make all returns a dictionary by default.
+                        # If the method itself does not return a dictionary,
+                        # the returned data is placed in 'data' key.
+                        recast_as_dict = False
+                        if not isinstance(new_data, dict):
+                            new_data = {'data': new_data}
+                            dstr = ''.join(('Data returned should be a dict ',
+                                            'with data in "data", ',
+                                            'the keys for the variables to ',
+                                            'be stored in "name", along with ',
+                                            'any metadata using appropriate ',
+                                            'keys stored in self.labels. '))
+                            # raise DeprecationWarning(dstr)
+                            name = None
+                            recast_as_dict = True
+                        else:
+                            # Check for name
+                            if 'name' in new_data:
+                                name = new_data.pop('name')
+                            else:
+                                name = None
+
+                        # pandas.DataFrame returned, add to existing frame.
+                        if isinstance(new_data['data'], pds.DataFrame):
+                            if name is None:
+                                name = new_data['data'].columns
+
+                            self[name] = new_data
+
+                        # pandas.Series or xarray.DataArray returned,
+                        # add it as a column.
+                        elif isinstance(new_data['data'], (pds.Series,
+                                                           xr.DataArray)):
+                            if name is None:
+                                if new_data['data'].name is not None:
+                                    name = new_data['data'].name
                                 else:
                                     raise ValueError(
                                         ''.join(['Must assign a name to ',
                                                  'Series or return a ',
                                                  '"name" in dictionary.']))
-                            # xarray returned
-                            elif isinstance(newData['data'], xr.DataArray):
-                                self[newData['data'].name] = newData['data']
 
-                            # xarray.Dataset returned
-                            elif isinstance(newData['data'], xr.Dataset):
-                                self.data = xr.merge([self.data, newData])
+                            self[name] = new_data
 
-                            # some kind of iterable was returned
-                            elif hasattr(newData['data'], '__iter__'):
-                                # look for name in returned dict
-                                if 'name' in newData.keys():
-                                    name = newData.pop('name')
-                                    self[name] = newData
-                                else:
-                                    raise ValueError(''.join(('Must include ',
-                                                              '"name" in ',
-                                                              'returned ',
-                                                              'dictionary.')))
+                        # xarray.Dataset returned, merge into existing data.
+                        elif isinstance(new_data['data'], xr.Dataset):
+                            self.data = xr.merge([self.data, new_data])
 
-                        # bare DataFrame is returned
-                        elif isinstance(newData, pds.DataFrame):
-                            self[newData.columns] = newData
-                        # bare Series is returned, name must be attached to
-                        # Series
-                        elif isinstance(newData, pds.Series):
-                            self[newData.name] = newData
-
-                        # xarray.DataArray returned
-                        elif isinstance(newData, xr.DataArray):
-                            self[newData.name] = newData
-
-                        # xarray.Dataset returned
-                        elif isinstance(newData, xr.Dataset):
-                            self.data = xr.merge([self.data, newData])
-
-                        # some kind of iterable returned,
-                        # presuming (name, data)
-                        # or ([name1,...], [data1,...])
-                        elif hasattr(newData, '__iter__'):
-                            # falling back to older behavior
-                            # unpack tuple/list that was returned
-                            newName = newData[0]
-                            newData = newData[1]
-                            if len(newData) > 0:
-                                # doesn't really ensure data, there could
-                                # be multiple empty arrays returned, [[],[]]
-                                if isinstance(newName, str):
-                                    # one item to add
-                                    self[newName] = newData
-                                else:
-                                    # multiple items
-                                    for name, data in zip(newName, newData):
-                                        if len(data) > 0:
-                                            # fixes up the incomplete check
-                                            # from before
-                                            self[name] = data
+                        # Some kind of iterable was returned. Add using
+                        # best effort code.
+                        elif hasattr(new_data['data'], '__iter__'):
+                            # look for name in returned dict
+                            if name is not None:
+                                # name = new_data.pop('name')
+                                self[name] = new_data
+                            elif recast_as_dict:
+                                # Falling back to older behavior:
+                                # unpack tuple/list that was returned.
+                                new_name = new_data['data'][0]
+                                new_data = new_data['data'][1]
+                                if len(new_data) > 0:
+                                    # Check doesn't ensure data for all cases,
+                                    # there could be multiple empty arrays
+                                    # returned, [[],[]].
+                                    if isinstance(new_name, str):
+                                        # Only one item to add. Check on
+                                        # new_data above is sufficient for this
+                                        # case.
+                                        self[new_name] = new_data
+                                    else:
+                                        # Multiple items detected. Add one at
+                                        # a time.
+                                        for name, data in zip(new_name,
+                                                              new_data):
+                                            if len(data) > 0:
+                                                # Fixes up the incomplete check
+                                                # from above
+                                                self[name] = data
+                                dstr = ''.join(('Data returned will require ',
+                                                'a "name" key in the returned ',
+                                                'dictionary.'))
+                                # raise DeprecationWarning(dstr)
+                            else:
+                                raise ValueError(''.join(('Must include ',
+                                                          '"name" in ',
+                                                          'returned ',
+                                                          'dictionary.')))
                         else:
-                            raise ValueError(''.join(("kernel doesn't know",
-                                                      " what to do with",
-                                                      " returned data.")))
+                            raise ValueError(''.join(("kernel doesn't know ",
+                                                      "what to do with ",
+                                                      "returned data.")))
 
-                    # modifying loaded data
-                    if kind == 'modify':
-                        t = func(self, *arg, **kwarg)
-                        if t is not None:
-                            raise ValueError(''.join(('Modified functions',
-                                                      ' should not return',
-                                                      ' any information via',
-                                                      ' return. Information ',
-                                                      'may only be propagated',
-                                                      ' back by modifying ',
+                    # Modifying loaded data. Methods run on Instrument object
+                    # directly and any changes to object by the method are
+                    # retained. No data may be returned by method itself.
+                    elif kind == 'modify':
+                        null_out = func(self, *arg, **kwarg)
+                        if null_out is not None:
+                            raise ValueError(''.join(('Modify functions ',
+                                                      'should not return ',
+                                                      'any information via ',
+                                                      'return. Information ',
+                                                      'may only be propagated ',
+                                                      'back by modifying ',
                                                       'supplied pysat object.'
                                                       )))
 
-                    # pass function (function runs on a copy of Instrument,
-                    # no modifications to Instrument are retained,
-                    # no data allowed back)
-                    if kind == 'pass':
+                    # Pass function. Method runs on a copy of Instrument,
+                    # thus no modifications to Instrument are retained,
+                    # and no data is allowed to be returned.
+                    elif kind == 'pass':
                         tempd = self.copy()
-                        temp_out = func(tempd, *arg, **kwarg)
+                        null_out = func(tempd, *arg, **kwarg)
                         del tempd
-                        if temp_out is not None:
-                            raise ValueError(''.join(('Pass functions should',
-                                                      ' not return any',
-                                                      ' information via',
-                                                      ' return.')))
+                        if null_out is not None:
+                            raise ValueError(''.join(('Pass functions should ',
+                                                      'not return any ',
+                                                      'information via ',
+                                                      'return.')))
 
     def custom_clear(self):
         """Clear custom function list."""

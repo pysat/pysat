@@ -4,6 +4,7 @@ from io import StringIO
 import numpy as np
 import pandas as pds
 import pytest
+import xarray as xr
 
 import pysat
 
@@ -327,7 +328,6 @@ class TestBasics():
         """
         def custom1(inst):
             out = pds.Series({'doubleMLT': inst.data.mlt * 2}, index=inst.index)
-            # out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
 
@@ -335,9 +335,24 @@ class TestBasics():
         with pytest.raises(ValueError):
             self.testInst.load(2009, 1)
 
-    # def test_add_xarray_series(self):
-    #     """Test add function success with xarray"""
-    #
+    def test_add_xarray_dataarray(self):
+        """Test add function success with xarray"""
+        def custom1(inst):
+            out = xr.DataArray(inst.data.mlt * 2, dims=['time'],
+                               coords=[inst.index])
+            out.name = 'doubleMLT'
+            return {'data': out, inst.name_label: 'doubleMLTlong',
+                    inst.units_label: 'hours1'}
+
+        self.testInst.custom_attach(custom1, 'add')
+        self.testInst.load(2009, 1)
+        units = self.testInst.units_label
+        lname = self.testInst.name_label
+        assert self.testInst.meta['doubleMLT', units] == 'hours1'
+        assert self.testInst.meta['doubleMLT', lname] == 'doubleMLTlong'
+        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
+        assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
+
     def test_add_numpy_array_w_meta_name_in_dict(self):
         """Test add function success with array and MetaData
         """
