@@ -2620,8 +2620,8 @@ class Instrument(object):
                                                 " they were missing in the ",
                                                 "Instrument"])
                         warn_default = True
-                        self.meta[case_var] = {self.labels.name: var,
-                                               self.labels.notes: default_warn}
+                        self.meta[var] = {self.labels.name: var,
+                                          self.labels.notes: default_warn}
 
                 if warn_default:
                     warnings.warn(default_warn, stacklevel=2)
