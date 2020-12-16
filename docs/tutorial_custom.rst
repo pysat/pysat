@@ -89,7 +89,8 @@ only when using the DataFrame.
 
 .. code:: python
 
-   def custom_func_add(inst, optional_param1=False, optional_param2=False):
+   def custom_func_add(inst, param1, optional_param1=False,
+                       optional_param2=False):
        return {'data': 2.*inst['mlt'], 'name': 'double_mlt',
                'long_name': 'doubledouble', 'units': 'hours'}
 
@@ -103,9 +104,11 @@ to automatically apply the method upon ever load.
    ivm.custom_attach(custom_func_modify, 'modify', kwargs={'optional_param2': True})
    ivm.load(2009, 1)
    print(ivm['double_mlt'])
-   ivm.custom_attach(custom_func_add, 'add', kwargs={'optional_param2': True})
+   ivm.custom_attach(custom_func_add, 'add', args=[param1],
+                     kwargs={'optional_param2': True})
    # can also set via a string name for method
-   ivm.custom_attach('custom_func_add', 'add', kwargs={'optional_param2': False})
+   ivm.custom_attach('custom_func_add', 'add', rgs=[param2],
+                     kwargs={'optional_param2': False})
    # set bounds limiting the file/date range the Instrument will iterate over
    ivm.bounds = (start, stop)
    # perform analysis. Whatever modifications are enabled by the custom
@@ -171,13 +174,13 @@ at instantiation via the `custom` keyword.
 
 .. code:: python
 
-   # create dictionary for each custom methods and associated inputs
+   # create dictionary for each custom method and associated inputs
    custom_func_1 = {'function': custom_func_modify, 'kind': 'modify',
-                    'kwargs': {'optional_param2': True}}
+                    'kwargs': {'optional_param': True}}
    custom_func_2 = {'function': custom_func_add, 'kind': 'add',
-                    'kwargs': {'optional_param2': True}}
+                    'args'=[arg1, arg2], 'kwargs': {'optional_param1': True}}
    custom_func_3 = {'function': custom_func_add, 'kind': 'add',
-                    'kwargs': {'optional_param2': False}}
+                    'kwargs': {'optional_param2': True}}
 
    # Combine all dicts into a list in order of application and execution.
    custom = [custom_func_1, custom_func_2, custom_func_3]
