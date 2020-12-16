@@ -51,15 +51,13 @@ class TestFileCadance():
                               ("minutes", 1, True), ("hours", 1, True),
                               ("days", 1, True), ("days", 2, False),
                               ("months", 1, False), ("years", 1, False)])
-    def test_datetime_file_cadance(self, time_kwarg, time_val, is_daily):
-        """ Test is_daily_file_cadance with dt.datetime input
+    def test_dateoffset_file_cadance(self, time_kwarg, time_val, is_daily):
+        """ Test is_daily_file_cadance with pds.DateOffset input
         """
         in_time = pds.DateOffset(**{time_kwarg: time_val})
         check_daily = gen.is_daily_file_cadance(in_time)
 
         assert check_daily == is_daily
-        
-        
 
 
 class TestRemoveLeadText():
