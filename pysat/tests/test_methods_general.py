@@ -36,8 +36,7 @@ class TestFileCadance():
     @pytest.mark.parametrize("time_kwarg, time_val, is_daily",
                              [("microseconds", 1, True), ("seconds", 1, True),
                               ("minutes", 1, True), ("hours", 1, True),
-                              ("days", 1, True), ("days", 2, False),
-                              ("months", 1, False), ("years", 1, False)])
+                              ("days", 1, True), ("days", 2, False)])
     def test_datetime_file_cadance(self, time_kwarg, time_val, is_daily):
         """ Test is_daily_file_cadance with dt.datetime input
         """
