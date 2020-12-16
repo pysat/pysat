@@ -1991,8 +1991,8 @@ class Instrument(object):
         function : string or function object
             name of function or function object to be added to queue
         kind : str
-            Specifies the type of interaction between the custom function and the
-            Instrument data.  Accepts one of 'add', 'modify', or 'pass'.
+            Specifies the type of interaction between the custom function and
+            the Instrument data.  Accepts one of 'add', 'modify', or 'pass'.
             - add
                 Adds data returned from function to instrument object.
                 A copy of pysat.Instrument object supplied to routine.
