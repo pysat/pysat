@@ -2019,18 +2019,17 @@ class Instrument(object):
         ----
         Allowed `custom_attach` function returns if `kind` is 'add':
 
-        - {'data' : pandas Series/DataFrame/array_like,
-          'units' : string/array_like of strings,
-          'long_name' : string/array_like of strings,
-          'name' : string/array_like of strings (iff data array_like)}
+            - {'data' : pandas Series/DataFrame/array_like,
+               meta_label_string : string/array_like of strings,
+               'name' : string/array_like of strings}
 
-        - pandas DataFrame, names of columns are used
+            - pandas DataFrame, names of columns are used
 
-        - pandas Series, .name required
+            - pandas Series, .name required
 
-        - xarray DataArray, .name required
+            - xarray DataArray, .name required
 
-        - (string/list of strings, numpy array/list of arrays)
+            - (string/list of strings, numpy array/list of arrays)
 
         """
 
@@ -2096,6 +2095,8 @@ class Instrument(object):
                                             'keys stored in self.labels. '))
                             # raise DeprecationWarning(dstr)
                             name = None
+                            # Flag if recast to identify if working with
+                            # older style data.
                             recast_as_dict = True
                         else:
                             # Check for name
