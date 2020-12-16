@@ -13,40 +13,40 @@ logger = pysat.logger
 
 
 def is_daily_file_cadence(file_cadence):
-    """ Evaluate file cadance to see if it is daily or greater than daily
+    """ Evaluate file cadence to see if it is daily or greater than daily
 
     Parameters
     ----------
-    file_cadance : dt.timedelta or pds.DateOffset
-        pysat assumes a daily file cadance, but some instrument data file
+    file_cadence : dt.timedelta or pds.DateOffset
+        pysat assumes a daily file cadence, but some instrument data file
         contain longer periods of time.  This parameter allows the specification
-        of regular file cadances greater than or equal to a day (e.g., weekly,
+        of regular file cadences greater than or equal to a day (e.g., weekly,
         monthly, or yearly). (default=dt.timedelta(days=1))
 
     Returns
     -------
     is_daily : bool
-        True if the cadance is daily or less, False if the cadance is greater
+        True if the cadence is daily or less, False if the cadence is greater
         than daily
 
     """
     is_daily = True
 
-    if hasattr(file_cadance, 'days'):
-        if file_cadance.days > 1:
+    if hasattr(file_cadence, 'days'):
+        if file_cadence.days > 1:
             is_daily = False
     else:
-        if not (hasattr(file_cadance, 'microseconds')
-                or hasattr(file_cadance, 'seconds')
-                or hasattr(file_cadance, 'minutes')
-                or hasattr(file_cadance, 'hours')):
+        if not (hasattr(file_cadence, 'microseconds')
+                or hasattr(file_cadence, 'seconds')
+                or hasattr(file_cadence, 'minutes')
+                or hasattr(file_cadence, 'hours')):
             is_daily = False
 
     return is_daily
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
-               supported_tags=None, file_cadance=dt.timedelta(days=1),
+               supported_tags=None, file_cadence=dt.timedelta(days=1),
                two_digit_year_break=None, delimiter=None):
     """Return a Pandas Series of every file for chosen Instrument data.
 
@@ -69,10 +69,10 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     supported_tags : dict or NoneType
         keys are inst_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
-    file_cadance : dt.timedelta or pds.DateOffset
-        pysat assumes a daily file cadance, but some instrument data file
+    file_cadence : dt.timedelta or pds.DateOffset
+        pysat assumes a daily file cadence, but some instrument data file
         contain longer periods of time.  This parameter allows the specification
-        of regular file cadances greater than or equal to a day (e.g., weekly,
+        of regular file cadences greater than or equal to a day (e.g., weekly,
         monthly, or yearly). (default=dt.timedelta(days=1))
     two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then '1900' will be
@@ -124,9 +124,9 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     # If the data is not daily, pad the series.  Both pds.DateOffset and
     # dt.timedelta contain the 'days' attribute, so evaluate using that
-    if not out.empty and not is_daily_file_cadance(file_cadance):
+    if not out.empty and not is_daily_file_cadence(file_cadence):
         emonth = out.index[-1]
-        out.loc[out.index[-1] + file_cadance
+        out.loc[out.index[-1] + file_cadence
                 - dt.timedelta(days=1)] = out.iloc[-1]
         new_out = out.asfreq('D')
 
