@@ -12,7 +12,7 @@ import pysat
 logger = pysat.logger
 
 
-def is_daily_file_cadance(file_cadance):
+def is_daily_file_cadence(file_cadence):
     """ Evaluate file cadance to see if it is daily or greater than daily
 
     Parameters
