@@ -45,21 +45,24 @@ class Instrument(object):
     orbit_info : dict
         Orbit information, {'index':index, 'kind':kind, 'period':period}.
         See pysat.Orbits for more information.
-    inst_module : module, optional
-        Provide instrument module directly.
-        Takes precedence over platform/name.
-    update_files : boolean, optional
+    inst_module : module
+        Provide instrument module directly, takes precedence over platform/name
+        (default=None)
+    update_files : boolean
         If True, immediately query filesystem for instrument files and store.
-    temporary_file_list : boolean, optional
+        Otherwise, assume nothing has changed from the last time files were
+        loaded (default=False)
+    temporary_file_list : boolean
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
-    strict_time_flag : boolean, option (True)
+        (default=False)
+    strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
-        monotonically increasing.
-    multi_file_day : boolean, optional
+        monotonically increasing. (default=True)
+    multi_file_day : boolean or NoneType
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.
+        with a timestamp of day n-1 or n+1.  (default=None)
     manual_org : bool
         if True, then pysat will look directly in pysat data directory
         for data files and will not use default /platform/name/tag
@@ -72,34 +75,19 @@ class Instrument(object):
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
-        instrument list_files routine.
+        instrument list_files routine. (default=None)
     ignore_empty_files : boolean
         if True, the list of files found will be checked to
         ensure the filesizes are greater than zero. Empty files are
-        removed from the stored list of files.
-    units_label : str
-        String used to label units in storage. Defaults to 'units'.
-    name_label : str
-        String used to label long_name in storage. Defaults to 'name'.
-    notes_label : str
-       label to use for notes in storage. Defaults to 'notes'
-    desc_label : str
-       label to use for variable descriptions in storage. Defaults to 'desc'
-    plot_label : str
-       label to use to label variables in plots. Defaults to 'label'
-    axis_label : str
-        label to use for axis on a plot. Defaults to 'axis'
-    scale_label : str
-       label to use for plot scaling type in storage. Defaults to 'scale'
-    min_label : str
-       label to use for typical variable value min limit in storage.
-       Defaults to 'value_min'
-    max_label : str
-       label to use for typical variable value max limit in storage.
-       Defaults to 'value_max'
-    fill_label : str
-        label to use for fill values. Defaults to 'fill' but some
-        implementations will use 'FillVal'
+        removed from the stored list of files. (default=False)
+    labels : dict
+        Dict where keys are the label attribute names and the values are tuples
+        that have the label values and value types in that order.
+        (default={'units': ('units', str), 'name': ('long_name', str),
+                  'notes': ('notes', str), 'desc': ('desc', str),
+                  'plot': ('plot', str), 'axis': ('axis', str),
+                  'scale': ('scale', str), 'min_val': ('value_min', float),
+                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Attributes
     ----------
@@ -117,6 +105,10 @@ class Instrument(object):
         day of year for loaded data
     files : pysat.Files
         interface to instrument files
+    labels : pysat.MetaLabels
+        Class containing Meta data labels
+    meta_labels : dict
+        Dict containing defaults for new Meta data labels
     meta : pysat.Meta
         interface to instrument metadata, similar to netCDF 1.6
     orbits : pysat.Orbits
@@ -128,11 +120,10 @@ class Instrument(object):
 
     Note
     ----
-    Pysat attempts to load the module platform_name.py located in
-    the pysat/instruments directory. This module provides the underlying
-    functionality to download, load, and clean instrument data.
-    Alternatively, the module may be supplied directly
-    using keyword inst_module.
+    Pysat attempts to load the module platform_name.py located in the
+    pysat/instruments directory. This module provides the underlying
+    functionality to download, load, and clean instrument data. Alternatively,
+    the module may be supplied directly using keyword inst_module.
 
     Examples
     --------
@@ -179,11 +170,13 @@ class Instrument(object):
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
                  ignore_empty_files=False,
-                 units_label='units', name_label='long_name',
-                 notes_label='notes', desc_label='desc',
-                 plot_label='label', axis_label='axis', scale_label='scale',
-                 min_label='value_min', max_label='value_max',
-                 fill_label='fill', **kwargs):
+                 labels={'units': ('units', str), 'name': ('long_name', str),
+                         'notes': ('notes', str), 'desc': ('desc', str),
+                         'plot': ('plot', str), 'axis': ('axis', str),
+                         'scale': ('scale', str),
+                         'min_val': ('value_min', float),
+                         'max_val': ('value_max', float),
+                         'fill_val': ('fill', float)}, **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
@@ -268,27 +261,11 @@ class Instrument(object):
         # assign null data for user selected data type
         self.data = self._null_data.copy()
 
-        # create Meta instance with appropriate labels
-        self.units_label = units_label
-        self.name_label = name_label
-        self.notes_label = notes_label
-        self.desc_label = desc_label
-        self.plot_label = plot_label
-        self.axis_label = axis_label
-        self.scale_label = scale_label
-        self.min_label = min_label
-        self.max_label = max_label
-        self.fill_label = fill_label
-        self.meta = pysat.Meta(units_label=self.units_label,
-                               name_label=self.name_label,
-                               notes_label=self.notes_label,
-                               desc_label=self.desc_label,
-                               plot_label=self.plot_label,
-                               axis_label=self.axis_label,
-                               scale_label=self.scale_label,
-                               min_label=self.min_label,
-                               max_label=self.max_label,
-                               fill_label=self.fill_label)
+        # Create Meta instance with appropriate labels.  Meta class methods will
+        # use Instrument definition of MetaLabels over the Metadata declaration
+        self.meta_labels = labels
+        self.meta = pysat.Meta(labels=self.meta_labels)
+        self.labels = pysat.MetaLabels(metadata=self.meta, **labels)
 
         # function processing class, processes data on load
         self.custom = pysat.Custom()
@@ -676,17 +653,8 @@ class Instrument(object):
                         # This will ensure the correct defaults for all
                         # subvariables.  Meta can filter out empty metadata as
                         # needed, the check above reduces the need to create
-                        # Meta instances.
-                        ho_meta = pysat.Meta(units_label=self.units_label,
-                                             name_label=self.name_label,
-                                             notes_label=self.notes_label,
-                                             desc_label=self.desc_label,
-                                             plot_label=self.plot_label,
-                                             axis_label=self.axis_label,
-                                             scale_label=self.scale_label,
-                                             fill_label=self.fill_label,
-                                             min_label=self.min_label,
-                                             max_label=self.max_label)
+                        # Meta instances
+                        ho_meta = pysat.Meta(labels=self.meta_labels)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
 
@@ -1163,35 +1131,17 @@ class Instrument(object):
 
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
-                mdata.accept_default_labels(self)
+                mdata.accept_default_labels(self.meta)
                 bad_datetime = False
             except pds.errors.OutOfBoundsDatetime:
                 bad_datetime = True
                 data = self._null_data.copy()
-                mdata = pysat.Meta(units_label=self.units_label,
-                                   name_label=self.name_label,
-                                   notes_label=self.notes_label,
-                                   desc_label=self.desc_label,
-                                   plot_label=self.plot_label,
-                                   axis_label=self.axis_label,
-                                   scale_label=self.scale_label,
-                                   min_label=self.min_label,
-                                   max_label=self.max_label,
-                                   fill_label=self.fill_label)
+                mdata = pysat.Meta(labels=self.meta_labels)
 
         else:
             bad_datetime = False
             data = self._null_data.copy()
-            mdata = pysat.Meta(units_label=self.units_label,
-                               name_label=self.name_label,
-                               notes_label=self.notes_label,
-                               desc_label=self.desc_label,
-                               plot_label=self.plot_label,
-                               axis_label=self.axis_label,
-                               scale_label=self.scale_label,
-                               min_label=self.min_label,
-                               max_label=self.max_label,
-                               fill_label=self.fill_label)
+            mdata = pysat.Meta(labels=self.meta_labels)
 
         output_str = '{platform} {name} {tag} {inst_id}'
         output_str = output_str.format(platform=self.platform,
@@ -1500,8 +1450,11 @@ class Instrument(object):
                         estr.format(a=str(mdata_dict['_FillValue']),
                                     b=coltype)
 
-                mdata_dict['_FillValue'] = np.array(
-                    mdata_dict['_FillValue']).astype(coltype)
+        # check if load routine actually returns meta
+        if self.meta.data.empty:
+            self.meta[self.variables] = {self.labels.name: self.variables,
+                                         self.labels.units:
+                                         [''] * len(self.variables)}
 
         # Make sure FillValue is the same type as the data
         if 'FillVal' in mdata_dict.keys():
@@ -1582,61 +1535,8 @@ class Instrument(object):
 
     @bounds.setter
     def bounds(self, value=None):
-        """Sets the self.bounds property.
+        # Set the bounds property.  See property docstring for details
 
-        Parameters
-        ----------
-        start (value[0]) : datetime object, filename, or None
-            start of iteration, if None uses first data date.
-            list-like collection also accepted. (default=None)
-        stop  (value[1]):  datetime object, filename, or None
-            stop of iteration, inclusive. If None uses last data date.
-            list-like collection also accepted. (default=None)
-        step  (value[2]): str, int, or None
-            Step size used when iterating from start to stop. Use a
-            Pandas frequency string ('3D', '1M') when setting bounds by date,
-            an integer when setting bounds by file. Defaults to a single
-            day/file (default='1D', 1).
-        width (value[3]): pandas.DateOffset, int, or None
-            Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=dt.timedelta(days=1),
-            1)
-
-        Note
-        ----
-        Both start and stop must be the same type (date, or filename) or None.
-        Only the year, month, and day are used for date inputs.
-
-        Examples
-        --------
-        ::
-            import datetime as dt
-            import pandas as pds
-            import pysat
-
-            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
-            start = dt.datetime(2009,1,1)
-            stop = dt.datetime(2009,1,31)
-            # Defaults to stepping by a single day and a data loading window
-            # of one day/file.
-            inst.bounds = (start, stop)
-
-            # Set bounds by file. Iterates a file at a time.
-            inst.bounds = ('filename1', 'filename2')
-
-            # Create a more complicated season, multiple start and stop dates.
-            start2 = dt.datetetime(2010,1,1)
-            stop2 = dt.datetime(2010,2,14)
-            inst.bounds = ([start, start2], [stop, stop2])
-
-            # Iterate via a non-standard step size of two days.
-            inst.bounds = ([start, start2], [stop, stop2], '2D')
-
-            # Load more than a single day/file at a time when iterating
-            inst.bounds = ([start, start2], [stop, stop2], '2D',
-                           dt.timedelta(days=3))
-
-        """
         if value is None:
             # User wants defaults
             value = (None, None, None, None)
@@ -1835,9 +1735,9 @@ class Instrument(object):
         return self._date
 
     @date.setter
-    def date(self, new):
-        """Date for loaded data."""
-        self._date = self._filter_datetime_input(new)
+    def date(self, new_date):
+        # Set the date property, see property docstring for details
+        self._date = self._filter_datetime_input(new_date)
 
     @property
     def index(self):
@@ -2134,6 +2034,7 @@ class Instrument(object):
                          'old_name2':, 'new_name2'}
             inst.rename(new_var_names)
 
+
         If using a pandas DataFrame as the underlying data object,
         to rename higher-order variables supply a modified dictionary.
         Note that this rename will be invoked individually for all
@@ -2154,6 +2055,7 @@ class Instrument(object):
             var_names = {'uts': 'pysat_uts',
                      'profiles': {'density': 'pysat_density'}}
             inst.rename(var_names)
+
 
         pysat supports differing case for variable labels across the
         data and metadata objects attached to an Instrument. Since
@@ -2184,6 +2086,7 @@ class Instrument(object):
             # load in file and check
             raw = netCDF4.Dataset('./test.nc')
             print(raw.variables['Pysat_UTS'])
+
 
         """
 
@@ -2703,18 +2606,30 @@ class Instrument(object):
                 if (self.index[-1] == last_pad) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # if self.pad is False, load single day
+        # If self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
                                               inc=self.load_step)
             if not self.empty:
                 self.meta = meta
 
+                # If only some metadata included, define the remaining variables
+                warn_default = False
+                for var in self.variables:
+                    if var not in self.meta:
+                        default_warn = "".join(["Metadata set to defaults, as",
+                                                " they were missing in the ",
+                                                "Instrument"])
+                        warn_default = True
+                        self.meta[var] = {self.labels.name: var,
+                                          self.labels.notes: default_warn}
+
+                if warn_default:
+                    warnings.warn(default_warn, stacklevel=2)
+
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.variables] = {self.name_label: self.variables,
-                                         self.units_label:
-                                         [''] * len(self.variables)}
+            self.meta[self.variables] = {self.labels.name: self.variables}
 
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
@@ -3069,16 +2984,16 @@ class Instrument(object):
         if self._meta_translation_table is None:
             # didn't find a translation table, using the strings
             # attached to the supplied pysat.Instrument object
-            export_name_labels = [self.name_label]
-            export_units_labels = [self.units_label]
-            export_desc_labels = [self.desc_label]
-            export_notes_labels = [self.notes_label]
+            export_name_labels = [self.labels.name]
+            export_units_labels = [self.labels.units]
+            export_desc_labels = [self.labels.desc]
+            export_notes_labels = [self.labels.notes]
         else:
             # user supplied labels in translation table
-            export_name_labels = self._meta_translation_table['name_label']
-            export_units_labels = self._meta_translation_table['units_label']
-            export_desc_labels = self._meta_translation_table['desc_label']
-            export_notes_labels = self._meta_translation_table['notes_label']
+            export_name_labels = self._meta_translation_table['name']
+            export_units_labels = self._meta_translation_table['units']
+            export_desc_labels = self._meta_translation_table['desc']
+            export_notes_labels = self._meta_translation_table['notes']
             logger.info(' '.join(('Using Metadata Translation Table:',
                                   str(self._meta_translation_table))))
 
