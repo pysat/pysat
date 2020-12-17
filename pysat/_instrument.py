@@ -2129,14 +2129,26 @@ class Instrument(object):
 
                         # xarray.Dataset returned, merge into existing data.
                         elif isinstance(new_data['data'], xr.Dataset):
-                            self.data = xr.merge([self.data, new_data])
+                            # First, merge in dataset data
+                            xr_data = new_data.pop('data')
+                            self.data = xr.merge([self.data, xr_data])
+
+                            # Second, check on names. If not provided, generate
+                            # names from dataset itself.
+                            if name is None:
+                                name = list(xr_data.variables.keys())[1:]
+                                # Filter out any indexes variables
+                                fnames = [lname for lname in name
+                                          if lname not in xr_data.indexes]
+
+                            # Finally, add in the metadata.
+                            self.meta[fnames] = new_data
 
                         # Some kind of iterable was returned. Add using
                         # best effort code.
                         elif hasattr(new_data['data'], '__iter__'):
                             # look for name in returned dict
                             if name is not None:
-                                # name = new_data.pop('name')
                                 self[name] = new_data
                             elif recast_as_dict:
                                 # Falling back to older behavior:
