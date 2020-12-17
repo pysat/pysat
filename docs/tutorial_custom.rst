@@ -62,6 +62,7 @@ Multiple return types are supported.
   Series            Variable name must be in .name
   DataFrame         Columns used as variable names
   DataArray         Variable name must be in .name
+  Dataset           Merged into existing Instrument.data
 ===============     ===================================
 
 .. code:: python

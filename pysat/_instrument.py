@@ -2023,11 +2023,13 @@ class Instrument(object):
                meta_label_string : string/array_like of strings,
                'name' : string/array_like of strings}
 
-            - pandas DataFrame, names of columns are used
+            - pandas DataFrame, names of columns are used if not provided
 
-            - pandas Series, .name required
+            - pandas Series, Series.name used if not provided in 'name'
 
-            - xarray DataArray, .name required
+            - xarray DataArray, DataArray.name used if not provided in 'name'
+
+            - xarray Dataset, variables names used if not provided in 'name'
 
             - (string/list of strings, numpy array/list of arrays)
 
