@@ -6,6 +6,7 @@ import numpy as np
 import os
 import pandas as pds
 import pytest
+import warnings
 
 import pysat
 import pysat.instruments.pysat_testing
@@ -29,12 +30,15 @@ class TestBasics():
         self.default_nan = ['fill', 'value_min', 'value_max']
         self.default_val = {'notes': '', 'units': '', 'desc': '',
                             'scale': 'linear'}
+        self.default_str = ''.join(['Metadata set to defaults, as they were',
+                                    ' missing in the Instrument'])
 
     def teardown(self):
         """Runs after every method to clean up previous testing
         """
         del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
+        del self.default_str
 
     def check_meta_settings(self):
         """ Test the Meta settings for a specified value
@@ -122,17 +126,25 @@ class TestBasics():
     def test_init_labels_w_int_default(self):
         """ Test MetaLabels initiation with an integer label type
         """
-        # Reinitialize the Meta
+        # Reinitialize the Meta and test for warning
         self.meta_labels['fill_val'] = ("fill", int)
-        self.testInst = pysat.Instrument('pysat', 'testing',
-                                         clean_level='clean',
-                                         labels=self.meta_labels)
-        self.testInst.load(*self.stime)
+
+        with warnings.catch_warnings(record=True) as war:
+            self.testInst = pysat.Instrument('pysat', 'testing',
+                                             clean_level='clean',
+                                             labels=self.meta_labels)
+            self.testInst.load(*self.stime)
+
+        # Test the warning
+        assert len(war) >= 1
+        assert war[0].category == UserWarning
+        assert self.default_str in str(war[0].message)
+
+        # Prepare to test the Metadata
         self.meta = self.testInst.meta
         self.dval = 'int32_dummy'
-
-        # Update the testing data
         self.default_val['fill'] = -1
+        self.default_val['notes'] = self.default_str
         self.default_nan.pop(self.default_nan.index('fill'))
 
         # Test the Meta settings
