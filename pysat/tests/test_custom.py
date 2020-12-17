@@ -353,6 +353,39 @@ class TestBasics():
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
 
+    def test_add_xarray_dataset(self):
+        """Test add function success with xarray"""
+        def custom_set(inst):
+            out1 = xr.DataArray(inst.data.mlt * 2, dims=['time'],
+                                coords=[inst.index])
+            out1.name = 'doubleMLT'
+
+            out2 = xr.DataArray(inst.data.mlt * 3, dims=['time'],
+                                coords=[inst.index])
+            out2.name = 'tripleMLT'
+
+            out = xr.Dataset({'doubleMLT': out1, 'tripleMLT': out2})
+
+            return {'data': out, inst.name_label: ['doubleMLTlong',
+                                                   'tripleMLTyo'],
+                    inst.units_label: ['hours1', 'hours2']}
+
+        if not self.testInst.pandas_format:
+            self.testInst.custom_attach(custom_set, 'add')
+            self.testInst.load(2009, 1)
+            units = self.testInst.units_label
+            lname = self.testInst.name_label
+            assert self.testInst.meta['doubleMLT', units] == 'hours1'
+            assert self.testInst.meta['tripleMLT', units] == 'hours2'
+            assert self.testInst.meta['doubleMLT', lname] == 'doubleMLTlong'
+            assert self.testInst.meta['tripleMLT', lname] == 'tripleMLTyo'
+            assert (self.testInst['doubleMLT']
+                    == 2.0 * self.testInst['mlt']).all()
+            assert (self.testInst['tripleMLT']
+                    == 3.0 * self.testInst['mlt']).all()
+            tlen = self.ncols + 2
+            assert len([kk for kk in self.testInst.data.keys()]) == tlen
+
     def test_add_numpy_array_w_meta_name_in_dict(self):
         """Test add function success with array and MetaData
         """
