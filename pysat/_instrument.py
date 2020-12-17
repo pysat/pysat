@@ -2087,12 +2087,12 @@ class Instrument(object):
                         recast_as_dict = False
                         if not isinstance(new_data, dict):
                             new_data = {'data': new_data}
-                            dstr = ''.join(('Data returned should be a dict ',
-                                            'with data in "data", ',
-                                            'the keys for the variables to ',
-                                            'be stored in "name", along with ',
-                                            'any metadata using appropriate ',
-                                            'keys stored in self.labels. '))
+                            # dstr = ''.join(('Data returned should be a dict ',
+                            #                 'with data in "data", ',
+                            #                 'the keys for the variables to ',
+                            #                 'be stored in "name", along with ',
+                            #                 'any metadata using appropriate ',
+                            #                 'keys stored in self.labels. '))
                             # raise DeprecationWarning(dstr)
                             name = None
                             # Flag if recast to identify if working with
@@ -2161,9 +2161,9 @@ class Instrument(object):
                                                 # Fixes up the incomplete check
                                                 # from above
                                                 self[name] = data
-                                dstr = ''.join(('Data returned will require ',
-                                                'a "name" key in the returned ',
-                                                'dictionary.'))
+                                # dstr = ''.join(('Data returned will require ',
+                                #                 'a "name" key in the returned ',
+                                #                 'dictionary.'))
                                 # raise DeprecationWarning(dstr)
                             else:
                                 raise ValueError(''.join(('Must include ',
