@@ -30,15 +30,12 @@ class TestBasics():
         self.default_nan = ['fill', 'value_min', 'value_max']
         self.default_val = {'notes': '', 'units': '', 'desc': '',
                             'scale': 'linear'}
-        self.default_str = ''.join(['Metadata set to defaults, as they were',
-                                    ' missing in the Instrument'])
 
     def teardown(self):
         """Runs after every method to clean up previous testing
         """
         del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
-        del self.default_str
 
     def check_meta_settings(self):
         """ Test the Meta settings for a specified value
@@ -136,15 +133,17 @@ class TestBasics():
             self.testInst.load(*self.stime)
 
         # Test the warning
+        default_str = ''.join(['Metadata set to defaults, as they were',
+                               ' missing in the Instrument'])
         assert len(war) >= 1
         assert war[0].category == UserWarning
-        assert self.default_str in str(war[0].message)
+        assert default_str in str(war[0].message)
 
         # Prepare to test the Metadata
         self.meta = self.testInst.meta
         self.dval = 'int32_dummy'
         self.default_val['fill'] = -1
-        self.default_val['notes'] = self.default_str
+        self.default_val['notes'] = default_str
         self.default_nan.pop(self.default_nan.index('fill'))
 
         # Test the Meta settings
