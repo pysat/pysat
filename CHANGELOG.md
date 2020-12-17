@@ -30,6 +30,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     of Constellation/Instrument objects in code (#540)
   - Made underlying custom data structures visible (#529)
   - Updated data_mode method name to custom_attach for the Constellation object (#540)
+  - Added support for custom 'add' methods to return xarray.Datasets
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
