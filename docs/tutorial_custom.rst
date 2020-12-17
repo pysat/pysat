@@ -80,6 +80,21 @@ Multiple return types are supported.
 
        return ('double_mlt', 2.0 * inst['mlt'])
 
+   def custom_func_add_with_args(inst, req_param, req_param2,
+                                 optional_param=False):
+       """Calculate data to be added to pysat.Instrument object
+
+       Parameters
+       ----------
+       inst : pysat.Instrument
+           pysat will add returned data to this object
+       optional_param : stand-in
+           Placeholder indicated support for custom keywords
+           and arguments
+       """
+
+       return ('triple_mlt', 3.0 * inst['mlt'])
+
 **Add Function Including Metadata**
 
 Metadata may also be returned when using a dictionary object as the return
@@ -101,18 +116,27 @@ to automatically apply the method upon ever load.
 
 .. code:: python
 
-   ivm.custom_attach(custom_func_modify, 'modify', kwargs={'optional_param2': True})
-   ivm.load(2009, 1)
-   print(ivm['double_mlt'])
-   ivm.custom_attach(custom_func_add, 'add', args=[param1],
+   # Attach a 'modify' method and demonstrate execution
+   ivm.custom_attach(custom_func_modify, 'modify',
                      kwargs={'optional_param2': True})
-   # can also set via a string name for method
-   ivm.custom_attach('custom_func_add', 'add', rgs=[param2],
-                     kwargs={'optional_param2': False})
+   # `custom_func_modify` is executed as part on the `ivm.load` call.
+   ivm.load(2009, 1)
+   # Verify result is present
+   print(ivm['double_mlt'])
+
+   # Setting an 'add' method
+   ivm.custom_attach(custom_func_add, 'add', kwargs={'optional_param': True})
+
+   # Can also set methods via its string name. This example includes
+   # both required and optional arguments.
+   ivm.custom_attach('custom_func_add_with_args', 'add', args=[param1, param2],
+                     kwargs={'optional_param': False})
+
    # set bounds limiting the file/date range the Instrument will iterate over
    ivm.bounds = (start, stop)
-   # perform analysis. Whatever modifications are enabled by the custom
-   # methods are automatically available within the custom analysis
+
+   # Perform analysis. Whatever modifications are enabled by the custom
+   # methods are automatically available within the custom analysis.
    custom_complicated_analysis_over_season(ivm)
 
 The output of custom_func_modify will always be available from instrument
@@ -177,10 +201,10 @@ at instantiation via the `custom` keyword.
    # create dictionary for each custom method and associated inputs
    custom_func_1 = {'function': custom_func_modify, 'kind': 'modify',
                     'kwargs': {'optional_param': True}}
-   custom_func_2 = {'function': custom_func_add, 'kind': 'add',
-                    'args'=[arg1, arg2], 'kwargs': {'optional_param1': True}}
+   custom_func_2 = {'function': custom_func_add_with_args, 'kind': 'add',
+                    'args'=[arg1, arg2], 'kwargs': {'optional_param': True}}
    custom_func_3 = {'function': custom_func_add, 'kind': 'add',
-                    'kwargs': {'optional_param2': True}}
+                    'kwargs': {'optional_param': False}}
 
    # Combine all dicts into a list in order of application and execution.
    custom = [custom_func_1, custom_func_2, custom_func_3]
