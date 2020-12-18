@@ -38,7 +38,7 @@ def assert_list_contains(small_list, big_list):
 
 
 def assert_lists_equal(list1, list2):
-    """Assert that the lists are identical
+    """Assert that the lists contain the same elements
 
     Parameters
     ----------
@@ -51,6 +51,11 @@ def assert_lists_equal(list1, list2):
     ------
     AssertionError
         If a list1 value is missing from list2 or list lengths are unequal
+
+    Note
+    ----
+    This test does not require that the lists have the same elements in the
+    same order, and so is also a good test for keys.
     
     """
 
