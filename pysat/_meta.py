@@ -12,7 +12,7 @@ import pandas as pds
 
 import pysat
 import pysat.utils._core as core_utils
-
+from pysat.utils import testing
 
 class Meta(object):
     """ Stores metadata for Instrument instance, similar to CF-1.6 netCDFdata
@@ -609,100 +609,61 @@ class Meta(object):
         """
 
         if isinstance(other_meta, Meta):
-            # check first if variables and attributes are the same
-            # quick check on length
-            keys1 = [i for i in self.keys()]
-            keys2 = [i for i in other_meta.keys()]
-            if len(keys1) != len(keys2):
-                return False
+            # Check if the variables and attributes are the same
+            for iter1, iter2 in [(self.keys(), other_meta.keys()),
+                                 (self.attrs(), other_meta.attrs())]:
+                list1 = [value for value in iter1]
+                list2 = [value for value in iter2]
 
-            # now iterate over each of the keys in the first one
-            # don't need to iterate over second one, if all of the first
-            # in the second we are good. No more or less items in second from
-            # check earlier.
-            for key in keys1:
-                if key not in keys2:
+                try:
+                    testing.assert_lists_equal(list1, list2)
+                except AssertionError:
                     return False
 
-            # do same checks on attributes
-            attrs1 = [i for i in self.attrs()]
-            attrs2 = [i for i in other_meta.attrs()]
-            if len(attrs1) != len(attrs2):
-                return False
-
-            for attr in attrs1:
-                if attr not in attrs2:
-                    return False
-
-            # now check the values of all elements now that we know all
-            # variable and attribute names are the same
+            # Check that the values of all elements are the same. NaN is treated
+            # as equal, though mathematically NaN is not equal to anything
             for key in self.keys():
                 for attr in self.attrs():
-                    if not (self[key, attr] == other_meta[key, attr]):
-                        # np.nan is not equal to anything
-                        # if both values are NaN, ok in my book
-                        try:
-                            if not (np.isnan(self[key, attr])
-                                    and np.isnan(other_meta[key, attr])):
-                                # one or both are not NaN and they aren't equal
-                                # test failed
-                                return False
-                        except TypeError:
-                            # comparison above gets unhappy with string inputs
-                            return False
+                    if not testing.nan_equal(self[key, attr],
+                                             other_meta[key, attr]):
+                        return False
 
-            # check through higher order products
-            # in the same manner as code above
-            keys1 = [i for i in self.keys_nD()]
-            keys2 = [i for i in other_meta.keys_nD()]
-            if len(keys1) != len(keys2):
+            # Check the higher order products
+            keys1 = [key for key in self.keys_nD()]
+            keys2 = [key for key in other_meta.keys_nD()]
+            try:
+                testing.assert_lists_equal(keys1, keys2)
+            except AssertionError:
                 return False
 
-            for key in keys1:
-                if key not in keys2:
-                    return False
-
-            # do same check on all sub variables within each nD key
+            # Check the higher order variables within each nD key are the same.
+            # NaN is treated as equal, though mathematically NaN is not equal
+            # to anything
             for key in self.keys_nD():
-                keys1 = [i for i in self[key].children.keys()]
-                keys2 = [i for i in other_meta[key].children.keys()]
-                if len(keys1) != len(keys2):
-                    return False
+                for iter1, iter2 in [(self[key].children.keys(),
+                                      other_meta[key].children.keys()),
+                                     (self[key].children.attrs(),
+                                      other_meta[key].children.attrs())]:
+                    list1 = [value for value in iter1]
+                    list2 = [value for value in iter2]
 
-                for key_check in keys1:
-                    if key_check not in keys2:
+                    try:
+                        testing.assert_lists_equal(list1, list2)
+                    except AssertionError:
                         return False
 
-                # check if attributes are the same
-                attrs1 = [i for i in self[key].children.attrs()]
-                attrs2 = [i for i in other_meta[key].children.attrs()]
-                if len(attrs1) != len(attrs2):
-                    return False
+                # Check if all elements are individually equal
+                for ckey in self[key].children.keys():
+                    for cattr in self[key].children.attrs():
+                        if not testing.nan_equal(
+                                self[key].children[ckey, cattr],
+                                other_meta[key].children[ckey, cattr]):
+                            return False
 
-                for attr in attrs1:
-                    if attr not in attrs2:
-                        return False
-
-                # now time to check if all elements are individually equal
-                for key2 in self[key].children.keys():
-                    for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr]
-                                == other_meta[key].children[key2, attr]):
-                            try:
-                                nan_self = np.isnan(self[key].children[key2,
-                                                                       attr])
-                                nan_other = np.isnan(other_meta[key].children[
-                                    key2, attr])
-                                if not (nan_self and nan_other):
-                                    return False
-                            except TypeError:
-                                # comparison above gets unhappy with string
-                                # inputs
-                                return False
-            # if we made it this far, things are good
+            # If we made it this far, things are good
             return True
         else:
-            # wasn't even the correct class
+            # The object being compared wasn't even the correct class
             return False
 
     # -----------------------------------------------------------------------
