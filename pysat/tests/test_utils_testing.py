@@ -64,7 +64,6 @@ class TestTestingUtils():
         """
         assert testing.nan_equal(val1, val2)
 
-
     @pytest.mark.parametrize("val1, val2", [(0.0, 1.0), (np.nan, np.inf),
                                             ('one', 'One'), (None, False),
                                             (True, 'true'), (False, 'F'),

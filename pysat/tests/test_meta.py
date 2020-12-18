@@ -193,7 +193,7 @@ class TestBasics():
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
         self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
-            'units': 'V', 'long_name': 'The Doors'}
+                                 'units': 'V', 'long_name': 'The Doors'}
 
         assert self.testInst.meta['help', 'long_name'] == 'The Doors'
         testing.assert_list_contains(self.frame_list,
