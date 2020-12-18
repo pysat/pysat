@@ -56,7 +56,7 @@ def assert_lists_equal(list1, list2):
     ----
     This test does not require that the lists have the same elements in the
     same order, and so is also a good test for keys.
-    
+
     """
 
     assert len(list1) == len(list2)
@@ -94,7 +94,3 @@ def nan_equal(value1, value2):
             pass
 
     return is_equal
-    
-
-
-    
