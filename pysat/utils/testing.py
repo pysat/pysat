@@ -11,6 +11,8 @@ Angeline G. Burrell, NRL, Dec 2020
 
 """
 
+import numpy as np
+
 
 def assert_list_contains(small_list, big_list):
     """ Assert all elements of one list exist within the other list
