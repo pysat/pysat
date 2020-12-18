@@ -14,6 +14,7 @@ import pysat
 import pysat.utils._core as core_utils
 from pysat.utils import testing
 
+
 class Meta(object):
     """ Stores metadata for Instrument instance, similar to CF-1.6 netCDFdata
     standard.
