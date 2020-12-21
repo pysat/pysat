@@ -342,13 +342,13 @@ class TestBasics():
             out = xr.DataArray(inst.data.mlt * 2, dims=['time'],
                                coords=[inst.index])
             out.name = 'doubleMLT'
-            return {'data': out, inst.name_label: 'doubleMLTlong',
-                    inst.units_label: 'hours1'}
+            return {'data': out, inst.meta.labels.name: 'doubleMLTlong',
+                    inst.meta.labels.units: 'hours1'}
 
         self.testInst.custom_attach(custom1, 'add')
         self.testInst.load(2009, 1)
-        units = self.testInst.units_label
-        lname = self.testInst.name_label
+        units = self.testInst.meta.labels.units
+        lname = self.testInst.meta.labels.name
         assert self.testInst.meta['doubleMLT', units] == 'hours1'
         assert self.testInst.meta['doubleMLT', lname] == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
@@ -367,15 +367,15 @@ class TestBasics():
 
             out = xr.Dataset({'doubleMLT': out1, 'tripleMLT': out2})
 
-            return {'data': out, inst.name_label: ['doubleMLTlong',
-                                                   'tripleMLTyo'],
-                    inst.units_label: ['hours1', 'hours2']}
+            return {'data': out, inst.meta.labels.name: ['doubleMLTlong',
+                                                         'tripleMLTyo'],
+                    inst.meta.labels.units: ['hours1', 'hours2']}
 
         if not self.testInst.pandas_format:
             self.testInst.custom_attach(custom_set, 'add')
             self.testInst.load(2009, 1)
-            units = self.testInst.units_label
-            lname = self.testInst.name_label
+            units = self.testInst.meta.labels.units
+            lname = self.testInst.meta.labels.name
             assert self.testInst.meta['doubleMLT', units] == 'hours1'
             assert self.testInst.meta['tripleMLT', units] == 'hours2'
             assert self.testInst.meta['doubleMLT', lname] == 'doubleMLTlong'
