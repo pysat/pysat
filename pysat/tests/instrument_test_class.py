@@ -11,10 +11,6 @@ import pytest
 
 import pysat
 
-# dict, keyed by pysat instrument, with a list of usernames and passwords
-user_download_dict = {'supermag_magnetometer': {'user': 'rstoneback',
-                                                'password': 'None'}}
-
 
 def initialize_test_inst_and_date(inst_dict):
     """Initializes the instrument object to test and date
@@ -36,7 +32,9 @@ def initialize_test_inst_and_date(inst_dict):
 
     test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                  tag=inst_dict['tag'],
-                                 inst_id=inst_dict['inst_id'])
+                                 inst_id=inst_dict['inst_id'],
+                                 temporary_file_list=True,
+                                 update_files=True)
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
@@ -136,9 +134,8 @@ class InstTestClass():
         test_inst, date = initialize_test_inst_and_date(inst_dict)
 
         # check for username
-        inst_name = '_'.join((test_inst.platform, test_inst.name))
-        dl_dict = user_download_dict[inst_name] if inst_name in \
-            user_download_dict.keys() else {}
+        dl_dict = inst_dict['user_info'] if 'user_info' in \
+            inst_dict.keys() else {}
         test_inst.download(date, date, **dl_dict)
         assert len(test_inst.files.files) > 0
 

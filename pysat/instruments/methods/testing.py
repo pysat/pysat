@@ -141,6 +141,12 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
 
     if tag == 'no_download':
         warnings.warn('This simulates an instrument without download support')
+    # Check that user name and password are passed through the unit tests
+    if tag == 'user_password':
+        if (not user) and (not password):
+            # Note that this line will be uncovered if test succeeds
+            raise ValueError(' '.join(('Tests are not passing user and',
+                                       'password to test instruments')))
 
     return
 
@@ -220,7 +226,7 @@ def generate_times(fnames, num, freq='1S'):
         dates.append(date)
 
         # Create one day of data at desired frequency
-        end_date = date + pds.DateOffset(seconds=86399)
+        end_date = date + dt.timedelta(seconds=86399)
         index = pds.date_range(start=date, end=end_date, freq=freq)
         index = index[0:num]
         indices.extend(index)

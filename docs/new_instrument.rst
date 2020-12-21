@@ -333,7 +333,8 @@ The load module method signature should appear as:
   metadata parameters associated with that variable, including items like
   'units' and 'long_name'. A variety of parameters are included by default.
   Additional arbitrary columns allowed. See `pysat.Meta` for more information on
-  creating the initial metadata.
+  creating the initial metadata.  Any values not set in the load routine will
+  be set to the default values for that label type.
 - Note that users may opt for a different
   naming scheme for metadata parameters thus the most general code for working
   with metadata uses the attached labels,
@@ -411,10 +412,11 @@ in-place as needed; equivalent to a 'modify' custom routine.
 keywords are not supported within the init module method signature, though
 custom keyword support for instruments is available via inst.kwargs.
 
-**default**
+**preprocess**
 
 
-First custom function applied, once per instrument load.
+First custom function applied, once per instrument load.  Designed for standard
+instrument preprocessing.
 
 .. code:: python
 

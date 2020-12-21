@@ -9,7 +9,7 @@ import logging
 import numpy as np
 import warnings
 
-import xarray
+import xarray as xr
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
@@ -48,24 +48,24 @@ def init(self):
     return
 
 
-def default(self):
-    """Default customization function.
-
-    Note
-    ----
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    """
-
-    pass
-
-
 def clean(self):
     """Cleaning function
     """
 
-    pass
+    return
+
+
+# Optional method
+def preprocess(self):
+    """Customization method that performs standard preprocessing.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
+
+    """
+
+    return
 
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
@@ -125,13 +125,15 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     if malformed_index:
         index = index.tolist()
-        # nonmonotonic
+
+        # Create a nonmonotonic index
         index[0:3], index[3:6] = index[3:6], index[0:3]
-        # non unique
+
+        # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
-    data = xarray.Dataset({'uts': ((epoch_name), index)},
-                          coords={epoch_name: index})
+    data = xr.Dataset({'uts': ((epoch_name), index)},
+                      coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = dates[0] - root_date
@@ -198,73 +200,54 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                            np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int64))
 
-    return data, meta.copy()
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
+                   'custom': False}
+    meta[epoch_name] = {'units': 'Milliseconds since 1970-1-1',
+                        'Bin_Location': 0.5,
+                        'notes':
+                        'UTC time at middle of geophysical measurement.',
+                        'desc': 'UTC seconds', }
+    meta['mlt'] = {'units': 'hours',
+                   'long_name': 'Magnetic Local Time',
+                   'plot': 'MLT',
+                   'axis': 'MLT',
+                   'desc': 'Magnetic Local Time',
+                   'value_min': 0.,
+                   'value_max': 24.,
+                   'notes': ''.join(['Magnetic Local Time is the solar local ',
+                                     'time of the field line at the location ',
+                                     'where the field crosses the magnetic ',
+                                     'equator. In this case we just simulate ',
+                                     '0-24 with a consistent orbital period ',
+                                     'and an offset with SLT.']),
+                   'scale': 'linear'}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+                   'plot': 'Solar Local Time', 'axis': 'SLT',
+                   'desc': 'Solar Local Time', 'value_min': 0.,
+                   'value_max': 24.,
+                   'notes': ''.join(['Solar Local Time is the local time ',
+                                     '(zenith angle of thee sun) of the given',
+                                     ' locaiton. Overhead noon, +/- 90 is 6,',
+                                     ' 18 SLT .']), 'scale': 'linear'}
+    meta['orbit_num'] = {'long_name': 'Orbit Number', 'plot': 'Orbit Number',
+                         'axis': 'Orbit Number', 'desc': 'Orbit Number',
+                         'value_min': 0., 'value_max': 25000.,
+                         'notes': ''.join(['Number of orbits since the start ',
+                                           'of the mission. For this ',
+                                           'simulation we use the ',
+                                           'number of 5820 second periods ',
+                                           'since the start, 2008-01-01.']),
+                         'scale': 'linear'}
+
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
 list_remote_files = functools.partial(mm_test.list_remote_files,
                                       test_dates=_test_dates)
 download = functools.partial(mm_test.download)
-
-
-meta = pysat.Meta()
-meta['uts'] = {'units': 's',
-               'long_name': 'Universal Time',
-               'custom': False}
-meta[epoch_name] = {'units': 'Milliseconds since 1970-1-1',
-                    'Bin_Location': 0.5,
-                    'notes': 'UTC time at middle of geophysical measurement.',
-                    'desc': 'UTC seconds', }
-meta['mlt'] = {'units': 'hours',
-               'long_name': 'Magnetic Local Time',
-               'label': 'MLT',
-               'axis': 'MLT',
-               'desc': 'Magnetic Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Magnetic Local Time is the solar local time of the '
-                         'field line at the location where the field crosses '
-                         'the magnetic equator. In this case we just simulate '
-                         '0-24 with a consistent orbital period and an offste '
-                         'with SLT.'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['slt'] = {'units': 'hours',
-               'long_name': 'Solar Local Time',
-               'label': 'SLT',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Solar Local Time is the local time (zenith angle of '
-                         'sun) of the given locaiton. Overhead noon, +/- 90 is'
-                         ' 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['orbit_num'] = {'units': '',
-                     'long_name': 'Orbit Number',
-                     'label': 'Orbit Number',
-                     'axis': 'Orbit Number',
-                     'desc': 'Orbit Number',
-                     'value_min': 0.,
-                     'value_max': 25000.,
-                     'notes': ('Number of orbits since the start of the '
-                               'mission. For this simulation we use the '
-                               'number of 5820 second periods since the '
-                               'start, 2008-01-01.'),
-                     'fill': np.nan,
-                     'scale': 'linear'}
-
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
-meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
-meta['dummy3'] = {'units': '', 'long_name': 'dummy3'}
-meta['dummy4'] = {'units': '', 'long_name': 'dummy4'}
-meta['string_dummy'] = {'units': '', 'long_name': 'string_dummy'}
-meta['unicode_dummy'] = {'units': '', 'long_name': 'unicode_dummy'}
-meta['int8_dummy'] = {'units': '', 'long_name': 'int8_dummy'}
-meta['int16_dummy'] = {'units': '', 'long_name': 'int16_dummy'}
-meta['int32_dummy'] = {'units': '', 'long_name': 'int32_dummy'}
-meta['int64_dummy'] = {'units': '', 'long_name': 'int64_dummy'}

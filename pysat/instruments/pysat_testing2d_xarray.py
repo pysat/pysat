@@ -46,24 +46,24 @@ def init(self):
     return
 
 
-def default(self):
-    """Default customization function.
-
-    Note
-    ----
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    """
-
-    pass
-
-
 def clean(self):
     """Cleaning function
     """
 
     pass
+
+
+# Optional method
+def preprocess(self):
+    """Customization method that performs standard preprocessing.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
+
+    """
+
+    return
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
@@ -89,7 +89,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data : xr.Dataset
         Testing data
     meta : pysat.Meta
-        Metadataxs
+        Testing metadata
 
     """
 
@@ -173,66 +173,58 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     # create altitude 'profile' at each location to simulate remote data
     num = len(data['uts'])
-    data['profiles'] = \
-        ((epoch_name, 'profile_height'),
-         data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
+    data['profiles'] = (
+        (epoch_name, 'profile_height'),
+        data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['profile_height'] = ('profile_height', np.arange(15))
 
     # profiles that could have different altitude values
-    data['variable_profiles'] = \
-        ((epoch_name, 'z'),
-         data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['variable_profile_height'] = \
-        ((epoch_name, 'z'),
-         np.arange(15)[np.newaxis, :] * np.ones((num, 15)))
+    data['variable_profiles'] = (
+        (epoch_name, 'z'), data['dummy3'].values[:, np.newaxis]
+        * np.ones((num, 15)))
+    data.coords['variable_profile_height'] = (
+        (epoch_name, 'z'), np.arange(15)[np.newaxis, :] * np.ones((num, 15)))
 
     # Create fake image type data, projected to lat / lon at some location
     # from satellite
-    data['images'] = \
-        ((epoch_name, 'x', 'y'),
-         data['dummy3'].values[:,
-                               np.newaxis,
-                               np.newaxis] * np.ones((num, 17, 17)))
+    data['images'] = ((epoch_name, 'x', 'y'),
+                      data['dummy3'].values[
+                          :, np.newaxis, np.newaxis] * np.ones((num, 17, 17)))
     data.coords['image_lat'] = \
         ((epoch_name, 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
                        :] * np.ones((num, 17, 17)))
-    data.coords['image_lon'] = \
-        ((epoch_name, 'x', 'y'),
-         np.arange(17)[np.newaxis,
-                       np.newaxis,
-                       :] * np.ones((num, 17, 17)))
+    data.coords['image_lon'] = ((epoch_name, 'x', 'y'),
+                                np.arange(17)[np.newaxis, np.newaxis,
+                                              :] * np.ones((num, 17, 17)))
 
-    return data, meta.copy()
+    # create very limited metadata
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    variable_profile_meta = pysat.Meta()
+    variable_profile_meta['variable_profiles'] = {'long_name': 'series'}
+    meta['variable_profiles'] = {'meta': variable_profile_meta,
+                                 'long_name': 'series'}
+    profile_meta = pysat.Meta()
+    profile_meta['density'] = {'long_name': 'profiles'}
+    profile_meta['dummy_str'] = {'long_name': 'profiles'}
+    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
+    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+    image_meta = pysat.Meta()
+    image_meta['density'] = {'long_name': 'profiles'}
+    image_meta['fraction'] = {'long_name': 'profiles'}
+    meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
+
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
 list_remote_files = functools.partial(mm_test.list_remote_files,
                                       test_dates=_test_dates)
 download = functools.partial(mm_test.download)
-
-
-# create very limited metadata
-meta = pysat.Meta()
-meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-variable_profile_meta = pysat.Meta()
-variable_profile_meta['variable_profiles'] = {'units': '',
-                                              'long_name': 'series'}
-meta['variable_profiles'] = {'meta': variable_profile_meta, 'units': '',
-                             'long_name': 'series'}
-profile_meta = pysat.Meta()
-profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
-meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
-image_meta = pysat.Meta()
-image_meta['density'] = {'units': '', 'long_name': 'profiles'}
-image_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
-meta['images'] = {'meta': image_meta, 'units': '',
-                  'long_name': 'profiles'}

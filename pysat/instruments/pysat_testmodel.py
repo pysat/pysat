@@ -108,32 +108,26 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
     dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
     data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'), dummy2)
 
-    return data, meta.copy()
+    # Set the metadata
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
+                   'custom': False}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+                   'plot': 'Solar Local Times', 'axis': 'SLT',
+                   'desc': 'Solar Local Time', 'value_min': 0.0,
+                   'value_max': 24.0,
+                   'notes': ''.join(['Solar Local Time is the local time ',
+                                     '(zenith angle of sun) of the given ',
+                                     'locaiton. Overhead noon, +/- 90 is 6, ',
+                                     '18 SLT .'])}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
 list_remote_files = functools.partial(mm_test.list_remote_files,
                                       test_dates=_test_dates)
 download = functools.partial(mm_test.download)
-
-meta = pysat.Meta()
-meta['uts'] = {'units': 's',
-               'long_name': 'Universal Time',
-               'custom': False}
-meta['slt'] = {'units': 'hours',
-               'long_name': 'Solar Local Time',
-               'label': 'SLT',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.0,
-               'value_max': 24.0,
-               'notes': ('Solar Local Time is the local time (zenith '
-                         'angle of sun) of the given locaiton. Overhead '
-                         'noon, +/- 90 is 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
-meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
