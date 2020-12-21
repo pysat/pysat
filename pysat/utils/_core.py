@@ -503,6 +503,16 @@ def generate_instrument_list(inst_loc, user_info=None):
         EX: user_info = {'supermag_magnetometer': {'user': 'rstoneback',
                                                    'password': 'None'}}
 
+    Returns
+    -------
+    output : dict
+        Dictionary with keys 'names', 'download', 'no_download' that contain
+        lists with different information for each key:
+        'names' - list of platform_name combinations
+        'download' - dict containing 'inst_module', 'tag', and 'inst_id' for
+        instruments with download routines
+        'no_download' - dict containing 'inst_module', 'tag', and 'inst_id' for
+        instruments without download routines
 
     Note
     ----
@@ -568,6 +578,115 @@ def generate_instrument_list(inst_loc, user_info=None):
               'no_download': instrument_no_download}
 
     return output
+
+
+def available_instruments(inst_loc=None):
+    """Obtain basic information about instruments in a given subpackage.
+
+    Parameters
+    ----------
+    inst_loc : python subpackage or NoneType
+        The location of the instrument subpackage (e.g., pysat.instruments)
+        or None to list all registered instruments (default=None)
+
+    Returns
+    -------
+    inst_info : dict
+        Nested dictionary with 'platform', 'name', 'inst_module',
+        'inst_ids_tags', 'inst_id', and 'tag' with the tag descriptions given
+        as the value for each unique dictionary combination.
+
+    """
+
+    if inst_loc is None:
+        # Access the registered instruments
+        inst_info = dict()
+
+        # Cycle through each instrument platform and name to reshape the
+        # dictionary and get the instrument tags and inst_ids
+        for platform in pysat.user_modules.keys():
+            inst_info[platform] = dict()
+            for name in pysat.user_modules[platform].keys():
+                try:
+                    module = importlib.import_module(
+                        pysat.user_modules[platform][name])
+                    inst_ids = {inst_id: {tag: module.tags[tag]
+                                          for tag in module.inst_ids[inst_id]}
+                                for inst_id in module.inst_ids.keys()}
+                except ImportError as ierr:
+                    inst_ids = {'ERROR': {'ERROR': str(ierr)}}
+
+                inst_info[platform][name] = {'inst_module':
+                                             pysat.user_modules[platform][name],
+                                             'inst_ids_tags': inst_ids}
+    else:
+        # Access the instruments in the specified module
+        inst_mods = inst_loc.__all__
+        inst_info = dict()
+
+        # Cycle through the available instrument modules
+        for inst_mod in inst_mods:
+            # Get the platform, name, and instrument module name
+            platform = inst_mod.split('_')[0]
+            name = '_'.join(inst_mod.split('_')[1:])
+            mod_name = '.'.join([inst_loc.__name__, inst_mod])
+
+            # Initialize the dictionary for this platform and name
+            if platform not in inst_info.keys():
+                inst_info[platform] = dict()
+            inst_info[platform][name] = {'inst_module': mod_name}
+
+            # Get the inst_id and tag information, if possible
+            try:
+                module = importlib.import_module(mod_name)
+                inst_info[platform][name]['inst_ids_tags'] = {
+                    inst_id: {tag: module.tags[tag]
+                              for tag in module.inst_ids[inst_id]}
+                    for inst_id in module.inst_ids.keys()}
+            except ImportError as ierr:
+                inst_info[platform][name]['inst_ids_tags'] = {
+                    'ERROR': {'ERROR': str(ierr)}}
+
+    return inst_info
+
+
+def display_available_instruments(inst_loc=None):
+    """Display basic information about instruments in a given subpackage.
+
+    Parameters
+    ----------
+    inst_loc : python subpackage or NoneType
+        The location of the instrument subpackage (e.g., pysat.instruments)
+        or None to list all registered instruments (default=None)
+
+    Note
+    ----
+    Prints to standard out, a user-friendly interface for availabe_instruments
+
+    """
+
+    inst_info = available_instruments(inst_loc)
+
+    print("Platform   Name  Instrument_Module       Tag  Inst_ID   Description")
+    print("-" * 80)
+    for platform in inst_info.keys():
+        for name in inst_info[platform].keys():
+            mod_str = ""
+            for inst_id in inst_info[platform][name]['inst_ids_tags'].keys():
+                for tag in inst_info[platform][name][
+                        'inst_ids_tags'][inst_id].keys():
+                    if len(mod_str) == 0:
+                        mod_str = " ".join([
+                            platform.__repr__(), name.__repr__(),
+                            inst_info[platform][name]['inst_module']])
+                    else:
+                        mod_str = " " * len(mod_str)
+
+                    print(" ".join([mod_str, inst_id.__repr__(), tag.__repr__(),
+                                    inst_info[platform][name]['inst_ids_tags'][
+                                        inst_id][tag]]))
+    return
+
 
 
 class NetworkLock(Lock):
