@@ -609,10 +609,47 @@ class Meta(object):
 
         """
 
-        if isinstance(other_meta, Meta):
-            # Check if the variables and attributes are the same
-            for iter1, iter2 in [(self.keys(), other_meta.keys()),
-                                 (self.attrs(), other_meta.attrs())]:
+        if not isinstance(other_meta, Meta):
+            # The object being compared wasn't even the correct class
+            return NotImplemented
+
+        # Check if the variables and attributes are the same
+        for iter1, iter2 in [(self.keys(), other_meta.keys()),
+                             (self.attrs(), other_meta.attrs())]:
+            list1 = [value for value in iter1]
+            list2 = [value for value in iter2]
+
+            try:
+                testing.assert_lists_equal(list1, list2)
+            except AssertionError:
+                return False
+
+        # Check that the values of all elements are the same. NaN is treated
+        # as equal, though mathematically NaN is not equal to anything
+        for key in self.keys():
+            for attr in self.attrs():
+                print("HI", key, attr, self[key, attr], other_meta[key, attr], testing.nan_equal(self[key, attr], other_meta[key, attr]))
+                if not testing.nan_equal(self[key, attr],
+                                         other_meta[key, attr]):
+                    return False
+
+        # Check the higher order products. Recursive call into this function
+        # didn't work, so spell out the details.
+        keys1 = [key for key in self.keys_nD()]
+        keys2 = [key for key in other_meta.keys_nD()]
+        try:
+            testing.assert_lists_equal(keys1, keys2)
+        except AssertionError:
+            return False
+
+        # Check the higher order variables within each nD key are the same.
+        # NaN is treated as equal, though mathematically NaN is not equal
+        # to anything
+        for key in self.keys_nD():
+            for iter1, iter2 in [(self[key].children.keys(),
+                                  other_meta[key].children.keys()),
+                                 (self[key].children.attrs(),
+                                  other_meta[key].children.attrs())]:
                 list1 = [value for value in iter1]
                 list2 = [value for value in iter2]
 
@@ -621,51 +658,16 @@ class Meta(object):
                 except AssertionError:
                     return False
 
-            # Check that the values of all elements are the same. NaN is treated
-            # as equal, though mathematically NaN is not equal to anything
-            for key in self.keys():
-                for attr in self.attrs():
-                    if not testing.nan_equal(self[key, attr],
-                                             other_meta[key, attr]):
+            # Check if all elements are individually equal
+            for ckey in self[key].children.keys():
+                for cattr in self[key].children.attrs():
+                    if not testing.nan_equal(
+                            self[key].children[ckey, cattr],
+                            other_meta[key].children[ckey, cattr]):
                         return False
 
-            # Check the higher order products
-            keys1 = [key for key in self.keys_nD()]
-            keys2 = [key for key in other_meta.keys_nD()]
-            try:
-                testing.assert_lists_equal(keys1, keys2)
-            except AssertionError:
-                return False
-
-            # Check the higher order variables within each nD key are the same.
-            # NaN is treated as equal, though mathematically NaN is not equal
-            # to anything
-            for key in self.keys_nD():
-                for iter1, iter2 in [(self[key].children.keys(),
-                                      other_meta[key].children.keys()),
-                                     (self[key].children.attrs(),
-                                      other_meta[key].children.attrs())]:
-                    list1 = [value for value in iter1]
-                    list2 = [value for value in iter2]
-
-                    try:
-                        testing.assert_lists_equal(list1, list2)
-                    except AssertionError:
-                        return False
-
-                # Check if all elements are individually equal
-                for ckey in self[key].children.keys():
-                    for cattr in self[key].children.attrs():
-                        if not testing.nan_equal(
-                                self[key].children[ckey, cattr],
-                                other_meta[key].children[ckey, cattr]):
-                            return False
-
-            # If we made it this far, things are good
-            return True
-        else:
-            # The object being compared wasn't even the correct class
-            return False
+        # If we made it this far, things are good
+        return True
 
     # -----------------------------------------------------------------------
     # Define the hidden methods
