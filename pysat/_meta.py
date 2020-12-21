@@ -628,7 +628,6 @@ class Meta(object):
         # as equal, though mathematically NaN is not equal to anything
         for key in self.keys():
             for attr in self.attrs():
-                print("HI", key, attr, self[key, attr], other_meta[key, attr], testing.nan_equal(self[key, attr], other_meta[key, attr]))
                 if not testing.nan_equal(self[key, attr],
                                          other_meta[key, attr]):
                     return False
