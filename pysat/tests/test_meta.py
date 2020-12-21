@@ -688,11 +688,13 @@ class TestBasics():
         assert self.meta['new'].description == 'boohoo'
 
     def test_meta_equality(self):
-
+        """ Test basic equality case
+        """
         assert self.testInst.meta == self.testInst.meta
 
     def test_false_meta_equality(self):
-
+        """ Test inequality with different types
+        """
         assert not (self.testInst.meta == self.testInst)
 
     def test_equality_with_higher_order_meta(self):
