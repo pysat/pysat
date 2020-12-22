@@ -2005,7 +2005,7 @@ class Instrument(object):
                             # dstr = ''.join(('Data returned should be a dict ',
                             #                 'with data in "data", ',
                             #                 'the keys for the variables to ',
-                            #                 'be stored in "name", along with ',
+                            #                'be stored in "name", along with ',
                             #                 'any metadata using appropriate ',
                             #                 'keys stored in self.labels. '))
                             # raise DeprecationWarning(dstr)
@@ -2089,7 +2089,7 @@ class Instrument(object):
                                                 # from above
                                                 self[name] = data
                                 # dstr = ''.join(('Data returned will require ',
-                                #                 'a "name" key in the returned ',
+                                #               'a "name" key in the returned ',
                                 #                 'dictionary.'))
                                 # raise DeprecationWarning(dstr)
                             else:
