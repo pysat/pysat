@@ -5,8 +5,7 @@ When referring to this software package, please cite the original paper by
 Stoneback et al [2018] `<https://doi.org/10.1029/2018JA025297>`_ as well as the
 package `<https://doi.org/10.5281/zenodo.1199703>`_. Note that this DOI will
 always point to the latest version of the code.  A list of DOIs for all
-versions can be found at the
-`Zenodo page <https://zenodo.org/record/1199703)>`_.
+versions can be found at the Zenodo page above.
 
 Example for citation in BibTex for a generalized version:
 
