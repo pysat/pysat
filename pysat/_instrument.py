@@ -85,8 +85,7 @@ class Instrument(object):
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
                   'notes': ('notes', str), 'desc': ('desc', str),
-                  'plot': ('plot', str), 'axis': ('axis', str),
-                  'scale': ('scale', str), 'min_val': ('value_min', float),
+                  'min_val': ('value_min', float),
                   'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Attributes
@@ -172,8 +171,6 @@ class Instrument(object):
                  ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot', str), 'axis': ('axis', str),
-                         'scale': ('scale', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
                          'fill_val': ('fill', float)}, **kwargs):
