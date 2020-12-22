@@ -48,9 +48,5 @@
         "orcid": "0000-0003-1707-7963"
       }
     ],
-    "access_right": "open",
-    "upload_type": {
-      "type": "software",
-      "title": "Software"
-    }
+    "access_right": "open"
 }
