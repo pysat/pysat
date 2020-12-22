@@ -1,5 +1,5 @@
+.. _rst_new_inst:
 
-=======================
 Adding a New Instrument
 =======================
 
@@ -83,18 +83,18 @@ When combined with the platform this forms a unique file in the `instruments`
 directory.  Examples include the EUV instrument on ICON (icon_euv) and the
 Incoherent Scatter Radar at JRO (jro_isr).
 
+**tag**
+
+In general, the tag points to a specific data product.  This could be a
+specific processing level (such as L1, L2), or a product file (such as the
+different profile products for cosmic_gps data, 'ionprf', 'atmprf', ...).
+
 **inst_id**
 
 In general, this is a unique identifier for a satellite in a constellation of
 identical or similar satellites, or multiple instruments on the same satellite
 with different look directions.  For example, the DMSP satellites carry similar
 instrument suites across multiple spacecraft.  These are labeled as f11-f18.
-
-**tag**
-
-In general, the tag points to a specific data product.  This could be a
-specific processing level (such as L1, L2), or a product file (such as the
-different profile products for cosmic_gps data, 'ionprf', 'atmprf', ...).
 
 **Naming Requirements in Instrument Module**
 
@@ -139,10 +139,8 @@ a pysat instrument that uses all levels of variable names.
 Required Variables
 ------------------
 
-pysat also requires that instruments include information pertaining to
-acknowledgements and references for an instrument.  These are simply defined as
-strings at the instrument level.  In the most basic case, these can be defined
-with the data information at the top.
+Because platform, name, tags, and inst_ids are used for loading and maintaining
+different data sets they must be defined for every instrument.
 
 .. code:: python
 
@@ -150,27 +148,40 @@ with the data information at the top.
   name = 'name_of_instrument'
   tags = {'': ''}
   inst_ids = {'': ['']}
-  acknowledgements = 'Ancillary data provided under Radchaai grant PS31612.E3353A83'
-  references = 'Breq et al, 2013'
 
+Pysat also requires that instruments include information pertaining to
+acknowledgements and references for an instrument.  These are simply defined as
+strings at the instrument level.  In the most basic case, these can be defined
+with the data information at the top.
 
-Alternatively, for an instrument with different reference statements for different
-tags, these could be defined under the optional ``init`` function.
+Pysat also requires that a logger handle be defined and instrumentment
+information pertaining to acknowledgements and references be included.  These
+ensure that people using the data know who to contact with questions and what
+they should reference when publishing their results.  The logging handle should
+be assigned to the pysat logger handle, while the references and acknowedgements
+are defined as instrument attributes within the initalization method.
 
 .. code:: python
 
+  logger = pysat.logger
   platform = 'your_platform_name'
   name = 'name_of_instrument'
   tags = {'tag1': '',
           'tag2': ''}
   inst_ids = {'': ['']}
-  acknowledgements = 'Ancillary data provided under Radchaai grant PS31612.E3353A83'
 
   def init(self):
+      """Initializes the Instrument object with instrument specific values.
+      """
+      self.acknowledgements = ''.join(['Ancillary data provided under ',
+                                       'Radchaai grant PS31612.E3353A83'])
       if self.tag == 'tag1':
           self.references = 'Breq et al, 2013'
       elif self.tag == 'tag2':
           self.references = 'Mianaai and Mianaai, 2014'
+
+      logger.info(self.acknowledgements)
+      return
 
 Required Routines
 -----------------
@@ -236,9 +247,9 @@ in ``pysat.instruments.methods.general.list_files`` that may find broad use.
 include time information in the filename and utilize a constant field width
 or a consistent delimiter. The location and format of the time information is
 specified using standard python formatting and keywords year, month, day, hour,
-minute, second. Additionally, both version and revision keywords
+minute, second. Additionally, version, revision, and cycle keywords
 are supported. When present, the from_os constructor will filter down the
-file list to the latest version and revision combination.
+file list to the latest version/revision/cycle combination.
 
 A complete list_files routine could be as simple as
 
@@ -252,7 +263,7 @@ A complete list_files routine could be as simple as
            # template string below works for CINDI IVM data that looks like
            # 'cindi-2009310-ivm-v02.hdf'
            # format_str supported keywords: year, month, day,
-           # hour, minute, second, version, and revision
+           # hour, minute, second, version, revision, and cycle
            format_str = 'cindi-{year:4d}{day:03d}-ivm-v{version:02d}.hdf'
        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
@@ -276,6 +287,7 @@ files which may take time to identify. The list of files associated
 with an Instrument may be updated by adding `update_files=True`.
 
 .. code:: python
+
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
 The output provided by the list_files function that has been pulled into pysat
@@ -327,7 +339,8 @@ The load module method signature should appear as:
   metadata parameters associated with that variable, including items like
   'units' and 'long_name'. A variety of parameters are included by default and
   additional arbitrary columns are allowed. See `pysat.Meta` for more 
-  information on creating the initial metadata.
+  information on creating the initial metadata. Any values not set in the load routine will
+  be set to the default values for that label type.
 - Note that users may opt for a different
   naming scheme for metadata parameters thus the most general code for working
   with metadata uses the attached labels:
@@ -405,10 +418,11 @@ in-place as needed; equivalent to a 'modify' custom routine.
 Keywords are not supported within the init module method signature, though
 custom keyword support for instruments is available via inst.kwargs.
 
-**default**
+**preprocess**
 
 
-First custom function applied, once per instrument load.
+First custom function applied, once per instrument load.  Designed for standard
+instrument preprocessing.
 
 .. code:: python
 
@@ -604,6 +618,7 @@ generally be put in the `init` function of each instrument.
 
         self.acknowledgements = acknowledgements_string
         self.references = references_string
+        logger.info(self.acknowledgements)
 
         return
 

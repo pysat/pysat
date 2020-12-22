@@ -293,14 +293,14 @@ class Files(object):
         # if not, do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
-            # # of items is different, things are new
+            # The number of items is different, things are new
             new_flag = True
         elif len(stored_files) == len(self.files):
-            # # of items equal, check specifically for equality
+            # The number of items is the same, check specifically for equality
             if stored_files.eq(self.files).all():
                 new_flag = False
             else:
-                # not equal, there are new files
+                # Stored and new data are not equal, there are new files
                 new_flag = True
 
         if new_flag:
@@ -356,7 +356,7 @@ class Files(object):
     def refresh(self):
         """Update list of files, if there are changes.
 
-        Calls underlying list_rtn for the particular science instrument.
+        Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
         pysat_data_dir/platform/name/tag/,
         where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
@@ -369,17 +369,18 @@ class Files(object):
                                        name=self._sat.name, tag=self._sat.tag,
                                        inst_id=self._sat.inst_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
-        output_str = " ".join(output_str.split())
+        output_str = " ".join(output_str.split())  # Remove duplicate whitespace
         logger.info(output_str)
 
-        info = self._sat._list_rtn(tag=self._sat.tag, inst_id=self._sat.inst_id,
-                                   data_path=self.data_path,
-                                   format_str=self.file_format)
+        info = self._sat._list_files_rtn(tag=self._sat.tag,
+                                         inst_id=self._sat.inst_id,
+                                         data_path=self.data_path,
+                                         format_str=self.file_format)
         info = self._remove_data_dir_path(info)
         if not info.empty:
             if self.ignore_empty_files:
                 self._filter_empty_files()
-            logger.info('Found {ll:d} files locally.'.format(ll=len(info)))
+            logger.info('Found {:d} local files.'.format(len(info)))
         else:
             estr = "Unable to find any files that match the supplied template."
             estr += " If you have the necessary files please check pysat "
@@ -483,34 +484,35 @@ class Files(object):
             except TypeError:
                 return self.files.loc[key]
 
-    def get_file_array(self, start, end):
-        """Return a list of filenames between and including start and end.
+    def get_file_array(self, start, stop):
+        """Return a list of filenames between and including start and stop.
 
         Parameters
         ----------
             start: array_like or single string
                 filenames for start of returned filelist
             stop: array_like or single string
-                filenames inclusive end of list
+                filenames inclusive of the ending of list provided by the stop
+                time
 
         Returns
         -------
-            list of filenames between and including start and end over all
-            intervals.
+            list of filenames between and including start and stop times over
+            all intervals.
 
         """
-        if hasattr(start, '__iter__') & hasattr(end, '__iter__'):
+        if hasattr(start, '__iter__') and hasattr(stop, '__iter__'):
             files = []
-            for (sta, stp) in zip(start, end):
+            for (sta, stp) in zip(start, stop):
                 id1 = self.get_index(sta)
                 id2 = self.get_index(stp)
                 files.extend(self.files.iloc[id1:(id2 + 1)])
-        elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
+        elif hasattr(start, '__iter__') or hasattr(stop, '__iter__'):
             estr = 'Either both or none of the inputs need to be iterable'
             raise ValueError(estr)
         else:
             id1 = self.get_index(start)
-            id2 = self.get_index(end)
+            id2 = self.get_index(stop)
             files = self.files[id1:(id2 + 1)].to_list()
         return files
 
@@ -538,16 +540,17 @@ class Files(object):
             Provides the naming pattern of the instrument files and the
             locations of date information so an ordered list may be produced.
             Supports 'year', 'month', 'day', 'hour', 'minute', 'second',
-            'version', and 'revision'
+            'version', 'revision', and 'cycle'
             Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
         two_digit_year_break : int or None
             If filenames only store two digits for the year, then
             '1900' will be added for years >= two_digit_year_break
             and '2000' will be added for years < two_digit_year_break.
             If None, then four-digit years are assumed. (default=None)
-        delimiter : string
-            If set, then filename will be processed using delimiter rather
-            than assuming a fixed width (default=None)
+        delimiter : string or NoneType
+            Delimiter string upon which files will be split (e.g., '.'). If
+            None, filenames will be parsed presuming a fixed width format.
+            (default=None)
 
         Note
         ----
@@ -615,9 +618,9 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     Note
     ----
         If two files have the same date and time information in the
-        filename then the file with the higher version/revision is used.
+        filename then the file with the higher version/revision/cycle is used.
         Series returned only has one file der datetime. Version is required
-        for this filtering, revision is optional.
+        for this filtering, revision and cycle are optional.
 
     """
 
@@ -646,15 +649,15 @@ def parse_fixed_width_filenames(files, format_str):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        and 'revision'
-        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        'revision', and 'cycle'
+        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
 
     Returns
     -------
     OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision'
+        'revision', 'cycle'
         'files' - input list of files
 
     """
@@ -684,15 +687,17 @@ def parse_delimited_filenames(files, format_str, delimiter):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        and 'revision'
-        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        'revision', 'cycle'
+        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+    delimiter : string
+        Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
     OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision'
+        'revision', 'cycle'
         'files' - input list of files
         'format_str' - formatted string from input
 
@@ -722,7 +727,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        and 'revision'
+        'revision', and 'cycle'
         Ex: 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
     wildcard : bool
         if True, replaces the ? sequence with a * . This option may be well

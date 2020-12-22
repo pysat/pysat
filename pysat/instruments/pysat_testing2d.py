@@ -7,6 +7,7 @@ import datetime as dt
 import functools
 import logging
 import numpy as np
+import warnings
 
 import pandas as pds
 
@@ -41,23 +42,28 @@ def init(self):
     return
 
 
-def default(inst):
-    """Default customization function.
+def clean(self):
+    """Cleaning function
+    """
+
+    return
+
+
+# Optional method
+def preprocess(self):
+    """Customization method that performs standard preprocessing.
 
     This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
 
     """
 
-    pass
+    return
 
 
-def load(fnames, tag=None, inst_id=None, malformed_index=False):
+def load(fnames, tag=None, inst_id=None, malformed_index=False,
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -67,34 +73,46 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False):
     tag : str or NoneType
         Instrument tag (accepts '')
     inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        Instrument satellite ID (accepts '')
     malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
         (default=False)
+    num_samples : int
+        Number of samples
+
     Returns
     -------
     data : pds.DataFrame
         Testing data
     meta : pysat.Meta
-        Metadataxs
+        Testing metadata
 
     """
 
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
+    if num_samples is None:
+        if inst_id != '':
+            estr = ' '.join(('inst_id will no longer be supported',
+                             'for setting the number of samples per day.'))
+            warnings.warn(estr, DeprecationWarning)
+            num_samples = int(inst_id)
+        else:
+            num_samples = 864
+
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='100S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
+                                               freq='100S')
     # seed DataFrame with UT array
-    data = pds.DataFrame(uts, columns=['uts'])
+    data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     # figure out how far in time from the root start
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
-    time_delta = date - dt.datetime(2009, 1, 1)
+    time_delta = dates[0] - dt.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                              period=iperiod['lt'],
@@ -131,11 +149,9 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False):
     # higher rate time signal (for scalar >= 2)
     # this time signal used for 2D profiles associated with each time in main
     # DataFrame
-    high_rate_template = pds.date_range(date,
-                                        date + pds.DateOffset(hours=0,
-                                                              minutes=1,
-                                                              seconds=39),
-                                        freq='2S')
+    num_profiles = 50 if num_samples >= 50 else num_samples
+    end_date = dates[0] + dt.timedelta(seconds=2 * num_profiles - 1)
+    high_rate_template = pds.date_range(dates[0], end_date, freq='2S')
 
     # create a few simulated profiles
     # DataFrame at each time with mixed variables
@@ -145,16 +161,16 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False):
     # Serie at each time, numeric data only
     series_profiles = []
     # frame indexed by date times
-    frame = pds.DataFrame({'density': data.loc[data.index[0:50],
+    frame = pds.DataFrame({'density': data.loc[data.index[0:num_profiles],
                                                'mlt'].values.copy(),
-                           'dummy_str': ['test'] * 50,
-                           'dummy_ustr': [u'test'] * 50},
-                          index=data.index[0:50],
+                           'dummy_str': ['test'] * num_profiles,
+                           'dummy_ustr': [u'test'] * num_profiles},
+                          index=data.index[0:num_profiles],
                           columns=['density', 'dummy_str', 'dummy_ustr'])
     # frame indexed by float
-    dd = np.arange(50) * 1.2
-    ff = np.arange(50) / 50.
-    ii = np.arange(50) * 0.5
+    dd = np.arange(num_profiles) * 1.2
+    ff = np.arange(num_profiles) / num_profiles
+    ii = np.arange(num_profiles) * 0.5
     frame_alt = pds.DataFrame({'density': dd, 'fraction': ff},
                               index=ii,
                               columns=['density', 'fraction'])
@@ -170,34 +186,33 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False):
     data['profiles'] = pds.Series(profiles, index=data.index)
     data['alt_profiles'] = pds.Series(alt_profiles, index=data.index)
     data['series_profiles'] = pds.Series(series_profiles, index=data.index)
-    return data, meta.copy()
+
+    # create very limited metadata
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    series_profile_meta = pysat.Meta()
+    series_profile_meta['series_profiles'] = {'long_name': 'series'}
+    meta['series_profiles'] = {'meta': series_profile_meta,
+                               'long_name': 'series'}
+    profile_meta = pysat.Meta()
+    profile_meta['density'] = {'long_name': 'profiles'}
+    profile_meta['dummy_str'] = {'long_name': 'profiles'}
+    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
+    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+    alt_profile_meta = pysat.Meta()
+    alt_profile_meta['density'] = {'long_name': 'profiles'}
+    alt_profile_meta['fraction'] = {'long_name': 'profiles'}
+    meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
+
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
 list_remote_files = functools.partial(mm_test.list_remote_files,
                                       test_dates=_test_dates)
 download = functools.partial(mm_test.download)
-
-
-# create very limited metadata
-meta = pysat.Meta()
-meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-series_profile_meta = pysat.Meta()
-series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
-meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
-                           'long_name': 'series'}
-profile_meta = pysat.Meta()
-profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
-meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
-alt_profile_meta = pysat.Meta()
-alt_profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-alt_profile_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
-meta['alt_profiles'] = {'meta': alt_profile_meta, 'units': '',
-                        'long_name': 'profiles'}

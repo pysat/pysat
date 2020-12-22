@@ -8,15 +8,13 @@ contributions.
 Short version
 -------------
 
-* Submit bug reports and feature requests at
-  `GitHub  <https://github.com/rstoneback/pysat/issues>`_
+* Submit bug reports and feature requests at `GitHub <https://github.com/pysat/pysat/issues>`_
 * Make pull requests to the ``develop`` branch
 
 Bug reports
 -----------
 
-When reporting a bug please
-include:
+When reporting a bug please include:
 
 * Your operating system name and version
 * Any details about your local setup that might be helpful in troubleshooting
@@ -26,7 +24,7 @@ Feature requests and feedback
 -----------------------------
 
 The best way to send feedback is to file an issue at
-`GitHub <https://github.com/rstoneback/pysat/issues>`_.
+`GitHub <https://github.com/pysat/pysat/issues>`_.
 
 If you are proposing a feature:
 
@@ -40,7 +38,7 @@ Development
 
 To set up `pysat` for local development:
 
-1. `Fork pysat on GitHub <https://github.com/rstoneback/pysat/fork>`_.
+1. `Fork pysat on GitHub <https://github.com/pysat/pysat/fork>`_.
 2. Clone your fork locally::
 
     git clone git@github.com:your_name_here/pysat.git
@@ -117,10 +115,13 @@ These include:
   * `import numpy as np`
   * `import pandas as pds`
   * `import xarray as xr`
+* When incrementing a timestamp, use `dt.timedelta` instead of `pds.DateOffset`
+  when possible to reduce program runtime
 * All classes should have `__repr__` and `__str__` functions
 * Docstrings use `Note` instead of `Notes`
 * Try to avoid creating a try/except statement where except passes
 * Use setup and teardown in test classes
 * Use pytest parametrize in test classes when appropriate
+* Use pysat testing utilities when appropriate
 * Provide testing class methods with informative failure statements and
   descriptive, one-line docstrings

@@ -7,6 +7,7 @@ import datetime as dt
 import functools
 import logging
 import numpy as np
+import warnings
 
 import xarray as xr
 
@@ -42,7 +43,14 @@ def init(self):
     return
 
 
-def load(fnames, tag=None, inst_id=None):
+def clean(self):
+    """Cleaning function
+    """
+
+    pass
+
+
+def load(fnames, tag=None, inst_id=None, num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -52,8 +60,10 @@ def load(fnames, tag=None, inst_id=None):
     tag : str or NoneType
         Instrument tag (accepts '')
     inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        Instrument satellite ID (accepts '')
+    num_samples : int
+        Number of samples
+
     Returns
     -------
     data : xr.Dataset
@@ -63,14 +73,23 @@ def load(fnames, tag=None, inst_id=None):
 
     """
 
+    if num_samples is None:
+        if inst_id != '':
+            estr = ' '.join(('inst_id will no longer be supported',
+                             'for setting the number of samples per day.'))
+            warnings.warn(estr, DeprecationWarning)
+            num_samples = int(inst_id)
+        else:
+            num_samples = 96
     # create an artifical satellite data set
-    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='900S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
+                                               freq='900S')
 
     # Define range of simulated 3D model
     latitude = np.linspace(-50, 50, 21)
     longitude = np.linspace(0, 360, 73)
     altitude = np.linspace(300, 500, 41)
-    data = xr.Dataset({'uts': (('time'), uts)},
+    data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
                       coords={'time': index, 'latitude': latitude,
                               'longitude': longitude, 'altitude': altitude})
 
@@ -89,32 +108,26 @@ def load(fnames, tag=None, inst_id=None):
     dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
     data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'), dummy2)
 
-    return data, meta.copy()
+    # Set the metadata
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
+                   'custom': False}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+                   'plot': 'Solar Local Times', 'axis': 'SLT',
+                   'desc': 'Solar Local Time', 'value_min': 0.0,
+                   'value_max': 24.0,
+                   'notes': ''.join(['Solar Local Time is the local time ',
+                                     '(zenith angle of sun) of the given ',
+                                     'locaiton. Overhead noon, +/- 90 is 6, ',
+                                     '18 SLT .'])}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
 list_remote_files = functools.partial(mm_test.list_remote_files,
                                       test_dates=_test_dates)
 download = functools.partial(mm_test.download)
-
-meta = pysat.Meta()
-meta['uts'] = {'units': 's',
-               'long_name': 'Universal Time',
-               'custom': False}
-meta['slt'] = {'units': 'hours',
-               'long_name': 'Solar Local Time',
-               'label': 'SLT',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.0,
-               'value_max': 24.0,
-               'notes': ('Solar Local Time is the local time (zenith '
-                         'angle of sun) of the given locaiton. Overhead '
-                         'noon, +/- 90 is 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
-meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}

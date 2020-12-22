@@ -3,25 +3,57 @@
 """
 
 import datetime as dt
-import logging
 import numpy as np
 import pandas as pds
 
 import pysat
 
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
+
+
+def is_daily_file_cadence(file_cadence):
+    """ Evaluate file cadence to see if it is daily or greater than daily
+
+    Parameters
+    ----------
+    file_cadence : dt.timedelta or pds.DateOffset
+        pysat assumes a daily file cadence, but some instrument data file
+        contain longer periods of time.  This parameter allows the specification
+        of regular file cadences greater than or equal to a day (e.g., weekly,
+        monthly, or yearly). (default=dt.timedelta(days=1))
+
+    Returns
+    -------
+    is_daily : bool
+        True if the cadence is daily or less, False if the cadence is greater
+        than daily
+
+    """
+    is_daily = True
+
+    if hasattr(file_cadence, 'days'):
+        if file_cadence.days > 1:
+            is_daily = False
+    else:
+        if not (hasattr(file_cadence, 'microseconds')
+                or hasattr(file_cadence, 'seconds')
+                or hasattr(file_cadence, 'minutes')
+                or hasattr(file_cadence, 'hours')):
+            is_daily = False
+
+    return is_daily
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
-               supported_tags=None, fake_daily_files_from_monthly=False,
-               two_digit_year_break=None):
-    """Return a Pandas Series of every file for chosen satellite data.
+               supported_tags=None, file_cadence=dt.timedelta(days=1),
+               two_digit_year_break=None, delimiter=None):
+    """Return a Pandas Series of every file for chosen Instrument data.
 
     This routine provides a standard interfacefor pysat instrument modules.
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
@@ -37,19 +69,23 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     supported_tags : dict or NoneType
         keys are inst_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
-    fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month, interfering
-        with pysat's functionality of loading by day. This flag, when true,
-        appends daily dates to monthly files internally. These dates are
-        used by load routine in this module to provide data by day.
-    two_digit_year_break : int
-        If filenames only store two digits for the year, then
-        '1900' will be added for years >= two_digit_year_break
-        and '2000' will be added for years < two_digit_year_break.
+    file_cadence : dt.timedelta or pds.DateOffset
+        pysat assumes a daily file cadence, but some instrument data file
+        contain longer periods of time.  This parameter allows the specification
+        of regular file cadences greater than or equal to a day (e.g., weekly,
+        monthly, or yearly). (default=dt.timedelta(days=1))
+    two_digit_year_break : int or NoneType
+        If filenames only store two digits for the year, then '1900' will be
+        added for years >= two_digit_year_break and '2000' will be added for
+        years < two_digit_year_break. If None, then four-digit years are
+        assumed. (default=None)
+    delimiter : string or NoneType
+        Delimiter string upon which files will be split (e.g., '.'). If None,
+        filenames will be parsed presuming a fixed width format. (default=None)
 
     Returns
-    --------
-    pysat.Files.from_os : pysat._files.Files
+    -------
+    out : pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Examples
@@ -83,14 +119,15 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     # Get the series of files
     out = pysat.Files.from_os(data_path=data_path, format_str=format_str,
-                              two_digit_year_break=two_digit_year_break)
+                              two_digit_year_break=two_digit_year_break,
+                              delimiter=delimiter)
 
-    # If the data is monthly, pad the series
-    # TODO: take file frequency as an input to allow e.g., weekly files
-    if (not out.empty) and fake_daily_files_from_monthly:
+    # If the data is not daily, pad the series.  Both pds.DateOffset and
+    # dt.timedelta contain the 'days' attribute, so evaluate using that
+    if not out.empty and not is_daily_file_cadence(file_cadence):
         emonth = out.index[-1]
-        out.loc[out.index[-1] + pds.DateOffset(months=1)
-                - pds.DateOffset(days=1)] = out.iloc[-1]
+        out.loc[out.index[-1] + file_cadence
+                - dt.timedelta(days=1)] = out.iloc[-1]
         new_out = out.asfreq('D')
 
         for i, out_month in enumerate(out.index):

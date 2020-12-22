@@ -1,3 +1,5 @@
+import datetime as dt
+import pandas as pds
 import pytest
 
 import pysat
@@ -29,11 +31,39 @@ class TestGenMethods():
         assert str(excinfo.value).find(err_msg) >= 0
 
 
+class TestFileCadence():
+
+    @pytest.mark.parametrize("time_kwarg, time_val, is_daily",
+                             [("microseconds", 1, True), ("seconds", 1, True),
+                              ("minutes", 1, True), ("hours", 1, True),
+                              ("days", 1, True), ("days", 2, False)])
+    def test_datetime_file_cadence(self, time_kwarg, time_val, is_daily):
+        """ Test is_daily_file_cadence with dt.datetime input
+        """
+        in_time = dt.timedelta(**{time_kwarg: time_val})
+        check_daily = gen.is_daily_file_cadence(in_time)
+
+        assert check_daily == is_daily
+
+    @pytest.mark.parametrize("time_kwarg, time_val, is_daily",
+                             [("microseconds", 1, True), ("seconds", 1, True),
+                              ("minutes", 1, True), ("hours", 1, True),
+                              ("days", 1, True), ("days", 2, False),
+                              ("months", 1, False), ("years", 1, False)])
+    def test_dateoffset_file_cadence(self, time_kwarg, time_val, is_daily):
+        """ Test is_daily_file_cadence with pds.DateOffset input
+        """
+        in_time = pds.DateOffset(**{time_kwarg: time_val})
+        check_daily = gen.is_daily_file_cadence(in_time)
+
+        assert check_daily == is_daily
+
+
 class TestRemoveLeadText():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', inst_id='12',
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.Npts = len(self.testInst['uts'])
@@ -85,7 +115,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
-                                         inst_id='12',
+                                         num_samples=12,
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.Npts = len(self.testInst['uts'])

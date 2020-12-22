@@ -34,7 +34,7 @@ could look something like:
 
 The instruments folder includes a file for each instrument object.  The
 requirements for structuring each of the instruments is discussed in
-:ref:`new_inst`.  The __init__ file in this folder should import the instruments
+:ref:`rst_new_inst`.  The __init__ file in this folder should import the instruments
 and construct a list of instruments to aid in the testing.
 
 .. code:: python

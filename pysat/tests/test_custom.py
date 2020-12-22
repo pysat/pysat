@@ -1,5 +1,6 @@
-import logging
+import datetime as dt
 from io import StringIO
+import logging
 import numpy as np
 import pandas as pds
 import pytest
@@ -11,7 +12,7 @@ class TestLogging():
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing', inst_id='10',
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean')
         self.out = ''
         self.log_capture = StringIO()
@@ -39,7 +40,7 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing', inst_id='10',
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len(self.testInst.data.columns)
@@ -112,7 +113,7 @@ class TestBasics():
             pytest.skip('pandas specific test for time index')
 
         def custom1(inst):
-            new_index = inst.index + pds.DateOffset(milliseconds=500)
+            new_index = inst.index + dt.timedelta(milliseconds=500)
             d = pds.Series(2.0 * inst['mlt'], index=new_index)
             d.name = 'doubleMLT'
             return d
@@ -251,8 +252,8 @@ class TestBasics():
 
         self.testInst.custom.attach(custom1, 'add')
         self.testInst.load(2009, 1)
-        assert self.testInst.meta['doubleMLT'].units == 'hours1'
-        assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLT'
+        assert self.testInst.meta['doubleMLT', 'units'] == 'hours1'
+        assert self.testInst.meta['doubleMLT', 'long_name'] == 'doubleMLT'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
 
@@ -421,7 +422,7 @@ class TestBasicsXarray(TestBasics):
         """Runs before every method to create a clean testing setup.
         """
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
-                                         inst_id='10', clean_level='clean')
+                                         num_samples=10, clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
 
@@ -437,7 +438,7 @@ class ConstellationTestBasics(TestBasics):
         """Runs before every method to create a clean testing setup
         """
         self.testConst = pysat.Constellation([
-            pysat.Instrument('pysat', 'testing', inst_id='10',
+            pysat.Instrument('pysat', 'testing', num_samples=10,
                              clean_level='clean')
             for i in range(5)])
 

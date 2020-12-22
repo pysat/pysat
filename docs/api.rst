@@ -88,12 +88,12 @@ Registry
 .. automodule:: pysat.utils.registry
    :members:
 
-Statistics
-^^^^^^^^^^
-.. automodule:: pysat.utils.stats
-   :members:
-
 Time
 ^^^^^^^^^^^
 .. automodule:: pysat.utils.time
+   :members:
+
+Testing
+^^^^^^^^^^^
+.. automodule:: pysat.utils.testing
    :members:
