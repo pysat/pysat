@@ -650,7 +650,8 @@ def available_instruments(inst_loc=None):
     return inst_info
 
 
-def display_available_instruments(inst_loc=None):
+def display_available_instruments(inst_loc=None, show_inst_mod=None,
+                                  show_platform_name=None):
     """Display basic information about instruments in a given subpackage.
 
     Parameters
@@ -658,17 +659,44 @@ def display_available_instruments(inst_loc=None):
     inst_loc : python subpackage or NoneType
         The location of the instrument subpackage (e.g., pysat.instruments)
         or None to list all registered instruments (default=None)
+    show_inst_mod : boolean or NoneType
+        Displays the instrument module if True, does not include it if False,
+        and reverts to standard display based on inst_loc type if None.
+       (default=None)
+    show_platform_name : boolean or NoneType
+        Displays the platform and name if True, does not include it if False,
+        and reverts to standard display based on inst_loc type if None.
+       (default=None)
 
     Note
     ----
-    Prints to standard out, a user-friendly interface for availabe_instruments
+    Prints to standard out, a user-friendly interface for availabe_instruments.
+    Defaults to including the instrument module and not the platform/name values
+    if inst_loc is an instrument module and to including the platform/name
+    values and not the instrument module if inst_loc is None (listing the
+    registered instruments).
 
     """
 
     inst_info = available_instruments(inst_loc)
 
-    print("Platform   Name  Instrument_Module       Tag  Inst_ID   Description")
-    print("-" * 80)
+    if show_platform_name is None and inst_loc is None:
+        show_platform_name = True
+
+    if show_inst_mod is None and inst_loc is not None:
+        show_inst_mod = True
+
+    if show_platform_name:
+        header = "Platform   Name   "
+    else:
+        header = ""
+
+    if show_inst_mod:
+        header = "{:s}Instrument_Module".format(header)
+
+    header = "{:s}      [Tag   Inst_ID]  Description".format(header)
+    print(header)
+    print("-" * len(header))
     for platform in inst_info.keys():
         for name in inst_info[platform].keys():
             mod_str = ""
@@ -676,15 +704,20 @@ def display_available_instruments(inst_loc=None):
                 for tag in inst_info[platform][name][
                         'inst_ids_tags'][inst_id].keys():
                     if len(mod_str) == 0:
-                        mod_str = " ".join([
-                            platform.__repr__(), name.__repr__(),
-                            inst_info[platform][name]['inst_module']])
+                        if show_platform_name:
+                            mod_str = "".join([platform.__repr__(), " ",
+                                               name.__repr__(), " "])
+                        if show_inst_mod:
+                            mod_str = "{:s}{:s}".format(
+                                mod_str,
+                                inst_info[platform][name]['inst_module'])
                     else:
                         mod_str = " " * len(mod_str)
 
-                    print(" ".join([mod_str, inst_id.__repr__(), tag.__repr__(),
-                                    inst_info[platform][name]['inst_ids_tags'][
-                                        inst_id][tag]]))
+                    print("".join([mod_str, " [", tag.__repr__(), " ",
+                                   inst_id.__repr__(), "]  ",
+                                   inst_info[platform][name]['inst_ids_tags'][
+                                       inst_id][tag]]))
     return
 
 
