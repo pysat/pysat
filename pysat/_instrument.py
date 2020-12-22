@@ -59,13 +59,10 @@ class Instrument(object):
     strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
         monotonically increasing. (default=True)
-    multi_file_day : boolean or NoneType
+    multi_file_day : boolean
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.  (default=None)
-    manual_org : bool
-        if True, then pysat will look directly in pysat data directory
-        for data files and will not use default /platform/name/tag
+        with a timestamp of day n-1 or n+1.  (default=False)
     directory_format : str
         directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
@@ -165,8 +162,8 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
                  clean_level='clean', update_files=False, pad=None,
-                 orbit_info=None, inst_module=None, multi_file_day=None,
-                 manual_org=None, directory_format=None, file_format=None,
+                 orbit_info=None, inst_module=None, multi_file_day=False,
+                 directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
                  ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
@@ -342,10 +339,8 @@ class Instrument(object):
                 '' if len(missing_keys) == 1 else 's', missing_keys))
 
         # instantiate Files class
-        manual_org = False if manual_org is None else manual_org
         temporary_file_list = not temporary_file_list
-        self.files = pysat.Files(self, manual_org=manual_org,
-                                 directory_format=self.directory_format,
+        self.files = pysat.Files(self, directory_format=self.directory_format,
                                  update_files=update_files,
                                  file_format=self.file_format,
                                  write_to_disk=temporary_file_list,
