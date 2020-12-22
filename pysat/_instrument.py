@@ -1313,15 +1313,13 @@ class Instrument(object):
             else:
                 raise TypeError('Unknown Variable Type' + str(coltype))
 
-    def _get_data_info(self, data, netcdf_format):
+    def _get_data_info(self, data):
         """Support file writing by determining data type and other options
 
         Parameters
         ----------
         data : pandas object
             Data to be written
-        netcdf_format : str
-            String indicating netCDF3 or netCDF4
 
         Returns
         -------
@@ -2953,7 +2951,6 @@ class Instrument(object):
         if export_nan is None:
             export_nan = self.meta._export_nan
 
-        netcdf_format = 'NETCDF4'
         # base_instrument used to define the standard attributes attached
         # to the instrument object. Any additional attributes added
         # to the main input Instrument will be written to the netCDF4
@@ -3005,7 +3002,7 @@ class Instrument(object):
         #    - if column is a Series of Frames, write as 2D variables
         # 3) metadata must be filtered before writing to netCDF4, since
         #    string variables can't have a fill value
-        with netCDF4.Dataset(fname, mode='w', format=netcdf_format) as out_data:
+        with netCDF4.Dataset(fname, mode='w', format='NETCDF4') as out_data:
             # number of items, yeah
             num = len(self.index)
 
@@ -3079,8 +3076,7 @@ class Instrument(object):
                     # use variable names used by user when working with data
                     case_key = key
 
-                data, coltype, datetime_flag = self._get_data_info(
-                    self[key], netcdf_format)
+                data, coltype, datetime_flag = self._get_data_info(self[key])
 
                 # operate on data based upon type
                 if self[key].dtype != np.dtype('O'):
@@ -3216,8 +3212,7 @@ class Instrument(object):
                                 # multiple subvariables stored under a single
                                 # main variable heading
                                 idx = self[key].iloc[good_data_loc][col]
-                                data, coltype, _ = self._get_data_info(
-                                    idx, netcdf_format)
+                                data, coltype, _ = self._get_data_info(idx)
                                 cdfkey = out_data.createVariable(
                                     '_'.join((case_key, col)), coltype,
                                     dimensions=var_dim, zlib=zlib,
@@ -3261,8 +3256,7 @@ class Instrument(object):
                                 # We are dealing with a Series.  Get
                                 # information from within the series
                                 idx = self[key].iloc[good_data_loc]
-                                data, coltype, _ = self._get_data_info(
-                                    idx, netcdf_format)
+                                data, coltype, _ = self._get_data_info(idx)
                                 cdfkey = out_data.createVariable(
                                     case_key + '_data', coltype,
                                     dimensions=var_dim, zlib=zlib,
@@ -3302,7 +3296,7 @@ class Instrument(object):
                         # Get index information
                         idx = good_data_loc
                         data, coltype, datetime_flag = self._get_data_info(
-                            self[key].iloc[idx].index, netcdf_format)
+                            self[key].iloc[idx].index)
 
                         # Create dimension variable for to store index in
                         # netCDF4
