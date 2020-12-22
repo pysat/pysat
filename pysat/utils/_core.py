@@ -721,7 +721,6 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
     return
 
 
-
 class NetworkLock(Lock):
     def __init__(self, *args, **kwargs):
         """Lock manager compatible with networked file systems
