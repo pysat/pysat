@@ -274,8 +274,7 @@ class Instrument(object):
 
         # If the multi_file_day flag was set update here, otherwise the
         # default will be set by _assign_attrs
-        if multi_file_day is not None:
-            self.multi_file_day = multi_file_day
+        self.multi_file_day = multi_file_day
 
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
