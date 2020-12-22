@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     of the standard methods (not just load).
   - Added support for 'cycle' in addition to 'version' and 'revision' for
     filename conventions.
+  - Added testing utility functions.
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -97,6 +98,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Moved setup metadata to setup.cfg
   - Improve instrument tests for files
   - Use dt.timedelta instead of pds.DateOffSet where possible
+  - Reduced code duplication throughout package
 
 ## [2.2.2] - 2020-12-31
  - New Features
