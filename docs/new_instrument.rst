@@ -35,8 +35,8 @@ part of pysat's user instrument registry using the following syntax:
   import my_package
   registry.register_from_module(my_package.instruments)
 
-After registry the instrument module name is stored in the user's home 
-directory under :code:`~.pysat/user_modules.txt`. The instrument may then 
+After registry the instrument module name is stored in the user's home
+directory under :code:`~.pysat/user_modules.txt`. The instrument may then
 be instantiated with the instrument's platform and name:
 
 .. code-block:: python
@@ -73,7 +73,7 @@ support a 'default' data set if desired. Examples are given below.
 
 In general, this is the name of the mission or observatory.  Examples include
 ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite,
-a constellation of satellites, a ground-based observatory, or a collaboration 
+a constellation of satellites, a ground-based observatory, or a collaboration
 of ground-based observatories.
 
 **name**
@@ -281,9 +281,9 @@ See pysat.utils.time.create_datetime_index for creating a datetime index for an
 array of irregularly sampled times.
 
 pysat will invoke the list_files method the first time a particular instrument
-is instantiated. After the first instantiation, by default, pysat will not 
+is instantiated. After the first instantiation, by default, pysat will not
 search for instrument files as some missions can produce a large number of
-files which may take time to identify. The list of files associated
+files, which may take time to identify. The list of files associated
 with an Instrument may be updated by adding `update_files=True`.
 
 .. code:: python
@@ -338,7 +338,7 @@ The load module method signature should appear as:
   uses a pandas DataFrame indexed by variable name with columns for
   metadata parameters associated with that variable, including items like
   'units' and 'long_name'. A variety of parameters are included by default and
-  additional arbitrary columns are allowed. See `pysat.Meta` for more 
+  additional arbitrary columns are allowed. See `pysat.Meta` for more
   information on creating the initial metadata. Any values not set in the load routine will
   be set to the default values for that label type.
 - Note that users may opt for a different
@@ -378,8 +378,8 @@ Optional Routines and Support
 
 **Custom Keywords in load Method**
 
-If provided, pysat supports the definition and use of keywords for an 
-instrument module so that users may trigger optional features. All custom 
+If provided, pysat supports the definition and use of keywords for an
+instrument module so that users may trigger optional features. All custom
 keywords for an instrument module must be defined in the `load` method.
 
 .. code:: python
@@ -477,10 +477,10 @@ All modules defined in the __init__.py for pysat/instruments are automatically
 tested when pysat code is tested. To support testing all of the required
 routines, additional information is required by pysat.
 
-Below is example code from dmsp_ivm.py. The attributes are set at the top 
-level simply by defining variable names with the proper info. The various 
-satellites within DMSP, F11, F12, F13 are separated out using the inst_id 
-parameter. 'utd' is used as a tag to delineate that the data contains the 
+Below is example code from dmsp_ivm.py. The attributes are set at the top
+level simply by defining variable names with the proper info. The various
+satellites within DMSP, F11, F12, F13 are separated out using the inst_id
+parameter. 'utd' is used as a tag to delineate that the data contains the
 UTD developed quality flags.
 
 .. code:: python
@@ -549,8 +549,8 @@ This tells the test routines to skip the download / load tests for Level 1 data.
 Instead, the download function for this flag will be tested to see if it has an
 appropriate user warning that downloads are not available.
 
-Note that pysat assumes that this flag is True if no variable is present.  
-Thus specifying only `_test_download = {'': {'Level_1': False}}` has the 
+Note that pysat assumes that this flag is True if no variable is present.
+Thus specifying only `_test_download = {'': {'Level_1': False}}` has the
 same effect, and Level 2 tests will still be run.
 
 **FTP Access**
@@ -558,8 +558,8 @@ same effect, and Level 2 tests will still be run.
 Another thing to note about testing is that the Travis CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
 HTTPS access is preferred whenever possible.  However, if this is not the case,
-the `_test_download_travis` flag can be used.  This has a similar function, 
-except that it skips the download tests if on Travis CI, but will run those 
+the `_test_download_travis` flag can be used.  This has a similar function,
+except that it skips the download tests if on Travis CI, but will run those
 tests if run locally.
 
 .. code:: python
@@ -581,8 +581,8 @@ tag that is False.  The other is True by default.
 Another potential issue is that some instruments have download routines,
 but should not undergo automated download tests because it would require
 the  user to save a password in a potentially public location.  The
-`_password_req` flag is used to skip both the download tests and the 
-download warning message tests, since a functional download routine is 
+`_password_req` flag is used to skip both the download tests and the
+download warning message tests, since a functional download routine is
 present.
 
 .. code:: python
