@@ -1339,26 +1339,12 @@ class Instrument(object):
         # get type of data
         data_type = data.dtype
 
-        # check if older netcdf_format
-        if netcdf_format != 'NETCDF4':
-            old_format = True
-        else:
-            old_format = False
-
         # Check for object type
         if data_type != np.dtype('O'):
             # Simple data, not an object
 
-            if (data_type == np.int64) and old_format:
-                # No 64bit ints in netCDF3
-                data = data.astype(np.int32)
-                data_type = np.int32
-
             if data_type == np.dtype('<M8[ns]'):
-                if not old_format:
-                    data_type = np.int64
-                else:
-                    data_type = np.float
+                data_type = np.int64
                 datetime_flag = True
             else:
                 datetime_flag = False
