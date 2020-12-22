@@ -1293,7 +1293,7 @@ class Instrument(object):
 
         Note
         ----
-        Understands np.dtype, numpy int, uint, and float varients, and
+        Understands np.dtype, numpy int, uint, and float variants, and
         str subclasses
 
         """
