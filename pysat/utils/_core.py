@@ -1,4 +1,3 @@
-import copy
 import datetime as dt
 import importlib
 import netCDF4
@@ -183,7 +182,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     --------
     out : pandas.core.frame.DataFrame
         DataFrame output
-    mdata : pysat._meta.Meta
+    meta : pysat._meta.Meta
         Meta data
 
     """
@@ -198,41 +197,40 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     else:
         file_format = file_format.upper()
 
-    saved_mdata = None
+    saved_meta = None
     running_idx = 0
     running_store = []
     two_d_keys = []
     two_d_dims = []
-    mdata = pysat.Meta(labels=labels)
+    meta = pysat.Meta(labels=labels)
 
     if pandas_format:
         for fname in fnames:
             with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
-                # build up dictionary with all global ncattrs
-                # and add those attributes to a pysat meta object
-                ncattrsList = data.ncattrs()
-                for ncattr in ncattrsList:
-                    if hasattr(mdata, ncattr):
-                        mdata.__setattr__('{:}_'.format(ncattr),
-                                          data.getncattr(ncattr))
+                # Build a dictionary with all global ncattrs and add those
+                # attributes to a pysat meta object
+                for ncattr in data.ncattrs():
+                    if hasattr(meta, ncattr):
+                        meta.__setattr__('{:}_'.format(ncattr),
+                                         data.getncattr(ncattr))
                     else:
-                        mdata.__setattr__(ncattr, data.getncattr(ncattr))
+                        meta.__setattr__(ncattr, data.getncattr(ncattr))
 
-                loadedVars = {}
+                loaded_vars = {}
                 for key in data.variables.keys():
-                    # load up metadata.  From here group unique
-                    # dimensions and act accordingly, 1D, 2D, 3D
+                    # Load the metadata.  From here group unique dimensions and
+                    # act accordingly, 1D, 2D, 3D
                     if len(data.variables[key].dimensions) == 1:
                         if pandas_format:
                             # load 1D data variable
                             # assuming basic time dimension
-                            loadedVars[key] = data.variables[key][:]
+                            loaded_vars[key] = data.variables[key][:]
                         # load up metadata
                         meta_dict = {}
                         for nc_key in data.variables[key].ncattrs():
                             meta_dict[nc_key] = \
                                 data.variables[key].getncattr(nc_key)
-                        mdata[key] = meta_dict
+                        meta[key] = meta_dict
                     if len(data.variables[key].dimensions) == 2:
                         # part of dataframe within dataframe
                         two_d_keys.append(key)
@@ -276,7 +274,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         # if the object index uses UNIX time, process into
                         # datetime index
                         if data.variables[obj_key].getncattr(
-                                mdata.labels.name) == epoch_name:
+                                meta.labels.name) == epoch_name:
                             # name to be used in DataFrame index
                             index_name = epoch_name
                             time_index_flag = True
@@ -284,7 +282,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             time_index_flag = False
                             # label to be used in DataFrame index
                             index_name = data.variables[obj_key].getncattr(
-                                mdata.labels.name)
+                                meta.labels.name)
                     else:
                         # dimension is not itself a variable
                         index_key_name = None
@@ -306,7 +304,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         for nc_key in data.variables[obj_key].ncattrs():
                             dim_meta_dict[nc_key] = \
                                 data.variables[obj_key].getncattr(nc_key)
-                        mdata[obj_key] = dim_meta_dict
+                        meta[obj_key] = dim_meta_dict
 
                     # iterate over all variables with this dimension
                     # data storage, whole shebang
@@ -362,24 +360,24 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
                     # add 2D object data, all based on a unique dimension within
                     # netCDF, to loaded data dictionary
-                    loadedVars[obj_key] = loop_list
+                    loaded_vars[obj_key] = loop_list
                     del loop_list
 
                 # prepare dataframe index for this netcdf file
-                time_var = loadedVars.pop(epoch_name)
+                time_var = loaded_vars.pop(epoch_name)
 
                 # convert from GPS seconds to seconds used in pandas (unix time,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
-                loadedVars[epoch_name] = \
-                    pds.to_datetime((1E6 * time_var).astype(int))
-                running_store.append(loadedVars)
-                running_idx += len(loadedVars[epoch_name])
+                loaded_vars[epoch_name] = pds.to_datetime(
+                    (1E6 * time_var).astype(int))
+                running_store.append(loaded_vars)
+                running_idx += len(loaded_vars[epoch_name])
 
                 if strict_meta:
-                    if saved_mdata is None:
-                        saved_mdata = copy.deepcopy(mdata)
-                    elif (mdata != saved_mdata):
+                    if saved_meta is None:
+                        saved_meta = meta.copy()
+                    elif (meta != saved_meta):
                         raise ValueError(' '.join(('Metadata across filenames',
                                                    'is not the same.')))
 
@@ -398,19 +396,20 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             meta_dict = {}
             for nc_key in out.variables[key].attrs.keys():
                 meta_dict[nc_key] = out.variables[key].attrs[nc_key]
-            mdata[key] = meta_dict
+            meta[key] = meta_dict
             # Remove variable attributes from the data object
             out.variables[key].attrs = {}
         # Copy the file attributes from the data object to the metadata
-        for d in out.attrs.keys():
-            if hasattr(mdata, d):
-                mdata.__setattr__(d + '_', out.attrs[d])
+        for out_attr in out.attrs.keys():
+            if hasattr(meta, out_attr):
+                set_attr = "".join([out_attr, "_"])
+                meta.__setattr__(set_attr, out.attrs[out_attr])
             else:
-                mdata.__setattr__(d, out.attrs[d])
+                meta.__setattr__(out_attr, out.attrs[out_attr])
         # Remove attributes from the data object
         out.attrs = {}
 
-    return out, mdata
+    return out, meta
 
 
 def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
