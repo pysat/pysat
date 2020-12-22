@@ -43,8 +43,9 @@ etc. pysat goes through that trouble for you.
    # data at the end of download
    vefi.download(start, stop)
 
-   # leave bounds unassigned to cover the whole dataset
+   # specify bounds for the analysis
    vefi.bounds = (start, stop)
+   # if unassigned, code will run for the entire dataset available
 
    for orbit_count, vefi in enumerate(vefi.orbits):
        # for each loop pysat puts a copy of the next available

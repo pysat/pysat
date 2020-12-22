@@ -113,7 +113,7 @@ to automatically apply the method upon every load.
    # methods are automatically available within the custom analysis
    custom_complicated_analysis_over_season(ivm)
 
-The output of custom_func_modify will always be available from instrument
+The changes made by custom_func_modify will always be available from instrument
 object, regardless of what level the science analysis is performed.
 
 We can repeat the earlier DMSP example, this time using nano-kernel

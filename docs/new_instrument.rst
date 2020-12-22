@@ -213,11 +213,11 @@ available data. The location on the local filesystem to search for the files
 is passed in data_path. The list_files method must return
 a pandas Series of filenames indexed by datetime objects.
 
-A user is also able to supply a file template string
-suitable for locating files on their system at pysat.Instrument instantiation,
-passed via format_str, that must be supported. Sometimes users obtain files
-from non-traditional sources and format_str makes it easier for those users
-to use an existing instrument module to work with those files.
+A user must also supply a file template string suitable for locating files
+on their system at pysat.Instrument instantiation, passed via format_str,
+that must be supported. Sometimes users obtain files from non-traditional
+sources and format_str makes it easier for those users to use an existing
+instrument module to work with those files.
 
 pysat will by default store data in pysat_data_dir/platform/name/tag,
 helpfully provided in data_path, where pysat_data_dir is specified by using
@@ -284,15 +284,14 @@ pysat will invoke the list_files method the first time a particular instrument
 is instantiated. After the first instantiation, by default, pysat will not
 search for instrument files as some missions can produce a large number of
 files, which may take time to identify. The list of files associated
-with an Instrument may be updated by adding `update_files=True`.
+with an Instrument may be updated by adding `update_files=True` to the kwargs.
 
 .. code:: python
 
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
-The output provided by the list_files function that has been pulled into pysat
-the Instrument object above can be inspected from within Python by
-checking `inst.files.files`.
+The output provided by the `list_files` function above can be inspected
+by calling `inst.files.files`.
 
 **load**
 

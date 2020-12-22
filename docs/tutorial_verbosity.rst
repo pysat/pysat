@@ -9,7 +9,8 @@ logging level.
 
 .. code:: python
 
-   from pysat import logger, logging
-   logger.set_level(logging.INFO)
+import logging
+import pysat
+logger.set_level(logging.INFO)
 
 The logging level will be applied to all instruments loaded by pysat.

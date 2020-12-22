@@ -36,13 +36,13 @@ must load some data.
 
    ivm.load(date=start)
 
-Orbits may be selected directly from the attached ``ivm.orbits`` class. 
+Orbits may be selected directly from the attached ``ivm.orbits`` class.
 The data for the orbit is stored in ``ivm.data``.
 
 .. code:: ipython
 
-   In [50]: ivm.orbits[1]
-   Out[50]:
+   ivm.orbits[1]
+
    Returning cnofs ivm  data for 12/27/12
    Returning cnofs ivm  data for 12/28/12
    Loaded Orbit:0
@@ -54,8 +54,8 @@ pysat is checking here if the first orbit for 12/28/2012 actually started on
 
 .. code:: ipython
 
-   In [51]: ivm[0:5, 'mlt']
-   Out[51]:
+   ivm[0:5, 'mlt']
+
    2012-12-27 23:05:14.584000    0.002449
    2012-12-27 23:05:15.584000    0.006380
    2012-12-27 23:05:16.584000    0.010313
@@ -63,8 +63,8 @@ pysat is checking here if the first orbit for 12/28/2012 actually started on
    2012-12-27 23:05:18.584000    0.018178
    Name: mlt, dtype: float32
 
-   In [52]: ivm[-5:, 'mlt']
-   Out[52]:
+   ivm[-5:, 'mlt']
+
    2012-12-28 00:41:50.563000    23.985415
    2012-12-28 00:41:51.563000    23.989031
    2012-12-28 00:41:52.563000    23.992649
@@ -76,13 +76,13 @@ You can also go back an orbit.
 
 .. code:: ipython
 
-   In [53]: ivm.orbits.prev()
-   Out[53]:
+   ivm.orbits.prev()
+
    Returning cnofs ivm  data for 12/27/12
    Loaded Orbit:15
 
-   In [54]: ivm[-5:, 'mlt']
-   Out[54]:
+   ivm[-5:, 'mlt']
+
    2012-12-27 23:05:09.584000    23.982796
    2012-12-27 23:05:10.584000    23.986725
    2012-12-27 23:05:11.584000    23.990656
@@ -104,15 +104,15 @@ can skip the iteration and just go for the last orbit of a day,
 
 .. code:: ipython
 
-   In[] : ivm.orbits[-1]
-   Out[]:
+   ivm.orbits[-1]
+
    Returning cnofs ivm  data for 12/29/12
    Loaded Orbit:1
 
 .. code:: ipython
 
-   In[72] : ivm[:5, 'mlt']
-   Out[72]:
+   ivm[:5, 'mlt']
+
    2012-12-28 23:03:34.160000    0.003109
    2012-12-28 23:03:35.152000    0.007052
    2012-12-28 23:03:36.160000    0.010996
@@ -120,8 +120,8 @@ can skip the iteration and just go for the last orbit of a day,
    2012-12-28 23:03:38.160000    0.018884
    Name: mlt, dtype: float32
 
-   In[73] : ivm[-5:, 'mlt']
-   Out[73]:
+   ivm[-5:, 'mlt']
+
    2012-12-29 00:40:13.119000    23.982937
    2012-12-29 00:40:14.119000    23.986605
    2012-12-29 00:40:15.119000    23.990273
@@ -135,7 +135,8 @@ as the first orbit of 12/29/12. Thus, if we ask for the next orbit,
 
 .. code:: ipython
 
-   In[] : ivm.orbits.next()
+   ivm.orbits.next()
+
    Loaded Orbit:2
 
 pysat will indicate it is the second orbit of the day. Going back an orbit
@@ -144,7 +145,8 @@ was labeled orbit 1.
 
 .. code:: ipython
 
-   In[] : ivm.orbits.prev()
+   ivm.orbits.prev()
+
    Returning cnofs ivm  data for 12/28/12
    Loaded Orbit:16
 
