@@ -544,7 +544,7 @@ class ConstellationTestBasics(TestBasics):
         """
         del self.testConst
 
-    def add(self, function, kind='add', at_pos='end', args=[], kwargs={}):
+    def test_add(self, function, kind='add', at_pos='end', args=[], kwargs={}):
         """ Add a function to the object's custom queue
         """
         self.testConst.custom_attach(function, kind, at_pos, args, kwargs)
