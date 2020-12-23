@@ -63,11 +63,13 @@ class Instrument(object):
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
         with a timestamp of day n-1 or n+1.  (default=False)
-    directory_format : str
+    directory_format : string or NoneType
         directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{tag}'
+        expressed as '{platform}/{name}/{tag}'.
+        If None, the default directory structure is used
+        (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string

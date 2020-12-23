@@ -243,6 +243,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                      'notes': 'UTC time at middle of geophysical measurement.',
                      'desc': 'UTC seconds'}
     meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
+                   'desc': 'Magnetic Local Time',
                    'value_min': 0.0, 'value_max': 24.0,
                    'notes': ''.join(['Magnetic Local Time is the solar local ',
                                      'time of thefield line at the location ',

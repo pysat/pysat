@@ -29,11 +29,15 @@ class Files(object):
     stop_date : datetime
         date of last file, used as default stop bound for instrument
         object
-    data_path : string
-        path to the directory containing instrument files,
-        top_dir/platform/name/tag/
-    update_files : bool
-        updates files on instantiation if True
+    update_files : boolean
+        If True, immediately query filesystem for instrument files and
+        store
+        (default=False)
+    file_format : str or NoneType
+        File naming structure in string format.  Variables such as year,
+        month, and inst_id will be filled in as needed using python string
+        formatting.  The default file format structure is supplied in the
+        instrument list_files routine. (default=None)
 
     Note
     ----
@@ -132,11 +136,9 @@ class Files(object):
         self.file_format = file_format
 
         # construct subdirectory path
-        self.sub_dir_path = \
-            self.directory_format.format(name=self._sat.name,
-                                         platform=self._sat.platform,
-                                         tag=self._sat.tag,
-                                         inst_id=self._sat.inst_id)
+        self.sub_dir_path = self.directory_format.format(
+            name=self._sat.name, platform=self._sat.platform,
+            tag=self._sat.tag, inst_id=self._sat.inst_id)
         # ensure we have a path for pysat data directory
         if data_dir == '':
             raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",

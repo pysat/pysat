@@ -220,6 +220,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                                      '0-24 with a consistent orbital period ',
                                      'and an offset with SLT.'])}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+                   'desc': 'Solar Local Time', 'value_min': 0.,
                    'value_max': 24.,
                    'notes': ''.join(['Solar Local Time is the local time ',
                                      '(zenith angle of thee sun) of the given',
