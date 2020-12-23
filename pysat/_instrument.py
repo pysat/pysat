@@ -43,7 +43,7 @@ class Instrument(object):
         custom functions. Dictionary, if supplied, is simply passed to
         pandas DateOffset.
     orbit_info : dict
-        Orbit information, {'index':index, 'kind':kind, 'period':period}.
+        Orbit information, {'index': index, 'kind': kind, 'period': period}.
         See pysat.Orbits for more information.
     inst_module : module
         Provide instrument module directly, takes precedence over platform/name
@@ -58,18 +58,13 @@ class Instrument(object):
         (default=False)
     strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
-        monotonically increasing. (default=True)
-    multi_file_day : boolean
-        Set to True if Instrument data files for a day are spread across
-        multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.  (default=False)
+        monotonically increasing. (default=True
     directory_format : string or NoneType
-        directory naming structure in string format. Variables such as
-        platform, name, and tag will be filled in as needed using python
-        string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{tag}'.
-        If None, the default directory structure is used
-        (default=None)
+        Directory naming structure in string format. Variables such as platform,
+        name, and tag will be filled in as needed using python string
+        formatting. The default directory structure would be expressed as
+        '{platform}/{name}/{tag}'. If None, the default directory structure is
+        used. (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -164,10 +159,9 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
                  clean_level='clean', update_files=False, pad=None,
-                 orbit_info=None, inst_module=None, multi_file_day=False,
-                 directory_format=None, file_format=None,
-                 temporary_file_list=False, strict_time_flag=True,
-                 ignore_empty_files=False,
+                 orbit_info=None, inst_module=None, directory_format=None,
+                 file_format=None, temporary_file_list=False,
+                 strict_time_flag=True, ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'min_val': ('value_min', float),
@@ -273,10 +267,6 @@ class Instrument(object):
         self._prev_data = self._null_data.copy()
         self._prev_data_track = []
         self._curr_data = self._null_data.copy()
-
-        # If the multi_file_day flag was set update here, otherwise the
-        # default will be set by _assign_attrs
-        self.multi_file_day = multi_file_day
 
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
