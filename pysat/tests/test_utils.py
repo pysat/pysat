@@ -274,6 +274,8 @@ class TestBasicNetCDF4():
             assert(np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_basic_write_and_read_netcdf4_mixed_case_format(self):
+        """ Test basic netCDF4 read/write with mixed case data variables
+        """
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
@@ -286,9 +288,8 @@ class TestBasicNetCDF4():
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        self.testInst.data = \
-            self.testInst.data.reindex(sorted(self.testInst.data.columns),
-                                       axis=1)
+        self.testInst.data = self.testInst.data.reindex(
+            sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         # check that names are lower case when written
@@ -310,6 +311,8 @@ class TestBasicNetCDF4():
                       == sorted(loaded_inst.columns))
 
     def test_write_netcdf4_duplicate_variable_names(self):
+        """ Test netCDF4 writing with duplicate variable names
+        """
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
@@ -338,6 +341,8 @@ class TestBasicNetCDF4():
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
+        """ Test the netCDF4 write/read abilities with an odd epoch name
+        """
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
@@ -347,9 +352,8 @@ class TestBasicNetCDF4():
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                      epoch_name='Santa')
-        self.testInst.data = \
-            self.testInst.data.reindex(sorted(self.testInst.data.columns),
-                                       axis=1)
+        self.testInst.data = self.testInst.data.reindex(
+            sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
@@ -433,7 +437,8 @@ class TestBasicNetCDF4():
         assert np.all(test_list)
 
     def test_netcdf_prevent_attribute_override(self):
-        """Test that attributes will not be overridden by default"""
+        """Test that attributes will not be overridden by default
+        """
         self.testInst.load(date=self.stime)
 
         try:
@@ -485,9 +490,9 @@ class TestBasicNetCDF4xarray():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
-                                         num_samples=100,
-                                         clean_level='clean')
-        self.testInst.pandas_format = False
+                                         num_samples=100)
+        self.stime = pysat.instruments.pysat_testing2d_xarray._test_dates[
+            '']['']
 
         # create testing directory
         prep_dir(self.testInst)
@@ -496,9 +501,11 @@ class TestBasicNetCDF4xarray():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         pysat.utils.set_data_dir(self.data_path, store=False)
-        del self.testInst
+        del self.testInst, self.stime
 
     def test_basic_write_and_read_netcdf4_default_format(self):
+        """ Test basic netCDF4 writing and reading
+        """
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
@@ -507,9 +514,8 @@ class TestBasicNetCDF4xarray():
         self.testInst.data.attrs['new_attr'] = 1
         self.testInst.data.to_netcdf(outfile)
 
-        loaded_inst, meta = \
-            pysat.utils.load_netcdf4(outfile,
-                                     pandas_format=self.testInst.pandas_format)
+        loaded_inst, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format)
         keys = self.testInst.data.data_vars.keys()
 
         for key in keys:
@@ -517,6 +523,8 @@ class TestBasicNetCDF4xarray():
         assert meta.new_attr == 1
 
     def test_load_netcdf4_pandas_3d_error(self):
+        """ Test load_netcdf4 error with a pandas 3D file
+        """
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
@@ -526,9 +534,8 @@ class TestBasicNetCDF4xarray():
         self.testInst.data.to_netcdf(outfile)
 
         with pytest.raises(ValueError):
-            loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
-                                                         epoch_name='time',
-                                                         pandas_format=True)
+            loaded_inst, meta = pysat.utils.load_netcdf4(
+                outfile, epoch_name='time', pandas_format=True)
 
 
 class TestFmtCols():
