@@ -45,6 +45,7 @@ class TestBasics():
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean')
         self.testInst.load(2008, 1)
+        self.load_date = dt.datetime(2009, 1, 1)
         self.ncols = len(self.testInst.data.columns)
         self.out = None
 
@@ -69,6 +70,8 @@ class TestBasics():
 
         self.testInst.custom_attach(mult_data, 'modify', args=[2.0],
                                     kwargs={"dkey": "mlt"})
+        # Execute custom method
+        self.testInst.load(date=self.load_date)
         self.out = self.testInst.__str__()
         assert isinstance(self.out, str)
         # No custom functions
@@ -86,7 +89,7 @@ class TestBasics():
 
         self.testInst.custom_attach(custom1, 'modify')
         with pytest.raises(ValueError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
     def test_single_adding_custom_function(self):
         """Test successful use of custom function loaded as add
@@ -97,7 +100,7 @@ class TestBasics():
             return d
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert (self.testInst['doubleMLT'].values == 2.0
                 * self.testInst['mlt'].values).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
@@ -115,7 +118,7 @@ class TestBasics():
             return d
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert (self.testInst['doubleMLT'].isnull()).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
 
@@ -128,7 +131,7 @@ class TestBasics():
             return inst.data.doubleMLT
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert (self.testInst.data['doubleMLT'] == 2.0
                 * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
@@ -191,7 +194,7 @@ class TestBasics():
             return ('doubleMLT', 2.0 * inst.data.mlt.values)
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
 
@@ -202,7 +205,7 @@ class TestBasics():
             return (['doubleMLT', 'tripleMLT'], [2.0 * inst.data.mlt.values,
                                                  3.0 * inst.data.mlt.values])
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert (self.testInst.data['doubleMLT'] == 2.0
                 * self.testInst['mlt']).all()
         assert (self.testInst.data['tripleMLT'] == 3.0
@@ -220,7 +223,7 @@ class TestBasics():
 
         self.testInst.custom_attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
     def test_add_function_tuple_return_style_too_many_elements(self):
         """Test failure of add function that too many array elements
@@ -233,7 +236,7 @@ class TestBasics():
 
         self.testInst.custom_attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
     def test_add_dataframe(self):
         """Test add function success with pandas DataFrame return
@@ -245,7 +248,7 @@ class TestBasics():
             return out
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert (self.testInst.data['doubleMLT'] == 2.0
                 * self.testInst['mlt']).all()
         assert (self.testInst.data['tripleMLT'] == 3.0
@@ -264,7 +267,7 @@ class TestBasics():
                     'units': ['hours1', 'hours2']}
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert self.testInst.meta['tripleMLT'].units == 'hours2'
@@ -283,7 +286,7 @@ class TestBasics():
                     'units': 'hours1'}
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
@@ -298,7 +301,7 @@ class TestBasics():
             return {'data': out, 'units': 'hours1'}
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert self.testInst.meta['doubleMLT', 'units'] == 'hours1'
         assert self.testInst.meta['doubleMLT', 'long_name'] == 'doubleMLT'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
@@ -313,7 +316,7 @@ class TestBasics():
                     'units': 'hours1', 'name': 'doubleMLT'}
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
@@ -329,7 +332,7 @@ class TestBasics():
 
         self.testInst.custom_attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
     def test_add_xarray_dataarray(self):
         """Test add function success with xarray"""
@@ -341,7 +344,7 @@ class TestBasics():
                     inst.meta.labels.units: 'hours1'}
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         units = self.testInst.meta.labels.units
         lname = self.testInst.meta.labels.name
         assert self.testInst.meta['doubleMLT', units] == 'hours1'
@@ -368,7 +371,7 @@ class TestBasics():
 
         if not self.testInst.pandas_format:
             self.testInst.custom_attach(custom_set, 'add')
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
             units = self.testInst.meta.labels.units
             lname = self.testInst.meta.labels.name
             assert self.testInst.meta['doubleMLT', units] == 'hours1'
@@ -391,7 +394,7 @@ class TestBasics():
                     'units': 'hours1', 'name': 'doubleMLT'}
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
@@ -407,7 +410,7 @@ class TestBasics():
 
         self.testInst.custom_attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
     def test_add_list_w_meta_name_in_dict(self):
         """Test add function success with list and full MetaData
@@ -418,7 +421,7 @@ class TestBasics():
                     'units': 'hours1', 'name': 'doubleMLT'}
 
         self.testInst.custom_attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
@@ -434,7 +437,7 @@ class TestBasics():
 
         self.testInst.custom_attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
     def test_clear_functions(self):
         """Test successful clearance of custom functions
@@ -473,7 +476,7 @@ class TestBasics():
         assert len(self.testInst.custom_args) == 1
         assert len(self.testInst.custom_kwargs) == 1
 
-        self.testInst.load(2009, 1)
+        self.testInst.load(date=self.load_date)
         # Test that the number of data columns is the same
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols
 
@@ -487,7 +490,7 @@ class TestBasics():
 
         self.testInst.custom_attach(custom1, 'pass')
         with pytest.raises(ValueError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
     def test_add_multiple_functions_one_not_at_end(self):
         """Test for error if custom functions are run in the wrong order
@@ -510,7 +513,7 @@ class TestBasics():
         # last attached function (inst.data.MLTx2) won't be present yet
 
         with pytest.raises(AttributeError):
-            self.testInst.load(2009, 1)
+            self.testInst.load(date=self.load_date)
 
 
 # Repeate the above tests with xarray
