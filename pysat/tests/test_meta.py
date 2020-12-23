@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """
 tests the pysat meta object and code
 """
@@ -11,31 +16,33 @@ import warnings
 import pysat
 import pysat.instruments.pysat_testing
 import pysat.tests.test_utils
+from pysat.utils import testing
 
 
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup
         """
-        self.testInst = pysat.Instrument('pysat', 'testing',
-                                         clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testing')
+        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.meta = self.testInst.meta
 
         self.meta_labels = {'units': ('Units', str),
                             'name': ('Long_Name', str)}
         self.dval = None
-        self.stime = [2009, 1]
         self.out = None
         self.default_name = ['long_name', 'axis', 'plot']
         self.default_nan = ['fill', 'value_min', 'value_max']
         self.default_val = {'notes': '', 'units': '', 'desc': '',
                             'scale': 'linear'}
+        self.frame_list = ['dummy_frame1', 'dummy_frame2']
 
     def teardown(self):
         """Runs after every method to clean up previous testing
         """
         del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
+        del self.frame_list
 
     def check_meta_settings(self):
         """ Test the Meta settings for a specified value
@@ -82,7 +89,7 @@ class TestBasics():
         """ Test Meta initialization with data
         """
         # Initialize the instrument
-        self.testInst.load(*self.stime)
+        self.testInst.load(date=self.stime)
         self.dval = 'test_inst_data_assign_meta'
 
         # Update the testing data and set the new data dictionary
@@ -108,7 +115,7 @@ class TestBasics():
         """ Test string assignment to meta with a list of strings
         """
         # Initialize the Meta Data
-        self.testInst.load(*self.stime)
+        self.testInst.load(date=self.stime)
         self.dval = 'test_inst_data_assign_meta_string_list'
         self.testInst[self.dval] = {'data': self.testInst['mlt'],
                                     mlabel: slist}
@@ -130,7 +137,7 @@ class TestBasics():
             self.testInst = pysat.Instrument('pysat', 'testing',
                                              clean_level='clean',
                                              labels=self.meta_labels)
-            self.testInst.load(*self.stime)
+            self.testInst.load(date=self.stime)
 
         # Test the warning
         default_str = ''.join(['Metadata set to defaults, as they were',
@@ -154,7 +161,7 @@ class TestBasics():
         """
         # Initialize the Meta data
         self.dval = 'test_inst_data_assign_meta_then_data'
-        self.testInst.load(*self.stime)
+        self.testInst.load(date=self.stime)
         self.testInst[self.dval] = {'data': self.testInst['mlt'], 'units': 'V'}
         self.testInst[self.dval] = self.testInst['mlt']
         self.meta = self.testInst.meta
@@ -166,64 +173,60 @@ class TestBasics():
         self.check_meta_settings()
 
     def test_inst_ho_data_assign_no_meta_default(self):
-        self.testInst.load(*self.stime)
-        frame = pds.DataFrame({'dummy_frame1': np.arange(10),
-                               'dummy_frame2': np.arange(10)},
-                              columns=['dummy_frame1', 'dummy_frame2'])
+        self.testInst.load(date=self.stime)
+        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
+                              columns=self.frame_list)
         self.testInst['help'] = [frame] * len(self.testInst.data.index)
 
-        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame1' in self.testInst.meta['help']['children']
-        assert 'dummy_frame2' in self.testInst.meta['help']['children']
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'units')
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'desc')
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta.ho_data['help'])
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta['help']['children'])
+        for label in ['units', 'desc']:
+            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
+                label)
 
     def test_inst_ho_data_assign_meta_default(self):
-        self.testInst.load(*self.stime)
-        frame = pds.DataFrame({'dummy_frame1': np.arange(10),
-                               'dummy_frame2': np.arange(10)},
-                              columns=['dummy_frame1', 'dummy_frame2'])
-        self.testInst['help'] = {'data':
-                                 [frame] * len(self.testInst.data.index),
-                                 'units': 'V',
-                                 'long_name': 'The Doors'}
+        """ Test the assignment of the default higher order metadata
+        """
+        self.testInst.load(date=self.stime)
+        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
+                              columns=self.frame_list)
+        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
+                                 'units': 'V', 'long_name': 'The Doors'}
 
         assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame1' in self.testInst.meta['help']['children']
-        assert 'dummy_frame2' in self.testInst.meta['help']['children']
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'units')
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'desc')
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta.ho_data['help'])
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta['help']['children'])
+        for label in ['units', 'desc']:
+            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
+                label)
 
     def test_inst_ho_data_assign_meta(self):
-        self.testInst.load(*self.stime)
-        frame = pds.DataFrame({'dummy_frame1': np.arange(10),
-                               'dummy_frame2': np.arange(10)},
-                              columns=['dummy_frame1', 'dummy_frame2'])
+        """ Test the assignemnt of custom higher order metadata
+        """
+        self.testInst.load(date=self.stime)
+        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
+                              columns=self.frame_list)
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data':
-                                 [frame] * len(self.testInst.data.index),
-                                 'units': 'V',
-                                 'long_name': 'The Doors',
+        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
+                                 'units': 'V', 'long_name': 'The Doors',
                                  'meta': meta}
 
         assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame1' in self.testInst.meta['help']['children']
-        assert 'dummy_frame2' in self.testInst.meta['help']['children']
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'units')
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'desc')
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta.ho_data['help'])
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta['help']['children'])
+
+        for label in ['units', 'desc']:
+            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
+                label)
+
         assert self.testInst.meta['help']['children']['dummy_frame1',
                                                       'units'] == 'A'
         assert self.testInst.meta['help']['children']['dummy_frame1',
@@ -232,29 +235,30 @@ class TestBasics():
                                                       'desc'] == 'nothing'
 
     def test_inst_ho_data_assign_meta_then_data(self):
-        self.testInst.load(*self.stime)
-        frame = pds.DataFrame({'dummy_frame1': np.arange(10),
-                               'dummy_frame2': np.arange(10)},
-                              columns=['dummy_frame1', 'dummy_frame2'])
+        """ Test assignment of higher order metadata before assigning data
+        """
+        self.testInst.load(date=self.stime)
+        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
+                              columns=self.frame_list)
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data':
-                                 [frame] * len(self.testInst.data.index),
-                                 'units': 'V',
-                                 'long_name': 'The Doors',
+        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
+                                 'units': 'V', 'long_name': 'The Doors',
                                  'meta': meta}
-        self.testInst['help'] = [frame] * len(self.testInst.data.index)
+
+        self.testInst['help'] = [frame] * self.testInst.index.shape[0]
 
         assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame1' in self.testInst.meta['help']['children']
-        assert 'dummy_frame2' in self.testInst.meta['help']['children']
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'units')
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'desc')
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta.ho_data['help'])
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta['help']['children'])
+
+        for label in ['units', 'desc']:
+            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
+                label)
+
         assert self.testInst.meta['help']['children']['dummy_frame1',
                                                       'units'] == 'A'
         assert self.testInst.meta['help']['children']['dummy_frame1',
@@ -265,10 +269,9 @@ class TestBasics():
     def test_inst_ho_data_assign_meta_different_labels(self):
         """ Test the higher order assignment of custom metadata labels
         """
-        self.testInst.load(*self.stime)
-        frame = pds.DataFrame({'dummy_frame1': np.arange(10),
-                               'dummy_frame2': np.arange(10)},
-                              columns=['dummy_frame1', 'dummy_frame2'])
+        self.testInst.load(date=self.stime)
+        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
+                              columns=self.frame_list)
         self.meta_labels = {'units': ('barrels', str),
                             'desc': ('Monkeys', str),
                             'meta': ('meta', object)}
@@ -276,24 +279,24 @@ class TestBasics():
         self.meta['dummy_frame1'] = {'barrels': 'A'}
         self.meta['dummy_frame2'] = {'Monkeys': 'are fun'}
         self.meta['dummy_frame2'] = {'bananas': 2}
+
         # The 'units', 'desc' and other labels used on self.testInst are
         # applied to the input metadata to ensure everything remains
         # consistent across the object.
-        self.testInst['help'] = {'data':
-                                 [frame] * len(self.testInst.data.index),
-                                 'units': 'V',
-                                 'long_name': 'The Doors',
+        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
+                                 'units': 'V', 'long_name': 'The Doors',
                                  'meta': self.meta}
 
         assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
-        assert 'dummy_frame1' in self.testInst.meta['help']['children']
-        assert 'dummy_frame2' in self.testInst.meta['help']['children']
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'units')
-        assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'desc')
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta.ho_data['help'])
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta['help']['children'])
+
+        for label in ['units', 'desc']:
+            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
+                label)
+
         assert self.testInst.meta['help']['children']['dummy_frame1',
                                                       'units'] == 'A'
         assert self.testInst.meta['help']['children']['dummy_frame1',
@@ -306,7 +309,7 @@ class TestBasics():
         """
         # Assign new meta data
         self.dval = "test_inst_assing_from_meta"
-        self.testInst.load(*self.stime)
+        self.testInst.load(date=self.stime)
         self.testInst['new_data'] = self.testInst['mlt']
         self.testInst[self.dval] = self.testInst['mlt']
         self.testInst.meta[self.dval] = self.testInst.meta['new_data']
@@ -323,17 +326,14 @@ class TestBasics():
     def test_inst_assign_from_meta_w_ho(self):
         """ Test assignment to Instrument from Meta with higher order data
         """
-        self.testInst.load(*self.stime)
-        frame = pds.DataFrame({'dummy_frame1': np.arange(10),
-                               'dummy_frame2': np.arange(10)},
-                              columns=['dummy_frame1', 'dummy_frame2'])
+        self.testInst.load(date=self.stime)
+        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
+                              columns=self.frame_list)
         self.meta = pysat.Meta()
         self.meta['dummy_frame1'] = {'units': 'A'}
         self.meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data':
-                                 [frame] * len(self.testInst.data.index),
-                                 'units': 'V',
-                                 'long_name': 'The Doors',
+        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
+                                 'units': 'V', 'long_name': 'The Doors',
                                  'meta': self.meta}
         self.testInst['help2'] = self.testInst['help']
         self.testInst.meta['help2'] = self.testInst.meta['help']
@@ -341,14 +341,14 @@ class TestBasics():
         assert self.testInst.meta['help'].children['dummy_frame1',
                                                    'units'] == 'A'
         assert self.testInst.meta['help2', 'long_name'] == 'The Doors'
-        assert 'dummy_frame1' in self.testInst.meta.ho_data['help2']
-        assert 'dummy_frame2' in self.testInst.meta.ho_data['help2']
-        assert 'dummy_frame1' in self.testInst.meta['help2']['children']
-        assert 'dummy_frame2' in self.testInst.meta['help2']['children']
-        assert self.testInst.meta['help2']['children'].hasattr_case_neutral(
-            'units')
-        assert self.testInst.meta['help2']['children'].hasattr_case_neutral(
-            'desc')
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta.ho_data['help'])
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta['help']['children'])
+        for label in ['units', 'desc']:
+            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
+                label)
+
         assert self.testInst.meta['help2']['children']['dummy_frame1',
                                                        'desc'] == ''
         assert self.testInst.meta['help2']['children']['dummy_frame2',
@@ -356,26 +356,22 @@ class TestBasics():
         assert 'children' not in self.testInst.meta.data.columns
 
     def test_inst_assign_from_meta_w_ho_then_update(self):
-        self.testInst.load(*self.stime)
-        frame = pds.DataFrame({'dummy_frame1': np.arange(10),
-                               'dummy_frame2': np.arange(10)},
-                              columns=['dummy_frame1', 'dummy_frame2'])
+        """ Test assignment of Instrument.meta from separate Meta with HO data
+        """
+        self.testInst.load(date=self.stime)
+        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
+                              columns=self.frame_list)
         self.meta = pysat.Meta()
         self.meta['dummy_frame1'] = {'units': 'A'}
         self.meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data':
-                                 [frame] * len(self.testInst.data.index),
-                                 'units': 'V',
-                                 'name': 'The Doors',
+        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
+                                 'units': 'V', 'name': 'The Doors',
                                  'meta': self.meta}
         self.testInst['help2'] = self.testInst['help']
         self.testInst.meta['help2'] = self.testInst.meta['help']
         new_meta = self.testInst.meta['help2'].children
-        new_meta['dummy_frame1'] = {'units': 'Amps',
-                                    'desc': 'something',
-                                    'label': 'John Wick',
-                                    'axis': 'Reeves',
-                                    }
+        new_meta['dummy_frame1'] = {'units': 'Amps', 'desc': 'something',
+                                    'label': 'John Wick', 'axis': 'Reeves'}
         self.testInst.meta['help2'] = new_meta
         self.testInst.meta['help2'] = {'label': 'The Doors Return'}
 
@@ -383,14 +379,14 @@ class TestBasics():
                                                       'units'] == 'A'
         assert self.testInst.meta['help2', 'name'] == 'The Doors'
         assert self.testInst.meta['help2', 'label'] == 'The Doors Return'
-        assert 'dummy_frame1' in self.testInst.meta.ho_data['help2']
-        assert 'dummy_frame2' in self.testInst.meta.ho_data['help2']
-        assert 'dummy_frame1' in self.testInst.meta['help2']['children']
-        assert 'dummy_frame2' in self.testInst.meta['help2']['children']
-        assert self.testInst.meta['help2']['children'].hasattr_case_neutral(
-            'units')
-        assert self.testInst.meta['help2']['children'].hasattr_case_neutral(
-            'desc')
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta.ho_data['help2'])
+        testing.assert_list_contains(self.frame_list,
+                                     self.testInst.meta['help2']['children'])
+        for label in ['units', 'desc']:
+            assert self.testInst.meta['help2']['children'].hasattr_case_neutral(
+                label)
+
         assert self.testInst.meta['help2']['children']['dummy_frame1',
                                                        'desc'] == 'something'
         assert self.testInst.meta['help2']['children']['dummy_frame2',
@@ -692,11 +688,13 @@ class TestBasics():
         assert self.meta['new'].description == 'boohoo'
 
     def test_meta_equality(self):
-
+        """ Test basic equality case
+        """
         assert self.testInst.meta == self.testInst.meta
 
     def test_false_meta_equality(self):
-
+        """ Test inequality with different types
+        """
         assert not (self.testInst.meta == self.testInst)
 
     def test_equality_with_higher_order_meta(self):
@@ -1291,6 +1289,7 @@ class TestBasicsImmutable(TestBasics):
         # Instrument object and disable mutability
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
+        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.meta = self.testInst.meta
         self.meta.mutable = False
         self.meta_labels = {'units': ('Units', str),
@@ -1298,15 +1297,16 @@ class TestBasicsImmutable(TestBasics):
 
         # Assign remaining values
         self.dval = None
-        self.stime = [2009, 1]
         self.out = None
         self.default_name = ['long_name', 'axis', 'plot']
         self.default_nan = ['fill', 'value_min', 'value_max']
         self.default_val = {'notes': '', 'units': '', 'desc': '',
                             'scale': 'linear'}
+        self.frame_list = ['dummy_frame1', 'dummy_frame2']
 
     def teardown(self):
         """Runs after every method to clean up previous testing
         """
         del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
+        del self.frame_list

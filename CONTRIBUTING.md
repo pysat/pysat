@@ -122,5 +122,6 @@ These include:
 * Try to avoid creating a try/except statement where except passes
 * Use setup and teardown in test classes
 * Use pytest parametrize in test classes when appropriate
+* Use pysat testing utilities when appropriate
 * Provide testing class methods with informative failure statements and
   descriptive, one-line docstrings
