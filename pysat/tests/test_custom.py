@@ -524,6 +524,7 @@ class TestBasicsXarray(TestBasics):
         """
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=10, clean_level='clean')
+        self.load_date = dt.datetime(2009, 1, 1)
         self.testInst.load(date=self.load_date)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
 
