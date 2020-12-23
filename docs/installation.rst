@@ -11,21 +11,25 @@ science python package setups are available from `<https://www.python.org/>`_,
 `Anaconda <https://www.anaconda.com/distribution/>`_, and other locations
 (some platform specific). Anaconda also includes a developer environment
 that works well with pysat. Core science packages such as numpy, scipy,
-matplotlib, pandas and many others may also be installed directly via pip or
-your favorite package manager.
+matplotlib, pandas and many others may also be installed directly via the
+python package installer "pip" or your favorite package manager.
 
 For maximum safety, pysat should be installed into its own virtual
-environment to ensure there are no conflicts with any system installed Python
+environment to ensure there are no conflicts with any other installed Python
 distributions.
 
-For MacOS systems it is recommended that `gcc` is installed via
-`HomeBrew <https://brew.sh>`_ for compatibility with Fortran code.
+For MacOS and Linux systems make sure that `gcc` is compatible with Fortran
+code. In Linux this can be accomplished by installing `gfortran`.  For MacOS
+systems it is recommended that `gcc` is installed via 
+`HomeBrew <https://brew.sh>`_
+for compatibility with Fortran code.
 
 .. code:: bash
 
     brew install gcc
 
-For Windows systems, please see the ``Windows`` section below
+
+For Windows systems, please see the Windows section below
 for setting up a POSIX compatible C/Fortran environment.
 
 To use Anaconda's tools for creating a suitable virtual environment, for Python
@@ -44,11 +48,13 @@ and for Python 3
     conda activate virt_env_name
     conda install numpy -c conda
 
+
+
 **pysat**
 
 ----
 
-Pysat itself may be installed from a terminal command line via::
+pysat itself may be installed from a terminal command line via::
 
    pip install pysat
 
@@ -60,6 +66,7 @@ needed by the installer:
      * pandas (>=0.23)
      * scipy
      * xarray
+
 
 
 **Development Installation**
@@ -88,8 +95,6 @@ any changes to the software do not have to be reinstalled to take effect.
 
 
 **Windows**
-
-----
 
 To get pysat installed in Windows you need a POSIX compatible C/ Fortran
 compiling environment. This is required to compile the

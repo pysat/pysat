@@ -12,7 +12,7 @@ discovery. A compatible module may also be supplied directly using
 
 .. code:: Python
 
-    pysat.Instrument(inst_module=python_module_object).
+    pysat.Instrument(inst_module=python_module_object)
 
 
 A general template has also been included to make starting any Instrument
@@ -27,17 +27,17 @@ part of pysat's user instrument registry using the following syntax:
 .. code-block:: python
 
   from pysat.utils import registry
-  
-  # register single instrument
-  registry.register('my.package.myInstrument')
-  
-  # register all insstrument sub-modules
-  import my.package
-  registry.register_from_module(my.package)
 
-After registry, the instrument module name is stored in the user's home
-directory under :code:`~.pysat/user_modules.txt`. The instrument may then be
-instantiated with the instrument's platform and name:
+  # Register single instrument
+  registry.register('my.package.myInstrument')
+
+  # register all instrument sub-modules
+  import my_package
+  registry.register_from_module(my_package.instruments)
+
+After registry the instrument module name is stored in the user's home
+directory under :code:`~.pysat/user_modules.txt`. The instrument may then
+be instantiated with the instrument's platform and name:
 
 .. code-block:: python
 
@@ -46,7 +46,7 @@ instantiated with the instrument's platform and name:
 
 Instrument Libraries
 --------------------
-Pysat instruments can reside in external libraries.  The registry methods
+pysat instruments can reside in external libraries.  The registry methods
 described  above can be used to provide links to these instrument libraries
 for rapid access.  For instance, pysat instruments which handle the outputs
 of geophysical models (such as the TIE-GCM model) reside in the pysatModels
@@ -56,7 +56,7 @@ Naming Conventions
 ------------------
 
 pysat uses a hierarchy of named variables to define each specific data product.
-In order, this is
+In order this is:
 
 * platform
 * name
@@ -72,14 +72,14 @@ support a 'default' data set if desired. Examples are given below.
 **platform**
 
 In general, this is the name of the mission or observatory.  Examples include
-ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite or
-ground-based observatory, a constellation of satellites, or a collaboration of
-ground-based observatories.
+ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite,
+a constellation of satellites, a ground-based observatory, or a collaboration
+of ground-based observatories.
 
 **name**
 
 In general, this is the name of the instrument or high-level data product.
-When combined with the platform, this forms a unique file in the `instruments`
+When combined with the platform this forms a unique file in the `instruments`
 directory.  Examples include the EUV instrument on ICON (icon_euv) and the
 Incoherent Scatter Radar at JRO (jro_isr).
 
@@ -109,18 +109,18 @@ the module must be stored as dictionaries.
   # dictionary keyed by tag with a string description of that dataset
   tags = {'': 'The standard processing for the data.  Loaded by default',
           'fancy': 'A higher-level processing of the data.'}
-  # dictionary keyed by inst_id with a list of supported tags
-  # for each key
+
+  # Dictionary keyed by inst_id with a list of supported tags for each key
   inst_ids = {'A': ['', 'fancy'], 'B': ['', 'fancy'], 'C': ['']}
 
 Note that the possible tags that can be invoked are '' and 'fancy'.  The tags
 dictionary includes a short description for each of these tags.  A blank tag
 will be present by default if the user does not specify a tag.
 
-The supported inst_ids should also stored in a dictionary.  Each key name here
+The supported inst_ids should also be stored in a dictionary.  Each key name here
 points to a list of the possible tags that can be associated with that
 particular `inst_id`. Note that not all satellites in the example support
-every level of processing. In this case, the 'fancy' processing is available
+every level of processing. In this case the 'fancy' processing is available
 for satellites A and B, but not C.
 
 For a dataset that does not need multiple levels of tags and inst_ids, an empty
@@ -148,6 +148,11 @@ different data sets they must be defined for every instrument.
   name = 'name_of_instrument'
   tags = {'': ''}
   inst_ids = {'': ['']}
+
+Pysat also requires that instruments include information pertaining to
+acknowledgements and references for an instrument.  These are simply defined as
+strings at the instrument level.  In the most basic case, these can be defined
+with the data information at the top.
 
 Pysat also requires that a logger handle be defined and instrumentment
 information pertaining to acknowledgements and references be included.  These
@@ -194,7 +199,7 @@ as needed in response to user inputs.
 **list_files**
 
 pysat maintains a list of files to enable data management functionality.
-To get this information, pysat expects a module method platform_name.list_files
+To get this information pysat expects a module method platform_name.list_files
 to return a pandas Series of filenames indexed by time with a method
 signature of:
 
@@ -208,11 +213,11 @@ available data. The location on the local filesystem to search for the files
 is passed in data_path. The list_files method must return
 a pandas Series of filenames indexed by datetime objects.
 
-A user is also able to supply a file template string
-suitable for locating files on their system at pysat.Instrument instantiation,
-passed via format_str, that must be supported. Sometimes users obtain files
-from non-traditional sources and format_str makes it easier for those users
-to use an existing instrument module to work with those files.
+A user must also supply a file template string suitable for locating files
+on their system at pysat.Instrument instantiation, passed via format_str,
+that must be supported. Sometimes users obtain files from non-traditional
+sources and format_str makes it easier for those users to use an existing
+instrument module to work with those files.
 
 pysat will by default store data in pysat_data_dir/platform/name/tag,
 helpfully provided in data_path, where pysat_data_dir is specified by using
@@ -231,7 +236,7 @@ do not need to do anything to support the directory_format keyword.
 **Pre-Built list_files Methods and Support**
 
 Finding local files is generally similar across data sets thus pysat
-includes a variety of methods to make support this functionality easier.
+includes a variety of methods to make supporting this functionality easier.
 The simplest way to construct a valid list_files method is to use one of these
 included pysat methods.
 
@@ -276,18 +281,17 @@ See pysat.utils.time.create_datetime_index for creating a datetime index for an
 array of irregularly sampled times.
 
 pysat will invoke the list_files method the first time a particular instrument
-is instantiated. After the first instantiation, by default pysat will not search
-for instrument files as some missions can produce a large number of
-files which may take time to identify. The list of files associated
-with an Instrument may be updated by adding `update_files=True`.
+is instantiated. After the first instantiation, by default, pysat will not
+search for instrument files as some missions can produce a large number of
+files, which may take time to identify. The list of files associated
+with an Instrument may be updated by adding `update_files=True` to the kwargs.
 
 .. code:: python
 
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
-The output provided by the list_files function that has been pulled into pysat
-the Instrument object above can be inspected from within Python by
-checking `inst.files.files`.
+The output provided by the `list_files` function above can be inspected
+by calling `inst.files.files`.
 
 **load**
 
@@ -303,7 +307,7 @@ The load module method signature should appear as:
        return data, meta
 
 - fnames contains a list of filenames with the complete data path that
-  pysat expects the routine to load data for. For most data sets
+  pysat expects the routine to load data for. With most data sets
   the method should return the exact data that is within the file.
   However, pysat is also currently optimized for working with
   data by day. This can present some issues for data sets that are stored
@@ -315,8 +319,9 @@ The load module method signature should appear as:
 - `data` is a pandas DataFrame, column names are the data labels, rows are
   indexed by datetime objects.
 - For multi-dimensional data, an xarray can be
-  used instead. When returning xarray data, a variable at the instrument module
-  top-level must be set,
+  used instead. When returning xarray data, a variable at the top-level of the
+  instrument module must be set:
+
 .. code:: python
 
    pandas_format = False
@@ -325,19 +330,20 @@ The load module method signature should appear as:
   xarray objects this index needs to be named 'Epoch' or 'time'. In a future
   version the supported names for the time index may be reduced. 'Epoch'
   should be used for pandas though wider compatibility is expected.
-- `pysat.utils.create_datetime_index` provides for quick generation of an
-  appropriate datetime index for irregularly sampled data set with gaps
+- `pysat.utils.create_datetime_index` provides quick generation of an
+  appropriate datetime index for irregularly sampled data sets with gaps
 
 - A pysat meta object may be obtained from `pysat.Meta()`. The Meta object
   uses a pandas DataFrame indexed by variable name with columns for
   metadata parameters associated with that variable, including items like
-  'units' and 'long_name'. A variety of parameters are included by default.
-  Additional arbitrary columns allowed. See `pysat.Meta` for more information on
-  creating the initial metadata.  Any values not set in the load routine will
+  'units' and 'long_name'. A variety of parameters are included by default and
+  additional arbitrary columns are allowed. See `pysat.Meta` for more
+  information on creating the initial metadata. Any values not set in the load routine will
   be set to the default values for that label type.
 - Note that users may opt for a different
   naming scheme for metadata parameters thus the most general code for working
-  with metadata uses the attached labels,
+  with metadata uses the attached labels:
+
 .. code:: python
 
    # update units to meters, 'm' for variable
@@ -352,7 +358,7 @@ The load module method signature should appear as:
 **download**
 
 Download support significantly lowers the hassle in dealing with any dataset.
-Fetch data from the internet.
+To fetch data from the internet the download method should have the signature
 
 .. code:: python
 
@@ -364,17 +370,16 @@ Fetch data from the internet.
 * user, string for username
 * password, string for password
 
-Routine should download data and write it to disk.
-
+The routine should download the data and write it to the disk at the data_path.
 
 Optional Routines and Support
 -----------------------------
 
 **Custom Keywords in load Method**
 
-pysat supports the definition and use of keywords for an instrument module
-so that users may trigger optional features, if provided. All custom keywords
-for an instrument module must be defined in the `load` method.
+If provided, pysat supports the definition and use of keywords for an
+instrument module so that users may trigger optional features. All custom
+keywords for an instrument module must be defined in the `load` method.
 
 .. code:: python
 
@@ -409,7 +414,7 @@ If present, the instrument init method runs once at instrument instantiation.
 inst is a pysat.Instrument() instance. init should modify inst
 in-place as needed; equivalent to a 'modify' custom routine.
 
-keywords are not supported within the init module method signature, though
+Keywords are not supported within the init module method signature, though
 custom keyword support for instruments is available via inst.kwargs.
 
 **preprocess**
@@ -471,10 +476,11 @@ All modules defined in the __init__.py for pysat/instruments are automatically
 tested when pysat code is tested. To support testing all of the required
 routines, additional information is required by pysat.
 
-Example code from dmsp_ivm.py. The attributes are set at the top level simply
-by defining variable names with the proper info. The various satellites within
-DMSP, F11, F12, F13 are separated out using the inst_id parameter. 'utd' is used
-as a tag to delineate that the data contains the UTD developed quality flags.
+Below is example code from dmsp_ivm.py. The attributes are set at the top
+level simply by defining variable names with the proper info. The various
+satellites within DMSP, F11, F12, F13 are separated out using the inst_id
+parameter. 'utd' is used as a tag to delineate that the data contains the
+UTD developed quality flags.
 
 .. code:: python
 
@@ -496,17 +502,17 @@ as a tag to delineate that the data contains the UTD developed quality flags.
         # code normally follows, example terminates here
 
 The rationale behind the variable names is explained above under Naming
-Conventions.  What is important here are the _test_dates.  Each of these points
+Conventions.  What is important here are the `_test_dates`. Each of these points
 to a specific date for which the unit tests will attempt to download and load
 data as part of end-to-end testing.  Make sure that the data exists for the
 given date. The tags without test dates will not be tested. The leading
-underscore in _test_dates ensures that this information is not added to the
+underscore in `_test_dates` ensures that this information is not added to the
 instrument's meta attributes, so it will not be present in IO operations.
 
 The standardized pysat tests are available in pysat.tests.instrument_test_class.
 The test collection test_instruments.py imports this class, collects a list of
 all available instruments (including potential tag / inst_id combinations),
-and run the tests using pytestmark.  By default, pysat assumes that your
+and runs the tests using pytestmark.  By default, pysat assumes that your
 instrument has a fully functional download  routine, and will run an end-to-end
 test.  If this is not the case, see the next section.
 
@@ -517,8 +523,8 @@ Special Test Configurations
 Some instruments simply don't have download routines available.  It could be
 that data is not yet publicly available, or it may be a model run that is
 locally generated.  To let the test routines know this is the case, the
-:python:`_test_download` flag is used.  This flag uses the same dictionary
-structure as :python:`_test_dates`.
+`_test_download` flag is used.  This flag uses the same dictionary
+structure as `_test_dates`.
 
 For instance, say we have an instrument team that wants to use pysat to
 manage their data products.  Level 1 data is locally generated by the team,
@@ -542,8 +548,8 @@ This tells the test routines to skip the download / load tests for Level 1 data.
 Instead, the download function for this flag will be tested to see if it has an
 appropriate user warning that downloads are not available.
 
-Note that pysat assumes that this flag is True if no variable is present.  Thus
-specifying only :python:`_test_download = {'': {'Level_1': False}}` has the
+Note that pysat assumes that this flag is True if no variable is present.
+Thus specifying only `_test_download = {'': {'Level_1': False}}` has the
 same effect, and Level 2 tests will still be run.
 
 **FTP Access**
@@ -551,9 +557,9 @@ same effect, and Level 2 tests will still be run.
 Another thing to note about testing is that the Travis CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
 HTTPS access is preferred whenever possible.  However, if this is not the case,
-the :python:`_test_download_travis` flag can be used.  This has a similar
-function, except that it skips the download tests if on Travis CI, but will
-run those tests if run locally.
+the `_test_download_travis` flag can be used.  This has a similar function,
+except that it skips the download tests if on Travis CI, but will run those
+tests if run locally.
 
 .. code:: python
 
@@ -574,8 +580,8 @@ tag that is False.  The other is True by default.
 Another potential issue is that some instruments have download routines,
 but should not undergo automated download tests because it would require
 the  user to save a password in a potentially public location.  The
-:python:`_password_req` flag is used to skip both the download tests and
-the download warning message tests, since a functional download routine is
+`_password_req` flag is used to skip both the download tests and the
+download warning message tests, since a functional download routine is
 present.
 
 .. code:: python
@@ -628,7 +634,7 @@ General
 A general instrument template is included with pysat,
 ``pysat.instruments.templates.template_instrument``,
 that has the full set
-of required and optional methods, and docstrings, that may be used as a
+of required and optional methods and docstrings, which may be used as a
 starting point for adding a new instrument to pysat.
 
 Note that there are general supporting methods for adding an Instrument.

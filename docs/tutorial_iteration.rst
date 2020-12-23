@@ -43,7 +43,7 @@ using
        print(out_str.format(max=vefi['dB_mer'].max(),
                             units=vefi.meta['dB_mer', 'units']))
 
-Each loop of the python for iteration initiates a vefi.load() for the next date,
+Each iteration of the "for" loop initiates a vefi.load() for the next date,
 starting with the first available date. By default the instrument instance will
 iterate over all available data. To control the range, set the instrument bounds,
 
@@ -111,11 +111,10 @@ The output is,
    pysat INFO: Returning cnofs vefi dc_b data for 05 January 2010
    Maximum meridional magnetic perturbation: 21.67 nT
 
-So far, the iteration support has only saved a single line of code, the
-.load line. However, this line in the examples above is tied to loading by date.
-What if we wanted to load by file instead? This would require changing the code.
-However, with the abstraction provided by the Instrument iteration, that is no
-longer the case.
+So far, the iteration support has only saved a single line of code.
+What if we wanted to load by file instead? Normally this would require
+changing the code. However, with the abstraction provided by the Instrument
+iteration, that is no longer the case.
 
 .. code:: python
 
