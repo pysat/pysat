@@ -681,6 +681,9 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
 
     if show_platform_name is None and inst_loc is None:
         show_platform_name = True
+        plat_keys = sorted([platform for platform in inst_info.keys()])
+    else:
+        plat_keys = inst_info.keys()
 
     if show_inst_mod is None and inst_loc is not None:
         show_inst_mod = True
@@ -696,7 +699,7 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
     header = "{:s}      [Tag   Inst_ID]  Description".format(header)
     print(header)
     print("-" * len(header))
-    for platform in inst_info.keys():
+    for platform in plat_keys:
         for name in inst_info[platform].keys():
             mod_str = ""
             for inst_id in inst_info[platform][name]['inst_ids_tags'].keys():
