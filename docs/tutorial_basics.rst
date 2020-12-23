@@ -52,7 +52,7 @@ You can learn about the different Instruments in an instrument package using
 the utility display_available_instruments.  When providing an Instrument
 submodule as input, this will list the Instrument module name, and all possible
 combinations of tags, inst_ids, and a description of the data (if available).
-This example with use the ``pysatMadrigal`` package.
+This example will use the ``pysatMadrigal`` package.
 
 .. code:: python
 
