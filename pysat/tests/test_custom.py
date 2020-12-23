@@ -137,14 +137,9 @@ class TestBasics():
         """Test adding custom methods at Instrument instantiation
         """
         def custom_add(inst, arg1, arg2, kwarg1=False, kwarg2=True):
-            d = 2.0 * inst['mlt']
-            d.name = 'doubleMLT'
-            return d
+            return
 
         def custom_modify(inst, arg1, arg2, kwarg1=False, kwarg2=True):
-            d = 2.0 * inst['mlt']
-            d.name = 'doubleMLT'
-            inst['doubleMLT_modify'] = d
             return
 
         self.testInst.custom_attach(custom_add, 'add', args=[0, 1],
