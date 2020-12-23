@@ -44,8 +44,8 @@ class TestBasics():
         """
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean')
-        self.testInst.load(2008, 1)
         self.load_date = dt.datetime(2009, 1, 1)
+        self.testInst.load(date=self.load_date)
         self.ncols = len(self.testInst.data.columns)
         self.out = None
 
@@ -72,6 +72,7 @@ class TestBasics():
                                     kwargs={"dkey": "mlt"})
         # Execute custom method
         self.testInst.load(date=self.load_date)
+        # Store output to be tested
         self.out = self.testInst.__str__()
         assert isinstance(self.out, str)
         # No custom functions
@@ -523,7 +524,7 @@ class TestBasicsXarray(TestBasics):
         """
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=10, clean_level='clean')
-        self.testInst.load(2008, 1)
+        self.testInst.load(date=self.load_date)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
 
     def teardown(self):
