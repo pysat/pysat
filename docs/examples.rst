@@ -43,7 +43,7 @@ etc. pysat goes through that trouble for you.
    # data at the end of download
    vefi.download(start, stop)
 
-   # specify bounds for the analysis
+   # Specify the analysis time limits using `bounds`
    vefi.bounds = (start, stop)
    # if unassigned, code will run for the entire dataset available
 

@@ -321,13 +321,15 @@ load both the vernal and autumnal equinoxes).
     plt.ylabel(dmsp.meta['ti', dmsp.meta.name_label] + ' (' +
                dmsp.meta['ti', dmsp.meta.units_label] + ')')
 
-Note, the np.where may be removed using the convenient access to the
-attached pandas data object.
+Note, np.where may be used to select a subset of data using either
+the convenient access or standard pandas or xarray selection methods.
 
 .. code:: python
 
    idx, = np.where((dmsp['mlat'] < 5) & (dmsp['mlat'] > -5))
-   dmsp.data = dmsp[idx] = dmsp.data.iloc[idx]
+   dmsp.data = dmsp[idx]
+   # Alternatively
+   dmsp.data = dmsp.data.iloc[idx]
 
 is equivalent to
 

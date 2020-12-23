@@ -28,7 +28,7 @@ part of pysat's user instrument registry using the following syntax:
 
   from pysat.utils import registry
 
-  # register single instrument
+  # Register single instrument
   registry.register('my.package.myInstrument')
 
   # register all instrument sub-modules
@@ -110,7 +110,7 @@ the module must be stored as dictionaries.
   tags = {'': 'The standard processing for the data.  Loaded by default',
           'fancy': 'A higher-level processing of the data.'}
 
-  # dictionary keyed by inst_id with a list of supported tags for each key
+  # Dictionary keyed by inst_id with a list of supported tags for each key
   inst_ids = {'A': ['', 'fancy'], 'B': ['', 'fancy'], 'C': ['']}
 
 Note that the possible tags that can be invoked are '' and 'fancy'.  The tags

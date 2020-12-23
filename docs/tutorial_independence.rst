@@ -121,7 +121,7 @@ more than 1D datasets.
        for date in date_array:
            inst.load(date=date)
            if not inst.empty:
-               # compute mean absolute using pandas functions and store
+               # Compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for
                # 2D and lower
                data = inst[data_label]
