@@ -597,6 +597,16 @@ def available_instruments(inst_loc=None):
 
     """
 
+    def get_inst_id_dict(inst_module_name):
+        try:
+            module = importlib.import_module(inst_module_name)
+            inst_ids = {inst_id: {tag: module.tags[tag]
+                                  for tag in module.inst_ids[inst_id]}
+                        for inst_id in module.inst_ids.keys()}
+        except ImportError as ierr:
+            inst_ids = {'ERROR': {'ERROR': str(ierr)}}
+        return inst_ids
+
     if inst_loc is None:
         # Access the registered instruments
         inst_info = dict()
@@ -606,15 +616,7 @@ def available_instruments(inst_loc=None):
         for platform in pysat.user_modules.keys():
             inst_info[platform] = dict()
             for name in pysat.user_modules[platform].keys():
-                try:
-                    module = importlib.import_module(
-                        pysat.user_modules[platform][name])
-                    inst_ids = {inst_id: {tag: module.tags[tag]
-                                          for tag in module.inst_ids[inst_id]}
-                                for inst_id in module.inst_ids.keys()}
-                except ImportError as ierr:
-                    inst_ids = {'ERROR': {'ERROR': str(ierr)}}
-
+                inst_ids = get_inst_id_dict(pysat.user_modules[platform][name])
                 inst_info[platform][name] = {'inst_module':
                                              pysat.user_modules[platform][name],
                                              'inst_ids_tags': inst_ids}
@@ -633,18 +635,11 @@ def available_instruments(inst_loc=None):
             # Initialize the dictionary for this platform and name
             if platform not in inst_info.keys():
                 inst_info[platform] = dict()
-            inst_info[platform][name] = {'inst_module': mod_name}
 
-            # Get the inst_id and tag information, if possible
-            try:
-                module = importlib.import_module(mod_name)
-                inst_info[platform][name]['inst_ids_tags'] = {
-                    inst_id: {tag: module.tags[tag]
-                              for tag in module.inst_ids[inst_id]}
-                    for inst_id in module.inst_ids.keys()}
-            except ImportError as ierr:
-                inst_info[platform][name]['inst_ids_tags'] = {
-                    'ERROR': {'ERROR': str(ierr)}}
+            # Finalize the dictionary
+            inst_info[platform][name] = {
+                'inst_module': mod_name,
+                'inst_ids_tags': get_inst_id_dict(mod_name)}
 
     return inst_info
 
