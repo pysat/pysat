@@ -180,9 +180,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     Returns
     --------
-    out : pandas.core.frame.DataFrame
+    out : pandas.DataFrame
         DataFrame output
-    meta : pysat._meta.Meta
+    meta : pysat.Meta
         Meta data
 
     """
