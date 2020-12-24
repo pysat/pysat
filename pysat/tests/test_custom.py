@@ -525,7 +525,7 @@ class TestBasicsXarray(TestBasics):
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=10, clean_level='clean')
         self.load_date = pysat.instruments.pysat_testing_xarray._test_dates
-        self.load_date = self.load_date = ['']['']
+        self.load_date = self.load_date['']['']
         self.testInst.load(date=self.load_date)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
 
