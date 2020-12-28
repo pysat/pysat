@@ -517,7 +517,7 @@ class TestBasics():
             self.testInst.load(date=self.load_date)
 
 
-# Repeate the above tests with xarray
+# Repeat the above tests with xarray
 class TestBasicsXarray(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup.
