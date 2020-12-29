@@ -116,9 +116,9 @@ generally be unchanged.  Instruments are grouped in three lists:
   for method in method_list:
       if hasattr(getattr(InstTestClass, method), 'pytestmark'):
           # Get list of names of pytestmarks
-          Nargs = len(getattr(InstTestClass, method).pytestmark)
+          nargs = len(getattr(InstTestClass, method).pytestmark)
           names = [getattr(InstTestClass, method).pytestmark[j].name
-                   for j in range(0, Nargs)]
+                   for j in range(0, nargs)]
           # Add instruments from your library
           if 'all_inst' in names:
               mark = pytest.mark.parametrize("inst_name", instruments['names'])

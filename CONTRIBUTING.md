@@ -1,8 +1,8 @@
 Contributing
 ============
 
-Bug reports, feature suggestions and other contributions are greatly
-appreciated!  Pysat is a community-driven project and welcomes both feedback and
+Bug reports, feature suggestions, and other contributions are greatly
+appreciated!  pysat is a community-driven project and welcomes both feedback and
 contributions.
 
 Short version
@@ -14,8 +14,7 @@ Short version
 Bug reports
 -----------
 
-When `reporting a bug <https://github.com/pysat/pysat/issues>`_ please
-include:
+When reporting a bug please include:
 
 * Your operating system name and version
 * Any details about your local setup that might be helpful in troubleshooting
@@ -29,9 +28,9 @@ The best way to send feedback is to file an issue at
 
 If you are proposing a feature:
 
-* Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that code contributions
+* Explain in detail how it would work
+* Keep the scope as narrow as possible to make it easier to implement
+* Remember that this is a volunteer-driven project, and code contributions
   are welcome :)
 
 Development
@@ -48,14 +47,15 @@ To set up `pysat` for local development:
 
     git checkout -b name-of-your-bugfix-or-feature
 
-   Now you can make your changes locally. Tests for new instruments are
-   performed automatically.  Tests for custom functions should be added to the
-   appropriately named file in ``pysat/tests``.  For example, custom functions
-   for the OMNI HRO data are tested in ``pysat/tests/test_omni_hro.py``.  If no
-   test file exists, then you should create one.  This testing uses pytest,
-   which will run tests on any python file in the test directory that starts
-   with ``test``.  Classes must begin with ``Test``, and methods must begin
-   with ``test`` as well.
+   Now you can make your changes locally. 
+
+   Tests for new instruments are performed automatically.  Tests for custom 
+   functions should be added to the appropriately named file in ``pysat/tests``.
+   For example, custom functions for the OMNI HRO data are tested in 
+   ``pysat/tests/test_omni_hro.py``.  If no test file exists, then you should 
+   create one.  This testing uses pytest, which will run tests on any python 
+   file in the test directory that starts with ``test``.  Classes must begin 
+   with ``Test``, and methods must begin with ``test`` as well.
 
 4. When you're done making changes, run all the checks to ensure that nothing
    is broken on your local system::
