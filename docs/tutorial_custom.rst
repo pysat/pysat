@@ -228,7 +228,7 @@ at instantiation via the `custom` keyword.
 
 .. code:: python
 
-   # create dictionary for each custom method and associated inputs
+   # Create dictionary for each custom method and associated inputs
    custom_func_1 = {'function': custom_func_modify, 'kind': 'modify',
                     'kwargs': {'optional_param': True}}
    custom_func_2 = {'function': custom_func_add_with_args, 'kind': 'add',
