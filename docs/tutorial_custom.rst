@@ -57,7 +57,7 @@ Multiple return types are supported.
 **Type** 	        **Notes**
 ---------------     -----------------------------------
   tuple             (data_name, data_to_be_added)
-  dict              Data to be added keyed by data_name
+  dict              Data to be added keyed under 'data'
   Iterable          ((name1, name2, ...), (data1, data2, ...))
   Series            Variable name must be in .name
   DataFrame         Columns used as variable names
@@ -77,9 +77,16 @@ Multiple return types are supported.
        optional_param : stand-in
            Placeholder indicated support for custom keywords
            and arguments
+
+       Returns
+       -------
+       tuple
+           First element is a string and is used by pysat to store the
+           data in the second element within the Instrument object
+
        """
 
-       return ('double_mlt', 2.0 * inst['mlt'])
+       return ('single_mlt', 1.0 * inst['mlt'])
 
    def custom_func_add_with_args(inst, req_param, req_param2,
                                  optional_param=False):
@@ -92,6 +99,13 @@ Multiple return types are supported.
        optional_param : stand-in
            Placeholder indicated support for custom keywords
            and arguments
+
+       Returns
+       -------
+       tuple
+           First element is a string and is used by pysat to store the
+           data in the second element within the Instrument object
+
        """
 
        return ('triple_mlt', 3.0 * inst['mlt'])
@@ -107,32 +121,46 @@ only when using the DataFrame.
 
    def custom_func_add(inst, param1, optional_param1=False,
                        optional_param2=False):
-       return {'data': 2.*inst['mlt'], 'name': 'double_mlt',
-               inst.meta.labels.name: 'doubledouble',
+       return {'data': 1. * inst['mlt'], 'name': 'single_mlt',
+               inst.meta.labels.name: 'singleMLT',
                inst.meta.labels.units: 'hours'}
 
 **Attaching Custom Function**
 
 Custom methods must be attached to an Instrument object for pysat
-to automatically apply the method upon ever load.
+to automatically apply the method upon every load.
 
 .. code:: python
 
    # Attach a 'modify' method and demonstrate execution
    ivm.custom_attach(custom_func_modify, 'modify',
                      kwargs={'optional_param2': True})
-   # `custom_func_modify` is executed as part on the `ivm.load` call.
+
+   # `custom_func_modify` is executed as part of the `ivm.load` call.
    ivm.load(2009, 1)
+
    # Verify result is present
    print(ivm['double_mlt'])
 
-   # Setting an 'add' method
+   # Attach an 'add' method
    ivm.custom_attach(custom_func_add, 'add', kwargs={'optional_param': True})
+
+   # `custom_func_modify` and `custom_func_add` are executed by `ivm.load` call.
+   ivm.load(2009, 1)
+
+   # Verify results are present
+   print(ivm[['double_mlt', 'single_mlt']])
 
    # Can also set methods via its string name. This example includes
    # both required and optional arguments.
    ivm.custom_attach('custom_func_add_with_args', 'add', args=[param1, param2],
                      kwargs={'optional_param': False})
+
+   # All three methods are executed with each load call.
+   ivm.load(2009, 1)
+
+   # Verify results are present
+   print(ivm[['double_mlt', 'single_mlt', 'triple_mlt']])
 
    # set bounds limiting the file/date range the Instrument will iterate over
    ivm.bounds = (start, stop)
@@ -141,7 +169,7 @@ to automatically apply the method upon ever load.
    # methods are automatically available within the custom analysis.
    custom_complicated_analysis_over_season(ivm)
 
-The output of custom_func_modify will always be available from instrument
+The output of `custom_func_modify` will always be available from the instrument
 object, regardless of what level the science analysis is performed.
 
 We can repeat the earlier DMSP example, this time using nano-kernel
