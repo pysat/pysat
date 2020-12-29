@@ -322,25 +322,34 @@ class Instrument(object):
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.labels = pysat.MetaLabels(metadata=self.meta, **labels)
 
-        # function processing class, processes data on load
+        # Nano-kernel processing variables. Feature processes data on each load.
         self.custom_functions = []
         self.custom_kind = []
         self.custom_args = []
         self.custom_kwargs = []
+
+        # Process provided user input for custom methods, if provided.
         if custom is not None:
-            # process user input
+            # Required keys.
             req_keys = ['function', 'kind']
-            # optional inputs with default values
+            # Optional inputs with default values
             opt_keys = [('args', []), ('kwargs', {})]
+
             for cust in custom:
+                # Check if required keys present in input.
                 for label in req_keys:
                     if label not in cust:
                         estr = ''.join(('Input dict to custom is missing ',
                                         'a required key: ', label))
                         raise ValueError(estr)
+
+                # Check if optional arguments present. If not, provide
+                # default value.
                 for label, def_type in opt_keys:
                     if label not in cust:
                         cust[label] = def_type
+
+                # Inputs have been checked, add to Instrument object.
                 self.custom_attach(cust['function'], kind=cust['kind'],
                                    args=cust['args'], kwargs=cust['kwargs'])
 
