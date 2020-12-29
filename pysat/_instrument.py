@@ -481,7 +481,7 @@ class Instrument(object):
     def __repr__(self):
         """ Print the basic Instrument properties"""
 
-        # create string for custom attached methods
+        # Create string for custom attached methods
         cstr = '['
         for func, kind, arg, kwarg in zip(self.custom_functions,
                                           self.custom_kind, self.custom_args,
@@ -493,7 +493,7 @@ class Instrument(object):
             cstr = "".join((cstr, '{', tstr, '}, '))
         cstr += ']'
 
-        # create string for other parts Instrument instantiation
+        # Create string for other parts Instrument instantiation
         out_str = "".join(["Instrument(platform='", self.platform, "', name='",
                            self.name, "', inst_id='", self.inst_id,
                            "', clean_level='", self.clean_level,
