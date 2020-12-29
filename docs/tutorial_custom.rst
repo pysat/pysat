@@ -108,7 +108,8 @@ only when using the DataFrame.
    def custom_func_add(inst, param1, optional_param1=False,
                        optional_param2=False):
        return {'data': 2.*inst['mlt'], 'name': 'double_mlt',
-               'long_name': 'doubledouble', 'units': 'hours'}
+               inst.meta.labels.name: 'doubledouble',
+               inst.meta.labels.units: 'hours'}
 
 **Attaching Custom Function**
 
