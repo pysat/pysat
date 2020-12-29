@@ -159,12 +159,13 @@ class Instrument(object):
         ivm.load(2009,1)
         print(ivm['ionVelmeridional'])
 
-        # Ionosphere profiles from GPS occultation
+        # Ionosphere profiles from GPS occultation. Enable binning profile
+        # data using a constant step-size. Feature provided by the underlying
+        # COSMIC support code.
         cosmic = pysat.Instrument('cosmic',
                                   'gps',
                                   'ionprf',
                                   altitude_bin=3)
-        # bins profile using 3 km step
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
 
@@ -174,7 +175,7 @@ class Instrument(object):
         # be passed safely to other routines and the data will always
         # be processed appropriately.
 
-        # define custom function to modify Instrument in place
+        # Define custom function to modify Instrument in place.
         def custom_func(inst, opt_param1=False, opt_param2=False):
             # perform calculations and store in new_data
             inst['new_data'] = new_data
@@ -184,17 +185,34 @@ class Instrument(object):
         inst.custom_attach(custom_func, kind='modify',
                            kwargs={'opt_param1': True})
 
-        # define custom function that returns data to be added to Instrument
+        # Define custom function that returns data to be added to Instrument.
         def custom_func2(inst, req_param, opt_param=False):
             return ('new_data2', data_to_be_added)
 
         inst.custom_attach(custom_func2, kind='add', args=[True],
                            kwargs={'opt_param': False})
 
-        # custom methods are applied to data when loaded
+        # Custom methods are applied to data when loaded.
         inst.load(date=date)
 
         print(inst['new_data2'])
+
+        # Custom methods may also be attached at instantiation.
+        # Create a dictionary for each custom method and associated inputs
+        custom_func_1 = {'function': custom_func_modify, 'kind': 'modify',
+                         'kwargs': {'optional_param': True}}
+        custom_func_2 = {'function': custom_func_add_with_args, 'kind': 'add',
+                         'args'=[arg1, arg2],
+                         'kwargs': {'optional_param': True}}
+        custom_func_3 = {'function': custom_func_add, 'kind': 'add',
+                         'kwargs': {'optional_param': False}}
+
+        # Combine all dicts into a list in order of application and execution.
+        custom = [custom_func_1, custom_func_2, custom_func_3]
+
+        # Instantiate pysat.Instrument
+        inst = pysat.Instrument(platform, name, inst_id=inst_id, tag=tag,
+                                custom=custom)
 
     """
 
