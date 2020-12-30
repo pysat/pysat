@@ -69,6 +69,7 @@ if not os.path.isdir(pysat_dir) or \
     if not os.path.isdir(pysat_dir):
         os.mkdir(pysat_dir)
         os.mkdir(os.path.join(pysat_dir, 'instruments'))
+        os.mkdir(os.path.join(pysat_dir, 'instruments', 'archive'))
         print('Created .pysat directory in home directory to store settings.')
 
     # Create parameters file

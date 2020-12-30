@@ -309,7 +309,7 @@ class Files(object):
 
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
-                                                 'previous_' + name),
+                                                 'archive', name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
                                     header=False)
                 self.files.to_csv(os.path.join(self.home_path, name),
@@ -338,7 +338,7 @@ class Files(object):
 
         fname = self.stored_file_name
         if prev_version:
-            fname = os.path.join(self.home_path, 'previous_' + fname)
+            fname = os.path.join(self.home_path, 'archive', fname)
         else:
             fname = os.path.join(self.home_path, fname)
 
