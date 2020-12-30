@@ -390,3 +390,37 @@ def search_local_system_formatted_filename(data_path, search_str):
     files = [sfile.split(data_path)[-1] for sfile in files]
     # return info
     return files
+
+
+def update_data_directory_structure(new_template, test_run=True):
+    """Update pysat data directory structure to match supplied template
+
+    Translates all of pysat's managed science files to a new
+    directory structure. By default, pysat uses the template string stored in
+    pysat.params['directory_format'] to organize files. This method makes
+    it possible to transition an existing pysat installation so it works
+    with the supplied new template.
+
+    Parameters
+    ----------
+    new_template : str
+        New directory template string. The default value for pysat is
+         `os.path.join(('{platform}', '{name}', '{inst_id}', '{tag}'))`
+    test_run : bool
+        If True, a printout of all proposed changes will be made, but the
+        directory changes will not be enacted. (default=True)
+
+    """
+
+    # Get a list of supported instruments
+    # Best solved with an upcoming method in pull #633
+
+    # Iterate over each Instrument in the list and instantiate it.
+    # Be sure and update files to get the latest list, ensure there are files.
+    # Instantiate another version of same instrument but using new_template
+    # Register directory change of inst1.files.data_path over to inst2.files.data_path
+    # Collect all changes
+    # Print list
+    # Enable directory changes
+
+    return
