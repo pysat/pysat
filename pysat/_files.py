@@ -118,7 +118,8 @@ class Files(object):
         self._update_files = update_files
 
         # location of .pysat file
-        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
+        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat',
+                                      'instruments')
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None, dtype='object')
@@ -150,10 +151,11 @@ class Files(object):
                                              inst_id=self._sat.inst_id)
         # ensure we have a path for pysat data directory
         if data_dir == '':
-            raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
-                                         "directory using",
-                                         "pysat.utils.set_data_dir.")))
-        # make sure path always ends with directory seperator
+            raise RuntimeError(" ".join(("pysat's data_dir has not been set. ",
+                                         "Please set a top-level directory ",
+                                         "path to store data using ",
+                                         "`pysat.params['data_dir'] = path`")))
+        # make sure path always ends with directory separator
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         if self.data_path[-2] == os.path.sep:
             self.data_path = self.data_path[:-1]
