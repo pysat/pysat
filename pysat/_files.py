@@ -7,7 +7,7 @@ import weakref
 import pandas as pds
 from pysat import data_dir as data_dir
 from pysat.utils import files as futils
-from pysat import logger
+from pysat import logger, params
 
 
 class Files(object):
@@ -134,7 +134,7 @@ class Files(object):
         self.manual_org = manual_org
         # path for sub-directories under pysat data path
         if directory_format is None:
-            directory_format = os.path.join('{platform}', '{name}', '{tag}')
+            directory_format = params['directory_format']
         self.directory_format = directory_format
 
         # user-specified file format
