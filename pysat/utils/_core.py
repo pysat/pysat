@@ -11,7 +11,7 @@ import xarray as xr
 import pysat
 
 
-def set_data_dir(path=None, store=True):
+def set_data_dir(path=None, store=False):
     """
     Set the top level directory pysat uses to look for data and reload.
 
@@ -31,10 +31,10 @@ def set_data_dir(path=None, store=True):
 
     if os.path.isdir(path):
         if store:
-            data_path_file = os.path.join(os.path.expanduser('~'),
-                                          '.pysat', 'data_path.txt')
-            with NetworkLock(data_path_file, 'w') as fout:
-                fout.write(path)
+            estr = ''.join(('pysat has moved to a central structure for ',
+                            'storing parameters to disk. Please switch to ',
+                            '`pysat.params["data_dir"] = path` instead.'))
+            raise RuntimeError(estr)
 
         pysat.data_dir = path
         pysat._files = importlib.reload(pysat._files)
@@ -575,8 +575,8 @@ class NetworkLock(Lock):
         """Lock manager compatible with networked file systems
         """
 
-        super(NetworkLock, self).__init__(timeout=pysat.file_timeout, *args,
-                                          **kwargs)
+        super(NetworkLock, self).__init__(timeout=pysat.params['file_timeout'],
+                                          *args, **kwargs)
 
     def release(self):
         """Releases the Lock so the file system
