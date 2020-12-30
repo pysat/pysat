@@ -82,13 +82,14 @@ class Parameters(object):
                     'directory_format': dir_format,
                     'ignore_empty_files': False,
                     'file_timeout': 10,
-                    'update_files': True}
+                    'update_files': True,
+                    'user_modules': {}}
 
         # Attach default parameters and values to object
         self.defaults = defaults
 
         # Define pysat parameters without a default setting
-        non_defaults = ['data_dir', 'user_modules']
+        non_defaults = ['data_dir']
         self.non_defaults = non_defaults
 
         # If path provided, need to make a new parameters file. Load existing
@@ -202,11 +203,31 @@ class Parameters(object):
         # Update current settings
         # Some parameters require processing before storage.
         if key == 'data_dir':
+            # Use existing method for now for input checking but disable
+            # its storage mechanism
             pysat.utils.set_data_dir(value, store=False)
+            # Store the directory in this class
             self.data['data_dir'] = pysat.data_dir
+
+        elif key == 'user_modules':
+            if not isinstance(value, dict):
+                estr = ''.join(('The `user_module` information must be a ',
+                                'dictionary. The pysat.utils.registry ',
+                                'submodule has methods designed to build ',
+                                'and work with this pysat attribute.'))
+                raise ValueError(estr)
         else:
             # General or user parameter, no additional processing
             self.data[key] = value
+
+        # Store updated parameters to disk
+        self.store()
+
+    def store(self):
+        """Store parameters to file.
+
+        Uses path in self.file_path.
+        """
 
         # Store settings in file
         with Lock(self.file_path, 'w', self['file_timeout']) as fout:
@@ -214,6 +235,8 @@ class Parameters(object):
             # Ensure write is fully complete even for network file systems
             fout.flush()
             os.fsync(fout.fileno())
+
+        return
 
     def restore_defaults(self):
         """Restore default pysat parameters
@@ -227,11 +250,11 @@ class Parameters(object):
         # all but the last parameter directly. Set last using __setitem__
         # to trigger a file write.
         keys = list(self.defaults.keys())
-        for key in keys[:-1]:
+        for key in keys:
             self.data[key] = self.defaults[key]
 
-        # Set final item which also triggers a file write
-        self[keys[-1]] = self.defaults[keys[-1]]
+        # Trigger a file write
+        self.store()
 
         return
 
@@ -243,11 +266,11 @@ class Parameters(object):
         # Clear current data and assign a copy of default values
         self.data = copy.deepcopy(self.defaults)
 
-        # Set pysat parameters without a default value to ''
-        for key in self.non_defaults[:-1]:
+        # Set pysat parameters without a default working value to ''
+        for key in self.non_defaults:
             self.data[key] = ''
 
-        # Trigger a file write built into item assignment for last item
-        self[self.non_defaults[-1]] = ''
+        # Trigger a file write
+        self.store()
 
         return
