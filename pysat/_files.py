@@ -518,10 +518,14 @@ class Files(object):
             files = self.files[id1:(id2 + 1)].to_list()
         return files
 
-    def _remove_data_dir_path(self, inp=None):
+    def _remove_data_dir_path(self, inp=None, path=None):
         """Remove the data directory path from filenames"""
+        if path is None:
+            estr = 'A path is required.'
+            raise ValueError(estr)
+
         if inp is not None:
-            split_str = os.path.join(self.data_path, '')
+            split_str = os.path.join(path, '')
             return inp.apply(lambda x: x.split(split_str)[-1])
 
     @classmethod
