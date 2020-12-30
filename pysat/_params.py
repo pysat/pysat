@@ -44,7 +44,7 @@ class Parameters(object):
             'clean_level' : 'clean'
             'directory_format' : os.path.join('{platform}', '{name}',
                                               '{inst_id}','{tag}')
-            'ignore_empty_files': True
+            'ignore_empty_files': False
             'update_files': True
 
         Values that map to internal pysat settings:
