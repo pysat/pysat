@@ -165,11 +165,11 @@ class Instrument(object):
     # Define all magic methods
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
-                 clean_level='clean', update_files=False, pad=None,
+                 clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
-                 ignore_empty_files=False,
+                 ignore_empty_files=None,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'plot': ('plot', str), 'axis': ('axis', str),
@@ -231,6 +231,8 @@ class Instrument(object):
             # string or a method dependent on tag and inst_id
             if callable(self.directory_format):
                 self.directory_format = self.directory_format(tag, inst_id)
+            else:
+                self.directory_format = self.params['directory_format']
 
         # assign the file format string, if provided by user
         # enables user to temporarily put in a new string template for files
@@ -347,6 +349,11 @@ class Instrument(object):
         # instantiate Files class
         manual_org = False if manual_org is None else manual_org
         temporary_file_list = not temporary_file_list
+        if ignore_empty_files is None:
+            ignore_empty_files = self.params['ignore_empty_files']
+        if update_files is None:
+            update_files = self.params['update_files']
+
         self.files = pysat.Files(self, manual_org=manual_org,
                                  directory_format=self.directory_format,
                                  update_files=update_files,
