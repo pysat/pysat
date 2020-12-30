@@ -37,8 +37,12 @@ def set_data_dir(path=None, store=False):
             raise RuntimeError(estr)
 
         pysat.data_dir = path
-        pysat._files = importlib.reload(pysat._files)
-        pysat._instrument = importlib.reload(pysat._instrument)
+
+        # Reload libraries if already present
+        if hasattr(pysat, '_files'):
+            pysat._files = importlib.reload(pysat._files)
+        if hasattr(pysat, '_instrument'):
+            pysat._instrument = importlib.reload(pysat._instrument)
     else:
         raise ValueError(' '.join(('Path {:s} does not lead to a valid',
                                    'directory.')).format(path))
