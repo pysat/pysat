@@ -36,7 +36,8 @@ class Instrument(object):
     inst_id : string, optional
         identity within constellation
     clean_level : {'clean','dusty','dirty','none'}, optional
-        level of data quality
+        Level of data quality. If not provided, will default to the
+        setting in `pysat.params['clean_level']` (default=None)
     pad : pandas.DateOffset, or dictionary, optional
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
@@ -167,7 +168,7 @@ class Instrument(object):
     # Define all magic methods
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
-                 clean_level='clean', update_files=None, pad=None,
+                 clean_level=None, update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
@@ -217,7 +218,7 @@ class Instrument(object):
 
         # more reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
-                            else 'none')
+                            else pysat.params['clean_level'])
 
         # assign strict_time_flag
         self.strict_time_flag = strict_time_flag
