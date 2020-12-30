@@ -65,6 +65,7 @@ test_data_path = os.path.join(here, 'tests', 'test_data')
 if not os.path.isdir(pysat_dir) or \
         (not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json'))):
 
+    # Make a .pysat directory if not already present
     if not os.path.isdir(pysat_dir):
         os.mkdir(pysat_dir)
         os.mkdir(os.path.join(pysat_dir, 'instruments'))
