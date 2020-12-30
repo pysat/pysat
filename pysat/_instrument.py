@@ -48,10 +48,10 @@ class Instrument(object):
     inst_module : module
         Provide instrument module directly, takes precedence over platform/name
         (default=None)
-    update_files : boolean
+    update_files : boolean or Nonetype
         If True, immediately query filesystem for instrument files and store.
-        Otherwise, assume nothing has changed from the last time files were
-        loaded (default=False)
+        If False, the local files are presumed to be the same. By default,
+        this setting will be obtained from `pysat.params` (default=None)
     temporary_file_list : boolean
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
@@ -66,11 +66,13 @@ class Instrument(object):
     manual_org : bool
         if True, then pysat will look directly in pysat data directory
         for data files and will not use default /platform/name/tag
-    directory_format : str
+    directory_format : str or None
         directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{tag}'
+        expressed as '{platform}/{name}/{inst_id}/{tag}'. If no value
+        provided, the stored value `pysat.params['directory_format']`
+        will be used instead. (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -220,8 +222,8 @@ class Instrument(object):
         # assign strict_time_flag
         self.strict_time_flag = strict_time_flag
 
-        # assign directory format information, which tells pysat how to look in
-        # sub-directories for files
+        # Assign directory format information, which tells pysat how to look in
+        # sub-directories for files.
         if directory_format is not None:
             # assign_func sets some instrument defaults, direct info rules all
             self.directory_format = directory_format.lower()
@@ -231,8 +233,9 @@ class Instrument(object):
             # string or a method dependent on tag and inst_id
             if callable(self.directory_format):
                 self.directory_format = self.directory_format(tag, inst_id)
-            else:
-                self.directory_format = self.params['directory_format']
+        else:
+            # Value not provided by user or developer. Use stored value.
+            self.directory_format = self.params['directory_format']
 
         # assign the file format string, if provided by user
         # enables user to temporarily put in a new string template for files
