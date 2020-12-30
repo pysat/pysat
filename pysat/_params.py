@@ -51,12 +51,12 @@ class Parameters(object):
             'file_timeout': 10; Window in time (seconds) that pysat will wait
                  to load/write a file while another thread uses that file
                  before giving up.
+            'user_modules' : {}; Stores information on modules registered within
+                pysat. Used by `pysat.utils.registry`
 
-    pysat parameters without a working default value:
+    Stored pysat parameters without a working default value:
         'data_path': Stores location of top-level directory pysat uses to
             store and load data.
-        'user_modules': Stores information on modules registered within pysat.
-            Used by `pysat.utils.registry`
 
     """
 
@@ -88,7 +88,7 @@ class Parameters(object):
         # Attach default parameters and values to object
         self.defaults = defaults
 
-        # Define pysat parameters without a default setting
+        # Define stored pysat parameters without a default setting
         non_defaults = ['data_dir']
         self.non_defaults = non_defaults
 
