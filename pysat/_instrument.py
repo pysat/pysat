@@ -271,6 +271,7 @@ class Instrument(object):
         # use Instrument definition of MetaLabels over the Metadata declaration
         self.meta_labels = labels
         self.meta = pysat.Meta(labels=self.meta_labels)
+        self.meta.mutable = False
         self.labels = pysat.MetaLabels(metadata=self.meta, **labels)
 
         # function processing class, processes data on load
