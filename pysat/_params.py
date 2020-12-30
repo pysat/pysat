@@ -76,7 +76,7 @@ class Parameters(object):
         self.file_path = None
 
         # Define default parameters and values
-        dir_format = os.path.join('{platform}', '{name}', '{tag}')
+        dir_format = os.path.join('{platform}', '{name}', '{inst_id}', '{tag}')
         defaults = {'clean_level': 'clean',
                     'directory_format': dir_format,
                     'ignore_empty_files': True,
