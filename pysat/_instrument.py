@@ -236,7 +236,7 @@ class Instrument(object):
                 self.directory_format = self.directory_format(tag, inst_id)
         else:
             # Value not provided by user or developer. Use stored value.
-            self.directory_format = self.params['directory_format']
+            self.directory_format = pysat.params['directory_format']
 
         # assign the file format string, if provided by user
         # enables user to temporarily put in a new string template for files
@@ -354,9 +354,9 @@ class Instrument(object):
         manual_org = False if manual_org is None else manual_org
         temporary_file_list = not temporary_file_list
         if ignore_empty_files is None:
-            ignore_empty_files = self.params['ignore_empty_files']
+            ignore_empty_files = pysat.params['ignore_empty_files']
         if update_files is None:
-            update_files = self.params['update_files']
+            update_files = pysat.params['update_files']
 
         self.files = pysat.Files(self, manual_org=manual_org,
                                  directory_format=self.directory_format,
