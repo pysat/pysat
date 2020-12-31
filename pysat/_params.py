@@ -53,9 +53,11 @@ class Parameters(object):
                  before giving up.
             'user_modules' : {}; Stores information on modules registered within
                 pysat. Used by `pysat.utils.registry`
+            'warn_empty_file_list' : False; Raises a warning if no files are
+                found for a given pysat.Instrument.
 
     Stored pysat parameters without a working default value:
-        'data_path': Stores location of top-level directory pysat uses to
+        'data_dirs': Stores locations of top-level directories pysat uses to
             store and load data.
 
     """
@@ -77,19 +79,20 @@ class Parameters(object):
         self.file_path = None
 
         # Define default parameters and values
-        dir_format = os.path.join('{platform}', '{name}', '{inst_id}', '{tag}')
+        dir_format = os.path.join('{platform}', '{name}', '{tag}', '{inst_id}')
         defaults = {'clean_level': 'clean',
                     'directory_format': dir_format,
                     'ignore_empty_files': False,
                     'file_timeout': 10,
-                    'update_files': True,
-                    'user_modules': {}}
+                    'update_files': False,
+                    'user_modules': {},
+                    'warn_empty_file_list': False}
 
         # Attach default parameters and values to object
         self.defaults = defaults
 
         # Define stored pysat parameters without a default setting
-        non_defaults = ['data_dir']
+        non_defaults = ['data_dirs']
         self.non_defaults = non_defaults
 
         # If path provided, need to make a new parameters file. Load existing
@@ -202,12 +205,12 @@ class Parameters(object):
     def __setitem__(self, key, value):
         # Update current settings
         # Some parameters require processing before storage.
-        if key == 'data_dir':
+        if key == 'data_dirs':
             # Use existing method for now for input checking but disable
-            # its storage mechanism
+            # its previous storage mechanism. Method now stores information back
             pysat.utils.set_data_dir(value, store=False)
-            # Store the directory in this class
-            self.data['data_dir'] = pysat.data_dir
+            # # Store the directory in this class
+            # self.data['data_dirs'] = pysat.data_dir
 
         elif key == 'user_modules':
             if not isinstance(value, dict):
@@ -268,7 +271,7 @@ class Parameters(object):
 
         # Set pysat parameters without a default working value to ''
         for key in self.non_defaults:
-            self.data[key] = ''
+            self.data[key] = []
 
         # Trigger a file write
         self.store()

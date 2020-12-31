@@ -12,7 +12,7 @@ from pysat.utils import generate_instrument_list
 from pysat.tests.instrument_test_class import InstTestClass
 
 
-saved_path = pysat.data_dir
+saved_path = pysat.params['data_dirs'][0]
 
 # Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords

@@ -13,6 +13,7 @@ import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
 import pysat.instruments.pysat_testing2d
 from pysat.utils import generate_instrument_list
+from pysat.utils.time import filter_datetime_input
 
 xarray_epoch_name = 'time'
 
@@ -581,11 +582,11 @@ class TestBasics():
         if islist:
             self.ref_time = [dt.datetime(tt.year, tt.month, tt.day)
                              for tt in in_time]
-            self.out = self.testInst._filter_datetime_input(in_time)
+            self.out = filter_datetime_input(in_time)
         else:
             self.ref_time = [dt.datetime(in_time.year, in_time.month,
                                          in_time.day)]
-            self.out = [self.testInst._filter_datetime_input(in_time)]
+            self.out = [filter_datetime_input(in_time)]
 
         # Test for the date values and timezone awareness status
         for i, tt in enumerate(self.out):
@@ -1657,8 +1658,8 @@ class TestBasics():
         start = dt.datetime(2009, 1, 1, 1, 10)
         stop = dt.datetime(2009, 1, 15, 1, 10)
         self.testInst.bounds = (start, stop)
-        start = self.testInst._filter_datetime_input(start)
-        stop = self.testInst._filter_datetime_input(stop)
+        start = filter_datetime_input(start)
+        stop = filter_datetime_input(stop)
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
 
@@ -1709,8 +1710,8 @@ class TestBasics():
         stop = [dt.datetime(2009, 1, 15, 1, 10),
                 dt.datetime(2009, 2, 15, 1, 10)]
         self.testInst.bounds = (start, stop)
-        start = self.testInst._filter_datetime_input(start)
-        stop = self.testInst._filter_datetime_input(stop)
+        start = filter_datetime_input(start)
+        stop = filter_datetime_input(stop)
         out = pds.date_range(start[0], stop[0]).tolist()
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(self.testInst._iter_list == out)
@@ -1788,8 +1789,8 @@ class TestBasics():
                 dt.datetime(2009, 2, 15, 1, 10)]
         self.testInst.bounds = (start, stop)
         # filter
-        start = self.testInst._filter_datetime_input(start)
-        stop = self.testInst._filter_datetime_input(stop)
+        start = filter_datetime_input(start)
+        stop = filter_datetime_input(stop)
         # iterate
         dates = []
         for inst in self.testInst:

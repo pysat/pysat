@@ -5,9 +5,9 @@ import warnings
 import weakref
 
 import pandas as pds
-from pysat import data_dir as data_dir
+from pysat import pysat_dir, logger, params, Instrument
 from pysat.utils import files as futils
-from pysat import logger, params
+from pysat.utils.time import filter_datetime_input
 
 
 class Files(object):
@@ -21,8 +21,6 @@ class Files(object):
 
     Attributes
     ----------
-    base_path : string
-        path to .pysat directory in user home
     start_date : datetime
         date of first file, used as default start bound for instrument
         object
@@ -115,25 +113,36 @@ class Files(object):
 
         # Set the hidden variables
         self._sat = weakref.proxy(sat)
-        self._update_files = update_files
+        self.update_files = update_files
 
-        # location of .pysat file
-        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat',
-                                      'instruments')
+        # Location of directory to store file information in
+        self.home_path = os.path.join(pysat_dir, 'instruments')
+
+        # Assign base default dates and an empty list of files
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None, dtype='object')
-        # location of stored files
-        self.stored_file_name = ''.join((self._sat.platform, '_',
-                                         self._sat.name, '_', self._sat.tag,
-                                         '_', self._sat.inst_id,
-                                         '_stored_file_info.txt'))
+
+        # Grab Instrument info
+        self.sat_info = {'platform': sat.platform, 'name': sat.name,
+                         'tag': sat.tag, 'inst_id': sat.inst_id}
+        self.list_files_rtn = sat._list_files_rtn
+        self.multi_file_day = sat.multi_file_day
+
+        # Filename that stores list of Instrument files
+        self.stored_file_name = '_'.join((self.sat_info['platform'],
+                                          self.sat_info['name'],
+                                          self.sat_info['tag'],
+                                          self.sat_info['inst_id'],
+                                          'stored_file_info.txt'))
 
         # flag for setting simple organization of files, only
         # look under pysat_data_dir
         self.manual_org = manual_org
-        # path for sub-directories under pysat data path
+
+        # Get template for sub-directories under main pysat data directories
         if directory_format is None:
+            # Assign stored template if user doesn't provide one
             directory_format = params['directory_format']
         self.directory_format = directory_format
 
@@ -145,22 +154,30 @@ class Files(object):
         else:
             # construct subdirectory path
             self.sub_dir_path = \
-                self.directory_format.format(name=self._sat.name,
-                                             platform=self._sat.platform,
-                                             tag=self._sat.tag,
-                                             inst_id=self._sat.inst_id)
-        # ensure we have a path for pysat data directory
-        if data_dir == '':
-            raise RuntimeError(" ".join(("pysat's data_dir has not been set. ",
+                self.directory_format.format(**self.sat_info)
+            self.sub_dir_path = os.path.normpath(self.sub_dir_path)
+
+        # Ensure we have at least one path for pysat data directory
+        if len(params['data_dirs']) == 0:
+            raise RuntimeError(" ".join(("pysat's data_dirs has not been set. ",
                                          "Please set a top-level directory ",
                                          "path to store data using ",
-                                         "`pysat.params['data_dir'] = path`")))
-        # make sure path always ends with directory separator
-        self.data_path = os.path.join(data_dir, self.sub_dir_path)
-        if self.data_path[-2] == os.path.sep:
-            self.data_path = self.data_path[:-1]
-        elif self.data_path[-1] != os.path.sep:
-            self.data_path = os.path.join(self.data_path, '')
+                                         "`pysat.params['data_dirs'] = path`")))
+
+        # Get list of potential data directory paths from pysat. Construct
+        # possible locations for data. Ensure path always ends with directory
+        # separator.
+        self.data_paths = [os.path.join(pdir, self.sub_dir_path)
+                           for pdir in params['data_dirs']]
+        self.data_paths = [os.path.join(os.path.normpath(pdir), '')
+                           for pdir in self.data_paths]
+
+        # Only one of the above paths will actually be used when loading data.
+        # The actual value of data_path is determined in refresh(),
+        # if there are files present, and then is stored along with a list of
+        # found files, used by _load. We start here with the first directory
+        # for cases where there are no files.
+        self.data_path = self.data_paths[0]
 
         # store write to disk preference
         self.write_to_disk = write_to_disk
@@ -172,12 +189,12 @@ class Files(object):
         # store ignore_empty_files preference
         self.ignore_empty_files = ignore_empty_files
 
-        if self._sat.platform != '':
-            # load stored file info
+        if self.sat_info['platform'] != '':
+            # Load stored file info
             info = self._load()
             if not info.empty:
                 self._attach_files(info)
-                if update_files:
+                if self.update_files:
                     self.refresh()
             else:
                 # couldn't find stored info, load file list and then store
@@ -187,14 +204,14 @@ class Files(object):
         # Because the local Instrument object is weakly referenced, it may
         # not always be accessible
         try:
-            inst_repr = self._sat.__repr__()
+            inst_repr = Instrument(**self.sat_info).__repr__()
         except ReferenceError:
             inst_repr = "Instrument(weakly referenced)"
 
         out_str = "".join(["Files(", inst_repr, ", manual_org=",
                            "{:}, directory_format='".format(self.manual_org),
                            self.directory_format, "', update_files=",
-                           "{:}, file_format=".format(self._update_files),
+                           "{:}, file_format=".format(self.update_files),
                            "{:}, ".format(self.file_format.__repr__()),
                            "write_to_disk={:}, ".format(self.write_to_disk),
                            "ignore_empty_files=",
@@ -217,13 +234,13 @@ class Files(object):
 
         return output_str
 
-    def _filter_empty_files(self):
+    def _filter_empty_files(self, path):
         """Update the file list (files) with empty files ignored"""
 
         keep_index = []
         for i, fi in enumerate(self.files):
             # create full path
-            fi_path = os.path.join(self.data_path, fi)
+            fi_path = os.path.join(path, fi)
             # ensure it exists
             if os.path.exists(fi_path):
                 # check for size
@@ -238,52 +255,54 @@ class Files(object):
             self.files = self.files.iloc[keep_index]
 
     def _attach_files(self, files_info):
-        """Attach results of instrument list_files routine to Instrument object
+        """Attaches stored file lists to self
 
         Parameters
         ----------
         file_info :
             Stored file information
 
-        Returns
-        -------
-        updates the file list (files), start_date, and stop_date attributes
-        of the Files class object.
-
         """
 
         if not files_info.empty:
-            unique_files = len(files_info.index.unique()) != len(files_info)
-            if (not self._sat.multi_file_day and unique_files):
-                estr = 'Duplicate datetimes in provided file '
-                estr = '{:s}information.\nKeeping one of each '.format(estr)
-                estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
-                logger.warning(estr)
-                ind = files_info.index.duplicated()
-                logger.warning(files_info.index[ind].unique())
+            # # Check if files have unique times
+            # unique_files = len(files_info.index.unique()) != len(files_info)
+            # if (not self._sat.multi_file_day and unique_files):
+            #     estr = 'Duplicate datetimes in provided file '
+            #     estr = '{:s}information.\nKeeping one of each '.format(estr)
+            #     estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
+            #     logger.warning(estr)
+            #     ind = files_info.index.duplicated()
+            #     logger.warning(files_info.index[ind].unique())
+            #
+            #     idx = np.unique(files_info.index, return_index=True)
+            #     files_info = files_info.iloc[idx[1]]
+            #     raise ValueError('List of files must have unique datetimes.')
+            #
+            # # Ensure files are in order
+            # self.files = files_info.sort_index()
 
-                idx = np.unique(files_info.index, return_index=True)
-                files_info = files_info.iloc[idx[1]]
-                # raise ValueError('List of files must have unique datetimes.')
-
-            self.files = files_info.sort_index()
-            # filter for empty files here (in addition to refresh)
+            # Filter for empty files here (in addition to refresh)
             if self.ignore_empty_files:
-                self._filter_empty_files()
-            # extract date information
+                self._filter_empty_files(path=self.data_path)
+
+            # Attach data
+            self.files = files_info
+
+            # Extract date information from first and last files
             if not self.files.empty:
-                self.start_date = \
-                    self._sat._filter_datetime_input(self.files.index[0])
-                self.stop_date = \
-                    self._sat._filter_datetime_input(self.files.index[-1])
+                self.start_date = filter_datetime_input(self.files.index[0])
+                self.stop_date = filter_datetime_input(self.files.index[-1])
             else:
+                # No files found
                 self.start_date = None
                 self.stop_date = None
         else:
+            # No files found
             self.start_date = None
             self.stop_date = None
-            # convert to object type
-            # necessary if Series is empty, enables == checks with strings
+            # Convert to object type. Necessary when Series is empty,
+            # enables == checks with strings
             self.files = files_info.astype(np.dtype('O'))
 
     def _store(self):
@@ -311,10 +330,10 @@ class Files(object):
                 stored_files.to_csv(os.path.join(self.home_path,
                                                  'archive', name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
-                                    header=False)
+                                    header=[self.data_path])
                 self.files.to_csv(os.path.join(self.home_path, name),
                                   date_format='%Y-%m-%d %H:%M:%S.%f',
-                                  header=False)
+                                  header=[self.data_path])
             else:
                 self._previous_file_list = stored_files
                 self._current_file_list = self.files.copy()
@@ -344,8 +363,10 @@ class Files(object):
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                return pds.read_csv(fname, index_col=0, parse_dates=True,
-                                    squeeze=True, header=None)
+                loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
+                                      squeeze=True, header=0)
+                self.data_path = loaded.name
+                return loaded
             else:
                 # grab files from memory
                 if prev_version:
@@ -367,30 +388,65 @@ class Files(object):
         """
 
         output_str = '{platform} {name} {tag} {inst_id}'
-        output_str = output_str.format(platform=self._sat.platform,
-                                       name=self._sat.name, tag=self._sat.tag,
-                                       inst_id=self._sat.inst_id)
+        output_str = output_str.format(**self.sat_info)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
         output_str = " ".join(output_str.split())  # Remove duplicate whitespace
         logger.info(output_str)
 
-        info = self._sat._list_files_rtn(tag=self._sat.tag,
-                                         inst_id=self._sat.inst_id,
-                                         data_path=self.data_path,
-                                         format_str=self.file_format)
-        info = self._remove_data_dir_path(info)
+        # Check all potential directory locations for files.
+        # Stop as soon as we find some.
+        for path in self.data_paths:
+            # print('list_file ', self.list_files_rtn)
+            info = self.list_files_rtn(tag=self.sat_info['tag'],
+                                       inst_id=self.sat_info['inst_id'],
+                                       data_path=path,
+                                       format_str=self.file_format)
+
+            # If we find some files, this is the one directory we store
+            if not info.empty:
+                self.data_path = path
+                info = self._remove_data_dir_path(info, path=path)
+                break
+            # If I don't remove the directory paths then loading by filename
+            # becomes more of a challenge. Plus, more memory to store, more
+            # difficult for a human to parse when browsing a list, etc.
+
         if not info.empty:
+
+            # Filter for empty files is set by user flag
             if self.ignore_empty_files:
-                self._filter_empty_files()
+                self._filter_empty_files(path=path)
+
+            # Sort files to ensure they are in order
+            info = info.sort_index()
+
+            # Check if files have unique times
+            unique_files = len(info.index.unique()) != len(info)
+            if not self.multi_file_day and unique_files:
+                estr = 'Duplicate datetimes in provided file '
+                estr = '{:s}information.\nKeeping one of each '.format(estr)
+                estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
+                logger.warning(estr)
+                ind = info.index.duplicated()
+                logger.warning(info.index[ind].unique())
+
+                idx = np.unique(info.index, return_index=True)
+                info = info.iloc[idx[1]]
+
             logger.info('Found {:d} local files.'.format(len(info)))
-        else:
-            estr = "Unable to find any files that match the supplied template."
-            estr += " If you have the necessary files please check pysat "
-            estr += "settings and file locations (e.g. pysat.pysat_dir)."
+
+        # Warn user if no files found, if pysat.param set
+        elif params['warn_empty_file_list']:
+            pstrs = "\n".join(self.data_paths)
+            estr = "".join(("Unable to find any files that match the supplied ",
+                            "template: ", self.file_format, "\n",
+                            "In the following directories: \n", pstrs))
             logger.warning(estr)
-        # attach to object
+
+        # Attach Series of files to object
         self._attach_files(info)
-        # store - to disk, if enabled
+
+        # Store - to disk, if enabled
         self._store()
 
     def get_new(self):

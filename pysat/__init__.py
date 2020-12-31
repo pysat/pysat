@@ -79,7 +79,7 @@ if not os.path.isdir(pysat_dir) or \
     # Set initial data directory if we are on Travis
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
-        params['data_dir'] = data_dir
+        params['data_dirs'] = [data_dir]
 
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
@@ -91,10 +91,8 @@ else:
 
 # TODO: These individual parameters, data_dir and user_modules, may need to be
 #  removed. We currently have two places for both, attached to pysat,
-#  and within params
+#  and within params. data_dir fixed!
 
-# pull out data directory for compatibility
-data_dir = params['data_dir']
 # pull out user modules for initial compatibility
 user_modules = params['user_modules']
 
