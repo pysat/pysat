@@ -9,7 +9,8 @@ class TestConstellation:
         """Create instruments and a constellation for each test
         """
         self.instruments = [pysat.Instrument('pysat', 'testing',
-                                             clean_level='clean')
+                                             clean_level='clean',
+                                             update_files=True)
                             for i in range(2)]
         self.in_kwargs = {"instruments": self.instruments, "name": "testing"}
         self.const = None
