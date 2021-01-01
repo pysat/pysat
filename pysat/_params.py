@@ -84,7 +84,7 @@ class Parameters(object):
                     'directory_format': dir_format,
                     'ignore_empty_files': False,
                     'file_timeout': 10,
-                    'update_files': False,
+                    'update_files': True,
                     'user_modules': {},
                     'warn_empty_file_list': False}
 
