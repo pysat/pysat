@@ -282,12 +282,12 @@ class Files(object):
             # # Ensure files are in order
             # self.files = files_info.sort_index()
 
+            # Attach data
+            self.files = files_info
+
             # Filter for empty files here (in addition to refresh)
             if self.ignore_empty_files:
                 self._filter_empty_files(path=self.data_path)
-
-            # Attach data
-            self.files = files_info
 
             # Extract date information from first and last files
             if not self.files.empty:
@@ -366,6 +366,7 @@ class Files(object):
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
                                       squeeze=True, header=0)
                 self.data_path = loaded.name
+                loaded.name = None
                 return loaded
             else:
                 # grab files from memory
@@ -396,7 +397,6 @@ class Files(object):
         # Check all potential directory locations for files.
         # Stop as soon as we find some.
         for path in self.data_paths:
-            # print('list_file ', self.list_files_rtn)
             info = self.list_files_rtn(tag=self.sat_info['tag'],
                                        inst_id=self.sat_info['inst_id'],
                                        data_path=path,
