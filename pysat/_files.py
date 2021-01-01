@@ -14,7 +14,7 @@ class Files(object):
 
     Uses the list_files functions for each specific instrument
     to create an ordered collection of files in time. Used by
-    instrument object to load the correct files. Files also
+    instrument object to identify and load the correct files. Files also
     contains helper methods for determining the presence of
     new files and creating an ordered list of files.
 
@@ -144,7 +144,7 @@ class Files(object):
             directory_format = params['directory_format']
         self.directory_format = directory_format
 
-        # user-specified file format
+        # User-specified file format
         self.file_format = file_format
 
         if manual_org:
@@ -177,14 +177,14 @@ class Files(object):
         # for cases where there are no files.
         self.data_path = self.data_paths[0]
 
-        # store write to disk preference
+        # Store write to disk preference
         self.write_to_disk = write_to_disk
-        if self.write_to_disk is False:
-            # using blank memory rather than loading from disk
+        if not self.write_to_disk:
+            # Using blank memory rather than loading from disk
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
 
-        # store ignore_empty_files preference
+        # Store ignore_empty_files preference
         self.ignore_empty_files = ignore_empty_files
 
         if self.sat_info['platform'] != '':
@@ -252,7 +252,7 @@ class Files(object):
             self.files = self.files.iloc[keep_index]
 
     def _attach_files(self, files_info):
-        """Attaches stored file lists to self
+        """Attaches stored file lists to self.files
 
         Parameters
         ----------
