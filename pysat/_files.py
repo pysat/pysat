@@ -112,8 +112,7 @@ class Files(object):
             removed from the stored list of files.
         """
 
-        # Set the hidden variables
-        # self._sat = weakref.proxy(sat)
+        # Update file list an instantiation flag
         self.update_files = update_files
 
         # Location of directory to store file information in
@@ -201,12 +200,7 @@ class Files(object):
                     self.refresh()
 
     def __repr__(self):
-        # Because the local Instrument object is weakly referenced, it may
-        # not always be accessible
-        try:
-            inst_repr = Instrument(**self.sat_info).__repr__()
-        except ReferenceError:
-            inst_repr = "Instrument(weakly referenced)"
+        inst_repr = Instrument(**self.sat_info).__repr__()
 
         out_str = "".join(["Files(", inst_repr, ", manual_org=",
                            "{:}, directory_format='".format(self.manual_org),
