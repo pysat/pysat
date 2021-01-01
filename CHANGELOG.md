@@ -30,9 +30,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added support for multiple pysat data directories
   - Reorganized .pysat directory to store instrument information under 
     .pysat/instruments and .pysat/instruments/archive
-  - Added pysat.params, a central location to store and modify pysat parameters.
-    Parameters are stored at .pysat/pysat_settings.json
-  - Added `warn_empty_file_list to pysat.params to provide a warning if no 
+  - Added pysat.params, a central location to store and modify pysat default
+    parameters. File stored at .pysat/pysat_settings.json
+  - Added `warn_empty_file_list` to pysat.params to provide a warning if no 
     Instrument files are found. Default is False.
   - Updated default pysat directory organization template
 - Deprecations
