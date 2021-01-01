@@ -265,22 +265,6 @@ class Files(object):
         """
 
         if not files_info.empty:
-            # # Check if files have unique times
-            # unique_files = len(files_info.index.unique()) != len(files_info)
-            # if (not self._sat.multi_file_day and unique_files):
-            #     estr = 'Duplicate datetimes in provided file '
-            #     estr = '{:s}information.\nKeeping one of each '.format(estr)
-            #     estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
-            #     logger.warning(estr)
-            #     ind = files_info.index.duplicated()
-            #     logger.warning(files_info.index[ind].unique())
-            #
-            #     idx = np.unique(files_info.index, return_index=True)
-            #     files_info = files_info.iloc[idx[1]]
-            #     raise ValueError('List of files must have unique datetimes.')
-            #
-            # # Ensure files are in order
-            # self.files = files_info.sort_index()
 
             # Attach data
             self.files = files_info
