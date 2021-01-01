@@ -5,9 +5,10 @@ import warnings
 import weakref
 
 import pandas as pds
-from pysat import pysat_dir, logger, params, Instrument
+from pysat import pysat_dir, logger, Instrument
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
+import pysat
 
 
 class Files(object):
@@ -112,7 +113,7 @@ class Files(object):
         """
 
         # Set the hidden variables
-        self._sat = weakref.proxy(sat)
+        # self._sat = weakref.proxy(sat)
         self.update_files = update_files
 
         # Location of directory to store file information in
@@ -143,7 +144,7 @@ class Files(object):
         # Get template for sub-directories under main pysat data directories
         if directory_format is None:
             # Assign stored template if user doesn't provide one
-            directory_format = params['directory_format']
+            directory_format = pysat.params['directory_format']
         self.directory_format = directory_format
 
         # user-specified file format
@@ -158,7 +159,7 @@ class Files(object):
             self.sub_dir_path = os.path.normpath(self.sub_dir_path)
 
         # Ensure we have at least one path for pysat data directory
-        if len(params['data_dirs']) == 0:
+        if len(pysat.params['data_dirs']) == 0:
             raise RuntimeError(" ".join(("pysat's data_dirs has not been set. ",
                                          "Please set a top-level directory ",
                                          "path to store data using ",
@@ -168,7 +169,7 @@ class Files(object):
         # possible locations for data. Ensure path always ends with directory
         # separator.
         self.data_paths = [os.path.join(pdir, self.sub_dir_path)
-                           for pdir in params['data_dirs']]
+                           for pdir in pysat.params['data_dirs']]
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
 
@@ -190,15 +191,14 @@ class Files(object):
         self.ignore_empty_files = ignore_empty_files
 
         if self.sat_info['platform'] != '':
-            # Load stored file info
-            info = self._load()
-            if not info.empty:
-                self._attach_files(info)
-                if self.update_files:
-                    self.refresh()
-            else:
-                # couldn't find stored info, load file list and then store
+            if self.update_files:
                 self.refresh()
+            else:
+                # Load stored file info
+                info = self._load()
+                if info.empty:
+                    # Didn't find stored information. Search local system.
+                    self.refresh()
 
     def __repr__(self):
         # Because the local Instrument object is weakly referenced, it may
@@ -306,13 +306,13 @@ class Files(object):
             self.files = files_info.astype(np.dtype('O'))
 
     def _store(self):
-        """Store currently loaded filelist for instrument onto filesystem"""
+        """Store currently loaded filelist onto filesystem"""
 
         name = self.stored_file_name
         # check if current file data is different than stored file list
         # if so, move file list to previous file list, store current to file
         # if not, do nothing
-        stored_files = self._load()
+        stored_files = self._load(update_path=False)
         if len(stored_files) != len(self.files):
             # The number of items is different, things are new
             new_flag = True
@@ -339,7 +339,7 @@ class Files(object):
                 self._current_file_list = self.files.copy()
         return
 
-    def _load(self, prev_version=False):
+    def _load(self, prev_version=False, update_path=True):
         """Load stored filelist and return as Pandas Series
 
         Parameters
@@ -365,7 +365,8 @@ class Files(object):
             if self.write_to_disk:
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
                                       squeeze=True, header=0)
-                self.data_path = loaded.name
+                if update_path:
+                    self.data_path = loaded.name
                 loaded.name = None
                 return loaded
             else:
@@ -436,7 +437,7 @@ class Files(object):
             logger.info('Found {:d} local files.'.format(len(info)))
 
         # Warn user if no files found, if pysat.param set
-        elif params['warn_empty_file_list']:
+        elif pysat.params['warn_empty_file_list']:
             pstrs = "\n".join(self.data_paths)
             estr = "".join(("Unable to find any files that match the supplied ",
                             "template: ", self.file_format, "\n",
@@ -467,9 +468,9 @@ class Files(object):
         # refresh files
         self.refresh()
         # current files
-        new_info = self._load()
+        new_info = self._load(update_path=False)
         # previous set of files
-        old_info = self._load(prev_version=True)
+        old_info = self._load(prev_version=True, update_path=False)
         new_files = new_info[-new_info.isin(old_info)]
         return new_files
 

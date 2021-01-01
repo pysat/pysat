@@ -24,8 +24,6 @@ def set_data_dir(path=None, store=False):
 
     """
 
-
-    print('Input path ', path)
     paths = np.asarray(path)
     if paths.shape == ():
         paths = [paths.tolist()]
@@ -40,7 +38,7 @@ def set_data_dir(path=None, store=False):
     paths = [os.path.expandvars(path) for path in paths]
     # Ensure all paths are valid
     paths_check = [os.path.isdir(path) for path in paths]
-    print('Processed path ', paths)
+
     if np.all(paths_check):
         if store:
             estr = ''.join(('pysat has moved to a central structure for ',
@@ -53,14 +51,14 @@ def set_data_dir(path=None, store=False):
         # Store information
         pysat.params.store()
 
-        # # Reload libraries if already present
-        # if hasattr(pysat, '_files'):
-        #     pysat._files = importlib.reload(pysat._files)
-        # if hasattr(pysat, '_instrument'):
-        #     pysat._instrument = importlib.reload(pysat._instrument)
+        # Reload libraries if already present
+        if hasattr(pysat, '_files'):
+            pysat._files = importlib.reload(pysat._files)
+        if hasattr(pysat, '_instrument'):
+            pysat._instrument = importlib.reload(pysat._instrument)
     else:
-        raise ValueError(' '.join(('Path {:s} does not lead to a valid',
-                                   'directory.')).format(path))
+        raise ValueError(' '.join(("Paths {:s} don't not lead to a valid",
+                                   'directory.')).format(': '.join(paths)))
 
 
 def scale_units(out_unit, in_unit):
