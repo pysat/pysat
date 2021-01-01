@@ -1,4 +1,5 @@
 import datetime as dt
+# import inspect
 import numpy as np
 import os
 import warnings
@@ -125,6 +126,13 @@ class Files(object):
         self.sat_info = {'platform': sat.platform, 'name': sat.name,
                          'tag': sat.tag, 'inst_id': sat.inst_id}
         self.list_files_rtn = sat._list_files_rtn
+
+        # Check if routine is actually a generator method
+        # if inspect.isgeneratorfunction(self.list_files_rtn):
+        #     self.list_files_generator = self.list_files_rtn()
+        # else:
+        #     self.list_files_generator = None
+
         self.multi_file_day = sat.multi_file_day
 
         # Filename that stores list of Instrument files
@@ -196,6 +204,8 @@ class Files(object):
                 if info.empty:
                     # Didn't find stored information. Search local system.
                     self.refresh()
+                else:
+                    self._attach_files(info)
 
     def __repr__(self):
         inst_repr = Instrument(**self.sat_info).__repr__()
