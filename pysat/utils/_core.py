@@ -57,7 +57,7 @@ def set_data_dir(path=None, store=False):
         if hasattr(pysat, '_instrument'):
             pysat._instrument = importlib.reload(pysat._instrument)
     else:
-        raise ValueError(' '.join(("Paths {:s} don't not lead to a valid",
+        raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
                                    'directory.')).format(': '.join(paths)))
 
 
