@@ -2,13 +2,11 @@ import datetime as dt
 import numpy as np
 import os
 import warnings
-import weakref
 
 import pandas as pds
-from pysat import pysat_dir, logger, Instrument
+from pysat import pysat_dir, logger, params, Instrument
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
-import pysat
 
 
 class Files(object):
@@ -143,7 +141,7 @@ class Files(object):
         # Get template for sub-directories under main pysat data directories
         if directory_format is None:
             # Assign stored template if user doesn't provide one
-            directory_format = pysat.params['directory_format']
+            directory_format = params['directory_format']
         self.directory_format = directory_format
 
         # user-specified file format
@@ -158,7 +156,7 @@ class Files(object):
             self.sub_dir_path = os.path.normpath(self.sub_dir_path)
 
         # Ensure we have at least one path for pysat data directory
-        if len(pysat.params['data_dirs']) == 0:
+        if len(params['data_dirs']) == 0:
             raise RuntimeError(" ".join(("pysat's data_dirs has not been set. ",
                                          "Please set a top-level directory ",
                                          "path to store data using ",
@@ -168,7 +166,7 @@ class Files(object):
         # possible locations for data. Ensure path always ends with directory
         # separator.
         self.data_paths = [os.path.join(pdir, self.sub_dir_path)
-                           for pdir in pysat.params['data_dirs']]
+                           for pdir in params['data_dirs']]
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
 
@@ -229,23 +227,28 @@ class Files(object):
         return output_str
 
     def _filter_empty_files(self, path):
-        """Update the file list (files) with empty files ignored"""
+        """Update the file list (self.files) with empty files removed
+
+        Parameters
+        ----------
+        path : str
+            Path to top-level containing files
+        """
 
         keep_index = []
         for i, fi in enumerate(self.files):
-            # create full path
+            # Create full path for each file
             fi_path = os.path.join(path, fi)
-            # ensure it exists
-            if os.path.exists(fi_path):
-                # check for size
-                if os.path.getsize(fi_path) > 0:
-                    # store if not empty
-                    keep_index.append(i)
-        # remove filenames as needed
+            # Ensure it exists
+            if os.path.exists(fi_path) and (os.path.getsize(fi_path) > 0):
+                # Store if not empty
+                keep_index.append(i)
+
+        # Remove filenames for empty files as needed
         dropped_num = len(self.files.index) - len(keep_index)
         if dropped_num > 0:
-            print(' '.join(('Removing', str(dropped_num),
-                  'empty files from Instrument list.')))
+            logger.info(' '.join(('Removing', str(dropped_num),
+                                  'empty files from Instrument list.')))
             self.files = self.files.iloc[keep_index]
 
     def _attach_files(self, files_info):
@@ -415,7 +418,7 @@ class Files(object):
             logger.info('Found {:d} local files.'.format(len(info)))
 
         # Warn user if no files found, if pysat.param set
-        elif pysat.params['warn_empty_file_list']:
+        elif params['warn_empty_file_list']:
             pstrs = "\n".join(self.data_paths)
             estr = "".join(("Unable to find any files that match the supplied ",
                             "template: ", self.file_format, "\n",
