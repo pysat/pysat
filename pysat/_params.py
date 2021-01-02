@@ -178,8 +178,8 @@ class Parameters(object):
         # Print the short output
         out_str = "pysat Parameters object\n"
         out_str += "----------------------\n"
-        out_str += "Tracking {:d} standards with defaults\n".format(len(typical))
-        out_str += "Tracking {:d} standards no defaults\n".format(len(pparams))
+        out_str += "Tracking {:d} pysat settings\n".format(len(typical))
+        out_str += "Tracking {:d} settings (non-default)\n".format(len(pparams))
         out_str += "Tracking {:d} user values\n".format(len(users))
 
         # Print the longer output
