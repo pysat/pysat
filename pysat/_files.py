@@ -11,13 +11,44 @@ from pysat.utils.time import filter_datetime_input
 
 
 class Files(object):
-    """Maintains collection of files for instrument object.
+    """Maintains collection of files plus associated methods.
 
-    Uses the list_files functions for each specific instrument
-    to create an ordered collection of files in time. Used by
-    instrument object to identify and load the correct files. Files also
-    contains helper methods for determining the presence of
-    new files and creating an ordered list of files.
+    Interfaces with the `list_files` method for a given instrument
+    support module to create an ordered collection of files in time,
+    used primarily by the pysat.Instrument object to identify files
+    to be loaded. The Files class mediates access to the files by
+    datetime and contains helper methods for determining the presence of
+    new files and filtering out empty files.
+
+    Parameters
+    -----------
+    sat : pysat.Instrument
+        Instrument object
+    manual_org : boolean
+        If True, then pysat will look directly in pysat data directory
+        for data files and will not use default /platform/name/tag
+        (default=False)
+    directory_format : string or NoneType
+        directory naming structure in string format. Variables such as
+        platform, name, and tag will be filled in as needed using python
+        string formatting. The default directory structure would be
+        expressed as '{platform}/{name}/{tag}' (default=None)
+    update_files : boolean
+        If True, immediately query filesystem for instrument files and
+        store (default=False)
+    file_format : str or NoneType
+        File naming structure in string format.  Variables such as year,
+        month, and inst_id will be filled in as needed using python string
+        formatting.  The default file format structure is supplied in the
+        instrument list_files routine. (default=None)
+    write_to_disk : boolean
+        If true, the list of Instrument files will be written to disk.
+        Setting this to False prevents a rare condition when running
+        multiple pysat processes.
+    ignore_empty_files : boolean
+        if True, the list of files found will be checked to
+        ensure the filesiizes are greater than zero. Empty files are
+        removed from the stored list of files.
 
     Attributes
     ----------
@@ -30,11 +61,27 @@ class Files(object):
     data_path : string
         path to the directory containing instrument files,
         top_dir/platform/name/tag/
-    manual_org : bool
-        if True, then Files will look directly in pysat data directory
-        for data files and will not use /platform/name/tag
-    update_files : bool
-        updates files on instantiation if True
+    data_paths: list of str
+        Available paths that pysat will use when looking for files. The
+        class uses the first directory with relevant data, stored in data_path.
+    files : pandas.Series
+        Filenames indexed by time. Leading pysat path information not stored.
+    home_path : str
+        Directory used for class storage
+    list_files_generator : generator
+        Experimental feature for Instruments that internally generate data
+        and thus don't have a defined supported date range.
+    list_files_rtn : method
+        Method used to locate relevant files on the local system. Provided
+        by associated pysat.Instrument object.
+    multi_file_day : boolean
+        Flag copied from associated pysat.Instrument object that indicates
+        when data for day n may be found in files for days n-1, or n+1
+    sat_info : dict
+        Contains pysat.Instrument parameters 'platform', 'name', 'tag',
+        and 'inst_id', identifying the source of the files.
+    stored_file_name : str
+        File used by this class to store file information
 
     Note
     ----
@@ -77,39 +124,6 @@ class Files(object):
     def __init__(self, sat, manual_org=False, directory_format=None,
                  update_files=False, file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
-        """ Initialization for Files class object
-
-        Parameters
-        -----------
-        sat : pysat._instrument.Instrument
-            Instrument object
-        manual_org : boolian
-            If True, then pysat will look directly in pysat data directory
-            for data files and will not use default /platform/name/tag
-            (default=False)
-        directory_format : string or NoneType
-            directory naming structure in string format. Variables such as
-            platform, name, and tag will be filled in as needed using python
-            string formatting. The default directory structure would be
-            expressed as '{platform}/{name}/{tag}' (default=None)
-        update_files : boolean
-            If True, immediately query filesystem for instrument files and
-            store
-            (default=False)
-        file_format : str or NoneType
-            File naming structure in string format.  Variables such as year,
-            month, and inst_id will be filled in as needed using python string
-            formatting.  The default file format structure is supplied in the
-            instrument list_files routine. (default=None)
-        write_to_disk : boolean
-            If true, the list of Instrument files will be written to disk.
-            Setting this to False prevents a rare condition when running
-            multiple pysat processes.
-        ignore_empty_files : boolean
-            if True, the list of files found will be checked to
-            ensure the filesiizes are greater than zero. Empty files are
-            removed from the stored list of files.
-        """
 
         # Update file list an instantiation flag
         self.update_files = update_files
@@ -201,6 +215,7 @@ class Files(object):
 
         if self.sat_info['platform'] != '':
             if self.list_files_generator is None:
+                # Typical instrument with files, not generated data.
                 if self.update_files:
                     self.refresh()
                 else:
@@ -210,6 +225,7 @@ class Files(object):
                         # Didn't find stored information. Search local system.
                         self.refresh()
                     else:
+                        # Attach the data loaded
                         self._attach_files(info)
 
     def __repr__(self):
@@ -271,8 +287,8 @@ class Files(object):
 
         Parameters
         ----------
-        file_info :
-            Stored file information
+        files_info : pandas.Series
+            Filenames indexed by datetime
 
         """
 
@@ -302,7 +318,7 @@ class Files(object):
             self.files = files_info.astype(np.dtype('O'))
 
     def _store(self):
-        """Store currently loaded filelist onto filesystem"""
+        """Store self.files onto filesystem"""
 
         name = self.stored_file_name
         # check if current file data is different than stored file list
@@ -321,7 +337,6 @@ class Files(object):
                 new_flag = True
 
         if new_flag:
-
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
                                                  'archive', name),
@@ -336,18 +351,21 @@ class Files(object):
         return
 
     def _load(self, prev_version=False, update_path=True):
-        """Load stored filelist and return as Pandas Series
+        """Load stored filelist
 
         Parameters
         ----------
         prev_version : boolean
             if True, will load previous version of file list
+        update_path : boolean
+            If True, the path written to stored info will be
+            assigned to self.data_path. (default=True)
 
         Returns
         -------
         pandas.Series
-            Full path file names are indexed by datetime
-            Series is empty if there is no file list to load
+            file path names, indexed by datetime. Series is empty if no
+            files are found.
 
         """
 
@@ -375,13 +393,13 @@ class Files(object):
             return pds.Series([], dtype='a')
 
     def refresh(self):
-        """Update list of files, if there are changes.
+        """Update list of files, if there are detected changes.
 
         Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
-        pysat_data_dir/platform/name/tag/,
-        where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
-
+        where the top level is set by `pysat.params['data_dirs'] = path`
+        and the instrument specific sub-directories are generated from
+        the template, `self.directory_format`.
 
         """
 
@@ -413,7 +431,6 @@ class Files(object):
             # difficult for a human to parse when browsing a list, etc.
 
         if not info.empty:
-
             # Filter for empty files is set by user flag
             if self.ignore_empty_files:
                 self._filter_empty_files(path=path)
@@ -552,11 +569,11 @@ class Files(object):
 
         Parameters
         ----------
-            start: array_like or single string
-                filenames for start of returned filelist
-            stop: array_like or single string
-                filenames inclusive of the ending of list provided by the stop
-                time
+        start: array_like or single string
+            filenames for start of returned filelist
+        stop: array_like or single string
+            filenames inclusive of the ending of list provided by the stop
+            time
 
         Returns
         -------
