@@ -1,5 +1,5 @@
 import datetime as dt
-# import inspect
+import inspect
 import numpy as np
 import os
 import warnings
@@ -128,10 +128,14 @@ class Files(object):
         self.list_files_rtn = sat._list_files_rtn
 
         # Check if routine is actually a generator method
-        # if inspect.isgeneratorfunction(self.list_files_rtn):
-        #     self.list_files_generator = self.list_files_rtn()
-        # else:
-        #     self.list_files_generator = None
+        if inspect.isgeneratorfunction(self.list_files_rtn):
+            self.list_files_generator = self.list_files_rtn()
+            # Instrument iteration methods require a date range
+            # So, do we just pick dates far into future and past?
+            self.start_date = dt.datetime(1900, 1, 1)
+            self.stop_date = dt.datetime(2100, 1, 1)
+        else:
+            self.list_files_generator = None
 
         self.multi_file_day = sat.multi_file_day
 
@@ -196,16 +200,17 @@ class Files(object):
         self.ignore_empty_files = ignore_empty_files
 
         if self.sat_info['platform'] != '':
-            if self.update_files:
-                self.refresh()
-            else:
-                # Load stored file info
-                info = self._load()
-                if info.empty:
-                    # Didn't find stored information. Search local system.
+            if self.list_files_generator is None:
+                if self.update_files:
                     self.refresh()
                 else:
-                    self._attach_files(info)
+                    # Load stored file info
+                    info = self._load()
+                    if info.empty:
+                        # Didn't find stored information. Search local system.
+                        self.refresh()
+                    else:
+                        self._attach_files(info)
 
     def __repr__(self):
         inst_repr = Instrument(**self.sat_info).__repr__()
@@ -380,6 +385,10 @@ class Files(object):
 
         """
 
+        if self.list_files_generator is not None:
+            estr = ''.join(('refresh() does not work with list generators'))
+            raise RuntimeError(estr)
+
         output_str = '{platform} {name} {tag} {inst_id}'
         output_str = output_str.format(**self.sat_info)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
@@ -499,6 +508,10 @@ class Files(object):
     # date and index are normal non-inclusive end point
 
     def __getitem__(self, key):
+        if self.list_files_generator is not None:
+            # Return generated filename
+            return self.list_files_generator(key)
+
         if isinstance(key, slice):
             try:
                 try:
