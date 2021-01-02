@@ -17,26 +17,39 @@ def set_data_dir(path=None, store=False):
 
     Parameters
     ----------
-    path : string
+    path : string or list-like of str
         valid path to directory pysat uses to look for data
     store : bool
         if True, store data directory for future runs
 
     """
 
-    # account for a user prefix in the path, such as ~
-    path = os.path.expanduser(path)
-    # account for the presence of $HOME or similar
-    path = os.path.expandvars(path)
+    paths = np.asarray(path)
+    if paths.shape == ():
+        paths = [paths.tolist()]
+    elif paths.shape[0] > 1:
+        paths = paths.squeeze().tolist()
+    elif paths.shape[0] == 1:
+        paths = paths.tolist()
 
-    if os.path.isdir(path):
+    # Account for a user prefix in the path, such as ~
+    paths = [os.path.expanduser(path) for path in paths]
+    # Account for the presence of $HOME or similar
+    paths = [os.path.expandvars(path) for path in paths]
+    # Ensure all paths are valid
+    paths_check = [os.path.isdir(path) for path in paths]
+
+    if np.all(paths_check):
         if store:
             estr = ''.join(('pysat has moved to a central structure for ',
                             'storing parameters to disk. Please switch to ',
                             '`pysat.params["data_dir"] = path` instead.'))
             raise RuntimeError(estr)
 
-        pysat.data_dir = path
+        # Assign updated and validated paths
+        pysat.params.data['data_dirs'] = paths
+        # Store information
+        pysat.params.store()
 
         # Reload libraries if already present
         if hasattr(pysat, '_files'):
@@ -44,8 +57,8 @@ def set_data_dir(path=None, store=False):
         if hasattr(pysat, '_instrument'):
             pysat._instrument = importlib.reload(pysat._instrument)
     else:
-        raise ValueError(' '.join(('Path {:s} does not lead to a valid',
-                                   'directory.')).format(path))
+        raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
+                                   'directory.')).format(': '.join(paths)))
 
 
 def scale_units(out_unit, in_unit):

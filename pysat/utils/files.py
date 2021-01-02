@@ -418,7 +418,7 @@ def update_data_directory_structure(new_template, test_run=True):
     # Iterate over each Instrument in the list and instantiate it.
     # Be sure and update files to get the latest list, ensure there are files.
     # Instantiate another version of same instrument but using new_template
-    # Register directory change of inst1.files.data_path over to inst2.files.data_path
+    # Register change of inst1.files.data_path over to inst2.files.data_path
     # Collect all changes
     # Print list
     # Enable directory changes

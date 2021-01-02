@@ -38,7 +38,6 @@ and name string identifiers.
 
 import importlib
 import logging
-import os
 
 import pysat
 import pysat.tests.instrument_test_class as itc

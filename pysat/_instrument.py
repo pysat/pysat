@@ -20,8 +20,9 @@ from pysat import utils
 from pysat import user_modules
 from pysat import logger
 
+from pysat.utils.time import filter_datetime_input
 
-# main class for users
+
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
@@ -1054,50 +1055,6 @@ class Instrument(object):
                                   ' default  values: {:}'.format(missing)]))
         return
 
-    def _filter_datetime_input(self, date):
-        """
-        Returns datetime that only includes year, month, and day.
-
-        Parameters
-        ----------
-        date : NoneType, array-like, or datetime
-            Single or sequence of datetime inputs
-
-        Returns
-        -------
-        out_date: NoneType, datetime, or list of datetimes
-            NoneType input yeilds NoneType output, array-like yeilds list,
-            datetime object yeilds like.  All datetime output excludes the
-            sub-daily temporal increments (keeps only date information).
-
-        Note
-        ----
-        Checks for timezone information not in UTC
-
-        """
-
-        if date is None:
-            out_date = None
-        else:
-            # Check for timezone information and remove time of day for
-            # single datetimes and iterable containers of datetime objects
-            if hasattr(date, '__iter__'):
-                out_date = []
-                for in_date in date:
-                    if(in_date.tzinfo is not None
-                       and in_date.utcoffset() is not None):
-                        in_date = in_date.astimezone(tz=dt.timezone.utc)
-
-                    out_date.append(dt.datetime(in_date.year, in_date.month,
-                                                in_date.day))
-            else:
-                if date.tzinfo is not None and date.utcoffset() is not None:
-                    date = date.astimezone(tz=dt.timezone.utc)
-
-                out_date = dt.datetime(date.year, date.month, date.day)
-
-        return out_date
-
     def _load_data(self, date=None, fid=None, inc=None):
         """
         Load data for an instrument on given date or fid, depending upon input.
@@ -1120,7 +1077,7 @@ class Instrument(object):
             pysat meta data
         """
 
-        date = self._filter_datetime_input(date)
+        date = filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
             # inclusive loading on filenames
@@ -1693,8 +1650,8 @@ class Instrument(object):
                     self._iter_width = dt.timedelta(days=1)
 
                 # Create list-like of dates for iteration
-                starts = self._filter_datetime_input(starts)
-                stops = self._filter_datetime_input(stops)
+                starts = filter_datetime_input(starts)
+                stops = filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
@@ -1749,7 +1706,7 @@ class Instrument(object):
     @date.setter
     def date(self, new_date):
         # Set the date property, see property docstring for details
-        self._date = self._filter_datetime_input(new_date)
+        self._date = filter_datetime_input(new_date)
 
     @property
     def index(self):
@@ -1828,7 +1785,7 @@ class Instrument(object):
             Today's date in UTC
 
         """
-        today_utc = self._filter_datetime_input(dt.datetime.utcnow())
+        today_utc = filter_datetime_input(dt.datetime.utcnow())
 
         return today_utc
 
@@ -2398,7 +2355,7 @@ class Instrument(object):
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
-            date = self._filter_datetime_input(date)
+            date = filter_datetime_input(date)
 
             # Increment after determining the desird step size
             if end_date is not None:
@@ -2870,8 +2827,8 @@ class Instrument(object):
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
             # whole days
-            start = self._filter_datetime_input(start)
-            stop = self._filter_datetime_input(stop)
+            start = filter_datetime_input(start)
+            stop = filter_datetime_input(stop)
             date_array = utils.time.create_date_range(start, stop, freq=freq)
 
         # Add necessary kwargs to the optional kwargs
