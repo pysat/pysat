@@ -4,6 +4,8 @@ import importlib
 import netCDF4
 import numpy as np
 import os
+import warnings
+
 import pandas as pds
 from portalocker import Lock
 import xarray as xr
@@ -11,7 +13,7 @@ import xarray as xr
 import pysat
 
 
-def set_data_dir(path=None, store=False):
+def set_data_dir(path=None, store=True):
     """
     Set the top level directory pysat uses to look for data and reload.
 
@@ -22,24 +24,25 @@ def set_data_dir(path=None, store=False):
     Parameters
     ----------
     path : string or list-like of str
-        valid path to directory pysat uses to look for data
+        valid path to directory pysat uses to look for data (default=None)
     store : bool
-        if True, store data directory for future runs
+        if True, store data directory for future runs (default=True).
 
     """
-
-    estr = ''.join(('pysat has moved to a central location for ',
-                    'storing and managing pysat parameters. Please switch to ',
-                    '`pysat.params["data_dirs"] = path` instead.'))
-    raise DeprecationWarning(estr)
 
     if not store:
         estr = ''.join(('pysat support for optional storage has been ',
                         'deprecated. Storing pysat ',
                         'parameters via `pysat.params["data_dirs"] = path` ',
                         'is thread-safe.'))
-        raise DeprecationWarning(estr)
+        warnings.warn(estr, DeprecationWarning, stacklevel=2)
 
+    estr = ''.join(('pysat has moved to a central location for ',
+                    'storing and managing pysat parameters. Please switch to ',
+                    '`pysat.params["data_dirs"] = path` instead.'))
+    warnings.warn(estr, DeprecationWarning, stacklevel=2)
+
+    # Perform actual update of pysat directories using the params class
     pysat.params._set_data_dirs(path, store=store)
 
     return
