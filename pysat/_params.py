@@ -130,7 +130,7 @@ class Parameters(object):
         # doesn't exist yet.
         with Lock(self.file_path, 'r', timeout=10) as fout:
             self.data = json.load(fout)
-            # In case of network files system
+            # In case of network file system
             fout.flush()
             os.fsync(fout.fileno())
 
@@ -223,58 +223,6 @@ class Parameters(object):
         # Store updated parameters to disk
         self.store()
 
-    def store(self):
-        """Store parameters to file.
-
-        Uses path in self.file_path.
-        """
-
-        # Store settings in file
-        with Lock(self.file_path, 'w', self['file_timeout']) as fout:
-            json.dump(self.data, fout)
-            # Ensure write is fully complete even for network file systems
-            fout.flush()
-            os.fsync(fout.fileno())
-
-        return
-
-    def restore_defaults(self):
-        """Restore default pysat parameters
-
-        Does not modify any stored custom user keys or pysat parameters
-        without a default value.
-
-        """
-
-        # Set default values for each of the pysat provided values. Set
-        # all but the last parameter directly. Set last using __setitem__
-        # to trigger a file write.
-        keys = list(self.defaults.keys())
-        for key in keys:
-            self.data[key] = self.defaults[key]
-
-        # Trigger a file write
-        self.store()
-
-        return
-
-    def clear_and_restart(self):
-        """Clears all stored settings and sets pysat defaults
-
-        pysat parameters without a default value are set to '' """
-
-        # Clear current data and assign a copy of default values
-        self.data = copy.deepcopy(self.defaults)
-
-        # Set pysat parameters without a default working value to ''
-        for key in self.non_defaults:
-            self.data[key] = []
-
-        # Trigger a file write
-        self.store()
-
-        return
-
     def _set_data_dirs(self, path=None, store=True):
         """
         Set the top level directories pysat uses to store and load data.
@@ -314,3 +262,55 @@ class Parameters(object):
         else:
             raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
                                        'directory.')).format(': '.join(paths)))
+
+    def clear_and_restart(self):
+        """Clears all stored settings and sets pysat defaults
+
+        pysat parameters without a default value are set to '' """
+
+        # Clear current data and assign a copy of default values
+        self.data = copy.deepcopy(self.defaults)
+
+        # Set pysat parameters without a default working value to ''
+        for key in self.non_defaults:
+            self.data[key] = []
+
+        # Trigger a file write
+        self.store()
+
+        return
+
+    def restore_defaults(self):
+        """Restore default pysat parameters
+
+        Does not modify any stored custom user keys or pysat parameters
+        without a default value.
+
+        """
+
+        # Set default values for each of the pysat provided values. Set
+        # all but the last parameter directly. Set last using __setitem__
+        # to trigger a file write.
+        keys = list(self.defaults.keys())
+        for key in keys:
+            self.data[key] = self.defaults[key]
+
+        # Trigger a file write
+        self.store()
+
+        return
+
+    def store(self):
+        """Store parameters to file.
+
+        Uses path in self.file_path.
+        """
+
+        # Store settings in file
+        with Lock(self.file_path, 'w', self['file_timeout']) as fout:
+            json.dump(self.data, fout)
+            # Ensure write is fully complete even for network file systems
+            fout.flush()
+            os.fsync(fout.fileno())
+
+        return
