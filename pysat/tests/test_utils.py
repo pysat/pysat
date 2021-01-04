@@ -17,8 +17,7 @@ import shutil
 import tempfile
 
 import pysat
-
-from registration_test_class import TestWithRegistration
+from pysat.tests.registration_test_class import TestWithRegistration
 
 
 # ----------------------------------

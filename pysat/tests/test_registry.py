@@ -14,8 +14,7 @@ import sys
 
 import pysat
 from pysat.utils import registry
-
-from registration_test_class import TestWithRegistration
+from pysat.tests.registration_test_class import TestWithRegistration
 
 
 def ensure_updated_stored_modules(modules):
