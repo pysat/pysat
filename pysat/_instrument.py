@@ -72,9 +72,10 @@ class Instrument(object):
         directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{inst_id}/{tag}'. If no value
-        provided, the stored value `pysat.params['directory_format']`
-        will be used instead. (default=None)
+        expressed as '{platform}/{name}/{tag}/{inst_id}', where
+        '/' is platform appropriate. If no value is provided, then the
+        stored value `pysat.params['directory_format']` will be used
+        instead. (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
