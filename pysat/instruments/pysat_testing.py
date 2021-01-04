@@ -103,7 +103,8 @@ def preprocess(self):
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False, num_samples=None):
+         malformed_index=False, mangle_file_dates=False, num_samples=None,
+         multi_file_day=False):
     """ Loads the test files
 
     Parameters

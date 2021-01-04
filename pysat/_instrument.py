@@ -65,6 +65,10 @@ class Instrument(object):
         formatting. The default directory structure would be expressed as
         '{platform}/{name}/{tag}'. If None, the default directory structure is
         used. (default=None)
+    multi_file_day : boolean
+        Set to True if Instrument data files for a day are spread across
+        multiple files and data for day n could be found in a file
+        with a timestamp of day n-1 or n+1.  (default=False)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -159,8 +163,9 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
                  clean_level='clean', update_files=False, pad=None,
-                 orbit_info=None, inst_module=None, directory_format=None,
-                 file_format=None, temporary_file_list=False,
+                 orbit_info=None, inst_module=None, multi_file_day=None,
+                 directory_format=None, file_format=None,
+                 temporary_file_list=False,
                  strict_time_flag=True, ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
@@ -268,6 +273,9 @@ class Instrument(object):
         self._prev_data_track = []
         self._curr_data = self._null_data.copy()
 
+        # If the multi_file_day flag was set update here, otherwise the
+        # default will be set by _assign_attrs
+        self.multi_file_day = multi_file_day
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
@@ -884,9 +892,9 @@ class Instrument(object):
                         'optional': ['preprocess']}
         inst_funcs = {'required': ['load', 'list_files', 'download'],
                       'optional': ['list_remote_files']}
-        inst_attrs = {"directory_format": None, "file_format": None,
-                      "multi_file_day": False, "orbit_info": None,
-                      "pandas_format": True}
+        inst_attrs = {'directory_format': None, 'file_format': None,
+                      'multi_file_day': False, 'orbit_info': None,
+                      'pandas_format': True}
         test_attrs = {'_test_download': True, '_test_download_travis': True,
                       '_password_req': False}
 
