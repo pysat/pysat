@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """
 tests the pysat utils area
 """
@@ -7,12 +12,13 @@ from io import StringIO
 from importlib import reload
 import numpy as np
 import os
+import pytest
 import shutil
 import tempfile
 
-import pytest
-
 import pysat
+
+from registration_test_class import TestWithRegistration
 
 
 # ----------------------------------
@@ -653,9 +659,12 @@ class TestFmtCols():
         self.test_output()
 
 
-class TestAvailableInst():
-    setup = pysat.tests.test_registry.TestRegistration.setup
-    teardown = pysat.tests.test_registry.TestRegistration.teardown
+class TestAvailableInst(TestWithRegistration):
+
+    # Set setup/teardown to the class defaults
+    setup = TestWithRegistration.setup
+    teardown = TestWithRegistration.teardown
+
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",
                              [(None, None), (False, False), (True, True)])
