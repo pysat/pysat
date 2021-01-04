@@ -205,7 +205,7 @@ class Instrument(object):
                     setattr(self, iattr, getattr(inst_module, iattr).lower())
                 else:
                     raise AttributeError(''.join(['Supplied module ',
-                                                  "{:}".format(inst_module),
+                                                  '{:} '.format(inst_module),
                                                   'is missing required ',
                                                   'attribute: ', iattr]))
 
