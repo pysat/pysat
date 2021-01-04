@@ -5,9 +5,10 @@
 # ----------------------------------------------------------------------------
 
 import copy
+import json
+import numpy as np
 import os
 
-import json
 from portalocker import Lock
 
 import pysat.utils
@@ -206,11 +207,7 @@ class Parameters(object):
         # Update current settings
         # Some parameters require processing before storage.
         if key == 'data_dirs':
-            # Use existing method for now for input checking but disable
-            # its previous storage mechanism. Method now stores information back
-            pysat.utils.set_data_dir(value, store=False)
-            # # Store the directory in this class
-            # self.data['data_dirs'] = pysat.data_dir
+            self._set_data_dirs(value)
 
         elif key == 'user_modules':
             if not isinstance(value, dict):
@@ -277,3 +274,43 @@ class Parameters(object):
         self.store()
 
         return
+
+    def _set_data_dirs(self, path=None, store=True):
+        """
+        Set the top level directories pysat uses to store and load data.
+
+        Parameters
+        ----------
+        path : string or list-like of str
+            Valid path(s) to directory
+        store : bool
+            Optionally store parameters to disk. Present to support a
+            Deprecated method (default=True).
+
+        """
+
+        paths = np.asarray(path)
+        if paths.shape == ():
+            paths = [paths.tolist()]
+        elif paths.shape[0] > 1:
+            paths = paths.squeeze().tolist()
+        elif paths.shape[0] == 1:
+            paths = paths.tolist()
+
+        # Account for a user prefix in the path, such as ~
+        paths = [os.path.expanduser(path) for path in paths]
+        # Account for the presence of $HOME or similar
+        paths = [os.path.expandvars(path) for path in paths]
+        # Ensure all paths are valid
+        paths_check = [os.path.isdir(path) for path in paths]
+
+        if np.all(paths_check):
+            # Assign updated and validated paths
+            self.data['data_dirs'] = paths
+            # Optionally store information
+            if store:
+                self.store()
+
+        else:
+            raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
+                                       'directory.')).format(': '.join(paths)))

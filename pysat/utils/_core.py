@@ -15,6 +15,10 @@ def set_data_dir(path=None, store=False):
     """
     Set the top level directory pysat uses to look for data and reload.
 
+    .. deprecated::
+        `set_data_dir` has been deprecated. Please use
+        `pysat.params['data_dirs'] = path(s)` instead.
+
     Parameters
     ----------
     path : string or list-like of str
@@ -24,41 +28,21 @@ def set_data_dir(path=None, store=False):
 
     """
 
-    paths = np.asarray(path)
-    if paths.shape == ():
-        paths = [paths.tolist()]
-    elif paths.shape[0] > 1:
-        paths = paths.squeeze().tolist()
-    elif paths.shape[0] == 1:
-        paths = paths.tolist()
+    estr = ''.join(('pysat has moved to a central location for ',
+                    'storing and managing pysat parameters. Please switch to ',
+                    '`pysat.params["data_dirs"] = path` instead.'))
+    raise DeprecationWarning(estr)
 
-    # Account for a user prefix in the path, such as ~
-    paths = [os.path.expanduser(path) for path in paths]
-    # Account for the presence of $HOME or similar
-    paths = [os.path.expandvars(path) for path in paths]
-    # Ensure all paths are valid
-    paths_check = [os.path.isdir(path) for path in paths]
+    if not store:
+        estr = ''.join(('pysat support for optional storage has been ',
+                        'deprecated. Storing pysat ',
+                        'parameters via `pysat.params["data_dirs"] = path` ',
+                        'is thread-safe.'))
+        raise DeprecationWarning(estr)
 
-    if np.all(paths_check):
-        if store:
-            estr = ''.join(('pysat has moved to a central structure for ',
-                            'storing parameters to disk. Please switch to ',
-                            '`pysat.params["data_dir"] = path` instead.'))
-            raise RuntimeError(estr)
+    pysat.params._set_data_dirs(path, store=store)
 
-        # Assign updated and validated paths
-        pysat.params.data['data_dirs'] = paths
-        # Store information
-        pysat.params.store()
-
-        # Reload libraries if already present
-        if hasattr(pysat, '_files'):
-            pysat._files = importlib.reload(pysat._files)
-        if hasattr(pysat, '_instrument'):
-            pysat._instrument = importlib.reload(pysat._instrument)
-    else:
-        raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
-                                   'directory.')).format(': '.join(paths)))
+    return
 
 
 def scale_units(out_unit, in_unit):
