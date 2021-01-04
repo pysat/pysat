@@ -654,7 +654,8 @@ class TestFmtCols():
 
 
 class TestAvailableInst():
-
+    setup = pysat.tests.test_registry.TestRegistration.setup
+    teardown = pysat.tests.test_registry.TestRegistration.teardown
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",
                              [(None, None), (False, False), (True, True)])
