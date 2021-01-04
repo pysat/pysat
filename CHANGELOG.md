@@ -68,6 +68,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     `fake_monthly_files_from_daily` to `file_cadence`
   - Changed name of Instrument method `default` to `preprocess`
   - Removed `pysat.data_dir`. Information now at `pysat.params['data_dirs']`.
+  - Moved `pysat.Instrument._filter_datetime_input` to 
+    `pysat.utils.time.filter_datetime_input`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
