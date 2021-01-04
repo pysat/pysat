@@ -232,6 +232,49 @@ class Files(object):
                         # Attach the data loaded
                         self._attach_files(info)
 
+    # slicing via date and index filename is inclusive slicing,
+    # date and index are normal non-inclusive end point
+
+    def __getitem__(self, key):
+        if self.list_files_generator is not None:
+            # Return generated filename
+            return self.list_files_generator(key)
+
+        if isinstance(key, slice):
+            try:
+                try:
+                    # Assume key is integer (including list or slice)
+                    out = self.files.iloc[key]
+                except TypeError:
+                    # Assume key is something else
+                    out = self.files.loc[key]
+            except IndexError as err:
+                raise IndexError(''.join((str(err), '\n',
+                                          'Date requested outside file ',
+                                          'bounds.')))
+            if isinstance(key.start, dt.datetime):
+                # enforce exclusive slicing on datetime
+                if len(out) > 1:
+                    if out.index[-1] >= key.stop:
+                        return out[:-1]
+                    else:
+                        return out
+                elif len(out) == 1:
+                    if out.index[0] >= key.stop:
+                        return pds.Series([], dtype='a')
+                    else:
+                        return out
+                else:
+                    return out
+            else:
+                # not a datetime
+                return out
+        else:
+            try:
+                return self.files.iloc[key]
+            except TypeError:
+                return self.files.loc[key]
+
     def __repr__(self):
         inst_repr = Instrument(**self.sat_info).__repr__()
 
@@ -260,56 +303,6 @@ class Files(object):
             output_str += self.files.index[-1].strftime('%d %B %Y')
 
         return output_str
-
-    def _filter_empty_files(self, path):
-        """Update the file list (self.files) with empty files removed
-
-        Parameters
-        ----------
-        path : str
-            Path to top-level containing files
-        """
-
-        keep_index = []
-        for i, fi in enumerate(self.files):
-            # Create full path for each file
-            fi_path = os.path.join(path, fi)
-            # Ensure it exists
-            if os.path.exists(fi_path) and (os.path.getsize(fi_path) > 0):
-                # Store if not empty
-                keep_index.append(i)
-
-        # Remove filenames for empty files as needed
-        dropped_num = len(self.files.index) - len(keep_index)
-        if dropped_num > 0:
-            logger.info(' '.join(('Removing', str(dropped_num),
-                                  'empty files from Instrument list.')))
-            self.files = self.files.iloc[keep_index]
-
-        return
-
-    def _ensure_unique_file_datetimes(self):
-        """Update the file list (self.files) to ensure uniqueness"""
-
-        # Check if files are unique.
-        unique_files = len(self.files.index.unique()) == len(self.files)
-
-        if not self.multi_file_day and not unique_files:
-            # Give user feedback about the issue
-            estr = 'Duplicate datetimes in stored filename '
-            estr = '{:s}information.\nKeeping one of each '.format(estr)
-            estr = '{:s}of the duplicates, dropping the rest. '.format(estr)
-            estr = '{:s}Please ensure the file datetimes '.format(estr)
-            estr = '{:s}are unique at the microsecond level.'.format(estr)
-            logger.warning(estr)
-            ind = self.files.index.duplicated()
-            logger.warning(self.files.index[ind].unique())
-
-            # Downselect to unique file datetimes
-            idx = np.unique(self.files.index, return_index=True)
-            self.files = self.files.iloc[idx[1]]
-
-        return
 
     def _attach_files(self, files_info):
         """Attaches stored file lists to self.files
@@ -349,37 +342,54 @@ class Files(object):
             # enables == checks with strings
             self.files = files_info.astype(np.dtype('O'))
 
-    def _store(self):
-        """Store self.files onto filesystem"""
+    def _ensure_unique_file_datetimes(self):
+        """Update the file list (self.files) to ensure uniqueness"""
 
-        name = self.stored_file_name
-        # check if current file data is different than stored file list
-        # if so, move file list to previous file list, store current to file
-        # if not, do nothing
-        stored_files = self._load(update_path=False)
-        if len(stored_files) != len(self.files):
-            # The number of items is different, things are new
-            new_flag = True
-        elif len(stored_files) == len(self.files):
-            # The number of items is the same, check specifically for equality
-            if stored_files.eq(self.files).all():
-                new_flag = False
-            else:
-                # Stored and new data are not equal, there are new files
-                new_flag = True
+        # Check if files are unique.
+        unique_files = len(self.files.index.unique()) == len(self.files)
 
-        if new_flag:
-            if self.write_to_disk:
-                stored_files.to_csv(os.path.join(self.home_path,
-                                                 'archive', name),
-                                    date_format='%Y-%m-%d %H:%M:%S.%f',
-                                    header=[self.data_path])
-                self.files.to_csv(os.path.join(self.home_path, name),
-                                  date_format='%Y-%m-%d %H:%M:%S.%f',
-                                  header=[self.data_path])
-            else:
-                self._previous_file_list = stored_files
-                self._current_file_list = self.files.copy()
+        if not self.multi_file_day and not unique_files:
+            # Give user feedback about the issue
+            estr = 'Duplicate datetimes in stored filename '
+            estr = '{:s}information.\nKeeping one of each '.format(estr)
+            estr = '{:s}of the duplicates, dropping the rest. '.format(estr)
+            estr = '{:s}Please ensure the file datetimes '.format(estr)
+            estr = '{:s}are unique at the microsecond level.'.format(estr)
+            logger.warning(estr)
+            ind = self.files.index.duplicated()
+            logger.warning(self.files.index[ind].unique())
+
+            # Downselect to unique file datetimes
+            idx = np.unique(self.files.index, return_index=True)
+            self.files = self.files.iloc[idx[1]]
+
+        return
+
+    def _filter_empty_files(self, path):
+        """Update the file list (self.files) with empty files removed
+
+        Parameters
+        ----------
+        path : str
+            Path to top-level containing files
+        """
+
+        keep_index = []
+        for i, fi in enumerate(self.files):
+            # Create full path for each file
+            fi_path = os.path.join(path, fi)
+            # Ensure it exists
+            if os.path.exists(fi_path) and (os.path.getsize(fi_path) > 0):
+                # Store if not empty
+                keep_index.append(i)
+
+        # Remove filenames for empty files as needed
+        dropped_num = len(self.files.index) - len(keep_index)
+        if dropped_num > 0:
+            logger.info(' '.join(('Removing', str(dropped_num),
+                                  'empty files from Instrument list.')))
+            self.files = self.files.iloc[keep_index]
+
         return
 
     def _load(self, prev_version=False, update_path=True):
@@ -431,6 +441,135 @@ class Files(object):
         else:
             # Storage file not present.
             return pds.Series([], dtype='a')
+
+    def _remove_data_dir_path(self, inp=None, path=None):
+        """Remove the data directory path from filenames"""
+        if path is None:
+            estr = 'A path is required.'
+            raise ValueError(estr)
+
+        if inp is not None:
+            split_str = os.path.join(path, '')
+            return inp.apply(lambda x: x.split(split_str)[-1])
+
+    def _store(self):
+        """Store self.files onto filesystem"""
+
+        name = self.stored_file_name
+        # check if current file data is different than stored file list
+        # if so, move file list to previous file list, store current to file
+        # if not, do nothing
+        stored_files = self._load(update_path=False)
+        if len(stored_files) != len(self.files):
+            # The number of items is different, things are new
+            new_flag = True
+        elif len(stored_files) == len(self.files):
+            # The number of items is the same, check specifically for equality
+            if stored_files.eq(self.files).all():
+                new_flag = False
+            else:
+                # Stored and new data are not equal, there are new files
+                new_flag = True
+
+        if new_flag:
+            if self.write_to_disk:
+                stored_files.to_csv(os.path.join(self.home_path,
+                                                 'archive', name),
+                                    date_format='%Y-%m-%d %H:%M:%S.%f',
+                                    header=[self.data_path])
+                self.files.to_csv(os.path.join(self.home_path, name),
+                                  date_format='%Y-%m-%d %H:%M:%S.%f',
+                                  header=[self.data_path])
+            else:
+                self._previous_file_list = stored_files
+                self._current_file_list = self.files.copy()
+        return
+
+    def get_file_array(self, start, stop):
+        """Return a list of filenames between and including start and stop.
+
+        Parameters
+        ----------
+        start: array_like or single string
+            filenames for start of returned filelist
+        stop: array_like or single string
+            filenames inclusive of the ending of list provided by the stop
+            time
+
+        Returns
+        -------
+            list of filenames between and including start and stop times over
+            all intervals.
+
+        """
+        if hasattr(start, '__iter__') and hasattr(stop, '__iter__'):
+            files = []
+            for (sta, stp) in zip(start, stop):
+                id1 = self.get_index(sta)
+                id2 = self.get_index(stp)
+                files.extend(self.files.iloc[id1:(id2 + 1)])
+        elif hasattr(start, '__iter__') or hasattr(stop, '__iter__'):
+            estr = 'Either both or none of the inputs need to be iterable'
+            raise ValueError(estr)
+        else:
+            id1 = self.get_index(start)
+            id2 = self.get_index(stop)
+            files = self.files[id1:(id2 + 1)].to_list()
+        return files
+
+    def get_index(self, fname):
+        """Return index for a given filename.
+
+        Parameters
+        ----------
+        fname : string
+            filename
+
+        Note
+        ----
+        If fname not found in the file information already attached
+        to the instrument.files instance, then a files.refresh() call
+        is made.
+
+        """
+
+        idx, = np.where(fname == self.files)
+        if len(idx) == 0:
+            # filename not in index, try reloading files from disk
+            self.refresh()
+            idx, = np.where(fname == np.array(self.files))
+
+            if len(idx) == 0:
+                raise ValueError(' '.join(('Could not find "{:}"'.format(fname),
+                                           'in available file list. Valid',
+                                           'Example:', self.files.iloc[0])))
+        # return a scalar rather than array - otherwise introduces array to
+        # index warnings.
+        return idx[0]
+
+    def get_new(self):
+        """List new files since last recorded file state.
+
+        pysat stores filenames in the user_home/.pysat directory. Returns
+        a list of all new fileanmes since the last known change to files.
+        Filenames are stored if there is a change and either update_files
+        is True at instrument object level or files.refresh() is called.
+
+        Returns
+        -------
+        pandas.Series
+            files are indexed by datetime
+
+        """
+
+        # refresh files
+        self.refresh()
+        # current files
+        new_info = self._load(update_path=False)
+        # previous set of files
+        old_info = self._load(prev_version=True, update_path=False)
+        new_files = new_info[-new_info.isin(old_info)]
+        return new_files
 
     def refresh(self):
         """Update list of files, if there are detected changes.
@@ -495,145 +634,6 @@ class Files(object):
 
         # Store - to disk, if enabled
         self._store()
-
-    def get_new(self):
-        """List new files since last recorded file state.
-
-        pysat stores filenames in the user_home/.pysat directory. Returns
-        a list of all new fileanmes since the last known change to files.
-        Filenames are stored if there is a change and either update_files
-        is True at instrument object level or files.refresh() is called.
-
-        Returns
-        -------
-        pandas.Series
-            files are indexed by datetime
-
-        """
-
-        # refresh files
-        self.refresh()
-        # current files
-        new_info = self._load(update_path=False)
-        # previous set of files
-        old_info = self._load(prev_version=True, update_path=False)
-        new_files = new_info[-new_info.isin(old_info)]
-        return new_files
-
-    def get_index(self, fname):
-        """Return index for a given filename.
-
-        Parameters
-        ----------
-        fname : string
-            filename
-
-        Note
-        ----
-        If fname not found in the file information already attached
-        to the instrument.files instance, then a files.refresh() call
-        is made.
-
-        """
-
-        idx, = np.where(fname == self.files)
-        if len(idx) == 0:
-            # filename not in index, try reloading files from disk
-            self.refresh()
-            idx, = np.where(fname == np.array(self.files))
-
-            if len(idx) == 0:
-                raise ValueError(' '.join(('Could not find "{:}"'.format(fname),
-                                           'in available file list. Valid',
-                                           'Example:', self.files.iloc[0])))
-        # return a scalar rather than array - otherwise introduces array to
-        # index warnings.
-        return idx[0]
-
-    # slicing via date and index filename is inclusive slicing,
-    # date and index are normal non-inclusive end point
-
-    def __getitem__(self, key):
-        if self.list_files_generator is not None:
-            # Return generated filename
-            return self.list_files_generator(key)
-
-        if isinstance(key, slice):
-            try:
-                try:
-                    # Assume key is integer (including list or slice)
-                    out = self.files.iloc[key]
-                except TypeError:
-                    # Assume key is something else
-                    out = self.files.loc[key]
-            except IndexError as err:
-                raise IndexError(''.join((str(err), '\n',
-                                          'Date requested outside file ',
-                                          'bounds.')))
-            if isinstance(key.start, dt.datetime):
-                # enforce exclusive slicing on datetime
-                if len(out) > 1:
-                    if out.index[-1] >= key.stop:
-                        return out[:-1]
-                    else:
-                        return out
-                elif len(out) == 1:
-                    if out.index[0] >= key.stop:
-                        return pds.Series([], dtype='a')
-                    else:
-                        return out
-                else:
-                    return out
-            else:
-                # not a datetime
-                return out
-        else:
-            try:
-                return self.files.iloc[key]
-            except TypeError:
-                return self.files.loc[key]
-
-    def get_file_array(self, start, stop):
-        """Return a list of filenames between and including start and stop.
-
-        Parameters
-        ----------
-        start: array_like or single string
-            filenames for start of returned filelist
-        stop: array_like or single string
-            filenames inclusive of the ending of list provided by the stop
-            time
-
-        Returns
-        -------
-            list of filenames between and including start and stop times over
-            all intervals.
-
-        """
-        if hasattr(start, '__iter__') and hasattr(stop, '__iter__'):
-            files = []
-            for (sta, stp) in zip(start, stop):
-                id1 = self.get_index(sta)
-                id2 = self.get_index(stp)
-                files.extend(self.files.iloc[id1:(id2 + 1)])
-        elif hasattr(start, '__iter__') or hasattr(stop, '__iter__'):
-            estr = 'Either both or none of the inputs need to be iterable'
-            raise ValueError(estr)
-        else:
-            id1 = self.get_index(start)
-            id2 = self.get_index(stop)
-            files = self.files[id1:(id2 + 1)].to_list()
-        return files
-
-    def _remove_data_dir_path(self, inp=None, path=None):
-        """Remove the data directory path from filenames"""
-        if path is None:
-            estr = 'A path is required.'
-            raise ValueError(estr)
-
-        if inp is not None:
-            split_str = os.path.join(path, '')
-            return inp.apply(lambda x: x.split(split_str)[-1])
 
     @classmethod
     def from_os(cls, data_path=None, format_str=None,
