@@ -65,10 +65,10 @@ class Instrument(object):
         formatting. The default directory structure would be expressed as
         '{platform}/{name}/{tag}'. If None, the default directory structure is
         used. (default=None)
-    multi_file_day : boolean
+    multi_file_day : boolean or NoneType
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.  (default=False)
+        with a timestamp of day n-1 or n+1.  (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -275,7 +275,8 @@ class Instrument(object):
 
         # If the multi_file_day flag was set update here, otherwise the
         # default will be set by _assign_attrs
-        self.multi_file_day = multi_file_day
+        if multi_file_day is not None:
+            self.multi_file_day = multi_file_day
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
