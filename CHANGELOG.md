@@ -100,6 +100,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improve instrument tests for files
   - Use dt.timedelta instead of pds.DateOffSet where possible
   - Reduced code duplication throughout package
+  - Reduced unused code snippets throughout
 
 ## [2.2.2] - 2020-12-31
  - New Features

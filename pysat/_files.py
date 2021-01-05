@@ -29,14 +29,15 @@ class Files(object):
     stop_date : datetime
         date of last file, used as default stop bound for instrument
         object
-    data_path : string
-        path to the directory containing instrument files,
-        top_dir/platform/name/tag/
-    manual_org : bool
-        if True, then Files will look directly in pysat data directory
-        for data files and will not use /platform/name/tag
-    update_files : bool
-        updates files on instantiation if True
+    update_files : boolean
+        If True, immediately query filesystem for instrument files and
+        store
+        (default=False)
+    file_format : str or NoneType
+        File naming structure in string format.  Variables such as year,
+        month, and inst_id will be filled in as needed using python string
+        formatting.  The default file format structure is supplied in the
+        instrument list_files routine. (default=None)
 
     Note
     ----
@@ -76,7 +77,7 @@ class Files(object):
 
     """
 
-    def __init__(self, sat, manual_org=False, directory_format=None,
+    def __init__(self, sat, directory_format=None,
                  update_files=False, file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
         """ Initialization for Files class object
@@ -85,15 +86,13 @@ class Files(object):
         -----------
         sat : pysat._instrument.Instrument
             Instrument object
-        manual_org : boolian
-            If True, then pysat will look directly in pysat data directory
-            for data files and will not use default /platform/name/tag
-            (default=False)
         directory_format : string or NoneType
             directory naming structure in string format. Variables such as
             platform, name, and tag will be filled in as needed using python
             string formatting. The default directory structure would be
-            expressed as '{platform}/{name}/{tag}' (default=None)
+            expressed as '{platform}/{name}/{tag}'.
+            If None, the default directory structure is used
+            (default=None)
         update_files : boolean
             If True, immediately query filesystem for instrument files and
             store
@@ -128,9 +127,6 @@ class Files(object):
                                          '_', self._sat.inst_id,
                                          '_stored_file_info.txt'))
 
-        # flag for setting simple organization of files, only
-        # look under pysat_data_dir
-        self.manual_org = manual_org
         # path for sub-directories under pysat data path
         if directory_format is None:
             directory_format = os.path.join('{platform}', '{name}', '{tag}')
@@ -139,15 +135,10 @@ class Files(object):
         # user-specified file format
         self.file_format = file_format
 
-        if manual_org:
-            self.sub_dir_path = ''
-        else:
-            # construct subdirectory path
-            self.sub_dir_path = \
-                self.directory_format.format(name=self._sat.name,
-                                             platform=self._sat.platform,
-                                             tag=self._sat.tag,
-                                             inst_id=self._sat.inst_id)
+        # construct subdirectory path
+        self.sub_dir_path = self.directory_format.format(
+            name=self._sat.name, platform=self._sat.platform,
+            tag=self._sat.tag, inst_id=self._sat.inst_id)
         # ensure we have a path for pysat data directory
         if data_dir == '':
             raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
@@ -189,9 +180,9 @@ class Files(object):
         except ReferenceError:
             inst_repr = "Instrument(weakly referenced)"
 
-        out_str = "".join(["Files(", inst_repr, ", manual_org=",
-                           "{:}, directory_format='".format(self.manual_org),
-                           self.directory_format, "', update_files=",
+        out_str = "".join(["Files(", inst_repr, ", directory_format=",
+                           "'{:}'".format(self.directory_format),
+                           ", update_files=",
                            "{:}, file_format=".format(self._update_files),
                            "{:}, ".format(self.file_format.__repr__()),
                            "write_to_disk={:}, ".format(self.write_to_disk),

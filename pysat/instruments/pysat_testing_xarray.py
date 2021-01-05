@@ -210,8 +210,6 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                         'desc': 'UTC seconds', }
     meta['mlt'] = {'units': 'hours',
                    'long_name': 'Magnetic Local Time',
-                   'plot': 'MLT',
-                   'axis': 'MLT',
                    'desc': 'Magnetic Local Time',
                    'value_min': 0.,
                    'value_max': 24.,
@@ -220,25 +218,21 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                                      'where the field crosses the magnetic ',
                                      'equator. In this case we just simulate ',
                                      '0-24 with a consistent orbital period ',
-                                     'and an offset with SLT.']),
-                   'scale': 'linear'}
+                                     'and an offset with SLT.'])}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'plot': 'Solar Local Time', 'axis': 'SLT',
                    'desc': 'Solar Local Time', 'value_min': 0.,
                    'value_max': 24.,
                    'notes': ''.join(['Solar Local Time is the local time ',
                                      '(zenith angle of thee sun) of the given',
                                      ' locaiton. Overhead noon, +/- 90 is 6,',
-                                     ' 18 SLT .']), 'scale': 'linear'}
-    meta['orbit_num'] = {'long_name': 'Orbit Number', 'plot': 'Orbit Number',
-                         'axis': 'Orbit Number', 'desc': 'Orbit Number',
+                                     ' 18 SLT .'])}
+    meta['orbit_num'] = {'long_name': 'Orbit Number', 'desc': 'Orbit Number',
                          'value_min': 0., 'value_max': 25000.,
                          'notes': ''.join(['Number of orbits since the start ',
                                            'of the mission. For this ',
                                            'simulation we use the ',
                                            'number of 5820 second periods ',
-                                           'since the start, 2008-01-01.']),
-                         'scale': 'linear'}
+                                           'since the start, 2008-01-01.'])}
 
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
