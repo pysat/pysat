@@ -93,24 +93,6 @@ else:
 #  removed. We currently have two places for both, attached to pysat,
 #  and within params. data_dir fixed!
 
-@property
-def data_dir():
-    """Deprecated support for a single top-level pysat data directory"""
-    estr = ''.join(('pysat.data_dir has been deprecated. Please use ',
-                    '`pysat.params["data_dirs"]` instead.'))
-    raise DeprecationWarning(estr)
-    return params['data_dirs'][0]
-
-@data_dir.setter
-def data_dir(value):
-    estr = ''.join(('pysat.data_dir has been deprecated. Please use ',
-                    '`pysat.params["data_dirs"]` instead.'))
-    raise DeprecationWarning(estr)
-    temp = params['data_dirs']
-    temp[0] = value
-    params['data_dirs'] = temp
-    del temp
-
 # pull out user modules for initial compatibility
 user_modules = params['user_modules']
 
