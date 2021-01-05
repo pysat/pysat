@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     of the standard methods (not just load).
   - Added support for 'cycle' in addition to 'version' and 'revision' for
     filename conventions.
+  - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
