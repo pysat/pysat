@@ -11,8 +11,6 @@ import os
 
 from portalocker import Lock
 
-import pysat.utils
-
 
 class Parameters(object):
     """Stores user parameters used by pysat.
