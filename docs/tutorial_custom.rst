@@ -122,6 +122,8 @@ only when using the DataFrame.
 
    def custom_func_add(inst, param1, optional_param1=False,
                        optional_param2=False):
+                       """ Sample function that adds data to an Instrument
+                       """
        return {'data': 1. * inst['mlt'], 'name': 'single_mlt',
                inst.meta.labels.name: 'singleMLT',
                inst.meta.labels.units: 'hours'}

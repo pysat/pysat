@@ -108,7 +108,7 @@ class Instrument(object):
         to a custom function
     data : pandas.DataFrame
         loaded science data
-    date : pandas.datetime
+    date : dt.datetime
         date for loaded data
     doy : int
         day of year for loaded data
