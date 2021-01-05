@@ -671,6 +671,11 @@ class TestAvailableInst(TestWithRegistration):
                                            plat_flag):
         """Test display_available_instruments options
         """
+        # If using the pysat registry, make sure there is something registered
+        if inst_loc is None:
+            pysat.utils.registry.register(self.module_names)
+
+        # Initialize the STDOUT stream
         new_stdout = StringIO()
 
         with contextlib.redirect_stdout(new_stdout):
