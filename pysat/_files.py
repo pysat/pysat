@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+
 import datetime as dt
 import numpy as np
 import os
@@ -13,34 +19,51 @@ from pysat import logger
 class Files(object):
     """Maintains collection of files for instrument object.
 
-    Uses the list_files functions for each specific instrument
-    to create an ordered collection of files in time. Used by
-    instrument object to load the correct files. Files also
-    contains helper methods for determining the presence of
-    new files and creating an ordered list of files.
-
     Attributes
     ----------
-    base_path : string
-        path to .pysat directory in user home
-    start_date : datetime
+    home_path : str
+        Path to the pysat information directory.
+    start_date : datetime or NoneType
         date of first file, used as default start bound for instrument
-        object
-    stop_date : datetime
+        object, or None if no files are loaded.
+    stop_date : datetime or NoneType
         date of last file, used as default stop bound for instrument
-        object
-    update_files : boolean
-        If True, immediately query filesystem for instrument files and
-        store
-        (default=False)
+        object, or None if no files are loaded.
+    files : pds.Series
+        Series of data files, indexed by file start time
+    stored_file_name : str
+        Name of the hidden file containing the list of archieved data files
+        for this instrument.
+    directory_format : str or NoneType
+        Directory naming structure in string format. Variables such as
+        platform, name, and tag will be filled in as needed using python
+        string formatting. The default directory structure would be
+        expressed as '{platform}/{name}/{tag}'. If None, the default
+        directory structure is used (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
         instrument list_files routine. (default=None)
+    data_path : str
+        File directory structure that includes Instrument tags, inst_ids,
+        version numbers, et cetera.
+    write_to_disk : boolean
+        If True, the list of Instrument files will be written to disk.
+        Setting this to False prevents a rare condition when running multiple
+        pysat processes. (default=True)
+    ignore_empty_files : boolean
+        If True, the list of files found will be checked to ensure the
+        filesizes are greater than zero. Empty files are removed from the
+        stored list of files. (default=False)
 
     Note
     ----
+    Uses the list_files functions for each specific instrument to create an
+    ordered collection of files in time. Used by instrument object to load the
+    correct files. Files also contains helper methods for determining the
+    presence of new files and creating an ordered list of files.
+
     User should generally use the interface provided by a pysat.Instrument
     instance. Exceptions are the classmethod from_os, provided to assist
     in generating the appropriate output for an instrument routine.
@@ -58,45 +81,46 @@ class Files(object):
         # files from start up to stop (exclusive on stop)
         start = dt.datetime(2009,1,1)
         stop = dt.datetime(2009,1,3)
-        print(vefi.files[start:stop])
+        print(inst.files[start:stop])
 
         # files for date
-        print(vefi.files[start])
+        print(inst.files[start])
 
         # files by slicing
-        print(vefi.files[0:4])
+        print(inst.files[0:4])
 
         # get a list of new files
         # new files are those that weren't present the last time
         # a given instrument's file list was stored
-        new_files = vefi.files.get_new()
+        new_files = inst.files.get_new()
 
         # search pysat appropriate directory for instrument files and
         # update Files instance.
-        vefi.files.refresh()
+        inst.files.refresh()
 
     """
 
-    def __init__(self, sat, directory_format=None,
-                 update_files=False, file_format=None, write_to_disk=True,
+    # -----------------------------------------------------------------------
+    # Define the magic methods
+
+    def __init__(self, inst, directory_format=None, update_files=False,
+                 file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
         """ Initialization for Files class object
 
         Parameters
-        -----------
-        sat : pysat._instrument.Instrument
+        ----------
+        inst : pysat.Instrument
             Instrument object
-        directory_format : string or NoneType
+        directory_format : str or NoneType
             directory naming structure in string format. Variables such as
             platform, name, and tag will be filled in as needed using python
             string formatting. The default directory structure would be
-            expressed as '{platform}/{name}/{tag}'.
-            If None, the default directory structure is used
-            (default=None)
+            expressed as '{platform}/{name}/{tag}'. If None, the default
+            directory structure is used (default=None)
         update_files : boolean
             If True, immediately query filesystem for instrument files and
-            store
-            (default=False)
+            store (default=False)
         file_format : str or NoneType
             File naming structure in string format.  Variables such as year,
             month, and inst_id will be filled in as needed using python string
@@ -105,64 +129,70 @@ class Files(object):
         write_to_disk : boolean
             If true, the list of Instrument files will be written to disk.
             Setting this to False prevents a rare condition when running
-            multiple pysat processes.
+            multiple pysat processes. (default=True)
         ignore_empty_files : boolean
             if True, the list of files found will be checked to
             ensure the filesiizes are greater than zero. Empty files are
-            removed from the stored list of files.
+            removed from the stored list of files. (default=False)
+
         """
 
-        # Set the hidden variables
-        self._sat = weakref.proxy(sat)
-        self._update_files = update_files
-
-        # location of .pysat file
-        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
-        self.start_date = None
-        self.stop_date = None
-        self.files = pds.Series(None, dtype='object')
-        # location of stored files
-        self.stored_file_name = ''.join((self._sat.platform, '_',
-                                         self._sat.name, '_', self._sat.tag,
-                                         '_', self._sat.inst_id,
-                                         '_stored_file_info.txt'))
-
-        # path for sub-directories under pysat data path
-        if directory_format is None:
-            directory_format = os.path.join('{platform}', '{name}', '{tag}')
-        self.directory_format = directory_format
-
-        # user-specified file format
-        self.file_format = file_format
-
-        # construct subdirectory path
-        self.sub_dir_path = self.directory_format.format(
-            name=self._sat.name, platform=self._sat.platform,
-            tag=self._sat.tag, inst_id=self._sat.inst_id)
-        # ensure we have a path for pysat data directory
+        # Ensure we have a path for pysat data directory
         if data_dir == '':
             raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
                                          "directory using",
                                          "pysat.utils.set_data_dir.")))
-        # make sure path always ends with directory seperator
-        self.data_path = os.path.join(data_dir, self.sub_dir_path)
+
+        # Set the hidden variables
+        self._inst = weakref.proxy(inst)
+        self._update_files = update_files
+
+        # Determine the location of the .pysat file
+        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
+
+        # Initialize the file series
+        self.start_date = None
+        self.stop_date = None
+        self.files = pds.Series(None, dtype='object')
+
+        # Set the location of stored files
+        self.stored_file_name = ''.join((self._inst.platform, '_',
+                                         self._inst.name, '_', self._inst.tag,
+                                         '_', self._inst.inst_id,
+                                         '_stored_file_info.txt'))
+
+        # Set the path for sub-directories under pysat data path
+        if directory_format is None:
+            directory_format = os.path.join('{platform}', '{name}', '{tag}')
+        self.directory_format = directory_format
+
+        # Set the user-specified file format
+        self.file_format = file_format
+
+        # Construct the subdirectory path
+        sub_dir_path = self.directory_format.format(
+            name=self._inst.name, platform=self._inst.platform,
+            tag=self._inst.tag, inst_id=self._inst.inst_id)
+
+        # Make sure path always ends with directory seperator
+        self.data_path = os.path.join(data_dir, sub_dir_path)
         if self.data_path[-2] == os.path.sep:
             self.data_path = self.data_path[:-1]
         elif self.data_path[-1] != os.path.sep:
             self.data_path = os.path.join(self.data_path, '')
 
-        # store write to disk preference
+        # Set the preference of writing the file list to disk or not
         self.write_to_disk = write_to_disk
         if self.write_to_disk is False:
-            # using blank memory rather than loading from disk
+            # Use blank memory rather than loading from disk
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
 
-        # store ignore_empty_files preference
+        # Set the preference to ignore or include empty files
         self.ignore_empty_files = ignore_empty_files
 
-        if self._sat.platform != '':
-            # load stored file info
+        if self._inst.platform != '':
+            # Load stored file info
             info = self._load()
             if not info.empty:
                 self._attach_files(info)
@@ -176,7 +206,7 @@ class Files(object):
         # Because the local Instrument object is weakly referenced, it may
         # not always be accessible
         try:
-            inst_repr = self._sat.__repr__()
+            inst_repr = self._inst.__repr__()
         except ReferenceError:
             inst_repr = "Instrument(weakly referenced)"
 
@@ -243,7 +273,7 @@ class Files(object):
 
         if not files_info.empty:
             unique_files = len(files_info.index.unique()) != len(files_info)
-            if (not self._sat.multi_file_day and unique_files):
+            if (not self._inst.multi_file_day and unique_files):
                 estr = 'Duplicate datetimes in provided file '
                 estr = '{:s}information.\nKeeping one of each '.format(estr)
                 estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
@@ -262,9 +292,9 @@ class Files(object):
             # extract date information
             if not self.files.empty:
                 self.start_date = \
-                    self._sat._filter_datetime_input(self.files.index[0])
+                    self._inst._filter_datetime_input(self.files.index[0])
                 self.stop_date = \
-                    self._sat._filter_datetime_input(self.files.index[-1])
+                    self._inst._filter_datetime_input(self.files.index[-1])
             else:
                 self.start_date = None
                 self.stop_date = None
@@ -356,15 +386,15 @@ class Files(object):
         """
 
         output_str = '{platform} {name} {tag} {inst_id}'
-        output_str = output_str.format(platform=self._sat.platform,
-                                       name=self._sat.name, tag=self._sat.tag,
-                                       inst_id=self._sat.inst_id)
+        output_str = output_str.format(platform=self._inst.platform,
+                                       name=self._inst.name, tag=self._inst.tag,
+                                       inst_id=self._inst.inst_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
         output_str = " ".join(output_str.split())  # Remove duplicate whitespace
         logger.info(output_str)
 
-        info = self._sat._list_files_rtn(tag=self._sat.tag,
-                                         inst_id=self._sat.inst_id,
+        info = self._inst._list_files_rtn(tag=self._inst.tag,
+                                         inst_id=self._inst.inst_id,
                                          data_path=self.data_path,
                                          format_str=self.file_format)
         info = self._remove_data_dir_path(info)
