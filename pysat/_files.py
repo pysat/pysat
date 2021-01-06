@@ -203,6 +203,8 @@ class Files(object):
                 self.refresh()
 
     def __repr__(self):
+        """ Representation of the class and its current state
+        """
         # Because the local Instrument object is weakly referenced, it may
         # not always be accessible
         try:
@@ -223,6 +225,9 @@ class Files(object):
         return out_str
 
     def __str__(self):
+        """ Description of the class and its contents
+        """
+
         num_files = len(self.files)
         output_str = 'Local File Statistics\n'
         output_str += '---------------------\n'
@@ -235,6 +240,74 @@ class Files(object):
             output_str += self.files.index[-1].strftime('%d %B %Y')
 
         return output_str
+
+    def __getitem__(self, key):
+        """ Retrieve items from the files attribute
+
+        Parameters
+        ----------
+        key : int, list, slice, dt.datetime
+            Key for locating files from a pandas Series indexed by time
+
+        Returns
+        -------
+        out : pds.Series
+           Subset of the files as a Series
+
+        Raises
+        ------
+        IndexError
+            If data is outside of file bounds
+
+        Note
+        ----
+        Slicing via date and index filename is inclusive slicing, date and
+        index are normal non-inclusive end point
+
+        """
+
+        if isinstance(key, slice):
+            try:
+                try:
+                    # Assume key is integer (including list or slice)
+                    out = self.files.iloc[key]
+                except TypeError:
+                    # The key must be something else, use alternative access
+                    out = self.files.loc[key]
+            except IndexError as err:
+                raise IndexError(''.join((str(err), '\n',
+                                          'Date requested outside file ',
+                                          'bounds.')))
+
+            if isinstance(key.start, dt.datetime):
+                # Enforce exclusive slicing on datetime
+                if len(out) > 1:
+                    if out.index[-1] >= key.stop:
+                        return out[:-1]
+                    else:
+                        return out
+                elif len(out) == 1:
+                    if out.index[0] >= key.stop:
+                        return pds.Series([], dtype='a')
+                    else:
+                        return out
+                else:
+                    return out
+            else:
+                # Not a datetime key, return based on previous selection calls
+                return out
+        else:
+            try:
+                # Assume key is integer (including list or slice)
+                out = self.files.iloc[key]
+            except TypeError:
+                # The key must be something else, use alternative access
+                out = self.files.loc[key]
+
+        return out
+
+    # -----------------------------------------------------------------------
+    # Define the hidden methods
 
     def _filter_empty_files(self):
         """Update the file list (files) with empty files ignored"""
@@ -466,44 +539,7 @@ class Files(object):
         # index warnings.
         return idx[0]
 
-    # slicing via date and index filename is inclusive slicing,
-    # date and index are normal non-inclusive end point
 
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            try:
-                try:
-                    # Assume key is integer (including list or slice)
-                    out = self.files.iloc[key]
-                except TypeError:
-                    # Assume key is something else
-                    out = self.files.loc[key]
-            except IndexError as err:
-                raise IndexError(''.join((str(err), '\n',
-                                          'Date requested outside file ',
-                                          'bounds.')))
-            if isinstance(key.start, dt.datetime):
-                # enforce exclusive slicing on datetime
-                if len(out) > 1:
-                    if out.index[-1] >= key.stop:
-                        return out[:-1]
-                    else:
-                        return out
-                elif len(out) == 1:
-                    if out.index[0] >= key.stop:
-                        return pds.Series([], dtype='a')
-                    else:
-                        return out
-                else:
-                    return out
-            else:
-                # not a datetime
-                return out
-        else:
-            try:
-                return self.files.iloc[key]
-            except TypeError:
-                return self.files.loc[key]
 
     def get_file_array(self, start, stop):
         """Return a list of filenames between and including start and stop.
