@@ -359,12 +359,9 @@ class Instrument(object):
         # initialize orbit support
         if orbit_info is None:
             if self.orbit_info is None:
-                # If default info not provided, set None as default
-                orbit_info = {'index': None, 'kind': None, 'period': None}
-            else:
-                # Default provided by instrument module
-                orbit_info = self.orbit_info
-        self.orbits = pysat.Orbits(self, **orbit_info)
+                # If default info not provided, use class defaults
+                self.orbit_info = dict()
+        self.orbits = pysat.Orbits(self, **self.orbit_info)
         self.orbit_info = orbit_info
 
         # Create empty placeholder for meta translation table
