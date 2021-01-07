@@ -193,9 +193,9 @@ class Files(object):
 
         if self._inst.platform != '':
             # Load stored file info
-            info = self._load()
-            if not info.empty:
-                self._attach_files(info)
+            file_info = self._load()
+            if not file_info.empty:
+                self._attach_files(file_info)
                 if update_files:
                     self.refresh()
             else:
@@ -310,31 +310,36 @@ class Files(object):
     # Define the hidden methods
 
     def _filter_empty_files(self):
-        """Update the file list (files) with empty files ignored"""
+        """Update the file list (files) by removing empty files
+        """
 
         keep_index = []
-        for i, fi in enumerate(self.files):
-            # create full path
-            fi_path = os.path.join(self.data_path, fi)
-            # ensure it exists
-            if os.path.exists(fi_path):
-                # check for size
-                if os.path.getsize(fi_path) > 0:
-                    # store if not empty
+        for i, fname in enumerate(self.files):
+            # Create a full filename with file path
+            full_fname = os.path.join(self.data_path, fname)
+
+            # Ensure the file exists and is a file
+            if os.path.isfile(full_fname):
+                # Check for size
+                if os.path.getsize(full_fname) > 0:
+                    # Store if not empty
                     keep_index.append(i)
-        # remove filenames as needed
+
+        # Remove filenames as needed
         dropped_num = len(self.files.index) - len(keep_index)
         if dropped_num > 0:
-            print(' '.join(('Removing', str(dropped_num),
-                  'empty files from Instrument list.')))
+            logger.warning(' '.join(('Removing {:d}'.format(dropped_num),
+                                     'empty files from Instrument list.')))
             self.files = self.files.iloc[keep_index]
+
+        return
 
     def _attach_files(self, files_info):
         """Attach results of instrument list_files routine to Instrument object
 
         Parameters
         ----------
-        file_info :
+        files_info : pds.Series
             Stored file information
 
         Returns
@@ -346,50 +351,57 @@ class Files(object):
 
         if not files_info.empty:
             unique_files = len(files_info.index.unique()) != len(files_info)
+            # Filter file list, removing duplicates
             if (not self._inst.multi_file_day and unique_files):
-                estr = 'Duplicate datetimes in provided file '
-                estr = '{:s}information.\nKeeping one of each '.format(estr)
-                estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
+                estr = ''.join(['Duplicate datetimes in provided file ',
+                                'information.\nKeeping one of each of the ',
+                                'duplicates, dropping the rest.'])
                 logger.warning(estr)
                 ind = files_info.index.duplicated()
                 logger.warning(files_info.index[ind].unique())
 
                 idx = np.unique(files_info.index, return_index=True)
                 files_info = files_info.iloc[idx[1]]
-                # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
-            # filter for empty files here (in addition to refresh)
+
+            # Refresh list and filter for empty files
             if self.ignore_empty_files:
                 self._filter_empty_files()
-            # extract date information
+
+            # Extract date information
             if not self.files.empty:
-                self.start_date = \
-                    self._inst._filter_datetime_input(self.files.index[0])
-                self.stop_date = \
-                    self._inst._filter_datetime_input(self.files.index[-1])
+                self.start_date = self._inst._filter_datetime_input(
+                    self.files.index[0])
+                self.stop_date = self._inst._filter_datetime_input(
+                    self.files.index[-1])
             else:
                 self.start_date = None
                 self.stop_date = None
         else:
             self.start_date = None
             self.stop_date = None
-            # convert to object type
-            # necessary if Series is empty, enables == checks with strings
+
+            # Convert to object type if Series is empty.  This allows for
+            # `==` equality checks with strings
             self.files = files_info.astype(np.dtype('O'))
 
-    def _store(self):
-        """Store currently loaded filelist for instrument onto filesystem"""
+        return
 
-        name = self.stored_file_name
-        # check if current file data is different than stored file list
-        # if so, move file list to previous file list, store current to file
-        # if not, do nothing
+    def _store(self):
+        """Store currently loaded filelist for instrument onto filesystem
+        """
+
+        stored_name = self.stored_file_name
+
+        # Check if current file data is different than stored file list. If so,
+        # move file list to previous file list, store current to file. If not,
+        # do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
             # The number of items is different, things are new
             new_flag = True
-        elif len(stored_files) == len(self.files):
+        else:
             # The number of items is the same, check specifically for equality
             if stored_files.eq(self.files).all():
                 new_flag = False
@@ -398,16 +410,19 @@ class Files(object):
                 new_flag = True
 
         if new_flag:
-
             if self.write_to_disk:
-                stored_files.to_csv(os.path.join(self.home_path,
-                                                 'previous_' + name),
+                # Save the previous data in a backup file
+                prev_name = "_".join(["previous", stored_name])
+                stored_files.to_csv(os.path.join(self.home_path, prev_name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
                                     header=False)
-                self.files.to_csv(os.path.join(self.home_path, name),
+
+                # Overwrite the old reference file with the new file info
+                self.files.to_csv(os.path.join(self.home_path, stored_name),
                                   date_format='%Y-%m-%d %H:%M:%S.%f',
                                   header=False)
             else:
+                # Update the hidden File attributes
                 self._previous_file_list = stored_files
                 self._current_file_list = self.files.copy()
         return
@@ -502,7 +517,7 @@ class Files(object):
         if not new_files.empty:
             if self.ignore_empty_files:
                 self._filter_empty_files()
-            logger.info('Found {:d} local files.'.format(len(info)))
+            logger.info('Found {:d} local files.'.format(len(new_files)))
         else:
             estr = "".join(["Unable to find any files that match the supplied ",
                             "template. If you have the necessary files please",
@@ -642,6 +657,12 @@ class Files(object):
             None, filenames will be parsed presuming a fixed width format.
             (default=None)
 
+        Returns
+        -------
+        pds.Series
+            A Series of filenames indexed by time. See
+            `pysat.utils.files.process_parsed_filenames` for details.
+
         Note
         ----
         Requires fixed_width or delimited filename
@@ -659,29 +680,34 @@ class Files(object):
             raise ValueError(" ".join(("Must supply instrument directory path",
                                        "(dir_path)")))
 
-        # parse format string to figure out the search string to use
-        # to identify files in the filesystem
-        # different option required if filename is delimited
+        # Parse format string to figure out which search string should be used
+        # to identify files in the filesystem. Different option required if
+        # filename is delimited
         if delimiter is None:
             wildcard = False
         else:
             wildcard = True
-        search_dict = \
-            futils.construct_searchstring_from_format(format_str,
-                                                      wildcard=wildcard)
+        search_dict = futils.construct_searchstring_from_format(
+            format_str, wildcard=wildcard)
         search_str = search_dict['search_string']
-        # perform local file search
+
+        # Perform the local file search
         files = futils.search_local_system_formatted_filename(data_path,
                                                               search_str)
-        # we have a list of files, now we need to extract the information
-        # pull of data from the areas identified by format_str
+
+        # Use the file list to extract the information. Pull data from the
+        # areas identified by format_str
         if delimiter is None:
             stored = futils.parse_fixed_width_filenames(files, format_str)
         else:
             stored = futils.parse_delimited_filenames(files, format_str,
                                                       delimiter)
-        # process the parsed filenames and return a properly formatted Series
+
+        # Process the parsed filenames and return a properly formatted Series
         return futils.process_parsed_filenames(stored, two_digit_year_break)
+
+# --------------------------------------------------------
+#   Utilities supporting the Files Object (all deprecated)
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
@@ -709,10 +735,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     Note
     ----
-        If two files have the same date and time information in the
-        filename then the file with the higher version/revision/cycle is used.
-        Series returned only has one file der datetime. Version is required
-        for this filtering, revision and cycle are optional.
+    If two files have the same date and time information in the filename then
+    the file with the higher version/revision/cycle is used. Series returned
+    only has one file der datetime. Version is required for this filtering,
+    revision and cycle are optional.
 
     """
 
@@ -840,9 +866,9 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     Note
     ----
-        The '?' may be used to indicate a set number of spaces for a variable
-        part of the name that need not be extracted.
-        'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
+    The '?' may be used to indicate a set number of spaces for a variable
+    part of the name that need not be extracted.
+    'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
 
     """
 
