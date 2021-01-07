@@ -447,66 +447,101 @@ class Files(object):
         else:
             return pds.Series([], dtype='a')
 
+    def _remove_data_dir_path(self, file_series=None):
+        """Remove the data directory path from filenames
+
+        Parameters
+        ----------
+        file_series : pds.Series or NoneType
+            Series of filenames (potentially with file paths)
+
+        Returns
+        -------
+        If `file_series` is a Series, removes the data path from the filename,
+        if present.  Void if `path_input` is None.
+
+        """
+        if file_series is not None:
+            # Ensure there is a directory divider at the end of the path
+            split_str = os.path.join(self.data_path, '')
+
+            # Remove the data path from all filenames in the Series
+            return file_series.apply(lambda x: x.split(split_str)[-1])
+
+        return
+
+    # -----------------------------------------------------------------------
+    # Define the public methods and properties
+
     def refresh(self):
         """Update list of files, if there are changes.
 
+        Note
+        ----
         Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
-        pysat_data_dir/platform/name/tag/,
-        where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
-
+        pysat_data_dir/platform/name/tag/, where pysat_data_dir is set by
+        pysat.utils.set_data_dir(path=path).
 
         """
 
-        output_str = '{platform} {name} {tag} {inst_id}'
-        output_str = output_str.format(platform=self._inst.platform,
-                                       name=self._inst.name, tag=self._inst.tag,
-                                       inst_id=self._inst.inst_id)
-        output_str = " ".join(("pysat is searching for", output_str, "files."))
-        output_str = " ".join(output_str.split())  # Remove duplicate whitespace
-        logger.info(output_str)
+        # Let interested users know pysat is searching for
+        info_str = '{platform} {name} {tag} {inst_id}'.format(
+            platform=self._inst.platform, name=self._inst.name,
+            tag=self._inst.tag, inst_id=self._inst.inst_id)
+        info_str = " ".join(("pysat is searching for", info_str, "files."))
+        info_str = " ".join(info_str.split())  # Remove duplicate whitespace
+        logger.info(info_str)
 
-        info = self._inst._list_files_rtn(tag=self._inst.tag,
-                                         inst_id=self._inst.inst_id,
-                                         data_path=self.data_path,
-                                         format_str=self.file_format)
-        info = self._remove_data_dir_path(info)
-        if not info.empty:
+        # Get a list of new files, removing empty files if desired
+        new_files = self._inst._list_files_rtn(tag=self._inst.tag,
+                                               inst_id=self._inst.inst_id,
+                                               data_path=self.data_path,
+                                               format_str=self.file_format)
+        new_files = self._remove_data_dir_path(new_files)
+        if not new_files.empty:
             if self.ignore_empty_files:
                 self._filter_empty_files()
             logger.info('Found {:d} local files.'.format(len(info)))
         else:
-            estr = "Unable to find any files that match the supplied template."
-            estr += " If you have the necessary files please check pysat "
-            estr += "settings and file locations (e.g. pysat.pysat_dir)."
+            estr = "".join(["Unable to find any files that match the supplied ",
+                            "template. If you have the necessary files please",
+                            " check pysat settings and file locations ",
+                            "(e.g. pysat.pysat_dir)."])
             logger.warning(estr)
-        # attach to object
-        self._attach_files(info)
-        # store - to disk, if enabled
+
+        # Attach to object
+        self._attach_files(new_files)
+
+        # Store to disk, if enabled for this class
         self._store()
 
     def get_new(self):
         """List new files since last recorded file state.
 
-        pysat stores filenames in the user_home/.pysat directory. Returns
-        a list of all new fileanmes since the last known change to files.
-        Filenames are stored if there is a change and either update_files
-        is True at instrument object level or files.refresh() is called.
-
         Returns
         -------
         pandas.Series
-            files are indexed by datetime
+           A datetime-index Series of all new fileanmes since the last known
+           change to the files.
+
+        Note
+        ----
+        pysat stores filenames in the user_home/.pysat directory. Filenames are
+        stored if there is a change and either update_files is True at
+        instrument object level or files.refresh() is called.
 
         """
 
-        # refresh files
+        # Refresh file series
         self.refresh()
-        # current files
-        new_info = self._load()
-        # previous set of files
-        old_info = self._load(prev_version=True)
-        new_files = new_info[-new_info.isin(old_info)]
+
+        # Load current and previous set of files
+        new_file_series = self._load()
+        old_file_series = self._load(prev_version=True)
+
+        # Select files that are in the new series and not the old series
+        new_files = new_file_series[-new_file_series.isin(old_file_series)]
         return new_files
 
     def get_index(self, fname):
@@ -515,7 +550,7 @@ class Files(object):
         Parameters
         ----------
         fname : string
-            filename
+            Filename for the desired time index
 
         Note
         ----
@@ -527,7 +562,7 @@ class Files(object):
 
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
-            # filename not in index, try reloading files from disk
+            # Filename not in index, try reloading files from disk
             self.refresh()
             idx, = np.where(fname == np.array(self.files))
 
@@ -535,29 +570,34 @@ class Files(object):
                 raise ValueError(' '.join(('Could not find "{:}"'.format(fname),
                                            'in available file list. Valid',
                                            'Example:', self.files.iloc[0])))
-        # return a scalar rather than array - otherwise introduces array to
+
+        # Return a scalar rather than array - otherwise introduces array to
         # index warnings.
         return idx[0]
-
-
 
     def get_file_array(self, start, stop):
         """Return a list of filenames between and including start and stop.
 
         Parameters
         ----------
-            start: array_like or single string
-                filenames for start of returned filelist
-            stop: array_like or single string
-                filenames inclusive of the ending of list provided by the stop
-                time
+        start: array_like or single string
+            filenames for start of returned filelist
+        stop: array_like or single string
+            filenames inclusive of the ending of list provided by the stop time
 
         Returns
         -------
-            list of filenames between and including start and stop times over
-            all intervals.
+        files : list
+            A list of filenames between and including start and stop times
+            over all intervals.
+
+        Note
+        ----
+        `start` and `stop` must be of the same type: both array-like or both
+        strings
 
         """
+        # Selection is treated differently if start/stop are iterable or not
         if hasattr(start, '__iter__') and hasattr(stop, '__iter__'):
             files = []
             for (sta, stp) in zip(start, stop):
@@ -571,21 +611,14 @@ class Files(object):
             id1 = self.get_index(start)
             id2 = self.get_index(stop)
             files = self.files[id1:(id2 + 1)].to_list()
-        return files
 
-    def _remove_data_dir_path(self, inp=None):
-        """Remove the data directory path from filenames"""
-        if inp is not None:
-            split_str = os.path.join(self.data_path, '')
-            return inp.apply(lambda x: x.split(split_str)[-1])
+        return files
 
     @classmethod
     def from_os(cls, data_path=None, format_str=None,
                 two_digit_year_break=None, delimiter=None):
         """
         Produces a list of files and and formats it for Files class.
-
-        Requires fixed_width or delimited filename
 
         Parameters
         ----------
@@ -611,8 +644,10 @@ class Files(object):
 
         Note
         ----
-        Does not produce a Files instance, but the proper output
-        from instrument_module.list_files method.
+        Requires fixed_width or delimited filename
+
+        Does not produce a Files instance, but the proper output from
+        instrument_module.list_files method.
 
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.
