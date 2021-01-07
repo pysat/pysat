@@ -58,7 +58,7 @@ class Instrument(object):
         (default=False)
     strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
-        monotonically increasing. (default=True
+        monotonically increasing. (default=True)
     directory_format : string or NoneType
         Directory naming structure in string format. Variables such as platform,
         name, and tag will be filled in as needed using python string
