@@ -34,6 +34,27 @@ class Orbits(object):
         in the datetime index (inst.data.index) is large enough to
         consider it a new orbit
 
+    Attributes
+    ----------
+    inst : pysat.Instrument
+        Instrument object for which the orbits will be determined
+    kind : str
+        Kind of orbit, which specifies how orbital breaks are determined.
+        Expects one of: 'local time', 'longitude', 'polar', or 'orbit'
+        - local time: negative gradients in lt or breaks in inst.data.index
+        - longitude: negative gradients or breaks in inst.data.index
+        - polar: zero crossings in latitude or breaks in inst.data.index
+        - orbit: uses unique values of orbit number
+        (default='local time')
+    orbit_period : pds.Timedelta
+        Pandas Timedelta that specifies the orbit period.  Used instead of
+        dt.timedelta to enable np.timedelta64 input.
+        (default=97 min)
+    num : int
+        Number of orbits in loaded data
+    orbit_index : int
+        Index of currently loaded orbit, zero indexed
+
     Note
     ----
     Determines the locations of orbit breaks in the loaded data in inst.data
@@ -139,26 +160,6 @@ class Orbits(object):
 
         return output_str
 
-    @property
-    def current(self):
-        """Current orbit number.
-
-        Returns
-        -------
-        int or None
-            None if no orbit data. Otherwise, returns orbit number, beginning
-            with zero. The first and last orbit of a day is somewhat ambiguous.
-            The first orbit for day n is generally also the last orbit
-            on day n - 1. When iterating forward, the orbit will be labeled
-            as first (0). When iterating backward, orbit labeled as the last.
-
-        """
-
-        if self._current > 0:
-            return self._current - 1
-        else:
-            return None
-
     def __getitem__(self, orbit_key):
         """Enable convenience notation for loading orbit into parent object.
 
@@ -180,11 +181,42 @@ class Orbits(object):
         A day of data must already be loaded.
 
         """
-        # hack included so that orbits appear to be zero indexed
         if orbit_key < 0:
-            self.load(orbit_key)
+            self.load(orbit_key)  # Loading for reverse indices
         else:
-            self.load(orbit_key + 1)
+            self.load(orbit_key + 1)  # Loading for forward indices
+
+    def __iter__(self):
+        """Support iteration by orbit.
+
+        Examples
+        --------
+        ::
+
+            for inst in inst.orbits:
+                print('next available orbit ', inst.data)
+
+        Note
+        ----
+        For each iteration the next available orbit is loaded into
+        inst.data.
+
+        Limits of iteration set by setting inst.bounds.
+
+        """
+        # Load up the first increment of data
+        while self.inst.empty:
+            self.inst.next()
+
+        while True:
+            try:
+                self.next()
+                yield self.inst
+            except StopIteration:
+                return
+
+    # -----------------------------------------------------------------------
+    # Define the hidden methods
 
     def _reset(self):
         # create null arrays for storing orbit info
@@ -541,6 +573,29 @@ class Orbits(object):
                                                'orbits for day')))
             else:
                 raise ValueError('Must set an orbit')
+
+    # -----------------------------------------------------------------------
+    # Define the public methods and properties
+
+    @property
+    def current(self):
+        """Current orbit number.
+
+        Returns
+        -------
+        int or None
+            None if no orbit data. Otherwise, returns orbit number, beginning
+            with zero. The first and last orbit of a day is somewhat ambiguous.
+            The first orbit for day n is generally also the last orbit
+            on day n - 1. When iterating forward, the orbit will be labeled
+            as first (0). When iterating backward, orbit labeled as the last.
+
+        """
+
+        if self._current > 0:
+            return self._current - 1
+        else:
+            return None
 
     def load(self, orbit=None):
         """Load a particular orbit into .data for loaded day.
@@ -951,34 +1006,3 @@ class Orbits(object):
                 # Cycle to more data or raise stopIteration at end of data set
                 self.inst.prev()
             self.prev()
-
-    def __iter__(self):
-        """Support iteration by orbit.
-
-        For each iteration the next available orbit is loaded into
-        inst.data.
-
-        Examples
-        --------
-        ::
-
-            for inst in inst.orbits:
-                print('next available orbit ', inst.data)
-
-        Note
-        ----
-        Limits of iteration set by setting inst.bounds.
-
-        """
-        # load up the first increment of data
-        # coupling with Instrument frame is high, but it is already
-        # high in a number of areas
-        while self.inst.empty:
-            self.inst.next()
-
-        while True:
-            try:
-                self.next()
-                yield self.inst
-            except StopIteration:
-                return
