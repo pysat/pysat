@@ -589,7 +589,7 @@ class Orbits(object):
 
         Returns
         -------
-        int or None
+        int or NoneType
             None if no orbit data. Otherwise, returns orbit number, beginning
             with zero. The first and last orbit of a day is somewhat ambiguous.
             The first orbit for day n is generally also the last orbit
@@ -603,13 +603,19 @@ class Orbits(object):
         else:
             return None
 
-    def load(self, orbit=None):
+    def load(self, orbit_num):
         """Load a particular orbit into .data for loaded day.
 
         Parameters
         ----------
-        orbit : int
-            orbit number, 1 indexed
+        orbit_num : int
+            orbit number, 1 indexed (1-length or -1 to -length) with sign
+            denoting forward or backward indexing
+
+        Raises
+        ------
+        ValueError
+            If index requested lies beyond the number of orbits
 
         Note
         ----
@@ -621,120 +627,110 @@ class Orbits(object):
         """
         # Ensure data exits
         if not self.inst.empty:
-            # set up orbit metadata
+            # Set up orbit metadata
             self._calc_orbits()
-            # ensure user supplied an orbit
-            if orbit is not None:
-                # pull out requested orbit
-                if orbit < 0:
-                    # negative indexing consistent with numpy, -1 last,
-                    # -2 second to last, etc.
-                    orbit = self.num + 1 + orbit
 
-                if orbit == self.num:
-                    # we get here if user asks for last orbit
-                    # this call is first to trap case where there is only one
-                    # orbit (self.num=1)
-                    # which needs to be treated differently than a orbit=1 call
-                    if self.num != 1:
-                        # more than one orbit, go back one (simple call) and
-                        # then forward doing full logic for breaks across day
-                        self._get_basic_orbit(self.num - 1)
-                        self.next()
-                    else:
-                        # only one complete orbit in file, or less
-                        # check if we are close to beginning or end of day
-                        date = self.inst.date
-                        delta_start = self.inst.index[-1] - date
-                        delta_end = (date + dt.timedelta(days=1)
-                                     - self.inst.index[0])
+            # Pull out the requested orbit
+            if orbit_num < 0:
+                # Negative indexing consistent with numpy, -1 last,
+                # -2 second to last, etc.
+                orbit_num = self.num + 1 + orbit_num
 
-                        if delta_start <= self.orbit_period * 1.05:
-                            # We are near the beginning. Load the
-                            # previous file, then go forward one orbit
-                            self.inst.prev()
-                            self.next()
-                            if self.inst.index[-1] < date + delta_start:
-                                # we could go back a day, iterate over orbit, as
-                                # above, and the data we have is the wrong day
-                                # In this case, move forward again.
-                                # happens when previous day doesn't have data
-                                # near end of the day
-                                self.next()
+            if orbit_num == self.num:
+                # We get here if user asks for last orbit. This cal is first to
+                # trap case where there is only one orbit (self.num=1), which
+                # needs to be treated differently than a orbit=1 call
+                if self.num != 1:
+                    # More than one orbit, go back one (simple call) and
+                    # then forward doing full logic for breaks across day
+                    self._get_basic_orbit(self.num - 1)
+                    self.next()
+                else:
+                    # At most one complete orbit in the file, check if we are
+                    # close to beginning or end of day
+                    date = self.inst.date
+                    delta_start = self.inst.index[-1] - date
+                    delta_end = (date + dt.timedelta(days=1)
+                                 - self.inst.index[0])
 
-                        elif delta_end <= self.orbit_period * 1.05:
-                            # near end
-                            # load next file, then go back one orbit
-                            self.inst.next()
-                            self.prev()
-                            if self.inst.index[0] > (date - delta_end
-                                                    + dt.timedelta(days=1)):
-                                # we could go forward a day, iterate over orbit,
-                                # as above, and the data we have is the wrong
-                                # day.
-                                # In this case, move back again.
-                                # happens when next day doesn't have data
-                                # near beginning of the day
-                                self.prev()
-                        else:
-                            # not near beginning or end, just get the last orbit
-                            # available (only one)
-                            self._get_basic_orbit(-1)
-
-                elif orbit == 1:
-                    # user asked for first orbit
-                    try:
-                        # orbit could start file previous
-                        # check for this condition
-                        # store real date user wants
-                        true_date = self.inst.date
-
-                        # go back a day
+                    if delta_start <= self.orbit_period * 1.05:
+                        # We are near the beginning. Load the previous file,
+                        # then go forward one orbit
                         self.inst.prev()
-
-                        # if and else added becuase of CINDI turn off
-                        # 6/5/2013, turn on 10/22/2014
-                        # crashed when starting on 10/22/2014
-                        # prev returned empty data
-                        if not self.inst.empty:
-                            # get last orbit if there is data
-                            # this will deal with orbits across file cleanly
-                            self.load(orbit=-1)
-                        else:
-                            # no data, no previous data to account for
-                            # move back to original data, do simple load
-                            # of first orbit
-                            self.inst.next()
-                            self._get_basic_orbit(1)
-
-                        # check that this orbit should end on the current day
-                        delta = true_date - self.inst.index[0]
-                        if delta >= self.orbit_period:
-                            # the orbit loaded isn't close enough to date
-                            # to be the first orbit of the day, move forward
+                        self.next()
+                        if self.inst.index[-1] < date + delta_start:
+                            # We could go back a day, iterate over orbit, as
+                            # above, and the data we have is the wrong day.
+                            # In this case, move forward again.  This happens
+                            # when previous day doesn't have data near end of
+                            # the day
                             self.next()
 
-                    except StopIteration:
-                        # check if the first orbit is also the last orbit
+                    elif delta_end <= self.orbit_period * 1.05:
+                        # Near end; load next file, then go back one orbit
+                        self.inst.next()
+                        self.prev()
+                        if self.inst.index[0] > (date - delta_end
+                                                 + dt.timedelta(days=1)):
+                            # We could go forward a day, iterate over orbit
+                            # as above, and the data we have is the wrong day.
+                            # In this case, move back again. This happens when
+                            # next day doesn't have data near beginning of the
+                            # day
+                            self.prev()
+                    else:
+                        # Not near beginning or end, just get the last orbit
+                        # available (only one)
+                        self._get_basic_orbit(-1)
+            elif orbit_num == 1:
+                # User asked for first orbit
+                try:
+                    # Orbit could start file previous; check for this condition
+                    # and store the real date user wants
+                    true_date = self.inst.date
+
+                    # Go back a day
+                    self.inst.prev()
+
+                    # If and else added because of Instruments that have large
+                    # gaps (e.g., C/NOFS).  In this case, prev can return
+                    # empty data
+                    if not self.inst.empty:
+                        # Get last orbit if there is data. This will deal with
+                        # orbits across file cleanly
+                        self.load(-1)
+                    else:
+                        # No data, no previous data to account for. Move back
+                        # to original data, do simple load of first orbit
+                        self.inst.next()
                         self._get_basic_orbit(1)
 
-                        # includes hack to appear to be zero indexed
-                        logger.info('Loaded Orbit: %i' % (self._current - 1))
+                    # Check that this orbit should end on the current day
+                    delta = true_date - self.inst.index[0]
+                    if delta >= self.orbit_period:
+                        # The orbit loaded isn't close enough to date to be the
+                        # first orbit of the day, move forward
+                        self.next()
 
-                elif orbit < self.num:
-                    # load orbit data into data
-                    self._get_basic_orbit(orbit)
+                except StopIteration:
+                    # Check if the first orbit is also the last orbit
+                    self._get_basic_orbit(1)
 
-                    # includes hack to appear to be zero indexed
+                    # Includes hack to appear to be zero indexed
                     logger.info('Loaded Orbit: %i' % (self._current - 1))
 
-                else:
-                    # gone too far
-                    self.inst.data = self.inst._null_data
-                    raise Exception(' '.join(('Requested an orbit past total',
-                                              'orbits for day')))
+            elif orbit_num < self.num:
+                # Load basic orbit data into data
+                self._get_basic_orbit(orbit)
+
+                # Includes hack to appear to be zero indexed
+                logger.info('Loaded Orbit: %i' % (self._current - 1))
+
             else:
-                raise Exception('Must set an orbit')
+                # Gone too far
+                self.inst.data = self.inst._null_data
+                raise ValueError(' '.join(('Requested an orbit past total',
+                                           'orbits for day')))
         else:
             logger.info(' '.join(('No data loaded in instrument object to',
                                   'determine orbits.')))
@@ -864,7 +860,7 @@ class Orbits(object):
                 # no current orbit set, grab the first one
                 # using load command to specify the first orbit, which
                 # automatically loads prev day if needed to form complete orbit
-                self.load(orbit=1)
+                self.load(1)
 
             elif self._current < (self.num - 1):
                 # since we aren't close to the last orbit, just pull the next
@@ -952,7 +948,7 @@ class Orbits(object):
                 logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             elif self._current == 0:
-                self.load(orbit=-1)
+                self.load(-1)
                 return
 
             elif self._current < 2:
