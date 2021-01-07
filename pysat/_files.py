@@ -239,7 +239,6 @@ class Files(object):
         # _load. We start here with the first directory for cases where there
         # are no files.
         self.data_path = self.data_paths[0]
-        
         # Set the preference of writing the file list to disk or not
         self.write_to_disk = write_to_disk
         if not self.write_to_disk:
