@@ -218,6 +218,14 @@ class Orbits(object):
     # -----------------------------------------------------------------------
     # Define the hidden methods
 
+    def _report_current_orbit(self):
+        """ Report the current orbit to log at the info level
+        """
+        
+        # Index appears as zero-indexed, though it is one-indexed
+        logger.info('Loaded Orbit: {:d}'.format(self._current - 1))
+        return
+
     def _reset(self):
         """Create null arrays for storing orbit info
         """
@@ -715,16 +723,12 @@ class Orbits(object):
                 except StopIteration:
                     # Check if the first orbit is also the last orbit
                     self._get_basic_orbit(1)
-
-                    # Includes hack to appear to be zero indexed
-                    logger.info('Loaded Orbit: %i' % (self._current - 1))
+                    self._report_current_orbit(self)
 
             elif orbit_num < self.num:
                 # Load basic orbit data into data
                 self._get_basic_orbit(orbit)
-
-                # Includes hack to appear to be zero indexed
-                logger.info('Loaded Orbit: %i' % (self._current - 1))
+                self._report_current_orbit(self)
 
             else:
                 # Gone too far
@@ -735,8 +739,8 @@ class Orbits(object):
             logger.info(' '.join(('No data loaded in instrument object to',
                                   'determine orbits.')))
 
-    def next(self, *arg, **kwarg):
-        """Load the next orbit into .data.
+    def next(self):
+        """Load the next orbit into associated Instrument.data object
 
         Note
         ----
@@ -745,14 +749,14 @@ class Orbits(object):
 
         """
 
-        # first, check if data exists
+        # Check if data exists
         if not self.inst.empty:
-            # set up orbit metadata
+            # Set up orbit metadata
             self._calc_orbits()
 
-            # if current orbit near the last, must be careful
+            # If current orbit near the last, must be careful
             if self._current == (self.num - 1):
-                # first, load last orbit data
+                # Load last orbit data
                 self._get_basic_orbit(-1)
 
                 # End of orbit may occur on the next day
@@ -761,72 +765,72 @@ class Orbits(object):
                     delta = (self.inst.date - self.inst.index[-1]
                              + pds.Timedelta('1 day'))
                     if delta >= self.orbit_period:
-                        # don't need to load the next day because this orbit
+                        # Don't need to load the next day because this orbit
                         # ends more than a orbital period from the next date
                         load_next = False
 
                 if load_next:
-                    # the end of the user's desired orbit occurs tomorrow, need
+                    # The end of the user's desired orbit occurs tomorrow, need
                     # to form a complete orbit save this current orbit, load
                     # the next day, combine data, select the correct orbit
                     temp_orbit_data = self.inst.copy()
                     try:
-                        # loading next day/file clears orbit breaks info
+                        # Loading next day/file clears orbit breaks info
                         self.inst.next()
                         if not self.inst.empty:
-                            # combine this next day's data with previous last
+                            # Combine this next day's data with previous last
                             # orbit, grab the first one
-                            final_val = self.inst.index[0] \
-                                - dt.timedelta(microseconds=1)
+                            final_val = self.inst.index[0] - dt.timedelta(
+                                microseconds=1)
                             self.inst.concat_data(temp_orbit_data[:final_val],
-                                                 prepend=True)
+                                                  prepend=True)
                             self._get_basic_orbit(1)
                         else:
-                            # no data, go back a day and grab the last orbit.
-                            # As complete as orbit can be
+                            # No data, go back a day and grab the last orbit.
+                            # This is as complete as this orbit can be.
                             self.inst.prev()
                             self._get_basic_orbit(-1)
                     except StopIteration:
                         pass
                     del temp_orbit_data
-                # includes hack to appear to be zero indexed
-                logger.info('Loaded Orbit:%i' % (self._current - 1))
+
+                self._report_current_orbit(self)
 
             elif self._current == (self.num):
-                # at the last orbit, need to be careful about getting the next
+                # At the last orbit, need to be careful about getting the next
                 # orbit save this current orbit and load the next day
                 # temp_orbit_data = self.inst.data.copy()
                 temp_orbit_data = self.inst.copy()
 
-                # load next day, which clears orbit breaks info
+                # Load next day, which clears orbit breaks info
                 self.inst.next()
 
-                # combine this next day orbit with previous last orbit to
+                # Combine this next day orbit with previous last orbit to
                 # ensure things are correct
                 if not self.inst.empty:
                     pad_next = True
 
-                    # check if data padding is really needed, only works when
+                    # Check if data padding is really needed, only works when
                     # loading by date
                     if self.inst._iter_type == 'date':
                         delta = self.inst.date - temp_orbit_data.index[-1]
                         if delta >= self.orbit_period:
-                            # the end of the previous orbit is more than an
+                            # The end of the previous orbit is more than an
                             # orbit away from today we don't have to worry
                             # about it
                             pad_next = False
                     if pad_next:
-                        # orbit went across day break, stick old orbit onto new
-                        # data and grab second orbit (first is old)
+                        # The orbit went across day break, stick old orbit onto
+                        # new data and grab second orbit (first is old)
                         self.inst.concat_data(
                             temp_orbit_data[:self.inst.index[0]
                                             - dt.timedelta(microseconds=1)],
                             prepend=True)
 
-                        # select second orbit of combined data
+                        # Select second orbit of combined data
                         self._get_basic_orbit(2)
                     else:
-                        # padding from the previous orbit wasn't needed, can
+                        # Padding from the previous orbit wasn't needed, can
                         # just grab the first orbit of loaded data
                         self._get_basic_orbit(1)
                         if self.inst._iter_type == 'date':
@@ -834,7 +838,7 @@ class Orbits(object):
                                      - self.inst.index[0])
 
                             if delta < self.orbit_period:
-                                # this orbits end occurs on the next day,
+                                # This orbits end occurs on the next day,
                                 # though we grabbed the first orbit, missing
                                 # data means the first available orbit in the
                                 # datais actually the last for the day.
@@ -844,37 +848,33 @@ class Orbits(object):
                                 self._current = self.num - 1
                                 self.next()
                 else:
-                    # no data for the next day
-                    # continue loading data until there is some
-                    # nextData raises StopIteration when it reaches the end,
-                    # leaving this function
+                    # There is no data for the next day, continue loading data
+                    # until there is some.  The `next` method raises
+                    # StopIteration when it reaches the end, leaving this
+                    # function
                     while self.inst.empty:
                         self.inst.next()
                     self._get_basic_orbit(1)
 
                 del temp_orbit_data
-                # includes hack to appear to be zero indexed
-                logger.info('Loaded Orbit:%i' % (self._current - 1))
+                self._report_current_orbit(self)
 
             elif self._current == 0:
-                # no current orbit set, grab the first one
-                # using load command to specify the first orbit, which
-                # automatically loads prev day if needed to form complete orbit
+                # No current orbit set, grab the first one using the load
+                # command to specify the first orbit, which automatically
+                # loads prev day if needed to form a complete orbit
                 self.load(1)
 
             elif self._current < (self.num - 1):
-                # since we aren't close to the last orbit, just pull the next
+                # Since we aren't close to the last orbit, just pull the next
                 # orbit
                 self._get_basic_orbit(self._current + 1)
-                # includes hack to appear to be zero indexed
-                logger.info('Loaded Orbit:%i' % (self._current - 1))
-
+                self._report_current_orbit(self)
             else:
-                raise Exception(' '.join(('You ended up where nobody should',
-                                          'ever be. Talk to someone about',
-                                          'this fundamental failure or open',
-                                          'an issue at',
-                                          'www.github.com/rstonback/pysat')))
+                raise RuntimeError(' '.join(('This is a serious bug. Talk to ',
+                                             'someone about this fundamental ',
+                                             'failure or open an issue at',
+                                             'www.github.com/pysat/pysat')))
 
         else:
             # There is no data
@@ -883,61 +883,66 @@ class Orbits(object):
                 # at the end of the data set, and no more data is available
                 self.inst.next()
 
-            # we've found data, grab the next orbit
+            # We've found data, grab the next orbit
             self.next()
 
-    def prev(self, *arg, **kwarg):
-        """Load the previous orbit into .data.
+        return
+
+    def prev(self):
+        """Load the previous orbit into associated Instrument.data object
 
         Note
         ----
         Forms complete orbits across day boundaries. If no data loaded
-        then the last orbit of data from the last day is loaded into .data.
+        then the last orbit of data from the last day is loaded.
 
         """
 
-        # first, check if data exists
+        # First, check if data exists
         if not self.inst.empty:
-            # set up orbit metadata
+            # Set up orbit metadata
             self._calc_orbits()
 
-            # if not close to the first orbit, just pull the previous orbit
-            if (self._current > 2) & (self._current <= self.num):
-                # load orbit and put it into self.inst.data
+            if (self._current > 2) and (self._current <= self.num):
+                # If not close to the first orbit, just pull the previous orbit
+                #
+                # Load orbit and put it into self.inst.data
                 self._get_basic_orbit(self._current - 1)
-                logger.info('Loaded Orbit:%i' % (self._current - 1))
-
-            # if current orbit near the first, must be careful
+                self._report_current_orbit(self)
             elif self._current == 2:
-                # first, load prev orbit data
+                # If current orbit near the first, must be careful
+                #
+                # First, load prev orbit data
                 self._get_basic_orbit(self._current - 1)
 
                 load_prev = True
                 if self.inst._iter_type == 'date':
                     delta = self.inst.index[-1] - self.inst.date
                     if delta >= self.orbit_period:
-                        # don't need to load the prev day because this orbit
+                        # Don't need to load the prev day because this orbit
                         # ends more than a orbital period from start of today's
                         # date
                         load_prev = False
 
                 if load_prev:
-                    # need to save this current orbit and load the prev day
+                    # Need to save this current orbit and load the prev day
                     temp_orbit_data = self.inst[self.inst.date:]
 
-                    # load previous day, which clears orbit breaks info
+                    # Load previous day, which clears orbit breaks info
                     try:
                         self.inst.prev()
-                        # combine this next day orbit with previous last orbit
+                        # Combine this next day orbit with previous last orbit
                         if not self.inst.empty:
-                            self.inst.concat_data(temp_orbit_data, prepend=False)
-                            # select first orbit of combined data
+                            self.inst.concat_data(temp_orbit_data,
+                                                  prepend=False)
+
+                            # Select first orbit of combined data
                             self._get_basic_orbit(-1)
                         else:
                             self.inst.next()
                             self._get_basic_orbit(1)
                     except StopIteration:
-                        # if loading the first orbit, of first day of data,
+                        # If loading the first orbit, of first day of data,
                         # you'll end up here as the attempt to make a full
                         # orbit will move the date backwards, and StopIteration
                         # is made. everything is already ok, just move along
@@ -945,40 +950,39 @@ class Orbits(object):
 
                     del temp_orbit_data
 
-                logger.info('Loaded Orbit:%i' % (self._current - 1))
-
+                self._report_current_orbit(self)
             elif self._current == 0:
                 self.load(-1)
                 return
-
             elif self._current < 2:
-                # first, load prev orbit data
+                # First, load prev orbit data
                 self._get_basic_orbit(1)
 
-                # need to save this current orbit and load the prev day
+                # Need to save this current orbit and load the prev day
                 temp_orbit_data = self.inst[self.inst.date:]
 
-                # load previous day, which clears orbit breaks info
+                # Load previous day, which clears orbit breaks info
                 self.inst.prev()
 
-                # combine this next day orbit with previous last orbit
+                # Combine this next day orbit with previous last orbit
                 if not self.inst.empty:
                     load_prev = True
                     if self.inst._iter_type == 'date':
                         delta = (self.inst.date - self.inst.index[-1]
                                  + pds.Timedelta('1 day'))
                         if delta >= self.orbit_period:
-                            # don't need to load the prev day because this
+                            # Don't need to load the prev day because this
                             # orbit ends more than a orbital period from start
                             # of today's date
                             load_prev = False
 
                     if load_prev:
                         self.inst.concat_data(temp_orbit_data, prepend=False)
-                        # select second to last orbit of combined data
+
+                        # Select second to last orbit of combined data
                         self._get_basic_orbit(-2)
                     else:
-                        # padding from the previous is needed
+                        # Padding from the previous is needed
                         self._get_basic_orbit(-1)
                         if self.inst._iter_type == 'date':
                             delta = (self.inst.date - self.inst.index[-1]
@@ -992,19 +996,18 @@ class Orbits(object):
                     self._get_basic_orbit(-1)
 
                 del temp_orbit_data
-
-                # includes hack to appear to be zero indexed
-                logger.info('Loaded Orbit:%i' % (self._current - 1))
+                self._report_current_orbit(self)
             else:
                 raise RuntimeError(' '.join(('You ended up where nobody should',
                                              'ever be. Talk to someone about',
                                              'this fundamental failure or open',
                                              'an issue at',
                                              'www.github.com/pysat/pysat')))
-
         else:
-            # no data found
+            # No data found
             while self.inst.empty:
                 # Cycle to more data or raise stopIteration at end of data set
                 self.inst.prev()
             self.prev()
+
+        return
