@@ -5,29 +5,29 @@
 # ----------------------------------------------------------------------------
 
 import datetime as dt
+import inspect
 import numpy as np
 import os
 import warnings
-import weakref
 
 import pandas as pds
-from pysat import data_dir as data_dir
+from pysat import pysat_dir, logger, params, Instrument
 from pysat.utils import files as futils
-from pysat import logger
+from pysat.utils.time import filter_datetime_input
 
 
 class Files(object):
-    """Maintains collection of files for instrument object.
+    """Maintains collection of files plus associated methods.
 
     Attributes
     ----------
     home_path : str
         Path to the pysat information directory.
     start_date : datetime or NoneType
-        date of first file, used as default start bound for instrument
+        Date of first file, used as default start bound for instrument
         object, or None if no files are loaded.
     stop_date : datetime or NoneType
-        date of last file, used as default stop bound for instrument
+        Date of last file, used as default stop bound for instrument
         object, or None if no files are loaded.
     files : pds.Series
         Series of data files, indexed by file start time
@@ -56,13 +56,37 @@ class Files(object):
         If True, the list of files found will be checked to ensure the
         filesizes are greater than zero. Empty files are removed from the
         stored list of files. (default=False)
+    data_path : str
+        path to the directory containing instrument files,
+        top_dir/platform/name/tag/
+    data_paths: list of str
+        Available paths that pysat will use when looking for files. The
+        class uses the first directory with relevant data, stored in data_path.
+    files : pds.Series
+        Filenames indexed by time. Leading pysat path information not stored.
+    home_path : str
+        Directory used for class storage
+    list_files_generator : generator
+        Experimental feature for Instruments that internally generate data
+        and thus don't have a defined supported date range.
+    list_files_rtn : method
+        Method used to locate relevant files on the local system. Provided
+        by associated pysat.Instrument object.
+    multi_file_day : boolean
+        Flag copied from associated pysat.Instrument object that indicates
+        when data for day n may be found in files for days n-1, or n+1
+    inst_info : dict
+        Contains pysat.Instrument parameters 'platform', 'name', 'tag',
+        and 'inst_id', identifying the source of the files.
 
     Note
-    ----
-    Uses the list_files functions for each specific instrument to create an
-    ordered collection of files in time. Used by instrument object to load the
-    correct files. Files also contains helper methods for determining the
-    presence of new files and creating an ordered list of files.
+    ----  
+    Interfaces with the `list_files` method for a given instrument
+    support module to create an ordered collection of files in time,
+    used primarily by the pysat.Instrument object to identify files
+    to be loaded. The Files class mediates access to the files by
+    datetime and contains helper methods for determining the presence of
+    new files and filtering out empty files.
 
     User should generally use the interface provided by a pysat.Instrument
     instance. Exceptions are the classmethod from_os, provided to assist
@@ -106,8 +130,7 @@ class Files(object):
     def __init__(self, inst, directory_format=None, update_files=False,
                  file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
-        """ Initialization for Files class object
-
+        """
         Parameters
         ----------
         inst : pysat.Instrument
@@ -138,8 +161,8 @@ class Files(object):
         """
 
         # Ensure we have a path for pysat data directory
-        if data_dir == '':
-            raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
+        if pysat_dir == '':
+            raise RuntimeError(" ".join(("pysat's pysat_dir is None. Set a",
                                          "directory using",
                                          "pysat.utils.set_data_dir.")))
 
@@ -147,43 +170,79 @@ class Files(object):
         self._inst = weakref.proxy(inst)
         self._update_files = update_files
 
-        # Determine the location of the .pysat file
-        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
+        # Location of directory to store file information in
+        self.home_path = os.path.join(pysat_dir, 'instruments')
 
-        # Initialize the file series
+        # Assign base default dates and an empty list of files
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None, dtype='object')
+        
+        # Grab Instrument info
+        self.inst_info = {'platform': inst.platform, 'name': inst.name,
+                         'tag': inst.tag, 'inst_id': inst.inst_id}
+        self.list_files_rtn = inst._list_files_rtn
+        
+        # Check if routine is actually a generator method
+        if inspect.isgeneratorfunction(self.list_files_rtn):
+            self.list_files_generator = self.list_files_rtn()
+            # Instrument iteration methods require a date range.
+            # So, do we just pick dates far into future and past?
+            self.start_date = dt.datetime(1900, 1, 1)
+            self.stop_date = dt.datetime(2100, 1, 1)
+        else:
+            self.list_files_generator = None
+
+        self.multi_file_day = sat.multi_file_day
 
         # Set the location of stored files
-        self.stored_file_name = ''.join((self._inst.platform, '_',
-                                         self._inst.name, '_', self._inst.tag,
-                                         '_', self._inst.inst_id,
-                                         '_stored_file_info.txt'))
+        self.stored_file_name = '_'.join((self.inst_info['platform'],
+                                          self.inst_info['name'],
+                                          self.inst_info['tag'],
+                                          self.inst_info['inst_id'],
+                                          'stored_file_info.txt'))
 
         # Set the path for sub-directories under pysat data path
         if directory_format is None:
-            directory_format = os.path.join('{platform}', '{name}', '{tag}')
+            # Assign stored template if user doesn't provide one.
+            # TODO: Should we just error here? This ensures the settings are
+            # dominated by the Instrument object.
+            directory_format = params['directory_format']
         self.directory_format = directory_format
 
         # Set the user-specified file format
         self.file_format = file_format
 
         # Construct the subdirectory path
-        sub_dir_path = self.directory_format.format(
-            name=self._inst.name, platform=self._inst.platform,
-            tag=self._inst.tag, inst_id=self._inst.inst_id)
+        sub_dir_path = os.path.normpath(
+          self.directory_format.format(**self.inst_info))
 
-        # Make sure path always ends with directory seperator
-        self.data_path = os.path.join(data_dir, sub_dir_path)
-        if self.data_path[-2] == os.path.sep:
-            self.data_path = self.data_path[:-1]
-        elif self.data_path[-1] != os.path.sep:
-            self.data_path = os.path.join(self.data_path, '')
+        # Ensure we have at least one path for pysat data directory
+        if len(params['data_dirs']) == 0:
+            raise RuntimeError(" ".join(("pysat's data_dirs has not been set. ",
+                                         "Please set a top-level directory ",
+                                         "path to store data using ",
+                                         "`pysat.params['data_dirs'] = path`")))
 
+        # Get list of potential data directory paths from pysat. Construct
+        # possible locations for data. Ensure path always ends with directory
+        # separator.
+        self.data_paths = [os.path.join(pdir, sub_dir_path)
+                           for pdir in params['data_dirs']]
+        self.data_paths = [os.path.join(os.path.normpath(pdir), '')
+                           for pdir in self.data_paths]
+
+        # Only one of the above paths will actually be used when loading data.
+        # The actual value of data_path is determined in refresh().
+        # If there are files present, then that path is stored along with a
+        # list of found files in ~/.pysat. This stored info is retrieved by
+        # _load. We start here with the first directory for cases where there
+        # are no files.
+        self.data_path = self.data_paths[0]
+        
         # Set the preference of writing the file list to disk or not
         self.write_to_disk = write_to_disk
-        if self.write_to_disk is False:
+        if not self.write_to_disk:
             # Use blank memory rather than loading from disk
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
@@ -191,26 +250,29 @@ class Files(object):
         # Set the preference to ignore or include empty files
         self.ignore_empty_files = ignore_empty_files
 
-        if self._inst.platform != '':
+        if self.inst_info['platform'] != '':
             # Load stored file info
-            file_info = self._load()
-            if not file_info.empty:
-                self._attach_files(file_info)
-                if update_files:
+            if self.list_files_generator is None:
+                # Typical instrument with files, not generated data.
+                if self.update_files:
                     self.refresh()
-            else:
-                # couldn't find stored info, load file list and then store
-                self.refresh()
+                else:
+                    # Load stored file info
+                    file_info = self._load()
+                    if file_info.empty:
+                        # Didn't find stored information. Search local system.
+                        self.refresh()
+                    else:
+                        # Attach the data loaded
+                        self._attach_files(file_info)
+        return
 
     def __repr__(self):
         """ Representation of the class and its current state
         """
         # Because the local Instrument object is weakly referenced, it may
         # not always be accessible
-        try:
-            inst_repr = self._inst.__repr__()
-        except ReferenceError:
-            inst_repr = "Instrument(weakly referenced)"
+        inst_repr = Instrument(**self.sat_info).__repr__()
 
         out_str = "".join(["Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
@@ -265,8 +327,10 @@ class Files(object):
         index are normal non-inclusive end point
 
         """
-
-        if isinstance(key, slice):
+        if self.list_files_generator is not None:
+            # Return generated filename
+            out = self.list_files_generator(key)
+        elif isinstance(key, slice):
             try:
                 try:
                     # Assume key is integer (including list or slice)
@@ -283,19 +347,10 @@ class Files(object):
                 # Enforce exclusive slicing on datetime
                 if len(out) > 1:
                     if out.index[-1] >= key.stop:
-                        return out[:-1]
-                    else:
-                        return out
+                        out = out[:-1]
                 elif len(out) == 1:
                     if out.index[0] >= key.stop:
-                        return pds.Series([], dtype='a')
-                    else:
-                        return out
-                else:
-                    return out
-            else:
-                # Not a datetime key, return based on previous selection calls
-                return out
+                        out = pds.Series([], dtype='a')
         else:
             try:
                 # Assume key is integer (including list or slice)
@@ -335,56 +390,70 @@ class Files(object):
         return
 
     def _attach_files(self, files_info):
-        """Attach results of instrument list_files routine to Instrument object
+        """Attaches stored file lists to self.files
 
         Parameters
-        ----------
+        ---------
         files_info : pds.Series
-            Stored file information
+            Stored file information, filenames indexed by datetime
 
-        Returns
-        -------
-        updates the file list (files), start_date, and stop_date attributes
+        Note
+        ----
+        Updates the file list (files), start_date, and stop_date attributes
         of the Files class object.
 
         """
 
         if not files_info.empty:
-            unique_files = len(files_info.index.unique()) != len(files_info)
-            # Filter file list, removing duplicates
-            if (not self._inst.multi_file_day and unique_files):
-                estr = ''.join(['Duplicate datetimes in provided file ',
-                                'information.\nKeeping one of each of the ',
-                                'duplicates, dropping the rest.'])
-                logger.warning(estr)
-                ind = files_info.index.duplicated()
-                logger.warning(files_info.index[ind].unique())
+            # Attach data
+            self.files = files_info
 
-                idx = np.unique(files_info.index, return_index=True)
-                files_info = files_info.iloc[idx[1]]
+            # Ensure times are unique.
+            self._ensure_unique_file_datetimes()
 
-            self.files = files_info.sort_index()
-
-            # Refresh list and filter for empty files
+            # Filter for empty files.
             if self.ignore_empty_files:
-                self._filter_empty_files()
+                self._filter_empty_files(path=self.data_path)
 
-            # Extract date information
+            # Extract date information from first and last files
             if not self.files.empty:
-                self.start_date = self._inst._filter_datetime_input(
-                    self.files.index[0])
-                self.stop_date = self._inst._filter_datetime_input(
-                    self.files.index[-1])
+                self.start_date = filter_datetime_input(self.files.index[0])
+                self.stop_date = filter_datetime_input(self.files.index[-1])
             else:
+                # No files found
                 self.start_date = None
                 self.stop_date = None
         else:
+            # No files found
             self.start_date = None
             self.stop_date = None
 
             # Convert to object type if Series is empty.  This allows for
             # `==` equality checks with strings
             self.files = files_info.astype(np.dtype('O'))
+
+        return
+    
+    def _ensure_unique_file_datetimes(self):
+        """Update the file list (self.files) to ensure uniqueness"""
+
+        # Check if files are unique.
+        unique_files = len(self.files.index.unique()) == len(self.files)
+
+        if not self.multi_file_day and not unique_files:
+            # Give user feedback about the issue
+            estr = ''.join(['Duplicate datetimes in stored filename ',
+                            'information.\nKeeping one of each ',
+                            'of the duplicates, dropping the rest. ',
+                            'Please ensure the file datetimes ',
+                            'are unique at the microsecond level.'])
+            logger.warning(estr)
+            ind = self.files.index.duplicated()
+            logger.warning(self.files.index[ind].unique())
+
+            # Downselect to unique file datetimes
+            idx = np.unique(self.files.index, return_index=True)
+            self.files = self.files.iloc[idx[1]]
 
         return
 
@@ -397,7 +466,7 @@ class Files(object):
         # Check if current file data is different than stored file list. If so,
         # move file list to previous file list, store current to file. If not,
         # do nothing
-        stored_files = self._load()
+        stored_files = self._load(update_path=False)
         if len(stored_files) != len(self.files):
             # The number of items is different, things are new
             new_flag = True
@@ -412,8 +481,8 @@ class Files(object):
         if new_flag:
             if self.write_to_disk:
                 # Save the previous data in a backup file
-                prev_name = "_".join(["previous", stored_name])
-                stored_files.to_csv(os.path.join(self.home_path, prev_name),
+                prev_name = os.path.join(self.home_path, 'archive', stored_name)
+                stored_files.to_csv(prev_name,
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
                                     header=False)
 
@@ -425,41 +494,57 @@ class Files(object):
                 # Update the hidden File attributes
                 self._previous_file_list = stored_files
                 self._current_file_list = self.files.copy()
+
         return
 
-    def _load(self, prev_version=False):
-        """Load stored filelist and return as Pandas Series
+    def _load(self, prev_version=False, update_path=True):
+        """Load stored filelist
 
         Parameters
         ----------
         prev_version : boolean
             if True, will load previous version of file list
+        update_path : boolean
+            If True, the path written to stored info will be
+            assigned to self.data_path. (default=True)
 
         Returns
         -------
         pandas.Series
-            Full path file names are indexed by datetime
-            Series is empty if there is no file list to load
+            file path names, indexed by datetime. Series is empty if no
+            files are found.
 
         """
 
         fname = self.stored_file_name
         if prev_version:
-            fname = os.path.join(self.home_path, 'previous_' + fname)
+            # Archived file list storage filename
+            fname = os.path.join(self.home_path, 'archive', fname)
         else:
+            # Current file list storage filename
             fname = os.path.join(self.home_path, fname)
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                return pds.read_csv(fname, index_col=0, parse_dates=True,
-                                    squeeze=True, header=None)
+                # Load data stored on the local drive.
+                loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
+                                      squeeze=True, header=0)
+                if update_path:
+                    # Store the data_path from the .csv onto Files
+                    self.data_path = loaded.name
+
+                # Ensure the name of returned Series is None for consistency
+                loaded.name = None
+
+                return loaded
             else:
-                # grab files from memory
+                # Grab content from memory rather than local disk.
                 if prev_version:
                     return self._previous_file_list
                 else:
                     return self._current_file_list
         else:
+            # Storage file not present.
             return pds.Series([], dtype='a')
 
     def _remove_data_dir_path(self, file_series=None):
@@ -469,6 +554,7 @@ class Files(object):
         ----------
         file_series : pds.Series or NoneType
             Series of filenames (potentially with file paths)
+            (default=None)
 
         Returns
         -------
@@ -497,39 +583,62 @@ class Files(object):
         Typically, these routines search in the pysat provided path,
         pysat_data_dir/platform/name/tag/, where pysat_data_dir is set by
         pysat.utils.set_data_dir(path=path).
-
+        
         """
+
+        if self.list_files_generator is not None:
+            estr = ''.join(('refresh() does not work with list generators'))
+            raise RuntimeError(estr)
 
         # Let interested users know pysat is searching for
         info_str = '{platform} {name} {tag} {inst_id}'.format(
-            platform=self._inst.platform, name=self._inst.name,
-            tag=self._inst.tag, inst_id=self._inst.inst_id)
+            **self.inst_info)
         info_str = " ".join(("pysat is searching for", info_str, "files."))
         info_str = " ".join(info_str.split())  # Remove duplicate whitespace
         logger.info(info_str)
+        
+        # Check all potential directory locations for files.
+        # Stop as soon as we find some.
+        for path in self.data_paths:
+            new_files = self.list_files_rtn(tag=self.inst_info['tag'],
+                                            inst_id=self.inst_info['inst_id'],
+                                            data_path=path,
+                                            format_str=self.file_format)
+            # Ensure the name of returned Series is None for consistency
+            new_files.name = None
 
-        # Get a list of new files, removing empty files if desired
-        new_files = self._inst._list_files_rtn(tag=self._inst.tag,
-                                               inst_id=self._inst.inst_id,
-                                               data_path=self.data_path,
-                                               format_str=self.file_format)
-        new_files = self._remove_data_dir_path(new_files)
+            # If we find some files, this is the one directory we store.
+            # If I don't remove the directory paths then loading by filename
+            # becomes more of a challenge. Plus, more memory to store, more
+            # difficult for a human to parse when browsing a list, etc. The
+            # approach here provides for most of the potential functionality
+            # of multiple directories while still leaving the 'single' directory
+            # focus and features of the original pysat intact.
+            if not new_files.empty:
+                self.data_path = path
+                new_files = self._remove_data_dir_path(new_files)
+                break
+
+        # Feedback to info on number of files located
+        logger.info('Found {:d} local files.'.format(len(new_files)))
+
         if not new_files.empty:
-            if self.ignore_empty_files:
-                self._filter_empty_files()
-            logger.info('Found {:d} local files.'.format(len(new_files)))
-        else:
-            estr = "".join(["Unable to find any files that match the supplied ",
-                            "template. If you have the necessary files please",
-                            " check pysat settings and file locations ",
-                            "(e.g. pysat.pysat_dir)."])
+            # Sort files to ensure they are in order
+            new_files = new_files.sort_index()
+        elif params['warn_empty_file_list']:
+            # Warn user if no files found, if pysat.param set
+            pstrs = "\n".join(self.data_paths)
+            estr = "".join(("Unable to find any files that match the supplied ",
+                            "template: ", self.file_format, "\n",
+                            "In the following directories: \n", pstrs))
             logger.warning(estr)
 
-        # Attach to object
+        # Attach Series of files to the class object
         self._attach_files(new_files)
 
         # Store to disk, if enabled for this class
         self._store()
+        return
 
     def get_new(self):
         """List new files since last recorded file state.
@@ -552,8 +661,8 @@ class Files(object):
         self.refresh()
 
         # Load current and previous set of files
-        new_file_series = self._load()
-        old_file_series = self._load(prev_version=True)
+        new_file_series = self._load(update_path=False)
+        old_file_series = self._load(prev_version=True, update_path=False)
 
         # Select files that are in the new series and not the old series
         new_files = new_file_series[-new_file_series.isin(old_file_series)]
@@ -683,10 +792,7 @@ class Files(object):
         # Parse format string to figure out which search string should be used
         # to identify files in the filesystem. Different option required if
         # filename is delimited
-        if delimiter is None:
-            wildcard = False
-        else:
-            wildcard = True
+        wildcard = False if delimiter is None else True
         search_dict = futils.construct_searchstring_from_format(
             format_str, wildcard=wildcard)
         search_str = search_dict['search_string']

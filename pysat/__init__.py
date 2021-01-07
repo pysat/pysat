@@ -47,83 +47,58 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
-# file lock timeout (seconds)
-file_timeout = 10
+# Import and set user and pysat parameters object
+from pysat import _params
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
 version_filename = os.path.join(here, 'version.txt')
 
-with Lock(version_filename, 'r', file_timeout) as version_file:
-    __version__ = version_file.read().strip()
-
-# get home directory
+# Get home directory
 home_dir = os.path.expanduser('~')
+# Set pysat directory path in home directory
+pysat_dir = os.path.join(home_dir, '.pysat')
 # Set directory for test data
 test_data_path = os.path.join(here, 'tests', 'test_data')
-# set pysat directory path in home directory
-pysat_dir = os.path.join(home_dir, '.pysat')
-# make sure a pysat directory exists
-if not os.path.isdir(pysat_dir):
-    # create directory
-    os.mkdir(pysat_dir)
-    print('Created .pysat directory in user home directory to store settings.')
-    # create file with default data directory
-    data_dir = ''
+
+# Create a .pysat directory or parameters file if one doesn't exist
+if not os.path.isdir(pysat_dir) or \
+        (not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json'))):
+
+    # Make a .pysat directory if not already present
+    if not os.path.isdir(pysat_dir):
+        os.mkdir(pysat_dir)
+        os.mkdir(os.path.join(pysat_dir, 'instruments'))
+        os.mkdir(os.path.join(pysat_dir, 'instruments', 'archive'))
+        print('Created .pysat directory in home directory to store settings.')
+
+    # Create parameters file
+    if not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json')):
+        params = _params.Parameters(path=pysat_dir, create_new=True)
+
+    # Set initial data directory if we are on Travis
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
-    data_path_file = os.path.join(pysat_dir, 'data_path.txt')
-    with Lock(data_path_file, 'w', file_timeout) as fout:
-        fout.write(data_dir)
-
-        # in case of network files system
-        fout.flush()
-        os.fsync(fout.fileno())
+        params['data_dirs'] = [data_dir]
 
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
-                   "Run pysat.utils.set_data_dir to specify a different "
+                   "Assign `pysat.params['data_dir']` a path to specify a "
                    "top-level directory to store science data.")))
-
-    modules_file = os.path.join(pysat_dir, 'user_modules.txt')
-    with Lock(modules_file, 'w', file_timeout) as fout:
-        fout.write('')
-        user_modules = {}
-
-        # in case of network files system
-        fout.flush()
-        os.fsync(fout.fileno())
-
 else:
-    # load up stored data path
-    data_path_file = os.path.join(pysat_dir, 'data_path.txt')
-    with Lock(data_path_file, 'r', file_timeout) as fout:
-        data_dir = fout.readline()
-    # load up stored user modules
-    user_modules = {}
-    modules_file = os.path.join(pysat_dir, 'user_modules.txt')
-    if os.path.exists(modules_file):
-        with Lock(modules_file, 'r', file_timeout) as fopen:
-            for line in fopen:
-                if line != '' and (line is not None):
-                    # remove trailing whitespace
-                    line = line.strip()
-                    # stored as platform, name, module string
-                    platform, name, inst_module = line.split(' ')
-                    # dict of dicts, keyed by platform then name
-                    if platform not in user_modules:
-                        user_modules[platform] = {}
-                    # store instrument module string
-                    user_modules[platform][name] = inst_module
-    else:
-        # write user modules file
-        with Lock(modules_file, 'w', file_timeout) as fout:
-            fout.write('')
+    # Load up existing parameters file
+    params = _params.Parameters()
 
-            # in case of network files system
-            fout.flush()
-            os.fsync(fout.fileno())
+# TODO: These individual parameters, data_dir and user_modules, may need to be
+#  removed. We currently have two places for both, attached to pysat,
+#  and within params. data_dir fixed!
 
+# pull out user modules for initial compatibility
+user_modules = params['user_modules']
+
+# Load up version information
+with Lock(version_filename, 'r', params['file_timeout']) as version_file:
+    __version__ = version_file.read().strip()
 
 from pysat import utils
 from pysat._constellation import Constellation
@@ -135,3 +110,6 @@ from pysat._orbits import Orbits
 from pysat import instruments
 
 __all__ = ['instruments', 'utils']
+
+# Cleanup
+del here

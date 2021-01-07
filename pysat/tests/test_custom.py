@@ -13,7 +13,8 @@ class TestLogging():
         """Runs before every method to create a clean testing setup.
         """
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
-                                         clean_level='clean')
+                                         clean_level='clean',
+                                         update_files=False)
         self.out = ''
         self.log_capture = StringIO()
         pysat.logger.addHandler(logging.StreamHandler(self.log_capture))
@@ -41,7 +42,8 @@ class TestBasics():
         """Runs before every method to create a clean testing setup.
         """
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
-                                         clean_level='clean')
+                                         clean_level='clean',
+                                         update_files=True)
         self.testInst.load(2008, 1)
         self.ncols = len(self.testInst.data.columns)
         self.out = None
@@ -422,7 +424,8 @@ class TestBasicsXarray(TestBasics):
         """Runs before every method to create a clean testing setup.
         """
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
-                                         num_samples=10, clean_level='clean')
+                                         num_samples=10, clean_level='clean',
+                                         update_files=True)
         self.testInst.load(2008, 1)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
 
@@ -439,7 +442,8 @@ class ConstellationTestBasics(TestBasics):
         """
         self.testConst = pysat.Constellation([
             pysat.Instrument('pysat', 'testing', num_samples=10,
-                             clean_level='clean')
+                             clean_level='clean',
+                             update_files=True)
             for i in range(5)])
 
     def teardown(self):

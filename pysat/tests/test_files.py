@@ -23,7 +23,8 @@ def create_dir(inst=None, temporary_file_list=False):
     if inst is None:
         # create instrument
         inst = pysat.Instrument(platform='pysat', name='testing',
-                                temporary_file_list=temporary_file_list)
+                                temporary_file_list=temporary_file_list,
+                                update_files=True)
 
     # create data directories
     try:
@@ -146,14 +147,14 @@ class TestNoDataDir():
         """Runs before every method to create a clean testing setup."""
         self.temporary_file_list = False
         # store current pysat directory
-        self.saved_data_path = pysat.data_dir
+        self.saved_data_path = pysat.params['data_dirs']
 
-        pysat.data_dir = ''
+        pysat.params.data['data_dirs'] = []
         reload(pysat._files)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        pysat.data_dir = self.saved_data_path
+        pysat.params.data['data_dirs'] = self.saved_data_path
         reload(pysat._files)
 
     def test_no_data_dir(self):
@@ -175,22 +176,23 @@ class TestBasics():
         self.stop = dt.datetime(2009, 12, 31)
 
         # store current pysat directory
-        self.data_path = pysat.data_dir
+        self.data_paths = pysat.params['data_dirs']
 
         # create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
-        pysat.utils.set_data_dir(self.tempdir.name, store=False)
+        pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             temporary_file_list=self.temporary_file_list)
+                             temporary_file_list=self.temporary_file_list,
+                             update_files=True)
         # create instrument directories in tempdir
         create_dir(self.testInst)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        pysat.utils.set_data_dir(self.data_path, store=False)
+        pysat.params['data_dirs'] = self.data_paths
         self.tempdir.cleanup()
         del self.testInst, self.out, self.tempdir, self.start, self.stop
 
@@ -280,7 +282,7 @@ class TestBasics():
 
     def test_year_month_day_hour_minute_files_directly_call_from_os(self):
         """Files.from_os generates file list for date w/ hours and minutes"""
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
+        root_fname = ''.join(('pysat_testing_fromos_{year:04d}_gold_{day:03d}_',
                               'stuff_{month:02d}_{hour:02d}{minute:02d}.',
                               'pysat_testing_file'))
         # create a bunch of files by year and doy
@@ -301,7 +303,7 @@ class TestBasics():
 
     def test_year_month_day_hms_files_directly_call_from_os(self):
         """Files.from_os generates file list for date w/ hour/min/sec"""
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
+        root_fname = ''.join(('pysat_testing_hms_{year:04d}_gold_{day:03d}_',
                               'stuff_{month:02d}_{hour:02d}_{minute:02d}_',
                               '{second:02d}.pysat_testing_file'))
         # create a bunch of files by year and doy
@@ -361,11 +363,13 @@ class TestBasics():
                      use_doy=False, root_fname=root_fname)
         # create the same range of dates
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
+
         pysat.instruments.pysat_testing.list_files = \
             functools.partial(list_files, version=self.version)
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
         reload(pysat.instruments.pysat_testing)
+
         assert (np.all(inst.files.files.index == dates))
 
 
@@ -384,10 +388,10 @@ class TestInstWithFiles():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
-        self.data_path = pysat.data_dir
+        self.data_paths = pysat.params['data_dirs']
         # create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
-        pysat.utils.set_data_dir(self.tempdir.name, store=False)
+        pysat.params['data_dirs'] = [self.tempdir.name]
         # create testing directory
         create_dir(temporary_file_list=self.temporary_file_list)
 
@@ -400,7 +404,8 @@ class TestInstWithFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             temporary_file_list=self.temporary_file_list)
+                             temporary_file_list=self.temporary_file_list,
+                             update_files=True)
 
         self.root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
                                    '{day:03d}_stuff_{month:02d}_{hour:02d}_',
@@ -434,7 +439,7 @@ class TestInstWithFiles():
                          clean_level='clean',
                          update_files=True,
                          temporary_file_list=self.temporary_file_list)
-        pysat.utils.set_data_dir(self.data_path, store=False)
+        pysat.params['data_dirs'] = self.data_paths
         self.tempdir.cleanup()
         del self.tempdir, self.start, self.stop, self.start2, self.stop2
 
@@ -591,10 +596,10 @@ class TestInstWithFilesNonStandard():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
-        self.data_path = pysat.data_dir
+        self.data_paths = pysat.params['data_dirs']
         # create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
-        pysat.utils.set_data_dir(self.tempdir.name, store=False)
+        pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.start = dt.datetime(2008, 1, 11)
         self.stop = dt.datetime(2008, 1, 15)
@@ -623,7 +628,7 @@ class TestInstWithFilesNonStandard():
                          clean_level='clean',
                          update_files=True,
                          temporary_file_list=self.temporary_file_list)
-        pysat.utils.set_data_dir(self.data_path, store=False)
+        pysat.params['data_dirs'] = self.data_paths
         del self.start, self.stop
 
     def test_files_non_standard_pysat_directory(self):
@@ -807,10 +812,10 @@ class TestFilesRaceCondition():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
-        self.data_path = pysat.data_dir
+        self.data_paths = pysat.params['data_dirs']
         # create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
-        pysat.utils.set_data_dir(self.tempdir.name, store=False)
+        pysat.params['data_dirs'] = [self.tempdir.name]
         # create testing directory
         create_dir(temporary_file_list=self.temporary_file_list)
 
@@ -823,7 +828,8 @@ class TestFilesRaceCondition():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             temporary_file_list=self.temporary_file_list)
+                             temporary_file_list=self.temporary_file_list,
+                             update_files=True)
 
         self.root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
                                    '_{day:03d}{hour:02d}{minute:02d}',
@@ -856,7 +862,7 @@ class TestFilesRaceCondition():
                          clean_level='clean',
                          update_files=True,
                          temporary_file_list=self.temporary_file_list)
-        pysat.utils.set_data_dir(self.data_path, store=False)
+        pysat.params['data_dirs'] = self.data_paths
 
 # TODO: This needs to be replaced or expanded based on the tests that
 # portalocker uses

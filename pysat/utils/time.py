@@ -6,7 +6,7 @@ pysat.utils.time contains a number of functions used throughout
 the pysat package, including interactions with datetime objects,
 seasons, and calculation of solar local time
 """
-
+import datetime
 import datetime as dt
 import numpy as np
 import pandas as pds
@@ -212,3 +212,48 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
+
+
+def filter_datetime_input(date):
+    """
+    Returns datetime that only includes year, month, and day.
+
+    Parameters
+    ----------
+    date : NoneType, array-like, or datetime
+        Single or sequence of datetime inputs
+
+    Returns
+    -------
+    out_date: NoneType, datetime, or list of datetimes
+        NoneType input yeilds NoneType output, array-like yeilds list,
+        datetime object yeilds like.  All datetime output excludes the
+        sub-daily temporal increments (keeps only date information).
+
+    Note
+    ----
+    Checks for timezone information not in UTC
+
+    """
+
+    if date is None:
+        out_date = None
+    else:
+        # Check for timezone information and remove time of day for
+        # single datetimes and iterable containers of datetime objects
+        if hasattr(date, '__iter__'):
+            out_date = []
+            for in_date in date:
+                if(in_date.tzinfo is not None
+                   and in_date.utcoffset() is not None):
+                    in_date = in_date.astimezone(tz=dt.timezone.utc)
+
+                out_date.append(dt.datetime(in_date.year, in_date.month,
+                                            in_date.day))
+        else:
+            if date.tzinfo is not None and date.utcoffset() is not None:
+                date = date.astimezone(tz=dt.timezone.utc)
+
+            out_date = dt.datetime(date.year, date.month, date.day)
+
+    return out_date

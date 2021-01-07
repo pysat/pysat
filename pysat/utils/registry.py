@@ -38,7 +38,6 @@ and name string identifiers.
 
 import importlib
 import logging
-import os
 
 import pysat
 import pysat.tests.instrument_test_class as itc
@@ -56,41 +55,15 @@ def load_saved_modules():
 
     """
 
-    saved_modules = {}
-    user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
-    with pysat.utils.NetworkLock(user_modules_file, 'r') as fopen:
-        for line in fopen:
-            if line != '' and (line is not None):
-                # remove trailing whitespace
-                line = line.strip()
-                # stored as platform, name, module string
-                platform, name, inst_module = line.split(' ')
-                # dict of dicts, keyed by platform then name
-                if platform not in saved_modules:
-                    saved_modules[platform] = {}
-                # store instrument module string
-                saved_modules[platform][name] = inst_module
-
-    return saved_modules
+    return pysat.params['user_modules']
 
 
 def store():
     """Rewrite user_modules.txt based on current listing"""
 
-    with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'w') as fopen:
-        for platform in pysat.user_modules:
-            for name in pysat.user_modules[platform]:
-                # instrument module string
-                inst_mod = pysat.user_modules[platform][name]
-                # format for storage
-                # platform, name, instrument module
-                out = ' '.join((platform, name, inst_mod, '\n'))
-                # store
-                fopen.write(out)
+    pysat.params['user_modules'] = pysat.user_modules
 
-        # in case of network file system
-        fopen.flush()
-        os.fsync(fopen.fileno())
+    return
 
 
 def register(module_names, overwrite=False):

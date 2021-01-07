@@ -28,6 +28,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     filename conventions.
   - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
+  - Added support for multiple pysat data directories
+  - Reorganized .pysat directory to store instrument information under 
+    .pysat/instruments and .pysat/instruments/archive
+  - Added pysat.params, a central location to store and modify pysat default
+    parameters. File stored at .pysat/pysat_settings.json
+  - Added `warn_empty_file_list` to pysat.params to provide a warning if no 
+    Instrument files are found. Default is False.
+  - Updated default pysat directory organization template
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -60,6 +68,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Changed `pysat.instruments.methods.general.list_files` kwarg
     `fake_monthly_files_from_daily` to `file_cadence`
   - Changed name of Instrument method `default` to `preprocess`
+  - Removed `pysat.data_dir`. Information now at `pysat.params['data_dirs']`.
+  - Moved `pysat.Instrument._filter_datetime_input` to 
+    `pysat.utils.time.filter_datetime_input`
+  - Deprecated `pysat.utils.set_data_dir`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
@@ -83,6 +95,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed unused input arguments
   - Corrects Instrument today, yesterday, and tomorrow methods by implementing
     datetime.datetime.utcnow
+  - Ensured pysat.Meta instances are immutable at Instrument instantiation
+  - Removed weak reference back to Instrument within Files class
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility

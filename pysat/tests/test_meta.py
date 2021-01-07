@@ -1210,6 +1210,15 @@ class TestBasics():
         with pytest.raises(AttributeError):
             self.meta.hey = greeting
 
+    def test_meta_immutable_at_instrument_instantiation(self):
+        """Test meta immutable at instrument Instantiation"""
+
+        assert self.testInst.meta.mutable is False
+
+        greeting = '...listen!'
+        with pytest.raises(AttributeError):
+            self.meta.hey = greeting
+
     def test_meta_mutable_properties(self):
         """check that @properties are always mutable"""
         self.meta = pysat.Meta()
