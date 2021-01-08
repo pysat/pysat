@@ -115,7 +115,6 @@ class Orbits(object):
             period = pds.Timedelta(np.timedelta64(97, 'm'))
         self.orbit_period = pds.Timedelta(period)
 
-
         orbit_breaks = None
         if self.kind in ['local time', 'lt']:
             orbit_breaks = 24.0
@@ -221,7 +220,7 @@ class Orbits(object):
     def _report_current_orbit(self):
         """ Report the current orbit to log at the info level
         """
-        
+
         # Index appears as zero-indexed, though it is one-indexed
         logger.info('Loaded Orbit: {:d}'.format(self._current - 1))
         return
@@ -570,12 +569,12 @@ class Orbits(object):
                     self._orbit_breaks[self.num + orbit_num]:
                     self._orbit_breaks[self.num + orbit_num + 1]]
                 self._current = self.num + orbit_num + 1
-            elif orbit < self.num and orbit != 0:
+            elif orbit_num < self.num and orbit_num != 0:
                 # Load forward indexed orbit data into data
                 self.inst.data = self.inst[self._orbit_breaks[orbit_num - 1]:
                                            self._orbit_breaks[orbit_num]]
                 self._current = orbit_num
-            elif orbit == self.num:
+            elif orbit_num == self.num:
                 self.inst.data = self.inst[self._orbit_breaks[orbit_num - 1]:]
                 self._current = orbit_num
             elif orbit_num == 0:
@@ -723,12 +722,12 @@ class Orbits(object):
                 except StopIteration:
                     # Check if the first orbit is also the last orbit
                     self._get_basic_orbit(1)
-                    self._report_current_orbit(self)
+                    self._report_current_orbit()
 
             elif orbit_num < self.num:
                 # Load basic orbit data into data
-                self._get_basic_orbit(orbit)
-                self._report_current_orbit(self)
+                self._get_basic_orbit(orbit_num)
+                self._report_current_orbit()
 
             else:
                 # Gone too far
@@ -794,7 +793,7 @@ class Orbits(object):
                         pass
                     del temp_orbit_data
 
-                self._report_current_orbit(self)
+                self._report_current_orbit()
 
             elif self._current == (self.num):
                 # At the last orbit, need to be careful about getting the next
@@ -857,7 +856,7 @@ class Orbits(object):
                     self._get_basic_orbit(1)
 
                 del temp_orbit_data
-                self._report_current_orbit(self)
+                self._report_current_orbit()
 
             elif self._current == 0:
                 # No current orbit set, grab the first one using the load
@@ -869,7 +868,7 @@ class Orbits(object):
                 # Since we aren't close to the last orbit, just pull the next
                 # orbit
                 self._get_basic_orbit(self._current + 1)
-                self._report_current_orbit(self)
+                self._report_current_orbit()
             else:
                 raise RuntimeError(' '.join(('This is a serious bug. Talk to ',
                                              'someone about this fundamental ',
@@ -908,7 +907,7 @@ class Orbits(object):
                 #
                 # Load orbit and put it into self.inst.data
                 self._get_basic_orbit(self._current - 1)
-                self._report_current_orbit(self)
+                self._report_current_orbit()
             elif self._current == 2:
                 # If current orbit near the first, must be careful
                 #
@@ -950,7 +949,7 @@ class Orbits(object):
 
                     del temp_orbit_data
 
-                self._report_current_orbit(self)
+                self._report_current_orbit()
             elif self._current == 0:
                 self.load(-1)
                 return
@@ -996,7 +995,7 @@ class Orbits(object):
                     self._get_basic_orbit(-1)
 
                 del temp_orbit_data
-                self._report_current_orbit(self)
+                self._report_current_orbit()
             else:
                 raise RuntimeError(' '.join(('You ended up where nobody should',
                                              'ever be. Talk to someone about',
