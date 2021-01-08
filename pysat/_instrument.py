@@ -359,13 +359,11 @@ class Instrument(object):
         # initialize orbit support
         if orbit_info is None:
             if self.orbit_info is None:
-                # If default info not provided, set None as default
-                orbit_info = {'index': None, 'kind': None, 'period': None}
-            else:
-                # Default provided by instrument module
-                orbit_info = self.orbit_info
-        self.orbits = pysat.Orbits(self, **orbit_info)
-        self.orbit_info = orbit_info
+                # If default info not provided, use class defaults
+                self.orbit_info = dict()
+        else:
+            self.orbit_info = orbit_info
+        self.orbits = pysat.Orbits(self, **self.orbit_info)
 
         # Create empty placeholder for meta translation table
         # gives information about how to label metadata for netcdf export
@@ -2330,7 +2328,7 @@ class Instrument(object):
                 raise ValueError(estr)
 
             # verify arguments make sense, in context
-            _check_load_arguments_none(fname, stop_fname, date, end_date,
+            _check_load_arguments_none([fname, stop_fname, date, end_date],
                                        raise_error=True)
             # convert yr/doy to a date
             date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy),
@@ -2357,8 +2355,8 @@ class Instrument(object):
 
         elif date is not None:
             # Verify arguments make sense, in context
-            _check_load_arguments_none(fname, stop_fname, yr, doy, end_yr,
-                                       end_doy, raise_error=True)
+            _check_load_arguments_none([fname, stop_fname, yr, doy, end_yr,
+                                        end_doy], raise_error=True)
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
@@ -2375,8 +2373,8 @@ class Instrument(object):
 
         elif fname is not None:
             # Verify arguments make sense, in context
-            _check_load_arguments_none(yr, doy, end_yr, end_doy, date, end_date,
-                                       raise_error=True)
+            _check_load_arguments_none([yr, doy, end_yr, end_doy, date,
+                                        end_date], raise_error=True)
             # Date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
@@ -2399,8 +2397,8 @@ class Instrument(object):
                 self.load_step = 0
             curr = self._fid.copy()
 
-        elif _check_load_arguments_none(yr, doy, end_yr, end_doy, date,
-                                        end_date, fname, stop_fname):
+        elif _check_load_arguments_none([yr, doy, end_yr, end_doy, date,
+                                         end_date, fname, stop_fname]):
             # empty call, treat as if all data requested
             if self.multi_file_day:
                 estr = ''.join(('`load()` is not supported with multi_file_day',
@@ -3507,7 +3505,7 @@ def _pass_func(*args, **kwargs):
     pass
 
 
-def _check_load_arguments_none(*args, raise_error=False):
+def _check_load_arguments_none(args, raise_error=False):
     """Ensure all arguments are None.
 
     Used to support .load method checks that arguments that should be
@@ -3515,7 +3513,7 @@ def _check_load_arguments_none(*args, raise_error=False):
 
     Parameters
     ----------
-    *args : iterable object
+    args : iterable object
         Variables that are to checked to ensure None
     raise_error : bool
         If True, an error is raised if all args aren't None (default=False)
