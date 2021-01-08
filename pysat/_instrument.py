@@ -106,7 +106,7 @@ class Instrument(object):
     custom_kwargs : list
         List of dictionaries with keywords and values to be passed
         to a custom function
-    data : pandas.DataFrame
+    data : pandas.DataFrame or xarray.Dataset
         loaded science data
     date : dt.datetime
         date for loaded data
