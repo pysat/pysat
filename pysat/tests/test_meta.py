@@ -31,10 +31,9 @@ class TestBasics():
                             'name': ('Long_Name', str)}
         self.dval = None
         self.out = None
-        self.default_name = ['long_name', 'axis', 'plot']
+        self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']
-        self.default_val = {'notes': '', 'units': '', 'desc': '',
-                            'scale': 'linear'}
+        self.default_val = {'notes': '', 'units': '', 'desc': ''}
         self.frame_list = ['dummy_frame1', 'dummy_frame2']
 
     def teardown(self):
@@ -371,7 +370,7 @@ class TestBasics():
         self.testInst.meta['help2'] = self.testInst.meta['help']
         new_meta = self.testInst.meta['help2'].children
         new_meta['dummy_frame1'] = {'units': 'Amps', 'desc': 'something',
-                                    'label': 'John Wick', 'axis': 'Reeves'}
+                                    'label': 'John Wick'}
         self.testInst.meta['help2'] = new_meta
         self.testInst.meta['help2'] = {'label': 'The Doors Return'}
 
@@ -395,8 +394,6 @@ class TestBasics():
                                                        'units'] == 'Amps'
         assert self.testInst.meta['help2']['children']['dummy_frame1',
                                                        'label'] == 'John Wick'
-        assert self.testInst.meta['help2']['children']['dummy_frame1',
-                                                       'axis'] == 'Reeves'
         assert 'children' not in self.testInst.meta.data.columns
 
     def test_str_call_runs_long_standard(self):
@@ -619,7 +616,6 @@ class TestBasics():
         assert self.meta['lower'].units == 'boo'
         assert self.meta['lower'].long_name == 'boohoo'
         assert self.meta['higher'].children == meta
-        self.meta['higher', ('axis', 'scale')]
 
     def test_multiple_meta_assignment_error(self):
         with pytest.raises(ValueError):
@@ -1307,10 +1303,9 @@ class TestBasicsImmutable(TestBasics):
         # Assign remaining values
         self.dval = None
         self.out = None
-        self.default_name = ['long_name', 'axis', 'plot']
+        self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']
-        self.default_val = {'notes': '', 'units': '', 'desc': '',
-                            'scale': 'linear'}
+        self.default_val = {'notes': '', 'units': '', 'desc': ''}
         self.frame_list = ['dummy_frame1', 'dummy_frame2']
 
     def teardown(self):

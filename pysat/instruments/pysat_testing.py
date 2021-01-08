@@ -103,7 +103,8 @@ def preprocess(self):
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False, num_samples=None):
+         malformed_index=False, mangle_file_dates=False, num_samples=None,
+         multi_file_day=False):
     """ Loads the test files
 
     Parameters
@@ -243,7 +244,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                      'notes': 'UTC time at middle of geophysical measurement.',
                      'desc': 'UTC seconds'}
     meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
-                   'plot': 'MLT', 'axis': 'MLT', 'desc': 'Magnetic Local Time',
+                   'desc': 'Magnetic Local Time',
                    'value_min': 0.0, 'value_max': 24.0,
                    'notes': ''.join(['Magnetic Local Time is the solar local ',
                                      'time of thefield line at the location ',
@@ -253,17 +254,15 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                                      'and an offset with SLT.']),
                    'scale': 'linear'}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'plot': 'Solar Local Time', 'axis': 'SLT',
                    'desc': 'Solar Local Time', 'value_min': 0.0,
-                   'value_max': 24.0, 'scale': 'linear',
+                   'value_max': 24.0,
                    'notes': ''.join(['Solar Local Time is the local time ',
                                      '(zenith angle of sun) of the given ',
                                      'location. Overhead noon, +/- 90 is 6, ',
                                      '18 SLT .'])}
     meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
-                         'plot': 'Orbit Number', 'axis': 'Orbit Number',
                          'desc': 'Orbit Number', 'value_min': 0.0,
-                         'value_max': 25000.0, 'scale': 'linear',
+                         'value_max': 25000.0,
                          'notes': ''.join(['Number of orbits since the start ',
                                            'of the mission. For this ',
                                            'simulation we use the number of ',

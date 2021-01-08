@@ -2353,6 +2353,13 @@ class TestBasics():
         estr = 'Supplied module '
         assert str(err).find(estr) >= 0
 
+    def test_get_var_type_code_unknown_type(self):
+        """Ensure that Error is thrown if unknown type is supplied"""
+        with pytest.raises(TypeError) as err:
+            self.testInst._get_var_type_code(type(None))
+        estr = 'Unknown Variable'
+        assert str(err).find(estr) >= 0
+
 
 # -----------------------------------------------------------------------------
 #

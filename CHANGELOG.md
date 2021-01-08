@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     of the standard methods (not just load).
   - Added support for 'cycle' in addition to 'version' and 'revision' for
     filename conventions.
+  - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
   - Added support for multiple pysat data directories
   - Reorganized .pysat directory to store instrument information under 
@@ -113,6 +114,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improve instrument tests for files
   - Use dt.timedelta instead of pds.DateOffSet where possible
   - Reduced code duplication throughout package
+  - Reduced unused code snippets throughout
 
 ## [2.2.2] - 2020-12-31
  - New Features
