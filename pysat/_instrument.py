@@ -2089,7 +2089,7 @@ class Instrument(object):
                         # Some kind of iterable was returned. Add using
                         # best effort code.
                         elif hasattr(new_data['data'], '__iter__'):
-                            # look for name in returned dict
+                            # Look for variable name in returned dict
                             if var_name is not None:
                                 self[var_name] = new_data
                             elif recast_as_dict:
