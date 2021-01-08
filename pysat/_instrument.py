@@ -2036,38 +2036,38 @@ class Instrument(object):
                             #                 'any metadata using appropriate ',
                             #                 'keys stored in self.labels. '))
                             # raise DeprecationWarning(dstr)
-                            name = None
+                            var_name = None
                             # Flag if recast to identify if working with
                             # older style data.
                             recast_as_dict = True
                         else:
                             # Check for name
                             if 'name' in new_data:
-                                name = new_data.pop('name')
+                                var_name = new_data.pop('name')
                             else:
-                                name = None
+                                var_name = None
 
                         # pandas.DataFrame returned, add to existing frame.
                         if isinstance(new_data['data'], pds.DataFrame):
-                            if name is None:
-                                name = new_data['data'].columns
+                            if var_name is None:
+                                var_name = new_data['data'].columns
 
-                            self[name] = new_data
+                            self[var_name] = new_data
 
                         # pandas.Series or xarray.DataArray returned,
                         # add it as a column.
                         elif isinstance(new_data['data'], (pds.Series,
                                                            xr.DataArray)):
-                            if name is None:
+                            if var_name is None:
                                 if new_data['data'].name is not None:
-                                    name = new_data['data'].name
+                                    var_name = new_data['data'].name
                                 else:
                                     raise ValueError(
                                         ''.join(['Must assign a name to ',
                                                  'Series or return a ',
                                                  '"name" in dictionary.']))
 
-                            self[name] = new_data
+                            self[var_name] = new_data
 
                         # xarray.Dataset returned, merge into existing data.
                         elif isinstance(new_data['data'], xr.Dataset):
@@ -2077,10 +2077,10 @@ class Instrument(object):
 
                             # Second, check on names. If not provided, generate
                             # names from dataset itself.
-                            if name is None:
-                                name = list(xr_data.variables.keys())[1:]
+                            if var_name is None:
+                                var_name = list(xr_data.variables.keys())[1:]
                                 # Filter out any indexes variables
-                                fnames = [lname for lname in name
+                                fnames = [lname for lname in var_name
                                           if lname not in xr_data.indexes]
 
                             # Finally, add in the metadata.
@@ -2090,31 +2090,31 @@ class Instrument(object):
                         # best effort code.
                         elif hasattr(new_data['data'], '__iter__'):
                             # look for name in returned dict
-                            if name is not None:
-                                self[name] = new_data
+                            if var_name is not None:
+                                self[var_name] = new_data
                             elif recast_as_dict:
                                 # Falling back to older behavior:
                                 # unpack tuple/list that was returned.
-                                new_name = new_data['data'][0]
+                                var_name = new_data['data'][0]
                                 new_data = new_data['data'][1]
                                 if len(new_data) > 0:
                                     # Check doesn't ensure data for all cases,
                                     # there could be multiple empty arrays
                                     # returned, [[],[]].
-                                    if isinstance(new_name, str):
+                                    if isinstance(var_name, str):
                                         # Only one item to add. Check on
                                         # new_data above is sufficient for this
                                         # case.
-                                        self[new_name] = new_data
+                                        self[var_name] = new_data
                                     else:
                                         # Multiple items detected. Add one at
                                         # a time.
-                                        for name, data in zip(new_name,
+                                        for name, data in zip(var_name,
                                                               new_data):
                                             if len(data) > 0:
                                                 # Fixes up the incomplete check
                                                 # from above
-                                                self[name] = data
+                                                self[var_name] = data
                                 # dstr = ''.join(('Data returned will require ',
                                 #               'a "name" key in the returned ',
                                 #                 'dictionary.'))
