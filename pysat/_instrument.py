@@ -2084,7 +2084,7 @@ class Instrument(object):
                                         # Multiple items detected. Add one at
                                         # a time.
                                         for vname, data in zip(var_name,
-                                                              new_data):
+                                                               new_data):
                                             if len(data) > 0:
                                                 # Fixes up the incomplete check
                                                 # from above
