@@ -28,22 +28,24 @@ any information via the method itself.
 
 .. code:: python
 
-   def custom_func_modify(inst, optional_param=False):
-       """Modify a pysat.Instrument object in place
+   def modify_value(inst, param_name, factor=1.):
+       """Modify param_name in inst by multiplying by factor
 
        Parameters
        ----------
        inst : pysat.Instrument
            Object to be modified
-       optional_param : stand-in
-           Placeholder to indicate support for custom keywords
-           and arguments
+       param_name : str
+           Label for variable to be multiplied by factor
+       factor : int or float
+           Value to apply to param_name via multiplication (default=1.)
        """
 
-       if optional_param:
-           inst['double_mlt'] = 2.0 * inst['mlt']
-       else:
-           inst['double_mlt'= -2.0 * inst['mlt']
+       inst[param_name] = inst[param_name] * factor
+
+       # Changes to the instrument object are retained
+       inst.modify_value_was_here = True
+
        return
 
 **The Add Functions**
@@ -66,53 +68,6 @@ Multiple return types are supported:
   Dataset           Merged into existing Instrument.data
 ===============     ===================================
 
-.. code:: python
-
-   def custom_func_add(inst, optional_param=False):
-       """Calculate data to be added to pysat.Instrument object
-
-       Parameters
-       ----------
-       inst : pysat.Instrument
-           pysat will add returned data to this object
-       optional_param : stand-in
-           Placeholder indicated support for custom keywords
-           and arguments
-
-       Returns
-       -------
-       tuple
-           First element is a string and is used by pysat to store the
-           data in the second element within the Instrument object
-
-       """
-
-       return ('single_mlt', 1.0 * inst['mlt'])
-
-   def custom_func_add_with_args(inst, req_param, req_param2,
-                                 optional_param=False):
-       """Calculate data to be added to pysat.Instrument object
-
-       Parameters
-       ----------
-       inst : pysat.Instrument
-           pysat will add returned data to this object
-       optional_param : stand-in
-           Placeholder indicated support for custom keywords
-           and arguments
-
-       Returns
-       -------
-       tuple
-           First element is a string and is used by pysat to store the
-           data in the second element within the Instrument object
-
-       """
-
-       return ('triple_mlt', 3.0 * inst['mlt'])
-
-**Add Function Including Metadata**
-
 Metadata may also be returned when using a dictionary object as the return
 type. In this case, the data must be in 'data', with other keys interpreted
 as metadata parameters. Multiple data variables may be added in this case
@@ -120,13 +75,46 @@ only when using the DataFrame.
 
 .. code:: python
 
-   def custom_func_add(inst, param1, optional_param1=False,
-                       optional_param2=False):
-                       """ Sample function that adds data to an Instrument
-                       """
-       return {'data': 1. * inst['mlt'], 'name': 'single_mlt',
-               inst.meta.labels.name: 'singleMLT',
-               inst.meta.labels.units: 'hours'}
+   def add_scaled_value(inst, factor, param_name, output_name=None):
+       """Scales param_name in Instrument by factor and adds as output_name
+
+       Parameters
+       ----------
+       inst : pysat.Instrument
+       factor : int or float
+           Multiplicative scalar applied to `param_name`
+       param_name : str
+           Label for variable to be multiplied by factor
+       output_name : str or None
+           Label the result will be stored as in `inst`. If None,
+           the output label will be generated as 'scaled_' + `param_name`
+           (default=None).
+
+       """
+
+       if output_name is None:
+           output_name = '_'.join(('scaled', param_name))
+
+       # Calculate result
+       output_data = factor * inst[param_name]
+
+       # Get units from input variable
+       output_units = inst.meta[param_name, inst.meta.labels.units]
+
+       # Generate a longer name using param_name's longer descriptive name
+       output_longname = ' * '.join(('{num:.2f}'.format(num=factor),
+                                     inst.meta[param_name,
+                                               inst.meta.labels.name]))
+
+       # Changes to the instrument object are NOT retained after method exits
+       inst.add_value_was_here = True
+
+       # Variable name used to identify and access output is provided
+       # by user in output_name.
+       return {'data': output_data,
+               'name': output_name,
+               inst.meta.labels.name: output_longname,
+               inst.meta.labels.units: output_units}
 
 **Attaching Custom Function**
 
@@ -135,35 +123,47 @@ to automatically apply the method upon every load.
 
 .. code:: python
 
-   # Attach a 'modify' method and demonstrate execution
-   ivm.custom_attach(custom_func_modify, 'modify',
-                     kwargs={'optional_param2': True})
+   # Load data
+   ivm.load(2009, 1)
 
-   # `custom_func_modify` is executed as part of the `ivm.load` call.
+   # Establish current values for 'mlt'
+   print(ivm['mlt'])
+   stored_data = ivm['mlt'].copy()
+
+   # Attach a 'modify' method and demonstrate execution
+   ivm.custom_attach(modify_value, 'modify',
+                     args=['mlt'],
+                     kwargs={'factor': 2.})
+
+   # `modify_value` is executed as part of the `ivm.load` call.
    ivm.load(2009, 1)
 
    # Verify result is present
-   print(ivm['double_mlt'])
+   print(ivm['mlt'], stored_result)
+
+   # Check for attribute added to ivm
+   print(ivm.modify_value_was_here)
 
    # Attach an 'add' method
-   ivm.custom_attach(custom_func_add, 'add', kwargs={'optional_param': True})
+   ivm.custom_attach(add_scaled_value, 'add', args=[2., 'mlt'],
+                     kwargs={'output_name': 'double_mlt'})
 
-   # `custom_func_modify` and `custom_func_add` are executed by `ivm.load` call.
+   # Both `modify_vaule` and `add_scaled_value` are executed by `ivm.load` call.
    ivm.load(2009, 1)
 
    # Verify results are present
-   print(ivm[['double_mlt', 'single_mlt']])
+   print(ivm[['double_mlt', 'mlt']], stored_result)
 
    # Can also set methods via its string name. This example includes
    # both required and optional arguments.
-   ivm.custom_attach('custom_func_add_with_args', 'add', args=[param1, param2],
-                     kwargs={'optional_param': False})
+   ivm.custom_attach('add_scaled_value', 'add', args=[3., 'mlt'],
+                     kwargs={'output_name': 'triple_mlt'})
 
    # All three methods are executed with each load call.
    ivm.load(2009, 1)
 
    # Verify results are present
-   print(ivm[['double_mlt', 'single_mlt', 'triple_mlt']])
+   print(ivm[['triple_mlt', 'double_mlt', 'mlt']], stored_result)
 
    # set bounds limiting the file/date range the Instrument will iterate over
    ivm.bounds = (start, stop)
@@ -173,8 +173,9 @@ to automatically apply the method upon every load.
    custom_complicated_analysis_over_season(ivm)
 
 
-The output of `custom_func_modify` will always be available from the instrument
-object, regardless of what level the science analysis is performed.
+The output of from these and other custom methods will always be available
+from the instrument object, regardless of what level the science analysis
+is performed.
 
 We can repeat the earlier DMSP example, this time using nano-kernel
 functionality.
@@ -233,12 +234,12 @@ at instantiation via the `custom` keyword.
 .. code:: python
 
    # Create dictionary for each custom method and associated inputs
-   custom_func_1 = {'function': custom_func_modify, 'kind': 'modify',
-                    'kwargs': {'optional_param': True}}
-   custom_func_2 = {'function': custom_func_add_with_args, 'kind': 'add',
-                    'args'=[arg1, arg2], 'kwargs': {'optional_param': True}}
-   custom_func_3 = {'function': custom_func_add, 'kind': 'add',
-                    'kwargs': {'optional_param': False}}
+   custom_func_1 = {'function': modify_value, 'kind': 'modify',
+                    'args': ['mlt'], 'kwargs': {'factor': 2.})}
+   custom_func_2 = {'function': add_scaled_value, 'kind': 'add',
+                    'args': [2., 'mlt'], 'kwargs'={'output_name': 'double_mlt'}}
+   custom_func_3 = {'function': add_scaled_value, 'kind': 'add',
+                    'args': [3., 'mlt'], 'kwargs'={'output_name': 'triple_mlt'}}
 
    # Combine all dicts into a list in order of application and execution.
    custom = [custom_func_1, custom_func_2, custom_func_3]
