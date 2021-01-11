@@ -137,7 +137,7 @@ class TestCIonly():
         del self.ci_env
 
     def test_initial_pysat_load(self, capsys):
-        """Ensure inital load routines work"""
+        """Ensure initial load routines work"""
 
         # Move settings directory to simulate first load after install
         root = os.path.join(os.getenv('HOME'), '.pysat')
