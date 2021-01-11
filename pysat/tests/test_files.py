@@ -372,6 +372,38 @@ class TestBasics():
 
         assert (np.all(inst.files.files.index == dates))
 
+    def test_get_file_array_single(self):
+        """Test get_file_array basic access"""
+
+        print('hi! ', self.testInst.files[0])
+        files = self.testInst.files.get_file_array(self.testInst.files[0],
+                                                   self.testInst.files[-1])
+
+        # Ensure we have the right number files
+        assert len(files) == len(self.testInst.files.files)
+        assert len(files) > 0
+        # Ensure it stores strings
+        assert isinstance(files[0], str)
+
+    def test_get_file_array_multiple(self):
+        """Test get_file_array basic access with a list of strings"""
+
+        start1 = self.testInst.files[0]
+        stop1 = self.testInst.files[10]
+
+        start2 = self.testInst.files[11]
+        stop2 = self.testInst.files[-1]
+
+        # Get list of files
+        files = self.testInst.files.get_file_array([start1, start2],
+                                                   [stop1, stop2])
+
+        # Get what should be same list of files
+        files2 = self.testInst.files.get_file_array(start1, stop2)
+
+        # Ensure we have the right files
+        assert np.all(files == files2)
+
 
 class TestBasicsNoFileListStorage(TestBasics):
     """Repeat basic tests with temporary file list"""
