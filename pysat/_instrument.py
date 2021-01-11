@@ -43,7 +43,7 @@ class Instrument(object):
         custom functions. Dictionary, if supplied, is simply passed to
         pandas DateOffset.
     orbit_info : dict
-        Orbit information, {'index':index, 'kind':kind, 'period':period}.
+        Orbit information, {'index': index, 'kind': kind, 'period': period}.
         See pysat.Orbits for more information.
     inst_module : module
         Provide instrument module directly, takes precedence over platform/name
@@ -58,19 +58,17 @@ class Instrument(object):
         (default=False)
     strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
-        monotonically increasing. (default=True)
+        monotonically increasing. (default=True
+    directory_format : string or NoneType
+        Directory naming structure in string format. Variables such as platform,
+        name, and tag will be filled in as needed using python string
+        formatting. The default directory structure would be expressed as
+        '{platform}/{name}/{tag}'. If None, the default directory structure is
+        used. (default=None)
     multi_file_day : boolean or NoneType
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
         with a timestamp of day n-1 or n+1.  (default=None)
-    manual_org : bool
-        if True, then pysat will look directly in pysat data directory
-        for data files and will not use default /platform/name/tag
-    directory_format : str
-        directory naming structure in string format. Variables such as
-        platform, name, and tag will be filled in as needed using python
-        string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{tag}'
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -85,8 +83,7 @@ class Instrument(object):
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
                   'notes': ('notes', str), 'desc': ('desc', str),
-                  'plot': ('plot', str), 'axis': ('axis', str),
-                  'scale': ('scale', str), 'min_val': ('value_min', float),
+                  'min_val': ('value_min', float),
                   'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Attributes
@@ -222,13 +219,11 @@ class Instrument(object):
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
                  clean_level='clean', update_files=False, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
-                 manual_org=None, directory_format=None, file_format=None,
-                 temporary_file_list=False, strict_time_flag=True,
-                 ignore_empty_files=False,
+                 directory_format=None, file_format=None,
+                 temporary_file_list=False,
+                 strict_time_flag=True, ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot', str), 'axis': ('axis', str),
-                         'scale': ('scale', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
                          'fill_val': ('fill', float)}, custom=None, **kwargs):
@@ -260,7 +255,7 @@ class Instrument(object):
                     setattr(self, iattr, getattr(inst_module, iattr).lower())
                 else:
                     raise AttributeError(''.join(['Supplied module ',
-                                                  "{:}".format(inst_module),
+                                                  '{:} '.format(inst_module),
                                                   'is missing required ',
                                                   'attribute: ', iattr]))
 
@@ -365,7 +360,6 @@ class Instrument(object):
         # default will be set by _assign_attrs
         if multi_file_day is not None:
             self.multi_file_day = multi_file_day
-
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
@@ -428,10 +422,8 @@ class Instrument(object):
                 '' if len(missing_keys) == 1 else 's', missing_keys))
 
         # instantiate Files class
-        manual_org = False if manual_org is None else manual_org
         temporary_file_list = not temporary_file_list
-        self.files = pysat.Files(self, manual_org=manual_org,
-                                 directory_format=self.directory_format,
+        self.files = pysat.Files(self, directory_format=self.directory_format,
                                  update_files=update_files,
                                  file_format=self.file_format,
                                  write_to_disk=temporary_file_list,
@@ -450,13 +442,11 @@ class Instrument(object):
         # initialize orbit support
         if orbit_info is None:
             if self.orbit_info is None:
-                # If default info not provided, set None as default
-                orbit_info = {'index': None, 'kind': None, 'period': None}
-            else:
-                # Default provided by instrument module
-                orbit_info = self.orbit_info
-        self.orbits = pysat.Orbits(self, **orbit_info)
-        self.orbit_info = orbit_info
+                # If default info not provided, use class defaults
+                self.orbit_info = dict()
+        else:
+            self.orbit_info = orbit_info
+        self.orbits = pysat.Orbits(self, **self.orbit_info)
 
         # Create empty placeholder for meta translation table
         # gives information about how to label metadata for netcdf export
@@ -1013,9 +1003,9 @@ class Instrument(object):
                         'optional': ['preprocess']}
         inst_funcs = {'required': ['load', 'list_files', 'download'],
                       'optional': ['list_remote_files']}
-        inst_attrs = {"directory_format": None, "file_format": None,
-                      "multi_file_day": False, "orbit_info": None,
-                      "pandas_format": True}
+        inst_attrs = {'directory_format': None, 'file_format': None,
+                      'multi_file_day': False, 'orbit_info': None,
+                      'pandas_format': True}
         test_attrs = {'_test_download': True, '_test_download_travis': True,
                       '_password_req': False}
 
@@ -1408,7 +1398,7 @@ class Instrument(object):
 
         Note
         ----
-        Understands np.dtype, numpy int, uint, and float varients, and
+        Understands np.dtype, numpy int, uint, and float variants, and
         str subclasses
 
         """
@@ -1428,15 +1418,13 @@ class Instrument(object):
             else:
                 raise TypeError('Unknown Variable Type' + str(coltype))
 
-    def _get_data_info(self, data, netcdf_format):
+    def _get_data_info(self, data):
         """Support file writing by determining data type and other options
 
         Parameters
         ----------
         data : pandas object
             Data to be written
-        netcdf_format : str
-            String indicating netCDF3 or netCDF4
 
         Returns
         -------
@@ -1451,26 +1439,12 @@ class Instrument(object):
         # get type of data
         data_type = data.dtype
 
-        # check if older netcdf_format
-        if netcdf_format != 'NETCDF4':
-            old_format = True
-        else:
-            old_format = False
-
         # Check for object type
         if data_type != np.dtype('O'):
             # Simple data, not an object
 
-            if (data_type == np.int64) and old_format:
-                # No 64bit ints in netCDF3
-                data = data.astype(np.int32)
-                data_type = np.int32
-
             if data_type == np.dtype('<M8[ns]'):
-                if not old_format:
-                    data_type = np.int64
-                else:
-                    data_type = np.float
+                data_type = np.int64
                 datetime_flag = True
             else:
                 datetime_flag = False
@@ -2711,7 +2685,7 @@ class Instrument(object):
                 raise ValueError(estr)
 
             # verify arguments make sense, in context
-            _check_load_arguments_none(fname, stop_fname, date, end_date,
+            _check_load_arguments_none([fname, stop_fname, date, end_date],
                                        raise_error=True)
             # convert yr/doy to a date
             date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy),
@@ -2738,8 +2712,8 @@ class Instrument(object):
 
         elif date is not None:
             # Verify arguments make sense, in context
-            _check_load_arguments_none(fname, stop_fname, yr, doy, end_yr,
-                                       end_doy, raise_error=True)
+            _check_load_arguments_none([fname, stop_fname, yr, doy, end_yr,
+                                        end_doy], raise_error=True)
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
@@ -2756,8 +2730,8 @@ class Instrument(object):
 
         elif fname is not None:
             # Verify arguments make sense, in context
-            _check_load_arguments_none(yr, doy, end_yr, end_doy, date, end_date,
-                                       raise_error=True)
+            _check_load_arguments_none([yr, doy, end_yr, end_doy, date,
+                                        end_date], raise_error=True)
             # Date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
@@ -2780,8 +2754,8 @@ class Instrument(object):
                 self.load_step = 0
             curr = self._fid.copy()
 
-        elif _check_load_arguments_none(yr, doy, end_yr, end_doy, date,
-                                        end_date, fname, stop_fname):
+        elif _check_load_arguments_none([yr, doy, end_yr, end_doy, date,
+                                         end_date, fname, stop_fname]):
             # empty call, treat as if all data requested
             if self.multi_file_day:
                 estr = ''.join(('`load()` is not supported with multi_file_day',
@@ -3327,7 +3301,6 @@ class Instrument(object):
         if export_nan is None:
             export_nan = self.meta._export_nan
 
-        netcdf_format = 'NETCDF4'
         # base_instrument used to define the standard attributes attached
         # to the instrument object. Any additional attributes added
         # to the main input Instrument will be written to the netCDF4
@@ -3379,7 +3352,7 @@ class Instrument(object):
         #    - if column is a Series of Frames, write as 2D variables
         # 3) metadata must be filtered before writing to netCDF4, since
         #    string variables can't have a fill value
-        with netCDF4.Dataset(fname, mode='w', format=netcdf_format) as out_data:
+        with netCDF4.Dataset(fname, mode='w', format='NETCDF4') as out_data:
             # number of items, yeah
             num = len(self.index)
 
@@ -3453,8 +3426,7 @@ class Instrument(object):
                     # use variable names used by user when working with data
                     case_key = key
 
-                data, coltype, datetime_flag = self._get_data_info(
-                    self[key], netcdf_format)
+                data, coltype, datetime_flag = self._get_data_info(self[key])
 
                 # operate on data based upon type
                 if self[key].dtype != np.dtype('O'):
@@ -3590,8 +3562,7 @@ class Instrument(object):
                                 # multiple subvariables stored under a single
                                 # main variable heading
                                 idx = self[key].iloc[good_data_loc][col]
-                                data, coltype, _ = self._get_data_info(
-                                    idx, netcdf_format)
+                                data, coltype, _ = self._get_data_info(idx)
                                 cdfkey = out_data.createVariable(
                                     '_'.join((case_key, col)), coltype,
                                     dimensions=var_dim, zlib=zlib,
@@ -3635,8 +3606,7 @@ class Instrument(object):
                                 # We are dealing with a Series.  Get
                                 # information from within the series
                                 idx = self[key].iloc[good_data_loc]
-                                data, coltype, _ = self._get_data_info(
-                                    idx, netcdf_format)
+                                data, coltype, _ = self._get_data_info(idx)
                                 cdfkey = out_data.createVariable(
                                     case_key + '_data', coltype,
                                     dimensions=var_dim, zlib=zlib,
@@ -3676,7 +3646,7 @@ class Instrument(object):
                         # Get index information
                         idx = good_data_loc
                         data, coltype, datetime_flag = self._get_data_info(
-                            self[key].iloc[idx].index, netcdf_format)
+                            self[key].iloc[idx].index)
 
                         # Create dimension variable for to store index in
                         # netCDF4
@@ -3892,7 +3862,7 @@ def _pass_func(*args, **kwargs):
     pass
 
 
-def _check_load_arguments_none(*args, raise_error=False):
+def _check_load_arguments_none(args, raise_error=False):
     """Ensure all arguments are None.
 
     Used to support .load method checks that arguments that should be
@@ -3900,7 +3870,7 @@ def _check_load_arguments_none(*args, raise_error=False):
 
     Parameters
     ----------
-    *args : iterable object
+    args : iterable object
         Variables that are to checked to ensure None
     raise_error : bool
         If True, an error is raised if all args aren't None (default=False)

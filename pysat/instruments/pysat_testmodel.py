@@ -113,7 +113,6 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'custom': False}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'plot': 'Solar Local Times', 'axis': 'SLT',
                    'desc': 'Solar Local Time', 'value_min': 0.0,
                    'value_max': 24.0,
                    'notes': ''.join(['Solar Local Time is the local time ',

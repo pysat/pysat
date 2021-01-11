@@ -35,45 +35,43 @@ up to four parameters
 ===============     ===================================
 **Identifier** 	        **Description**
 ---------------     -----------------------------------
-  platform		    General platform instrument is on
+  platform		Name of the platform supporting the instrument
   name		        Name of the instrument
-  tag		        Label for a subset of total data
-  inst_id		    Label for instrument sub-group
+  tag		        Label for an instrument data product
+  inst_id		Label for instrument sub-group
 ===============     ===================================
 
 
-All supported pysat Instruments for v2.x are stored in the pysat.instruments
-submodule. A listing of all currently supported instruments
-is available via help,
+In pysat v3.x+, Instruments are supported by separate instrument packages.
+Local instruments in pysat.instruments submodule have been developed for testing
+purposes.  The current list and development status of different packages in
+the pysat ecosystem can be found on the
+`wiki <https://github.com/pysat/pysat/wiki/Pysat-Ecosystem-Status-Chart>`_.
+
+You can learn about the different Instruments in an instrument package using
+the utility display_available_instruments.  When providing an Instrument
+submodule as input, this will list the Instrument module name, and all possible
+combinations of tags, inst_ids, and a description of the data (if available).
+This example will use the ``pysatMadrigal`` package.
 
 .. code:: python
 
-    help(pysat.instruments)
+    import pysat
+    import pysatMadrigal as pysatMad
+    pysat.utils.display_available_instruments(pysatMad.instruments)
 
-Each instrument listed will support one or more data sets for analysis. The
-submodules are named with the convention platform_name. To get
-a description of an instrument from a pysat package, you can use a searching
-function.  This example uses the ``pysatMadrigal`` package.
+You can see each listed instrument supports one or more data sets for analysis.
+The submodules are named with the convention platform_name.  When supplying
+an Instrument submodule as input the display utility provides the submodule
+name instead of the platform and name because non-registered Instruments are
+instantiated using the ``inst_module`` keyword instead of the ``platform`` and
+``name`` keywords (jump to the :ref:`Instantiation` section below for more
+information).  To use the ``platform`` and ``name`` keywords, the instrument
+must be registered.  To display the registered instruments, no input is needed.
 
 .. code:: python
 
-   import pysatMadrigal as pysatMad
-   mad_inst = pysat.utils.generate_instrument_list(pysatMad.instruments)
-   print(mad_inst['names'])
-
-
-Further, the dictionary::
-
-    pysatMadrigal.instruments.dmsp_ivm.tags
-
-is keyed by ``tag`` with a description of each type of data
-the ``tag`` parameter selects. The dictionary::
-
-    pysatMadrigal.instruments.dmsp_ivm.inst_ids
-
-indicates which instrument or satellite ids (``inst_id``) support which tag.
-The combination of ``tag`` and ``inst_id`` select the particular dataset
-a pysat.Instrument object will provide and interact with.
+    pysat.utils.display_available_instruments()
 
 
 Instantiation
