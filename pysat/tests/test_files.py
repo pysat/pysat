@@ -426,6 +426,11 @@ class TestBasics():
                 idx = self.testInst.files.get_index(test_str)
             assert str(war).find('in available file list') > 0
 
+    def test_default_directory_format(self):
+        """Ensure default directory format from params is used"""
+        files = pysat.Files(self.testInst)
+        assert files.directory_format == pysat.params['directory_format']
+
 
 class TestBasicsNoFileListStorage(TestBasics):
     """Repeat basic tests with temporary file list"""

@@ -139,8 +139,8 @@ class Files(object):
             directory naming structure in string format. Variables such as
             platform, name, and tag will be filled in as needed using python
             string formatting. The default directory structure would be
-            expressed as '{platform}/{name}/{tag}'. If None, the default
-            directory structure is used (default=None)
+            expressed as '{platform}/{name}/{tag}/{inst_id}'. If None,
+            the default directory structure is used (default=None)
         update_files : boolean
             If True, immediately query filesystem for instrument files and
             store (default=False)
@@ -204,8 +204,6 @@ class Files(object):
         # Set the path for sub-directories under pysat data path
         if directory_format is None:
             # Assign stored template if user doesn't provide one.
-            # TODO: Should we just error here? This ensures the settings are
-            # dominated by the Instrument object.
             directory_format = params['directory_format']
         self.directory_format = directory_format
 
