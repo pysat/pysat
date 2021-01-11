@@ -214,7 +214,7 @@ class Files(object):
 
         # Construct the subdirectory path
         sub_dir_path = os.path.normpath(
-          self.directory_format.format(**self.inst_info))
+            self.directory_format.format(**self.inst_info))
 
         # Ensure we have at least one path for pysat data directory
         if len(params['data_dirs']) == 0:
