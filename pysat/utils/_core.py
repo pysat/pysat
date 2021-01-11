@@ -1,4 +1,3 @@
-import copy
 import datetime as dt
 import importlib
 import netCDF4
@@ -181,9 +180,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     Returns
     --------
-    out : pandas.core.frame.DataFrame
+    out : pandas.DataFrame
         DataFrame output
-    mdata : pysat._meta.Meta
+    meta : pysat.Meta
         Meta data
 
     """
@@ -198,41 +197,40 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     else:
         file_format = file_format.upper()
 
-    saved_mdata = None
+    saved_meta = None
     running_idx = 0
     running_store = []
     two_d_keys = []
     two_d_dims = []
-    mdata = pysat.Meta(labels=labels)
+    meta = pysat.Meta(labels=labels)
 
     if pandas_format:
         for fname in fnames:
             with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
-                # build up dictionary with all global ncattrs
-                # and add those attributes to a pysat meta object
-                ncattrsList = data.ncattrs()
-                for ncattr in ncattrsList:
-                    if hasattr(mdata, ncattr):
-                        mdata.__setattr__('{:}_'.format(ncattr),
-                                          data.getncattr(ncattr))
+                # Build a dictionary with all global ncattrs and add those
+                # attributes to a pysat meta object
+                for ncattr in data.ncattrs():
+                    if hasattr(meta, ncattr):
+                        meta.__setattr__('{:}_'.format(ncattr),
+                                         data.getncattr(ncattr))
                     else:
-                        mdata.__setattr__(ncattr, data.getncattr(ncattr))
+                        meta.__setattr__(ncattr, data.getncattr(ncattr))
 
-                loadedVars = {}
+                loaded_vars = {}
                 for key in data.variables.keys():
-                    # load up metadata.  From here group unique
-                    # dimensions and act accordingly, 1D, 2D, 3D
+                    # Load the metadata.  From here group unique dimensions and
+                    # act accordingly, 1D, 2D, 3D
                     if len(data.variables[key].dimensions) == 1:
                         if pandas_format:
                             # load 1D data variable
                             # assuming basic time dimension
-                            loadedVars[key] = data.variables[key][:]
+                            loaded_vars[key] = data.variables[key][:]
                         # load up metadata
                         meta_dict = {}
                         for nc_key in data.variables[key].ncattrs():
                             meta_dict[nc_key] = \
                                 data.variables[key].getncattr(nc_key)
-                        mdata[key] = meta_dict
+                        meta[key] = meta_dict
                     if len(data.variables[key].dimensions) == 2:
                         # part of dataframe within dataframe
                         two_d_keys.append(key)
@@ -276,7 +274,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         # if the object index uses UNIX time, process into
                         # datetime index
                         if data.variables[obj_key].getncattr(
-                                mdata.labels.name) == epoch_name:
+                                meta.labels.name) == epoch_name:
                             # name to be used in DataFrame index
                             index_name = epoch_name
                             time_index_flag = True
@@ -284,7 +282,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             time_index_flag = False
                             # label to be used in DataFrame index
                             index_name = data.variables[obj_key].getncattr(
-                                mdata.labels.name)
+                                meta.labels.name)
                     else:
                         # dimension is not itself a variable
                         index_key_name = None
@@ -306,7 +304,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         for nc_key in data.variables[obj_key].ncattrs():
                             dim_meta_dict[nc_key] = \
                                 data.variables[obj_key].getncattr(nc_key)
-                        mdata[obj_key] = dim_meta_dict
+                        meta[obj_key] = dim_meta_dict
 
                     # iterate over all variables with this dimension
                     # data storage, whole shebang
@@ -362,24 +360,24 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
                     # add 2D object data, all based on a unique dimension within
                     # netCDF, to loaded data dictionary
-                    loadedVars[obj_key] = loop_list
+                    loaded_vars[obj_key] = loop_list
                     del loop_list
 
                 # prepare dataframe index for this netcdf file
-                time_var = loadedVars.pop(epoch_name)
+                time_var = loaded_vars.pop(epoch_name)
 
                 # convert from GPS seconds to seconds used in pandas (unix time,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
-                loadedVars[epoch_name] = \
-                    pds.to_datetime((1E6 * time_var).astype(int))
-                running_store.append(loadedVars)
-                running_idx += len(loadedVars[epoch_name])
+                loaded_vars[epoch_name] = pds.to_datetime(
+                    (1E6 * time_var).astype(int))
+                running_store.append(loaded_vars)
+                running_idx += len(loaded_vars[epoch_name])
 
                 if strict_meta:
-                    if saved_mdata is None:
-                        saved_mdata = copy.deepcopy(mdata)
-                    elif (mdata != saved_mdata):
+                    if saved_meta is None:
+                        saved_meta = meta.copy()
+                    elif (meta != saved_meta):
                         raise ValueError(' '.join(('Metadata across filenames',
                                                    'is not the same.')))
 
@@ -398,19 +396,20 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             meta_dict = {}
             for nc_key in out.variables[key].attrs.keys():
                 meta_dict[nc_key] = out.variables[key].attrs[nc_key]
-            mdata[key] = meta_dict
+            meta[key] = meta_dict
             # Remove variable attributes from the data object
             out.variables[key].attrs = {}
         # Copy the file attributes from the data object to the metadata
-        for d in out.attrs.keys():
-            if hasattr(mdata, d):
-                mdata.__setattr__(d + '_', out.attrs[d])
+        for out_attr in out.attrs.keys():
+            if hasattr(meta, out_attr):
+                set_attr = "".join([out_attr, "_"])
+                meta.__setattr__(set_attr, out.attrs[out_attr])
             else:
-                mdata.__setattr__(d, out.attrs[d])
+                meta.__setattr__(out_attr, out.attrs[out_attr])
         # Remove attributes from the data object
         out.attrs = {}
 
-    return out, mdata
+    return out, meta
 
 
 def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
@@ -503,6 +502,16 @@ def generate_instrument_list(inst_loc, user_info=None):
         EX: user_info = {'supermag_magnetometer': {'user': 'rstoneback',
                                                    'password': 'None'}}
 
+    Returns
+    -------
+    output : dict
+        Dictionary with keys 'names', 'download', 'no_download' that contain
+        lists with different information for each key:
+        'names' - list of platform_name combinations
+        'download' - dict containing 'inst_module', 'tag', and 'inst_id' for
+        instruments with download routines
+        'no_download' - dict containing 'inst_module', 'tag', and 'inst_id' for
+        instruments without download routines
 
     Note
     ----
@@ -568,6 +577,145 @@ def generate_instrument_list(inst_loc, user_info=None):
               'no_download': instrument_no_download}
 
     return output
+
+
+def available_instruments(inst_loc=None):
+    """Obtain basic information about instruments in a given subpackage.
+
+    Parameters
+    ----------
+    inst_loc : python subpackage or NoneType
+        The location of the instrument subpackage (e.g., pysat.instruments)
+        or None to list all registered instruments (default=None)
+
+    Returns
+    -------
+    inst_info : dict
+        Nested dictionary with 'platform', 'name', 'inst_module',
+        'inst_ids_tags', 'inst_id', and 'tag' with the tag descriptions given
+        as the value for each unique dictionary combination.
+
+    """
+
+    def get_inst_id_dict(inst_module_name):
+        try:
+            module = importlib.import_module(inst_module_name)
+            inst_ids = {inst_id: {tag: module.tags[tag]
+                                  for tag in module.inst_ids[inst_id]}
+                        for inst_id in module.inst_ids.keys()}
+        except ImportError as ierr:
+            inst_ids = {'ERROR': {'ERROR': str(ierr)}}
+        return inst_ids
+
+    if inst_loc is None:
+        # Access the registered instruments
+        inst_info = dict()
+
+        # Cycle through each instrument platform and name to reshape the
+        # dictionary and get the instrument tags and inst_ids
+        for platform in pysat.user_modules.keys():
+            inst_info[platform] = dict()
+            for name in pysat.user_modules[platform].keys():
+                inst_ids = get_inst_id_dict(pysat.user_modules[platform][name])
+                inst_info[platform][name] = {'inst_module':
+                                             pysat.user_modules[platform][name],
+                                             'inst_ids_tags': inst_ids}
+    else:
+        # Access the instruments in the specified module
+        inst_mods = inst_loc.__all__
+        inst_info = dict()
+
+        # Cycle through the available instrument modules
+        for inst_mod in inst_mods:
+            # Get the platform, name, and instrument module name
+            platform = inst_mod.split('_')[0]
+            name = '_'.join(inst_mod.split('_')[1:])
+            mod_name = '.'.join([inst_loc.__name__, inst_mod])
+
+            # Initialize the dictionary for this platform and name
+            if platform not in inst_info.keys():
+                inst_info[platform] = dict()
+
+            # Finalize the dictionary
+            inst_info[platform][name] = {
+                'inst_module': mod_name,
+                'inst_ids_tags': get_inst_id_dict(mod_name)}
+
+    return inst_info
+
+
+def display_available_instruments(inst_loc=None, show_inst_mod=None,
+                                  show_platform_name=None):
+    """Display basic information about instruments in a given subpackage.
+
+    Parameters
+    ----------
+    inst_loc : python subpackage or NoneType
+        The location of the instrument subpackage (e.g., pysat.instruments)
+        or None to list all registered instruments (default=None)
+    show_inst_mod : boolean or NoneType
+        Displays the instrument module if True, does not include it if False,
+        and reverts to standard display based on inst_loc type if None.
+       (default=None)
+    show_platform_name : boolean or NoneType
+        Displays the platform and name if True, does not include it if False,
+        and reverts to standard display based on inst_loc type if None.
+       (default=None)
+
+    Note
+    ----
+    Prints to standard out, a user-friendly interface for availabe_instruments.
+    Defaults to including the instrument module and not the platform/name values
+    if inst_loc is an instrument module and to including the platform/name
+    values and not the instrument module if inst_loc is None (listing the
+    registered instruments).
+
+    """
+
+    inst_info = available_instruments(inst_loc)
+
+    if show_platform_name is None and inst_loc is None:
+        show_platform_name = True
+        plat_keys = sorted([platform for platform in inst_info.keys()])
+    else:
+        plat_keys = inst_info.keys()
+
+    if show_inst_mod is None and inst_loc is not None:
+        show_inst_mod = True
+
+    if show_platform_name:
+        header = "Platform   Name   "
+    else:
+        header = ""
+
+    if show_inst_mod:
+        header = "{:s}Instrument_Module".format(header)
+
+    header = "{:s}      [Tag   Inst_ID]  Description".format(header)
+    print(header)
+    print("-" * len(header))
+    for platform in plat_keys:
+        for name in inst_info[platform].keys():
+            mod_str = ""
+            for inst_id in inst_info[platform][name]['inst_ids_tags'].keys():
+                for tag in inst_info[platform][name][
+                        'inst_ids_tags'][inst_id].keys():
+                    if len(mod_str) == 0:
+                        if show_platform_name:
+                            mod_str = "".join([platform.__repr__(), " ",
+                                               name.__repr__(), " "])
+                        if show_inst_mod:
+                            mod_str = "{:s}{:s}".format(
+                                mod_str,
+                                inst_info[platform][name]['inst_module'])
+                    else:
+                        mod_str = " " * len(mod_str)
+
+                    print("".join([mod_str, " [", tag.__repr__(), " ",
+                                   inst_id.__repr__(), "]  ",
+                                   inst_info[platform][name]['inst_ids_tags'][
+                                       inst_id][tag]]))
+    return
 
 
 class NetworkLock(Lock):

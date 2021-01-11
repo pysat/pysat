@@ -30,9 +30,8 @@ class Meta(object):
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
-        'plot': ('plot', str), 'axis': ('axis', str),
-        'scale': ('scale', str), 'min_val': ('value_min', float),
-        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'min_val': ('value_min', float), 'max_val': ('value_max', float),
+        'fill_val': ('fill', float)})
     export_nan : list or NoneType
         List of labels that should be exported even if their value is nan or
         None for an empty list. When used, metadata with a value of nan will
@@ -61,14 +60,14 @@ class Meta(object):
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, name, notes, desc, plot, axis, scale, value_min,
-    value_max, and fill). These base attributes may be used to programatically
-    access and set types of metadata regardless of the string values used for
-    the attribute. String values for attributes may need to be changed
-    depending upon the standards of code or files interacting with pysat.
+    attributes (units, name, notes, desc, value_min, value_max, and fill).
+    These base attributes may be used to programatically access and set types
+    of metadata regardless of the string values used for the attribute. String
+    values for attributes may need to be changed depending upon the standards
+    of code or files interacting with pysat.
 
     Meta objects returned as part of pysat loading routines are automatically
-    updated to use the same values of plot, units, etc. as found in the
+    updated to use the same values of units, etc. as found in the
     pysat.Instrument object.
 
     Examples
@@ -133,7 +132,6 @@ class Meta(object):
         # note that all instances of fill_label
         # within the meta object are NOT updated FIX??
         meta.labels.fill_val = '_FillValue'
-        meta.labels.plot = 'Special Plot Variable'
 
         # this feature is useful when converting metadata within pysat
         # so that it is consistent with externally imposed file standards
@@ -146,8 +144,6 @@ class Meta(object):
     def __init__(self, metadata=None,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot', str), 'axis': ('axis', str),
-                         'scale': ('scale', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
                          'fill_val': ('fill', float)}, export_nan=None):
@@ -682,8 +678,8 @@ class Meta(object):
         Note
         ----
         Sets NaN for all float values, -1 for all int values, 'data_var' for
-        names and plot labels, 'linear' for the scale label, '' for all
-        other str values, and None for any othere data type.
+        names labels, '' for all other str values, and None for any other
+        data type.
 
         """
         # Cycle through each label type to create a list off label names
@@ -693,7 +689,7 @@ class Meta(object):
         for lattr in self.labels.label_type.keys():
             labels.append(getattr(self.labels, lattr))
 
-            if lattr in ['name', 'plot', 'axis']:
+            if lattr in ['name']:
                 default_vals.append(data_var)
             else:
                 default_vals.append(self.labels.default_values_from_attr(lattr))
@@ -1270,12 +1266,6 @@ class MetaLabels(object):
         Notes label name and value type (default=('notes', str))
     desc : tuple
         Description label name and value type (default=('desc', str))
-    plot : tuple
-        Plot label name and value type (default=('plot', str))
-    axis : tuple
-        Axis label name and value type (default=('axis', str))
-    scale : tuple
-        Scale label name and value type (default=('scale', str))
     min_val : tuple
         Minimum value label name and value type (default=('value_min', float))
     max_val : tuple
@@ -1301,12 +1291,6 @@ class MetaLabels(object):
     desc : str
        String used to label variable descriptions in storage.
        (default='desc')
-    plot : str
-       String used to label variables in plots. (default='plot')
-    axis : str
-        Label used for axis on a plot. (default='axis')
-    scale : str
-       string used to label plot scaling type in storage. (default='scale')
     min_val : str
        String used to label typical variable value min limit in storage.
        (default='value_min')
@@ -1331,22 +1315,21 @@ class MetaLabels(object):
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, name, notes, desc, plot, axis, scale, value_min,
-    value_max, and fill). These base attributes may be used to programatically
-    access and set types of metadata regardless of the string values used for
-    the attribute. String values for attributes may need to be changed
-    depending upon the standards of code or files interacting with pysat.
+    attributes (units, name, notes, desc, value_min, value_max, and fill).
+    These base attributes may be used to programatically access and set types
+    of metadata regardless of the string values used for the attribute. String
+    values for attributes may need to be changed depending upon the standards
+    of code or files interacting with pysat.
 
     Meta objects returned as part of pysat loading routines are automatically
-    updated to use the same values of plot, units, etc. as found in the
+    updated to use the same values of units, etc. as found in the
     pysat.Instrument object.
 
     """
 
     def __init__(self, metadata=None, units=('units', str),
                  name=('long_name', str), notes=('notes', str),
-                 desc=('desc', str), plot=('plot', str),
-                 axis=('axis', str), scale=('scale', str),
+                 desc=('desc', str),
                  min_val=('value_min', float), max_val=('value_max', float),
                  fill_val=('fill', float), **kwargs):
         """ Initialize the MetaLabels class
@@ -1361,12 +1344,6 @@ class MetaLabels(object):
             Notes label name and value type (default=('notes', str))
         desc : tuple
             Description label name and value type (default=('desc', str))
-        plot : tuple
-            Plot label name and value type (default=('plot', str))
-        axis : tuple
-            Axis label name and value type (default=('axis', str))
-        scale : tuple
-            Scale label name and value type (default=('scale', str))
         min_val : tuple
             Minimum value label name and value type
             (default=('value_min', float))
@@ -1387,8 +1364,7 @@ class MetaLabels(object):
         # Initialize a dictionary of label types, whose keys are the label
         # attributes
         self.label_type = {'units': units[1], 'name': name[1],
-                           'notes': notes[1], 'desc': desc[1], 'plot': plot[1],
-                           'axis': axis[1], 'scale': scale[1],
+                           'notes': notes[1], 'desc': desc[1],
                            'min_val': min_val[1], 'max_val': max_val[1],
                            'fill_val': fill_val[1]}
 
@@ -1397,9 +1373,6 @@ class MetaLabels(object):
         self.name = name[0]
         self.notes = notes[0]
         self.desc = desc[0]
-        self.plot = plot[0]
-        self.axis = axis[0]
-        self.scale = scale[0]
         self.min_val = min_val[0]
         self.max_val = max_val[0]
         self.fill_val = fill_val[0]

@@ -31,6 +31,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Made underlying custom data structures visible (#529)
   - Updated data_mode method name to custom_attach for the Constellation object (#540)
   - Added support for custom 'add' methods to return xarray.Datasets
+  - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
@@ -104,6 +105,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improve instrument tests for files
   - Use dt.timedelta instead of pds.DateOffSet where possible
   - Reduced code duplication throughout package
+  - Reduced unused code snippets throughout
 
 ## [2.2.2] - 2020-12-31
  - New Features
