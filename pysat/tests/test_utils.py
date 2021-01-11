@@ -269,7 +269,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=100, update_files=True)
-        self.stime = pysat.instruments.pysat_testing._test_dates[''][''
+        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.pandas_format = True
 
         # create testing directory
