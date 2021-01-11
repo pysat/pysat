@@ -211,6 +211,12 @@ class TestBasics():
         # Test no files
         assert self.out.find('Date Range') > 0
 
+    def test_from_os_requires_data_path(self):
+        """Check that path required for from_os"""
+        with pytest.raises(ValueError) as war:
+            self.testInst.files.from_os()
+        assert str(war).find('Must supply instrument') > 0
+
     def test_year_doy_files_directly_call_from_os(self):
         """Check that Files.from_os generates file list"""
         # create a bunch of files by year and doy
@@ -403,6 +409,22 @@ class TestBasics():
 
         # Ensure we have the right files
         assert np.all(files == files2)
+
+    def test_get_index(self):
+        """Ensure test_index working as expected"""
+        in_idxs = [0, 10, 100]
+        for in_idx in in_idxs:
+            idx = self.testInst.files.get_index(self.testInst.files[in_idx])
+            assert idx == in_idx
+
+    def test_get_index_nonexistent_file(self):
+        """Ensure test_index working as expected file not found"""
+        in_idxs = [0, 10, 100]
+        for in_idx in in_idxs:
+            test_str = ''.join(('_', self.testInst.files[in_idx]))
+            with pytest.raises(ValueError) as war:
+                idx = self.testInst.files.get_index(test_str)
+            assert str(war).find('in available file list') > 0
 
 
 class TestBasicsNoFileListStorage(TestBasics):
