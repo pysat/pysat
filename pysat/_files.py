@@ -562,14 +562,15 @@ class Files(object):
         if present.  Void if `path_input` is None.
 
         """
+        out = None
         if file_series is not None:
             # Ensure there is a directory divider at the end of the path
             split_str = os.path.join(self.data_path, '')
 
             # Remove the data path from all filenames in the Series
-            return file_series.apply(lambda x: x.split(split_str)[-1])
+            out = file_series.apply(lambda x: x.split(split_str)[-1])
 
-        return
+        return out
 
     # -----------------------------------------------------------------------
     # Define the public methods and properties
@@ -722,20 +723,29 @@ class Files(object):
         strings
 
         """
+
+        starts = np.asarray(start)
+        if starts.shape == ():
+            starts = [starts.tolist()]
+        elif starts.shape[0] > 1:
+            starts = starts.squeeze().tolist()
+        elif starts.shape[0] == 1:
+            starts = starts.tolist()
+
+        stops = np.asarray(stop)
+        if stops.shape == ():
+            stops = [stops.tolist()]
+        elif stops.shape[0] > 1:
+            stops = stops.squeeze().tolist()
+        elif stops.shape[0] == 1:
+            stops = stops.tolist()
+
         # Selection is treated differently if start/stop are iterable or not
-        if hasattr(start, '__iter__') and hasattr(stop, '__iter__'):
-            files = []
-            for (sta, stp) in zip(start, stop):
-                id1 = self.get_index(sta)
-                id2 = self.get_index(stp)
-                files.extend(self.files.iloc[id1:(id2 + 1)])
-        elif hasattr(start, '__iter__') or hasattr(stop, '__iter__'):
-            estr = 'Either both or none of the inputs need to be iterable'
-            raise ValueError(estr)
-        else:
-            id1 = self.get_index(start)
-            id2 = self.get_index(stop)
-            files = self.files[id1:(id2 + 1)].to_list()
+        files = []
+        for (sta, stp) in zip(starts, stops):
+            id1 = self.get_index(sta)
+            id2 = self.get_index(stp)
+            files.extend(self.files.iloc[id1:(id2 + 1)])
 
         return files
 
