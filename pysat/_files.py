@@ -484,12 +484,12 @@ class Files(object):
                 prev_name = os.path.join(self.home_path, 'archive', stored_name)
                 stored_files.to_csv(prev_name,
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
-                                    header=False)
+                                    header=[self.data_path])
 
                 # Overwrite the old reference file with the new file info
                 self.files.to_csv(os.path.join(self.home_path, stored_name),
                                   date_format='%Y-%m-%d %H:%M:%S.%f',
-                                  header=False)
+                                  header=[self.data_path])
             else:
                 # Update the hidden File attributes
                 self._previous_file_list = stored_files
@@ -666,6 +666,7 @@ class Files(object):
 
         # Select files that are in the new series and not the old series
         new_files = new_file_series[-new_file_series.isin(old_file_series)]
+
         return new_files
 
     def get_index(self, fname):

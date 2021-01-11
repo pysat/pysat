@@ -505,15 +505,12 @@ class TestInstWithFiles():
     def test_get_new_files_after_adding_files(self):
         """Check that get_new locates new files"""
         # create new files and make sure that new files are captured
-        print('first files', self.testInst.files.files)
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
         dates = pysat.utils.time.create_date_range(self.start2, self.stop2,
                                                    freq='100min')
         new_files = self.testInst.files.get_new()
-        print('second files ', self.testInst.files.files)
-        print('new files ', new_files)
         assert (np.all(new_files.index == dates))
 
     def test_get_new_files_after_refresh(self):
