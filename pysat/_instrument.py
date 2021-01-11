@@ -2109,12 +2109,12 @@ class Instrument(object):
                                     else:
                                         # Multiple items detected. Add one at
                                         # a time.
-                                        for name, data in zip(var_name,
+                                        for vname, data in zip(var_name,
                                                               new_data):
                                             if len(data) > 0:
                                                 # Fixes up the incomplete check
                                                 # from above
-                                                self[var_name] = data
+                                                self[vname] = data
                                 # dstr = ''.join(('Data returned will require ',
                                 #               'a "name" key in the returned ',
                                 #                 'dictionary.'))
