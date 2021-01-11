@@ -6,7 +6,7 @@ pysat.utils.time contains a number of functions used throughout
 the pysat package, including interactions with datetime objects,
 seasons, and calculation of solar local time
 """
-import datetime
+
 import datetime as dt
 import numpy as np
 import pandas as pds
