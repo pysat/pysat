@@ -80,7 +80,7 @@ class Files(object):
         and 'inst_id', identifying the source of the files.
 
     Note
-    ----  
+    ----
     Interfaces with the `list_files` method for a given instrument
     support module to create an ordered collection of files in time,
     used primarily by the pysat.Instrument object to identify files
@@ -167,8 +167,7 @@ class Files(object):
                                          "pysat.utils.set_data_dir.")))
 
         # Set the hidden variables
-        self._inst = weakref.proxy(inst)
-        self._update_files = update_files
+        self.update_files = update_files
 
         # Location of directory to store file information in
         self.home_path = os.path.join(pysat_dir, 'instruments')
@@ -177,12 +176,12 @@ class Files(object):
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None, dtype='object')
-        
+
         # Grab Instrument info
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
-                         'tag': inst.tag, 'inst_id': inst.inst_id}
+                          'tag': inst.tag, 'inst_id': inst.inst_id}
         self.list_files_rtn = inst._list_files_rtn
-        
+
         # Check if routine is actually a generator method
         if inspect.isgeneratorfunction(self.list_files_rtn):
             self.list_files_generator = self.list_files_rtn()
@@ -193,7 +192,7 @@ class Files(object):
         else:
             self.list_files_generator = None
 
-        self.multi_file_day = sat.multi_file_day
+        self.multi_file_day = inst.multi_file_day
 
         # Set the location of stored files
         self.stored_file_name = '_'.join((self.inst_info['platform'],
@@ -271,12 +270,12 @@ class Files(object):
         """
         # Because the local Instrument object is weakly referenced, it may
         # not always be accessible
-        inst_repr = Instrument(**self.sat_info).__repr__()
+        inst_repr = Instrument(**self.inst_info).__repr__()
 
         out_str = "".join(["Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
                            ", update_files=",
-                           "{:}, file_format=".format(self._update_files),
+                           "{:}, file_format=".format(self.update_files),
                            "{:}, ".format(self.file_format.__repr__()),
                            "write_to_disk={:}, ".format(self.write_to_disk),
                            "ignore_empty_files=",
@@ -363,23 +362,25 @@ class Files(object):
     # -----------------------------------------------------------------------
     # Define the hidden methods
 
-    def _filter_empty_files(self):
-        """Update the file list (files) by removing empty files
+    def _filter_empty_files(self, path):
+        """Update the file list (self.files) with empty files removed
+
+        Parameters
+        ----------
+        path : str
+            Path to top-level containing files
         """
 
         keep_index = []
-        for i, fname in enumerate(self.files):
-            # Create a full filename with file path
-            full_fname = os.path.join(self.data_path, fname)
+        for i, fi in enumerate(self.files):
+            # Create full path for each file
+            full_name = os.path.join(path, fi)
+            # Ensure it exists
+            if os.path.exists(full_name) and (os.path.getsize(full_name) > 0):
+                # Store if not empty
+                keep_index.append(i)
 
-            # Ensure the file exists and is a file
-            if os.path.isfile(full_fname):
-                # Check for size
-                if os.path.getsize(full_fname) > 0:
-                    # Store if not empty
-                    keep_index.append(i)
-
-        # Remove filenames as needed
+        # Remove filenames for empty files as needed
         dropped_num = len(self.files.index) - len(keep_index)
         if dropped_num > 0:
             logger.warning(' '.join(('Removing {:d}'.format(dropped_num),
@@ -432,7 +433,7 @@ class Files(object):
             self.files = files_info.astype(np.dtype('O'))
 
         return
-    
+
     def _ensure_unique_file_datetimes(self):
         """Update the file list (self.files) to ensure uniqueness"""
 
@@ -582,7 +583,7 @@ class Files(object):
         Typically, these routines search in the pysat provided path,
         pysat_data_dir/platform/name/tag/, where pysat_data_dir is set by
         pysat.utils.set_data_dir(path=path).
-        
+
         """
 
         if self.list_files_generator is not None:
@@ -595,7 +596,7 @@ class Files(object):
         info_str = " ".join(("pysat is searching for", info_str, "files."))
         info_str = " ".join(info_str.split())  # Remove duplicate whitespace
         logger.info(info_str)
-        
+
         # Check all potential directory locations for files.
         # Stop as soon as we find some.
         for path in self.data_paths:

@@ -505,12 +505,15 @@ class TestInstWithFiles():
     def test_get_new_files_after_adding_files(self):
         """Check that get_new locates new files"""
         # create new files and make sure that new files are captured
+        print('first files', self.testInst.files.files)
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
         dates = pysat.utils.time.create_date_range(self.start2, self.stop2,
                                                    freq='100min')
         new_files = self.testInst.files.get_new()
+        print('second files ', self.testInst.files.files)
+        print('new files ', new_files)
         assert (np.all(new_files.index == dates))
 
     def test_get_new_files_after_refresh(self):
@@ -624,11 +627,11 @@ class TestInstWithFilesNonStandard():
         reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
+        pysat.params['data_dirs'] = self.data_paths
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                          clean_level='clean',
                          update_files=True,
                          temporary_file_list=self.temporary_file_list)
-        pysat.params['data_dirs'] = self.data_paths
         del self.start, self.stop
 
     def test_files_non_standard_pysat_directory(self):
