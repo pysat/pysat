@@ -1000,6 +1000,7 @@ class TestDeprecation():
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
 
+
 class TestCIonly():
     """Tests where we mess with local settings.
     These only run in CI environments such as Travis and Appveyor to avoid
@@ -1011,19 +1012,20 @@ class TestCIonly():
         self.ci_env = (os.environ.get('TRAVIS') == 'true')
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
-
-        # Move settings directory to simulate first load after install
-        self.root = os.path.join(os.getenv('HOME'), '.pysat')
-        self.new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
-        shutil.move(self.root, self.new_root)
+        else:
+            # Move settings directory to simulate first load after install
+            self.root = os.path.join(os.getenv('HOME'), '.pysat')
+            self.new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+            shutil.move(self.root, self.new_root)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.ci_env
+        if self.ci_env:
+            # Move settings back
+            shutil.rmtree(self.root)
+            shutil.move(self.new_root, self.root)
 
-        # Move settings back
-        shutil.rmtree(self.root)
-        shutil.move(self.new_root, self.root)
+        del self.ci_env
 
     def test_initial_pysat_load(self, capsys):
         """Ensure data_dirs check in Files works"""
