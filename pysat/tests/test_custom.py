@@ -65,6 +65,7 @@ class TestBasics():
         """Test __repr__ with a custom method"""
         def custom_func(inst):
             return
+
         def custom_func2(inst):
             return
         self.testInst.custom_attach(custom_func, 'modify')
