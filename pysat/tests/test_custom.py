@@ -174,9 +174,6 @@ class TestBasics():
                   ]
         testInst2 = pysat.Instrument('pysat', 'testing', custom=custom)
 
-        # trigger runs of empty functions
-        testInst2.load(date=self.load_date)
-
         # ensure both instruments have the same custom_* attributes
         assert self.testInst.custom_functions == testInst2.custom_functions
         assert self.testInst.custom_kind == testInst2.custom_kind
@@ -551,21 +548,32 @@ class TestBasicsXarray(TestBasics):
 
 
 # Repeat the above tests with a Constellation
-class TestConstellationBasics(TestBasics):
+class TestConstellationBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup
         """
-        self.testConst = pysat.Constellation([
+        self.testInst = pysat.Constellation([
             pysat.Instrument('pysat', 'testing', num_samples=10,
                              clean_level='clean')
             for i in range(5)])
 
+        self.load_date = pysat.instruments.pysat_testing._test_dates['']['']
+
     def teardown(self):
         """ Runs after every method to clean up previous testing
         """
-        del self.testConst
+        del self.testInst
 
-    def test_add(self, function, kind='add', at_pos='end', args=[], kwargs={}):
+    def test_add(self):
         """ Add a function to the object's custom queue
         """
-        self.testConst.custom_attach(function, kind, at_pos, args, kwargs)
+        def custom_test(inst, arg1, kwarg1=None):
+            inst.arg1 = arg1
+            inst.kwarg1 = kwarg1
+            return
+        self.testInst.custom_attach(custom_test, kind='modify', args=['hi'],
+                                    kwargs={'kwarg1': 'bye'})
+        self.testInst.load(date=self.load_date)
+        for inst in self.testInst:
+            assert inst.arg1 == 'hi'
+            assert inst.kwarg1 == 'bye'
