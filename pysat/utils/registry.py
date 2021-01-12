@@ -59,9 +59,9 @@ def load_saved_modules():
 
 
 def store():
-    """Rewrite user_modules.txt based on current listing"""
+    """Store current registry onto disk"""
 
-    pysat.params['user_modules'] = pysat.user_modules
+    pysat.params._set_user_modules(pysat.user_modules)
 
     return
 

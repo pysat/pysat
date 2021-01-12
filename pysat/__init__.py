@@ -89,10 +89,6 @@ else:
     # Load up existing parameters file
     params = _params.Parameters()
 
-# TODO: These individual parameters, data_dir and user_modules, may need to be
-#  removed. We currently have two places for both, attached to pysat,
-#  and within params. data_dir fixed!
-
 # pull out user modules for initial compatibility
 user_modules = params['user_modules']
 

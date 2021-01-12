@@ -74,24 +74,6 @@ class TestBasics():
         reload(pysat)
         assert pysat.params['data_dirs'] == ['.']
 
-    def test_set_data_dirs_param(self):
-        """update data_dir via pysat.params"""
-        pysat.params['data_dirs'] = '.'
-        assert pysat.params['data_dirs'] == ['.']
-
-        # Check if next load of pysat remembers the change
-        reload(pysat)
-        assert pysat.params['data_dirs'] == ['.']
-
-    def test_set_data_dirs_param_with_list(self):
-        """update data_dir via pysat.params"""
-        pysat.params['data_dirs'] = ['.', './']
-        assert pysat.params['data_dirs'] == ['.', './']
-
-        # Check if next load of pysat remembers the change
-        reload(pysat)
-        assert pysat.params['data_dirs'] == ['.', './']
-
     def test_set_data_dir_no_store(self):
         """update data_dir without storing"""
 
@@ -108,16 +90,6 @@ class TestBasics():
         pysat._instrument = reload(pysat._instrument)
         reload(pysat)
         assert (pysat.params['data_dirs'] == self.data_path)
-
-    def test_set_data_dir_wrong_path(self):
-        """update data_dir with an invalid path"""
-        with pytest.raises(ValueError):
-            pysat.utils.set_data_dir('not_a_directory', store=False)
-
-    def test_set_data_dir_bad_directory(self):
-        with pytest.raises(ValueError) as excinfo:
-            pysat.utils.set_data_dir('/fake/directory/path', store=False)
-        assert str(excinfo.value).find("don't lead to a valid") >= 0
 
 
 class TestCIonly():

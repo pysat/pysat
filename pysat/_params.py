@@ -143,8 +143,8 @@ class Parameters(object):
             Simply formatted output string
 
         """
-
-        out_str = ''.join(('Parameters(path=', self.file_path, ')'))
+        dir_path = os.path.split(self.file_path)[0]
+        out_str = ''.join(('Parameters(path="', dir_path, '")'))
         return out_str
 
     def __str__(self, long_str=True):
@@ -208,12 +208,11 @@ class Parameters(object):
             self._set_data_dirs(value)
 
         elif key == 'user_modules':
-            if not isinstance(value, dict):
-                estr = ''.join(('The `user_module` information must be a ',
-                                'dictionary. The pysat.utils.registry ',
-                                'submodule has methods designed to build ',
-                                'and work with this pysat attribute.'))
-                raise ValueError(estr)
+            estr = ''.join(('The pysat.utils.registry ',
+                            'submodule has methods designed to build ',
+                            'and work with this pysat attribute. ',
+                            '`user_modules` is not modifiable here.'))
+            raise ValueError(estr)
         else:
             # General or user parameter, no additional processing
             self.data[key] = value
@@ -261,15 +260,24 @@ class Parameters(object):
             raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
                                        'directory.')).format(': '.join(paths)))
 
+    def _set_user_modules(self, value):
+        """Update value for 'user_modules'"""
+        if isinstance(value, dict):
+            self.data['user_modules'] = value
+        else:
+            raise ValueError('User modules must be a dictionary.')
+
+        return
+
     def clear_and_restart(self):
         """Clears all stored settings and sets pysat defaults
 
-        pysat parameters without a default value are set to '' """
+        pysat parameters without a default value are set to [] """
 
         # Clear current data and assign a copy of default values
         self.data = copy.deepcopy(self.defaults)
 
-        # Set pysat parameters without a default working value to ''
+        # Set pysat parameters without a default working value to []
         for key in self.non_defaults:
             self.data[key] = []
 
