@@ -61,6 +61,18 @@ class TestBasics():
         # No custom functions
         assert self.out.find('0 applied') > 0
 
+    def test_basic_repr(self):
+        """Test __repr__ with a custom method"""
+        def custom_func(inst):
+            return
+        def custom_func2(inst):
+            return
+        self.testInst.custom_attach(custom_func, 'modify')
+        self.testInst.custom_attach(custom_func2, 'modify')
+        self.out = self.testInst.__repr__()
+        assert isinstance(self.out, str)
+        assert self.out.find("'function'") >= 0
+
     def test_basic_str_w_function(self):
         """Check for lines from each decision point in str"""
         def mult_data(inst, mult, dkey="mlt"):
@@ -161,6 +173,9 @@ class TestBasics():
                   {'function': custom_modify, 'kind': 'modify'}
                   ]
         testInst2 = pysat.Instrument('pysat', 'testing', custom=custom)
+
+        # trigger runs of empty functions
+        testInst2.load()
 
         # ensure both instruments have the same custom_* attributes
         assert self.testInst.custom_functions == testInst2.custom_functions
@@ -536,7 +551,7 @@ class TestBasicsXarray(TestBasics):
 
 
 # Repeat the above tests with a Constellation
-class ConstellationTestBasics(TestBasics):
+class TestConstellationBasics(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup
         """
