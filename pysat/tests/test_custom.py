@@ -175,7 +175,7 @@ class TestBasics():
         testInst2 = pysat.Instrument('pysat', 'testing', custom=custom)
 
         # trigger runs of empty functions
-        testInst2.load()
+        testInst2.load(date=self.load_date)
 
         # ensure both instruments have the same custom_* attributes
         assert self.testInst.custom_functions == testInst2.custom_functions
