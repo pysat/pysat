@@ -6,6 +6,7 @@ import functools
 from importlib import reload
 import numpy as np
 import os
+import shutil
 import time
 import warnings
 
@@ -998,3 +999,43 @@ class TestDeprecation():
 
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
+
+class TestCIonly():
+    """Tests where we mess with local settings.
+    These only run in CI environments such as Travis and Appveyor to avoid
+    breaking an end user's setup
+    """
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        if not self.ci_env:
+            pytest.skip("Skipping local tests to avoid breaking user setup")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.ci_env
+
+    def test_initial_pysat_load(self, capsys):
+        """Ensure initial load routines work"""
+
+        # Move settings directory to simulate first load after install
+        root = os.path.join(os.getenv('HOME'), '.pysat')
+        new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+        shutil.move(root, new_root)
+
+        reload(pysat)
+
+        captured = capsys.readouterr()
+        # Ensure pysat is running in 'first-time' mode
+        assert captured.out.find("Hi there!") >= 0
+
+        # try to instantiate Instrument
+        with pytest.raises(RuntimeError) as err:
+            pysat.Instrument('pysat', 'testing')
+
+        assert str(err).find("pysat's `data_dirs` hasn't been set.") >= 0
+
+        # Move settings back
+        shutil.rmtree(root)
+        shutil.move(new_root, root)

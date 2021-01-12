@@ -216,9 +216,9 @@ class Files(object):
 
         # Ensure we have at least one path for pysat data directory
         if len(params['data_dirs']) == 0:
-            raise RuntimeError(" ".join(("pysat's data_dirs has not been set. ",
-                                         "Please set a top-level directory ",
-                                         "path to store data using ",
+            raise RuntimeError(" ".join(("pysat's `data_dirs` hasn't been set.",
+                                         "Please set a top-level directory",
+                                         "path to store data using",
                                          "`pysat.params['data_dirs'] = path`")))
 
         # Get list of potential data directory paths from pysat. Construct
