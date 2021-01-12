@@ -135,7 +135,7 @@ class Parameters(object):
         return
 
     def __repr__(self):
-        """String describing MetaData instantiation parameters
+        """String describing Parameters instantiation parameters
 
         Returns
         -------
@@ -148,7 +148,7 @@ class Parameters(object):
         return out_str
 
     def __str__(self, long_str=True):
-        """String describing Meta instance, variables, and attributes
+        """String describing Parameters instance, variables, and attributes
 
         Parameters
         ----------
