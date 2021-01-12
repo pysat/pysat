@@ -184,7 +184,7 @@ class TestCIonly():
         # Ensure we can't create a parameters file without valid .json
         with pytest.raises(RuntimeError) as err:
             pysat._params.Parameters()
-        assert str(err).find('pysat is unable to locate a user settings') == 0
+        assert str(err).find('pysat is unable to locate a user settings') >= 0
 
         # Move pysat settings file to cwd and try again
         shutil.move(os.path.join(root, 'pysat_settings_moved.json'),
