@@ -1,6 +1,7 @@
 """
 tests the pysat meta object and code
 """
+import copy
 import datetime as dt
 import functools
 from importlib import reload
@@ -1012,7 +1013,7 @@ class TestCIonly():
         self.ci_env = (os.environ.get('TRAVIS') == 'true')
 
         # Store directory paths
-        self.saved_path = pysat.params['data_dirs']
+        self.saved_path = copy.deepcopy(pysat.params['data_dirs'])
 
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
@@ -1020,6 +1021,11 @@ class TestCIonly():
             # Move settings directory to simulate first load after install
             self.root = os.path.join(os.getenv('HOME'), '.pysat')
             self.new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+            try:
+                # Ensure new_root is clean
+                shutil.rmtree(self.new_root)
+            except FileNotFoundError:
+                pass
             shutil.move(self.root, self.new_root)
 
     def teardown(self):
@@ -1029,10 +1035,10 @@ class TestCIonly():
             shutil.rmtree(self.root)
             shutil.move(self.new_root, self.root)
 
-        # Restore directory paths
-        pysat.params['data_dirs'] = self.saved_path
+            # Restore directory paths
+            pysat.params['data_dirs'] = self.saved_path
 
-        del self.ci_env
+        del self.ci_env, self.saved_path
 
     def test_initial_pysat_load(self, capsys):
         """Ensure data_dirs check in Files works"""
