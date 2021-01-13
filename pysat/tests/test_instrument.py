@@ -777,7 +777,7 @@ class TestBasics():
         """Test string output with custom function """
         def testfunc(self):
             pass
-        self.testInst.custom.attach(testfunc, 'modify')
+        self.testInst.custom_attach(testfunc, 'modify')
         self.out = self.testInst.__str__()
         assert self.out.find('testfunc') > 0
 

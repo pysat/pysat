@@ -200,6 +200,7 @@ than a single day. Assignment of the data step size and width is also
 set via the bounds attribute.
 
 .. code:: python
+
    # set a season with an expanded load range and increased step size
    # sets a data width of 2 days via the pandas DateOffset
    # sets a data step size of 2 days via the pandas frequency string, '2D'
