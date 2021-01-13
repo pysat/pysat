@@ -1010,6 +1010,10 @@ class TestCIonly():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.ci_env = (os.environ.get('TRAVIS') == 'true')
+
+        # Store directory paths
+        self.saved_path = pysat.params['data_dirs']
+
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
         else:
@@ -1024,6 +1028,9 @@ class TestCIonly():
             # Move settings back
             shutil.rmtree(self.root)
             shutil.move(self.new_root, self.root)
+
+        # Restore directory paths
+        pysat.params['data_dirs'] = self.saved_path
 
         del self.ci_env
 
