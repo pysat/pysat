@@ -44,12 +44,6 @@ Constellation
 .. autoclass:: pysat.Constellation
    :members:
 
-Custom
-------
-
-.. autoclass:: pysat.Custom
-   :members:
-
 Files
 -----
 

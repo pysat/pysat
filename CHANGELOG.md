@@ -26,6 +26,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     of the standard methods (not just load).
   - Added support for 'cycle' in addition to 'version' and 'revision' for
     filename conventions.
+  - Integrated Custom class directly into Instrument to support mixed use
+    of Constellation/Instrument objects in code (#540)
+  - Made underlying custom data structures visible (#529)
+  - Updated data_mode method name to custom_attach for the Constellation object (#540)
+  - Added support for custom 'add' methods to return xarray.Datasets
   - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
   - Added support for multiple pysat data directories
