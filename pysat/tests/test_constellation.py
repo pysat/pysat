@@ -1,3 +1,4 @@
+import datetime as dt
 import pytest
 
 import pysat
@@ -99,10 +100,28 @@ class TestConstellation:
         self.const = pysat.Constellation(**self.in_kwargs)
 
         # Add the custom function
-        self.const.data_mod(double_mlt, 'add', at_pos='end')
+        self.const.custom_attach(double_mlt, 'add', at_pos='end')
         self.const.load(2009, 1)
 
         # Test the added value
         for inst in self.const:
             assert 'doubleMLT' in inst.data.columns
             assert (inst['doubleMLT'] == 2.0 * inst['mlt']).all()
+
+    def test_bounds_passthrough(self):
+        """Ensure bounds are applied to each instrument within Constellation"""
+
+        # Create costellation
+        self.const = pysat.Constellation(instruments=self.instruments)
+
+        # Set bounds
+        self.start_date = dt.datetime(2009, 1, 1)
+        self.stop_date = dt.datetime(2010, 1, 1)
+        self.const.bounds = (self.start_date, self.stop_date)
+
+        # Ensure constellation reports correct dates
+        assert self.const.bounds[0:2] == ([self.start_date], [self.stop_date])
+
+        # Test bounds are the same for all instruments
+        for instrument in self.const:
+            assert instrument.bounds == self.const.bounds

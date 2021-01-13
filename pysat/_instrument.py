@@ -88,36 +88,45 @@ class Instrument(object):
 
     Attributes
     ----------
-    data : pandas.DataFrame
-        loaded science data
-    date : pandas.datetime
-        date for loaded data
-    yr : int
-        year for loaded data
     bounds : (datetime/filename/None, datetime/filename/None)
         bounds for loading data, supply array_like for a season with gaps.
         Users may provide as a tuple or tuple of lists, but the attribute is
         stored as a tuple of lists for consistency
+    custom_functions : list
+        List of functions to be applied by instrument nano-kernel
+    custom_kind : list
+        List of strings indicating type of custom function, 'modify', 'add', or
+        'pass'
+    custom_args : list
+        List of lists containing arguments to be passed to particular
+        custom function
+    custom_kwargs : list
+        List of dictionaries with keywords and values to be passed
+        to a custom function
+    data : pandas.DataFrame or xarray.Dataset
+        loaded science data
+    date : dt.datetime
+        date for loaded data
+    yr : int
+        year for loaded data
     doy : int
         day of year for loaded data
     files : pysat.Files
         interface to instrument files
     labels : pysat.MetaLabels
         Class containing Meta data labels
+    kwargs : dictionary
+        keyword arguments passed to the standard Instrument routines
     meta_labels : dict
         Dict containing defaults for new Meta data labels
     meta : pysat.Meta
         interface to instrument metadata, similar to netCDF 1.6
     orbits : pysat.Orbits
         interface to extracting data orbit-by-orbit
-    custom : pysat.Custom
-        interface to instrument nano-kernel
-    kwargs : dictionary
-        keyword arguments passed to the standard Instrument routines
 
     Note
     ----
-    Pysat attempts to load the module platform_name.py located in the
+    pysat attempts to load the module platform_name.py located in the
     pysat/instruments directory. This module provides the underlying
     functionality to download, load, and clean instrument data. Alternatively,
     the module may be supplied directly using keyword inst_module.
@@ -147,14 +156,60 @@ class Instrument(object):
         ivm.load(2009,1)
         print(ivm['ionVelmeridional'])
 
-        # Ionosphere profiles from GPS occultation
+        # Ionosphere profiles from GPS occultation. Enable binning profile
+        # data using a constant step-size. Feature provided by the underlying
+        # COSMIC support code.
         cosmic = pysat.Instrument('cosmic',
                                   'gps',
                                   'ionprf',
                                   altitude_bin=3)
-        # bins profile using 3 km step
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
+
+        # Nano-kernel functionality enables instrument objects that are
+        # 'set and forget'. The functions are always run whenever
+        # the instrument load routine is called so instrument objects may
+        # be passed safely to other routines and the data will always
+        # be processed appropriately.
+
+        # Define custom function to modify Instrument in place.
+        def custom_func(inst, opt_param1=False, opt_param2=False):
+            # perform calculations and store in new_data
+            inst['new_data'] = new_data
+            return None
+
+        inst = pysat.Instrument('pysat', 'testing')
+        inst.custom_attach(custom_func, kind='modify',
+                           kwargs={'opt_param1': True})
+
+        # Define custom function that returns data to be added to Instrument.
+        def custom_func2(inst, req_param, opt_param=False):
+            return ('new_data2', data_to_be_added)
+
+        inst.custom_attach(custom_func2, kind='add', args=[True],
+                           kwargs={'opt_param': False})
+
+        # Custom methods are applied to data when loaded.
+        inst.load(date=date)
+
+        print(inst['new_data2'])
+
+        # Custom methods may also be attached at instantiation.
+        # Create a dictionary for each custom method and associated inputs
+        custom_func_1 = {'function': custom_func_modify, 'kind': 'modify',
+                         'kwargs': {'optional_param': True}}
+        custom_func_2 = {'function': custom_func_add_with_args, 'kind': 'add',
+                         'args'=[arg1, arg2],
+                         'kwargs': {'optional_param': True}}
+        custom_func_3 = {'function': custom_func_add, 'kind': 'add',
+                         'kwargs': {'optional_param': False}}
+
+        # Combine all dicts into a list in order of application and execution.
+        custom = [custom_func_1, custom_func_2, custom_func_3]
+
+        # Instantiate pysat.Instrument
+        inst = pysat.Instrument(platform, name, inst_id=inst_id, tag=tag,
+                                custom=custom)
 
     """
 
@@ -171,7 +226,7 @@ class Instrument(object):
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}, **kwargs):
+                         'fill_val': ('fill', float)}, custom=None, **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
@@ -262,11 +317,40 @@ class Instrument(object):
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.labels = pysat.MetaLabels(metadata=self.meta, **labels)
 
-        # function processing class, processes data on load
-        self.custom = pysat.Custom()
+        # Nano-kernel processing variables. Feature processes data on each load.
+        self.custom_functions = []
+        self.custom_kind = []
+        self.custom_args = []
+        self.custom_kwargs = []
 
-        # create arrays to store data around loaded day
-        # enables padding across day breaks with minimal loads
+        # Process provided user input for custom methods, if provided.
+        if custom is not None:
+            # Required keys.
+            req_keys = ['function', 'kind']
+
+            # Optional inputs with default values
+            opt_keys = [('args', []), ('kwargs', {})]
+
+            for cust in custom:
+                # Check if required keys present in input.
+                for rkey in req_keys:
+                    if rkey not in cust:
+                        estr = ''.join(('Input dict to custom is missing ',
+                                        'a required key: ', rkey))
+                        raise ValueError(estr)
+
+                # Check if optional arguments present. If not, provide
+                # default value.
+                for okey, def_type in opt_keys:
+                    if okey not in cust:
+                        cust[okey] = def_type
+
+                # Inputs have been checked, add to Instrument object.
+                self.custom_attach(cust['function'], kind=cust['kind'],
+                                   args=cust['args'], kwargs=cust['kwargs'])
+
+        # Create arrays to store data around loaded day. This enables padding
+        # across day breaks with minimal loads
         self._next_data = self._null_data.copy()
         self._next_data_track = []
         self._prev_data = self._null_data.copy()
@@ -277,6 +361,7 @@ class Instrument(object):
         # default will be set by _assign_attrs
         if multi_file_day is not None:
             self.multi_file_day = multi_file_day
+
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
@@ -338,7 +423,7 @@ class Instrument(object):
             raise ValueError('unknown keyword{:s} supplied: {:}'.format(
                 '' if len(missing_keys) == 1 else 's', missing_keys))
 
-        # instantiate Files class
+        # Instantiate the Files class
         temporary_file_list = not temporary_file_list
         self.files = pysat.Files(self, directory_format=self.directory_format,
                                  update_files=update_files,
@@ -346,9 +431,8 @@ class Instrument(object):
                                  write_to_disk=temporary_file_list,
                                  ignore_empty_files=ignore_empty_files)
 
-        # set bounds for iteration
-        # self.bounds requires the Files class
-        # setting (None,None) loads default bounds
+        # Set bounds for iteration. self.bounds requires the Files class, and
+        # setting bounds to (None, None) loads the default bounds.
         self.bounds = (None, None)
         self.date = None
         self._fid = None
@@ -356,7 +440,7 @@ class Instrument(object):
         self.doy = None
         self._load_by_date = False
 
-        # initialize orbit support
+        # Initialize orbit support
         if orbit_info is None:
             if self.orbit_info is None:
                 # If default info not provided, use class defaults
@@ -375,23 +459,40 @@ class Instrument(object):
         # will occur
         self._export_meta_post_processing = None
 
-        # start with a daily increment for loading
+        # Start with a daily increment for loading
         self.load_step = dt.timedelta(days=1)
 
         # Run instrument init function, a basic pass function is used if the
         # user doesn't supply the init function
         self._init_rtn()
 
-        # store base attributes, used in particular by Meta class
+        # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
     def __repr__(self):
         """ Print the basic Instrument properties"""
+
+        # Create string for custom attached methods
+        cstr = '['
+        for func, kind, arg, kwarg in zip(self.custom_functions,
+                                          self.custom_kind, self.custom_args,
+                                          self.custom_kwargs):
+            tstr = "".join(("'function': {sfunc}, 'kind': '{skind}', ",
+                            "'args': {sargs}, 'kwargs': {kargs}"))
+            tstr = tstr.format(sfunc=repr(func), skind=kind, sargs=repr(arg),
+                               kargs=repr(kwarg))
+            cstr = "".join((cstr, '{', tstr, '}, '))
+        cstr += ']'
+
+        # Create string for other parts Instrument instantiation
         out_str = "".join(["Instrument(platform='", self.platform, "', name='",
                            self.name, "', inst_id='", self.inst_id,
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
-                           "{:}, **{:})".format(self.orbit_info, self.kwargs)])
+                           "{:}, ".format(self.orbit_info),
+                           "custom=", cstr,
+                           ", **{:}".format(self.kwargs),
+                           ")"])
 
         return out_str
 
@@ -414,7 +515,19 @@ class Instrument(object):
         for routine in self.kwargs.keys():
             output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
             output_str += "{:s}\n".format(self.kwargs[routine].__str__())
-        output_str += "{:s}\n".format(self.custom.__str__())
+
+        num_funcs = len(self.custom_functions)
+        output_str += "Custom Functions: {:d} applied\n".format(num_funcs)
+        if num_funcs > 0:
+            for i, func in enumerate(self.custom_functions):
+                output_str += "    {:d}: {:}\n".format(i, func.__repr__())
+                if len(self.custom_args[i]) > 0:
+                    ostr = "     : Args={:}\n".format(self.custom_args[i])
+                    output_str += ostr
+                if len(self.custom_kwargs[i]) > 0:
+                    ostr = "     : Kwargs={:}\n".format(self.custom_kwargs[i])
+                    output_str += ostr
+        output_str += '\n'
 
         # Print out the orbit settings
         if self.orbits.orbit_index is not None:
@@ -1781,6 +1894,251 @@ class Instrument(object):
         self.data = concat_func(new_data, **kwargs)
         return
 
+    def custom_attach(self, function, kind='modify', at_pos='end', args=[],
+                      kwargs={}):
+        """Attach a function to custom processing queue.
+
+        Custom functions are applied automatically whenever `.load()`
+        command called.
+
+        Parameters
+        ----------
+        function : string or function object
+            name of function or function object to be added to queue
+        kind : str
+            Specifies the type of interaction between the custom function and
+            the Instrument data.  Accepts one of 'add', 'modify', or 'pass'.
+            - add
+                Adds data returned from function to instrument object.
+                A copy of pysat.Instrument object supplied to routine.
+            - modify
+                pysat.Instrument object supplied to routine. Any and all
+                changes to object are retained.
+            - pass
+                A copy of pysat.Instrument object is passed to function
+                thus no modifications are retained. No data is accepted
+                from return.
+            (default='modify')
+        at_pos : string or int
+            Accepts string 'end' or a number that will be used to determine
+            the insertion order if multiple custom functions are attached
+            to an Instrument object. (default='end').
+        args : list or tuple
+            Ordered arguments following the instrument object input that are
+            required by the custom function (default=[])
+        kwargs : dict
+            Dictionary of keyword arguments required by the custom function
+            (default={})
+
+        Note
+        ----
+        Allowed `custom_attach` function returns if `kind` is 'add':
+
+            - {'data' : pandas Series/DataFrame/array_like,
+               meta_label_string : string/array_like of strings,
+               'name' : string/array_like of strings}
+
+            - pandas DataFrame, names of columns are used if not provided
+
+            - pandas Series, Series.name used if not provided in 'name'
+
+            - xarray DataArray, DataArray.name used if not provided in 'name'
+
+            - xarray Dataset, variables names used if not provided in 'name'
+
+            - (string/list of strings, numpy array/list of arrays)
+
+        """
+
+        # Test the positioning input
+        pos_list = list(np.arange(0, len(self.custom_functions), 1))
+        pos_list.append('end')
+
+        if at_pos not in pos_list:
+            logger.warning(''.join(['unknown position specified, including ',
+                                    'function at end of current list']))
+            at_pos = 'end'
+
+        # Convert string to function object, if necessary
+        if isinstance(function, str):
+            function = eval(function)
+
+        # If the position is 'end' or greater
+        if (at_pos == 'end') | (at_pos == len(self.custom_functions)):
+            # store function object
+            self.custom_functions.append(function)
+            self.custom_args.append(args)
+            self.custom_kwargs.append(kwargs)
+            self.custom_kind.append(kind.lower())
+        else:
+            # user picked a specific location to insert
+            self.custom_functions.insert(at_pos, function)
+            self.custom_args.insert(at_pos, args)
+            self.custom_kwargs.insert(at_pos, kwargs)
+            self.custom_kind.insert(at_pos, kind)
+
+    def custom_apply_all(self):
+        """
+        Apply all of the custom functions to the satellite data object.
+
+        This method does not generally need to be invoked directly by users.
+        """
+
+        if len(self.custom_functions) > 0:
+            for func, arg, kwarg, kind in zip(self.custom_functions,
+                                              self.custom_args,
+                                              self.custom_kwargs,
+                                              self.custom_kind):
+                if not self.empty:
+
+                    # Add method. Apply custom functions to an Instrument copy.
+                    # Take the returned data and add it to self.
+                    if kind == 'add':
+                        tempd = self.copy()
+                        new_data = func(tempd, *arg, **kwarg)
+                        del tempd
+
+                        # Make all returns a dictionary by default.
+                        # If the method itself does not return a dictionary,
+                        # the returned data is placed in 'data' key.
+                        recast_as_dict = False
+                        if not isinstance(new_data, dict):
+                            new_data = {'data': new_data}
+                            # dstr = ''.join(('Data returned should be a dict ',
+                            #                 'with data in "data", ',
+                            #                 'the keys for the variables to ',
+                            #                'be stored in "name", along with ',
+                            #                 'any metadata using appropriate ',
+                            #                 'keys stored in self.labels. '))
+                            # raise DeprecationWarning(dstr)
+                            var_name = None
+                            # Flag if recast to identify if working with
+                            # older style data.
+                            recast_as_dict = True
+                        else:
+                            # Check for name
+                            if 'name' in new_data:
+                                var_name = new_data.pop('name')
+                            else:
+                                var_name = None
+
+                        # pandas.DataFrame returned, add to existing frame.
+                        if isinstance(new_data['data'], pds.DataFrame):
+                            if var_name is None:
+                                var_name = new_data['data'].columns
+
+                            self[var_name] = new_data
+
+                        # pandas.Series or xarray.DataArray returned,
+                        # add it as a column.
+                        elif isinstance(new_data['data'], (pds.Series,
+                                                           xr.DataArray)):
+                            if var_name is None:
+                                if new_data['data'].name is not None:
+                                    var_name = new_data['data'].name
+                                else:
+                                    raise ValueError(
+                                        ''.join(['Must assign a name to ',
+                                                 'Series or return a ',
+                                                 '"name" in dictionary.']))
+
+                            self[var_name] = new_data
+
+                        # xarray.Dataset returned, merge into existing data.
+                        elif isinstance(new_data['data'], xr.Dataset):
+                            # First, merge in dataset data
+                            xr_data = new_data.pop('data')
+                            self.data = xr.merge([self.data, xr_data])
+
+                            # Second, check on names. If not provided, generate
+                            # names from dataset itself.
+                            if var_name is None:
+                                var_name = list(xr_data.variables.keys())[1:]
+                                # Filter out any indexes variables
+                                fnames = [lname for lname in var_name
+                                          if lname not in xr_data.indexes]
+
+                            # Finally, add in the metadata.
+                            self.meta[fnames] = new_data
+
+                        # Some kind of iterable was returned. Add using
+                        # best effort code.
+                        elif hasattr(new_data['data'], '__iter__'):
+                            # Look for variable name in returned dict
+                            if var_name is not None:
+                                self[var_name] = new_data
+                            elif recast_as_dict:
+                                # Falling back to older behavior:
+                                # unpack tuple/list that was returned.
+                                var_name = new_data['data'][0]
+                                new_data = new_data['data'][1]
+                                if len(new_data) > 0:
+                                    # Check doesn't ensure data for all cases,
+                                    # there could be multiple empty arrays
+                                    # returned, [[],[]].
+                                    if isinstance(var_name, str):
+                                        # Only one item to add. Check on
+                                        # new_data above is sufficient for this
+                                        # case.
+                                        self[var_name] = new_data
+                                    else:
+                                        # Multiple items detected. Add one at
+                                        # a time.
+                                        for vname, data in zip(var_name,
+                                                               new_data):
+                                            if len(data) > 0:
+                                                # Fixes up the incomplete check
+                                                # from above
+                                                self[vname] = data
+                                # dstr = ''.join(('Data returned will require ',
+                                #               'a "name" key in the returned ',
+                                #                 'dictionary.'))
+                                # raise DeprecationWarning(dstr)
+                            else:
+                                raise ValueError(''.join(('Must include ',
+                                                          '"name" in ',
+                                                          'returned ',
+                                                          'dictionary.')))
+                        else:
+                            raise ValueError(''.join(("kernel doesn't know ",
+                                                      "what to do with ",
+                                                      "returned data.")))
+
+                    # Modifying loaded data. Methods run on Instrument object
+                    # directly and any changes to object by the method are
+                    # retained. No data may be returned by method itself.
+                    elif kind == 'modify':
+                        null_out = func(self, *arg, **kwarg)
+                        if null_out is not None:
+                            raise ValueError(''.join(('Modify functions ',
+                                                      'should not return ',
+                                                      'any information via ',
+                                                      'return. Information ',
+                                                      'may only be propagated ',
+                                                      'back by modifying ',
+                                                      'supplied pysat object.'
+                                                      )))
+
+                    # Pass function. Method runs on a copy of Instrument,
+                    # thus no modifications to Instrument are retained,
+                    # and no data is allowed to be returned.
+                    elif kind == 'pass':
+                        tempd = self.copy()
+                        null_out = func(tempd, *arg, **kwarg)
+                        del tempd
+                        if null_out is not None:
+                            raise ValueError(''.join(('Pass functions should ',
+                                                      'not return any ',
+                                                      'information via ',
+                                                      'return.')))
+
+    def custom_clear(self):
+        """Clear custom function list."""
+        self.custom_functions = []
+        self.custom_args = []
+        self.custom_kwargs = []
+        self.custom_kind = []
+
     def today(self):
         """Returns today's date (UTC), with no hour, minute, second, etc.
 
@@ -2642,7 +3000,7 @@ class Instrument(object):
 
         # Apply custom functions via the nanokernel in self.custom
         if not self.empty:
-            self.custom._apply_all(self)
+            self.custom_apply_all()
 
         # Remove the excess data padding, if any applied
         if (self.pad is not None) & (not self.empty) & (not verifyPad):
