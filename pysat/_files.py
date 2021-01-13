@@ -11,7 +11,8 @@ import os
 import warnings
 
 import pandas as pds
-from pysat import pysat_dir, logger, params, Instrument
+import pysat
+from pysat import pysat_dir, logger, Instrument
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
 
@@ -204,7 +205,7 @@ class Files(object):
         # Set the path for sub-directories under pysat data path
         if directory_format is None:
             # Assign stored template if user doesn't provide one.
-            directory_format = params['directory_format']
+            directory_format = pysat.params['directory_format']
         self.directory_format = directory_format
 
         # Set the user-specified file format
@@ -215,17 +216,16 @@ class Files(object):
             self.directory_format.format(**self.inst_info))
 
         # Ensure we have at least one path for pysat data directory
-        if len(params['data_dirs']) == 0:
+        if len(pysat.params['data_dirs']) == 0:
             raise RuntimeError(" ".join(("pysat's `data_dirs` hasn't been set.",
                                          "Please set a top-level directory",
                                          "path to store data using",
                                          "`pysat.params['data_dirs'] = path`")))
-
         # Get list of potential data directory paths from pysat. Construct
         # possible locations for data. Ensure path always ends with directory
         # separator.
         self.data_paths = [os.path.join(pdir, sub_dir_path)
-                           for pdir in params['data_dirs']]
+                           for pdir in pysat.params['data_dirs']]
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
 
@@ -624,7 +624,7 @@ class Files(object):
         if not new_files.empty:
             # Sort files to ensure they are in order
             new_files = new_files.sort_index()
-        elif params['warn_empty_file_list']:
+        elif pysat.params['warn_empty_file_list']:
             # Warn user if no files found, if pysat.param set
             pstrs = "\n".join(self.data_paths)
             estr = "".join(("Unable to find any files that match the supplied ",

@@ -5,12 +5,12 @@
 # ----------------------------------------------------------------------------
 
 import copy
+from importlib import reload
 import os
 import pytest
 import shutil
 
-from pysat import params
-
+import pysat
 
 class TravisCICleanSetup():
     """ Tests where local settings are altered.
@@ -25,8 +25,9 @@ class TravisCICleanSetup():
 
         self.ci_env = (os.environ.get('TRAVIS') == 'true')
 
+        reload(pysat)
         # Store directory paths
-        self.saved_path = copy.deepcopy(params['data_dirs'])
+        self.saved_path = copy.deepcopy(pysat.params['data_dirs'])
 
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
@@ -49,6 +50,6 @@ class TravisCICleanSetup():
             shutil.move(self.new_root, self.root)
 
             # Restore directory paths
-            params['data_dirs'] = self.saved_path
+            pysat.params['data_dirs'] = self.saved_path
 
         del self.ci_env, self.saved_path

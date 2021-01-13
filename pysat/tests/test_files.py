@@ -382,7 +382,6 @@ class TestBasics():
     def test_get_file_array_single(self):
         """Test get_file_array basic access"""
 
-        print('hi! ', self.testInst.files[0])
         files = self.testInst.files.get_file_array(self.testInst.files[0],
                                                    self.testInst.files[-1])
 
@@ -1013,9 +1012,6 @@ class TestCIonly():
 
     def test_initial_pysat_load(self, capsys):
         """Ensure data_dirs check in Files works"""
-
-        # Make sure there is no suitable data directory set
-        pysat.params.data['data_dirs'] = []
 
         # Ensure pysat is running in 'first-time' mode
         reload(pysat)
