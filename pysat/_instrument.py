@@ -107,6 +107,8 @@ class Instrument(object):
         loaded science data
     date : dt.datetime
         date for loaded data
+    yr : int
+        year for loaded data
     doy : int
         day of year for loaded data
     files : pysat.Files
@@ -121,8 +123,6 @@ class Instrument(object):
         interface to instrument metadata, similar to netCDF 1.6
     orbits : pysat.Orbits
         interface to extracting data orbit-by-orbit
-    yr : int
-        year for loaded data
 
     Note
     ----
@@ -327,29 +327,30 @@ class Instrument(object):
         if custom is not None:
             # Required keys.
             req_keys = ['function', 'kind']
+
             # Optional inputs with default values
             opt_keys = [('args', []), ('kwargs', {})]
 
             for cust in custom:
                 # Check if required keys present in input.
-                for label in req_keys:
-                    if label not in cust:
+                for rkey in req_keys:
+                    if rkey not in cust:
                         estr = ''.join(('Input dict to custom is missing ',
-                                        'a required key: ', label))
+                                        'a required key: ', rkey))
                         raise ValueError(estr)
 
                 # Check if optional arguments present. If not, provide
                 # default value.
-                for label, def_type in opt_keys:
-                    if label not in cust:
-                        cust[label] = def_type
+                for okey, def_type in opt_keys:
+                    if okey not in cust:
+                        cust[okey] = def_type
 
                 # Inputs have been checked, add to Instrument object.
                 self.custom_attach(cust['function'], kind=cust['kind'],
                                    args=cust['args'], kwargs=cust['kwargs'])
 
-        # create arrays to store data around loaded day
-        # enables padding across day breaks with minimal loads
+        # Create arrays to store data around loaded day. This enables padding
+        # across day breaks with minimal loads
         self._next_data = self._null_data.copy()
         self._next_data_track = []
         self._prev_data = self._null_data.copy()
@@ -360,6 +361,7 @@ class Instrument(object):
         # default will be set by _assign_attrs
         if multi_file_day is not None:
             self.multi_file_day = multi_file_day
+
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
@@ -421,7 +423,7 @@ class Instrument(object):
             raise ValueError('unknown keyword{:s} supplied: {:}'.format(
                 '' if len(missing_keys) == 1 else 's', missing_keys))
 
-        # instantiate Files class
+        # Instantiate the Files class
         temporary_file_list = not temporary_file_list
         self.files = pysat.Files(self, directory_format=self.directory_format,
                                  update_files=update_files,
@@ -429,9 +431,8 @@ class Instrument(object):
                                  write_to_disk=temporary_file_list,
                                  ignore_empty_files=ignore_empty_files)
 
-        # set bounds for iteration
-        # self.bounds requires the Files class
-        # setting (None,None) loads default bounds
+        # Set bounds for iteration. self.bounds requires the Files class, and
+        # setting bounds to (None, None) loads the default bounds.
         self.bounds = (None, None)
         self.date = None
         self._fid = None
@@ -439,7 +440,7 @@ class Instrument(object):
         self.doy = None
         self._load_by_date = False
 
-        # initialize orbit support
+        # Initialize orbit support
         if orbit_info is None:
             if self.orbit_info is None:
                 # If default info not provided, use class defaults
@@ -458,14 +459,14 @@ class Instrument(object):
         # will occur
         self._export_meta_post_processing = None
 
-        # start with a daily increment for loading
+        # Start with a daily increment for loading
         self.load_step = dt.timedelta(days=1)
 
         # Run instrument init function, a basic pass function is used if the
         # user doesn't supply the init function
         self._init_rtn()
 
-        # store base attributes, used in particular by Meta class
+        # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
     def __repr__(self):
