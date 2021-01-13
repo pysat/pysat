@@ -34,7 +34,7 @@ class TestBasics():
     #######################
     # test pysat data dir options
     def test_set_data_dirs_param_single(self):
-        """update data_dir via pysat.params, single path string"""
+        """Update pysat directory via pysat.params, single string input"""
         pysat.params['data_dirs'] = '.'
         assert pysat.params['data_dirs'] == ['.']
 
@@ -43,7 +43,7 @@ class TestBasics():
         assert pysat.params['data_dirs'] == ['.']
 
     def test_set_data_dirs_param_with_list(self):
-        """update pysat directories via pysat.params, list of paths"""
+        """Update pysat directories via pysat.params, list of strings"""
         pysat.params['data_dirs'] = ['.', './']
         assert pysat.params['data_dirs'] == ['.', './']
 
@@ -52,7 +52,7 @@ class TestBasics():
         assert pysat.params['data_dirs'] == ['.', './']
 
     def test_set_data_dir_wrong_path(self):
-        """update data_dir with an invalid path form"""
+        """Update data_dir with an invalid path form"""
         with pytest.raises(ValueError):
             pysat.params['data_dirs'] = 'not_a_directory'
 
@@ -85,6 +85,7 @@ class TestBasics():
 
     def test_restore_defaults(self):
         """Test restore_defaults works as intended"""
+
         # Get default value, as per setup
         default_val = pysat.params['update_files']
 
@@ -118,6 +119,7 @@ class TestBasics():
 
     def test_no_update_user_modules(self):
         """Ensure user_modules not modifiable via params"""
+
         # Attempt to change value
         with pytest.raises(ValueError) as err:
             pysat.params['user_modules'] = {}
@@ -125,6 +127,7 @@ class TestBasics():
 
     def test_add_user_parameter(self):
         """Add custom parameter and ensure present"""
+
         pysat.params['hi_there'] = 'hello there!'
         assert pysat.params['hi_there'] == 'hello there!'
 
@@ -133,7 +136,7 @@ class TestBasics():
         assert new_params['hi_there'] == pysat.params['hi_there']
 
     def test_clear_and_restart(self):
-        """Verify clear_and_Restart method"""
+        """Verify clear_and_restart method"""
 
         pysat.params.clear_and_restart()
 
@@ -144,7 +147,6 @@ class TestBasics():
         assert pysat.params['data_dirs'] == []
 
         return
-
 
 
 class TestCIonly():
