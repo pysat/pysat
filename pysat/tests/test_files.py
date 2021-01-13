@@ -1,13 +1,11 @@
 """
 tests the pysat meta object and code
 """
-import copy
 import datetime as dt
 import functools
 from importlib import reload
 import numpy as np
 import os
-import shutil
 import time
 import warnings
 
@@ -426,7 +424,7 @@ class TestBasics():
         for in_idx in in_idxs:
             test_str = ''.join(('_', self.testInst.files[in_idx]))
             with pytest.raises(ValueError) as war:
-                idx = self.testInst.files.get_index(test_str)
+                self.testInst.files.get_index(test_str)
             assert str(war).find('in available file list') > 0
 
     def test_default_directory_format(self):
