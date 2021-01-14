@@ -1,4 +1,8 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 import copy
 import datetime as dt
 import errno
@@ -21,7 +25,6 @@ from pysat import user_modules
 from pysat import logger
 
 
-# main class for users
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
