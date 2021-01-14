@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+
 import datetime as dt
 import pytest
 
@@ -12,7 +18,8 @@ class TestConstellation:
         self.instruments = [pysat.Instrument('pysat', 'testing',
                                              clean_level='clean')
                             for i in range(2)]
-        self.in_kwargs = {"instruments": self.instruments, "name": "testing"}
+        self.in_kwargs = {"instruments": self.instruments,
+                          "const_module": "pysat.constellations.testing"}
         self.const = None
 
     def teardown(self):
@@ -20,25 +27,25 @@ class TestConstellation:
         """
         del self.const, self.instruments, self.in_kwargs
 
-    @pytest.mark.parametrize("ikey,ival,ilen", [("name", None, 2),
-                                                ("instruments", None, 5)])
+    @pytest.mark.parametrize("ikey,ival,ilen",
+                             [("const_module", None, 2),
+                              ("instruments", None, 5),
+                              (None, None, 7)])
     def test_construct_constellation(self, ikey, ival, ilen):
         """Construct a Constellation with good input
         """
-        self.in_kwargs[ikey] = ival
+        if ikey is not None:
+            self.in_kwargs[ikey] = ival
         self.const = pysat.Constellation(**self.in_kwargs)
         assert len(self.const.instruments) == ilen
 
-    @pytest.mark.parametrize("ikeys,ivals",
-                             [([], []), (["instruments", "name"], [42, None])])
-    def test_construct_raises_error(self, ikeys, ivals):
-        """Attempt to construct a Constellation by name and list
+    def test_construct_raises_noniterable_error(self):
+        """Attempt to construct a Constellation by const_module and list
         """
-        for i, ikey in enumerate(ikeys):
-            self.in_kwargs[ikey] = ivals[i]
+        with pytest.raises(ValueError) as verr:
+            self.const = pysat.Constellation(instruments=self.instruments[0])
 
-        with pytest.raises(ValueError):
-            self.const = pysat.Constellation(**self.in_kwargs)
+        assert str(verr).find("instruments argument must be list-like")
 
     def test_construct_null(self):
         """Attempt to construct a Constellation with no arguments
@@ -47,9 +54,9 @@ class TestConstellation:
         assert len(self.const.instruments) == 0
 
     def test_getitem(self):
-        """Test Constellation:__getitem__
+        """Test Constellation iteration through instruments attribute
         """
-        self.in_kwargs['name'] = None
+        self.in_kwargs['const_module'] = None
         self.const = pysat.Constellation(**self.in_kwargs)
 
         assert self.const[0] == self.instruments[0]
@@ -60,7 +67,7 @@ class TestConstellation:
     def test_repr_w_inst(self):
         """Test Constellation string output with instruments loaded
         """
-        self.in_kwargs['name'] = None
+        self.in_kwargs['const_module'] = None
         self.const = pysat.Constellation(**self.in_kwargs)
         out_str = self.const.__repr__()
 
@@ -70,7 +77,7 @@ class TestConstellation:
     def test_str_w_inst(self):
         """Test Constellation string output with instruments loaded
         """
-        self.in_kwargs['name'] = None
+        self.in_kwargs['const_module'] = None
         self.const = pysat.Constellation(**self.in_kwargs)
         out_str = self.const.__str__()
 
@@ -96,7 +103,7 @@ class TestConstellation:
             return dmlt
 
         # Initialize the constellation
-        self.in_kwargs['name'] = None
+        self.in_kwargs['const_module'] = None
         self.const = pysat.Constellation(**self.in_kwargs)
 
         # Add the custom function
