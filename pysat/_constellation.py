@@ -7,6 +7,7 @@
 """
 
 import importlib
+import numpy as np
 
 
 class Constellation(object):
@@ -14,7 +15,7 @@ class Constellation(object):
 
     Parameters
     ----------
-    constellation_module : string
+    const_module : string
         Name of a pysat constellation module
     instruments : list-like
         A list of pysat Instruments to include in the Constellation
@@ -33,14 +34,14 @@ class Constellation(object):
     # -----------------------------------------------------------------------
     # Define the magic methods
 
-    def __init__(self, constellation_module=None, instruments=None):
+    def __init__(self, const_module=None, instruments=None):
         """
         Constructs a Constellation given a list of instruments or the name of
         a file with a pre-defined constellation.
 
         Parameters
         ----------
-        constellation_module : string
+        const_module : string
             Name of a pysat constellation module
         instruments : list-like
 
@@ -50,16 +51,18 @@ class Constellation(object):
 
         """
 
-        # Load Instruments from the constellation module, if it exists
-        if constellation_module is not None:
-            const = importlib.import_module(constellation_module)
+        # Include Instruments from the constellation module, if it exists
+        if const_module is not None:
+            const = importlib.import_module(const_module)
             self.instruments = const.instruments
         else:
             self.instruments = []
-        
+
+        # Add any Instruments provided in the list
         if instruments is not None:
-            if hasattr(instruments, '__getitem__'):
-                raise ValueError('instruments must be iterable')
+            test_instruments = np.asarray(instruments)
+            if test_instruments.shape == ():
+                raise ValueError('instruments argument must be list-like')
 
             self.instruments.extend(list(instruments))
 
