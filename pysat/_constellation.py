@@ -44,6 +44,12 @@ class Constellation(object):
         const_module : string
             Name of a pysat constellation module
         instruments : list-like
+            A list of pysat Instruments to include in the Constellation
+
+        Raises
+        ------
+        ValueError
+            When `instruments` is not list-like
 
         Note
         ----
