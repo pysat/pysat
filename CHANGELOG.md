@@ -65,6 +65,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Changed `pysat.instruments.methods.general.list_files` kwarg
     `fake_monthly_files_from_daily` to `file_cadence`
   - Changed name of Instrument method `default` to `preprocess`
+  - Removed unnecessary Instrument attribute `labels`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
