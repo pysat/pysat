@@ -3,12 +3,13 @@ import glob
 import numpy as np
 import os
 import re
+import shutil
 import string
 
 import pandas as pds
 
 from pysat.utils.time import create_datetime_index
-
+from pysat.utils._core import available_instruments
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
     """Accepts dict with data parsed from filenames and creates
@@ -412,15 +413,61 @@ def update_data_directory_structure(new_template, test_run=True):
 
     """
 
+    # Import required here to avoid circular import
+    from pysat import Instrument
+
     # Get a list of supported instruments
     # Best solved with an upcoming method in pull #633
+    insts = available_instruments()
 
-    # Iterate over each Instrument in the list and instantiate it.
-    # Be sure and update files to get the latest list, ensure there are files.
-    # Instantiate another version of same instrument but using new_template
-    # Register change of inst1.files.data_path over to inst2.files.data_path
-    # Collect all changes
-    # Print list
-    # Enable directory changes
+    for platform in insts.keys():
+        for name in insts[platform].keys():
+            for modu in insts[platform][name].keys():
+                for inst_id in insts[platform][name][modu].keys():
+                    for tag in insts[platform][name][modu][inst_id].keys():
+
+                        inst = Instrument(inst_module=modu, inst_id=inst_id,
+                                          tag=tag, update_files=True)
+                        flist = inst.files.files.values
+
+                        # Figure out which directory these files are in by
+                        # removing existing directory template information.
+                        currdir = inst.files.data_path.split(
+                            inst.files.sub_dir_path)[0]
+
+                        # Create instrument with new information
+                        new_inst = Instrument(inst_module=modu, inst_id=inst_id,
+                                              tag=tag, update_files=False,
+                                              directory_format=new_template)
+
+                        # Get new directory template
+                        subdir = new_inst.files.sub_dir_path
+
+                        # Construct lists for old and new filenames
+                        old_files = [os.path.join(inst.files.data_path, ifile)
+                                     for ifile in flist]
+                        new_files = [os.path.join(currdir, subdir, ifile)
+                                     for ifile in flist]
+                        if test_run:
+                            # Print the proposed changes so user may verify
+                            for ofile, nfile in zip(old_files, new_files):
+                                ostr = ''.join(('Moving: ', ofile, '\n',
+                                                '\tto: ', nfile))
+                                print(ostr)
+                        else:
+                            # Real deal. Move the files.
+                            for ofile, nfile in zip(old_files, new_files):
+                                shutil.move(ofile, nfile)
+                            new_inst = Instrument(inst_module=modu,
+                                                  inst_id=inst_id,
+                                                  tag=tag, update_files=True,
+                                                  directory_format=new_template)
+
+                            # Check on number of files before and after
+                            if (len(new_inst.files.files) !=
+                                    len(inst.files.files)):
+                                estr = ''.join(('Number of files before and ',
+                                                'after not the same.'))
+                                raise ValueError(estr)
 
     return

@@ -11,7 +11,7 @@ import os
 import warnings
 
 import pandas as pds
-import pysat
+import pysat  # Needed to access pysat.params across reimports
 from pysat import pysat_dir, logger, Instrument
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
@@ -33,13 +33,13 @@ class Files(object):
     files : pds.Series
         Series of data files, indexed by file start time
     stored_file_name : str
-        Name of the hidden file containing the list of archieved data files
+        Name of the hidden file containing the list of archived data files
         for this instrument.
     directory_format : str or NoneType
         Directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{tag}'. If None, the default
+        expressed as '{platform}/{name}/{tag}/{inst_id}'. If None, the default
         directory structure is used (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
@@ -59,7 +59,7 @@ class Files(object):
         stored list of files. (default=False)
     data_path : str
         path to the directory containing instrument files,
-        top_dir/platform/name/tag/
+        top_dir/platform/name/tag/inst_id
     data_paths: list of str
         Available paths that pysat will use when looking for files. The
         class uses the first directory with relevant data, stored in data_path.
@@ -212,7 +212,7 @@ class Files(object):
         self.file_format = file_format
 
         # Construct the subdirectory path
-        sub_dir_path = os.path.normpath(
+        self.sub_dir_path = os.path.normpath(
             self.directory_format.format(**self.inst_info))
 
         # Ensure we have at least one path for pysat data directory
@@ -224,7 +224,7 @@ class Files(object):
         # Get list of potential data directory paths from pysat. Construct
         # possible locations for data. Ensure path always ends with directory
         # separator.
-        self.data_paths = [os.path.join(pdir, sub_dir_path)
+        self.data_paths = [os.path.join(pdir, self.sub_dir_path)
                            for pdir in pysat.params['data_dirs']]
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
