@@ -17,7 +17,6 @@ import xarray as xr
 
 import pysat
 from pysat import utils
-from pysat import user_modules
 from pysat import logger
 
 from pysat.utils.time import filter_datetime_input
@@ -1052,16 +1051,16 @@ class Instrument(object):
             else:
                 # Not a native pysat.Instrument.  First, get the supporting
                 # instrument module from the pysat registry
-                if self.platform not in user_modules.keys():
+                if self.platform not in pysat.user_modules.keys():
                     raise KeyError('unknown platform supplied: {:}'.format(
                         self.platform))
 
-                if self.name not in user_modules[self.platform].keys():
+                if self.name not in pysat.user_modules[self.platform].keys():
                     raise KeyError(''.join(['unknown name supplied: ',
                                             self.name, ' not assigned to the ',
                                             self.platform, ' platform']))
 
-                mod = user_modules[self.platform][self.name]
+                mod = pysat.user_modules[self.platform][self.name]
 
                 # Import the registered module.  Though modules are checked to
                 # ensure they may be imported when registered, something may
