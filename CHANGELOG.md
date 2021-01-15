@@ -77,6 +77,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Moved `pysat.Instrument._filter_datetime_input` to 
     `pysat.utils.time.filter_datetime_input`
   - Deprecated `pysat.utils.set_data_dir`
+  - Removed unnecessary Instrument attribute `labels`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
