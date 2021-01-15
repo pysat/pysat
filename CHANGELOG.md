@@ -33,6 +33,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added support for custom 'add' methods to return xarray.Datasets
   - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
+  - Added support for dual specification of Instruments to include in a
+    Constellation
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -65,6 +67,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Changed `pysat.instruments.methods.general.list_files` kwarg
     `fake_monthly_files_from_daily` to `file_cadence`
   - Changed name of Instrument method `default` to `preprocess`
+  - Changed `name` kwarg in Constellation to `const_module`
   - Removed unnecessary Instrument attribute `labels`
 - Documentation
   - Added info on how to register new instruments

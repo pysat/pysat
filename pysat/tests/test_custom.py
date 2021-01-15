@@ -553,7 +553,7 @@ class TestConstellationBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup
         """
-        self.testInst = pysat.Constellation([
+        self.testInst = pysat.Constellation(instruments=[
             pysat.Instrument('pysat', 'testing', num_samples=10,
                              clean_level='clean')
             for i in range(5)])
