@@ -68,6 +68,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     `fake_monthly_files_from_daily` to `file_cadence`
   - Changed name of Instrument method `default` to `preprocess`
   - Changed `name` kwarg in Constellation to `const_module`
+  - Removed unnecessary Instrument attribute `labels`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
