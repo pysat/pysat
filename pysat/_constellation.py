@@ -146,10 +146,9 @@ class Constellation(object):
         **kwargs : dict reference
             References a dict of input keyword arguments
 
-        Note
-        ----
-        Wraps Instrument.custom_attach; see Instrument.custom_attach for more
-        information.
+        See Also
+        ---------
+        Instrument.custom_attach : base method for attaching custom functions
 
         """
 
@@ -168,9 +167,9 @@ class Constellation(object):
         **kwargs : dict reference
             References a dict of input keyword arguments
 
-        Note
-        ----
-        Wraps pysat.Instrument.load; see Instrument.load for more information.
+        See Also
+        ---------
+        Instrument.load : base method for loading Instrument data
 
         """
 
