@@ -22,11 +22,8 @@ module my.package.myInstrument with platform and name attributes
     registry.register('my.package.myInstrument')
 
 The full module name "my.package.myInstrument" will be
-registered in pysat_dir/user_modules.txt and is also listed in
-::
-
-    pysat.user_modules
-which is stored as a dict of dicts keyed by platform and name.
+registered in pysat.params['user_modules'] and stored as a dict of
+dicts keyed by platform and name.
 
 Once registered, subsequent calls to Instrument may use the platform
 and name string identifiers.
@@ -61,7 +58,7 @@ def load_saved_modules():
 def store():
     """Store current registry onto disk"""
 
-    pysat.params._set_user_modules(pysat.user_modules)
+    pysat.params.store()
 
     return
 
@@ -108,7 +105,7 @@ def register(module_names, overwrite=False):
     Current registered modules bay be found at
     ::
 
-        pysat.user_modules
+        pysat.params['user_modules']
 
     which is stored as a dict of dicts keyed by platform and name.
 
@@ -116,7 +113,7 @@ def register(module_names, overwrite=False):
     --------
     ::
 
-        from pysat import Instrument, user_modules
+        from pysat import Instrument
         from pysat.utils import registry
 
         registry.register('my.package.name.myInstrument')
@@ -162,20 +159,20 @@ def register(module_names, overwrite=False):
         name = inst_module.name
         # only register module if not already present
         # multiple names allowed for a single platform
-        if platform not in pysat.user_modules:
+        if platform not in pysat.params['user_modules']:
             # setup `of dict` part of dict of dicts
-            pysat.user_modules[platform] = {}
+            pysat.params.data['user_modules'][platform] = {}
         # only register name if not present under platform
-        if name not in pysat.user_modules[platform]:
+        if name not in pysat.params['user_modules'][platform]:
             logger.info('Registering user module {}'.format(module_name))
             # add to current user modules structure
-            pysat.user_modules[platform][name] = module_name
+            pysat.params.data['user_modules'][platform][name] = module_name
             # store user modules to disk
             store()
         else:
             # platform/name combination already registered
             # check if this is a new package or just a redundant assignment
-            if module_name != pysat.user_modules[platform][name]:
+            if module_name != pysat.params['user_modules'][platform][name]:
                 # new assignment, check for overwrite flag
                 if not overwrite:
                     estr = ' '.join(('An instrument has already been ',
@@ -187,7 +184,7 @@ def register(module_names, overwrite=False):
                     raise ValueError(estr)
                 else:
                     # overwrite with new module information
-                    pysat.user_modules[platform][name] = module_name
+                    pysat.params.data['user_modules'][platform][name] = module_name
                     # store
                     store()
 
@@ -261,7 +258,7 @@ def remove(platforms, names):
 
     Note
     ----
-    Current registered user modules available at pysat.user_modules
+    Current registered user modules available at pysat.params['user_modules']
 
     Examples
     --------
@@ -291,25 +288,25 @@ def remove(platforms, names):
 
     # iterate over inputs and remove modules
     for platform, name in zip(platforms, names):
-        if platform in pysat.user_modules:
+        if platform in pysat.params['user_modules']:
             if name is None:
                 # remove platform entirely
-                pysat.user_modules.pop(platform)
+                pysat.params['user_modules'].pop(platform)
                 # store
                 store()
             else:
                 # name supplied, remove single module
-                if name in pysat.user_modules[platform]:
+                if name in pysat.params['user_modules'][platform]:
                     # remove module
-                    pysat.user_modules[platform].pop(name)
+                    pysat.params['user_modules'][platform].pop(name)
                 else:
                     # name not in platform
                     estr = ''.join((platform, ', ', name, ': not a registered ',
                                     'instrument module.'))
                     logger.info(estr)
                 # remove platform if no remaining instruments
-                if len(pysat.user_modules[platform]) == 0:
-                    pysat.user_modules.pop(platform)
+                if len(pysat.params['user_modules'][platform]) == 0:
+                    pysat.params['user_modules'].pop(platform)
                 # store
                 store()
         else:
