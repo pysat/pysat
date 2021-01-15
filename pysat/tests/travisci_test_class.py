@@ -25,7 +25,7 @@ class TravisCICleanSetup():
         """Runs before every method to create a clean testing setup."""
 
         self.ci_env = (os.environ.get('TRAVIS') == 'true')
-        self.ci_env = True
+
         reload(pysat)
         # Store directory paths
         self.saved_path = copy.deepcopy(pysat.params['data_dirs'])
