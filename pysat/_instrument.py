@@ -1050,17 +1050,18 @@ class Instrument(object):
                     package='pysat.instruments')
             else:
                 # Not a native pysat.Instrument.  First, get the supporting
-                # instrument module from the pysat registry
-                if self.platform not in pysat.user_modules.keys():
+                # instrument module from the pysat registry.
+                user_modules = pysat.params['user_modules']
+                if self.platform not in user_modules.keys():
                     raise KeyError('unknown platform supplied: {:}'.format(
                         self.platform))
 
-                if self.name not in pysat.user_modules[self.platform].keys():
+                if self.name not in user_modules[self.platform].keys():
                     raise KeyError(''.join(['unknown name supplied: ',
                                             self.name, ' not assigned to the ',
                                             self.platform, ' platform']))
 
-                mod = pysat.user_modules[self.platform][self.name]
+                mod = user_modules[self.platform][self.name]
 
                 # Import the registered module.  Though modules are checked to
                 # ensure they may be imported when registered, something may
