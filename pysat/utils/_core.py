@@ -611,18 +611,21 @@ def available_instruments(inst_loc=None):
             inst_ids = {'ERROR': {'ERROR': str(ierr)}}
         return inst_ids
 
+    # Get user modules dictionary.
+    user_modules = pysat.params['user_modules']
+
     if inst_loc is None:
         # Access the registered instruments
         inst_info = dict()
 
         # Cycle through each instrument platform and name to reshape the
         # dictionary and get the instrument tags and inst_ids
-        for platform in pysat.user_modules.keys():
+        for platform in user_modules.keys():
             inst_info[platform] = dict()
-            for name in pysat.user_modules[platform].keys():
-                inst_ids = get_inst_id_dict(pysat.user_modules[platform][name])
+            for name in user_modules[platform].keys():
+                inst_ids = get_inst_id_dict(user_modules[platform][name])
                 inst_info[platform][name] = {'inst_module':
-                                             pysat.user_modules[platform][name],
+                                             user_modules[platform][name],
                                              'inst_ids_tags': inst_ids}
     else:
         # Access the instruments in the specified module
