@@ -11,6 +11,7 @@ import pandas as pds
 from pysat.utils.time import create_datetime_index
 from pysat.utils._core import available_instruments
 
+
 def process_parsed_filenames(stored, two_digit_year_break=None):
     """Accepts dict with data parsed from filenames and creates
     a pandas Series object formatted for the Files class.
