@@ -50,7 +50,8 @@ class TravisCICleanSetup():
             shutil.rmtree(self.root)
             shutil.move(self.new_root, self.root)
 
-            # Restore directory paths
+            # Restore pysat and directory paths
+            reload(pysat)
             pysat.params['data_dirs'] = self.saved_path
 
         del self.ci_env, self.saved_path
