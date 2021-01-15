@@ -90,6 +90,7 @@ else:
     params = _params.Parameters()
 
 # pull out user modules for initial compatibility
+# TODO: Should we just switch to pysat.params['user_modules']?
 user_modules = params['user_modules']
 
 # Load up version information

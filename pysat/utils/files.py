@@ -465,10 +465,13 @@ def update_data_directory_structure(new_template, test_run=True):
                                                   directory_format=new_template)
 
                             # Check on number of files before and after
-                            if (len(new_inst.files.files) !=
-                                    len(inst.files.files)):
-                                estr = ''.join(('Number of files before and ',
-                                                'after not the same.'))
+                            nnew = len(new_inst.files.files)
+                            nold = len(inst.files.files)
+                            if nnew != nold:
+                                estr = ' '.join(('Number of files before and',
+                                                 'after not the same.',
+                                                 'Something has gone wrong for',
+                                                 platform, name, tag, inst_id))
                                 raise ValueError(estr)
 
     return
