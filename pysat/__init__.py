@@ -89,10 +89,6 @@ else:
     # Load up existing parameters file
     params = _params.Parameters()
 
-# pull out user modules for initial compatibility
-# TODO: Should we just switch to pysat.params['user_modules']?
-user_modules = params['user_modules']
-
 # Load up version information
 with Lock(version_filename, 'r', params['file_timeout']) as version_file:
     __version__ = version_file.read().strip()
