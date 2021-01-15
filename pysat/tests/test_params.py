@@ -53,12 +53,12 @@ class TestBasics():
         assert pysat.params['data_dirs'] == ['.', './']
 
     def test_set_data_dir_wrong_path(self):
-        """Update data_dir with an invalid path form"""
+        """Update data_dirs with an invalid path form"""
         with pytest.raises(ValueError):
             pysat.params['data_dirs'] = 'not_a_directory'
 
     def test_set_data_dir_bad_directory(self):
-        """Ensure you can't set data directory to bad path"""
+        """Ensure you can't set data_dirs to bad path"""
         with pytest.raises(ValueError) as excinfo:
             pysat.params['data_dirs'] = '/fake/directory/path'
         assert str(excinfo.value).find("don't lead to a valid") >= 0
@@ -114,7 +114,8 @@ class TestBasics():
         # Ensure it is in memory
         assert pysat.params['update_files'] is not default_val
 
-        # Get a new parameters instance and verify information is retained
+        # Get a new parameters instance and verify information is retained.
+        # Using eval to ensure all settings with current pysat.params retained.
         new_params = eval(pysat.params.__repr__())
         assert new_params['update_files'] == pysat.params['update_files']
 
@@ -133,11 +134,12 @@ class TestBasics():
         assert pysat.params['hi_there'] == 'hello there!'
 
         # Get a new parameters instance and verify information is retained
+        # Using eval to ensure all settings with current pysat.params retained.
         new_params = eval(pysat.params.__repr__())
         assert new_params['hi_there'] == pysat.params['hi_there']
 
     def test_clear_and_restart(self):
-        """Verify clear_and_restart method"""
+        """Verify clear_and_restart method impacts all values"""
 
         pysat.params.clear_and_restart()
 
@@ -160,8 +162,8 @@ class TestCIonly(TravisCICleanSetup):
     setup = TravisCICleanSetup.setup
     teardown = TravisCICleanSetup.teardown
 
-    def test_initial_pysat_parameters_load(self, capsys):
-        """Ensure initial parameters load routines work"""
+    def test_settings_file_must_be_present(self, capsys):
+        """Ensure pysat_settings.json must be present"""
 
         reload(pysat)
 
@@ -178,17 +180,38 @@ class TestCIonly(TravisCICleanSetup):
             Parameters()
         assert str(err).find('pysat is unable to locate a user settings') >= 0
 
-        # Move pysat settings file to cwd and try again
         shutil.move(os.path.join(self.root, 'pysat_settings_moved.json'),
+                    os.path.join(self.root, 'pysat_settings.json'))
+
+    def test_settings_file_cwd(self, capsys):
+        """Test Parameters works when settings file in current working dir"""
+
+        reload(pysat)
+
+        captured = capsys.readouterr()
+        # Ensure pysat is running in 'first-time' mode
+        assert captured.out.find("Hi there!") >= 0
+
+        # Move pysat settings file to cwd
+        shutil.move(os.path.join(self.root, 'pysat_settings.json'),
                     os.path.join('./', 'pysat_settings.json'))
 
-        Parameters()
+        # Try loading by supplying a specific path
+        test_params = Parameters(path='./')
+
+        # Supplying no path should yield the same result
+        test_params2 = Parameters()
+
+        # Confirm data is the same for both
+        assert test_params.data == test_params2.data
+
+        # Confirm path is the same for both
+        assert test_params.file_path == test_params2.file_path
+
+        # Ensure we didn't load a file in .pysat
+        assert not os.path.isfile(os.path.join(self.root,
+                                               'pysat_settings.json'))
 
         # Move pysat settings file back to original
         shutil.move(os.path.join('./', 'pysat_settings.json'),
                     os.path.join(self.root, 'pysat_settings.json'))
-
-        # Make sure settings file created
-        assert os.path.isfile(os.path.join(self.root, 'pysat_settings.json'))
-        assert os.path.isdir(os.path.join(self.root, 'instruments'))
-        assert os.path.isdir(os.path.join(self.root, 'instruments', 'archive'))

@@ -94,11 +94,18 @@ class Parameters(object):
         non_defaults = ['data_dirs']
         self.non_defaults = non_defaults
 
-        # If path provided, need to make a new parameters file. Load existing
-        # file otherwise.
+        # If path provided, use it. Otherwise, iterate through potential
+        # locations until file is found.
         if path is not None:
-            # Create a new file using name provided
+            # Confirm path is valid
+            if not os.path.exists(path):
+                estr = ''.join(('Supplied path does not exist on the local ',
+                                'system. Please create it and try again.'))
+                raise RuntimeError(estr)
+
+            # Store full file path including fixed settings file name
             self.file_path = os.path.join(path, sfname)
+
         else:
             # Cycle through locations and load any pysat parameter files found.
             # First, check current working directory, then pysat user directory.
@@ -111,16 +118,17 @@ class Parameters(object):
                     self.file_path = fileloc
                     break
 
-        if create_new:
-            self.clear_and_restart()
-        else:
-            # Ensure we have a valid file
-            if self.file_path is None:
+            # Ensure we have a valid file if the user isn't creating a new one.
+            if self.file_path is None and (not create_new):
                 estr = ''.join(('pysat is unable to locate a user settings ',
                                 'file. Please check the locations, "./" or ',
                                 '"~/.pysat" for the file "pysat_settings.json"',
                                 '.'))
                 raise RuntimeError(estr)
+
+        if create_new:
+            # Initialize new settings file. Method below includes a .store call
+            self.clear_and_restart()
 
         # Load parameters in thread-safe manner.
         # Can't use user set file_timeout since we don't know what it is yet.

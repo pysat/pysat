@@ -1018,6 +1018,11 @@ class TestCIonly():
         captured = capsys.readouterr()
         assert captured.out.find("Hi there!") >= 0
 
+        # Ensure the pysat 'data_dirs' param is empty list on both
+        # local systems and TravisCI. A directory is automatically set
+        # in __init__ for TravisCI.
+        pysat.params.data['data_dirs'] = []
+
         # Try to instantiate Instrument
         with pytest.raises(RuntimeError) as err:
             pysat.Instrument('pysat', 'testing')
