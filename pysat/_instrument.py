@@ -113,8 +113,6 @@ class Instrument(object):
         day of year for loaded data
     files : pysat.Files
         interface to instrument files
-    labels : pysat.MetaLabels
-        Class containing Meta data labels
     kwargs : dictionary
         keyword arguments passed to the standard Instrument routines
     meta_labels : dict
@@ -315,7 +313,6 @@ class Instrument(object):
         # use Instrument definition of MetaLabels over the Metadata declaration
         self.meta_labels = labels
         self.meta = pysat.Meta(labels=self.meta_labels)
-        self.labels = pysat.MetaLabels(metadata=self.meta, **labels)
 
         # Nano-kernel processing variables. Feature processes data on each load.
         self.custom_functions = []
@@ -1539,8 +1536,8 @@ class Instrument(object):
 
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.variables] = {self.labels.name: self.variables,
-                                         self.labels.units:
+            self.meta[self.variables] = {self.meta.labels.name: self.variables,
+                                         self.meta.labels.units:
                                          [''] * len(self.variables)}
 
         # Make sure FillValue is the same type as the data
@@ -1990,7 +1987,6 @@ class Instrument(object):
                                               self.custom_kwargs,
                                               self.custom_kind):
                 if not self.empty:
-
                     # Add method. Apply custom functions to an Instrument copy.
                     # Take the returned data and add it to self.
                     if kind == 'add':
@@ -2004,14 +2000,8 @@ class Instrument(object):
                         recast_as_dict = False
                         if not isinstance(new_data, dict):
                             new_data = {'data': new_data}
-                            # dstr = ''.join(('Data returned should be a dict ',
-                            #                 'with data in "data", ',
-                            #                 'the keys for the variables to ',
-                            #                'be stored in "name", along with ',
-                            #                 'any metadata using appropriate ',
-                            #                 'keys stored in self.labels. '))
-                            # raise DeprecationWarning(dstr)
                             var_name = None
+
                             # Flag if recast to identify if working with
                             # older style data.
                             recast_as_dict = True
@@ -2448,10 +2438,9 @@ class Instrument(object):
                                          'a known variable.'))
                         raise ValueError(estr)
                 else:
-                    # variable name is in higher order list
+                    # Variable name is in higher order list
                     if isinstance(nname, dict):
-                        # changing a variable name within
-                        # higher order object
+                        # Changing a variable name within a higher order object
                         label = [k for k in nname.keys()][0]
                         hdict[label] = nname[label]
                         # ensure variable is there
@@ -2460,30 +2449,30 @@ class Instrument(object):
                                             'higher-order variable under ',
                                             oname, '.'))
                             raise ValueError(estr)
-                        # check for lowercase flag
+                        # Check for lowercase flag
                         if lowercase_data_labels:
                             gdict = {}
                             gdict[label] = nname[label].lower()
                         else:
                             gdict = hdict
-                        # change variables for frame at each time
+                        # Change variables for frame at each time
                         for i in np.arange(len(self.index)):
                             # within data itself
                             self[i, oname].rename(columns=gdict,
                                                   inplace=True)
 
-                        # change metadata, once per variable only
-                        # hdict used as it retains user provided case
+                        # Change metadata, once per variable only hdict used as
+                        # it retains user provided case
                         self.meta.ho_data[oname].data.rename(hdict,
                                                              inplace=True)
-                        # clear out dict for next loop
+                        # Clear out dict for next loop
                         hdict.pop(label)
                     else:
-                        # changing the outer 'column' label
+                        # Changing the outer 'column' label
                         fdict[oname] = nname
 
-            # rename regular variables, single go
-            # check for lower case data labels first
+            # Rename regular variables, single go check for lower case data
+            # labels first
             if lowercase_data_labels:
                 gdict = {}
                 for fkey in fdict:
@@ -2491,12 +2480,11 @@ class Instrument(object):
             else:
                 gdict = fdict
 
-            # change variable names for attached data object
+            # Change variable names for attached data object
             self.data.rename(columns=gdict, inplace=True)
 
         else:
-            # xarray renaming
-            # account for lowercase data labels first
+            # xarray renaming: account for lowercase data labels first
             if lowercase_data_labels:
                 gdict = {}
                 for vkey in var_names:
@@ -2505,11 +2493,11 @@ class Instrument(object):
                 gdict = var_names
             self.data = self.data.rename(gdict)
 
-            # set up dictionary for renaming metadata variables
+            # Set up dictionary for renaming metadata variables
             fdict = var_names
 
-        # update normal metadata parameters in a single go
-        # case must always be preserved in Meta object
+        # Update normal metadata parameters in a single go.  The case must
+        # always be preserved in Meta object
         new_fdict = {}
         for fkey in fdict:
             case_old = self.meta.var_case_name(fkey)
@@ -2733,6 +2721,7 @@ class Instrument(object):
             # Verify arguments make sense, in context
             _check_load_arguments_none([yr, doy, end_yr, end_doy, date,
                                         end_date], raise_error=True)
+
             # Date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
@@ -2751,13 +2740,13 @@ class Instrument(object):
                 else:
                     self.load_step = diff
             else:
-                # increment one file at a time
+                # Increment one file at a time
                 self.load_step = 0
             curr = self._fid.copy()
 
         elif _check_load_arguments_none([yr, doy, end_yr, end_doy, date,
                                          end_date, fname, stop_fname]):
-            # empty call, treat as if all data requested
+            # Empty call, treat as if all data requested
             if self.multi_file_day:
                 estr = ''.join(('`load()` is not supported with multi_file_day',
                                 '=True.'))
@@ -2779,11 +2768,11 @@ class Instrument(object):
 
         self.orbits._reset()
 
-        # if pad  or multi_file_day is true, need to have a three day/file load
+        # If `pad` or `multi_file_day` is True, need to load three days/files
         loop_pad = self.pad if self.pad is not None \
             else dt.timedelta(seconds=0)
 
-        # check for constiency between loading range and data padding, if any
+        # Check for constiency between loading range and data padding, if any
         if self.pad is not None:
             if self._load_by_date:
                 tdate = dt.datetime(2009, 1, 1)
@@ -2793,7 +2782,7 @@ class Instrument(object):
                                     'range of data or shorten the padding.'))
                     raise ValueError(estr)
             else:
-                # loading by file
+                # Loading by file
                 wstr = ''.join(('Using a data padding window ',
                                 'when loading by file can produce unexpected ',
                                 'results whenever the padding window ',
@@ -2804,11 +2793,11 @@ class Instrument(object):
 
         if (self.pad is not None) or self.multi_file_day:
             if self._empty(self._next_data) and self._empty(self._prev_data):
-                # data has not already been loaded for previous and next days
+                # Data has not already been loaded for previous and next days
                 # load data for all three
                 logger.info('Initializing three day/file window')
 
-                # using current date or fid
+                # Using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = \
                     self._load_data(date=self.date, fid=self._fid,
@@ -2816,7 +2805,7 @@ class Instrument(object):
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
-                    # moving forward in time
+                    # Moving forward in time
                     del self._prev_data
                     self._prev_data = self._curr_data
                     self._prev_meta = self._curr_meta
@@ -2824,7 +2813,7 @@ class Instrument(object):
                     self._curr_meta = self._next_meta
                     self._next_data, self._next_meta = self._load_next()
                 elif self._prev_data_track == curr:
-                    # moving backward in time
+                    # Moving backward in time
                     del self._next_data
                     self._next_data = self._curr_data
                     self._next_meta = self._curr_meta
@@ -2832,7 +2821,7 @@ class Instrument(object):
                     self._curr_meta = self._prev_meta
                     self._prev_data, self._prev_meta = self._load_prev()
                 else:
-                    # jumped in time/or switched from filebased to date based
+                    # Jumped in time/or switched from filebased to date based
                     # access
                     del self._prev_data
                     del self._curr_data
@@ -2843,7 +2832,7 @@ class Instrument(object):
                                         inc=self.load_step)
                     self._next_data, self._next_meta = self._load_next()
 
-            # make sure datetime indices for all data is monotonic
+            # Make sure datetime indices for all data is monotonic
             if not self._index(self._prev_data).is_monotonic_increasing:
                 self._prev_data.sort_index(inplace=True)
             if not self._index(self._curr_data).is_monotonic_increasing:
@@ -2851,7 +2840,7 @@ class Instrument(object):
             if not self._index(self._next_data).is_monotonic_increasing:
                 self._next_data.sort_index(inplace=True)
 
-            # make tracking indexes consistent with new loads
+            # Make tracking indexes consistent with new loads
             if self._load_by_date:
                 self._next_data_track = curr + self.load_step
                 self._prev_data_track = curr - self.load_step
@@ -2861,7 +2850,8 @@ class Instrument(object):
                 # treatment. Loading by file is inclusive.
                 self._next_data_track = curr + self.load_step + 1
                 self._prev_data_track = curr - self.load_step - 1
-            # attach data to object
+
+            # Attach data to object
             if not self._empty(self._curr_data):
                 # The data being added isn't empty, so copy the data values
                 # and the meta data values
@@ -2896,19 +2886,18 @@ class Instrument(object):
                 raise ValueError(" ".join(("Can't have multi_file_day and load",
                                            "by file.")))
 
-            # pad data based upon passed parameter
+            # Pad data based upon passed parameter
             if (not self._empty(self._prev_data)) & (not self.empty):
                 stored_data = self.data  # .copy()
                 temp_time = copy.deepcopy(self.index[0])
 
-                # pad data using access mechanisms that works
-                # for both pandas and xarray
+                # Pad data using access mechanisms that works for both pandas
+                # and xarray
                 self.data = self._prev_data.copy()
 
-                # __getitem__ used below to get data
-                # from instrument object. Details
-                # for handling pandas and xarray are different
-                # and handled by __getitem__
+                # __getitem__ used below to get data from instrument object.
+                # Details for handling pandas and xarray are different and
+                # handled by __getitem__
                 self.data = self[first_pad:temp_time]
                 if not self.empty:
                     if self.index[-1] == temp_time:
@@ -2921,8 +2910,8 @@ class Instrument(object):
                 stored_data = self.data  # .copy()
                 temp_time = copy.deepcopy(self.index[-1])
 
-                # pad data using access mechanisms that work
-                # for both pandas and xarray
+                # Pad data using access mechanisms that work foro both pandas
+                # and xarray
                 self.data = self._next_data.copy()
                 self.data = self[temp_time:last_pad]
                 if not self.empty:
@@ -2933,7 +2922,8 @@ class Instrument(object):
                     self.data = stored_data
 
             self.data = self[first_pad:last_pad]
-            # want exclusive end slicing behavior from above
+
+            # Want exclusive end slicing behavior from above
             if not self.empty:
                 if (self.index[-1] == last_pad) & (not want_last_pad):
                     self.data = self[:-1]
@@ -2953,17 +2943,17 @@ class Instrument(object):
                                                 " they were missing in the ",
                                                 "Instrument"])
                         warn_default = True
-                        self.meta[var] = {self.labels.name: var,
-                                          self.labels.notes: default_warn}
+                        self.meta[var] = {self.meta.labels.name: var,
+                                          self.meta.labels.notes: default_warn}
 
                 if warn_default:
                     warnings.warn(default_warn, stacklevel=2)
 
-        # check if load routine actually returns meta
+        # Check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.variables] = {self.labels.name: self.variables}
+            self.meta[self.variables] = {self.meta.labels.name: self.variables}
 
-        # if loading by file set the yr, doy, and date
+        # If loading by file set the yr, doy, and date
         if not self._load_by_date:
             if self.pad is not None:
                 temp = first_time
@@ -2972,9 +2962,9 @@ class Instrument(object):
             self.date = dt.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.time.getyrdoy(self.date)
 
-        # ensure data is unique and monotonic
-        # check occurs after all the data padding loads, or individual load
-        # thus it can potentially check issues with padding or with raw data
+        # Ensure data is unique and monotonic. Check occurs after all the data
+        # padding loads, or individual load. Thus, it can potentially check
+        # issues with padding or with raw data
         if not (self.index.is_monotonic_increasing and self.index.is_unique):
             message = ''
             if not self.index.is_unique:
@@ -3009,7 +2999,7 @@ class Instrument(object):
                 if (self.index[-1] == last_time) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # transfer any extra attributes in meta to the Instrument object
+        # Transfer any extra attributes in meta to the Instrument object
         self.meta.transfer_attributes_to_instrument(self)
         self.meta.mutable = False
         sys.stdout.flush()
@@ -3298,29 +3288,29 @@ class Instrument(object):
 
         """
 
-        # check export nans first
+        # Check export nans first
         if export_nan is None:
             export_nan = self.meta._export_nan
 
-        # base_instrument used to define the standard attributes attached
+        # Base_instrument used to define the standard attributes attached
         # to the instrument object. Any additional attributes added
         # to the main input Instrument will be written to the netCDF4
         base_instrument = Instrument() if base_instrument is None \
             else base_instrument
 
-        # begin processing metadata for writing to the file
-        # look to see if user supplied a list of export keys
-        # corresponding to internally tracked metadata within pysat
+        # Begin processing metadata for writing to the file. Look to see if
+        # user supplied a list of export keys corresponding to internally
+        # tracked metadata within pysat
         export_meta = self.generic_meta_translator(self.meta)
         if self._meta_translation_table is None:
-            # didn't find a translation table, using the strings
+            # Didn't find a translation table, using the strings
             # attached to the supplied pysat.Instrument object
-            export_name_labels = [self.labels.name]
-            export_units_labels = [self.labels.units]
-            export_desc_labels = [self.labels.desc]
-            export_notes_labels = [self.labels.notes]
+            export_name_labels = [self.meta.labels.name]
+            export_units_labels = [self.meta.labels.units]
+            export_desc_labels = [self.meta.labels.desc]
+            export_notes_labels = [self.meta.labels.notes]
         else:
-            # user supplied labels in translation table
+            # User supplied labels in translation table
             export_name_labels = self._meta_translation_table['name']
             export_units_labels = self._meta_translation_table['units']
             export_desc_labels = self._meta_translation_table['desc']
@@ -3332,7 +3322,7 @@ class Instrument(object):
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)
 
-        # check if there are multiple variables with same characters
+        # Check if there are multiple variables with same characters
         # but with different case
         lower_variables = [var.lower() for var in self.variables]
         unique_lower_variables = np.unique(lower_variables)
