@@ -394,7 +394,8 @@ def search_local_system_formatted_filename(data_path, search_str):
     return files
 
 
-def update_data_directory_structure(new_template, test_run=True):
+def update_data_directory_structure(new_template, test_run=True,
+                                    full_breakdown=False):
     """Update pysat data directory structure to match supplied template
 
     Translates all of pysat's managed science files to a new
@@ -423,55 +424,112 @@ def update_data_directory_structure(new_template, test_run=True):
 
     for platform in insts.keys():
         for name in insts[platform].keys():
-            for modu in insts[platform][name].keys():
-                for inst_id in insts[platform][name][modu].keys():
-                    for tag in insts[platform][name][modu][inst_id].keys():
+            for inst_id in insts[platform][name]['inst_ids_tags'].keys():
+                tkeys = insts[platform][name]['inst_ids_tags'][inst_id].keys()
+                for tag in tkeys:
 
-                        inst = Instrument(inst_module=modu, inst_id=inst_id,
-                                          tag=tag, update_files=True)
-                        flist = inst.files.files.values
+                    # Get a list of current Instrument files. Some Instruments
+                    # construct filenames so we start by taking only the
+                    # unique ones.
+                    inst = Instrument(platform=platform, name=name,
+                                      inst_id=inst_id, tag=tag,
+                                      update_files=True)
+                    flist = inst.files.files.values
+                    flist = np.unique(flist)
 
-                        # Figure out which directory these files are in by
-                        # removing existing directory template information.
-                        currdir = inst.files.data_path.split(
-                            inst.files.sub_dir_path)[0]
+                    # Existing full directory path, including template.
+                    curr_path = inst.files.data_path
 
-                        # Create instrument with new information
-                        new_inst = Instrument(inst_module=modu, inst_id=inst_id,
-                                              tag=tag, update_files=False,
+                    # Figure out which top-level directory these files are in by
+                    # removing existing directory template information.
+                    # pysat supports multiple paths so we need to get
+                    # which of those this particular instrument uses.
+                    currdir = inst.files.data_path.split(
+                        inst.files.sub_dir_path)[0]
+
+                    # Create instrument with new information
+                    new_inst = Instrument(platform=platform, name=name,
+                                          inst_id=inst_id, tag=tag,
+                                          update_files=False,
+                                          directory_format=new_template)
+
+                    # Get new formatted directory template
+                    subdir = new_inst.files.sub_dir_path
+
+                    # Make new path using correct top_level data directory but
+                    # with new template. new_inst won't find files and thus
+                    # defaults to the first of all pysat data_dirs though
+                    # we know better.
+                    new_path = os.path.join(currdir, subdir)
+                    print(' '.join(('Working Instrument:', platform, name,
+                                    tag, inst_id)))
+                    print('Current path :  ' + curr_path)
+                    print('Proposed path:  ' + new_path)
+
+                    # Construct full paths in lists for old and new filenames
+                    old_files = [os.path.join(inst.files.data_path, ifile)
+                                 for ifile in flist]
+                    new_files = [os.path.join(currdir, subdir, ifile)
+                                 for ifile in flist]
+
+                    if len(old_files) == 0:
+                        print('No files found.\n')
+                    else:
+                        print('{:d} files indicated.\n'.format(
+                            len(old_files)))
+
+                    missing = 0
+                    for ofile, nfile in zip(old_files, new_files):
+                        if os.path.isfile(ofile):
+                            if full_breakdown:
+                                # Print the proposed changes so user may verify
+                                ostr = ''.join(('Will move: ', ofile, '\n',
+                                                '       to: ', nfile))
+                                print(ostr)
+
+                            if not test_run:
+                                # Move files if not in test mode
+                                shutil.move(ofile, nfile)
+                        else:
+                            missing += 1
+
+                    if full_breakdown and (missing != len(old_files)):
+                        # Sometimes include a newline to maintain consistent
+                        # line spacing.
+                        print('')
+
+                    if missing > 0:
+                        # Some listed files aren't actually on the disk.
+                        ostr = ' '.join(('{:d} out of {:d} expected files',
+                                         'were not found. It is likely',
+                                         'that', platform, name,
+                                         'is using an internally',
+                                         'modified file list and must be',
+                                         'moved manually.\n'))
+                        ostr = ostr.format(missing, len(old_files))
+                        print(ostr)
+
+                    elif len(old_files) > 0:
+                        # No missing files and there are actually
+                        # files on the disk to deal with.
+
+                        # Get new list of files from Instrument
+                        new_inst = Instrument(platform=platform, name=name,
+                                              inst_id=inst_id, tag=tag,
+                                              update_files=True,
                                               directory_format=new_template)
 
-                        # Get new directory template
-                        subdir = new_inst.files.sub_dir_path
-
-                        # Construct lists for old and new filenames
-                        old_files = [os.path.join(inst.files.data_path, ifile)
-                                     for ifile in flist]
-                        new_files = [os.path.join(currdir, subdir, ifile)
-                                     for ifile in flist]
-                        if test_run:
-                            # Print the proposed changes so user may verify
-                            for ofile, nfile in zip(old_files, new_files):
-                                ostr = ''.join(('Moving: ', ofile, '\n',
-                                                '\tto: ', nfile))
-                                print(ostr)
-                        else:
-                            # Real deal. Move the files.
-                            for ofile, nfile in zip(old_files, new_files):
-                                shutil.move(ofile, nfile)
-                            new_inst = Instrument(inst_module=modu,
-                                                  inst_id=inst_id,
-                                                  tag=tag, update_files=True,
-                                                  directory_format=new_template)
-
-                            # Check on number of files before and after
-                            nnew = len(new_inst.files.files)
-                            nold = len(inst.files.files)
+                        # Check on number of files before and after
+                        nnew = len(new_inst.files.files)
+                        nold = len(inst.files.files)
+                        if not test_run:
                             if nnew != nold:
                                 estr = ' '.join(('Number of files before and',
                                                  'after not the same.',
                                                  'Something has gone wrong for',
                                                  platform, name, tag, inst_id))
                                 raise ValueError(estr)
+
+                            print('All files moved and accounted for.\n')
 
     return
