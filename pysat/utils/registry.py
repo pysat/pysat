@@ -122,14 +122,14 @@ def register(module_names, overwrite=False):
 
     """
 
-    for module_name in module_names:
+    for mod_name in module_names:
         # first, ensure module string directs to something importable
         try:
-            inst_module = importlib.import_module(module_name)
+            inst_module = importlib.import_module(mod_name)
         except Exception:
             # log then preserve trace and propagate error
             estr = ' '.join(('There was a problem trying to import',
-                             module_name))
+                             mod_name))
             logger.error(estr)
             raise
 
@@ -141,7 +141,7 @@ def register(module_names, overwrite=False):
             pass
         validate.inst_loc = Foo()
         # parse string to get package part and instrument module part
-        parse = module_name.split('.')
+        parse = mod_name.split('.')
         # module name without package
         mod_part = parse[-1]
         # the package preamble
@@ -164,27 +164,27 @@ def register(module_names, overwrite=False):
             pysat.params.data['user_modules'][platform] = {}
         # only register name if not present under platform
         if name not in pysat.params['user_modules'][platform]:
-            logger.info('Registering user module {}'.format(module_name))
+            logger.info('Registering user module {}'.format(mod_name))
             # add to current user modules structure
-            pysat.params.data['user_modules'][platform][name] = module_name
+            pysat.params.data['user_modules'][platform][name] = mod_name
             # store user modules to disk
             store()
         else:
             # platform/name combination already registered
             # check if this is a new package or just a redundant assignment
-            if module_name != pysat.params['user_modules'][platform][name]:
+            if mod_name != pysat.params['user_modules'][platform][name]:
                 # new assignment, check for overwrite flag
                 if not overwrite:
                     estr = ' '.join(('An instrument has already been ',
                                      'registered for platform:', platform,
                                      'and name:', name,
-                                     'which maps to:', module_name, 'To assign',
+                                     'which maps to:', mod_name, 'To assign',
                                      'a new module the overwrite flag',
                                      'must be enabled.'))
                     raise ValueError(estr)
                 else:
                     # overwrite with new module information
-                    pysat.params.data['user_modules'][platform][name] = module_name
+                    pysat.params.data['user_modules'][platform][name] = mod_name
                     # store
                     store()
 
