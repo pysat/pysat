@@ -268,15 +268,6 @@ class Parameters(object):
             raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
                                        'directory.')).format(': '.join(paths)))
 
-    def _set_user_modules(self, value):
-        """Update value for 'user_modules'"""
-        if isinstance(value, dict):
-            self.data['user_modules'] = value
-        else:
-            raise ValueError('User modules must be a dictionary.')
-
-        return
-
     def clear_and_restart(self):
         """Clears all stored settings and sets pysat defaults
 
