@@ -70,6 +70,10 @@ class TestBasics():
 
     def test_str(self):
         """Ensure str method works"""
+
+        # include a user parameter as well
+        pysat.params['pysat_user_test_str'] = 'We are here.'
+
         out = str(pysat.params)
         # Confirm start of str
         assert out.find('pysat Parameters object') >= 0
@@ -150,6 +154,12 @@ class TestBasics():
         assert pysat.params['data_dirs'] == []
 
         return
+
+    def test_bad_path_instantiation(self):
+        """Ensure you can't use bad path when loading Parameters"""
+        with pytest.raises(RuntimeError) as excinfo:
+            Parameters(path='./made_up_name')
+        assert str(excinfo.value).find("Supplied path does not exist") >= 0
 
 
 class TestCIonly(TravisCICleanSetup):
