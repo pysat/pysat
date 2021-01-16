@@ -12,7 +12,7 @@ import warnings
 
 import pandas as pds
 import pysat  # Needed to access pysat.params across reimports
-from pysat import pysat_dir, logger, Instrument
+from pysat import logger, Instrument
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
 
@@ -165,7 +165,7 @@ class Files(object):
         self.update_files = update_files
 
         # Location of directory to store file information in
-        self.home_path = os.path.join(pysat_dir, 'instruments')
+        self.home_path = os.path.join(pysat.pysat_dir, 'instruments')
 
         # Assign base default dates and an empty list of files
         self.start_date = None
