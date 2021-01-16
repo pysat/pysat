@@ -603,6 +603,9 @@ class Files(object):
                 # Instrument iteration methods require a date range.
                 self.start_date = filter_datetime_input(new_files['start_date'])
                 self.stop_date = filter_datetime_input(new_files['stop_date'])
+
+                # To really support iteration, we need to create a generator
+                # function that'll create a fake list of files as needed
                 return
 
             # Ensure the name of returned Series is None for consistency
