@@ -1,4 +1,8 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 import copy
 import datetime as dt
 import errno
