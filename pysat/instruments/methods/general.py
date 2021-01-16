@@ -208,3 +208,31 @@ def remove_leading_text(inst, target=None):
                 inst.meta[new_key] = new_meta
 
     return
+
+
+def filename_creator(value, format_str=None, start_date=None, stop_date=None):
+    """Creates filenames as needed to support use of generated pysat data sets
+
+    Parameters
+    ----------
+    # TODO Fix value docstring area
+    value : slice (?)
+        Datetime slice, see _instrument.py,
+        fname = self.files[date:(date + inc)]
+    format_str : str
+        File format template string (default=None)
+    start_date : datetime.datetime or None
+        First date supported (default=None)
+    stop_date: datetime.datetime or None
+        Last date supported (default=None)
+
+    Returns
+    -------
+    pandas.Series
+        Created filenames from format_str indexed by datetime
+
+    """
+
+    raise NotImplemented()
+
+    return
