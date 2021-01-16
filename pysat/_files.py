@@ -161,12 +161,6 @@ class Files(object):
 
         """
 
-        # Ensure we have a path for pysat data directory
-        if pysat_dir == '':
-            raise RuntimeError(" ".join(("pysat's pysat_dir is None. Set a",
-                                         "directory using",
-                                         "pysat.utils.set_data_dir.")))
-
         # Set the hidden variables
         self.update_files = update_files
 
