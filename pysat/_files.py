@@ -5,7 +5,7 @@
 # ----------------------------------------------------------------------------
 
 import datetime as dt
-import inspect
+from functools import partial
 import numpy as np
 import os
 import warnings
@@ -15,6 +15,7 @@ import pysat  # Needed to access pysat.params across reimports
 from pysat import logger, Instrument
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
+from pysat.instruments.methods import general
 
 
 class Files(object):
@@ -67,7 +68,7 @@ class Files(object):
         Filenames indexed by time. Leading pysat path information not stored.
     home_path : str
         Directory used for class storage
-    list_files_generator : generator
+    list_files_creator : functools.partial or NoneType
         Experimental feature for Instruments that internally generate data
         and thus don't have a defined supported date range.
     list_files_rtn : method
@@ -177,17 +178,12 @@ class Files(object):
                           'tag': inst.tag, 'inst_id': inst.inst_id}
         self.list_files_rtn = inst._list_files_rtn
 
-        # Check if routine is actually a generator method
-        if inspect.isgeneratorfunction(self.list_files_rtn):
-            self.list_files_generator = self.list_files_rtn()
-            # Instrument iteration methods require a date range.
-            # So, do we just pick dates far into future and past?
-            self.start_date = dt.datetime(1900, 1, 1)
-            self.stop_date = dt.datetime(2100, 1, 1)
-        else:
-            self.list_files_generator = None
-
         self.multi_file_day = inst.multi_file_day
+
+        # Begin with presumption that the list_files_rtn is a typical
+        # function that returns a Series of filenames. Some generated
+        # data sets employ a function that creates filenames on-the-fly.
+        self.list_files_creator = None
 
         # Set the location of stored files
         self.stored_file_name = '_'.join((self.inst_info['platform'],
@@ -230,6 +226,7 @@ class Files(object):
         # _load. We start here with the first directory for cases where there
         # are no files.
         self.data_path = self.data_paths[0]
+
         # Set the preference of writing the file list to disk or not
         self.write_to_disk = write_to_disk
         if not self.write_to_disk:
@@ -241,20 +238,22 @@ class Files(object):
         self.ignore_empty_files = ignore_empty_files
 
         if self.inst_info['platform'] != '':
-            # Load stored file info
-            if self.list_files_generator is None:
-                # Typical instrument with files, not generated data.
-                if self.update_files:
+            # Only load filenames if this is associated with a real
+            # pysat.Instrument instance, not pysat.Instrument().
+            if self.update_files:
+                # Refresh filenames as directed by user
+                self.refresh()
+            else:
+                # Load stored file info
+                file_info = self._load()
+                if file_info.empty:
+                    # Didn't find stored information. Search local system.
+                    # If list_files_rtn returns a dict to create
+                    # filenames as needed that is handled in refresh.
                     self.refresh()
                 else:
-                    # Load stored file info
-                    file_info = self._load()
-                    if file_info.empty:
-                        # Didn't find stored information. Search local system.
-                        self.refresh()
-                    else:
-                        # Attach the data loaded
-                        self._attach_files(file_info)
+                    # Attach the data loaded
+                    self._attach_files(file_info)
         return
 
     def __repr__(self):
@@ -317,9 +316,10 @@ class Files(object):
         index are normal non-inclusive end point
 
         """
-        if self.list_files_generator is not None:
-            # Return generated filename
-            out = self.list_files_generator(key)
+        if self.list_files_creator is not None:
+            # Return filename generated on demand
+            out = self.list_files_creator(key)
+
         elif isinstance(key, slice):
             try:
                 try:
@@ -579,10 +579,6 @@ class Files(object):
 
         """
 
-        if self.list_files_generator is not None:
-            estr = ''.join(('refresh() does not work with list generators'))
-            raise RuntimeError(estr)
-
         # Let interested users know pysat is searching for
         info_str = '{platform} {name} {tag} {inst_id}'.format(
             **self.inst_info)
@@ -597,6 +593,18 @@ class Files(object):
                                             inst_id=self.inst_info['inst_id'],
                                             data_path=path,
                                             format_str=self.file_format)
+
+            # Check if list_files_rtn is actually returning filename or a
+            # dict to be passed to filename creator function.
+            if isinstance(new_files, dict):
+                self.list_files_creator = partial(general.filename_creator,
+                                                  **new_files)
+
+                # Instrument iteration methods require a date range.
+                self.start_date = filter_datetime_input(new_files['start_date'])
+                self.stop_date = filter_datetime_input(new_files['stop_date'])
+                return
+
             # Ensure the name of returned Series is None for consistency
             new_files.name = None
 
