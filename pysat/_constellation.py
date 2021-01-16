@@ -1,46 +1,78 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+""" Created as part of a Spring 2018 UTDesign project.
+"""
+
 import importlib
+import numpy as np
 
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
 
-    Created as part of a Spring 2018 UTDesign project.
+    Parameters
+    ----------
+    const_module : string
+        Name of a pysat constellation module
+    instruments : list-like
+        A list of pysat Instruments to include in the Constellation
+
+    Attributes
+    ----------
+    instruments : list
+        A list of pysat Instruments that make up the Constellation
+    bounds : (datetime/filename/None, datetime/filename/None)
+        bounds for loading data, supply array_like for a season with gaps.
+        Users may provide as a tuple or tuple of lists, but the attribute is
+        stored as a tuple of lists for consistency
 
     """
 
-    def __init__(self, instruments=None, name=None):
+    # -----------------------------------------------------------------------
+    # Define the magic methods
+
+    def __init__(self, const_module=None, instruments=None):
         """
         Constructs a Constellation given a list of instruments or the name of
         a file with a pre-defined constellation.
 
         Parameters
         ----------
-        instruments : list
-            a list of pysat Instruments
-        name : string
-            Name of a file in pysat/constellations containing a list of
-            instruments.
+        const_module : string
+            Name of a pysat constellation module
+        instruments : list-like
+            A list of pysat Instruments to include in the Constellation
+
+        Raises
+        ------
+        ValueError
+            When `instruments` is not list-like
 
         Note
         ----
-        The name and instruments parameters should not both be set.
-        If neither is given, an empty constellation will be created.
+        Omit `instruments` and `name` to create an empty constellation.
 
         """
 
-        if instruments and name:
-            raise ValueError('When creating a constellation, please specify '
-                             'a list of instruments or a name, not both.')
-        elif instruments and not hasattr(instruments, '__getitem__'):
-            raise ValueError('Constellation: Instruments must be list-like.')
-
-        if instruments:
-            self.instruments = instruments
-        elif name:
-            const = importlib.import_module('pysat.constellations.' + name)
+        # Include Instruments from the constellation module, if it exists
+        if const_module is not None:
+            const = importlib.import_module(const_module)
             self.instruments = const.instruments
         else:
             self.instruments = []
+
+        # Add any Instruments provided in the list
+        if instruments is not None:
+            test_instruments = np.asarray(instruments)
+            if test_instruments.shape == ():
+                raise ValueError('instruments argument must be list-like')
+
+            self.instruments.extend(list(instruments))
+
+        return
 
     def __getitem__(self, *args, **kwargs):
         """
@@ -80,106 +112,68 @@ class Constellation(object):
 
         return output_str
 
+    # -----------------------------------------------------------------------
+    # Define the public methods and properties
+
     @property
     def bounds(self):
         return self.instruments[0].bounds
 
     @bounds.setter
     def bounds(self, value=None):
-
-        """ Sets boundaries for all instruments in constellation
+        """ Sets boundaries for all Instruments in Constellation
 
         Parameters
         ----------
-        start : dt.datetime
-            Starting time for Instrument bounds attribute
-        stop : dt.datetime
-            Ending time for Instrument bounds attribute
+        value : tuple or NoneType
+            Tuple containing starting time and ending time for Instrument
+            bounds attribute or None (default=None)
 
         """
 
         for instrument in self.instruments:
             instrument.bounds = value
 
+        return
+
     def custom_attach(self, *args, **kwargs):
-        """
-        Register a function to modify data of member Instruments.
-
-        When the Constellation receives a function call to register
-        a function for data modification, it passes the call to each
-        instrument and registers it in the instrument's Custom queue.
-
-        (Wraps Instrument.custom_attach; documentation of that function is
-        reproduced here.)
+        """Register a function to modify data of member Instruments.
 
         Parameters
         ----------
-        function : string or function object
-            name of function or function object to be added to queue
-        kind : {'add', 'modify', 'pass}
-            - add
-                Adds data returned from function to instrument object.
-                A copy of pysat instrument object supplied to routine.
-            - modify
-                pysat instrument object supplied to routine. Any and all
-                changes to object are retained.
-            - pass
-                A copy of pysat object is passed to function. No
-                data is accepted from return.
-            (default='modify')
+        *args : list reference
+            References a list of input arguments
+        **kwargs : dict reference
+            References a dict of input keyword arguments
 
-        at_pos : string or int
-            Accepts string 'end' or a number that will be used to determine
-            the insertion order if multiple custom functions are attached
-            to an Instrument object. (default='end').
-        args : list or tuple
-            Ordered arguments following the instrument object input that are
-            required by the custom function (default=[])
-        kwargs : dict
-            Dictionary of keyword arguements required by the custom function
-            (default={})
-
-        Note
-        ----
-        Allowed `attach` function returns:
-
-        - {'data' : pandas Series/DataFrame/array_like,
-          'units' : string/array_like of strings,
-          'long_name' : string/array_like of strings,
-          'name' : string/array_like of strings (iff data array_like)}
-
-        - pandas DataFrame, names of columns are used
-
-        - pandas Series, .name required
-
-        - (string/list of strings, numpy array/list of arrays)
+        See Also
+        ---------
+        Instrument.custom_attach : base method for attaching custom functions
 
         """
 
         for instrument in self.instruments:
             instrument.custom_attach(*args, **kwargs)
 
-    def load(self, *args, **kwargs):
-        """
-        Load instrument data into instrument object.data
+        return
 
-        (Wraps pysat.Instrument.load; documentation of that function is
-        reproduced here.)
+    def load(self, *args, **kwargs):
+        """ Load instrument data into Instrument object.data
 
         Parameters
         ----------
-        yr : integer
-            Year for desired data
-        doy : integer
-            day of year
-        data : datetime object
-            date to load
-        fname : string
-            filename to be loaded
-        verifyPad : boolean
-            if true, padding data not removed (debug purposes)
+        *args : list reference
+            References a list of input arguments
+        **kwargs : dict reference
+            References a dict of input keyword arguments
+
+        See Also
+        ---------
+        Instrument.load : base method for loading Instrument data
 
         """
 
         for instrument in self.instruments:
             instrument.load(*args, **kwargs)
+
+        return

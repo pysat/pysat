@@ -41,6 +41,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added `warn_empty_file_list` to pysat.params to provide a warning if no 
     Instrument files are found. Default is False.
   - Updated default pysat directory organization template
+  - Added support for dual specification of Instruments to include in a
+    Constellation
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -77,6 +79,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Moved `pysat.Instrument._filter_datetime_input` to 
     `pysat.utils.time.filter_datetime_input`
   - Deprecated `pysat.utils.set_data_dir`
+  - Changed `name` kwarg in Constellation to `const_module`
   - Removed unnecessary Instrument attribute `labels`
 - Documentation
   - Added info on how to register new instruments
