@@ -1117,7 +1117,6 @@ class TestBasics():
         with pytest.raises(AttributeError):
             self.meta.new_attribute
 
-
     def test_transfer_attributes_to_instrument_leading_(self):
         """Ensure private custom meta attributes not transferred"""
         self.meta.mutable = True
