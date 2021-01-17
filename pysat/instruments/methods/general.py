@@ -233,6 +233,6 @@ def filename_creator(value, format_str=None, start_date=None, stop_date=None):
 
     """
 
-    raise NotImplemented()
+    raise NotImplementedError()
 
     return
