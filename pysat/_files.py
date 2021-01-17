@@ -604,8 +604,10 @@ class Files(object):
                 self.start_date = filter_datetime_input(new_files['start_date'])
                 self.stop_date = filter_datetime_input(new_files['stop_date'])
 
-                # To really support iteration, we need to create a generator
-                # function that'll create a fake list of files as needed
+                # To really support iteration, we may need to create a generator
+                # function that'll create a fake list of files as needed.
+                # It would have to function in place of self.files. Is
+                # there truly a point to this?
                 return
 
             # Ensure the name of returned Series is None for consistency
