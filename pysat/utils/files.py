@@ -460,56 +460,79 @@ def update_data_directory_structure(new_template, test_run=True,
                     # with new template. new_inst won't find files and thus
                     # defaults to the first of all pysat data_dirs though
                     # we know better.
-                    new_path = os.path.join(currdir, subdir)
-                    print(' '.join(('Working Instrument:', platform, name,
+                    new_path = os.path.join(currdir, subdir, '')
+                    print(' '.join(('Working on Instrument:', platform, name,
                                     tag, inst_id)))
+                    if curr_path == new_path:
+                        print('No change in directory needed.\n')
+                        break
+
                     print('Current path :  ' + curr_path)
                     print('Proposed path:  ' + new_path)
 
                     # Construct full paths in lists for old and new filenames
                     old_files = [os.path.join(inst.files.data_path, ifile)
                                  for ifile in flist]
+
+                    # Determine which of these files exist.
+                    old_exists = [os.path.isfile(ofile) for ofile in old_files]
+                    idx, = np.where(old_exists)
+
+                    if len(idx) == 0:
+                        # If none of the files actually exists, likely that
+                        # instruments.methods.general.list_files is appending
+                        # a date to the end of the filename.
+                        exists = [os.path.isfile(ofile[:-11]) for ofile in
+                                  old_files]
+                        if np.all(exists):
+                            flist = [ifile[:-11] for ifile in flist]
+                            flist = np.unique(flist)
+                            old_files = [os.path.join(inst.files.data_path,
+                                                      ifile)
+                                         for ifile in flist]
+                        else:
+                            # Files don't exist as written and taking of
+                            # a trailing date didn't fix everything.
+                            raise ValueError()
+                    elif len(idx) < len(old_files):
+                        ostr = ' '.join(('{:d} out of {:d} expected files',
+                                         'were not found. It is likely',
+                                         'that', platform, name,
+                                         'is using a combination of internally',
+                                         'modified file names and regular ',
+                                         'names and must be moved manually.\n'))
+                        ostr = ostr.format(len(idx), len(old_files))
+                        print(ostr)
+                        break
+
+                    # Based on the files that do exist, construct the new
+                    # path names with the updated directory template.
                     new_files = [os.path.join(currdir, subdir, ifile)
                                  for ifile in flist]
 
                     if len(old_files) == 0:
                         print('No files found.\n')
                     else:
-                        print('{:d} files indicated.\n'.format(
+                        print('{:d} files located.\n'.format(
                             len(old_files)))
 
-                    missing = 0
                     for ofile, nfile in zip(old_files, new_files):
-                        if os.path.isfile(ofile):
-                            if full_breakdown:
-                                # Print the proposed changes so user may verify
-                                ostr = ''.join(('Will move: ', ofile, '\n',
-                                                '       to: ', nfile))
-                                print(ostr)
+                        if full_breakdown:
+                            # Print the proposed changes so user may verify
+                            ostr = ''.join(('Will move: ', ofile, '\n',
+                                            '       to: ', nfile))
+                            print(ostr)
 
-                            if not test_run:
-                                # Move files if not in test mode
-                                shutil.move(ofile, nfile)
-                        else:
-                            missing += 1
+                        if not test_run:
+                            # Move files if not in test mode
+                            shutil.move(ofile, nfile)
 
-                    if full_breakdown and (missing != len(old_files)):
+                    if full_breakdown and (len(old_files) > 0):
                         # Sometimes include a newline to maintain consistent
                         # line spacing.
                         print('')
 
-                    if missing > 0:
-                        # Some listed files aren't actually on the disk.
-                        ostr = ' '.join(('{:d} out of {:d} expected files',
-                                         'were not found. It is likely',
-                                         'that', platform, name,
-                                         'is using an internally',
-                                         'modified file list and must be',
-                                         'moved manually.\n'))
-                        ostr = ostr.format(missing, len(old_files))
-                        print(ostr)
-
-                    elif len(old_files) > 0:
+                    if len(old_files) > 0:
                         # No missing files and there are actually
                         # files on the disk to deal with.
 
@@ -531,5 +554,7 @@ def update_data_directory_structure(new_template, test_run=True,
                                 raise ValueError(estr)
 
                             print('All files moved and accounted for.\n')
+
+                        # Remove old directories
 
     return
