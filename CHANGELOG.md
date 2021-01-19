@@ -43,6 +43,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Updated default pysat directory organization template
   - Added support for dual specification of Instruments to include in a
     Constellation
+  - Added function to transition pysat managed data files to a user
+    provided template.
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
