@@ -233,8 +233,6 @@ class Files(object):
     def __repr__(self):
         """ Representation of the class and its current state
         """
-        # Because the local Instrument object is weakly referenced, it may
-        # not always be accessible
         inst_repr = Instrument(**self.inst_info).__repr__()
 
         out_str = "".join(["Files(", inst_repr, ", directory_format=",
