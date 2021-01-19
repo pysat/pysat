@@ -395,7 +395,8 @@ def search_local_system_formatted_filename(data_path, search_str):
 
 
 def update_data_directory_structure(new_template, test_run=True,
-                                    full_breakdown=False):
+                                    full_breakdown=False,
+                                    remove_empty_dirs=False):
     """Update pysat data directory structure to match supplied template
 
     Translates all of pysat's managed science files to a new
@@ -412,6 +413,14 @@ def update_data_directory_structure(new_template, test_run=True,
     test_run : bool
         If True, a printout of all proposed changes will be made, but the
         directory changes will not be enacted. (default=True)
+    full_breakdown : bool
+        If True, a full path for every file is printed to terminal.
+        (default=False)
+    remove_empty_dirs : bool
+        If True, all directories that had pysat.Instrument data moved
+        to another location and are now empty are deleted. Traverses
+        the directory chain up to the top-level directories in
+        `pysat.params['data_dirs']`. (default=False)
 
     """
 
@@ -555,6 +564,27 @@ def update_data_directory_structure(new_template, test_run=True,
 
                             print('All files moved and accounted for.\n')
 
-                        # Remove old directories
+                            # Number of files checks out. Time to remove old
+                            # directories if there are no real files in there.
+                            # First, get full directory path of previous inst
+                            wpath = inst.files.data_path
+                            while wpath != currdir:
+                                # Only continue while we are at a level
+                                # lower than the top-level pysat data directory.
+                                if len(os.listdir(wpath)) == 0:
+                                    # Directory is empty, remove it.
+                                    print(wpath.join(' is empty. and could',
+                                                     ' be removed.'))
+                                    if remove_empty_dirs:
+                                        os.shutil.rmtree(wpath)
+                                        print('Removing ', wpath)
+                                else:
+                                    print(''.join(('Directory is not empty: ',
+                                                   wpath, ' Ending cleanup.')))
+                                    break
+                                # Take off last path and start working up
+                                # the directory chain.
+                                wpath = os.path.sep.join(wpath.split(
+                                    os.path.sep)[:-2])
 
     return
