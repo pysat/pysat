@@ -569,8 +569,8 @@ def update_data_directory_structure(new_template, test_run=True,
                             # directories if there are no real files in there.
                             # First, get full directory path of previous inst
                             wpath = inst.files.data_path
-                            while wpath != currdir and (len(wpath) >
-                                                        len(currdir)):
+                            while wpath != currdir and (len(wpath)
+                                                        > len(currdir)):
                                 # Only continue while we are at a level
                                 # lower than the top-level pysat data directory.
                                 if len(os.listdir(wpath)) == 0:
