@@ -580,7 +580,8 @@ def update_data_directory_structure(new_template, test_run=True,
                                         print('Removing ', wpath)
                                 else:
                                     print(''.join(('Directory is not empty: ',
-                                                   wpath, ' Ending cleanup.')))
+                                                   wpath, ' Ending cleanup.',
+                                                   '\n')))
                                     break
                                 # Take off last path and start working up
                                 # the directory chain.
