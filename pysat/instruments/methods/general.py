@@ -215,8 +215,7 @@ def filename_creator(value, format_str=None, start_date=None, stop_date=None):
 
     Parameters
     ----------
-    # TODO Fix value docstring area
-    value : slice (?)
+    value : slice
         Datetime slice, see _instrument.py,
         fname = self.files[date:(date + inc)]
     format_str : str
