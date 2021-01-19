@@ -562,7 +562,8 @@ def update_data_directory_structure(new_template, test_run=True,
                                                  platform, name, tag, inst_id))
                                 raise ValueError(estr)
 
-                            print('All files moved and accounted for.\n')
+                            print(''.join(('All ', platform, name, tag, inst_id,
+                                           'files moved and accounted for.\n')))
 
                             # Number of files checks out. Time to remove old
                             # directories if there are no real files in there.
