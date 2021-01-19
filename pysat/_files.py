@@ -21,53 +21,47 @@ from pysat.instruments.methods import general
 class Files(object):
     """Maintains collection of files plus associated methods.
 
-    Attributes
+    Parameters
     ----------
-    home_path : str
-        Path to the pysat information directory.
-    start_date : datetime or NoneType
-        Date of first file, used as default start bound for instrument
-        object, or None if no files are loaded.
-    stop_date : datetime or NoneType
-        Date of last file, used as default stop bound for instrument
-        object, or None if no files are loaded.
-    files : pds.Series
-        Series of data files, indexed by file start time
-    stored_file_name : str
-        Name of the hidden file containing the list of archived data files
-        for this instrument.
+    inst : pysat.Instrument
+        Instrument object
     directory_format : str or NoneType
         Directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be
         expressed as '{platform}/{name}/{tag}/{inst_id}'. If None, the default
         directory structure is used (default=None)
+    update_files : boolean
+        If True, immediately query filesystem for instrument files and
+        store (default=False)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
         instrument list_files routine. (default=None)
-    data_path : str
-        File directory structure that includes Instrument tags, inst_ids,
-        version numbers, et cetera.
     write_to_disk : boolean
-        If True, the list of Instrument files will be written to disk.
-        Setting this to False prevents a rare condition when running multiple
-        pysat processes. (default=True)
+        If true, the list of Instrument files will be written to disk.
+        (default=True)
     ignore_empty_files : boolean
         If True, the list of files found will be checked to ensure the
         filesizes are greater than zero. Empty files are removed from the
         stored list of files. (default=False)
+
+    Attributes
+    ----------
+    home_path : str
+        Path to the pysat information directory.
     data_path : str
-        path to the directory containing instrument files,
-        top_dir/platform/name/tag/inst_id
+        Path to the top-level directory containing instrument files,
+        selected from data_paths.
     data_paths: list of str
         Available paths that pysat will use when looking for files. The
         class uses the first directory with relevant data, stored in data_path.
     files : pds.Series
-        Filenames indexed by time. Leading pysat path information not stored.
-    home_path : str
-        Directory used for class storage
+        Series of data files, indexed by file start time
+    inst_info : dict
+        Contains pysat.Instrument parameters 'platform', 'name', 'tag',
+        and 'inst_id', identifying the source of the files.
     list_files_creator : functools.partial or NoneType
         Experimental feature for Instruments that internally generate data
         and thus don't have a defined supported date range.
@@ -77,9 +71,15 @@ class Files(object):
     multi_file_day : boolean
         Flag copied from associated pysat.Instrument object that indicates
         when data for day n may be found in files for days n-1, or n+1
-    inst_info : dict
-        Contains pysat.Instrument parameters 'platform', 'name', 'tag',
-        and 'inst_id', identifying the source of the files.
+    start_date : datetime or NoneType
+        Date of first file, used as default start bound for instrument
+        object, or None if no files are loaded.
+    stop_date : datetime or NoneType
+        Date of last file, used as default stop bound for instrument
+        object, or None if no files are loaded.
+    stored_file_name : str
+        Name of the hidden file containing the list of archived data files
+        for this instrument.
 
     Note
     ----
@@ -132,35 +132,6 @@ class Files(object):
     def __init__(self, inst, directory_format=None, update_files=False,
                  file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
-        """
-        Parameters
-        ----------
-        inst : pysat.Instrument
-            Instrument object
-        directory_format : str or NoneType
-            directory naming structure in string format. Variables such as
-            platform, name, and tag will be filled in as needed using python
-            string formatting. The default directory structure would be
-            expressed as '{platform}/{name}/{tag}/{inst_id}'. If None,
-            the default directory structure is used (default=None)
-        update_files : boolean
-            If True, immediately query filesystem for instrument files and
-            store (default=False)
-        file_format : str or NoneType
-            File naming structure in string format.  Variables such as year,
-            month, and inst_id will be filled in as needed using python string
-            formatting.  The default file format structure is supplied in the
-            instrument list_files routine. (default=None)
-        write_to_disk : boolean
-            If true, the list of Instrument files will be written to disk.
-            Setting this to False prevents a rare condition when running
-            multiple pysat processes. (default=True)
-        ignore_empty_files : boolean
-            if True, the list of files found will be checked to
-            ensure the filesiizes are greater than zero. Empty files are
-            removed from the stored list of files. (default=False)
-
-        """
 
         # Set the hidden variables
         self.update_files = update_files
