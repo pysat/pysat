@@ -336,15 +336,18 @@ class Files(object):
         """
 
         keep_index = []
-        for i, fi in enumerate(self.files):
+        for i, fname in enumerate(self.files):
             # Create full path for each file
-            full_name = os.path.join(path, fi)
-            # Ensure it exists
-            if os.path.exists(full_name) and (os.path.getsize(full_name) > 0):
-                # Store if not empty
-                keep_index.append(i)
+            full_fname = os.path.join(path, fname)
 
-        # Remove filenames for empty files as needed
+            # Ensure it exists
+            if os.path.isfile(full_fname):
+                # Check for size
+                if os.path.getsize(full_fname) > 0:
+                    # Store if not empty
+                    keep_index.append(i)
+
+        # Remove filenames as needed
         dropped_num = len(self.files.index) - len(keep_index)
         if dropped_num > 0:
             logger.warning(' '.join(('Removing {:d}'.format(dropped_num),
