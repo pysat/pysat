@@ -18,6 +18,15 @@ class Parameters(object):
     Also stores custom user parameters provided the keys don't conflict with
     default pysat parameters.
 
+    Parameters
+    ----------
+    path : str
+        If provided, the directory path will be used to load/store a
+        parameters file with name 'pysat_settings.json' (default=None).
+    create_new : bool
+        If True, a new parameters file is created. Will be created at path
+        if provided. If not, file will be created in `pysat.pysat_dir`.
+
     Attributes
     ----------
     data : dict
@@ -62,17 +71,6 @@ class Parameters(object):
     """
 
     def __init__(self, path=None, create_new=False):
-        """
-        Parameters
-        ----------
-        path : str
-            If provided, the directory path will be used to load/store a
-            parameters file with name 'pysat_settings.json' (default=None).
-        create_new : bool
-            If True, a new parameters file is created. Will be created at path
-            if provided. If not, file will be created in `pysat.pysat_dir`.
-
-        """
         sfname = 'pysat_settings.json'
         self.data = {}
         self.file_path = None
