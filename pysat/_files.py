@@ -80,6 +80,9 @@ class Files(object):
     stored_file_name : str
         Name of the hidden file containing the list of archived data files
         for this instrument.
+    sub_dir_path : str
+        `directory_format` string formatted for the local system.
+
 
     Note
     ----
