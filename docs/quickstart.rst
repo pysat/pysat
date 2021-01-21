@@ -16,14 +16,14 @@ pysat will remind you to set the top level directory that will hold the data,
 
 .. code:: python
 
-   pysat.utils.set_data_dir(path=path)
+   pysat.params['data_dirs'] = path
 
 Note the directory path supplied must already exist or an error will be raised.
 To check the currently set data directory,
 
 .. code:: python
 
-    print(pysat.data_dir)
+    print(pysat.params['data_dirs'])
 
 To check if pysat and required packages are working, instantiate one of the
 test instruments. The test instrument will simulate data when using it to
