@@ -12,6 +12,7 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
 import pysat.instruments.pysat_testing2d
+import pysat.instruments.pysat_testing2d_xarray
 from pysat.utils import generate_instrument_list
 
 xarray_epoch_name = 'time'
@@ -2394,6 +2395,29 @@ class TestBasics2D(TestBasics):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
                                          num_samples=50,
+                                         clean_level='clean',
+                                         update_files=True)
+        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_doy = 1
+        self.out = None
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst, self.out, self.ref_time, self.ref_doy
+
+
+# -----------------------------------------------------------------------------
+#
+# Repeat tests above with 2d xarray data
+#
+# -----------------------------------------------------------------------------
+class TestBasics2DXarray(TestBasics):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing2d_xarray)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing2d_xarray',
+                                         num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 1)
