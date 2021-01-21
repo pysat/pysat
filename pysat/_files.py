@@ -621,6 +621,36 @@ class Files(object):
         self._store()
         return
 
+    def set_top_level_directory(self, path):
+        """Sets top-level data directory.
+
+        Sets a valid self.data_path using provided top-level directory
+        path and the associated pysat subdirectories derived from the
+        directory_format attribute as stored in self.sub_dir_path.
+
+        Parameters
+        ----------
+        path : str
+            Top-level path to use when looking for files. Must be in
+            pysat.params['data_dirs']
+
+        Note
+        ----
+        If there are Instrument files on the system under a top-level
+        directory other than `path`, then, under certain conditions,
+        self.data_path may be later updated by the object to point back
+        to the directory with files.
+
+        """
+
+        if path not in pysat.params['data_dirs']:
+            estr = "Supplied path not in `pysat.params['data_dirs']`"
+            raise ValueError(estr)
+        else:
+            self.data_path = os.path.join(path, self.sub_dir_path)
+
+        return
+
     def get_new(self):
         """List new files since last recorded file state.
 

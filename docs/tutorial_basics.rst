@@ -14,12 +14,20 @@ To begin,
 
    import pysat
 
-The data directory pysat looks in for data (pysat_data_dir) needs to be set
+The data directory paths pysat looks in for data needs to be set
 upon the first import,
 
 .. code:: python
 
-   pysat.utils.set_data_dir(path=path_to_existing_directory)
+   pysat.params['data_dirs']=path_or_list_of_paths_to_existing_directories
+
+More than one directory may be assigned. When looking for data for a given
+pysat.Instrument, pysat will start with the first directory and iterate through
+the list until one is found. Only one directory with data is supported per
+Instrument.
+
+If no data is found in any of the listed directories then pysat will by
+default assign the first path in ``pysat.params['data_dirs']``.
 
 .. note:: A data directory must be set before any pysat.Instruments may be used
    or an error will be raised.
@@ -89,7 +97,8 @@ F12 spacecraft), use:
 .. code:: python
 
    import pysatMadrigal as pysatMad
-   dmsp = pysat.Instrument(inst_module=pysatMad.instruments.dmsp_ivm, tag='utd', inst_id='f12')
+   dmsp = pysat.Instrument(inst_module=pysatMad.instruments.dmsp_ivm,
+                           tag='utd', inst_id='f12')
 
 Behind the scenes pysat uses a python module named dmsp_ivm that understands
 how to interact with 'utd' data for 'f12'.
@@ -99,7 +108,8 @@ can specify the desired Instrument using the ``platform`` and ``name`` keywords.
 
 .. code:: python
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12')
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
+                           inst_id='f12')
 
 You can also specify the specific keyword arguements needed for the standard
 ``pysat`` methods.  DMSP data is hosted by the `Madrigal database
@@ -119,7 +129,8 @@ provide their name and email address as their username and password.
 
    # Initalize the instrument, passing the username and password to the
    # standard routines that need it
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12', user=username, password=password)
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
+                           inst_id='f12', user=username, password=password)
 
 Download
 --------
@@ -141,9 +152,24 @@ include them here.
    # download data, assuming username and password were not set
    dmsp.download(start, stop, user=username, password=password)
 
-The data is downloaded to pysat_data_dir/platform/name/tag/, in this case
-pysat_data_dir/dmsp/ivm/utd/. At the end of the download, pysat
-will update the list of files associated with DMSP.
+The specific location the data is downloaded to depends upon user settings.
+By default, pysat data directories are organized via top_level/platform/name/tag/inst_id,
+where the top-level is one of the directories in ``pysat.params['data_dirs']``.
+The specific structure for your system is stored in ``pysat.params['directory_format']``.
+
+Presuming defaults, for this DMSP example data is downloaded to
+top_level/dmsp/ivm/utd/f12/. If this is the first download, then the first of the pysat
+data directories will be used by default. If there was already DMSP data on your system
+under one of the ``pysat.params['data_dirs']``, then the same top-level
+directory as existing DMSP data will be used. To pick a different directory to download
+data to, use
+
+.. code:: python
+
+   dmsp.files.set_top_level_directory(new_path)
+
+At the end of the download, pysat will update the list of files associated with DMSP.
+Note that having multiple directories with data may lead to unexpected results.
 
 Some instruments support an improved download experience that ensures
 the local system is fully up to date compared to the data source. The command,
@@ -282,9 +308,9 @@ the instrument level.
 
 See the :any:`Instrument` section for more information.
 
-To load data over a season pysat provides a function, 
+To load data over a season pysat provides a function,
 ``pysat.utils.time.create_date_range``, that returns an array of dates
-over a season. This time period does not need to be continuous (e.g., 
+over a season. This time period does not need to be continuous (e.g.,
 load both the vernal and autumnal equinoxes).
 
 .. code:: python

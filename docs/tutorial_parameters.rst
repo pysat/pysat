@@ -62,6 +62,7 @@ A description of each of the parameters and its use in pysat may be found
 using
 
 .. code:: python
+
    help(pysat.params)
 
    Default parameters and values tracked by this class:
@@ -87,8 +88,7 @@ using
 
 
 
-The ``data_dirs`` setting determines which directories pysat will use
-when storing and loading data files and is required to be set to
+The ``data_dirs`` setting is required to
 successfully instantiate a ``pysat.Instrument`` object.
 
 The ``user_modules`` parameter is used by the ``pysat.utils.registry`` submodule

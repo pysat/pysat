@@ -6,6 +6,7 @@ Tutorial
    :maxdepth: 2
 
    tutorial_basics.rst
+   tutorial_parameters.rst
    tutorial_verbosity.rst
    tutorial_custom.rst
    tutorial_independence.rst
