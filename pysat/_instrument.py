@@ -790,11 +790,10 @@ class Instrument(object):
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
                 try:
-                    # Try loading as values
                     self.data[key[-1]].loc[indict] = in_data
                 except (TypeError, KeyError):
-                    # Try loading indexed as integers
-                    self.data[key[-1]][indict] = in_data
+                    indict[epoch_name] = self.index[indict[epoch_name]]
+                    self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
