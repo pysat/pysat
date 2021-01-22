@@ -226,30 +226,23 @@ class TestBasics():
                 + dt.timedelta(days=1))
         return
 
-    def test_basic_instrument_load_by_file_and_multifile(self):
-        """Ensure multi_file_day has to be False when loading by filename"""
+    @pytest.mark.parametrize('load_in,verr',
+                             [('fname', 'have multi_file_day and load by file'),
+                              (None, 'is not supported with multi_file_day')])
+    def test_basic_instrument_load_by_file_and_multifile(self, load_in, verr):
+        """Ensure some load calls raises ValueError with multi_file_day as True
+        """
         self.testInst.multi_file_day = True
 
+        if load_in == 'fname':
+            load_kwargs = {load_in: self.testInst.files[0]}
+        else:
+            load_kwargs = dict()
+        
         with pytest.raises(ValueError) as err:
-            self.testInst.load(fname=self.testInst.files[0])
+            self.testInst.load(**load_kwargs)
 
-        estr = "have multi_file_day and load by file"
-        assert str(err).find(estr) >= 0
-
-        return
-
-    def test_basic_instrument_load_and_multifile(self):
-        """Ensure .load() only runs when multi_file_day is False"""
-        self.out = pysat.Instrument(platform=self.testInst.platform,
-                                    name=self.testInst.name,
-                                    num_samples=10,
-                                    clean_level='clean',
-                                    update_files=True,
-                                    multi_file_day=True)
-        with pytest.raises(ValueError) as err:
-            self.out.load()
-        estr = '`load()` is not supported with multi_file_day'
-        assert str(err).find(estr) >= 0
+        assert str(err).find(verr) >= 0
 
         return
 
@@ -2740,6 +2733,7 @@ class TestDataPadding():
         """Not allowed to enable data padding when loading all data, load()"""
         with pytest.raises(ValueError) as err:
             self.testInst.load()
+
         if self.testInst.multi_file_day:
             estr = '`load()` is not supported with multi_file_day'
         else:
@@ -2890,8 +2884,8 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 
@@ -2909,8 +2903,8 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 
@@ -2928,8 +2922,8 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 
@@ -2947,8 +2941,8 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 
