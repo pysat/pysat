@@ -958,32 +958,25 @@ class TestBasics():
             assert np.all(self.testInst[3:] == self.out[3:])
             assert np.all(self.testInst[0:3] == 0)
         else:
-            # This command does not work for xarray
-            assert True
+            pytest.skip("This notation does not make sense for xarray")
 
-    def test_setting_partial_data_by_name(self):
+    @pytest.mark.parametrize("change,fixed",
+                             [(0, slice(1, None)),
+                              ([0, 1, 2, 3], slice(4, None)),
+                              (slice(0, 10), slice(10, None)),
+                              (np.array([0, 1, 2, 3]), slice(4, None)),
+                              (dt.datetime(2009, 1, 1), slice(1, None)),
+                              (slice(dt.datetime(2009, 1, 1),
+                                     dt.datetime(2009, 1, 1, 0, 1)),
+                               slice(dt.datetime(2009, 1, 1, 0, 1), None))])
+    def test_setting_partial_data_by_inputs(self, change, fixed):
+        """Check that data can be set using each supported input type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[0, 'doubleMLT'] = 0
-        assert np.all(self.testInst[1:, 'doubleMLT']
-                      == 2. * self.testInst[1:, 'mlt'])
-        assert self.testInst[0, 'doubleMLT'] == 0
-
-    def test_setting_partial_data_by_integer_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[[0, 1, 2, 3], 'doubleMLT'] = 0
-        assert np.all(self.testInst[4:, 'doubleMLT']
-                      == 2. * self.testInst[4:, 'mlt'])
-        assert np.all(self.testInst[[0, 1, 2, 3], 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_slice_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[0:10, 'doubleMLT'] = 0
-        assert np.all(self.testInst[10:, 'doubleMLT']
-                      == 2. * self.testInst[10:, 'mlt'])
-        assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
+        self.testInst[change, 'doubleMLT'] = 0
+        assert np.all(self.testInst[fixed, 'doubleMLT']
+                      == 2. * self.testInst[fixed, 'mlt'])
+        assert np.all(self.testInst[change, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_index_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -992,35 +985,6 @@ class TestBasics():
         assert np.all(self.testInst[10:, 'doubleMLT']
                       == 2. * self.testInst[10:, 'mlt'])
         assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_numpy_array_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[np.array([0, 1, 2, 3]), 'doubleMLT'] = 0
-        assert np.all(self.testInst[4:, 'doubleMLT']
-                      == 2. * self.testInst[4:, 'mlt'])
-        assert np.all(self.testInst[0:4, 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_datetime_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0), 'doubleMLT'] = 0
-        assert np.all(self.testInst[0, 'doubleMLT']
-                      == 2. * self.testInst[0, 'mlt'])
-        assert np.all(self.testInst[0, 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_datetime_slicing_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        time_step = (self.testInst.index[1]
-                     - self.testInst.index[0]).value / 1.E9
-        offset = dt.timedelta(seconds=(10 * time_step))
-        start = dt.datetime(2009, 1, 1, 0, 0, 0)
-        stop = start + offset
-        self.testInst[start:stop, 'doubleMLT'] = 0
-        assert np.all(self.testInst[11:, 'doubleMLT']
-                      == 2. * self.testInst[11:, 'mlt'])
-        assert np.all(self.testInst[0:11, 'doubleMLT'] == 0)
 
     def test_modifying_data_inplace(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -2427,6 +2391,21 @@ class TestBasics2DXarray(TestBasics):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.out, self.ref_time, self.ref_doy
+
+    @pytest.mark.parametrize("change,fixed",
+                             [(0, slice(1, None)),
+                              ([0, 1, 2, 3], slice(4, None)),
+                              (slice(0, 10), slice(10, None)),
+                              (np.array([0, 1, 2, 3]), slice(4, None))])
+    def test_setting_partial_data_by_2d_inputs(self, change, fixed):
+        """Check that data can be set using each supported input type"""
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
+        self.testInst[change, change, 'doubleProfile'] = 0
+        assert np.all(np.all(self.testInst[fixed, fixed, 'doubleProfile']
+                             == 2. * self.testInst[fixed, 'profiles']))
+        assert np.all(np.all(self.testInst[change, change, 'doubleProfile']
+                             == 0))
 
 
 # -----------------------------------------------------------------------------
