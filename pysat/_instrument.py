@@ -2658,18 +2658,17 @@ class Instrument(object):
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
-
-        # set options used by loading routine based upon user input
+        # Set options used by loading routine based upon user input
         if (yr is not None) and (doy is not None):
             if doy < 1 or (doy > 366):
                 estr = ''.join(('Day of year (doy) is only valid between and ',
                                 'including 1-366.'))
                 raise ValueError(estr)
 
-            # verify arguments make sense, in context
+            # Verify arguments make sense, in context
             _check_load_arguments_none([fname, stop_fname, date, end_date],
                                        raise_error=True)
-            # convert yr/doy to a date
+            # Convert yr/doy to a date
             date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy),
                                         "%Y %j")
             self._set_load_parameters(date=date, fid=None)

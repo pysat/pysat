@@ -228,14 +228,11 @@ class TestBasics():
 
     def test_basic_instrument_load_by_file_and_multifile(self):
         """Ensure multi_file_day has to be False when loading by filename"""
-        self.out = pysat.Instrument(platform=self.testInst.platform,
-                                    name=self.testInst.name,
-                                    num_samples=10,
-                                    clean_level='clean',
-                                    update_files=True,
-                                    multi_file_day=True)
+        self.testInst.multi_file_day = True
+
         with pytest.raises(ValueError) as err:
-            self.out.load(fname=self.out.files[0])
+            self.testInst.load(fname=self.testInst.files[0])
+
         estr = "have multi_file_day and load by file"
         assert str(err).find(estr) >= 0
 
