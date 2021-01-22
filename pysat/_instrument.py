@@ -68,10 +68,6 @@ class Instrument(object):
         formatting. The default directory structure would be expressed as
         '{platform}/{name}/{tag}'. If None, the default directory structure is
         used. (default=None)
-    multi_file_day : boolean or NoneType
-        Set to True if Instrument data files for a day are spread across
-        multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.  (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -219,9 +215,8 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
                  clean_level='clean', update_files=False, pad=None,
-                 orbit_info=None, inst_module=None, multi_file_day=None,
-                 directory_format=None, file_format=None,
-                 temporary_file_list=False,
+                 orbit_info=None, inst_module=None, directory_format=None,
+                 file_format=None, temporary_file_list=False,
                  strict_time_flag=True, ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
@@ -239,10 +234,10 @@ class Instrument(object):
                 self.platform = platform.lower()
                 self.name = name.lower()
 
-                # look to module for instrument functions and defaults
+                # Look to module for instrument functions and defaults
                 self._assign_attrs(by_name=True)
             elif (platform is None) and (name is None):
-                # creating "empty" Instrument object with this path
+                # Creating "empty" Instrument object with this path
                 self.name = ''
                 self.platform = ''
                 self._assign_attrs()
@@ -250,7 +245,7 @@ class Instrument(object):
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
         else:
-            # user has provided a module, assign platform and name here
+            # User has provided a module, assign platform and name here
             for iattr in ['platform', 'name']:
                 if hasattr(inst_module, iattr):
                     setattr(self, iattr, getattr(inst_module, iattr).lower())
@@ -264,14 +259,14 @@ class Instrument(object):
             # attribute values
             self._assign_attrs(inst_module=inst_module)
 
-        # more reasonable defaults for optional parameters
+        # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else 'none')
 
-        # assign strict_time_flag
+        # Assign strict_time_flag
         self.strict_time_flag = strict_time_flag
 
-        # assign directory format information, which tells pysat how to look in
+        # Assign directory format information, which tells pysat how to look in
         # sub-directories for files
         if directory_format is not None:
             # assign_func sets some instrument defaults, direct info rules all
@@ -356,11 +351,6 @@ class Instrument(object):
         self._prev_data = self._null_data.copy()
         self._prev_data_track = []
         self._curr_data = self._null_data.copy()
-
-        # If the multi_file_day flag was set update here, otherwise the
-        # default will be set by _assign_attrs
-        if multi_file_day is not None:
-            self.multi_file_day = multi_file_day
 
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
