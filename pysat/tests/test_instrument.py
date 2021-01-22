@@ -238,7 +238,7 @@ class TestBasics():
             load_kwargs = {load_in: self.testInst.files[0]}
         else:
             load_kwargs = dict()
-        
+
         with pytest.raises(ValueError) as err:
             self.testInst.load(**load_kwargs)
 
