@@ -960,7 +960,7 @@ class TestBasics():
         else:
             pytest.skip("This notation does not make sense for xarray")
 
-    @pytest.mark.parametrize("change,fixed",
+    @pytest.mark.parametrize("changed,fixed",
                              [(0, slice(1, None)),
                               ([0, 1, 2, 3], slice(4, None)),
                               (slice(0, 10), slice(10, None)),
@@ -969,14 +969,14 @@ class TestBasics():
                               (slice(dt.datetime(2009, 1, 1),
                                      dt.datetime(2009, 1, 1, 0, 1)),
                                slice(dt.datetime(2009, 1, 1, 0, 1), None))])
-    def test_setting_partial_data_by_inputs(self, change, fixed):
+    def test_setting_partial_data_by_inputs(self, changed, fixed):
         """Check that data can be set using each supported input type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[change, 'doubleMLT'] = 0
+        self.testInst[changed, 'doubleMLT'] = 0
         assert np.all(self.testInst[fixed, 'doubleMLT']
                       == 2. * self.testInst[fixed, 'mlt'])
-        assert np.all(self.testInst[change, 'doubleMLT'] == 0)
+        assert np.all(self.testInst[changed, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_index_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -2392,19 +2392,19 @@ class TestBasics2DXarray(TestBasics):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.out, self.ref_time, self.ref_doy
 
-    @pytest.mark.parametrize("change,fixed",
+    @pytest.mark.parametrize("changed,fixed",
                              [(0, slice(1, None)),
                               ([0, 1, 2, 3], slice(4, None)),
                               (slice(0, 10), slice(10, None)),
                               (np.array([0, 1, 2, 3]), slice(4, None))])
-    def test_setting_partial_data_by_2d_inputs(self, change, fixed):
+    def test_setting_partial_data_by_2d_inputs(self, changed, fixed):
         """Check that data can be set using each supported input type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
-        self.testInst[change, change, 'doubleProfile'] = 0
+        self.testInst[changed, changed, 'doubleProfile'] = 0
         assert np.all(np.all(self.testInst[fixed, fixed, 'doubleProfile']
                              == 2. * self.testInst[fixed, 'profiles']))
-        assert np.all(np.all(self.testInst[change, change, 'doubleProfile']
+        assert np.all(np.all(self.testInst[changed, changed, 'doubleProfile']
                              == 0))
 
 
