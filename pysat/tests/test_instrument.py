@@ -856,21 +856,17 @@ class TestBasics():
     # Test basic data access features, both getting and setting data
     #
     # -------------------------------------------------------------------------
-    def test_basic_data_access_by_name(self):
+    @pytest.mark.parametrize("labels", [('mlt'),
+                                        (['mlt', 'longitude']),
+                                        (['longitude', 'mlt'])])
+    def test_basic_data_access_by_name(self, labels):
+        """Check that data can be accessed at the instrument level"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst['mlt'] == self.testInst.data['mlt'])
-
-    def test_basic_data_access_by_name_list(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[['uts', 'mlt']]
-                      == self.testInst.data[['uts', 'mlt']])
+        assert np.all(self.testInst[labels] == self.testInst.data[labels])
 
     @pytest.mark.parametrize("index", [(0),
                                        (slice(0, 10)),
-                                       (np.arange(0, 10)),
-                                       (dt.datetime(2009, 1, 1, 0, 0, 0)),
-                                       (slice(dt.datetime(2009, 1, 1),
-                                              dt.datetime(2009, 1, 1, 0, 1)))])
+                                       (np.arange(0, 10))])
     def test_data_access_by_indices_and_name(self, index):
         """Check that variables and be accessed by each supported index type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -878,11 +874,30 @@ class TestBasics():
                       == self.testInst.data['mlt'][index])
 
     def test_data_access_by_row_slicing_and_name_slicing(self):
+        """Check that each variable is downsampled """
         self.testInst.load(self.ref_time.year, self.ref_doy)
         result = self.testInst[0:10, :]
         for variable, array in result.items():
             assert len(array) == len(self.testInst.data[variable].values[0:10])
             assert np.all(array == self.testInst.data[variable].values[0:10])
+
+    def test_data_access_by_datetime_and_name(self):
+        """Check that datetime can be used to access data"""
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.out = dt.datetime(2009, 1, 1, 0, 0, 0)
+        assert np.all(self.testInst[self.out, 'uts']
+                      == self.testInst.data['uts'].values[0])
+
+    def test_data_access_by_datetime_slicing_and_name(self):
+        """Check that a slice of datetimes can be used to access data"""
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+        time_step = (self.testInst.index[1]
+                     - self.testInst.index[0]).value / 1.E9
+        offset = dt.timedelta(seconds=(10 * time_step))
+        start = dt.datetime(2009, 1, 1, 0, 0, 0)
+        stop = start + offset
+        assert np.all(self.testInst[start:stop, 'uts']
+                      == self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
