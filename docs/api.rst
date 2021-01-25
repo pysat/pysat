@@ -23,14 +23,11 @@ General
    :members:
 
 
-Instrument Templates
---------------------
-
-General Instrument
-^^^^^^^^^^^^^^^^^^
+Instrument Template
+-------------------
 
 .. automodule:: pysat.instruments.templates.template_instrument
-   :members: __doc__, init, load, list_files, list_remote_files, download, clean
+   :members: __doc__, init, clean, preprocess, list_files, download, load, list_remote_files
 
 Constellation
 -------------
