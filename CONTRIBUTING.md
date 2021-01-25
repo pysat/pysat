@@ -52,8 +52,8 @@ To set up `pysat` for local development:
 
    Tests for new instruments are performed automatically.  Tests for custom
    functions should be added to the appropriately named file in ``pysat/tests``.
-   For example, custom functions for the OMNI HRO data are tested in
-   ``pysat/tests/test_omni_hro.py``.  If no test file exists, then you should
+   For example, custom functions for the time utilities are tested in
+   ``pysat/tests/test_utils_time.py``.  If no test file exists, then you should
    create one.  This testing uses pytest, which will run tests on any python
    file in the test directory that starts with ``test``.  Classes must begin
    with ``Test``, and methods must begin with ``test`` as well.
