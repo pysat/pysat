@@ -858,17 +858,24 @@ class TestBasics():
     # -------------------------------------------------------------------------
     def test_basic_data_access_by_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
+        assert np.all(self.testInst['mlt'] == self.testInst.data['mlt'])
 
     def test_basic_data_access_by_name_list(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all(self.testInst[['uts', 'mlt']]
                       == self.testInst.data[['uts', 'mlt']])
 
-    def test_data_access_by_row_slicing_and_name(self):
+    @pytest.mark.parametrize("index", [(0),
+                                       (slice(0, 10)),
+                                       (np.arange(0, 10)),
+                                       (dt.datetime(2009, 1, 1, 0, 0, 0)),
+                                       (slice(dt.datetime(2009, 1, 1),
+                                              dt.datetime(2009, 1, 1, 0, 1)))])
+    def test_data_access_by_indices_and_name(self, index):
+        """Check that variables and be accessed by each supported index type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[0:10, 'uts']
-                      == self.testInst.data['uts'].values[0:10])
+        assert np.all(self.testInst[index, 'mlt']
+                      == self.testInst.data['mlt'][index])
 
     def test_data_access_by_row_slicing_and_name_slicing(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -876,38 +883,6 @@ class TestBasics():
         for variable, array in result.items():
             assert len(array) == len(self.testInst.data[variable].values[0:10])
             assert np.all(array == self.testInst.data[variable].values[0:10])
-
-    def test_data_access_by_row_slicing_w_ndarray_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[np.arange(0, 10), 'uts']
-                      == self.testInst.data['uts'].values[0:10])
-
-    def test_data_access_by_row_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[0, 'uts']
-                      == self.testInst.data['uts'].values[0])
-
-    def test_data_access_by_row_index(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = np.arange(10)
-        assert np.all(self.testInst[self.out]['uts']
-                      == self.testInst.data['uts'].values[self.out])
-
-    def test_data_access_by_datetime_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = dt.datetime(2009, 1, 1, 0, 0, 0)
-        assert np.all(self.testInst[self.out, 'uts']
-                      == self.testInst.data['uts'].values[0])
-
-    def test_data_access_by_datetime_slicing_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        time_step = (self.testInst.index[1]
-                     - self.testInst.index[0]).value / 1.E9
-        offset = dt.timedelta(seconds=(10 * time_step))
-        start = dt.datetime(2009, 1, 1, 0, 0, 0)
-        stop = start + offset
-        assert np.all(self.testInst[start:stop, 'uts']
-                      == self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -2392,13 +2367,23 @@ class TestBasics2DXarray(TestBasics):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.out, self.ref_time, self.ref_doy
 
+    @pytest.mark.parametrize("index", [(0),
+                                       ([0, 1, 2, 3]),
+                                       (slice(0, 10)),
+                                       (np.array([0, 1, 2, 3]))])
+    def test_data_access_by_2d_indices_and_name(self, index):
+        """Check that variables and be accessed by each supported index type"""
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+        assert np.all(self.testInst[index, index, 'profiles']
+                      == self.testInst.data['profiles'][index, index])
+
     @pytest.mark.parametrize("changed,fixed",
                              [(0, slice(1, None)),
                               ([0, 1, 2, 3], slice(4, None)),
                               (slice(0, 10), slice(10, None)),
                               (np.array([0, 1, 2, 3]), slice(4, None))])
-    def test_setting_partial_data_by_2d_inputs(self, changed, fixed):
-        """Check that data can be set using each supported input type"""
+    def test_setting_partial_data_by_2d_indices_and_name(self, changed, fixed):
+        """Check that data can be set using each supported index type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
         self.testInst[changed, changed, 'doubleProfile'] = 0
