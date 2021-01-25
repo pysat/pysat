@@ -865,6 +865,7 @@ class TestBasics():
         assert np.all(self.testInst[labels] == self.testInst.data[labels])
 
     @pytest.mark.parametrize("index", [(0),
+                                       ([0, 1, 2, 3]),
                                        (slice(0, 10)),
                                        (np.arange(0, 10))])
     def test_data_access_by_indices_and_name(self, index):
