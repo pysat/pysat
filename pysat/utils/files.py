@@ -367,7 +367,7 @@ def search_local_system_formatted_filename(data_path, search_str):
         functions as data_path.
     search_str : string
         String for searching local file system, including wildcard characters.
-        Examples include 'inst-name-????????-v??.cdf', 'inst-name-*-v??.cdf'
+        Examples include `inst-name-????????-v??.cdf`, `inst-name-*-v??.cdf`
 
     Returns
     -------
