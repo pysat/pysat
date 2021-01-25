@@ -313,9 +313,9 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     part of the name that need not be extracted.
     `cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf`
 
-        A standards compliant filename can be constructed by starting with
-        string_blocks, adding keys in order, and replacing the '' locations
-        with data of length length.
+    A standards compliant filename can be constructed by starting with
+    string_blocks, adding keys in order, and replacing the '' locations
+    with data of length length.
 
     """
 
