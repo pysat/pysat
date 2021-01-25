@@ -42,6 +42,7 @@ To set up `pysat` for local development:
 2. Clone your fork locally::
 
     git clone git@github.com:your_name_here/pysat.git
+    git clone git@github.com:your_name_here/pysat.git
 
 3. Create a branch for local development::
 
@@ -97,6 +98,7 @@ For merging, you should:
 Project Style Guidelines
 ------------------------
 
+In general, pysat follows PEP8 and numpydoc guidelines.  Pytest runs the unit
 In general, pysat follows PEP8 and numpydoc guidelines.  Pytest runs the unit
 and integration tests, flake8 checks for style, and sphinx-build performs
 documentation tests.  However, there are certain additional style elements that

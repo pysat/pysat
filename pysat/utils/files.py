@@ -373,7 +373,7 @@ def search_local_system_formatted_filename(data_path, search_str):
         functions as data_path.
     search_str : string
         String used to search for local files. For example,
-        `cnofs_cindi_ivm_500ms_????????_v??.cdf` or 'inst-name-*-v??.cdf'
+        `cnofs_cindi_ivm_500ms_????????_v??.cdf` or `inst-name-*-v??.cdf`
 
     Returns
     -------

@@ -19,7 +19,7 @@ NASA CDAWeb and Madrigal databases.  Check out info about adding an
 instrument here:
 `<https://pysat.readthedocs.io/en/latest/new_instrument.html>`_
 and make sure to read the guidelines for pull requests here:
-`<https://github.com/pysat/pysat/blob/main/CONTRIBUTING.rst>`_
+`<https://github.com/pysat/pysat/blob/main/CONTRIBUTING.md>`_
 
 Got a question?  Add it to the wiki FAQ:
 `<https://github.com/pysat/pysat/wiki/FAQ>`_
