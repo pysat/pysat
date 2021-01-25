@@ -629,6 +629,11 @@ class Instrument(object):
             Data variable name, tuple with a slice, or dict used to locate
             desired data
 
+        Returns
+        -------
+        xr.Dataset
+            Dataset of with only the desired values
+
         Note
         ----
         See xarray .loc and .iloc documentation for more details
@@ -660,34 +665,60 @@ class Instrument(object):
 
         if isinstance(key, tuple):
             if len(key) == 2:
-                # support slicing time, variable name
+                # Support slicing time, variable name
                 try:
                     return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
                 except (TypeError, KeyError):
                     try:
                         return self.data.sel(indexers={epoch_name:
                                                        key[0]})[key[1]]
-                    except TypeError:  # construct dataset from names
+                    except TypeError:
+                        # Construct dataset from names
                         return self.data[self.variables[key[1]]]
+                except ValueError as verr:
+                    # This may be multidimensional indexing, where the mutliple
+                    # dimensions are contained within an iterable object
+                    var_name = key[-1]
+
+                    # If this is not true, raise the original error
+                    if len(key[0]) != len(self[var_name].dims):
+                        raise ValueError(verr)
+
+                    # Construct a dictionary with dimensions as keys and the
+                    # indexes to select for each dimension as values
+                    indict = dict()
+                    for i, dim in enumerate(self[var_name].dims):
+                        indict[dim] = key[0][i]
+
+                    return self.data[var_name][indict]
             else:
-                # multidimensional indexing
-                indict = {}
-                for i, dim in enumerate(self[key[-1]].dims):
+                # Multidimensional indexing where the multple dimensions are
+                # not contained within another object
+                var_name = key[-1]
+
+                # Ensure the dimensions are appropriate
+                if len(key) - 1 != len(self[var_name].dims):
+                    raise ValueError("indices don't match data dimensions")
+
+                # Construct a dictionary with dimensions as keys and the
+                # indexes to select for each dimension as values
+                indict = dict()
+                for i, dim in enumerate(self[var_name].dims):
                     indict[dim] = key[i]
 
-                return self.data[key[-1]][indict]
+                return self.data[var_name][indict]
         else:
             try:
-                # grab a particular variable by name
+                # Grab a particular variable by name
                 return self.data[key]
             except (TypeError, KeyError):
-                # that didn't work
+                # If that didn't work, likely need to use `isel` or `sel`
                 try:
-                    # get all data variables but for a subset of time
+                    # Try to get all data variables, but for a subset of time
                     # using integer indexing
                     return self.data.isel(indexers={epoch_name: key})
                 except (TypeError, KeyError):
-                    # subset of time, using label based indexing
+                    # Try to get a subset of time, using label based indexing
                     return self.data.sel(indexers={epoch_name: key})
 
     def __setitem__(self, key, new):
