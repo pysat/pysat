@@ -136,8 +136,8 @@ string can be used. The code below only supports loading a single data set.
 The DMSP IVM (dmsp_ivm) instrument module is a practical example of
 a pysat instrument that uses all levels of variable names.
 
-Required Variables
-------------------
+Required Attributes
+-------------------
 
 Because platform, name, tags, and inst_ids are used for loading and maintaining
 different data sets they must be defined for every instrument.
@@ -371,6 +371,24 @@ To fetch data from the internet the download method should have the signature
 * password, string for password
 
 The routine should download the data and write it to the disk at the data_path.
+
+Optional Attributes
+-------------------
+
+Several attributes have default values that you may need to change depending on
+how your data and files are structured.
+
+**pandas_format**
+
+This defaults to `True` and assumes the data are organized as a time series,
+allowing them to be stored as a pandas DataFrame. Setting this attribute to
+`False` tells pysat that the data will be stored in an xarray Dataset.
+
+**multi_file_day**
+
+This defaults to `False`, which means that the files for this data set have one
+or less.  If your data set consists of multiple files per day, this attribute
+should be set to `True`.
 
 Optional Routines and Support
 -----------------------------
