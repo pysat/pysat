@@ -49,7 +49,7 @@ Citing the publication:
 
 To aid in scientific reproducibility, please include the version number in
 publications that use this code.  This can be found by invoking
-"pysat.__version__ ".
+``pysat.__version__ ``.
 
 Information for appropriately acknowledging and citing the different instruments
 accessed through pysat is sometimes available in the metadata through
