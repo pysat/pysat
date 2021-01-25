@@ -47,14 +47,14 @@ To set up `pysat` for local development:
 
     git checkout -b name-of-your-bugfix-or-feature
 
-   Now you can make your changes locally. 
+   Now you can make your changes locally.
 
-   Tests for new instruments are performed automatically.  Tests for custom 
+   Tests for new instruments are performed automatically.  Tests for custom
    functions should be added to the appropriately named file in ``pysat/tests``.
-   For example, custom functions for the OMNI HRO data are tested in 
-   ``pysat/tests/test_omni_hro.py``.  If no test file exists, then you should 
-   create one.  This testing uses pytest, which will run tests on any python 
-   file in the test directory that starts with ``test``.  Classes must begin 
+   For example, custom functions for the OMNI HRO data are tested in
+   ``pysat/tests/test_omni_hro.py``.  If no test file exists, then you should
+   create one.  This testing uses pytest, which will run tests on any python
+   file in the test directory that starts with ``test``.  Classes must begin
    with ``Test``, and methods must begin with ``test`` as well.
 
 4. When you're done making changes, run all the checks to ensure that nothing
@@ -105,9 +105,10 @@ These include:
 
 * Line breaks should occur before a binary operator (ignoring flake8 W503)
 * Combine long strings using `join`
-* Preferably break long lines on open parentheses rather than using `\`
+* Preferably break long lines on open parentheses rather than using `\\`
 * Use no more than 80 characters per line
-* Avoid using Instrument class key attribute names as unrelated variable names: `platform`, `name`, `tag`, and `inst_id`
+* Avoid using Instrument class key attribute names as unrelated variable names:
+  `platform`, `name`, `tag`, and `inst_id`
 * The pysat logger is imported into each sub-module and provides status updates
   at the info and warning levels (as appropriate)
 * Several dependent packages have common nicknames, including:

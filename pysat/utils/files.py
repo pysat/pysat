@@ -297,21 +297,21 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     Returns
     -------
     out_dict : dict
-        'search_string' format_str with data to be parsed replaced with ?
-        'keys' keys for data to be parsed
-        'lengths' string length for data to be parsed
-        'string_blocks' the filenames are broken down into fixed width
-            segments and '' strings are placed in locations where data will
-            eventually be parsed from a list of filenames. A standards
-            compliant filename can be constructed by starting with
-            string_blocks, adding keys in order, and replacing the '' locations
-            with data of length length.
+        - 'search_string' (format_str with data to be parsed replaced with ?)
+        - 'keys' (keys for data to be parsed)
+        - 'lengths' (string length for data to be parsed)
+        - 'string_blocks' (the filenames are broken down into fixed width
+          segments).
 
     Note
     ----
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
+
+        A standards compliant filename can be constructed by starting with
+        string_blocks, adding keys in order, and replacing the '' locations
+        with data of length length.
 
     """
 
@@ -366,9 +366,8 @@ def search_local_system_formatted_filename(data_path, search_str):
         is provided by pysat to the instrument_module.list_files
         functions as data_path.
     search_str : string
-        String to search local file system for
-        Ex: 'cnofs_cindi_ivm_500ms_????????_v??.cdf'
-            'cnofs_cinfi_ivm_500ms_*_v??.cdf'
+        String for searching local file system, including wildcard characters.
+        Examples include 'inst-name-????????-v??.cdf', 'inst-name-*-v??.cdf'
 
     Returns
     -------

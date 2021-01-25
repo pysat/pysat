@@ -26,6 +26,7 @@ registered in pysat_dir/user_modules.txt and is also listed in
 ::
 
     pysat.user_modules
+
 which is stored as a dict of dicts keyed by platform and name.
 
 Once registered, subsequent calls to Instrument may use the platform
@@ -227,6 +228,7 @@ def register_by_module(module):
     Enables instantiation of a third-party Instrument
     module using
     ::
+
         inst = pysat.Instrument(platform, name)
 
     Parameters

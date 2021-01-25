@@ -60,12 +60,13 @@ This example will use the ``pysatMadrigal`` package.
     import pysatMadrigal as pysatMad
     pysat.utils.display_available_instruments(pysatMad.instruments)
 
+
 You can see each listed instrument supports one or more data sets for analysis.
 The submodules are named with the convention platform_name.  When supplying
 an Instrument submodule as input the display utility provides the submodule
 name instead of the platform and name because non-registered Instruments are
 instantiated using the ``inst_module`` keyword instead of the ``platform`` and
-``name`` keywords (jump to the :ref:`Instantiation` section below for more
+``name`` keywords (jump to the :ref:`instantiation` section below for more
 information).  To use the ``platform`` and ``name`` keywords, the instrument
 must be registered.  To display the registered instruments, no input is needed.
 
@@ -73,6 +74,8 @@ must be registered.  To display the registered instruments, no input is needed.
 
     pysat.utils.display_available_instruments()
 
+
+.. _instantiation:
 
 Instantiation
 -------------
@@ -282,9 +285,9 @@ the instrument level.
 
 See the :any:`Instrument` section for more information.
 
-To load data over a season pysat provides a function, 
+To load data over a season pysat provides a function,
 ``pysat.utils.time.create_date_range``, that returns an array of dates
-over a season. This time period does not need to be continuous (e.g., 
+over a season. This time period does not need to be continuous (e.g.,
 load both the vernal and autumnal equinoxes).
 
 .. code:: python
