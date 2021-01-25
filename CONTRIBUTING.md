@@ -107,7 +107,7 @@ These include:
 
 * Line breaks should occur before a binary operator (ignoring flake8 W503)
 * Combine long strings using `join`
-* Preferably break long lines on open parentheses rather than using `\\`
+* Preferably break long lines on open parentheses rather than using backslashes
 * Use no more than 80 characters per line
 * Avoid using Instrument class key attribute names as unrelated variable names:
   `platform`, `name`, `tag`, and `inst_id`

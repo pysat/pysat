@@ -304,8 +304,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         - 'search_string' (format_str with data to be parsed replaced with ?)
         - 'keys' (keys for data to be parsed)
         - 'lengths' (string length for data to be parsed)
-        - 'string_blocks' (the filenames are broken down into fixed width
-          segments).
+        - 'string_blocks' (the filenames are broken into fixed width segments).
 
     Note
     ----

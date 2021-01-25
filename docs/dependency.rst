@@ -215,7 +215,7 @@ values between 0 and 20.
         assert mean_val == 11.3785
 
 The ``setup`` function is used to define and load a fresh instrument for each
-test.  While data is automatically generated, limits on the usable range have
+test.  While data are automatically generated, limits on the usable range have
 been imposed for testing purposes.  The test instruments generate dates between
 1 Jan 2008 and 31 Dec 2010 for use in the pysat ecosystem.  This allows for
 coverage for year changes both with and without leap days.
