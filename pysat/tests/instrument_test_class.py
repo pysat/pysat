@@ -184,7 +184,10 @@ class InstTestClass():
 
         if hasattr(getattr(self.inst_loc, name), 'list_remote_files'):
             assert callable(test_inst.remote_file_list)
-            files = test_inst.remote_file_list(start=date, stop=date)
+            # check for username
+            dl_dict = inst_dict['user_info'] if 'user_info' in \
+                inst_dict.keys() else {}
+            files = test_inst.remote_file_list(start=date, stop=date, **dl_dict)
             # If test date is correctly chosen, files should exist
             assert len(files) > 0
         else:
