@@ -366,27 +366,27 @@ def search_local_system_formatted_filename(data_path, search_str):
         is provided by pysat to the instrument_module.list_files
         functions as data_path.
     search_str : string
-        String to search local file system for
-        Ex: 'cnofs_cindi_ivm_500ms_????????_v??.cdf'
-            'cnofs_cinfi_ivm_500ms_*_v??.cdf'
+        String used to search for local files. For example,
+        `cnofs_cindi_ivm_500ms_????????_v??.cdf` or `jro????????drifts.*.hdf5`
 
     Returns
     -------
     files : list
-        list of files matching the format_str
+        list of files matching the specified file format
 
     Note
     ----
-    The use of ?s (1 ? per character) rather than the full wildcard *
-    provides a more specific filename search string that limits the
-    false positive rate.
+    The use of ?s (1 ? per character) rather than the full wildcard * provides
+    a more specific filename search string that limits the false positive rate.
 
     """
 
-    # perform local file search
+    # Perform local file search
     abs_search_str = os.path.join(data_path, search_str)
     files = glob.glob(abs_search_str)
-    # remove data_path portion
+
+    # Remove the specified data_path portion
     files = [sfile.split(data_path)[-1] for sfile in files]
-    # return info
+
+    # Return the desired filename information
     return files
