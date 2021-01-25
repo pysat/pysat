@@ -375,7 +375,7 @@ Metadata is also stored along with the main science data. pysat presumes
 a minimum default set of metadata that may be arbitrarily expanded.
 The default parameters are driven by the attributes required by public science
 data files, like those produced by the Ionospheric Connections Explorer
-`(ICON) <http://icon.ssl.berkeley.edu>`_.
+`(ICON) <https://icon.ssl.berkeley.edu>`_.
 
 ===============     ===================================
 **Metadata** 	        **Description**
