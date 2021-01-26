@@ -3001,7 +3001,7 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def remote_file_list(self, start=None, stop=None):
+    def remote_file_list(self, start=None, stop=None, **kwargs):
         """List remote files for chosen instrument
 
         Parameters
@@ -3014,6 +3014,10 @@ class Instrument(object):
             Ending time for the file list.  A None value will stop with the last
             file found.
             (default=None)
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
+            The keyword arguments 'user' and 'password' are expected for remote
+            databases requiring sign in or registration.
 
         Returns
         -------
@@ -3027,20 +3031,23 @@ class Instrument(object):
         return a subset of available files.
 
         """
-        # Set the user-supplied kwargs
-        if 'list_remote_files' in self.kwargs.keys():
-            kwargs = self.kwargs['list_remote_files']
-        else:
-            kwargs = {}
 
         # Add the function kwargs
         kwargs["start"] = start
         kwargs["stop"] = stop
 
+        # Add the user-supplied kwargs
+        rtn_key = 'list_remote_files'
+        if rtn_key in self.kwargs.keys():
+            for user_key in self.kwargs[rtn_key].keys():
+                # Don't overwrite kwargs supplied directly to this routine
+                if user_key not in kwargs.keys():
+                    kwargs[user_key] = self.kwargs[rtn_key][user_key]
+
         # Return the function call
         return self._list_remote_files_rtn(self.tag, self.inst_id, **kwargs)
 
-    def remote_date_range(self, start=None, stop=None):
+    def remote_date_range(self, start=None, stop=None, **kwargs):
         """Returns fist and last date for remote data
 
         Parameters
@@ -3053,6 +3060,10 @@ class Instrument(object):
             Ending time for the file list.  A None value will stop with the last
             file found.
             (default=None)
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
+            The keyword arguments 'user' and 'password' are expected for remote
+            databases requiring sign in or registration.
 
         Returns
         -------
@@ -3067,7 +3078,7 @@ class Instrument(object):
 
         """
 
-        files = self.remote_file_list(start=start, stop=stop)
+        files = self.remote_file_list(start=start, stop=stop, **kwargs)
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, **kwargs):
