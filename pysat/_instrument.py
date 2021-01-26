@@ -81,9 +81,9 @@ class Instrument(object):
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
-                  'notes': ('notes', str), 'desc': ('desc', str),
-                  'min_val': ('value_min', float),
-                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'notes': ('notes', str), 'desc': ('desc', str),
+        'min_val': ('value_min', float),
+        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Attributes
     ----------
@@ -1576,6 +1576,7 @@ class Instrument(object):
         Examples
         --------
         ::
+
             import datetime as dt
             import pandas as pds
             import pysat
@@ -1898,6 +1899,7 @@ class Instrument(object):
         kind : str
             Specifies the type of interaction between the custom function and
             the Instrument data.  Accepts one of 'add', 'modify', or 'pass'.
+
             - add
                 Adds data returned from function to instrument object.
                 A copy of pysat.Instrument object supplied to routine.
@@ -1908,6 +1910,7 @@ class Instrument(object):
                 A copy of pysat.Instrument object is passed to function
                 thus no modifications are retained. No data is accepted
                 from return.
+
             (default='modify')
         at_pos : string or int
             Accepts string 'end' or a number that will be used to determine
@@ -2342,7 +2345,7 @@ class Instrument(object):
 
         Examples
         --------
-        ..
+        ::
 
             # standard renaming
             new_var_names = {'old_name': 'new_name',
@@ -2354,7 +2357,7 @@ class Instrument(object):
         to rename higher-order variables supply a modified dictionary.
         Note that this rename will be invoked individually for all
         times in the dataset.
-        ..
+        ::
 
             # applies to higher-order datasets
             # that are loaded into pandas
@@ -2379,7 +2382,8 @@ class Instrument(object):
         feature may be used to provide friendlier variable names within
         pysat while also maintaining external format compatibility
         when writing files.
-        ..
+        ::
+
             # example with lowercase_data_labels
             inst = pysat.Instrument('pysat', 'testing2D')
             inst.load(2009, 1)
