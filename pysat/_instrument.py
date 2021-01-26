@@ -3032,6 +3032,14 @@ class Instrument(object):
         kwargs["start"] = start
         kwargs["stop"] = stop
 
+        # Add the user-supplied kwargs
+        rtn_key = 'list_remote_files'
+        if rtn_key in self.kwargs.keys():
+            for user_key in self.kwargs[rtn_key].keys():
+                # Don't overwrite kwargs supplied directly to this routine
+                if user_key not in kwargs.keys():
+                    kwargs[user_key] = self.kwargs[rtn_key][user_key]
+
         # Return the function call
         return self._list_remote_files_rtn(self.tag, self.inst_id, **kwargs)
 
