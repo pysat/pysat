@@ -2393,6 +2393,38 @@ class TestBasics2DXarray(TestBasics):
         assert np.all(self.testInst[index, index, 'profiles']
                       == self.testInst.data['profiles'][index, index])
 
+    def test_data_access_by_2d_tuple_indices_and_name(self):
+        """Check that variables and be accessed by multi-dim tuple index
+        """
+        self.testInst.load(date=self.ref_time)
+        index = ([0, 1, 2, 3], [0, 1, 2, 3])
+        assert np.all(self.testInst[index, 'profiles']
+                      == self.testInst.data['profiles'][index[0], index[1]])
+
+    def test_data_access_bad_dimension_tuple(self):
+        """Test raises ValueError for mismatched tuple index and data dimensions
+        """
+        self.testInst.load(date=self.ref_time)
+        index = ([0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3])
+
+        with pytest.raises(ValueError) as verr:
+            self.testInst[index, 'profiles']
+
+        estr = 'not convert tuple'
+        assert str(verr).find(estr) > 0
+
+    def test_data_access_bad_dimension_for_multidim(self):
+        """Test raises ValueError for mismatched index and data dimensions
+        """
+        self.testInst.load(date=self.ref_time)
+        index = [0, 1, 2, 3]
+
+        with pytest.raises(ValueError) as verr:
+            self.testInst[index, index, index, 'profiles']
+
+        estr = "don't match data"
+        assert str(verr).find(estr) > 0
+
     @pytest.mark.parametrize("changed,fixed",
                              [(0, slice(1, None)),
                               ([0, 1, 2, 3], slice(4, None)),
