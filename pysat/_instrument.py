@@ -1647,8 +1647,8 @@ class Instrument(object):
                 self._iter_width = dt.timedelta(days=1)
             if self._iter_start[0] is not None:
                 # There are files. Use those dates.
-                ustops = [stop - self._iter_width + dt.timedelta(days=1)
-                          for stop in self._iter_stop]
+                ustops = [istop - self._iter_width + dt.timedelta(days=1)
+                          for istop in self._iter_stop]
                 ufreq = self._iter_step
                 self._iter_list = utils.time.create_date_range(self._iter_start,
                                                                ustops,
@@ -1950,8 +1950,8 @@ class Instrument(object):
 
         if len(self.custom_functions) > 0:
             for func, arg, kwarg in zip(self.custom_functions,
-                                              self.custom_args,
-                                              self.custom_kwargs):
+                                        self.custom_args,
+                                        self.custom_kwargs):
                 if not self.empty:
                     # Custom functions do nothing or modify loaded data. Methods
                     # are run on Instrument object directly and any changes to
