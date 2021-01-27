@@ -1935,10 +1935,17 @@ class Instrument(object):
         return
 
     def custom_apply_all(self):
-        """
-        Apply all of the custom functions to the satellite data object.
+        """ Apply all of the custom functions to the satellite data object.
 
+        Raises
+        ------
+        ValueError
+            Raised when function returns any value
+
+        Note
+        ----
         This method does not generally need to be invoked directly by users.
+
         """
 
         if len(self.custom_functions) > 0:
@@ -1952,7 +1959,7 @@ class Instrument(object):
                     # by method itself.
                     null_out = func(self, *arg, **kwarg)
                     if null_out is not None:
-                        raise ValueError(''.join(('Modify functions should not',
+                        raise ValueError(''.join(('Custom functions should not',
                                                   ' return any information via',
                                                   ' return. Information may ',
                                                   'only be propagated back by',
@@ -1961,7 +1968,7 @@ class Instrument(object):
         return
 
     def custom_clear(self):
-        """Clear custom function list.
+        """Clear the custom function list.
         """
         self.custom_functions = []
         self.custom_args = []
