@@ -142,10 +142,35 @@ class TestBasics():
                   {'function': mult_data, 'args': self.custom_args}]
         testInst2 = pysat.Instrument('pysat', 'testing', custom=custom)
 
-        # ensure both instruments have the same custom_* attributes
+        # Ensure both instruments have the same custom_* attributes
         assert self.testInst.custom_functions == testInst2.custom_functions
         assert self.testInst.custom_args == testInst2.custom_args
         assert self.testInst.custom_kwargs == testInst2.custom_kwargs
+
+    def test_custom_positioning(self):
+        """Test custom method ordering specification
+        """
+
+        self.testInst.custom_attach(mult_data, args=[3],
+                                    kwargs={'dkey': '2xmlt'})
+        self.testInst.custom_attach(mult_data, at_pos=0, args=self.custom_args)
+
+        # Create another instance of pysat.Instrument and add custom
+        # via the input keyword
+        custom = [{'function': mult_data, 'args': [3],
+                   'kwargs': {'dkey': '2xmlt'}},
+                  {'function': mult_data, 'at_pos': 0,
+                   'args': self.custom_args}]
+        testInst2 = pysat.Instrument('pysat', 'testing', custom=custom)
+
+        # Ensure both Instruments have the same custom_* attributes
+        assert self.testInst.custom_functions == testInst2.custom_functions
+        assert self.testInst.custom_args == testInst2.custom_args
+        assert self.testInst.custom_kwargs == testInst2.custom_kwargs
+
+        # Ensure the run order was correct
+        assert self.testInst.custom_args[0] == self.custom_args
+        assert self.testInst.custom_args[1] == [3]
 
     def test_custom_keyword_instantiation_poor_format(self):
         """Test for error when custom missing keywords at instantiation
