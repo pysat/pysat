@@ -170,17 +170,10 @@ class Instrument(object):
         def custom_func(inst, opt_param1=False, opt_param2=False):
             # perform calculations and store in new_data
             inst['new_data'] = new_data
-            return None
+            return
 
         inst = pysat.Instrument('pysat', 'testing')
         inst.custom_attach(custom_func, kwargs={'opt_param1': True})
-
-        # Define custom function that returns data to be added to Instrument.
-        def custom_func2(inst, req_param, opt_param=False):
-            return ('new_data2', data_to_be_added)
-
-        inst.custom_attach(custom_func2, args=[True],
-                           kwargs={'opt_param': False})
 
         # Custom methods are applied to data when loaded.
         inst.load(date=date)
@@ -189,15 +182,15 @@ class Instrument(object):
 
         # Custom methods may also be attached at instantiation.
         # Create a dictionary for each custom method and associated inputs
-        custom_func_1 = {'function': custom_func_modify,
-                         'kwargs': {'optional_param': True}}
-        custom_func_2 = {'function': custom_func_add_with_args,
-                         'args'=[arg1, arg2],
-                         'kwargs': {'optional_param': True}}
-        custom_func_3 = {'function': custom_func_add,
-                         'kwargs': {'optional_param': False}}
+        custom_func_1 = {'function': custom_func,
+                         'kwargs': {'opt_param1': True}}
+        custom_func_2 = {'function': custom_func, 'args'=[True, False]}
+        custom_func_3 = {'function': custom_func, 'at_pos'=0,
+                         'kwargs': {'opt_param2': True}}
 
-        # Combine all dicts into a list in order of application and execution.
+        # Combine all dicts into a list in order of application and execution,
+        # although this can be modified by specifying 'at_pos'. The actual
+        # order these functions will run is: 3, 1, 2
         custom = [custom_func_1, custom_func_2, custom_func_3]
 
         # Instantiate pysat.Instrument
@@ -318,9 +311,6 @@ class Instrument(object):
             # Required keys.
             req_key = 'function'
 
-            # Optional inputs with default values
-            opt_keys = [('args', []), ('kwargs', {})]
-
             for cust in custom:
                 # Check if required keys present in input.
                 if req_key not in cust:
@@ -328,15 +318,14 @@ class Instrument(object):
                                     'required key: ', req_key))
                     raise ValueError(estr)
 
-                # Check if optional arguments present. If not, provide
-                # default value.
-                for okey, def_type in opt_keys:
-                    if okey not in cust:
-                        cust[okey] = def_type
+                # Set the custom kwargs
+                cust_kwargs = dict()
+                for ckey in cust.keys():
+                    if ckey != req_key:
+                        cust_kwargs[ckey] = cust[ckey]
 
                 # Inputs have been checked, add to Instrument object.
-                self.custom_attach(cust['function'], args=cust['args'],
-                                   kwargs=cust['kwargs'])
+                self.custom_attach(cust['function'], **cust_kwargs)
 
         # Create arrays to store data around loaded day. This enables padding
         # across day breaks with minimal loads
