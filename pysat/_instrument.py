@@ -325,7 +325,7 @@ class Instrument(object):
                 # Check if required keys present in input.
                 if req_key not in cust:
                     estr = ''.join(('Input dict to custom is missing the ',
-                                    'required key: ', rkey))
+                                    'required key: ', req_key))
                     raise ValueError(estr)
 
                 # Check if optional arguments present. If not, provide
