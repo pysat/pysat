@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+
 import collections
 import glob
 import numpy as np
@@ -13,8 +19,7 @@ from pysat.utils._core import available_instruments
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
-    """Accepts dict with data parsed from filenames and creates
-    a pandas Series object formatted for the Files class.
+    """Create a Files pandas Series of filenames from a formatted dict
 
     Parameters
     ----------
@@ -35,10 +40,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     Note
     ----
-        If two files have the same date and time information in the
-        filename then the file with the higher version/revision/cycle is used.
-        Series returned only has one file per datetime. Version is required
-        for this filtering, revision and cycle are optional.
+    If two files have the same date and time information in the filename then
+    the file with the higher version/revision/cycle is used. Series returned
+    only has one file per datetime. Version is required for this filtering,
+    revision and cycle are optional.
 
     """
 
@@ -126,16 +131,16 @@ def parse_fixed_width_filenames(files, format_str):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'
-        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+        'revision', and 'cycle'. For example,
+        `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
 
     Returns
     -------
     stored : OrderedDict
-        Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', 'cycle'
-        'files' - input list of files
+        Information parsed from filenames that inclues: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
+        includes 'files', an input list of files, and 'format_str', a formatted
+        string from input
 
     """
 
@@ -200,19 +205,18 @@ def parse_delimited_filenames(files, format_str, delimiter):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'
-        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+        'revision', and 'cycle'. For example,
+        `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
     delimiter : string
         Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
     stored : OrderedDict
-        Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', 'cycle'
-        'files' - input list of files
-        'format_str' - formatted string from input
+        Information parsed from filenames that inclues: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
+        includes 'files', an input list of files, and 'format_str', a formatted
+        string from input
 
     """
 
@@ -281,39 +285,38 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
 
 def construct_searchstring_from_format(format_str, wildcard=False):
-    """
-    Parses format file string and returns string formatted for searching.
+    """Parses format file string and returns string formatted for searching.
 
     Parameters
     ----------
-    format_str : string with python format codes
+    format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'
-        Ex: 'instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf'
+        'revision', and 'cycle'. For example,
+        `instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf`
     wildcard : bool
-        if True, replaces the ? sequence with a * . This option may be well
+        If True, replaces the ? sequence with a * . This option may be well
         suited when dealing with delimited filenames.
 
     Returns
     -------
     out_dict : dict
-        'search_string' format_str with data to be parsed replaced with ?
-        'keys' keys for data to be parsed
-        'lengths' string length for data to be parsed
-        'string_blocks' the filenames are broken down into fixed width
-            segments and '' strings are placed in locations where data will
-            eventually be parsed from a list of filenames. A standards
-            compliant filename can be constructed by starting with
-            string_blocks, adding keys in order, and replacing the '' locations
-            with data of length length.
+        An output dict with the following keys:
+        - 'search_string' (format_str with data to be parsed replaced with ?)
+        - 'keys' (keys for data to be parsed)
+        - 'lengths' (string length for data to be parsed)
+        - 'string_blocks' (the filenames are broken into fixed width segments).
 
     Note
     ----
-        The '?' may be used to indicate a set number of spaces for a variable
-        part of the name that need not be extracted.
-        'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
+    The '?' may be used to indicate a set number of spaces for a variable
+    part of the name that need not be extracted.
+    `cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf`
+
+    A standards compliant filename can be constructed by starting with
+    string_blocks, adding keys in order, and replacing the '' locations
+    with data of length length.
 
     """
 
@@ -324,27 +327,29 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
 
-    # parse format string to figure out how to construct the search string
+    # Parse format string to figure out how to construct the search string
     # to identify files in the filesystem
     form = string.Formatter()
     for snip in form.parse(format_str):
-        # collect all of the format keywords
-        # replace them in the string with the '?' wildcard
-        # numnber of ?s goes with length of data to be parsed
-        # length grabbed from format keywords so we know
-        # later on where to parse information out from
+        # Collect all of the format keywords. Replace them in the string with
+        # the '?' wildcard. The numnber of '?'s corresponds to the length of
+        # data to be parsed. The length is obtained from format keywords so
+        # that we know later on where to parse information out from.
         out_dict['search_string'] += snip[0]
         out_dict['string_blocks'].append(snip[0])
+
         if snip[1] is not None:
             out_dict['keys'].append(snip[1])
-            # try and determine formatting width
+
+            # Try and determine formatting width
             temp = re.findall(r'\d+', snip[2])
+
             if temp:
-                # there are items, try and grab width
+                # There are items, try and grab width
                 for i in temp:
-                    # make sure there is truly something there
+                    # Make sure there is truly something there
                     if i != 0:
-                        # store length and add to the search string
+                        # Store length and add to the search string
                         out_dict['lengths'].append(int(i))
                         if not wildcard:
                             out_dict['search_string'] += '?' * int(i)
@@ -368,29 +373,29 @@ def search_local_system_formatted_filename(data_path, search_str):
         is provided by pysat to the instrument_module.list_files
         functions as data_path.
     search_str : string
-        String to search local file system for
-        Ex: 'cnofs_cindi_ivm_500ms_????????_v??.cdf'
-            'cnofs_cinfi_ivm_500ms_*_v??.cdf'
+        String used to search for local files. For example,
+        `cnofs_cindi_ivm_500ms_????????_v??.cdf` or `inst-name-*-v??.cdf`
 
     Returns
     -------
     files : list
-        list of files matching the format_str
+        list of files matching the specified file format
 
     Note
     ----
-    The use of ?s (1 ? per character) rather than the full wildcard *
-    provides a more specific filename search string that limits the
-    false positive rate.
+    The use of ?s (1 ? per character) rather than the full wildcard * provides
+    a more specific filename search string that limits the false positive rate.
 
     """
 
-    # perform local file search
+    # Perform local file search
     abs_search_str = os.path.join(data_path, search_str)
     files = glob.glob(abs_search_str)
-    # remove data_path portion
+
+    # Remove the specified data_path portion
     files = [sfile.split(data_path)[-1] for sfile in files]
-    # return info
+
+    # Return the desired filename information
     return files
 
 

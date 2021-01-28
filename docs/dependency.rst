@@ -101,10 +101,12 @@ developers.  Continuing the above example, developers may copy over the
 The above code scans the list of instruments and flags each instrument for one
 or more of the test types, as defined below.  This bit of the code should
 generally be unchanged.  Instruments are grouped in three lists:
-- instruments['names']: A list of all module names to check for standardization
-- instruments['download']: A list of dicts containing info to initialize instruments
-  for end-to-end testing
-- instruments['no_download']: A list of dicts containing info to initialize
+
+* instruments['names']: A list of all module names to check for
+  standardization
+* instruments['download']: A list of dicts containing info to initialize
+  instruments for end-to-end testing
+* instruments['no_download']: A list of dicts containing info to initialize
   instruments without download support for specialized local tests
 
 .. code:: python
@@ -213,7 +215,10 @@ values between 0 and 20.
         assert mean_val == 11.3785
 
 The ``setup`` function is used to define and load a fresh instrument for each
-test.
+test.  While data are automatically generated, limits on the usable range have
+been imposed for testing purposes.  The test instruments generate dates between
+1 Jan 2008 and 31 Dec 2010 for use in the pysat ecosystem.  This allows for
+coverage for year changes both with and without leap days.
 
 Tips and Tricks
 ---------------

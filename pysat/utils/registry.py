@@ -157,23 +157,24 @@ def register(module_names, overwrite=False):
         # get platform and name identifiers from imported module
         platform = inst_module.platform
         name = inst_module.name
-        # only register module if not already present
-        # multiple names allowed for a single platform
+        
+        # Only register module if not already present. Multiple names are
+        # allowed for a single platform
         if platform not in pysat.params['user_modules']:
             # setup `of dict` part of dict of dicts
             pysat.params.data['user_modules'][platform] = {}
-        # only register name if not present under platform
+            
+        # Only register name if it is not present under platform
         if name not in pysat.params['user_modules'][platform]:
             logger.info('Registering user module {}'.format(mod_name))
-            # add to current user modules structure
+            # Add to current user modules structure and store it to disk
             pysat.params.data['user_modules'][platform][name] = mod_name
-            # store user modules to disk
             store()
         else:
-            # platform/name combination already registered
-            # check if this is a new package or just a redundant assignment
+            # Platform/name combination already registered. Check to see if
+            # this is a new package or just a redundant assignment
             if mod_name != pysat.params['user_modules'][platform][name]:
-                # new assignment, check for overwrite flag
+                # New assignment, check for overwrite flag
                 if not overwrite:
                     estr = ' '.join(('An instrument has already been ',
                                      'registered for platform:', platform,
@@ -183,9 +184,8 @@ def register(module_names, overwrite=False):
                                      'must be enabled.'))
                     raise ValueError(estr)
                 else:
-                    # overwrite with new module information
+                    # Overwrite with new module information
                     pysat.params.data['user_modules'][platform][name] = mod_name
-                    # store
                     store()
 
     return
@@ -194,9 +194,9 @@ def register(module_names, overwrite=False):
 def register_by_module(module):
     """Register all sub-modules attached to input module
 
-    Enables instantiation of a third-party Instrument
-    module using
+    Enables instantiation of a third-party Instrument module using
     ::
+
         inst = pysat.Instrument(platform, name)
 
     Parameters
@@ -212,8 +212,8 @@ def register_by_module(module):
 
     Note
     ----
-    Gets a list of sub-modules by using the __all__ attribute,
-    defined in the module's __init__.py
+    Gets a list of sub-modules by using the `__all__` attribute,
+    defined in the module's `__init__.py`
 
     Examples
     --------
@@ -223,16 +223,15 @@ def register_by_module(module):
         import pysatModels
         pysat.utils.registry.register_by_module(pysatModels.models)
 
-        import pysatSpaceWeather
-        pysat.utils.registry.register_by_module(pysatSpaceWeather.instruments)
-
     """
 
-    # get a list of all user specified modules attached to module
+    # Get a list of all user specified modules attached to module
     module_names = module.__all__
-    # add in package preamble
+
+    # Add in package preamble
     module_names = [module.__name__ + '.' + mod for mod in module_names]
-    # register all of them
+
+    # Register all of the sub-modules
     register(module_names)
 
     return

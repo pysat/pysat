@@ -70,10 +70,6 @@ class Instrument(object):
         formatting. The default directory structure would be expressed as
         '{platform}/{name}/{tag}'. If None, the default directory structure is
         used. (default=None)
-    multi_file_day : boolean or NoneType
-        Set to True if Instrument data files for a day are spread across
-        multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.  (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -87,9 +83,9 @@ class Instrument(object):
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
-                  'notes': ('notes', str), 'desc': ('desc', str),
-                  'min_val': ('value_min', float),
-                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'notes': ('notes', str), 'desc': ('desc', str),
+        'min_val': ('value_min', float),
+        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Attributes
     ----------
@@ -221,9 +217,8 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
                  clean_level=None, update_files=None, pad=None,
-                 orbit_info=None, inst_module=None, multi_file_day=None,
-                 directory_format=None, file_format=None,
-                 temporary_file_list=False,
+                 orbit_info=None, inst_module=None, directory_format=None,
+                 file_format=None, temporary_file_list=False,
                  strict_time_flag=True, ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
@@ -241,10 +236,10 @@ class Instrument(object):
                 self.platform = platform.lower()
                 self.name = name.lower()
 
-                # look to module for instrument functions and defaults
+                # Look to module for instrument functions and defaults
                 self._assign_attrs(by_name=True)
             elif (platform is None) and (name is None):
-                # creating "empty" Instrument object with this path
+                # Creating "empty" Instrument object with this path
                 self.name = ''
                 self.platform = ''
                 self._assign_attrs()
@@ -252,7 +247,7 @@ class Instrument(object):
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
         else:
-            # user has provided a module, assign platform and name here
+            # User has provided a module, assign platform and name here
             for iattr in ['platform', 'name']:
                 if hasattr(inst_module, iattr):
                     setattr(self, iattr, getattr(inst_module, iattr).lower())
@@ -266,11 +261,11 @@ class Instrument(object):
             # attribute values
             self._assign_attrs(inst_module=inst_module)
 
-        # more reasonable defaults for optional parameters
+        # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else pysat.params['clean_level'])
 
-        # assign strict_time_flag
+        # Assign strict_time_flag
         self.strict_time_flag = strict_time_flag
 
         # Assign directory format information, which tells pysat how to look in
@@ -362,11 +357,6 @@ class Instrument(object):
         self._prev_data = self._null_data.copy()
         self._prev_data_track = []
         self._curr_data = self._null_data.copy()
-
-        # If the multi_file_day flag was set update here, otherwise the
-        # default will be set by _assign_attrs
-        if multi_file_day is not None:
-            self.multi_file_day = multi_file_day
 
         # Initialize the padding
         if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
@@ -641,6 +631,11 @@ class Instrument(object):
             Data variable name, tuple with a slice, or dict used to locate
             desired data
 
+        Returns
+        -------
+        xr.Dataset
+            Dataset of with only the desired values
+
         Note
         ----
         See xarray .loc and .iloc documentation for more details
@@ -672,34 +667,60 @@ class Instrument(object):
 
         if isinstance(key, tuple):
             if len(key) == 2:
-                # support slicing time, variable name
+                # Support slicing time, variable name
                 try:
                     return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
                 except (TypeError, KeyError):
                     try:
                         return self.data.sel(indexers={epoch_name:
                                                        key[0]})[key[1]]
-                    except TypeError:  # construct dataset from names
+                    except TypeError:
+                        # Construct dataset from names
                         return self.data[self.variables[key[1]]]
+                except ValueError as verr:
+                    # This may be multidimensional indexing, where the mutliple
+                    # dimensions are contained within an iterable object
+                    var_name = key[-1]
+
+                    # If this is not true, raise the original error
+                    if len(key[0]) != len(self[var_name].dims):
+                        raise ValueError(verr)
+
+                    # Construct a dictionary with dimensions as keys and the
+                    # indexes to select for each dimension as values
+                    indict = dict()
+                    for i, dim in enumerate(self[var_name].dims):
+                        indict[dim] = key[0][i]
+
+                    return self.data[var_name][indict]
             else:
-                # multidimensional indexing
-                indict = {}
-                for i, dim in enumerate(self[key[-1]].dims):
+                # Multidimensional indexing where the multple dimensions are
+                # not contained within another object
+                var_name = key[-1]
+
+                # Ensure the dimensions are appropriate
+                if len(key) - 1 != len(self[var_name].dims):
+                    raise ValueError("indices don't match data dimensions")
+
+                # Construct a dictionary with dimensions as keys and the
+                # indexes to select for each dimension as values
+                indict = dict()
+                for i, dim in enumerate(self[var_name].dims):
                     indict[dim] = key[i]
 
-                return self.data[key[-1]][indict]
+                return self.data[var_name][indict]
         else:
             try:
-                # grab a particular variable by name
+                # Grab a particular variable by name
                 return self.data[key]
             except (TypeError, KeyError):
-                # that didn't work
+                # If that didn't work, likely need to use `isel` or `sel`
                 try:
-                    # get all data variables but for a subset of time
+                    # Try to get all data variables, but for a subset of time
                     # using integer indexing
                     return self.data.isel(indexers={epoch_name: key})
                 except (TypeError, KeyError):
-                    # subset of time, using label based indexing
+                    # Try to get a subset of time, using label based indexing
                     return self.data.sel(indexers={epoch_name: key})
 
     def __setitem__(self, key, new):
@@ -802,10 +823,11 @@ class Instrument(object):
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
                 try:
+                    # Try loading as values
                     self.data[key[-1]].loc[indict] = in_data
                 except (TypeError, KeyError):
-                    indict[epoch_name] = self.index[indict[epoch_name]]
-                    self.data[key[-1]].loc[indict] = in_data
+                    # Try loading indexed as integers
+                    self.data[key[-1]][indict] = in_data
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
@@ -1555,6 +1577,7 @@ class Instrument(object):
         Examples
         --------
         ::
+
             import datetime as dt
             import pandas as pds
             import pysat
@@ -1877,6 +1900,7 @@ class Instrument(object):
         kind : str
             Specifies the type of interaction between the custom function and
             the Instrument data.  Accepts one of 'add', 'modify', or 'pass'.
+
             - add
                 Adds data returned from function to instrument object.
                 A copy of pysat.Instrument object supplied to routine.
@@ -1887,6 +1911,7 @@ class Instrument(object):
                 A copy of pysat.Instrument object is passed to function
                 thus no modifications are retained. No data is accepted
                 from return.
+
             (default='modify')
         at_pos : string or int
             Accepts string 'end' or a number that will be used to determine
@@ -2321,7 +2346,7 @@ class Instrument(object):
 
         Examples
         --------
-        ..
+        ::
 
             # standard renaming
             new_var_names = {'old_name': 'new_name',
@@ -2333,7 +2358,7 @@ class Instrument(object):
         to rename higher-order variables supply a modified dictionary.
         Note that this rename will be invoked individually for all
         times in the dataset.
-        ..
+        ::
 
             # applies to higher-order datasets
             # that are loaded into pandas
@@ -2358,7 +2383,8 @@ class Instrument(object):
         feature may be used to provide friendlier variable names within
         pysat while also maintaining external format compatibility
         when writing files.
-        ..
+        ::
+
             # example with lowercase_data_labels
             inst = pysat.Instrument('pysat', 'testing2D')
             inst.load(2009, 1)
@@ -2637,18 +2663,17 @@ class Instrument(object):
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
-
-        # set options used by loading routine based upon user input
+        # Set options used by loading routine based upon user input
         if (yr is not None) and (doy is not None):
             if doy < 1 or (doy > 366):
                 estr = ''.join(('Day of year (doy) is only valid between and ',
                                 'including 1-366.'))
                 raise ValueError(estr)
 
-            # verify arguments make sense, in context
+            # Verify arguments make sense, in context
             _check_load_arguments_none([fname, stop_fname, date, end_date],
                                        raise_error=True)
-            # convert yr/doy to a date
+            # Convert yr/doy to a date
             date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy),
                                         "%Y %j")
             self._set_load_parameters(date=date, fid=None)
@@ -2977,7 +3002,7 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def remote_file_list(self, start=None, stop=None):
+    def remote_file_list(self, start=None, stop=None, **kwargs):
         """List remote files for chosen instrument
 
         Parameters
@@ -2990,6 +3015,10 @@ class Instrument(object):
             Ending time for the file list.  A None value will stop with the last
             file found.
             (default=None)
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
+            The keyword arguments 'user' and 'password' are expected for remote
+            databases requiring sign in or registration.
 
         Returns
         -------
@@ -3003,20 +3032,23 @@ class Instrument(object):
         return a subset of available files.
 
         """
-        # Set the user-supplied kwargs
-        if 'list_remote_files' in self.kwargs.keys():
-            kwargs = self.kwargs['list_remote_files']
-        else:
-            kwargs = {}
 
         # Add the function kwargs
         kwargs["start"] = start
         kwargs["stop"] = stop
 
+        # Add the user-supplied kwargs
+        rtn_key = 'list_remote_files'
+        if rtn_key in self.kwargs.keys():
+            for user_key in self.kwargs[rtn_key].keys():
+                # Don't overwrite kwargs supplied directly to this routine
+                if user_key not in kwargs.keys():
+                    kwargs[user_key] = self.kwargs[rtn_key][user_key]
+
         # Return the function call
         return self._list_remote_files_rtn(self.tag, self.inst_id, **kwargs)
 
-    def remote_date_range(self, start=None, stop=None):
+    def remote_date_range(self, start=None, stop=None, **kwargs):
         """Returns fist and last date for remote data
 
         Parameters
@@ -3029,6 +3061,10 @@ class Instrument(object):
             Ending time for the file list.  A None value will stop with the last
             file found.
             (default=None)
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
+            The keyword arguments 'user' and 'password' are expected for remote
+            databases requiring sign in or registration.
 
         Returns
         -------
@@ -3043,7 +3079,7 @@ class Instrument(object):
 
         """
 
-        files = self.remote_file_list(start=start, stop=stop)
+        files = self.remote_file_list(start=start, stop=stop, **kwargs)
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, **kwargs):

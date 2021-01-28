@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-12-10
+## [3.0.0] - 2021-01-21
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -29,7 +29,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Integrated Custom class directly into Instrument to support mixed use
     of Constellation/Instrument objects in code (#540)
   - Made underlying custom data structures visible (#529)
-  - Updated data_mode method name to custom_attach for the Constellation object (#540)
+  - Updated data_mode method name to custom_attach for the Constellation
+    object (#540)
   - Added support for custom 'add' methods to return xarray.Datasets
   - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
@@ -69,7 +70,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed utils.coords.local_horizontal_to_global_geo
   - Deprecation Warnings for methods in `pysat._files`
   - Addressed several Warnings raised by incorrect use of dependent packages
-  - Deprecated use of inst_id for number of simulated samples for test
+  - Deprecated use of `inst_id` for number of simulated samples for test
     instruments
   - Removed writing of custom Meta attributes (deprecated) when producing
     netCDF4 files
@@ -83,6 +84,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Deprecated `pysat.utils.set_data_dir`
   - Changed `name` kwarg in Constellation to `const_module`
   - Removed unnecessary Instrument attribute `labels`
+  - Removed unnecessary Instrument kwargs
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
@@ -108,6 +110,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     datetime.datetime.utcnow
   - Ensured pysat.Meta instances are immutable at Instrument instantiation
   - Removed weak reference back to Instrument within Files class
+  - Fixed access of xarray data with more than one dimension (#471)
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility

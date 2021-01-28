@@ -68,12 +68,13 @@ This example will use the ``pysatMadrigal`` package.
     import pysatMadrigal as pysatMad
     pysat.utils.display_available_instruments(pysatMad.instruments)
 
+
 You can see each listed instrument supports one or more data sets for analysis.
 The submodules are named with the convention platform_name.  When supplying
 an Instrument submodule as input the display utility provides the submodule
 name instead of the platform and name because non-registered Instruments are
 instantiated using the ``inst_module`` keyword instead of the ``platform`` and
-``name`` keywords (jump to the :ref:`Instantiation` section below for more
+``name`` keywords (jump to the :ref:`instantiation` section below for more
 information).  To use the ``platform`` and ``name`` keywords, the instrument
 must be registered.  To display the registered instruments, no input is needed.
 
@@ -81,6 +82,8 @@ must be registered.  To display the registered instruments, no input is needed.
 
     pysat.utils.display_available_instruments()
 
+
+.. _instantiation:
 
 Instantiation
 -------------
@@ -398,7 +401,7 @@ Metadata is also stored along with the main science data. pysat presumes
 a minimum default set of metadata that may be arbitrarily expanded.
 The default parameters are driven by the attributes required by public science
 data files, like those produced by the Ionospheric Connections Explorer
-`(ICON) <http://icon.ssl.berkeley.edu>`_.
+`(ICON) <https://icon.ssl.berkeley.edu>`_.
 
 ===============     ===================================
 **Metadata** 	        **Description**
