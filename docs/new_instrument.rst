@@ -411,9 +411,11 @@ Instrument object itself under inst.kwargs for use in other areas.
 .. code:: python
 
    inst = pysat.Instrument(platform, name, custom1=new_value)
-   # show user supplied value for custom1 keyword
+
+   # Show user supplied value for custom1 keyword
    print(inst.kwargs['custom1'])
-   # show default value applied for custom2 keyword
+
+   # Show default value applied for custom2 keyword
    print(inst.kwargs['custom2'])
 
 If a user supplies a keyword that is not supported by pysat or by the
@@ -430,7 +432,7 @@ If present, the instrument init method runs once at instrument instantiation.
        return None
 
 inst is a pysat.Instrument() instance. init should modify inst
-in-place as needed; equivalent to a 'modify' custom routine.
+in-place as needed; equivalent to a custom routine.
 
 Keywords are not supported within the init module method signature, though
 custom keyword support for instruments is available via inst.kwargs.
@@ -443,11 +445,11 @@ instrument preprocessing.
 
 .. code:: python
 
-   def default(inst):
+   def preprocess(inst):
        return None
 
 inst is a pysat.Instrument() instance. default should modify inst in-place as
-needed; equivalent to a 'modify' custom routine.
+needed; equivalent to a custom routine.
 
 **clean**
 
@@ -464,7 +466,7 @@ Cleans instrument for levels supplied in inst.clean_level.
        return None
 
 inst is a pysat.Instrument() instance. clean should modify inst in-place as
-needed; equivalent to a 'modify' custom routine.
+needed; equivalent to a custom routine.
 
 **list_remote_files**
 

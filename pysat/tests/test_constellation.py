@@ -93,21 +93,22 @@ class TestConstellation:
         assert out_str.find("pysat Constellation ") >= 0
         assert out_str.find("No loaded Instruments") > 0
 
-    def test_single_adding_custom_function(self):
+    def test_single_attachment_of_custom_function(self):
         """Test successful attachment of custom function
         """
         # Define a custom function
         def double_mlt(inst):
             dmlt = 2.0 * inst.data.mlt
             dmlt.name = 'doubleMLT'
-            return dmlt
+            inst.data[dmlt.name] = dmlt
+            return
 
         # Initialize the constellation
         self.in_kwargs['const_module'] = None
         self.const = pysat.Constellation(**self.in_kwargs)
 
         # Add the custom function
-        self.const.custom_attach(double_mlt, 'add', at_pos='end')
+        self.const.custom_attach(double_mlt, at_pos='end')
         self.const.load(2009, 1)
 
         # Test the added value

@@ -157,6 +157,20 @@ class Constellation(object):
 
         return
 
+    def custom_clear(self):
+        """Clear the custom function list
+
+        See Also
+        ---------
+        Instrument.custom_clear : base method for clearing custom functions
+
+        """
+
+        for instrument in self.instruments:
+            instrument.custom_clear()
+
+        return
+
     def load(self, *args, **kwargs):
         """ Load instrument data into Instrument object.data
 
