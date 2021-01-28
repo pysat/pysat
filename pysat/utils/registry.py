@@ -157,13 +157,13 @@ def register(module_names, overwrite=False):
         # get platform and name identifiers from imported module
         platform = inst_module.platform
         name = inst_module.name
-        
+
         # Only register module if not already present. Multiple names are
         # allowed for a single platform
         if platform not in pysat.params['user_modules']:
             # setup `of dict` part of dict of dicts
             pysat.params.data['user_modules'][platform] = {}
-            
+
         # Only register name if it is not present under platform
         if name not in pysat.params['user_modules'][platform]:
             logger.info('Registering user module {}'.format(mod_name))
