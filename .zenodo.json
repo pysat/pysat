@@ -1,4 +1,20 @@
 {
+    "references": [
+	"Stoneback, R. A. et al. (2018), PYSAT: Python Satellite Data Analysis Toolkit. Journal of Geophysical Research: Space Physics, 123, 5271– 5283. https://doi.org/10.1029/2018JA025297"
+    ],
+    "keywords": [
+	"pysat",
+	"ionosphere",
+	"atmosphere",
+	"thermosphere",
+	"magnetosphere",
+	"heliosphere",
+	"observations",
+	"models",
+	"space",
+	"satellites",
+	"analysis"
+    ],
     "creators": [
       {
         "affiliation": "The University of Texas at Dallas",
