@@ -62,12 +62,13 @@ class Instrument(object):
     strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
         monotonically increasing. (default=True
-    directory_format : string or NoneType
+    directory_format : string, function, or NoneType
         Directory naming structure in string format. Variables such as platform,
         name, and tag will be filled in as needed using python string
-        formatting. The default directory structure would be expressed as
-        '{platform}/{name}/{tag}'. If None, the default directory structure is
-        used. (default=None)
+        formatting. The default directory structure, which is used if None is
+        specified, is '{platform}/{name}/{tag}'. If a function is provided, it
+        must take `tag` and `inst_id` as arguments and return an appropriate
+        string. (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -258,25 +259,26 @@ class Instrument(object):
         # Assign directory format information, which tells pysat how to look in
         # sub-directories for files
         if directory_format is not None:
-            # assign_func sets some instrument defaults, direct info rules all
-            self.directory_format = directory_format.lower()
-        elif self.directory_format is not None:
-            # value not provided by user, check if there is a value provided by
-            # the instrument module, which may be provided as the desired
-            # string or a method dependent on tag and inst_id
-            if callable(self.directory_format):
-                self.directory_format = self.directory_format(tag, inst_id)
+            # assign_func sets some instrument defaults, but user inputs
+            # take precedence
+            self.directory_format = directory_format
 
-        # assign the file format string, if provided by user
-        # enables user to temporarily put in a new string template for files
-        # that may not match the standard names obtained from download routine
+        # The value provided by the user or the Instrument may be either
+        # a string or a function
+        if self.directory_format is not None and callable(
+                self.directory_format):
+            self.directory_format = self.directory_format(tag, inst_id)
+
+        # Assign the file format string, if provided by user. This enables
+        # users to temporarily put in a new string template for files that may
+        # not match the standard names obtained from download routine.
         if file_format is not None:
             self.file_format = file_format
 
-        # check to make sure value is reasonable
+        # Check to make sure value is reasonable
         if self.file_format is not None:
-            # check if it is an iterable string.  If it isn't formatted
-            # properly, raise Error
+            # Check if it is an iterable string.  If it isn't formatted
+            # properly, raise a ValueError
             if(not isinstance(self.file_format, str)
                or (self.file_format.find("{") < 0)
                or (self.file_format.find("}") < 0)):
