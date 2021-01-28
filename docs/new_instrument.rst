@@ -455,7 +455,7 @@ If present, the instrument init method runs once at instrument instantiation.
    def init(inst):
        return None
 
-inst is a ``pysat.Instrument()`` object. init should modify inst in-place as
+`inst` is a ``pysat.Instrument()`` object. ``init`` should modify `inst` in-place as
 needed; equivalent to a custom routine.
 
 Keywords are not supported within the init module method signature, though
@@ -469,10 +469,10 @@ instrument preprocessing.
 
 .. code:: python
 
-   def default(inst):
+   def preprocess(inst):
        return None
 
-inst is a ``pysat.Instrument()`` object. default should modify inst in-place
+`inst` is a ``pysat.Instrument()`` object. ``preprocess`` should modify `inst` in-place
 as needed; equivalent to a custom routine.
 
 **clean**
@@ -489,8 +489,8 @@ Cleans instrument for levels supplied in inst.clean_level.
    def clean(inst):
        return None
 
-inst is a ``pysat.Instrument()`` object. clean should modify inst in-place as
-needed; equivalent to a custom routine.
+`inst` is a ``pysat.Instrument()`` object. ``clean`` should modify `inst` in-place
+as needed; equivalent to a custom routine.
 
 **list_remote_files**
 

@@ -72,6 +72,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Changed `name` kwarg in Constellation to `const_module`
   - Removed unnecessary Instrument attribute `labels`
   - Removed unnecessary Instrument kwargs
+  - Removed the Custom function kwarg `kind`, accepting only `modify` behavior
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
