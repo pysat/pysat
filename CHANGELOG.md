@@ -36,6 +36,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added testing utility functions.
   - Added support for dual specification of Instruments to include in a
     Constellation
+  - Allow `directory_format` input to `Instrument` to be a function
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
