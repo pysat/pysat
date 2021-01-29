@@ -39,6 +39,13 @@ class Parameters(object):
         List of pysat parameters (strings) that don't have a defined
         default and are unaffected by self.restore_defaults().
 
+    Raises
+    ------
+    ValueError
+        The 'user_modules' parameter may not be set directly by the
+        user. Please use the `pysat.utils.regsitry` module to modify
+        the packages stored in 'user_modules'.
+
     Note
     ----
     This method will look for 'pysat_settings.json' file first in the
