@@ -53,12 +53,12 @@ class TestBasics():
 
     def test_set_data_dir_wrong_path(self):
         """Update data_dirs with an invalid path form"""
-        with pytest.raises(ValueError):
+        with pytest.raises(OSError):
             pysat.params['data_dirs'] = 'not_a_directory'
 
     def test_set_data_dir_bad_directory(self):
         """Ensure you can't set data_dirs to bad path"""
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(OSError) as excinfo:
             pysat.params['data_dirs'] = '/fake/directory/path'
         assert str(excinfo.value).find("don't lead to a valid") >= 0
 

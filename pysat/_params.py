@@ -263,8 +263,8 @@ class Parameters(object):
                 self.store()
 
         else:
-            raise ValueError(' '.join(("Paths {:s} don't lead to a valid",
-                                       'directory.')).format(': '.join(paths)))
+            raise OSError(' '.join(("Paths {:s} don't lead to a valid",
+                                    'directory.')).format(': '.join(paths)))
 
     def clear_and_restart(self):
         """Clears all stored settings and sets pysat defaults
