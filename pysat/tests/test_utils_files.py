@@ -110,6 +110,10 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                                        self.insts_kwargs):
             try:
                 # TODO: Remove once LASP download issues sorted out
+                # TravisCI can time out here
+                ostr = ''.join(('Downloading data for ', inst.platform,
+                                inst.name, inst.tag, inst.inst_id))
+                print(ostr)
                 inst.download(start=dates[0], stop=dates[1], **kwargs)
             except:
                 pass
