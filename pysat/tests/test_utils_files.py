@@ -120,6 +120,10 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # TODO: Check on potentially removing all inst directories
 
     def test_updating_directories(self, capsys):
+        """Test directory structure update method"""
+
+        # A variety of options are performed within a single test
+        # so that only one round of downloads is performed.
 
         # New Template
         templ = '{platform}'
