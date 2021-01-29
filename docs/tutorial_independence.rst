@@ -45,12 +45,13 @@ to non-DMSP data sets.
                            .mean(skipna=True))
        return mean_val
 
-   # instantiate pysat.Instrument object to get access to data
+   # Instantiate pysat.Instrument object to get access to data
    vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
 
-   # define custom filtering method
+   # Define a custom filtering method
    def filter_inst(inst, data_label, data_gate):
-       # select data within +/- data gate
+       """ Select data within +/- data gate
+       """
        min_gate = -np.abs(data_gate)
        max_gate = np.abs(data_gate)
        idx, = np.where((inst[data_label] < max_gate) &
@@ -58,13 +59,13 @@ to non-DMSP data sets.
        inst.data = inst[idx]
        return
 
-   # attach filter to vefi object, function is run upon every load
-   vefi.custom.add(filter_inst, 'modify', 'latitude', 5.)
+   # Attach filter to vefi object, function is run upon every load
+   vefi.custom_attach(filter_inst, args=['latitude', 5.0])
 
-   # make a plot of daily mean of 'db_mer'
+   # Make a plot of daily mean of 'db_mer'
    mean_dB = daily_mean(vefi, start, stop, 'dB_mer')
 
-   # plot the result using pandas functionality
+   # Plot the result using pandas functionality
    mean_dB.plot(title='Absolute Daily Mean of '
    	        + vefi.meta['dB_mer'].long_name)
    plt.ylabel('Absolute Daily Mean (' + vefi.meta['dB_mer'].units + ')')
@@ -85,12 +86,13 @@ instrument is supplied may be modified in arbitrary ways by the nano-kernel.
 
    cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean',
                              altitude_bin=3)
-   # attach filter method
-   cosmic.custom.add(filter_inst, 'modify', 'edmaxlat', 15.)
-   # perform average
+   # Attach the filter method
+   cosmic.custom_attach(filter_inst, args=['edmaxlat', 15.0])
+
+   # Perform the averaging
    mean_max_dens = daily_mean(cosmic, start, stop, 'edmax')
 
-   # plot the result using pandas functionality
+   # Plot the result using pandas functionality
    long_name = cosmic.meta[data_label, cosmic.name_label]
    units = cosmic.meta[data_label, cosmic.units_label]
    mean_max_dens.plot(title='Absolute Daily Mean of ' + long_name)
@@ -113,11 +115,13 @@ more than 1D datasets.
 
    def daily_mean(inst, start, stop, data_label):
 
-       # create empty series to hold result
+       # Create empty series to hold result
        mean_val = pandas.Series()
-       # get list of dates between start and stop
+
+       # Get list of dates between start and stop
        date_array = pysat.utils.time.create_date_range(start, stop)
-       # iterate over season, calculate the mean
+
+       # Iterate over season, calculate the mean
        for date in date_array:
            inst.load(date=date)
            if not inst.empty:

@@ -22,6 +22,7 @@ General
 .. automodule:: pysat.instruments.methods.general
    :members:
 
+.. _api-instrument-template:
 
 Instrument Template
 -------------------
@@ -41,11 +42,23 @@ Files
 .. autoclass:: pysat.Files
    :members:
 
+.. _api-meta:
+
 Meta
 ----
 
 .. autoclass:: pysat.Meta
    :members:
+
+.. _api-metalabels:
+
+MetaLabels
+----------
+
+.. autoclass:: pysat.MetaLabels
+   :members:
+
+.. _api-orbits:
 
 Orbits
 ------

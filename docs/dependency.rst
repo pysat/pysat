@@ -88,6 +88,7 @@ developers.  Continuing the above example, developers may copy over the
 
   # Make sure to import your instrument library here
   import customLibrary
+
   # Import the test classes from pysat
   from pysat.tests.instrument_test_class import generate_instrument_list
   from pysat.tests.instrument_test_class import InstTestClass
