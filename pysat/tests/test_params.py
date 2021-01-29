@@ -156,7 +156,7 @@ class TestBasics():
 
     def test_bad_path_instantiation(self):
         """Ensure you can't use bad path when loading Parameters"""
-        with pytest.raises(RuntimeError) as excinfo:
+        with pytest.raises(OSError) as excinfo:
             Parameters(path='./made_up_name')
         assert str(excinfo.value).find("Supplied path does not exist") >= 0
 

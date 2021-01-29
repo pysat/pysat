@@ -99,7 +99,7 @@ class Parameters(object):
             if not os.path.exists(path):
                 estr = ''.join(('Supplied path does not exist on the local ',
                                 'system. Please create it and try again.'))
-                raise RuntimeError(estr)
+                raise OSError(estr)
 
             # Store full file path including fixed settings file name
             self.file_path = os.path.join(path, sfname)
@@ -269,7 +269,7 @@ class Parameters(object):
     def clear_and_restart(self):
         """Clears all stored settings and sets pysat defaults
 
-        pysat parameters without a default value are set to [] 
+        pysat parameters without a default value are set to []
         """
 
         # Clear current data and assign a copy of default values
