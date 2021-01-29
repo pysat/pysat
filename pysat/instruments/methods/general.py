@@ -230,8 +230,20 @@ def filename_creator(value, format_str=None, start_date=None, stop_date=None):
     pandas.Series
         Created filenames from format_str indexed by datetime
 
+    Raises
+    ------
+    NotImplementedError
+        This method is a stub to support development of a potential feature
+        slated for a future release.
+
     """
 
-    raise NotImplementedError()
+    estr = ''.join(('This feature has not been implemented yet and is here ',
+                    'to support experimentation by the pysat team. If you are ',
+                    'here intentionally, please contact the pysat developers ',
+                    'at pysat.developers@gmail.com or pysat.slack.com and let ',
+                    'us know what you are trying to accomplish so we can ',
+                    'evaluate supporting the desired use case.'))
+    raise NotImplementedError(estr)
 
     return
