@@ -269,7 +269,8 @@ class Parameters(object):
     def clear_and_restart(self):
         """Clears all stored settings and sets pysat defaults
 
-        pysat parameters without a default value are set to [] """
+        pysat parameters without a default value are set to [] 
+        """
 
         # Clear current data and assign a copy of default values
         self.data = copy.deepcopy(self.defaults)
@@ -304,9 +305,7 @@ class Parameters(object):
         return
 
     def store(self):
-        """Store parameters to file.
-
-        Uses path in self.file_path.
+        """Store parameters to file using the filename specified in self.file_path.
         """
 
         # Store settings in file

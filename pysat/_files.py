@@ -19,7 +19,7 @@ from pysat.instruments.methods import general
 
 
 class Files(object):
-    """Maintains collection of files plus associated methods.
+    """Maintains collection of files and associated methods.
 
     Parameters
     ----------
@@ -185,6 +185,7 @@ class Files(object):
                                          "Please set a top-level directory",
                                          "path to store data using",
                                          "`pysat.params['data_dirs'] = path`")))
+
         # Get list of potential data directory paths from pysat. Construct
         # possible locations for data. Ensure path always ends with directory
         # separator.
@@ -340,7 +341,7 @@ class Files(object):
             # Create full path for each file
             full_fname = os.path.join(path, fname)
 
-            # Ensure it exists
+            # Ensure the file exists
             if os.path.isfile(full_fname):
                 # Check for size
                 if os.path.getsize(full_fname) > 0:

@@ -23,7 +23,8 @@ class TestBasics():
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
         self.stored_params = copy.deepcopy(pysat.params)
-        # set up default values
+
+        # Set up default values
         pysat.params.restore_defaults()
 
     def teardown(self):
@@ -32,8 +33,6 @@ class TestBasics():
         pysat.params.store()
         reload(pysat)
 
-    #######################
-    # test pysat data dir options
     def test_set_data_dirs_param_single(self):
         """Update pysat directory via params, single string input"""
         pysat.params['data_dirs'] = '.'
