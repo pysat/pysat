@@ -52,6 +52,7 @@ class TravisCICleanSetup():
 
             # Restore pysat and directory paths
             reload(pysat)
+            pysat.params.restore_defaults()
             pysat.params['data_dirs'] = self.saved_path
 
         del self.ci_env, self.saved_path
