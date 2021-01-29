@@ -16,7 +16,6 @@ pysat will remind you to set the top level directory that will hold the data,
 
 .. code:: python
 
-
    # Set a single directory to store all data
    pysat.params['data_dirs'] = path
 
