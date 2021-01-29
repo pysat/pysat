@@ -1,10 +1,12 @@
 import datetime as dt
+from importlib import reload
 import numpy as np
 import os
 
 import pysat
 from pysat.utils import files as futils
 from pysat.tests.travisci_test_class import TravisCICleanSetup
+
 
 class TestBasics():
 
@@ -59,6 +61,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
 
         # Create clean environment on Travis
         TravisCICleanSetup.setup(self)
+        reload(pysat)
 
         # Create several pysat.SpaceWeather instruments and download data.
         # We want to start with a setup that covers general cases a user may
@@ -73,7 +76,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         self.insts.append(pysat.Instrument('sw', 'ace', tag='historic',
                                            inst_id='sis'))
         test_dates = pysatSpaceWeather.instruments.sw_ace._test_dates
-        self.insts_dates.append([test_dates['sis']['historic']]*2)
+        self.insts_dates.append([test_dates['sis']['historic']] * 2)
         self.insts_kwargs.append({})
 
         # Data with date mangling, regular F10.7 data, stored monthly
@@ -93,13 +96,13 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Data by 30-days, recent Kp
         self.insts.append(pysat.Instrument('sw', 'kp', tag='recent'))
         test_dates = pysatSpaceWeather.instruments.sw_kp._test_dates
-        self.insts_dates.append([test_dates['']['recent']]*2)
+        self.insts_dates.append([test_dates['']['recent']] * 2)
         self.insts_kwargs.append({})
 
         # Data by 3-day, forecast Kp
         self.insts.append(pysat.Instrument('sw', 'kp', tag='forecast'))
         test_dates = pysatSpaceWeather.instruments.sw_kp._test_dates
-        self.insts_dates.append([test_dates['']['forecast']]*2)
+        self.insts_dates.append([test_dates['']['forecast']] * 2)
         self.insts_kwargs.append({})
 
         # Download data for all instruments
