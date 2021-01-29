@@ -427,6 +427,13 @@ def update_data_directory_structure(new_template, test_run=True,
         the directory chain up to the top-level directories in
         `pysat.params['data_dirs']`. (default=False)
 
+    Note
+    ----
+    After updating the data directory structures users should nominally
+    assign `new_template` as the directory format via:
+
+        pysat.params['directory_format'] = new_template
+
     """
 
     # Import required here to avoid circular import
