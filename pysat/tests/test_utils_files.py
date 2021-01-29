@@ -52,8 +52,9 @@ class TestBasics():
 class TestFileDirectoryTranslations(TravisCICleanSetup):
 
     def setup(self):
+        """Runs before every method to create a clean testing setup."""
 
-        # Module is only required for testing
+        # Module is only required for testing installations on TravisCI
         import pysatSpaceWeather
 
         # Create clean environment on Travis
@@ -111,6 +112,8 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                 pass
 
     def teardown(self):
+        """Runs after every method to clean up previous testing."""
+
         # Clean environment on Travis
         TravisCICleanSetup.teardown(self)
 
@@ -132,6 +135,16 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Check for descriptive output from full_breakdown
         fstr = 'Will move: '
         assert captured.find(fstr) >= 0
+
+        # Check how many instruments have no files found. Will be used later.
+        index = 0
+        orig_num_missing = 0
+        while index < len(captured):
+            index = captured.find('No files found.', index)
+            if index == -1:
+                break
+            else:
+                orig_num_missing += 1
 
         # Convert directories to simpler platform structure
         futils.update_data_directory_structure(new_template=templ,
@@ -157,10 +170,14 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Convert directories back to more complex structure
         # First, define new template
         templ = '{platform}/{name}/{tag}/{inst_id}'
+
         # Update structure
         futils.update_data_directory_structure(new_template=templ,
                                                test_run=False,
                                                remove_empty_dirs=True)
+
+        # Capture printouts
+        captured, err = capsys.readouterr()
 
         # Check if we did things correctly. Look for correct output strings.
         for inst in self.insts:
@@ -169,7 +186,8 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                             inst.inst_id, 'files moved and accounted for.\n'))
             assert captured.find(fstr) >= 0
 
-            # Refresh inst with the old directory template set
+            # Refresh inst with the old directory template set to get now 'old'
+            # path information.
             inst2 = pysat.Instrument(inst.platform, inst.name, tag=inst.tag,
                                      inst_id=inst.inst_id)
 
@@ -181,5 +199,30 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                             ' Ending cleanup.'))
             assert captured.find(fstr) >= 0
 
-        # Store new format
+        # Try to update structure again. Files have already moved so
+        # no files should be found.
+        futils.update_data_directory_structure(new_template=templ,
+                                               test_run=False,
+                                               remove_empty_dirs=True)
+
+        # Capture printouts
+        captured, err = capsys.readouterr()
+
+        # Check for no files output
+        index = 0
+        num_missing = 0
+        while index < len(captured):
+            index = captured.find('No files found.', index)
+            if index == -1:
+                break
+            else:
+                num_missing += 1
+
+        # Get difference in number of instruments with no files.
+        new_missing = orig_num_missing - num_missing
+
+        # Confirm none of the instruments had files.
+        assert new_missing == len(self.insts)
+
+        # Store new format like a typical user would
         pysat.params['directory_format'] = templ
