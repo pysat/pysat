@@ -65,7 +65,7 @@ class TestBasics():
     def test_str(self):
         """Ensure str method works"""
 
-        # include a user parameter as well
+        # Include a user parameter
         pysat.params['pysat_user_test_str'] = 'We are here.'
 
         out = str(pysat.params)
@@ -97,7 +97,7 @@ class TestBasics():
         # Ensure new value is the default
         assert pysat.params['update_files'] == default_val
 
-        # make sure that non-default values left as is
+        # Make sure that non-default values left as is
         assert pysat.params['data_dirs'] != []
 
     def test_update_standard_value(self):
@@ -141,10 +141,10 @@ class TestBasics():
 
         pysat.params.clear_and_restart()
 
-        # check default value
+        # Check default value
         assert pysat.params['user_modules'] == {}
 
-        # check value without working default
+        # Check value without working default
         assert pysat.params['data_dirs'] == []
 
         return
