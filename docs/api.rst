@@ -50,6 +50,8 @@ Files
 .. autoclass:: pysat.Files
    :members:
 
+.. _api-meta:
+
 Meta
 ----
 

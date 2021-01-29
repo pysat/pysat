@@ -1,6 +1,7 @@
+.. _tutorial_custom:
 
 Custom Functions
-----------------
+================
 
 Science analysis is built upon custom data processing. To simplify this task, and
 enable instrument independent analysis, custom functions may be attached to the
