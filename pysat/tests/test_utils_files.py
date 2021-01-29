@@ -91,7 +91,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
         self.insts_dates.append([test_dates['']['all'],
                                  test_dates['']['all']])
-        self.insts_kwargs.append()
+        self.insts_kwargs.append({})
 
         # Data by 30-days, recent Kp
         self.insts.append(pysat.Instrument('sw', 'kp', tag='recent'))
