@@ -320,7 +320,7 @@ class Parameters(object):
         return
 
     def store(self):
-        """Store parameters to file using the filename specified in self.file_path.
+        """Store parameters using the filename specified in self.file_path.
         """
 
         # Store settings in file
