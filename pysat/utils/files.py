@@ -539,7 +539,11 @@ def update_data_directory_structure(new_template, test_run=True,
 
                         if not test_run:
                             # Move files if not in test mode
-                            shutil.move(ofile, nfile)
+                            if not os.path.isfile(nfile):
+                                shutil.move(ofile, nfile)
+                            else:
+                                ostr = ''.join(nfile, ' already exists.')
+                                print(ostr)
 
                     if full_breakdown and (len(old_files) > 0):
                         # Sometimes include a newline to maintain consistent
