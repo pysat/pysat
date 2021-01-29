@@ -21,7 +21,7 @@ from pysat.tests.travisci_test_class import TravisCICleanSetup
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
+        # Store current pysat directory
         self.stored_params = copy.deepcopy(pysat.params)
 
         # Set up default values
@@ -33,34 +33,29 @@ class TestBasics():
         pysat.params.store()
         reload(pysat)
 
-    def test_set_data_dirs_param_single(self):
-        """Update pysat directory via params, single string input"""
-        pysat.params['data_dirs'] = '.'
-        assert pysat.params['data_dirs'] == ['.']
+    @pytest.mark.parametrize("path, check",
+                             [('.', ['.']),
+                              (['.', '.pysat'], None)])
+    def test_set_data_dirs(self, path, check):
+        """Update pysat directory via params"""
+        if check is None:
+            check = path
+        pysat.params['data_dirs'] = path
+        assert pysat.params['data_dirs'] == check
 
         # Check if next load of pysat remembers the change
         reload(pysat)
-        assert pysat.params['data_dirs'] == ['.']
+        assert pysat.params['data_dirs'] == check
 
-    def test_set_data_dirs_param_with_list(self):
-        """Update pysat directories via pysat.params, list of strings"""
-        pysat.params['data_dirs'] = ['.', './']
-        assert pysat.params['data_dirs'] == ['.', './']
-
-        # Check if next load of pysat remembers the change
-        reload(pysat)
-        assert pysat.params['data_dirs'] == ['.', './']
-
-    def test_set_data_dir_wrong_path(self):
-        """Update data_dirs with an invalid path form"""
-        with pytest.raises(OSError):
-            pysat.params['data_dirs'] = 'not_a_directory'
-
-    def test_set_data_dir_bad_directory(self):
-        """Ensure you can't set data_dirs to bad path"""
+    @pytest.mark.parametrize("path",
+                             ['/fake/directory/path',
+                              'not_a_directory'])
+    def test_set_data_dir_bad_directory(self, path):
+        """Ensure you can't set data_dirs to a bad path"""
         with pytest.raises(OSError) as excinfo:
-            pysat.params['data_dirs'] = '/fake/directory/path'
+            pysat.params['data_dirs'] = path
         assert str(excinfo.value).find("don't lead to a valid") >= 0
+        return
 
     def test_repr(self):
         """Test __repr__ method"""
