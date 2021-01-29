@@ -19,12 +19,16 @@ upon the first import,
 
 .. code:: python
 
-   pysat.params['data_dirs']=path_or_list_of_paths_to_existing_directories
+   # Set a single directory to store all data
+   pysat.params['data_dirs'] = path
 
-More than one directory may be assigned. When looking for data for a given
-pysat.Instrument, pysat will start with the first directory and iterate through
-the list until one is found. Only one directory with data is supported per
-Instrument.
+   # Alternately, multiple paths may be registered.
+   pysat.params['data_dirs'] = [path_1, path_2, ..., path_n]
+
+More than one directory may be assigned by supplying a list of strings.
+When looking for data for a given pysat.Instrument, pysat will start with the
+first directory and iterate through the list until one is found. Only one
+directory with data is supported per Instrument.
 
 If no data is found in any of the listed directories then pysat will by
 default assign the first path in ``pysat.params['data_dirs']``.
@@ -160,7 +164,7 @@ By default, pysat data directories are organized via top_level/platform/name/tag
 where the top-level is one of the directories in ``pysat.params['data_dirs']``.
 The specific structure for your system is stored in ``pysat.params['directory_format']``.
 
-Presuming defaults, for this DMSP example data is downloaded to
+Presuming defaults, this example downloads DMSP data to
 top_level/dmsp/ivm/utd/f12/. If this is the first download, then the first of the pysat
 data directories will be used by default. If there was already DMSP data on your system
 under one of the ``pysat.params['data_dirs']``, then the same top-level

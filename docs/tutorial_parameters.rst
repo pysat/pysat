@@ -1,5 +1,5 @@
-Parameters
-==========
+pysat Parameters
+================
 
 The ``pysat.params`` class provides a central location for storing a variety
 of parameters used by pysat as well as custom user provided settings. An
@@ -45,7 +45,7 @@ and are stored to disk automatically in a thread-safe manner
    # Add new user parameter
    pysat.params[user_param_str] = user_param_value
 
-All of the standard parameters above may be reset to defaults using
+All of the standard parameters above may be restored to defaults using
 
 .. code:: python
 
@@ -69,7 +69,7 @@ using
        Values that map to the corresponding keywords on pysat.Instrument.
             'clean_level' : 'clean'
             'directory_format' : os.path.join('{platform}', '{name}',
-                                              '{inst_id}','{tag}')
+                                              '{tag}', '{inst_id}')
             'ignore_empty_files': False
             'update_files': True
 
