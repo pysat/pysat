@@ -56,8 +56,10 @@ version_filename = os.path.join(here, 'version.txt')
 
 # Get home directory
 home_dir = os.path.expanduser('~')
+
 # Set pysat directory path in home directory
 pysat_dir = os.path.join(home_dir, '.pysat')
+
 # Set directory for test data
 test_data_path = os.path.join(here, 'tests', 'test_data')
 
@@ -83,7 +85,7 @@ if not os.path.isdir(pysat_dir) or \
 
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
-                   "Assign `pysat.params['data_dirs']` a path to specify a "
+                   "Set `pysat.params['data_dirs']` equal to a path that specifies a "
                    "top-level directory to store science data.")))
 else:
     # Load up existing parameters file
