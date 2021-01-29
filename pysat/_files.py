@@ -12,10 +12,11 @@ import warnings
 
 import pandas as pds
 import pysat  # Needed to access pysat.params across reimports
-from pysat import logger, Instrument
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
 from pysat.instruments.methods import general
+
+logger = pysat.logger
 
 
 class Files(object):
@@ -234,7 +235,7 @@ class Files(object):
     def __repr__(self):
         """ Representation of the class and its current state
         """
-        inst_repr = Instrument(**self.inst_info).__repr__()
+        inst_repr = pysat.Instrument(**self.inst_info).__repr__()
 
         out_str = "".join(["Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
