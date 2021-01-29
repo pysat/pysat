@@ -250,8 +250,13 @@ class Parameters(object):
 
         # Account for a user prefix in the path, such as ~
         paths = [os.path.expanduser(path) for path in paths]
+
         # Account for the presence of $HOME or similar
         paths = [os.path.expandvars(path) for path in paths]
+
+        # Ensure paths have some consistency despite user input
+        paths = [os.path.normpath(path) for path in paths]
+
         # Ensure all paths are valid
         paths_check = [os.path.isdir(path) for path in paths]
 
