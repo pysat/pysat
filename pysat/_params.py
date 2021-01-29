@@ -51,7 +51,7 @@ class Parameters(object):
         Values that map to the corresponding keywords on pysat.Instrument.
             'clean_level' : 'clean'
             'directory_format' : os.path.join('{platform}', '{name}',
-                                              '{inst_id}','{tag}')
+                                              '{tag}', '{inst_id}')
             'ignore_empty_files': False
             'update_files': True
 
