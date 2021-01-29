@@ -153,13 +153,10 @@ def clean(self):
 
     Note
     ----
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
+    - 'clean' All parameters are good, suitable for scientific studies
+    - 'dusty' Most parameters are good, requires instrument familiarity
+    - 'dirty' There are data areas that have issues, use with caution
+    - 'none' No cleaning applied, routine not called in this case.
 
     """
 

@@ -12,6 +12,7 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
 import pysat.instruments.pysat_testing2d
+import pysat.instruments.pysat_testing2d_xarray
 from pysat.utils import generate_instrument_list
 
 xarray_epoch_name = 'time'
@@ -226,33 +227,23 @@ class TestBasics():
                 + dt.timedelta(days=1))
         return
 
-    def test_basic_instrument_load_by_file_and_multifile(self):
-        """Ensure multi_file_day has to be False when loading by filename"""
-        self.out = pysat.Instrument(platform=self.testInst.platform,
-                                    name=self.testInst.name,
-                                    num_samples=10,
-                                    clean_level='clean',
-                                    update_files=True,
-                                    multi_file_day=True)
-        with pytest.raises(ValueError) as err:
-            self.out.load(fname=self.out.files[0])
-        estr = "have multi_file_day and load by file"
-        assert str(err).find(estr) >= 0
+    @pytest.mark.parametrize('load_in,verr',
+                             [('fname', 'have multi_file_day and load by file'),
+                              (None, 'is not supported with multi_file_day')])
+    def test_basic_instrument_load_by_file_and_multifile(self, load_in, verr):
+        """Ensure some load calls raises ValueError with multi_file_day as True
+        """
+        self.testInst.multi_file_day = True
 
-        return
+        if load_in == 'fname':
+            load_kwargs = {load_in: self.testInst.files[0]}
+        else:
+            load_kwargs = dict()
 
-    def test_basic_instrument_load_and_multifile(self):
-        """Ensure .load() only runs when multi_file_day is False"""
-        self.out = pysat.Instrument(platform=self.testInst.platform,
-                                    name=self.testInst.name,
-                                    num_samples=10,
-                                    clean_level='clean',
-                                    update_files=True,
-                                    multi_file_day=True)
         with pytest.raises(ValueError) as err:
-            self.out.load()
-        estr = '`load()` is not supported with multi_file_day'
-        assert str(err).find(estr) >= 0
+            self.testInst.load(**load_kwargs)
+
+        assert str(err).find(verr) >= 0
 
         return
 
@@ -855,50 +846,41 @@ class TestBasics():
     # Test basic data access features, both getting and setting data
     #
     # -------------------------------------------------------------------------
-    def test_basic_data_access_by_name(self):
+    @pytest.mark.parametrize("labels", [('mlt'),
+                                        (['mlt', 'longitude']),
+                                        (['longitude', 'mlt'])])
+    def test_basic_data_access_by_name(self, labels):
+        """Check that data can be accessed at the instrument level"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
+        assert np.all(self.testInst[labels] == self.testInst.data[labels])
 
-    def test_basic_data_access_by_name_list(self):
+    @pytest.mark.parametrize("index", [(0),
+                                       ([0, 1, 2, 3]),
+                                       (slice(0, 10)),
+                                       (np.arange(0, 10))])
+    def test_data_access_by_indices_and_name(self, index):
+        """Check that variables and be accessed by each supported index type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[['uts', 'mlt']]
-                      == self.testInst.data[['uts', 'mlt']])
-
-    def test_data_access_by_row_slicing_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[0:10, 'uts']
-                      == self.testInst.data['uts'].values[0:10])
+        assert np.all(self.testInst[index, 'mlt']
+                      == self.testInst.data['mlt'][index])
 
     def test_data_access_by_row_slicing_and_name_slicing(self):
+        """Check that each variable is downsampled """
         self.testInst.load(self.ref_time.year, self.ref_doy)
         result = self.testInst[0:10, :]
         for variable, array in result.items():
             assert len(array) == len(self.testInst.data[variable].values[0:10])
             assert np.all(array == self.testInst.data[variable].values[0:10])
 
-    def test_data_access_by_row_slicing_w_ndarray_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[np.arange(0, 10), 'uts']
-                      == self.testInst.data['uts'].values[0:10])
-
-    def test_data_access_by_row_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[0, 'uts']
-                      == self.testInst.data['uts'].values[0])
-
-    def test_data_access_by_row_index(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = np.arange(10)
-        assert np.all(self.testInst[self.out]['uts']
-                      == self.testInst.data['uts'].values[self.out])
-
     def test_data_access_by_datetime_and_name(self):
+        """Check that datetime can be used to access data"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = dt.datetime(2009, 1, 1, 0, 0, 0)
         assert np.all(self.testInst[self.out, 'uts']
                       == self.testInst.data['uts'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
+        """Check that a slice of datetimes can be used to access data"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         time_step = (self.testInst.index[1]
                      - self.testInst.index[0]).value / 1.E9
@@ -957,32 +939,25 @@ class TestBasics():
             assert np.all(self.testInst[3:] == self.out[3:])
             assert np.all(self.testInst[0:3] == 0)
         else:
-            # This command does not work for xarray
-            assert True
+            pytest.skip("This notation does not make sense for xarray")
 
-    def test_setting_partial_data_by_name(self):
+    @pytest.mark.parametrize("changed,fixed",
+                             [(0, slice(1, None)),
+                              ([0, 1, 2, 3], slice(4, None)),
+                              (slice(0, 10), slice(10, None)),
+                              (np.array([0, 1, 2, 3]), slice(4, None)),
+                              (dt.datetime(2009, 1, 1), slice(1, None)),
+                              (slice(dt.datetime(2009, 1, 1),
+                                     dt.datetime(2009, 1, 1, 0, 1)),
+                               slice(dt.datetime(2009, 1, 1, 0, 1), None))])
+    def test_setting_partial_data_by_inputs(self, changed, fixed):
+        """Check that data can be set using each supported input type"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[0, 'doubleMLT'] = 0
-        assert np.all(self.testInst[1:, 'doubleMLT']
-                      == 2. * self.testInst[1:, 'mlt'])
-        assert self.testInst[0, 'doubleMLT'] == 0
-
-    def test_setting_partial_data_by_integer_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[[0, 1, 2, 3], 'doubleMLT'] = 0
-        assert np.all(self.testInst[4:, 'doubleMLT']
-                      == 2. * self.testInst[4:, 'mlt'])
-        assert np.all(self.testInst[[0, 1, 2, 3], 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_slice_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[0:10, 'doubleMLT'] = 0
-        assert np.all(self.testInst[10:, 'doubleMLT']
-                      == 2. * self.testInst[10:, 'mlt'])
-        assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
+        self.testInst[changed, 'doubleMLT'] = 0
+        assert np.all(self.testInst[fixed, 'doubleMLT']
+                      == 2. * self.testInst[fixed, 'mlt'])
+        assert np.all(self.testInst[changed, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_index_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -991,35 +966,6 @@ class TestBasics():
         assert np.all(self.testInst[10:, 'doubleMLT']
                       == 2. * self.testInst[10:, 'mlt'])
         assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_numpy_array_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[np.array([0, 1, 2, 3]), 'doubleMLT'] = 0
-        assert np.all(self.testInst[4:, 'doubleMLT']
-                      == 2. * self.testInst[4:, 'mlt'])
-        assert np.all(self.testInst[0:4, 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_datetime_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0), 'doubleMLT'] = 0
-        assert np.all(self.testInst[0, 'doubleMLT']
-                      == 2. * self.testInst[0, 'mlt'])
-        assert np.all(self.testInst[0, 'doubleMLT'] == 0)
-
-    def test_setting_partial_data_by_datetime_slicing_and_name(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        time_step = (self.testInst.index[1]
-                     - self.testInst.index[0]).value / 1.E9
-        offset = dt.timedelta(seconds=(10 * time_step))
-        start = dt.datetime(2009, 1, 1, 0, 0, 0)
-        stop = start + offset
-        self.testInst[start:stop, 'doubleMLT'] = 0
-        assert np.all(self.testInst[11:, 'doubleMLT']
-                      == 2. * self.testInst[11:, 'mlt'])
-        assert np.all(self.testInst[0:11, 'doubleMLT'] == 0)
 
     def test_modifying_data_inplace(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -2407,6 +2353,86 @@ class TestBasics2D(TestBasics):
 
 # -----------------------------------------------------------------------------
 #
+# Repeat tests above with 2d xarray data
+#
+# -----------------------------------------------------------------------------
+class TestBasics2DXarray(TestBasics):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing2d_xarray)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing2d_xarray',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True)
+        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_doy = 1
+        self.out = None
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst, self.out, self.ref_time, self.ref_doy
+
+    @pytest.mark.parametrize("index", [(0),
+                                       ([0, 1, 2, 3]),
+                                       (slice(0, 10)),
+                                       (np.array([0, 1, 2, 3]))])
+    def test_data_access_by_2d_indices_and_name(self, index):
+        """Check that variables and be accessed by each supported index type"""
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+        assert np.all(self.testInst[index, index, 'profiles']
+                      == self.testInst.data['profiles'][index, index])
+
+    def test_data_access_by_2d_tuple_indices_and_name(self):
+        """Check that variables and be accessed by multi-dim tuple index
+        """
+        self.testInst.load(date=self.ref_time)
+        index = ([0, 1, 2, 3], [0, 1, 2, 3])
+        assert np.all(self.testInst[index, 'profiles']
+                      == self.testInst.data['profiles'][index[0], index[1]])
+
+    def test_data_access_bad_dimension_tuple(self):
+        """Test raises ValueError for mismatched tuple index and data dimensions
+        """
+        self.testInst.load(date=self.ref_time)
+        index = ([0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3])
+
+        with pytest.raises(ValueError) as verr:
+            self.testInst[index, 'profiles']
+
+        estr = 'not convert tuple'
+        assert str(verr).find(estr) > 0
+
+    def test_data_access_bad_dimension_for_multidim(self):
+        """Test raises ValueError for mismatched index and data dimensions
+        """
+        self.testInst.load(date=self.ref_time)
+        index = [0, 1, 2, 3]
+
+        with pytest.raises(ValueError) as verr:
+            self.testInst[index, index, index, 'profiles']
+
+        estr = "don't match data"
+        assert str(verr).find(estr) > 0
+
+    @pytest.mark.parametrize("changed,fixed",
+                             [(0, slice(1, None)),
+                              ([0, 1, 2, 3], slice(4, None)),
+                              (slice(0, 10), slice(10, None)),
+                              (np.array([0, 1, 2, 3]), slice(4, None))])
+    def test_setting_partial_data_by_2d_indices_and_name(self, changed, fixed):
+        """Check that data can be set using each supported index type"""
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
+        self.testInst[changed, changed, 'doubleProfile'] = 0
+        assert np.all(np.all(self.testInst[fixed, fixed, 'doubleProfile']
+                             == 2. * self.testInst[fixed, 'profiles']))
+        assert np.all(np.all(self.testInst[changed, changed, 'doubleProfile']
+                             == 0))
+
+
+# -----------------------------------------------------------------------------
+#
 # Repeat TestBasics above with shifted file dates
 #
 # -----------------------------------------------------------------------------
@@ -2743,6 +2769,7 @@ class TestDataPadding():
         """Not allowed to enable data padding when loading all data, load()"""
         with pytest.raises(ValueError) as err:
             self.testInst.load()
+
         if self.testInst.multi_file_day:
             estr = '`load()` is not supported with multi_file_day'
         else:
@@ -2893,8 +2920,8 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 
@@ -2912,8 +2939,8 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 
@@ -2931,8 +2958,8 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 
@@ -2950,8 +2977,8 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
-                                         pad={'minutes': 5},
-                                         multi_file_day=True)
+                                         pad={'minutes': 5})
+        self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
 

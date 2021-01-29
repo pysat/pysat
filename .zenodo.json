@@ -1,58 +1,67 @@
 {
+    "references": [
+	"Stoneback, R. A. et al. (2018), PYSAT: Python Satellite Data Analysis Toolkit. Journal of Geophysical Research: Space Physics, 123, 5271– 5283. https://doi.org/10.1029/2018JA025297"
+    ],
+    "keywords": [
+	"pysat",
+	"ionosphere",
+	"atmosphere",
+	"thermosphere",
+	"magnetosphere",
+	"heliosphere",
+	"observations",
+	"models",
+	"space",
+	"satellites",
+	"analysis"
+    ],
     "creators": [
       {
-        "affiliation": "University of Texas at Dallas", 
+        "affiliation": "The University of Texas at Dallas",
         "name": "Russell Stoneback",
-        "orcid": "0000-0001-7216-4336"  
-      }, 
+        "orcid": "0000-0001-7216-4336"
+      },
       {
         "affiliation": "Goddard Space Flight Center",
         "name": "Jeff Klenzing",
         "orcid": "0000-0001-8321-6074"
-      }, 
+      },
       {
-        "affiliation": "U.S. Naval Research Laboratory", 
+        "affiliation": "U.S. Naval Research Laboratory",
         "name": "Angeline Burrell",
         "orcid": "0000-0001-8875-9326"
-      }, 
+      },
       {
         "name": "Carey Spence",
         "orcid": "0000-0001-8340-5625"
-      }, 
+      },
+
       {
-        "name": "Asher Pembroke"
-      }, 
-      {
-        "affiliation": "University of Texas at Dallas", 
+        "affiliation": "The University of Texas at Dallas",
         "name": "Matthew Depew"
-      }, 
+      },
       {
-        "name": "NHargrave"
-      }, 
+        "name": "Nathaniel Hargrave"
+      },
       {
         "affiliation": "Catholic University of America, Goddard Space Flight Center",
         "name": "Jonathon Smith",
         "orcid": "0000-0002-8191-4765"
-      }, 
+      },
       {
-        "name": "vvonbose"
-      }, 
+        "name": "Veronica Von Bose"
+      },
       {
-        "affiliation": "Predictive Science", 
+        "affiliation": "Predictive Science",
         "name": "Asher Pembroke"
-      }, 
+      },
       {
-        "name": "Gayatri"
-      }, 
+        "name": "Gayatri Iyer"
+      },
       {
-        "affiliation": "@olist", 
+        "affiliation": "@olist",
         "name": "Silvio Leite",
-        "orcid": "0000-0003-1707-7963"  
+        "orcid": "0000-0003-1707-7963"
       }
-    ], 
-    "access_right": "open", 
-    "resource_type": {
-      "type": "software", 
-      "title": "Software"
-    }
+    ]
 }

@@ -62,7 +62,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
 
 def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
-                      start=None, stop=None, test_dates=None):
+                      start=None, stop=None, test_dates=None, user=None,
+                      password=None):
     """Produce a fake list of files spanning three years and one month to
     simulate new data files on a remote server
 
@@ -86,6 +87,12 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         (default=None)
     test_dates : dt.datetime
         Pass the _test_date object through from the test instrument files
+    user : string
+        User string input used for download. Provided by user and passed via
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
 
     Returns
     -------

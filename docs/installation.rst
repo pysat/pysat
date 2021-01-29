@@ -8,7 +8,7 @@ Installation
 
 Python and associated packages for science are freely available. Convenient
 science python package setups are available from `<https://www.python.org/>`_,
-`Anaconda <https://www.anaconda.com/distribution/>`_, and other locations
+`Anaconda <https://www.anaconda.com/products/individual/>`_, and other locations
 (some platform specific). Anaconda also includes a developer environment
 that works well with pysat. Core science packages such as numpy, scipy,
 matplotlib, pandas and many others may also be installed directly via the
@@ -20,7 +20,7 @@ distributions.
 
 For MacOS and Linux systems make sure that `gcc` is compatible with Fortran
 code. In Linux this can be accomplished by installing `gfortran`.  For MacOS
-systems it is recommended that `gcc` is installed via 
+systems it is recommended that `gcc` is installed via
 `HomeBrew <https://brew.sh>`_
 for compatibility with Fortran code.
 
@@ -40,6 +40,7 @@ To use Anaconda's tools for creating a suitable virtual environment, for Python
     conda create -n virt_env_name python=2.7
     conda activate virt_env_name
     conda install numpy -c conda
+
 and for Python 3
 
 .. code:: bash

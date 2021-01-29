@@ -22,21 +22,13 @@ General
 .. automodule:: pysat.instruments.methods.general
    :members:
 
+.. _api-instrument-template:
 
-Instrument Templates
---------------------
-
-General Instrument
-^^^^^^^^^^^^^^^^^^
+Instrument Template
+-------------------
 
 .. automodule:: pysat.instruments.templates.template_instrument
-   :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
-
-netCDF Pandas
-^^^^^^^^^^^^^
-
-.. automodule:: pysat.instruments.templates.netcdf_pandas
-  :members: __doc__, init, load, list_files, download
+   :members: __doc__, init, clean, preprocess, list_files, download, load, list_remote_files
 
 Constellation
 -------------
@@ -57,6 +49,16 @@ Meta
 
 .. autoclass:: pysat.Meta
    :members:
+
+.. _api-metalabels:
+
+MetaLabels
+----------
+
+.. autoclass:: pysat.MetaLabels
+   :members:
+
+.. _api-orbits:
 
 Orbits
 ------
