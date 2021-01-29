@@ -46,6 +46,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     Constellation
   - Added function to transition pysat managed data files to a user
     provided template.
+  - Allow `directory_format` input to `Instrument` to be a function
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -85,6 +86,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Changed `name` kwarg in Constellation to `const_module`
   - Removed unnecessary Instrument attribute `labels`
   - Removed unnecessary Instrument kwargs
+  - Removed the Custom function kwarg `kind`, accepting only `modify` behavior
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
