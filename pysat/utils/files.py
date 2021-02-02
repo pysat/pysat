@@ -547,8 +547,13 @@ def update_data_directory_structure(new_template, test_run=True,
                         if not test_run:
                             # Move files if not in test mode
                             if not os.path.isfile(nfile):
-                                shutil.move(ofile, nfile)
+                                if not os.path.isfile(ofile):
+                                    ostr = ''.join(ofile, ' already moved.')
+                                    print(ostr)
+                                else:
+                                    shutil.move(ofile, nfile)
                             else:
+                                # New file
                                 ostr = ''.join(nfile, ' already exists.')
                                 print(ostr)
 
@@ -578,8 +583,9 @@ def update_data_directory_structure(new_template, test_run=True,
                                                  platform, name, tag, inst_id))
                                 raise ValueError(estr)
 
-                            print(''.join(('All ', platform, name, tag, inst_id,
-                                           'files moved and accounted for.\n')))
+                            print(' '.join(('All', platform, name, tag, inst_id,
+                                            'files moved and accounted for.',
+                                            '\n')))
 
                             # Number of files checks out. Time to remove old
                             # directories if there are no real files in there.
@@ -591,19 +597,22 @@ def update_data_directory_structure(new_template, test_run=True,
                                 # lower than the top-level pysat data directory.
                                 if len(os.listdir(wpath)) == 0:
                                     # Directory is empty, remove it.
-                                    print(wpath.join(' is empty. and could',
-                                                     ' be removed.'))
+                                    print(''.join((wpath, ' is empty and ',
+                                                   'could be removed.')))
                                     if remove_empty_dirs:
-                                        os.shutil.rmtree(wpath)
-                                        print('Removing ', wpath)
+                                        shutil.rmtree(wpath)
+                                        print(''.join(('Removing: ', wpath)))
                                 else:
                                     print(''.join(('Directory is not empty: ',
-                                                   wpath, ' Ending cleanup.',
-                                                   '\n')))
+                                                   wpath, '\nEnding cleanup.',
+                                                   )))
                                     break
+
                                 # Take off last path and start working up
                                 # the directory chain.
                                 wpath = os.path.sep.join(wpath.split(
                                     os.path.sep)[:-2])
+                            else:
+                                print('\n')
 
     return
