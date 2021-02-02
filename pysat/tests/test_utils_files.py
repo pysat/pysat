@@ -111,8 +111,8 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
             try:
                 # TODO: Remove once LASP download issues sorted out
                 # TravisCI can time out here
-                ostr = ''.join(('Downloading data for ', inst.platform,
-                                inst.name, inst.tag, inst.inst_id))
+                ostr = ' '.join(('Downloading data for', inst.platform,
+                                 inst.name, inst.tag, inst.inst_id))
                 print(ostr)
                 inst.download(start=dates[0], stop=dates[1], **kwargs)
             except:
@@ -160,7 +160,8 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Convert directories to simpler platform structure
         futils.update_data_directory_structure(new_template=templ,
                                                test_run=False,
-                                               remove_empty_dirs=True)
+                                               remove_empty_dirs=True,
+                                               full_breakdown=True)
 
         # Capture printouts
         captured, err = capsys.readouterr()
@@ -185,7 +186,8 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Update structure
         futils.update_data_directory_structure(new_template=templ,
                                                test_run=False,
-                                               remove_empty_dirs=True)
+                                               remove_empty_dirs=True,
+                                               full_breakdown=True)
 
         # Capture printouts
         captured, err = capsys.readouterr()
@@ -214,7 +216,8 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # no files should be found.
         futils.update_data_directory_structure(new_template=templ,
                                                test_run=False,
-                                               remove_empty_dirs=True)
+                                               remove_empty_dirs=True,
+                                               full_breakdown=True)
 
         # Capture printouts
         captured, err = capsys.readouterr()
