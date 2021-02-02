@@ -63,6 +63,11 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         TravisCICleanSetup.setup(self)
         reload(pysat)
 
+        # Note, if testing locally, after setting self.ci_env = True
+        # in TravisCICleanSetup.setup then a data directory needs to be
+        # set here.
+        # pysat.params['data_dirs'] = '~/DemoData/'
+
         # Create several pysat.SpaceWeather instruments and download data.
         # We want to start with a setup that covers general cases a user may
         # have.
