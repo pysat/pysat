@@ -35,7 +35,7 @@ class TestBasics():
 
     @pytest.mark.parametrize("path, check",
                              [('.', ['.']),
-                              (['.', '.pysat'], None)])
+                              (['.', '~/.pysat'], None)])
     def test_set_data_dirs(self, path, check):
         """Update pysat directory via params"""
         if check is None:
