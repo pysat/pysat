@@ -33,14 +33,16 @@ class TestBasics():
         pysat.params.store()
         reload(pysat)
 
-    @pytest.mark.parametrize("path, check",
+    @pytest.mark.parametrize("paths, check",
                              [('.', ['.']),
-                              (['.', '~/.pysat'], None)])
-    def test_set_data_dirs(self, path, check):
+                              (['.', '.'], None)])
+    def test_set_data_dirs(self, paths, check):
         """Update pysat directory via params"""
         if check is None:
-            check = path
-        pysat.params['data_dirs'] = path
+            check = paths
+
+        # Assign path
+        pysat.params['data_dirs'] = paths
         assert pysat.params['data_dirs'] == check
 
         # Check if next load of pysat remembers the change
