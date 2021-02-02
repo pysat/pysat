@@ -141,7 +141,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                                                full_breakdown=True)
 
         # Capture printouts
-        captured, err = capsys.readouterr()
+        captured = capsys.readouterr()
 
         # Check for descriptive output from full_breakdown
         fstr = 'Will move: '
@@ -164,7 +164,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                                                full_breakdown=True)
 
         # Capture printouts
-        captured, err = capsys.readouterr()
+        captured = capsys.readouterr()
 
         # Check if we did things correctly. Look for correct output strings.
         for inst in self.insts:
@@ -190,7 +190,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                                                full_breakdown=True)
 
         # Capture printouts
-        captured, err = capsys.readouterr()
+        captured = capsys.readouterr()
 
         # Check if we did things correctly. Look for correct output strings.
         for inst in self.insts:
@@ -220,7 +220,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                                                full_breakdown=True)
 
         # Capture printouts
-        captured, err = capsys.readouterr()
+        captured = capsys.readouterr()
 
         # Check for no files output
         index = 0
