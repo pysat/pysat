@@ -85,8 +85,8 @@ if not os.path.isdir(pysat_dir) or \
 
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
-                   "Set `pysat.params['data_dirs']` equal to a path that specifies a "
-                   "top-level directory to store science data.")))
+                   "Set `pysat.params['data_dirs']` equal to a path that "
+                   "specifies a top-level directory to store science data.")))
 else:
     # Load up existing parameters file
     params = _params.Parameters()
