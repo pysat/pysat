@@ -150,13 +150,13 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
 
         # Check for descriptive output from full_breakdown
         fstr = 'Will move: '
-        assert captured.find(fstr) >= 0
+        assert captured.out.find(fstr) >= 0
 
         # Check how many instruments have no files found. Will be used later.
         index = 0
         orig_num_missing = 0
         while index < len(captured):
-            index = captured.find('No files found.', index)
+            index = captured.out.find('No files found.', index)
             if index == -1:
                 break
             else:
@@ -176,7 +176,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
             # Check for all files moved.
             fstr = ''.join(('All ', inst.platform, inst.name, inst.tag,
                             inst.inst_id, 'files moved and accounted for.\n'))
-            assert captured.find(fstr) >= 0
+            assert captured.out.find(fstr) >= 0
 
             # Check that directories were removed.
             assert not os.path.isdir(inst.files.data_path)
@@ -202,7 +202,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
             # Check for all files moved.
             fstr = ''.join(('All ', inst.platform, inst.name, inst.tag,
                             inst.inst_id, 'files moved and accounted for.\n'))
-            assert captured.find(fstr) >= 0
+            assert captured.out.find(fstr) >= 0
 
             # Refresh inst with the old directory template set to get now 'old'
             # path information.
@@ -215,7 +215,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
             # Confirm that the code was aware the directory was not empty.
             fstr = ''.join(('Directory is not empty: ', inst2.files.data_path,
                             ' Ending cleanup.'))
-            assert captured.find(fstr) >= 0
+            assert captured.out.find(fstr) >= 0
 
         # Try to update structure again. Files have already moved so
         # no files should be found.
@@ -231,7 +231,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         index = 0
         num_missing = 0
         while index < len(captured):
-            index = captured.find('No files found.', index)
+            index = captured.out.find('No files found.', index)
             if index == -1:
                 break
             else:
