@@ -550,8 +550,12 @@ def update_data_directory_structure(new_template, test_run=True,
                                 if not os.path.isfile(ofile):
                                     ostr = ''.join(ofile, ' already moved.')
                                     print(ostr)
-                                else:
-                                    shutil.move(ofile, nfile)
+                                # Get path portion of filename
+                                head, _ = os.path.split(nfile)
+                                # Ensure path exists
+                                check_and_make_path(head)
+                                # Move the file now
+                                shutil.move(ofile, nfile)
                             else:
                                 # New file
                                 ostr = ''.join(nfile, ' already exists.')
@@ -605,7 +609,7 @@ def update_data_directory_structure(new_template, test_run=True,
                                 else:
                                     print(''.join(('Directory is not empty: ',
                                                    wpath, '\nEnding cleanup.',
-                                                   )))
+                                                   '\n')))
                                     break
 
                                 # Take off last path and start working up
@@ -614,5 +618,55 @@ def update_data_directory_structure(new_template, test_run=True,
                                     os.path.sep)[:-2])
                             else:
                                 print('\n')
+
+    return
+
+
+def check_and_make_path(path):
+    """Checks if path exists, creates it if it doesn't.
+
+    Raises RuntimeError error if unable to complete.
+
+    Parameters
+    ----------
+    path : string
+        Directory path without any file names. Creates all
+        necessary directories to complete the path.
+
+    Returns
+    -------
+    None
+
+    Notes
+    ------
+    Raises ValueError if constructed and desired path are not equal.  Checks
+    the entire directory structure to ensure all necessary directories are
+    created
+
+    """
+
+    if not os.path.exists(path):
+        # make path, checking to see that each level exists before attempting
+        root_path, local_dir = os.path.split(path)
+        make_dir = list()
+        while not os.path.exists(root_path):
+            if len(local_dir) > 0:
+                # avoid case where input is path=/stuff/level/
+                # trailing / leads to a local_dir=''
+                make_dir.append(local_dir)
+            root_path, local_dir = os.path.split(root_path)
+
+        if len(local_dir) > 0:
+            # avoid case where input is path=/stuff/level/
+            # trailing / leads to a local_dir=''
+            make_dir.append(local_dir)
+
+        while len(make_dir) > 0:
+            local_dir = make_dir.pop()
+            root_path = os.path.join(root_path, local_dir)
+            os.mkdir(root_path)
+
+        if os.path.normpath(root_path) != os.path.normpath(path):
+            raise ValueError('Desired and constructed paths differ')
 
     return
