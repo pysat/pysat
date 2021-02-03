@@ -210,8 +210,8 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
             assert os.path.isdir(inst2.files.data_path)
 
             # Confirm that the code was aware the directory was not empty.
-            fstr = ''.join(('Directory is not empty: ', inst2.files.data_path,
-                            ' Ending cleanup.'))
+            fstr = ''.join(('Directory is not empty: ',
+                            inst2.files.data_path, '\nEnding cleanup.', '\n'))
             assert captured.out.find(fstr) >= 0
 
         # Try to update structure again. Files have already moved so
