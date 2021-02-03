@@ -98,18 +98,6 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
                                  test_dates['']['all']])
         self.insts_kwargs.append({})
 
-        # # Data by 30-days, recent Kp
-        # self.insts.append(pysat.Instrument('sw', 'kp', tag='recent'))
-        # test_dates = pysatSpaceWeather.instruments.sw_kp._test_dates
-        # self.insts_dates.append([test_dates['']['recent']] * 2)
-        # self.insts_kwargs.append({})
-        #
-        # # Data by 3-day, forecast Kp
-        # self.insts.append(pysat.Instrument('sw', 'kp', tag='forecast'))
-        # test_dates = pysatSpaceWeather.instruments.sw_kp._test_dates
-        # self.insts_dates.append([test_dates['']['forecast']] * 2)
-        # self.insts_kwargs.append({})
-
         # Download data for all instruments
         for inst, dates, kwargs in zip(self.insts, self.insts_dates,
                                        self.insts_kwargs):
