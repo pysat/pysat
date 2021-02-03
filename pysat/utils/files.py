@@ -526,17 +526,29 @@ def update_data_directory_structure(new_template, test_run=True,
                         print(ostr)
                         break
 
-                    # Based on the files that do exist, construct the new
-                    # path names with the updated directory template.
-                    new_files = [os.path.join(currdir, subdir, ifile)
-                                 for ifile in flist]
-
+                    # User feedback
                     if len(old_files) == 0:
                         print('No files found.\n')
                     else:
                         print('{:d} files located.\n'.format(
                             len(old_files)))
 
+                    # Based on the files that do exist, construct new
+                    # path names with the updated directory template.
+                    new_files = [os.path.join(currdir, subdir, ifile)
+                                 for ifile in flist]
+
+                    # Some instruments may have additional directories below
+                    # those expected by pysat. Get a list of all those unique
+                    # directories and create as needed.
+                    new_dirs = [os.path.split(ifile)[0] for ifile in new_files]
+                    new_dirs = np.unique(new_dirs)
+                    if not test_run:
+                        for ndir in new_dirs:
+                            # Create needed directories if actually moving files
+                            check_and_make_path(ndir)
+
+                    # Ready to iterate through list of files and move them
                     for ofile, nfile in zip(old_files, new_files):
                         if full_breakdown:
                             # Print the proposed changes so user may verify
@@ -547,13 +559,6 @@ def update_data_directory_structure(new_template, test_run=True,
                         if not test_run:
                             # Move files if not in test mode
                             if not os.path.isfile(nfile):
-                                if not os.path.isfile(ofile):
-                                    ostr = ''.join(ofile, ' already moved.')
-                                    print(ostr)
-                                # Get path portion of filename
-                                head, _ = os.path.split(nfile)
-                                # Ensure path exists
-                                check_and_make_path(head)
                                 # Move the file now
                                 shutil.move(ofile, nfile)
                             else:
