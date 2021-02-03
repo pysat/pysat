@@ -195,8 +195,9 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Check if we did things correctly. Look for correct output strings.
         for inst in self.insts:
             # Check for all files moved.
-            fstr = ''.join(('All ', inst.platform, inst.name, inst.tag,
-                            inst.inst_id, 'files moved and accounted for.\n'))
+            fstr = ' '.join(('All', inst.platform, inst.name, inst.tag,
+                             inst.inst_id, 'files moved and accounted for.',
+                             '\n'))
             assert captured.out.find(fstr) >= 0
 
             # Refresh inst with the old directory template set to get now 'old'
