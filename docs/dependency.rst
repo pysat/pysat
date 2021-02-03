@@ -134,7 +134,7 @@ generally be unchanged.  Instruments are grouped in three lists:
               getattr(InstTestClass, method).pytestmark.append(mark)
           elif 'download' in names:
               mark = pytest.mark.parametrize("inst_dict",
-	                                     instruments['download'])
+	                                        instruments['download'])
               getattr(InstTestClass, method).pytestmark.append(mark)
           elif 'no_download' in names:
               mark = pytest.mark.parametrize("inst_dict",
