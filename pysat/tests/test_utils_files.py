@@ -150,7 +150,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Check how many instruments have no files found. Will be used later.
         index = 0
         orig_num_missing = 0
-        while index < len(captured):
+        while index < len(captured.out):
             index = captured.out.find('No files found.', index)
             if index == -1:
                 break
@@ -227,7 +227,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Check for no files output
         index = 0
         num_missing = 0
-        while index < len(captured):
+        while index < len(captured.out):
             index = captured.out.find('No files found.', index)
             if index == -1:
                 break
