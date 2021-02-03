@@ -115,6 +115,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Use dt.timedelta instead of pds.DateOffSet where possible
   - Reduced code duplication throughout package
   - Reduced unused code snippets throughout
+  - Ensured download start time is used
 
 ## [2.2.2] - 2020-12-31
  - New Features
