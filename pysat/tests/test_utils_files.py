@@ -155,6 +155,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
             if index == -1:
                 break
             else:
+                index += 1
                 orig_num_missing += 1
 
         # Convert directories to simpler platform structure
@@ -232,10 +233,11 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
             if index == -1:
                 break
             else:
+                index += 1
                 num_missing += 1
 
         # Get difference in number of instruments with no files.
-        new_missing = orig_num_missing - num_missing
+        new_missing = num_missing - orig_num_missing
 
         # Confirm none of the instruments had files.
         assert new_missing == len(self.insts)
