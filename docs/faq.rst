@@ -12,8 +12,8 @@ Things that are currently in development can be found here:
 
 **Q. Yeah, but what about ...?**
 
-A. If a dataset is not in the current list of instruments or in the list on
-the develop branch, feel free to add it as a pull request.  For the most part
+A. If a data set is not in the current list of instruments or in the list on
+the develop branch, feel free to add it as a pull request.  For the most part,
 pysat makes it simple to add instruments.  Templates are included for the
 NASA CDAWeb and Madrigal databases.  Check out info about adding an
 instrument here:
