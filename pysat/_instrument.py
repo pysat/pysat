@@ -39,7 +39,7 @@ class Instrument(object):
         identifies particular subset of instrument data.
     inst_id : string, optional
         identity within constellation
-    clean_level : {'clean','dusty','dirty','none'}, optional
+    clean_level : str or NoneType
         Level of data quality. If not provided, will default to the
         setting in `pysat.params['clean_level']` (default=None)
     pad : pandas.DateOffset, or dictionary, optional

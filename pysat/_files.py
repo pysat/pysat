@@ -182,7 +182,7 @@ class Files(object):
 
         # Ensure we have at least one path for pysat data directory
         if len(pysat.params['data_dirs']) == 0:
-            raise RuntimeError(" ".join(("pysat's `data_dirs` hasn't been set.",
+            raise NameError(" ".join(("pysat's `data_dirs` hasn't been set.",
                                          "Please set a top-level directory",
                                          "path to store data using",
                                          "`pysat.params['data_dirs'] = path`")))
@@ -480,7 +480,7 @@ class Files(object):
         Returns
         -------
         pandas.Series
-            file path names, indexed by datetime. Series is empty if no
+            File path names, indexed by datetime. Series is empty if no
             files are found.
 
         """
