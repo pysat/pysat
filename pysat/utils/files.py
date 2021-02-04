@@ -630,23 +630,16 @@ def update_data_directory_structure(new_template, test_run=True,
 def check_and_make_path(path):
     """Checks if path exists, creates it if it doesn't.
 
-    Raises RuntimeError error if unable to complete.
-
     Parameters
     ----------
     path : string
         Directory path without any file names. Creates all
         necessary directories to complete the path.
 
-    Returns
-    -------
-    None
-
-    Notes
+    Raises
     ------
-    Raises ValueError if constructed and desired path are not equal.  Checks
-    the entire directory structure to ensure all necessary directories are
-    created
+    ValueError
+        If input path and internally constructed path are not equal.
 
     """
 
