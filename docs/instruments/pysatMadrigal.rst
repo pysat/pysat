@@ -3,7 +3,7 @@ pysatMadrigal
 
 `pysatMadrigal <https://github.com/pysat/pysatMadrigal>`_ provides pysat
 support for data available at the
-`Madrigal database. <http://cedar.openmadrigal.org/>`_. See the
+`Madrigal database. <http://cedar.openmadrigal.org/>`_ See the
 Supported Instruments page on the docs.
 
 ..
