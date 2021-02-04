@@ -527,8 +527,9 @@ class Files(object):
 
         Returns
         -------
-        If `file_series` is a Series, removes the data path from the filename,
-        if present.  Void if `path_input` is None.
+        pds.series or None
+            If `file_series` is a Series, removes the data path from the
+            filename, if present.  Returns None if `path_input` is None.
 
         """
         out = None
