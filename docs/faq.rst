@@ -4,22 +4,26 @@ Frequently Asked Questions
 **Q. Does pysat support data from ... mission?**
 
 A. Possibly!  A full list of supported instruments, models, and scientific
-indices can be found here:
-`<https://pysat.readthedocs.io/en/latest/supported_instruments.html>`_
-Things that are currently in development can be found here:
-`<https://github.com/pysat/pysat/blob/develop/docs/supported_instruments.rst>`_
+   indices can be found at :ref:`eco-inst`. The status of instruments
+   and repositories currently under development can be found on the
+   `wiki <https://github.com/pysat/pysat/wiki/Pysat-Ecosystem-Status-Chart>`_.
 
 
 **Q. Yeah, but what about ...?**
 
-A. If a data set is not in the current list of instruments or in the list on
-the develop branch, feel free to add it as a pull request.  For the most part,
-pysat makes it simple to add instruments.  Templates are included for the
-NASA CDAWeb and Madrigal databases.  Check out info about adding an
-instrument here:
-`<https://pysat.readthedocs.io/en/latest/new_instrument.html>`_
-and make sure to read the guidelines for pull requests here:
-`<https://github.com/pysat/pysat/blob/main/CONTRIBUTING.md>`_
+A. If a data set is not in the current list of instruments or on the develop
+   branch of one of the repositories, consider contributing to the appropriate
+   repository. If no such repository currently exists, you may either do it
+   yourself or contact the pysat development team.  You may also create a
+   single instrument template and use it locally.  However, contributions are
+   very welcome!
 
-Got a question?  Add it to the wiki FAQ:
-`<https://github.com/pysat/pysat/wiki/FAQ>`_
+   Check out info about :ref:`rst_new_inst` and make sure to read the
+   development guidelines in the Contrubiting section.
+
+**Q.  My question isn't listed here :(**
+
+A. Add it to the `wiki FAQ <https://github.com/pysat/pysat/wiki/FAQ>`_, join
+   the pysat slack channel, add a *question* issue to the appropriate pysat
+   GitHub repository, or email the development team at
+   pysat.developers@gmail.com.
