@@ -129,7 +129,7 @@ class Parameters(object):
                                 'file. Please check the locations, "./" or ',
                                 '"~/.pysat" for the file "pysat_settings.json"',
                                 '.'))
-                raise RuntimeError(estr)
+                raise OSError(estr)
 
         if create_new:
             # Initialize new settings file. Method below includes a .store call
