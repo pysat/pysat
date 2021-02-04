@@ -182,7 +182,7 @@ class TestCIonly(TravisCICleanSetup):
                     os.path.join(self.root, 'pysat_settings_moved.json'))
 
         # Ensure we can't create a parameters file without valid .json
-        with pytest.raises(RuntimeError) as err:
+        with pytest.raises(OSError) as err:
             Parameters()
         assert str(err).find('pysat is unable to locate a user settings') >= 0
 
