@@ -160,7 +160,7 @@ class TestNoDataDir():
 
     def test_no_data_dir(self):
         """Instrument should error if no data directory is specified."""
-        with pytest.raises(RuntimeError):
+        with pytest.raises(NameError):
             pysat.Instrument()
 
 
@@ -1024,7 +1024,7 @@ class TestCIonly():
         pysat.params.data['data_dirs'] = []
 
         # Try to instantiate Instrument
-        with pytest.raises(RuntimeError) as err:
+        with pytest.raises(NameError) as err:
             pysat.Instrument('pysat', 'testing')
 
         # Confirm we have the correct error
