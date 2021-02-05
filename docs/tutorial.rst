@@ -5,6 +5,7 @@ Tutorial
 .. toctree::
    :maxdepth: 2
 
+   tutorial/tutorial_v3_upgrade.rst
    tutorial/tutorial_basics.rst
    tutorial/tutorial_parameters.rst
    tutorial/tutorial_verbosity.rst
