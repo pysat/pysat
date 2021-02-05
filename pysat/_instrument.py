@@ -34,13 +34,13 @@ class Instrument(object):
         name of platform/satellite.
     name : string
         name of instrument.
-    tag : string, optional
+    tag : string
         identifies particular subset of instrument data.
-    inst_id : string, optional
+    inst_id : string
         identity within constellation
-    clean_level : {'clean','dusty','dirty','none'}, optional
+    clean_level : {'clean','dusty','dirty','none'}
         level of data quality
-    pad : pandas.DateOffset, or dictionary, optional
+    pad : pandas.DateOffset, or dictionary
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
         custom functions. Dictionary, if supplied, is simply passed to
