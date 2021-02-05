@@ -29,7 +29,13 @@ for organizing data while pysat v3.0 begins with a default of
 ``platform/name/tag/inst_id``. Thus, by default, a pysat v3.0 install will
 generally not find all existing data files that were managed by pysat v2.x.
 
-There are two main paths forward for restoring access to all existing data:
+Additionally, support for individual instruments has been moved out of
+pysat and into a penumbra of supporting packages. These supporting
+packages must be installed and registered with pysat before data may
+be loaded. See :ref:`ecosystem` and :ref:`api-pysat-registry` for more.
+
+There are two main paths forward for restoring access to all data after
+registering the necessary packages:
 
 - Update pysat's directory template to match the structure on the current
   install.

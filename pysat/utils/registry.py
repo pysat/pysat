@@ -13,9 +13,10 @@ external or custom instrument modules, as for those shipped
 with pysat, by maintaining information about these outside
 instrument files.
 
-Instrument support modules must be registered before use. For
-example, assume there is an implementation for myInstrument in the
-module my.package.myInstrument with platform and name attributes
+Instrument support modules must be registered before use. This may
+be done individually or for a collection of Instruments at once. For
+example, assume there is an implementation for `myInstrument` in the
+module `my.package.myInstrument` with platform and name attributes
 'myplatform' and 'myname'. Such an instrument may be registered with
 ::
 
@@ -30,6 +31,24 @@ and name string identifiers.
 ::
 
     Instrument('myplatform', 'myname')
+
+A full suite of instrument support modules may be registered at once
+using
+::
+
+    # General form where my.package contains a collection of
+    # submodules to support Instrument data sets.
+    registry.register_by_module(my.package)
+
+    # Register published packages from pysat team
+    import pysatSpaceWeather
+    registry.register_by_module(pysatSpaceWeather.instruments)
+
+    import pysatNASA
+    registry.register_by_module(pysatNASA.instruments)
+
+    import pysatModels
+    registry.register_by_module(pysatModels.models)
 
 """
 
