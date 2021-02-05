@@ -88,7 +88,7 @@ different local routines to validate the TIE-GCM ionosphere using the C/NOFS IVM
 **E** x **B** drifts. This figure also demonstrates how pysat Instruments can
 be used to retrieve both external and internal data sets.
 
-.. image:: ./images/pysat_workflow.png
+.. image:: ../images/pysat_workflow.png
 
 Simple Workflow
 ---------------
@@ -384,7 +384,7 @@ load both the vernal and autumnal equinoxes).
     plt.xlabel("Universal Time", labelpad=-15)
 
 
-.. image:: ./images/basic_demo.png
+.. image:: ../images/basic_demo.png
 
 Metadata
 ^^^^^^^^

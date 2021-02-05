@@ -5,7 +5,7 @@ The pysat ``load`` method takes care of a lot of the processing details needed
 to produce a scientifically useful data set.  The image below provides an
 overview of this proceess.
 
-.. image:: ./images/pysat_load_flow_chart.png
+.. image:: ../images/pysat_load_flow_chart.png
 
 	   
 Clean Data
