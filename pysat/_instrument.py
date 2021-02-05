@@ -45,7 +45,7 @@ class Instrument(object):
     clean_level : {'clean','dusty','dirty','none'}
         level of data quality
         (default='clean')
-    pad : pandas.DateOffset, or dictionary
+    pad : pandas.DateOffset, dictionary, or NoneType
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
         custom functions. Dictionary, if supplied, is simply passed to
@@ -55,7 +55,7 @@ class Instrument(object):
         Orbit information, {'index': index, 'kind': kind, 'period': period}.
         See pysat.Orbits for more information.
         (default={})
-    inst_module : module
+    inst_module : module or NoneType
         Provide instrument module directly, takes precedence over platform/name
         (default=None)
     update_files : boolean
