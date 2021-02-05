@@ -1,10 +1,8 @@
+.. _rst-inst:
+
 
 Installation
 ============
-
-**Starting from scratch**
-
-----
 
 Python and associated packages for science are freely available. Convenient
 science python package setups are available from `<https://www.python.org/>`_,
@@ -14,34 +12,11 @@ that works well with pysat. Core science packages such as numpy, scipy,
 matplotlib, pandas and many others may also be installed directly via the
 python package installer "pip" or your favorite package manager.
 
-For maximum safety, pysat should be installed into its own virtual
-environment to ensure there are no conflicts with any other installed Python
+For maximum safety, you can install pysat into its own virtual environment.
+This ensures there are no conflicts with any other installed Python
 distributions.
 
-For MacOS and Linux systems make sure that `gcc` is compatible with Fortran
-code. In Linux this can be accomplished by installing `gfortran`.  For MacOS
-systems it is recommended that `gcc` is installed via
-`HomeBrew <https://brew.sh>`_
-for compatibility with Fortran code.
-
-.. code:: bash
-
-    brew install gcc
-
-
-For Windows systems, please see the Windows section below
-for setting up a POSIX compatible C/Fortran environment.
-
-To use Anaconda's tools for creating a suitable virtual environment, for Python
-2
-
-.. code:: bash
-
-    conda create -n virt_env_name python=2.7
-    conda activate virt_env_name
-    conda install numpy -c conda
-
-and for Python 3
+To use Anaconda's tools for creating a suitable virtual environment,
 
 .. code:: bash
 
@@ -50,10 +25,8 @@ and for Python 3
     conda install numpy -c conda
 
 
-
-**pysat**
-
-----
+Standard installation
+---------------------
 
 pysat itself may be installed from a terminal command line via::
 
@@ -62,23 +35,25 @@ pysat itself may be installed from a terminal command line via::
 There are a few packages that pysat depends on that will be installed as
 needed by the installer:
 
+     * dask
      * netCDF4
-     * numpy (>=1.12)
-     * pandas (>=0.23)
+     * numpy
+     * pandas
+     * portalocker
      * scipy
+     * toolz
      * xarray
 
 
 
-**Development Installation**
-
-----
+Development Installation
+------------------------
 
 pysat may also be installed directly from the source repository on github::
 
    git clone https://github.com/pysat/pysat.git
    cd pysat
-   python setup.py install
+   python setup.py install --user
 
 An advantage to installing through github is access to the development branches.
 The latest bugfixes can be found in the ``develop`` branch. However, this
@@ -90,20 +65,7 @@ virtual environment and using::
    git checkout develop
    python setup.py develop
 
-The use of `develop` rather than `install` installs the code 'in-place', so
-any changes to the software do not have to be reinstalled to take effect.
-
-
-
-**Windows**
-
-To get pysat installed in Windows you need a POSIX compatible C/ Fortran
-compiling environment. This is required to compile the
-`pysatCDF <https://github.com/pysat/pysatCDF/>`_ package.
-
-Python environment: Python 3.x
-
-#. Install Microsoft's Windows Subsystem for Linux (WSL) following
-   the directions from `<https://docs.microsoft.com/en-us/windows/wsl/install-win10>`_.
-#. Python, and pysat, may now be installed following the instructions
-   above.
+The use of `develop` rather than `install` in the setup command installs the
+code 'in-place', so any changes to the software do not have to be reinstalled
+to take effect. It is not related to changing the pysat working branch from
+``main`` to ``develop`` in the preceeding line.
