@@ -48,7 +48,7 @@ There are two main paths forward for restoring access to all existing data:
 
    import pysat
 
-   # Update pysat's directory structure to match current file distribution.
+   # Update pysat's directory setting to match current file distribution.
    # Presuming the standard pysat v2.x distribution from above.
    pysat.params['directory_format'] = templ_str
 
@@ -71,4 +71,3 @@ There are two main paths forward for restoring access to all existing data:
 
    # After the files have been moved, update the directory structure setting
    pysat.params['directory_format'] = new_templ_str
-
