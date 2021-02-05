@@ -15,6 +15,7 @@ import os
 import pytest
 import shutil
 import tempfile
+import warnings
 
 import pysat
 from pysat.tests.registration_test_class import TestWithRegistration
@@ -47,47 +48,48 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
-        self.data_path = pysat.data_dir
+        self.data_path = pysat.params['data_dirs']
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        pysat.utils.set_data_dir(self.data_path)
+        pysat.params['data_dirs'] = self.data_path
 
     #######################
     # test pysat data dir options
-    def test_set_data_dir(self):
-        """update data_dir"""
-        pysat.utils.set_data_dir('.')
-        check1 = (pysat.data_dir == '.')
+    def test_deprecated_set_data_dir(self):
+        """update data_dir and look for deprecation"""
+
+        with warnings.catch_warnings(record=True) as war:
+            pysat.utils.set_data_dir('.')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+        msg = str(war[0].message)
+        assert msg.find('pysat has moved to a central') >= 0
+        assert pysat.params['data_dirs'] == ['.']
 
         # Check if next load of pysat remembers the change
         pysat._files = reload(pysat._files)
         pysat._instrument = reload(pysat._instrument)
         reload(pysat)
-        check2 = (pysat.data_dir == '.')
-
-        assert check1 & check2
+        assert pysat.params['data_dirs'] == ['.']
 
     def test_set_data_dir_no_store(self):
         """update data_dir without storing"""
-        pysat.utils.set_data_dir('.', store=False)
-        assert (pysat.data_dir == '.')
+
+        with warnings.catch_warnings(record=True) as war:
+            pysat.utils.set_data_dir('.', store=False)
+
+        msg = str(war[0].message)
+        assert msg.find('pysat support for optional storage') >= 0
+
+        assert pysat.params['data_dirs'] == ['.']
 
         # Check if next load of pysat remembers old settings
         pysat._files = reload(pysat._files)
         pysat._instrument = reload(pysat._instrument)
         reload(pysat)
-        assert (pysat.data_dir == self.data_path)
-
-    def test_set_data_dir_wrong_path(self):
-        """update data_dir with an invalid path"""
-        with pytest.raises(ValueError):
-            pysat.utils.set_data_dir('not_a_directory', store=False)
-
-    def test_set_data_dir_bad_directory(self):
-        with pytest.raises(ValueError) as excinfo:
-            pysat.utils.set_data_dir('/fake/directory/path', store=False)
-        assert str(excinfo.value).find('does not lead to a valid dir') >= 0
+        assert (pysat.params['data_dirs'] == self.data_path)
 
 
 class TestCIonly():
@@ -107,7 +109,7 @@ class TestCIonly():
         del self.ci_env
 
     def test_initial_pysat_load(self, capsys):
-        """Ensure inital load routines work"""
+        """Ensure initial load routines work"""
 
         # Move settings directory to simulate first load after install
         root = os.path.join(os.getenv('HOME'), '.pysat')
@@ -119,13 +121,10 @@ class TestCIonly():
         captured = capsys.readouterr()
         assert captured.out.find("Hi there!") >= 0
 
-        # Make sure user files are blank
-        with open(os.path.join(root, 'data_path.txt'), 'r') as f:
-            dir_list = f.readlines()
-            assert len(dir_list) == 1
-            assert dir_list[0].find('/home/travis/build/pysatData') >= 0
-        with open(os.path.join(root, 'user_modules.txt'), 'r') as f:
-            assert len(f.readlines()) == 0
+        # Make sure settings file created
+        assert os.path.isfile(os.path.join(root, 'pysat_settings.json'))
+        assert os.path.isdir(os.path.join(root, 'instruments'))
+        assert os.path.isdir(os.path.join(root, 'instruments', 'archive'))
 
         # Move settings back
         shutil.rmtree(root)
@@ -234,14 +233,14 @@ class TestBasicNetCDF4():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
-        self.data_path = pysat.data_dir
+        self.data_path = pysat.params['data_dirs']
 
         # create temporary directory
-        dir_name = tempfile.mkdtemp()
-        pysat.utils.set_data_dir(dir_name, store=False)
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=100)
+                                         num_samples=100, update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.pandas_format = True
 
@@ -250,8 +249,8 @@ class TestBasicNetCDF4():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        remove_files(self.testInst)
-        pysat.utils.set_data_dir(self.data_path, store=False)
+        pysat.params['data_dirs'] = self.data_path
+        self.tempdir.cleanup()
         del self.testInst, self.stime
 
     def test_load_netcdf4_empty_filenames(self):
@@ -366,7 +365,7 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):
         # create a bunch of files by year and doy
-        test_inst = pysat.Instrument('pysat', 'testing2d')
+        test_inst = pysat.Instrument('pysat', 'testing2d', update_files=True)
         prep_dir(test_inst)
         outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
         test_inst.load(2009, 1)
@@ -405,7 +404,7 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_higher_order_w_zlib(self):
         # create a bunch of files by year and doy
-        test_inst = pysat.Instrument('pysat', 'testing2d')
+        test_inst = pysat.Instrument('pysat', 'testing2d', update_files=True)
         prep_dir(test_inst)
         outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
         test_inst.load(2009, 1)
@@ -487,14 +486,15 @@ class TestBasicNetCDF4xarray():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
-        self.data_path = pysat.data_dir
+        self.data_path = pysat.params['data_dirs']
 
         # create temporary directory
-        dir_name = tempfile.mkdtemp()
-        pysat.utils.set_data_dir(dir_name, store=False)
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
+                                         update_files=True,
                                          num_samples=100)
         self.stime = pysat.instruments.pysat_testing2d_xarray._test_dates[
             '']['']
@@ -504,8 +504,9 @@ class TestBasicNetCDF4xarray():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        remove_files(self.testInst)
-        pysat.utils.set_data_dir(self.data_path, store=False)
+        # remove_files(self.testInst)
+        pysat.params['data_dirs'] = self.data_path
+        self.tempdir.cleanup()
         del self.testInst, self.stime
 
     def test_basic_write_and_read_netcdf4_default_format(self):

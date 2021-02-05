@@ -38,7 +38,8 @@ class TestLogging():
         """Runs before every method to create a clean testing setup.
         """
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
-                                         clean_level='clean')
+                                         clean_level='clean',
+                                         update_files=False)
         self.out = ''
         self.log_capture = StringIO()
         pysat.logger.addHandler(logging.StreamHandler(self.log_capture))
@@ -66,7 +67,8 @@ class TestBasics():
         """Runs before every method to create a clean testing setup.
         """
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
-                                         clean_level='clean')
+                                         clean_level='clean',
+                                         update_files=True)
         self.load_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.load(date=self.load_date)
         self.custom_args = [2]
@@ -220,8 +222,8 @@ class TestBasicsXarray(TestBasics):
         """
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=10, clean_level='clean')
-        self.load_date = pysat.instruments.pysat_testing_xarray._test_dates[
-            '']['']
+        self.load_date = pysat.instruments.pysat_testing_xarray._test_dates
+        self.load_date = self.load_date['']['']
         self.testInst.load(date=self.load_date)
         self.custom_args = [2]
 
@@ -237,7 +239,8 @@ class TestConstellationBasics():
         """
         self.testConst = pysat.Constellation(instruments=[
             pysat.Instrument('pysat', 'testing', num_samples=10,
-                             clean_level='clean')
+                             clean_level='clean',
+                             update_files=True)
             for i in range(5)])
         self.load_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.testConst.load(date=self.load_date)

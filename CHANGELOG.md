@@ -34,8 +34,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added support for custom 'add' methods to return xarray.Datasets
   - Added a display utility for discovering pysat Instrument data sets.
   - Added testing utility functions.
+  - Added support for multiple pysat data directories
+  - Reorganized .pysat directory to store instrument information under 
+    .pysat/instruments and .pysat/instruments/archive
+  - Added pysat.params, a central location to store and modify pysat default
+    parameters. File stored at .pysat/pysat_settings.json
+  - Added `warn_empty_file_list` to pysat.params to provide a warning if no 
+    Instrument files are found. Default is False.
+  - Updated default pysat directory organization template
   - Added support for dual specification of Instruments to include in a
     Constellation
+  - Added function to transition pysat managed data files to a user
+    provided template.
   - Allow `directory_format` input to `Instrument` to be a function
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
@@ -69,6 +79,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Changed `pysat.instruments.methods.general.list_files` kwarg
     `fake_monthly_files_from_daily` to `file_cadence`
   - Changed name of Instrument method `default` to `preprocess`
+  - Removed `pysat.data_dir`. Information now at `pysat.params['data_dirs']`.
+  - Moved `pysat.Instrument._filter_datetime_input` to 
+    `pysat.utils.time.filter_datetime_input`
+  - Deprecated `pysat.utils.set_data_dir`
   - Changed `name` kwarg in Constellation to `const_module`
   - Removed unnecessary Instrument attribute `labels`
   - Removed unnecessary Instrument kwargs
@@ -96,6 +110,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed unused input arguments
   - Corrects Instrument today, yesterday, and tomorrow methods by implementing
     datetime.datetime.utcnow
+  - Ensured pysat.Meta instances are immutable at Instrument instantiation
+  - Removed weak reference back to Instrument within Files class
   - Fixed access of xarray data with more than one dimension (#471)
 - Maintenance
   - nose dependency removed from unit tests

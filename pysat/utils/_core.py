@@ -3,6 +3,8 @@ import importlib
 import netCDF4
 import numpy as np
 import os
+import warnings
+
 import pandas as pds
 from portalocker import Lock
 import xarray as xr
@@ -14,33 +16,35 @@ def set_data_dir(path=None, store=True):
     """
     Set the top level directory pysat uses to look for data and reload.
 
+    .. deprecated::
+        `set_data_dir` has been deprecated. Please use
+        `pysat.params['data_dirs'] = path(s)` instead.
+
     Parameters
     ----------
-    path : string
-        valid path to directory pysat uses to look for data
+    path : string or list-like of str
+        valid path to directory pysat uses to look for data (default=None)
     store : bool
-        if True, store data directory for future runs
+        if True, store data directory for future runs (default=True).
 
     """
 
-    # account for a user prefix in the path, such as ~
-    path = os.path.expanduser(path)
-    # account for the presence of $HOME or similar
-    path = os.path.expandvars(path)
+    if not store:
+        estr = ''.join(('pysat support for optional storage has been ',
+                        'deprecated. Storing pysat ',
+                        'parameters via `pysat.params["data_dirs"] = path` ',
+                        'is thread-safe.'))
+        warnings.warn(estr, DeprecationWarning, stacklevel=2)
 
-    if os.path.isdir(path):
-        if store:
-            data_path_file = os.path.join(os.path.expanduser('~'),
-                                          '.pysat', 'data_path.txt')
-            with NetworkLock(data_path_file, 'w') as fout:
-                fout.write(path)
+    estr = ''.join(('pysat has moved to a central location for ',
+                    'storing and managing pysat parameters. Please switch to ',
+                    '`pysat.params["data_dirs"] = path` instead.'))
+    warnings.warn(estr, DeprecationWarning, stacklevel=2)
 
-        pysat.data_dir = path
-        pysat._files = importlib.reload(pysat._files)
-        pysat._instrument = importlib.reload(pysat._instrument)
-    else:
-        raise ValueError(' '.join(('Path {:s} does not lead to a valid',
-                                   'directory.')).format(path))
+    # Perform actual update of pysat directories using the params class
+    pysat.params._set_data_dirs(path, store=store)
+
+    return
 
 
 def scale_units(out_unit, in_unit):
@@ -607,18 +611,21 @@ def available_instruments(inst_loc=None):
             inst_ids = {'ERROR': {'ERROR': str(ierr)}}
         return inst_ids
 
+    # Get user modules dictionary.
+    user_modules = pysat.params['user_modules']
+
     if inst_loc is None:
         # Access the registered instruments
         inst_info = dict()
 
         # Cycle through each instrument platform and name to reshape the
         # dictionary and get the instrument tags and inst_ids
-        for platform in pysat.user_modules.keys():
+        for platform in user_modules.keys():
             inst_info[platform] = dict()
-            for name in pysat.user_modules[platform].keys():
-                inst_ids = get_inst_id_dict(pysat.user_modules[platform][name])
+            for name in user_modules[platform].keys():
+                inst_ids = get_inst_id_dict(user_modules[platform][name])
                 inst_info[platform][name] = {'inst_module':
-                                             pysat.user_modules[platform][name],
+                                             user_modules[platform][name],
                                              'inst_ids_tags': inst_ids}
     else:
         # Access the instruments in the specified module
@@ -723,8 +730,8 @@ class NetworkLock(Lock):
         """Lock manager compatible with networked file systems
         """
 
-        super(NetworkLock, self).__init__(timeout=pysat.file_timeout, *args,
-                                          **kwargs)
+        super(NetworkLock, self).__init__(timeout=pysat.params['file_timeout'],
+                                          *args, **kwargs)
 
     def release(self):
         """Releases the Lock so the file system

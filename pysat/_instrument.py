@@ -21,8 +21,9 @@ import xarray as xr
 
 import pysat
 from pysat import utils
-from pysat import user_modules
 from pysat import logger
+
+from pysat.utils.time import filter_datetime_input
 
 
 class Instrument(object):
@@ -38,8 +39,9 @@ class Instrument(object):
         identifies particular subset of instrument data.
     inst_id : string, optional
         identity within constellation
-    clean_level : {'clean','dusty','dirty','none'}, optional
-        level of data quality
+    clean_level : str or NoneType
+        Level of data quality. If not provided, will default to the
+        setting in `pysat.params['clean_level']` (default=None)
     pad : pandas.DateOffset, or dictionary, optional
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
@@ -51,17 +53,17 @@ class Instrument(object):
     inst_module : module
         Provide instrument module directly, takes precedence over platform/name
         (default=None)
-    update_files : boolean
+    update_files : boolean or Nonetype
         If True, immediately query filesystem for instrument files and store.
-        Otherwise, assume nothing has changed from the last time files were
-        loaded (default=False)
+        If False, the local files are presumed to be the same. By default,
+        this setting will be obtained from `pysat.params` (default=None)
     temporary_file_list : boolean
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
         (default=False)
     strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
-        monotonically increasing. (default=True
+        monotonically increasing. (default=True)
     directory_format : string, function, or NoneType
         Directory naming structure in string format. Variables such as platform,
         name, and tag will be filled in as needed using python string
@@ -204,7 +206,7 @@ class Instrument(object):
     # Define all magic methods
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
-                 clean_level='clean', update_files=False, pad=None,
+                 clean_level=None, update_files=None, pad=None,
                  orbit_info=None, inst_module=None, directory_format=None,
                  file_format=None, temporary_file_list=False,
                  strict_time_flag=True, ignore_empty_files=False,
@@ -251,13 +253,13 @@ class Instrument(object):
 
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
-                            else 'none')
+                            else pysat.params['clean_level'])
 
         # Assign strict_time_flag
         self.strict_time_flag = strict_time_flag
 
         # Assign directory format information, which tells pysat how to look in
-        # sub-directories for files
+        # sub-directories for files.
         if directory_format is not None:
             # assign_func sets some instrument defaults, but user inputs
             # take precedence
@@ -265,13 +267,16 @@ class Instrument(object):
 
         # The value provided by the user or the Instrument may be either
         # a string or a function
-        if self.directory_format is not None and callable(
-                self.directory_format):
-            self.directory_format = self.directory_format(tag, inst_id)
+        if self.directory_format is not None:
+            if callable(self.directory_format):
+                self.directory_format = self.directory_format(tag, inst_id)
+        else:
+            # Value not provided by user or developer. Use stored value.
+            self.directory_format = pysat.params['directory_format']
 
         # Assign the file format string, if provided by user. This enables
         # users to temporarily put in a new string template for files that may
-        # not match the standard names obtained from download routine.
+        # not match the standard names obtained from the download routine.
         if file_format is not None:
             self.file_format = file_format
 
@@ -302,6 +307,7 @@ class Instrument(object):
         # use Instrument definition of MetaLabels over the Metadata declaration
         self.meta_labels = labels
         self.meta = pysat.Meta(labels=self.meta_labels)
+        self.meta.mutable = False
 
         # Nano-kernel processing variables. Feature processes data on each load.
         self.custom_functions = []
@@ -400,6 +406,12 @@ class Instrument(object):
 
         # Instantiate the Files class
         temporary_file_list = not temporary_file_list
+
+        if ignore_empty_files is None:
+            ignore_empty_files = pysat.params['ignore_empty_files']
+        if update_files is None:
+            update_files = pysat.params['update_files']
+
         self.files = pysat.Files(self, directory_format=self.directory_format,
                                  update_files=update_files,
                                  file_format=self.file_format,
@@ -1045,7 +1057,8 @@ class Instrument(object):
                     package='pysat.instruments')
             else:
                 # Not a native pysat.Instrument.  First, get the supporting
-                # instrument module from the pysat registry
+                # instrument module from the pysat registry.
+                user_modules = pysat.params['user_modules']
                 if self.platform not in user_modules.keys():
                     raise KeyError('unknown platform supplied: {:}'.format(
                         self.platform))
@@ -1151,50 +1164,6 @@ class Instrument(object):
                                   ' default  values: {:}'.format(missing)]))
         return
 
-    def _filter_datetime_input(self, date):
-        """
-        Returns datetime that only includes year, month, and day.
-
-        Parameters
-        ----------
-        date : NoneType, array-like, or datetime
-            Single or sequence of datetime inputs
-
-        Returns
-        -------
-        out_date: NoneType, datetime, or list of datetimes
-            NoneType input yeilds NoneType output, array-like yeilds list,
-            datetime object yeilds like.  All datetime output excludes the
-            sub-daily temporal increments (keeps only date information).
-
-        Note
-        ----
-        Checks for timezone information not in UTC
-
-        """
-
-        if date is None:
-            out_date = None
-        else:
-            # Check for timezone information and remove time of day for
-            # single datetimes and iterable containers of datetime objects
-            if hasattr(date, '__iter__'):
-                out_date = []
-                for in_date in date:
-                    if(in_date.tzinfo is not None
-                       and in_date.utcoffset() is not None):
-                        in_date = in_date.astimezone(tz=dt.timezone.utc)
-
-                    out_date.append(dt.datetime(in_date.year, in_date.month,
-                                                in_date.day))
-            else:
-                if date.tzinfo is not None and date.utcoffset() is not None:
-                    date = date.astimezone(tz=dt.timezone.utc)
-
-                out_date = dt.datetime(date.year, date.month, date.day)
-
-        return out_date
-
     def _load_data(self, date=None, fid=None, inc=None):
         """
         Load data for an instrument on given date or fid, depending upon input.
@@ -1217,7 +1186,7 @@ class Instrument(object):
             pysat meta data
         """
 
-        date = self._filter_datetime_input(date)
+        date = filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
             # inclusive loading on filenames
@@ -1775,8 +1744,8 @@ class Instrument(object):
                     self._iter_width = dt.timedelta(days=1)
 
                 # Create list-like of dates for iteration
-                starts = self._filter_datetime_input(starts)
-                stops = self._filter_datetime_input(stops)
+                starts = filter_datetime_input(starts)
+                stops = filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
@@ -1831,7 +1800,7 @@ class Instrument(object):
     @date.setter
     def date(self, new_date):
         # Set the date property, see property docstring for details
-        self._date = self._filter_datetime_input(new_date)
+        self._date = filter_datetime_input(new_date)
 
     @property
     def index(self):
@@ -2007,7 +1976,7 @@ class Instrument(object):
             Today's date in UTC
 
         """
-        today_utc = self._filter_datetime_input(dt.datetime.utcnow())
+        today_utc = filter_datetime_input(dt.datetime.utcnow())
 
         return today_utc
 
@@ -2575,7 +2544,7 @@ class Instrument(object):
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
-            date = self._filter_datetime_input(date)
+            date = filter_datetime_input(date)
 
             # Increment after determining the desird step size
             if end_date is not None:
@@ -3063,8 +3032,8 @@ class Instrument(object):
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
             # whole days
-            start = self._filter_datetime_input(start)
-            stop = self._filter_datetime_input(stop)
+            start = filter_datetime_input(start)
+            stop = filter_datetime_input(stop)
             date_array = utils.time.create_date_range(start, stop, freq=freq)
 
         # Add necessary kwargs to the optional kwargs

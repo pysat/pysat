@@ -81,6 +81,9 @@ Files
 .. automodule:: pysat.utils.files
   :members:
 
+
+.. _api-pysat-registry:
+
 Registry
 ^^^^^^^^
 .. automodule:: pysat.utils.registry
