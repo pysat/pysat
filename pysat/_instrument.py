@@ -3014,7 +3014,7 @@ class Instrument(object):
                                self.name, '. ', err.message))
                 raise ValueError(msg)
 
-        if ((start is None) or (stop is None)) and (date_array is None):
+        if start is None and stop is None and date_array is None:
             # Defaults for downloads are set here rather than in the method
             # signature since method defaults are only set once! If an
             # Instrument object persists longer than a day then the download
@@ -3024,6 +3024,9 @@ class Instrument(object):
                                  'default (yesterday through tomorrow).']))
             start = self.yesterday()
             stop = self.tomorrow()
+        elif stop is None and date_array is None:
+            stop = start + dt.timedelta(days=1)
+
         logger.info('Downloading data to: {}'.format(self.files.data_path))
 
         if date_array is None:
