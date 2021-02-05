@@ -36,8 +36,8 @@ default assign the first path in ``pysat.params['data_dirs']``.
 .. note:: A data directory must be set before any pysat.Instruments may be used
    or an error will be raised.
 
-Basic Instrument Discovery
---------------------------
+Instrument Discovery
+--------------------
 
 Support for each instrument in pysat is enabled by a suite of methods that
 interact with the particular files for that dataset and supply the data within
@@ -86,11 +86,32 @@ must be registered.  To display the registered instruments, no input is needed.
 
     pysat.utils.display_available_instruments()
 
+Standard Workflow
+-----------------
+
+The standard pysat workflow takes place by interacting primarily with pysat and
+not the Instrument modules. Exceptions to this rule occur when invoking custom
+Instrument analysis methods (typically found in the
+``inst_package/instrument/methods/`` directory) or when using specific package
+utilites.  The figure below shows a sample workflow, where local routines use
+pysatSpaceWeather through pysat to create an input file with appropriate space
+weather inputs for TIE-GCM.  Then, the utilities in pysatModels are used within
+different local routines to validate the TIE-GCM ionosphere using the C/NOFS IVM
+**E** x **B** drifts. This figure also demonstrates how pysat Instruments can
+be used to retrieve both external and internal data sets.
+
+.. image:: ../images/pysat_workflow.png
+
+Simple Workflow
+---------------
+
+A simpler example, that presents a pysat workflow involving retrieving and
+loadiing data from a single Instrument, is presented below.
 
 .. _instantiation:
 
 Instantiation
--------------
+^^^^^^^^^^^^^
 
 To create a pysat.Instrument object, select a ``platform`` and instrument
 ``name`` or an ``inst_module`` along side (potentially) a ``tag`` and
@@ -140,7 +161,7 @@ provide their name and email address as their username and password.
                            inst_id='f12', user=username, password=password)
 
 Download
---------
+^^^^^^^^
 
 Let's download some data. To get DMSP data specifically all we have to do is
 invoke the ``.download()`` method attached to the DMSP object. If the username
@@ -194,35 +215,35 @@ from the server. This command downloads, as needed, the entire dataset.
    bandwidth as commercial providers
 
 Load Data
----------
+^^^^^^^^^
 
 Data is loaded into a pysat.Instrument object, in this case dmsp, using the
 ``.load`` method using year, day of year; date; or filename.
 
 .. code:: python
 
-   # load by year, day of year
+   # Load by year, day of year
    dmsp.load(2001, 1)
 
-   # load by date
-   dmsp.load(date=datetime.datetime(2001, 1, 1))
+   # Load by date
+   dmsp.load(date=start)
 
-   # load by filename from string
+   # Load by filename from string
    dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
 
-   # load by filename in tag
+   # Load by filename in tag
    dmsp.load(fname=dmsp.files[0])
 
-   # load by filename in tag and specify date
-   dmsp.load(fname=dmsp.files[datetime.datetime(2001, 1, 1)])
+   # Load by filename in tag and specify date
+   dmsp.load(fname=dmsp.files[start])
 
 When the pysat load routine runs it stores the instrument data into dmsp.data.
-pysat supports the use of two different data structures.
-You can either use a pandas DataFrame_, a highly capable structure with
-labeled rows and columns, or an xarray DataSet_ for data sets with
-more dimensions. Either way, the full data structure is available at::
+pysat supports the use of two different data structures. You can either use a
+pandas DataFrame_, a highly capable structure with labeled rows and columns, or
+an xarray DataSet_ for data sets with more dimensions. Either way, the full
+data structure is available at::
 
-   # all data
+   # Display all data
    dmsp.data
 
 This provides full access to the underlying data library functionality. The
@@ -238,10 +259,10 @@ Loading data by year and day of year.
 
 .. code:: python
 
-   # load by year, day of year from 2001, 1 up to but not including 2001, 3
+   # Load by year, day of year from 2001, 1 up to but not including 2001, 3
    dmsp.load(2001, 1, end_yr=2001, end_doy=3)
 
-   # the following two load commands are equivalent
+   # The following two load commands are equivalent
    dmsp.load(2001, 1, end_yr=2001, end_doy2=2)
    dmsp.load(2001, 1)
 
@@ -249,11 +270,11 @@ Loading data using datetimes.
 
 .. code:: python
 
-   # load by datetimes
+   # Load by datetimes
    dmsp.load(date=dt.datetime(2001, 1, 1),
              end_date=dt.datetime(2001, 1, 3))
 
-   # the following two load commands are equivalent
+   # The following two load commands are equivalent
    dmsp.load(date=dt.datetime(2001, 1, 1),
              end_date=dt.datetime(2001, 1, 2))
    dmsp.load(date=dt.datetime(2001, 1, 1))
@@ -285,11 +306,18 @@ loading all data at once.
    # F10.7 data
    import pysatSpaceWeather
    f107 = pysat.Instrument(inst_module=pysatSpaceWeather.instruments.sw_f107)
+
    # Load all F10.7 solar flux data, from beginning to end.
    f107.load()
 
-In addition, convenient access to the data is also available at
-the instrument level.
+
+Data Access
+^^^^^^^^^^^
+
+After loading data, the next thing you probably want to do is use it!  pysat
+supports standard pandas or xarray access through the pysat.data object, but
+also provides convenient access to the data at the instrument level that behaves
+the same whether the data is pandas or xarray.
 
 .. _DataFrame: https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
@@ -297,60 +325,27 @@ the instrument level.
 
 .. code:: python
 
-    # Convenient access
+    # Convenient data access
     dmsp['ti']
-    # slicing
+
+    # Slicing data by indices
     dmsp[0:10, 'ti']
-    # slicing by date time
+
+    # Slicing by date and time
     dmsp[start:stop, 'ti']
 
-    # Convenient assignment
+    # Convenient data assignment
     dmsp['ti'] = new_array
-    # exploit broadcasting, single value assigned to all times
+
+    # Convenient data broadcasting assignment, sets a single value to all times
     dmsp['ti'] = single_value
-    # slicing
+
+    # Assignment through index slicing
     dmsp[0:10, 'ti'] = sub_array
-    # slicing by date time
+
+    # Assignment through datetime slicing
     dmsp[start:stop, 'ti'] = sub_array
 
-See the :any:`Instrument` section for more information.
-
-To load data over a season pysat provides a function,
-``pysat.utils.time.create_date_range``, that returns an array of dates
-over a season. This time period does not need to be continuous (e.g.,
-load both the vernal and autumnal equinoxes).
-
-.. code:: python
-
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import pandas as pds
-
-    # create empty series to hold result
-    mean_ti = pds.Series()
-
-    # get list of dates between start and stop
-    start = dt.datetime(2001, 1, 1)
-    stop = dt.datetime(2001, 1, 10)
-    date_array = pysat.utils.time.create_date_range(start, stop)
-
-    # iterate over season, calculate the mean Ion Temperature
-    for date in date_array:
-       # load data into dmsp.data
-       dmsp.load(date=date)
-       # check if data present
-       if not dmsp.empty:
-           # isolate data to locations near geomagnetic equator
-           idx, = np.where((dmsp['mlat'] < 5) & (dmsp['mlat'] > -5))
-           # downselect data
-           dmsp.data = dmsp[idx]
-           # compute mean ion temperature using pandas functions and store
-           mean_ti[dmsp.date] = dmsp['ti'].abs().mean(skipna=True)
-
-    # plot the result using pandas functionality
-    mean_ti.plot(title='Mean Ion Temperature near Magnetic Equator')
-    plt.ylabel(dmsp.meta['ti', dmsp.meta.name_label] + ' (' +
-               dmsp.meta['ti', dmsp.meta.units_label] + ')')
 
 Note, np.where may be used to select a subset of data using either
 the convenient access or standard pandas or xarray selection methods.
@@ -368,44 +363,67 @@ is equivalent to
 
    dmsp.data = vefi[(dmsp['mlat'] < 5) & (dmsp['mlat'] > -5)]
 
+See the :any:`Instrument` section for more information.
 
-Clean Data
-----------
+Simple Analysis Example
+^^^^^^^^^^^^^^^^^^^^^^^
 
-Before data is available in .data it passes through an instrument specific
-cleaning routine. The amount of cleaning is set by the clean_level keyword,
-provided at instantiation. The level defaults to 'clean'.
+Here we present an example, following fromom the simple workflow above, where
+we plot DMSP ion temperature data over a season. pysat provides a function, 
+``pysat.utils.time.create_date_range``, that returns an array of dates
+over a season. This time period does not need to be continuous (e.g.,
+load both the vernal and autumnal equinoxes).
 
 .. code:: python
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
-                           clean_level=None)
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
-                           clean_level='clean')
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pds
 
-Four levels of cleaning may be specified,
+    # Create empty series to hold result
+    mean_ti = pds.Series()
 
-===============     ===================================
-**clean_level** 	        **Result**
----------------     -----------------------------------
-  clean		        Generally good data
-  dusty		        Light cleaning, use with care
-  dirty		        Minimal cleaning, use with caution
-  none		        No cleaning, use at your own risk
-===============     ===================================
+    # get list of dates between start and stop
+    start = dt.datetime(2001, 1, 1)
+    stop = dt.datetime(2001, 1, 10)
+    dmsp.download(start=start, stop=stop, user=username, password=password)
+    date_array = pysat.utils.time.create_date_range(start, stop)
 
-The user provided cleaning level is stored on the Instrument object at
-``dmsp.clean_level``. The details of the cleaning will generally vary greatly
-between instruments.
+    # Iterate over season, calculate the mean Ion Temperature
+    for date in date_array:
+       # Load data into dmsp.data
+       dmsp.load(date=date)
+       # Check if data present
+       if not dmsp.empty:
+           # Isolate data to locations near geomagnetic equator
+           idx, = np.where((dmsp['mlat'] < 5) & (dmsp['mlat'] > -5))
+
+           # Downselect data
+           dmsp.data = dmsp[idx]
+
+           # Compute mean ion temperature using pandas functions and store
+           mean_ti[dmsp.date] = dmsp['ti'].abs().mean(skipna=True)
+
+    # Plot the result using pandas functionality for a simple figure
+    mean_ti.plot(title='Mean Ion Temperature near Magnetic Equator')
+
+    # Improve figure using matplotlib tools
+    plt.ylabel(dmsp.meta['ti', dmsp.meta.labels.name] + ' (' +
+               dmsp.meta['ti', dmsp.meta.labels.units] + ')')
+    plt.xlabel("Universal Time", labelpad=-15)
+
+
+.. image:: ../images/basic_demo.png
 
 Metadata
---------
+^^^^^^^^
 
-Metadata is also stored along with the main science data. pysat presumes
-a minimum default set of metadata that may be arbitrarily expanded.
-The default parameters are driven by the attributes required by public science
-data files, like those produced by the Ionospheric Connections Explorer
-`(ICON) <https://icon.ssl.berkeley.edu>`_.
+The example aboved used metadata to provide the y-axis label name and units.
+Metadata is also stored in a :ref:`api-meta` object from the main science data.
+pysat presumes a minimum default set of metadata that may be arbitrarily
+expanded. The default parameters are driven by the attributes required by
+public science data files, like those produced by the Ionospheric Connections
+Explorer `(ICON) <http://icon.ssl.berkeley.edu>`_.
 
 ===============     ===================================
 **Metadata** 	        **Description**
@@ -424,30 +442,31 @@ data files, like those produced by the Ionospheric Connections Explorer
 
 .. code:: python
 
-   # all metadata
+   # Display all metadata
    dmsp.meta.data
 
-   # variable metadata
+   # Display ion temperature metadata
    dmsp.meta['ti']
 
-   # units using standard labels
+   # Retrieve units using standard labels
    dmsp.meta['ti'].units
 
-   # units using general labels
-   dmsp.meta['ti', dmsp.units_label]
+   # Retrieve units using general labels
+   dmsp.meta['ti', dmsp.meta.labels.units]
 
-   # update units for ti
-   dmsp.meta['ti'] = {'units':'new_units'}
+   # Update units for ion temperature
+   dmsp.meta['ti'] = {dmsp.meta.labels.units: 'Kelvin'}
 
-   # update display name, long_name
-   dmsp.meta['ti'] = {'long_name':'Fancy Name'}
+   # Update display name for ion temperature, using LaTeX notation
+   dmsp.meta['ti'] = {dmsp.meta.labels.name: 'T$_i$'}
 
-   # add new meta data
-   dmsp.meta['new'] = {dmsp.units_label:'fake',
-                       dmsp.name_label:'Display'}
+   # Add new meta data
+   dmsp.meta['new'] = {dmsp.meta.labels.units: 'unitless',
+                       dmsp.meta.labels.name: 'New display name'}
 
 The string values used within metadata to identify the parameters above
-are all attached to the instrument object as dmsp.*_label, or
+are all attached to the instrument object through a label assigned by the
+:ref:`api-metalabels` class.  They can be acceess as dmsp.meta.labels.*, or
 ``dmsp.units_label``, ``dmsp.min_label``, and ``dmsp.notes_label``, etc.
 
 All variables must have the same metadata parameters. If a new parameter
@@ -458,17 +477,17 @@ Data may be assigned to the instrument, with or without metadata.
 
 .. code:: python
 
-   # assign data alone
+   # Assign data alone
    dmsp['new_data'] = new_data
 
-   # assign data with metadata
-   # the data must be keyed under 'data'
-   # all other dictionary inputs are presumed to be metadata
+   # Assign data with metadata.
+   # The data must be keyed under 'data' and all other
+   # dictionary inputs are presumed to be metadata
    dmsp['new_data'] = {'data': new_data,
-                       dmsp.units_label: new_unit,
+                       dmsp.meta.labels.units: new_unit,
                        'new_meta_data': new_value}
 
-   # alter assigned metadata
+   # Alter assigned metadata
    dmsp.meta['new_data', 'new_meta_data'] = even_newer_value
 
 
@@ -476,10 +495,10 @@ The labels used for identifying metadata may be provided by the user at
 Instrument instantiation and do not need to conform with what is in the file::
 
    dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
-                           clean_level='dirty', units_label='new_units')
+                           clean_level='dirty', labels={'units': 'new_units'})
    dmsp.load(2001, 1)
    dmsp.meta['ti', 'new_units']
-   dmsp.meta['ti', dmsp.units_label]
+   dmsp.meta['ti', dmsp.meta.labels.units]
 
 While this feature doesn't require explicit support on the part of an instrument
 module developer, code that does not use the metadata labels may not always
