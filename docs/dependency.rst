@@ -34,8 +34,8 @@ could look something like:
 
 The instruments folder includes a file for each instrument object.  The
 requirements for structuring each of the instruments is discussed in
-:ref:`rst_new_inst`.  The __init__ file in this folder should import the instruments
-and construct a list of instruments to aid in the testing.
+:ref:`rst_new_inst`.  The __init__ file in this folder should import the
+instruments and construct a list of instruments to aid in the testing.
 
 .. code:: python
 
@@ -172,27 +172,32 @@ The test instruments are used as part of the unit tests.  This allows us to
 thoroughly test routines without including a large volume of data as part of
 the package.
 
-**pysat_testing:**
+pysat_testing
+^^^^^^^^^^^^^
 :ref:`api-pysat-testing` is the basic test object.  It returns a satellite-like
 object with 1D data as a function of latitude, longitude, and altitude in a
 pandas format.  Most similar to in situ data.
 
-**pysat_testing_xarray:**
+pysat_testing_xarray
+^^^^^^^^^^^^^^^^^^^^
 :ref:`api-pysat-testing_xarray` returns a satellite-like object with 1D data as
 a function of latitude, longitude, and altitude in a xarray format.
 
-**pysat_testing2d:**
+pysat_testing2d
+^^^^^^^^^^^^^^^
 :ref:`api-pysat-testing2d` is another satellite-like object that also returns
 profile data as a function of altitude at some distance from the satellite. It
 is similar to a Radio Occultation or other instruments that have altitude
 profiles.
 
-**pysat_testing2d_xarray:**
+pysat_testing2d_xarray
+^^^^^^^^^^^^^^^^^^^^^^
 :ref:`api-pysat-testing2d_xarray` is a satellite-like object that returns all
 of the above plus an imager-like data set, ie, remote data that is a function
 of time and two spatial dimensions.
 
-**pysat_testmodel:**
+pysat_testmodel
+^^^^^^^^^^^^^^^
 :ref:`api-pysat-testmodel` is an xarray object that returns a 4D object as a
 function of latitude, longitude, altitude, and time.  It most closely resembles
 data sets from geophysical models.
@@ -233,7 +238,7 @@ coverage for year changes both with and without leap days.
 Tips and Tricks
 ---------------
 
-Remember to include pysat as a dependency in your setup.py file.
+Remember to include pysat as a dependency in your setup.py or setup.cfg file.
 
 The CI environment will also need to be configured to install pysat and its
 dependencies.  You may need to install pysat from github rather than pip if

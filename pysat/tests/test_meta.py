@@ -1104,65 +1104,71 @@ class TestBasics():
 
     def test_transfer_attributes_to_instrument(self):
         """Test transfer of custom meta attributes"""
-        if self.meta.mutable:
-            # set non-conflicting attribute
-            self.meta.new_attribute = 'hello'
-            self.meta.transfer_attributes_to_instrument(self.testInst)
+        self.meta.mutable = True
 
-            # test transferred
-            assert self.testInst.new_attribute == 'hello'
+        # set non-conflicting attribute
+        self.meta.new_attribute = 'hello'
+        self.meta.transfer_attributes_to_instrument(self.testInst)
 
-            # ensure transferred attributes are removed
-            with pytest.raises(AttributeError):
-                self.meta.new_attribute
+        # test transferred
+        assert self.testInst.new_attribute == 'hello'
+
+        # ensure transferred attributes are removed
+        with pytest.raises(AttributeError):
+            self.meta.new_attribute
 
     def test_transfer_attributes_to_instrument_leading_(self):
         """Ensure private custom meta attributes not transferred"""
-        if self.meta.mutable:
-            # set private attributes
-            self.meta._yo_yo = 'yo yo'
-            self.meta.__yo_yo = 'yo yo'
+        self.meta.mutable = True
 
-            # include standard parameters as well
-            self.meta.new_attribute = 'hello'
-            self.meta.transfer_attributes_to_instrument(self.testInst)
+        # set private attributes
+        self.meta._yo_yo = 'yo yo'
+        self.meta.__yo_yo = 'yo yo'
 
-            # test private not transferred
-            assert not hasattr(self.testInst, "_yo_yo")
-            assert not hasattr(self.testInst, "__yo_yo")
+        # include standard parameters as well
+        self.meta.new_attribute = 'hello'
+        self.meta.transfer_attributes_to_instrument(self.testInst)
 
-            # Check to make sure other values still transferred
-            assert self.testInst.new_attribute == 'hello'
+        # test private not transferred
+        assert not hasattr(self.testInst, "_yo_yo")
+        assert not hasattr(self.testInst, "__yo_yo")
 
-            # ensure private attribute still present
-            assert self.meta._yo_yo == 'yo yo'
-            assert self.meta.__yo_yo == 'yo yo'
+        # Check to make sure other values still transferred
+        assert self.testInst.new_attribute == 'hello'
+
+        # ensure private attribute still present
+        assert self.meta._yo_yo == 'yo yo'
+        assert self.meta.__yo_yo == 'yo yo'
 
     def test_transfer_attributes_to_instrument_strict_names(self):
-        if self.meta.mutable:
-            self.meta.new_attribute = 'hello'
-            self.meta._yo_yo = 'yo yo'
-            self.meta.jojo_beans = 'yep!'
-            self.meta.name = 'Failure!'
-            self.meta.date = 'yo yo2'
-            self.testInst.load(2009, 1)
-            self.testInst.jojo_beans = 'nope!'
-            with pytest.raises(RuntimeError):
-                self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                            strict_names=True)
+        """Test attr transfer with strict_names set to True/False"""
+        self.meta.mutable = True
+
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.jojo_beans = 'yep!'
+        self.meta.name = 'Failure!'
+        self.meta.date = 'yo yo2'
+        self.testInst.load(2009, 1)
+        self.testInst.jojo_beans = 'nope!'
+        with pytest.raises(RuntimeError):
+            self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                        strict_names=True)
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
-        if self.meta.mutable:
-            self.meta.new_attribute = 'hello'
-            self.meta._yo_yo = 'yo yo'
-            self.meta.jojo_beans = 'yep!'
-            self.meta.name = 'Failure!'
-            self.meta.date = 'yo yo2'
-            self.testInst.load(2009, 1)
-            self.testInst.jojo_beans = 'nope!'
-            self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                        strict_names=False)
-            assert self.testInst.jojo_beans == 'yep!'
+        """Test attr transfer with strict_names set to True"""
+        self.meta.mutable = True
+
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.jojo_beans = 'yep!'
+        self.meta.name = 'Failure!'
+        self.meta.date = 'yo yo2'
+        self.testInst.load(2009, 1)
+        self.testInst.jojo_beans = 'nope!'
+        self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                    strict_names=False)
+        assert self.testInst.jojo_beans == 'yep!'
 
     def test_merge_meta(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -1207,6 +1213,15 @@ class TestBasics():
         assert self.meta.hey == greeting
 
         self.meta.mutable = False
+        with pytest.raises(AttributeError):
+            self.meta.hey = greeting
+
+    def test_meta_immutable_at_instrument_instantiation(self):
+        """Test meta immutable at instrument Instantiation"""
+
+        assert self.testInst.meta.mutable is False
+
+        greeting = '...listen!'
         with pytest.raises(AttributeError):
             self.meta.hey = greeting
 

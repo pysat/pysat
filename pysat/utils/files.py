@@ -9,11 +9,13 @@ import glob
 import numpy as np
 import os
 import re
+import shutil
 import string
 
 import pandas as pds
 
 from pysat.utils.time import create_datetime_index
+from pysat.utils._core import available_instruments
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
@@ -395,3 +397,274 @@ def search_local_system_formatted_filename(data_path, search_str):
 
     # Return the desired filename information
     return files
+
+
+def update_data_directory_structure(new_template, test_run=True,
+                                    full_breakdown=False,
+                                    remove_empty_dirs=False):
+    """Update pysat data directory structure to match supplied template
+
+    Translates all of pysat's managed science files to a new
+    directory structure. By default, pysat uses the template string stored in
+    pysat.params['directory_format'] to organize files. This method makes
+    it possible to transition an existing pysat installation so it works
+    with the supplied new template.
+
+    Parameters
+    ----------
+    new_template : str
+        New directory template string. The default value for pysat is
+         `os.path.join(('{platform}', '{name}', '{tag}', '{inst_id}'))`
+    test_run : bool
+        If True, a printout of all proposed changes will be made, but the
+        directory changes will not be enacted. (default=True)
+    full_breakdown : bool
+        If True, a full path for every file is printed to terminal.
+        (default=False)
+    remove_empty_dirs : bool
+        If True, all directories that had pysat.Instrument data moved
+        to another location and are now empty are deleted. Traverses
+        the directory chain up to the top-level directories in
+        `pysat.params['data_dirs']`. (default=False)
+
+    Note
+    ----
+    After updating the data directory structures users should nominally
+    assign `new_template` as the directory format via:
+
+        pysat.params['directory_format'] = new_template
+
+    """
+
+    # Import required here to avoid circular import
+    from pysat import Instrument
+
+    # Get a list of supported instruments
+    # Best solved with an upcoming method in pull #633
+    insts = available_instruments()
+
+    for platform in insts.keys():
+        for name in insts[platform].keys():
+            for inst_id in insts[platform][name]['inst_ids_tags'].keys():
+                tkeys = insts[platform][name]['inst_ids_tags'][inst_id].keys()
+                for tag in tkeys:
+
+                    # Get a list of current Instrument files. Some Instruments
+                    # construct filenames so we start by taking only the
+                    # unique ones.
+                    inst = Instrument(platform=platform, name=name,
+                                      inst_id=inst_id, tag=tag,
+                                      update_files=True)
+                    flist = inst.files.files.values
+                    flist = np.unique(flist)
+
+                    # Existing full directory path, including template.
+                    curr_path = inst.files.data_path
+
+                    # Figure out which top-level directory these files are in by
+                    # removing existing directory template information.
+                    # pysat supports multiple paths so we need to get
+                    # which of those this particular instrument uses.
+                    currdir = inst.files.data_path.split(
+                        inst.files.sub_dir_path)[0]
+
+                    # Create instrument with new information
+                    new_inst = Instrument(platform=platform, name=name,
+                                          inst_id=inst_id, tag=tag,
+                                          update_files=False,
+                                          directory_format=new_template)
+
+                    # Get new formatted directory template
+                    subdir = new_inst.files.sub_dir_path
+
+                    # Make new path using correct top_level data directory but
+                    # with new template. new_inst won't find files and thus
+                    # defaults to the first of all pysat data_dirs though
+                    # we know better.
+                    new_path = os.path.join(currdir, subdir, '')
+                    print(' '.join(('Working on Instrument:', platform, name,
+                                    tag, inst_id)))
+                    if curr_path == new_path:
+                        print('No change in directory needed.\n')
+                        break
+
+                    print('Current path :  ' + curr_path)
+                    print('Proposed path:  ' + new_path)
+
+                    # Construct full paths in lists for old and new filenames
+                    old_files = [os.path.join(inst.files.data_path, ifile)
+                                 for ifile in flist]
+
+                    # Determine which of these files exist.
+                    old_exists = [os.path.isfile(ofile) for ofile in old_files]
+                    idx, = np.where(old_exists)
+
+                    if len(idx) == 0:
+                        # If none of the files actually exists, likely that
+                        # instruments.methods.general.list_files is appending
+                        # a date to the end of the filename.
+                        exists = [os.path.isfile(ofile[:-11]) for ofile in
+                                  old_files]
+                        if np.all(exists):
+                            flist = [ifile[:-11] for ifile in flist]
+                            flist = np.unique(flist)
+                            old_files = [os.path.join(inst.files.data_path,
+                                                      ifile)
+                                         for ifile in flist]
+                        else:
+                            # Files don't exist as written and taking of
+                            # a trailing date didn't fix everything.
+                            raise ValueError()
+                    elif len(idx) < len(old_files):
+                        ostr = ' '.join(('{:d} out of {:d} expected files',
+                                         'were not found. It is likely',
+                                         'that', platform, name,
+                                         'is using a combination of internally',
+                                         'modified file names and regular ',
+                                         'names and must be moved manually.\n'))
+                        ostr = ostr.format(len(idx), len(old_files))
+                        print(ostr)
+                        break
+
+                    # User feedback
+                    if len(old_files) == 0:
+                        print('No files found.\n')
+                    else:
+                        print('{:d} files located.\n'.format(
+                            len(old_files)))
+
+                    # Based on the files that do exist, construct new
+                    # path names with the updated directory template.
+                    new_files = [os.path.join(currdir, subdir, ifile)
+                                 for ifile in flist]
+
+                    # Some instruments may have additional directories below
+                    # those expected by pysat. Get a list of all those unique
+                    # directories and create as needed.
+                    new_dirs = [os.path.split(ifile)[0] for ifile in new_files]
+                    new_dirs = np.unique(new_dirs)
+                    if not test_run:
+                        for ndir in new_dirs:
+                            # Create needed directories if actually moving files
+                            check_and_make_path(ndir)
+
+                    # Ready to iterate through list of files and move them
+                    for ofile, nfile in zip(old_files, new_files):
+                        if full_breakdown:
+                            # Print the proposed changes so user may verify
+                            ostr = ''.join(('Will move: ', ofile, '\n',
+                                            '       to: ', nfile))
+                            print(ostr)
+
+                        if not test_run:
+                            # Move files if not in test mode
+                            if not os.path.isfile(nfile):
+                                # Move the file now
+                                shutil.move(ofile, nfile)
+                            else:
+                                # New file
+                                ostr = ''.join(nfile, ' already exists.')
+                                print(ostr)
+
+                    if full_breakdown and (len(old_files) > 0):
+                        # Sometimes include a newline to maintain consistent
+                        # line spacing.
+                        print('')
+
+                    if len(old_files) > 0:
+                        # No missing files and there are actually
+                        # files on the disk to deal with.
+
+                        # Get new list of files from Instrument
+                        new_inst = Instrument(platform=platform, name=name,
+                                              inst_id=inst_id, tag=tag,
+                                              update_files=True,
+                                              directory_format=new_template)
+
+                        # Check on number of files before and after
+                        nnew = len(new_inst.files.files)
+                        nold = len(inst.files.files)
+                        if not test_run:
+                            if nnew != nold:
+                                estr = ' '.join(('Number of files before and',
+                                                 'after not the same.',
+                                                 'Something has gone wrong for',
+                                                 platform, name, tag, inst_id))
+                                raise ValueError(estr)
+
+                            print(' '.join(('All', platform, name, tag, inst_id,
+                                            'files moved and accounted for.',
+                                            '\n')))
+
+                            # Number of files checks out. Time to remove old
+                            # directories if there are no real files in there.
+                            # First, get full directory path of previous inst
+                            wpath = inst.files.data_path
+                            while wpath != currdir and (len(wpath)
+                                                        > len(currdir)):
+                                # Only continue while we are at a level
+                                # lower than the top-level pysat data directory.
+                                if len(os.listdir(wpath)) == 0:
+                                    # Directory is empty, remove it.
+                                    print(''.join((wpath, ' is empty and ',
+                                                   'could be removed.')))
+                                    if remove_empty_dirs:
+                                        shutil.rmtree(wpath)
+                                        print(''.join(('Removing: ', wpath)))
+                                else:
+                                    print(''.join(('Directory is not empty: ',
+                                                   wpath, '\nEnding cleanup.',
+                                                   '\n')))
+                                    break
+
+                                # Take off last path and start working up
+                                # the directory chain.
+                                wpath = os.path.sep.join(wpath.split(
+                                    os.path.sep)[:-2])
+                            else:
+                                print('\n')
+
+    return
+
+
+def check_and_make_path(path):
+    """Checks if path exists, creates it if it doesn't.
+
+    Parameters
+    ----------
+    path : string
+        Directory path without any file names. Creates all
+        necessary directories to complete the path.
+
+    Raises
+    ------
+    ValueError
+        If input path and internally constructed path are not equal.
+
+    """
+
+    if not os.path.exists(path):
+        # make path, checking to see that each level exists before attempting
+        root_path, local_dir = os.path.split(path)
+        make_dir = list()
+        while not os.path.exists(root_path):
+            if len(local_dir) > 0:
+                # avoid case where input is path=/stuff/level/
+                # trailing / leads to a local_dir=''
+                make_dir.append(local_dir)
+            root_path, local_dir = os.path.split(root_path)
+
+        if len(local_dir) > 0:
+            # avoid case where input is path=/stuff/level/
+            # trailing / leads to a local_dir=''
+            make_dir.append(local_dir)
+
+        while len(make_dir) > 0:
+            local_dir = make_dir.pop()
+            root_path = os.path.join(root_path, local_dir)
+            os.mkdir(root_path)
+
+        if os.path.normpath(root_path) != os.path.normpath(path):
+            raise ValueError('Desired and constructed paths differ')
+
+    return

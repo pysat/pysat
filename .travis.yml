@@ -47,6 +47,8 @@ install:
   - mkdir /home/travis/build/pysatData
   # install pysat
   - python setup.py install
+  # install pysatSpaceWeather after pysat until pysat v3.0 released
+  - pip install pysatSpaceWeather
 
 after_success:
  - coveralls --rcfile=setup.cfg

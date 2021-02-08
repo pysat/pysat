@@ -208,3 +208,42 @@ def remove_leading_text(inst, target=None):
                 inst.meta[new_key] = new_meta
 
     return
+
+
+def filename_creator(value, format_str=None, start_date=None, stop_date=None):
+    """Creates filenames as needed to support use of generated pysat data sets
+
+    Parameters
+    ----------
+    value : slice
+        Datetime slice, see _instrument.py,
+        fname = self.files[date:(date + inc)]
+    format_str : str
+        File format template string (default=None)
+    start_date : datetime.datetime or None
+        First date supported (default=None)
+    stop_date: datetime.datetime or None
+        Last date supported (default=None)
+
+    Returns
+    -------
+    pandas.Series
+        Created filenames from format_str indexed by datetime
+
+    Raises
+    ------
+    NotImplementedError
+        This method is a stub to support development of a potential feature
+        slated for a future release.
+
+    """
+
+    estr = ''.join(('This feature has not been implemented yet and is here ',
+                    'to support experimentation by the pysat team. If you are ',
+                    'here intentionally, please contact the pysat developers ',
+                    'at pysat.developers@gmail.com or pysat.slack.com and let ',
+                    'us know what you are trying to accomplish so we can ',
+                    'evaluate supporting the desired use case.'))
+    raise NotImplementedError(estr)
+
+    return

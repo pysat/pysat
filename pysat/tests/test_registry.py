@@ -18,7 +18,7 @@ from pysat.tests.registration_test_class import TestWithRegistration
 
 
 def ensure_updated_stored_modules(modules):
-    """Ensure stored pysat.user_modules updated
+    """Ensure stored pysat.params['user_modules'] updated
     to include modules
 
     Parameters
@@ -26,7 +26,7 @@ def ensure_updated_stored_modules(modules):
     modules : list
         List of tuples (module_string, platform, name)
         that will be checked against stored
-        pysat.user_modules
+        pysat.params['user_modules']
 
     """
     # make sure filesystem was updated
@@ -38,7 +38,7 @@ def ensure_updated_stored_modules(modules):
 
 
 def ensure_live_registry_updated(modules):
-    """Ensure current pysat.user_modules updated
+    """Ensure current pysat.params['user_modules'] updated
     to include modules
 
     Parameters
@@ -46,15 +46,15 @@ def ensure_live_registry_updated(modules):
     modules : list
         List of tuples (module_string, platform, name)
         that will be checked against stored
-        pysat.user_modules
+        pysat.params['user_modules']
 
     """
 
     for module_name, platform, name in modules:
         # check that global registry was updated
-        assert platform in pysat.user_modules
-        assert name in pysat.user_modules[platform]
-        assert module_name in pysat.user_modules[platform][name]
+        assert platform in pysat.params['user_modules']
+        assert name in pysat.params['user_modules'][platform]
+        assert module_name in pysat.params['user_modules'][platform][name]
 
 
 class TestRegistration(TestWithRegistration):
@@ -239,11 +239,11 @@ class TestRegistration(TestWithRegistration):
         """Test error raised when removing module not present"""
 
         # Try to remove non-registered modules using only platform
-        stored_modules = copy.deepcopy(pysat.user_modules)
+        stored_modules = copy.deepcopy(pysat.params['user_modules'])
         registry.remove(['made_up_name'], [None])
 
         # Make sure nothing changed
-        assert stored_modules == pysat.user_modules
+        assert stored_modules == pysat.params['user_modules']
 
         return
 
