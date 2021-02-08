@@ -1,9 +1,10 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """
-pysat.utils.coords - coordinate transformations for pysat
-=========================================================
-
-pysat.utils.coords contains a number of coordinate-transformation
-functions used throughout the pysat package.
+Coordinate transformation functions for pysat
 """
 
 import datetime as dt
