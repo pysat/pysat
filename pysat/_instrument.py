@@ -44,7 +44,7 @@ class Instrument(object):
     clean_level : str or NoneType
         Level of data quality. If not provided, will default to the
         setting in `pysat.params['clean_level']` (default=None)
-    pad : pandas.DateOffset, or dictionary
+    pad : pandas.DateOffset, dictionary, or NoneType
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
         custom functions. Dictionary, if supplied, is simply passed to
