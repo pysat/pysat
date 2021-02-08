@@ -1,39 +1,36 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """
-pysat.utils.registry - user module registry operations in pysat
-===============================================================
+pysat user module registry utilities
 
-Instantiating a pysat.Instrument object for a particular data set
-requires a module for each instrument with routines that download,
-load, and clean the respective data. Instructions for adding support
-for external modules may be found here
-https://pysat.readthedocs.io/en/latest/new_instrument.html
+This module allows pysat to provide direct access to external or custom
+instrument modules by maintaining information about these instrument modules.
 
-This module enables pysat to provide the same user experience for
-external or custom instrument modules, as for those shipped
-with pysat, by maintaining information about these outside
-instrument files.
-
-Instrument support modules must be registered before use. This may
-be done individually or for a collection of Instruments at once. For
-example, assume there is an implementation for `myInstrument` in the
-module `my.package.myInstrument` with platform and name attributes
-'myplatform' and 'myname'. Such an instrument may be registered with
+Examples
+--------
+Instrument support modules must be registered before use. This may be done
+individually or for a collection of Instruments at once. For example, assume
+there is an implementation for `myInstrument` in the module
+`my.package.myInstrument` with platform and name attributes 'myplatform' and
+'myname'. Such an instrument may be registered with
 ::
 
     registry.register('my.package.myInstrument')
 
-The full module name "my.package.myInstrument" will be
-registered in pysat.params['user_modules'] and stored as a dict of
-dicts keyed by platform and name.
+The full module name "my.package.myInstrument" will be registered in
+pysat.params['user_modules'] and stored as a dict of dicts keyed by platform
+and name.
 
-Once registered, subsequent calls to Instrument may use the platform
-and name string identifiers.
+Once registered, subsequent calls to Instrument may use the platform and name
+string identifiers.
 ::
 
     Instrument('myplatform', 'myname')
 
-A full suite of instrument support modules may be registered at once
-using
+A full suite of instrument support modules may be registered at once using
 ::
 
     # General form where my.package contains a collection of
@@ -142,38 +139,41 @@ def register(module_names, overwrite=False):
     """
 
     for mod_name in module_names:
-        # first, ensure module string directs to something importable
+        # First, ensure module string directs to something importable
         try:
             inst_module = importlib.import_module(mod_name)
         except Exception:
-            # log then preserve trace and propagate error
-            estr = ' '.join(('There was a problem trying to import',
-                             mod_name))
+            # Log then preserve trace and propagate error
+            estr = ' '.join(('There was a problem trying to import', mod_name))
             logger.error(estr)
             raise
 
-        # second, check that module is itself pysat compatible
+        # Second, check that module is itself pysat compatible
         validate = itc.InstTestClass()
-        # work with test code, create dummy structure to make things work
 
+        # Work with test code, create dummy structure to make things work
         class Foo(object):
             pass
         validate.inst_loc = Foo()
-        # parse string to get package part and instrument module part
+
+        # Parse string to get package part and instrument module part
         parse = mod_name.split('.')
-        # module name without package
+
+        # Module name without package
         mod_part = parse[-1]
-        # the package preamble
+
+        # The package preamble
         pack_part = parse[:-1]
-        # assign package info to Test class
+
+        # Assign package info to Test class
         validate.inst_loc.__name__ = '.'.join(pack_part)
-        # run tests
+
+        # Run tests
         validate.test_modules_standard(mod_part)
         validate.test_standard_function_presence(mod_part)
 
-        # registry is a dict of dicts
-        # platform, name, module string
-        # get platform and name identifiers from imported module
+        # Registry is a dict of dicts with platform, name, and module string.
+        # Get the platform and name identifiers from imported module
         platform = inst_module.platform
         name = inst_module.name
 
