@@ -18,41 +18,6 @@ import xarray as xr
 import pysat
 
 
-def set_data_dir(path=None, store=True):
-    """
-    Set the top level directory pysat uses to look for data and reload.
-
-    .. deprecated::
-        `set_data_dir` has been deprecated. Please use
-        `pysat.params['data_dirs'] = path(s)` instead.
-
-    Parameters
-    ----------
-    path : string or list-like of str
-        valid path to directory pysat uses to look for data (default=None)
-    store : bool
-        if True, store data directory for future runs (default=True).
-
-    """
-
-    if not store:
-        estr = ''.join(('pysat support for optional storage has been ',
-                        'deprecated. Storing pysat ',
-                        'parameters via `pysat.params["data_dirs"] = path` ',
-                        'is thread-safe.'))
-        warnings.warn(estr, DeprecationWarning, stacklevel=2)
-
-    estr = ''.join(('pysat has moved to a central location for ',
-                    'storing and managing pysat parameters. Please switch to ',
-                    '`pysat.params["data_dirs"] = path` instead.'))
-    warnings.warn(estr, DeprecationWarning, stacklevel=2)
-
-    # Perform actual update of pysat directories using the params class
-    pysat.params._set_data_dirs(path, store=store)
-
-    return
-
-
 def scale_units(out_unit, in_unit):
     """ Determine the scaling factor between two units
 
