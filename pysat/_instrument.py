@@ -32,25 +32,27 @@ class Instrument(object):
     Parameters
     ----------
     platform : string
-        name of platform/satellite.
+        name of instrument platform (default='')
     name : string
-        name of instrument.
-    tag : string, optional
-        identifies particular subset of instrument data.
-    inst_id : string, optional
-        identity within constellation
+        name of instrument (default='')
+    tag : string
+        identifies particular subset of instrument data
+        (default='')
+    inst_id : string
+        Secondary level of identification, such as spacecraft within a
+        constellation platform (default='')
     clean_level : str or NoneType
         Level of data quality. If not provided, will default to the
         setting in `pysat.params['clean_level']` (default=None)
-    pad : pandas.DateOffset, or dictionary, optional
+    pad : pandas.DateOffset, dictionary, or NoneType
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
         custom functions. Dictionary, if supplied, is simply passed to
-        pandas DateOffset.
+        pandas DateOffset. (default=None)
     orbit_info : dict
         Orbit information, {'index': index, 'kind': kind, 'period': period}.
-        See pysat.Orbits for more information.
-    inst_module : module
+        See pysat.Orbits for more information.  (default={})
+    inst_module : module or NoneType
         Provide instrument module directly, takes precedence over platform/name
         (default=None)
     update_files : boolean or Nonetype
