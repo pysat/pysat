@@ -1,10 +1,10 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """
-pysat.utils.time - date and time operations in pysat
-====================================================
-
-pysat.utils.time contains a number of functions used throughout
-the pysat package, including interactions with datetime objects,
-seasons, and calculation of solar local time
+pysat date and time utilities
 """
 
 import datetime as dt
