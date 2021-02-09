@@ -17,7 +17,7 @@ results_dir = ''
 # there are changes in the orbit (local time info not in file)
 orbit_info = {'index': 'longitude', 'kind': 'longitude'}
 vefi = pysat.Instrument(inst_module=pysatNASA.instruments.cnofs_vefi,
-	                tag='dc_b', clean_level=None, orbit_info=orbit_info)
+                        tag='dc_b', clean_level=None, orbit_info=orbit_info)
 
 # Set limits on dates analysis will cover, inclusive
 start = dt.datetime(2010, 5, 9)
@@ -60,8 +60,8 @@ for orbit_count, vefi in enumerate(vefi.orbits):
             pax.set_ylim(-0.5, 1.5)
         else:
             pax.plot(vefi['longitude'], vefi[p_params[i]], '.', ms=1)
-            pax.set_title(vefi.meta[param].name)
-            pax.set_ylabel(vefi.meta[param].units)
+            pax.set_title(vefi.meta[p_params[i]].name)
+            pax.set_ylabel(vefi.meta[p_params[i]].units)
 
         if i == 6:
             pax.set_xlabel(vefi.meta['longitude'].name)
