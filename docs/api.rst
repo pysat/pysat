@@ -63,7 +63,7 @@ Orbits
 Parameters
 ----------
 
-.. autoclass:: pysat.Parameters
+.. autoclass:: pysat._params.Parameters
    :members:
 
 
