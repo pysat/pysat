@@ -54,43 +54,6 @@ class TestBasics():
         """Runs after every method to clean up previous testing."""
         pysat.params['data_dirs'] = self.data_path
 
-    #######################
-    # test pysat data dir options
-    def test_deprecated_set_data_dir(self):
-        """update data_dir and look for deprecation"""
-
-        with warnings.catch_warnings(record=True) as war:
-            pysat.utils.set_data_dir('.')
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
-        msg = str(war[0].message)
-        assert msg.find('pysat has moved to a central') >= 0
-        assert pysat.params['data_dirs'] == ['.']
-
-        # Check if next load of pysat remembers the change
-        pysat._files = reload(pysat._files)
-        pysat._instrument = reload(pysat._instrument)
-        reload(pysat)
-        assert pysat.params['data_dirs'] == ['.']
-
-    def test_set_data_dir_no_store(self):
-        """update data_dir without storing"""
-
-        with warnings.catch_warnings(record=True) as war:
-            pysat.utils.set_data_dir('.', store=False)
-
-        msg = str(war[0].message)
-        assert msg.find('pysat support for optional storage') >= 0
-
-        assert pysat.params['data_dirs'] == ['.']
-
-        # Check if next load of pysat remembers old settings
-        pysat._files = reload(pysat._files)
-        pysat._instrument = reload(pysat._instrument)
-        reload(pysat)
-        assert (pysat.params['data_dirs'] == self.data_path)
-
 
 class TestCIonly():
     """Tests where we mess with local settings.
