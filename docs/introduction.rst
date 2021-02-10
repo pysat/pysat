@@ -1,24 +1,29 @@
+.. _introduction:
 
-============
 Introduction
 ============
 
-Every scientific instrument has unique properties though the general process for
-science data analysis is independent of platform. Find and download the data,
-write code to load the data, clean the data, apply custom analysis functions,
-and plot the results. The Python Satellite Data Analysis Toolkit (pysat)
-provides a framework for this general process that builds upon these
-commonalities to simplify adding new instruments, reduce data management
-overhead, and enable instrument independent analysis routines. Though pysat was
-initially designed for in-situ satellite based measurements it aims to support
-all instruments in space science.
+Every scientific instrument has unique properties, though the general process
+for science data analysis is platform independent. This process can by described
+as: finding and downloading data, writing code to load the data, cleaning the
+data to an appropriate level, and applying the specific analysis for a project,
+and plotting the results. The Python Satellite Data Analysis Toolkit (pysat)
+provides a framework to support this general process that builds upon these
+commonalities.  In doing so, pysat simplifies the process of using new
+instruments, reduces data management overhead, and enables the creation of
+instrument independent analysis routines. Although pysat was initially designed
+for `in situ` satellite measurements, has grown to support both observational
+and modelled space science measurements.
 
-This document covers installation, a tutorial on pysat including demonstration
-code, coverage of supported instruments, an overview of adding new instruments
-to pysat, and an API reference.
+The newest incarnation of pysat has been pared down to focus on the core
+elements of our mission: providing a framework for data management and analysis.
+The instruments and analysis tools currently supported by the greater pysat
+ecosystem can be found in the :ref:`ecosystem` section.
 
-**Logos**
 
+.. _logos:
+
+Logos
 -----
 
 Does your project use pysat?  If so, grab a "powered by pysat" logo!
