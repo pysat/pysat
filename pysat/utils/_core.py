@@ -9,7 +9,6 @@ import importlib
 import netCDF4
 import numpy as np
 import os
-import warnings
 
 import pandas as pds
 from portalocker import Lock
