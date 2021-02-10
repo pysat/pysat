@@ -1,3 +1,5 @@
+.. _examples:
+
 Sample Scientific Analysis
 ==========================
 
