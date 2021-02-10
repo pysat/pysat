@@ -32,7 +32,11 @@ class Parameters(object):
     data : dict
         pysat user settings dictionary
     defaults : dict
-        Default parameters (keys) and values used by pysat
+        Default parameters (keys) and values used by pysat that include
+        {'clean_level': 'clean', 'directory_format':
+        os.path.join('{platform}', '{name}', '{tag}', '{inst_id}'),
+        'ignore_empty_files': False, 'update_files': True,
+        'file_timeout': 10, 'user_modules' : {}, 'warn_empty_file_list': False}
     file_path : str
         Location of file used to store settings
     non_defaults : list
@@ -52,28 +56,25 @@ class Parameters(object):
     current working directory and then in the home '~/.pysat' directory.
 
     All pysat parameters are automatically stored whenever a parameter is
-    assigned or modified.
+    assigned or modified. The default parameters and values tracked by this
+    class are grouped by type below.
 
-    Default parameters and values tracked by this class:
-        Values that map to the corresponding keywords on pysat.Instrument.
-            'clean_level' : 'clean'
-            'directory_format' : os.path.join('{platform}', '{name}',
-                                              '{tag}', '{inst_id}')
-            'ignore_empty_files': False
-            'update_files': True
+    Values that map to the corresponding keywords on pysat.Instrument:
+    clean_level, directory_format, ignore_empty_files, and update_files.  See
+    the Instrument docstring for more information on these keywords.
 
-        Values that map to internal pysat settings:
-            'file_timeout': 10; Window in time (seconds) that pysat will wait
-                 to load/write a file while another thread uses that file
-                 before giving up.
-            'user_modules' : {}; Stores information on modules registered within
-                pysat. Used by `pysat.utils.registry`
-            'warn_empty_file_list' : False; Raises a warning if no files are
-                found for a given pysat.Instrument.
+    Values that map to internal pysat settings: file_timeout, user_modules, and
+    warn_empty_file_list.
 
-    Stored pysat parameters without a working default value:
-        'data_dirs': Stores locations of top-level directories pysat uses to
-            store and load data.
+    Stored pysat parameters without a working default value: data_dirs.
+
+    file_timeout -  Time in seconds that pysat will wait to modify a busy file
+
+    user_modules - Stores information on modules registered by pysat
+
+    warn_empty_file_list - Raise a warning when no Instrument files are found
+
+    data_dirs - Directory(ies) where data are stored, in access order
 
     """
 
@@ -326,6 +327,7 @@ class Parameters(object):
         # Store settings in file
         with Lock(self.file_path, 'w', self['file_timeout']) as fout:
             json.dump(self.data, fout)
+
             # Ensure write is fully complete even for network file systems
             fout.flush()
             os.fsync(fout.fileno())
