@@ -15,7 +15,6 @@ import os
 import pytest
 import shutil
 import tempfile
-import warnings
 
 import pysat
 from pysat.tests.registration_test_class import TestWithRegistration
