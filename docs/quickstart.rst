@@ -14,7 +14,7 @@ pysat will maintain organization of data from various platforms. When you import
 pysat for the first time, it will remind you that you need to set this variable
 for your system.
 
-.. code:: python
+.. code::
 
    import pysat
 
