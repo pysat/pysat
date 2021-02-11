@@ -481,7 +481,10 @@ class Instrument(object):
                 in_kwargs[meth_key] = self.kwargs[sort_key][meth_key]
 
         # Get the inst_module string
-        istr = "None" if self.inst_module is None else self.inst_module.__name_
+        if self.inst_module is None:
+            istr = "None"
+        else:
+            istr = getattr(self.inst_module, "__name__")
 
         # Create string for other parts Instrument instantiation
         out_str = "".join(["pysat.Instrument(platform='", self.platform,
