@@ -10,4 +10,3 @@ __all__ = ['testing', 'testing_empty', 'single_test']
 
 for const in __all__:
     exec("from pysat.constellations import {:}".format(const))
-    

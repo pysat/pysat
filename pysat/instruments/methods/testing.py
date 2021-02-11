@@ -202,7 +202,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
 
     if cyclic:
         uts_root = np.mod(t0, period)
-        data = (np.mod(uts_root + num_array, period) 
+        data = (np.mod(uts_root + num_array, period)
                 * (np.diff(data_range)[0] / float(period))) + data_range[0]
     else:
         data = ((t0 + num_array) / period).astype(int)
