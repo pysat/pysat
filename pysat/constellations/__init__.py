@@ -6,4 +6,9 @@ is contained within a subpackage of the pysat.instruments
 package.
 """
 
-__all__ = []
+__all__ = ['testing', 'testing_empty', 'single_test', 'test_add_opposite',
+           'test_add_similar', 'test_diff_same', 'test_diff_similar']
+
+for const in __all__:
+    exec("from pysat.constellations import {:}".format(const))
+    
