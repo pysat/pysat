@@ -59,8 +59,9 @@ class Constellation(object):
 
         # Include Instruments from the constellation module, if it exists
         if const_module is not None:
-            const = importlib.import_module(const_module)
-            self.instruments = const.instruments
+            if not hasattr(const_module, 'instruments'):
+                raise AttributeError("missing required attribute 'instruments'")
+            self.instruments = const_module.instruments
         else:
             self.instruments = []
 
@@ -87,8 +88,8 @@ class Constellation(object):
 
         """
 
-        out_str = "Constellation(instruments={:}) -> {:d} Instruments".format(
-            self.instruments, len(self.instruments))
+        out_str = "".join(["pysat.Constellation(instruments=",
+                           "{:})".format(self.instruments)])
         return out_str
 
     def __str__(self):
