@@ -151,11 +151,11 @@ provide their name and email address as their username and password.
 
 .. code:: python
 
-   # set user and password for Madrigal
+   # Set user and password for Madrigal
    username = 'Firstname+Lastname'
    password = 'email@address.com'
 
-   # Initalize the instrument, passing the username and password to the
+   # Initialize the instrument, passing the username and password to the
    # standard routines that need it
    dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
                            inst_id='f12', user=username, password=password)
@@ -173,11 +173,11 @@ include them here.
 
    import datetime as dt
 
-   # define date range to download data
+   # Define date range to download data
    start = dt.datetime(2001, 1, 1)
    stop = dt.datetime(2001, 1, 2)
 
-   # download data, assuming username and password were not set
+   # Download data, assuming username and password were not set
    dmsp.download(start, stop, user=username, password=password)
 
 The specific location the data is downloaded to depends upon user settings.
@@ -217,7 +217,7 @@ from the server. This command downloads, as needed, the entire dataset.
 Load Data
 ^^^^^^^^^
 
-Data is loaded into a pysat.Instrument object, in this case dmsp, using the
+Data is loaded into a pysat.Instrument object, in this case ``dmsp``, using the
 ``.load`` method using year, day of year; date; or filename.
 
 .. code:: python
@@ -228,25 +228,18 @@ Data is loaded into a pysat.Instrument object, in this case dmsp, using the
    # Load by date
    dmsp.load(date=start)
 
+   # Load by filename from string
+   dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
+
 When the pysat load routine runs it stores the instrument data into::
 
-   # Display all data
+   # Instrument data
    dmsp.data
 
-This provides full access to the underlying data library functionality.
-
-
-pysat supports the use of two different data structures. You can either use a
-pandas DataFrame_, a highly capable structure with labeled rows and columns, or
-an xarray DataSet_ for data sets with more dimensions.
-
-The type of data structure is flagged at the instrument level with the attribute
-``inst.pandas_format``. This is set to True if a DataFrame is returned by the
-corresponding instrument module load method.
-
-pysat also supports loading data from a range of files/file dates. Keywords
-in pysat with `end_*` are an exclusive bound, similar to slicing numpy arrays,
-while those with `stop_*` are an inclusive bound.
+This configuration provides full access to the underlying data library
+functionality. For additional details on loading a range of dates as well as
+support for both pandas and xarray as the underlying data structure,
+see :ref:`tut-load`.
 
 
 Data Access
@@ -321,7 +314,7 @@ load both the vernal and autumnal equinoxes).
     # Create empty series to hold result
     mean_ti = pds.Series()
 
-    # get list of dates between start and stop
+    # Get list of dates between start and stop
     start = dt.datetime(2001, 1, 1)
     stop = dt.datetime(2001, 1, 10)
     dmsp.download(start=start, stop=stop, user=username, password=password)
