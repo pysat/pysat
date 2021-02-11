@@ -221,9 +221,10 @@ class Instrument(object):
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
         self.inst_id = inst_id.lower() if inst_id is not None else ''
+        self.inst_module = inst_module
 
-        if inst_module is None:
-            # use strings to look up module name
+        if self.inst_module is None:
+            # Use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):
                 self.platform = platform.lower()
                 self.name = name.lower()
@@ -241,17 +242,17 @@ class Instrument(object):
         else:
             # User has provided a module, assign platform and name here
             for iattr in ['platform', 'name']:
-                if hasattr(inst_module, iattr):
-                    setattr(self, iattr, getattr(inst_module, iattr).lower())
+                if hasattr(self.inst_module, iattr):
+                    setattr(self, iattr,
+                            getattr(self.inst_module, iattr).lower())
                 else:
-                    raise AttributeError(''.join(['Supplied module ',
-                                                  '{:} '.format(inst_module),
-                                                  'is missing required ',
-                                                  'attribute: ', iattr]))
+                    raise AttributeError(
+                        ''.join(['Supplied module {:}'.format(self.inst_module),
+                                 ' is missing required attribute: ', iattr]))
 
             # Look to supplied module for instrument functions and non-default
             # attribute values
-            self._assign_attrs(inst_module=inst_module)
+            self._assign_attrs(inst_module=self.inst_module)
 
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
@@ -1053,7 +1054,7 @@ class Instrument(object):
         if by_name:
             # pysat platform is reserved for modules within pysat.instruments
             if self.platform == 'pysat':
-                # look within pysat
+                # Look within pysat
                 inst = importlib.import_module(
                     ''.join(('.', self.platform, '_', self.name)),
                     package='pysat.instruments')
