@@ -36,10 +36,14 @@ vefi.bounds = (start, stop)
 # Reloading the same orbit will erase any changes made
 for orbit_count, vefi in enumerate(vefi.orbits):
     # Satellite data can have time gaps, which leads to plots with erroneous
-    # lines connecting measurements on both sides of the gap. The
-    # command below fills in any data gaps using a 1-second cadence with
-    # NaNs. See pandas documentation for more info. The 1-s cadence is
-    # the nominal cadence for this instrument.
+    # lines connecting measurements on both sides of the gap if you plot the
+    # data using lines instead of markers. The command below fills in any
+    # data gaps using a 1-second cadence with NaNs, which Python will treat
+    # as a gap when plotting with lines or markers. See the matplotlib
+    # documentation for more information about plotting behavior and the
+    # pandas documentation for more information about the `resample` mtehod.
+    # The 1-s cadence was chosen because it is the nominal cadence for this
+    # instrument.
     vefi.data = vefi.data.resample('1S', label='left').ffill(limit=1)
 
     # Create a figure with seven subplots
@@ -59,16 +63,15 @@ for orbit_count, vefi in enumerate(vefi.orbits):
             pax.set_ylabel('Interp. Flag')
             pax.set_ylim(-0.5, 1.5)
         else:
-            pax.plot(vefi['longitude'], vefi[p_params[i]], '.', ms=1)
+            pax.plot(vefi['longitude'], vefi[p_params[i]], '-', lw=0.5)
             pax.set_title(vefi.meta[p_params[i]].name)
             pax.set_ylabel(vefi.meta[p_params[i]].units)
 
         if i == 6:
             pax.set_xlabel(vefi.meta['longitude'].name)
+            pax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
         else:
             pax.xaxis.set_major_formatter(ticker.FormatStrFormatter(''))
-
-        pax.set_xlim(0, 360)
         pax.xaxis.set_major_locator(ticker.MultipleLocator(60))
 
     # Format and save the output for this orbit
