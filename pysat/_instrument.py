@@ -365,14 +365,14 @@ class Instrument(object):
             func_name = _kwargs_keys_to_func_name(fkey)
             func = getattr(self, func_name)
 
-            # get dict of supported keywords and values
+            # Get dict of supported keywords and values
             default_kwargs = _get_supported_keywords(func)
 
-            # check if kwargs are in list
+            # Check if kwargs are in list
             good_kwargs = [ckey for ckey in kwargs.keys()
                            if ckey in default_kwargs]
 
-            # store appropriate user supplied keywords for this function
+            # Store appropriate user supplied keywords for this function
             self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
 
             # Add in defaults if not already present
@@ -473,15 +473,24 @@ class Instrument(object):
             cstr = "".join((cstr, '{', tstr, '}, '))
         cstr += ']'
 
+        # Deconstruct the kwargs
+        in_kwargs = dict()
+
+        for sort_key in self.kwargs.keys():
+            for meth_key in self.kwargs[sort_key]:
+                in_kwargs[meth_key] = self.kwargs[sort_key][meth_key]
+
+        # Get the inst_module string
+        istr = "None" if self.inst_module is None else self.inst_module.__name_
+
         # Create string for other parts Instrument instantiation
-        out_str = "".join(["Instrument(platform='", self.platform, "', name='",
-                           self.name, "', inst_id='", self.inst_id,
+        out_str = "".join(["pysat.Instrument(platform='", self.platform,
+                           "', name='", self.name, "', inst_id='", self.inst_id,
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
                            "{:}, ".format(self.orbit_info),
-                           "custom=", cstr,
-                           ", **{:}".format(self.kwargs),
-                           ")"])
+                           "inst_module=", istr, ", custom=", cstr,
+                           ", **{:}".format(in_kwargs), ")"])
 
         return out_str
 
