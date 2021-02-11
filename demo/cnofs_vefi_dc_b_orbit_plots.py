@@ -17,7 +17,7 @@ results_dir = ''
 # there are changes in the orbit (local time info not in file)
 orbit_info = {'index': 'longitude', 'kind': 'longitude'}
 vefi = pysat.Instrument(inst_module=pysatNASA.instruments.cnofs_vefi,
-                        tag='dc_b', clean_level=None, orbit_info=orbit_info)
+                        tag='dc_b', clean_level='none', orbit_info=orbit_info)
 
 # Set limits on dates analysis will cover, inclusive
 start = dt.datetime(2010, 5, 9)
