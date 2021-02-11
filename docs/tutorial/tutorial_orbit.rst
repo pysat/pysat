@@ -1,14 +1,18 @@
+.. _tutorial-orbit:
+
 Orbit Support
 =============
 
-pysat has functionality to determine orbits on the fly from loaded data.
-These orbits will span day breaks as needed (generally). To use any of
-these orbit features, information about
-the orbit needs to be provided at initialization. The 'index' is the name of
-the data to be used for determining orbits, and 'kind' indicates type of orbit.
-See :any:`pysat.Orbits` for latest inputs.
+pysat can take satellite data break it up into single orbits on the fly.
+These orbits will typically span day breaks, if  needed.  The :ref:`api-orbits`
+class, which is treated as a subclass of the Instrument object performs these
+operations.
 
-There are several orbits to choose from,
+pysat, by default, does not bother to calculate any type of orbit.  To use the
+orbital methods, information about the orbit needs to be provided at Instrument
+initialization. The 'index' is the name of the data to be used for determining
+orbits, and 'kind' indicates type of orbit. There are several orbits to choose
+from.
 
 ===========   ================
 **kind**	**method**
@@ -25,14 +29,23 @@ orbit periods aren't constant, a 100% success rate is not be guaranteed.
 
 .. code:: python
 
-   info = {'index': 'mlt', 'kind': 'local time'}
-   ivm = pysat.Instrument(platform='cnofs', name='ivm', orbit_info=info,
-                          clean_level='None')
+   import datetime as dt
+   import pysat
+   import pysatNASA
+
+   orbit_info = {'index': 'mlt', 'kind': 'local time'}
+   ivm = pysat.Instrument(inst_module=pysatNASA.instruments.cnofs_ivm,
+                          orbit_info=orbit_info, clean_level='none')
 
 Orbit determination acts upon data loaded in the ivm object, so to begin we
-must load some data.
+must load some data (first downloading it if necessary).
 
 .. code:: python
+
+   start = dt.datetime(2012, 12, 28)
+   stop = start + dt.timedelta(days=1)
+   if len(ivm.files[start:stop]) < 1:
+       ivm.download(start=start, stop=stop)
 
    ivm.load(date=start)
 
@@ -43,8 +56,8 @@ The data for the orbit is stored in ``ivm.data``.
 
    ivm.orbits[1]
 
-   Returning cnofs ivm  data for 12/27/12
-   Returning cnofs ivm  data for 12/28/12
+   Returning cnofs ivm data for 12/27/12
+   Returning cnofs ivm data for 12/28/12
    Loaded Orbit:0
 
 Note that getting the first orbit caused pysat to load the day previous, and
@@ -161,18 +174,20 @@ into ivm.
    for ivm in ivm.orbits:
        print 'next available orbit ', ivm.data
 
-Ground Based Instruments
+Ground-Based Instruments
 ------------------------
 
 The nominal breakdown of satellite data into discrete orbits isn't typically
 as applicable for ground based instruments, each of which makes exactly one
-orbit per day. However, as the orbit iterator triggers off of
+geostationary orbit per day. However, as the orbit iterator triggers off of
 negative gradients in a variable, a change in sign, or any change
 in a value, this functionality may be used to break a ground based data set
 into alternative groupings, as appropriate and desired.
 
-As the orbit iterator defaults to an orbit period consistent with Low
-Earth Orbit, the expected period of the 'orbits' must be provided at
-Instrument instantiation. Given the orbit heritage, it is assumed that
-there is a small amount of variation in the orbit period. pysat will actively
-filter 'orbits' that are inconsistent with the prescribed orbit period.
+However, should you decide to try and use the Orbit class to break up
+ground-based data, keep in mind that the orbit iterator defaults to an orbit
+period consistent with Low Earth Orbit at Earth.  This means that the expected
+period of the 'orbits' must be provided at Instrument instantiation. Given the
+orbit heritage, it is assumed that there is a small amount of variation in the
+orbit period. pysat will actively filter 'orbits' that are inconsistent with
+the prescribed orbit period.
