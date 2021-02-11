@@ -359,8 +359,10 @@ class Instrument(object):
         self.kwargs = {}
         saved_keys = []
         partial_func = ['list_files', 'download', 'preprocess', 'clean']
-        for fkey in ['list_files', 'load', 'preprocess', 'download',
-                     'list_remote_files', 'clean']:
+        # Expected function keywords
+        exp_keys = ['list_files', 'load', 'preprocess', 'download',
+                    'list_remote_files', 'clean']
+        for fkey in exp_keys:
             func_name = _kwargs_keys_to_func_name(fkey)
             func = getattr(self, func_name)
 
@@ -399,7 +401,7 @@ class Instrument(object):
         # Test for user supplied keys that are not used
         missing_keys = []
         for custom_key in kwargs:
-            if custom_key not in saved_keys:
+            if custom_key not in saved_keys and (custom_key not in exp_keys):
                 missing_keys.append(custom_key)
 
         if len(missing_keys) > 0:
