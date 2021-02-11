@@ -63,7 +63,7 @@ unchanged. To clear all parameters,
 A description of each of the parameters and its use in pysat may be found
 using
 
-.. code:: python
+.. code::
 
    help(pysat.params)
 
