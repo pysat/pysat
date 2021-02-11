@@ -715,7 +715,7 @@ class TestBasics():
         """The repr output will match the beginning of the str output"""
         self.out = self.testInst.__repr__()
         assert isinstance(self.out, str)
-        assert self.out.find("Instrument(") == 0
+        assert self.out.find("pysat.Instrument(") == 0
 
     def test_basic_str(self):
         """Check for lines from each decision point in repr"""
