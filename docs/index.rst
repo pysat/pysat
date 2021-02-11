@@ -10,12 +10,12 @@ Welcome to pysat's documentation!
    :maxdepth: 2
 
    introduction.rst
+   ecosystem.rst
    citing.rst
    installation.rst
    quickstart.rst
    tutorial.rst
    examples.rst
-   ecosystem.rst
    new_instrument.rst
    dependency.rst
    api.rst
