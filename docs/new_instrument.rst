@@ -687,4 +687,4 @@ of required and optional methods and docstrings, which may be used as a
 starting point for adding a new instrument to pysat.
 
 Note that there are general supporting methods for adding an Instrument.
-See :ref:`rst_general_data_general` for more.
+See :ref:`api-methods-general` for more.

@@ -1,4 +1,4 @@
-.. _rst-inst:
+.. _inst:
 
 
 Installation

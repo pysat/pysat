@@ -18,9 +18,10 @@ See :ref:`tut-params` for more.
 
 .. note:: Removing the existing .pysat directory will erase all internal
    pysat information and requires resetting user parameters such as the
-   top-level directory that stores relevant science data. The pysat v2.0
-   function ``pysat.utils.set_data_dir(new_path)`` to set this top-level
-   directory has been replaced with ``pysat.params['data_dirs'] = new_path``.
+   top-level directory that stores relevant science data. To set this top-level
+   directory run ``pysat.params['data_dirs'] = new_path`` where ``new_path``
+   is a string or list of strings for existing directories that pysat
+   can use to store science data.
 
 pysat v3.0 now supports more than one top-level directory to store science
 data as well as updates the default sub-directory structure for storing data.

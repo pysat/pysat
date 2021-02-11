@@ -85,10 +85,12 @@ if not os.path.isdir(pysat_dir) or \
         data_dir = '/home/travis/build/pysatData'
         params['data_dirs'] = [data_dir]
 
-    print(''.join(("\nHi there!  Pysat will nominally store data in the "
-                   "'pysatData' directory at the user's home directory level. "
-                   "Set `pysat.params['data_dirs']` equal to a path that "
-                   "specifies a top-level directory to store science data.")))
+    print(''.join(("\nHi there!  pysat will nominally store data in a ",
+                   "'pysatData' directory which needs to be assigned. ",
+                   "Please run `pysat.params['data_dirs'] = path` where path ",
+                   "specifies one or more existing top-level directories that ",
+                   "may be used to store science data. `path` may either be ",
+                   "a single string or a list of strings.")))
 else:
     # Load up existing parameters file
     params = _params.Parameters()

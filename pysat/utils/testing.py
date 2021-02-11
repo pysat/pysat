@@ -3,12 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-""" Routines to make common evaluations
-
-ModuleAuthor
-------------
-Angeline G. Burrell, NRL, Dec 2020
-
+""" Utilities to perform common evaluations
 """
 
 import numpy as np

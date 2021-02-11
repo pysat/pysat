@@ -1,50 +1,20 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+
 import datetime as dt
 import importlib
 import netCDF4
 import numpy as np
 import os
-import warnings
 
 import pandas as pds
 from portalocker import Lock
 import xarray as xr
 
 import pysat
-
-
-def set_data_dir(path=None, store=True):
-    """
-    Set the top level directory pysat uses to look for data and reload.
-
-    .. deprecated::
-        `set_data_dir` has been deprecated. Please use
-        `pysat.params['data_dirs'] = path(s)` instead.
-
-    Parameters
-    ----------
-    path : string or list-like of str
-        valid path to directory pysat uses to look for data (default=None)
-    store : bool
-        if True, store data directory for future runs (default=True).
-
-    """
-
-    if not store:
-        estr = ''.join(('pysat support for optional storage has been ',
-                        'deprecated. Storing pysat ',
-                        'parameters via `pysat.params["data_dirs"] = path` ',
-                        'is thread-safe.'))
-        warnings.warn(estr, DeprecationWarning, stacklevel=2)
-
-    estr = ''.join(('pysat has moved to a central location for ',
-                    'storing and managing pysat parameters. Please switch to ',
-                    '`pysat.params["data_dirs"] = path` instead.'))
-    warnings.warn(estr, DeprecationWarning, stacklevel=2)
-
-    # Perform actual update of pysat directories using the params class
-    pysat.params._set_data_dirs(path, store=store)
-
-    return
 
 
 def scale_units(out_unit, in_unit):
@@ -160,27 +130,28 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     Parameters
     ----------
-    fnames : string or array_like of strings
-        filenames to load (default=None)
+    fnames : string, array_like of strings, or NoneType
+        Filename(s) to load, will fail if None (default=None)
     strict_meta : boolean
-        check if metadata across fnames is the same (default=False)
-    file_format : string
-        file_format keyword passed to netCDF4 routine
-        NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
-        (default=None)
-    epoch_name : string
-        (default='Epoch')
-    pandas_format : bool
-        keyword for pandas DataFrame (True) or xarray Dataset (False)
+        Flag that checks if metadata across fnames is the same if True
         (default=False)
+    file_format : string or NoneType
+        file_format keyword passed to netCDF4 routine.  Expects one of
+        'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
+        If None, defaults to 'NETCDF4'. (default=None)
+    epoch_name : string
+        Data key for time variable (default='Epoch')
+    pandas_format : bool
+        Flag specifying if data is stored in a pandas DataFrame (True) or
+        xarray Dataset (False). (default=False)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
-                  'notes': ('notes', str), 'desc': ('desc', str),
-                  'plot': ('plot_label', str), 'axis': ('axis', str),
-                  'scale': ('scale', str), 'min_val': ('value_min', float),
-                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'notes': ('notes', str), 'desc': ('desc', str),
+        'plot': ('plot_label', str), 'axis': ('axis', str),
+        'scale': ('scale', str), 'min_val': ('value_min', float),
+        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Returns
     --------
@@ -188,6 +159,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         DataFrame output
     meta : pysat.Meta
         Meta data
+
+    Raises
+    ------
+    ValueError
+        If kwargs that should be args are not set on instantiation.
 
     """
 
@@ -497,14 +473,12 @@ def generate_instrument_list(inst_loc, user_info=None):
     Parameters
     ----------
     inst_loc : python subpackage
-        The location of the instrument subpackage to test,
-        e.g., 'pysat.instruments'
+        The location of the instrument subpackage to test, e.g.,
+        'pysat.instruments'
     user_info : dict or NoneType
         Nested dictionary with user and password info for instrument module
-        name.  If None, no user or password is assumed.
-        (default=None)
-        EX: user_info = {'supermag_magnetometer': {'user': 'rstoneback',
-                                                   'password': 'None'}}
+        name.  If None, no user or password is assumed. (default=None)
+        EX: user_info = {'jro_isr': {'user': 'myname', 'password': 'email'}}
 
     Returns
     -------
@@ -519,9 +493,9 @@ def generate_instrument_list(inst_loc, user_info=None):
 
     Note
     ----
-    - This routine currently supports classification of instruments for unit
-      tests both in the core package and in seperate instrument packages that
-      use pysat.
+    This routine currently supports classification of instruments for unit
+    tests both in the core package and in seperate instrument packages that
+    use pysat.
 
     """
 
@@ -663,11 +637,11 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
     show_inst_mod : boolean or NoneType
         Displays the instrument module if True, does not include it if False,
         and reverts to standard display based on inst_loc type if None.
-       (default=None)
+        (default=None)
     show_platform_name : boolean or NoneType
         Displays the platform and name if True, does not include it if False,
         and reverts to standard display based on inst_loc type if None.
-       (default=None)
+        (default=None)
 
     Note
     ----
