@@ -45,6 +45,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     if data_path is None:
         data_path = ''
+
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
         start = test_dates[''][''] - pds.DateOffset(years=1)
@@ -96,16 +97,18 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Returns
     -------
-    Series of filenames indexed by file time
+    Series of filenames indexed by file time, see list_files for more info
 
     """
 
     # Determine the appropriate date range for the fake files
     if start is None:
         start = test_dates[''][''] - pds.DateOffset(years=1)
+
     if stop is None:
         stop = (test_dates[''][''] + pds.DateOffset(years=2)
                 - pds.DateOffset(days=1) + pds.DateOffset(months=1))
+
     file_date_range = pds.date_range(start, stop)
 
     return list_files(tag=tag, inst_id=inst_id, data_path=data_path,
@@ -144,10 +147,20 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
         routine attached to a pysat.Instrument object are passed to this
         routine via kwargs.
 
+    Raises
+    ------
+    ValueError
+        When user/password are required but not supplied
+
+    Warnings
+    --------
+    When no download support will be provided
+
     """
 
     if tag == 'no_download':
         warnings.warn('This simulates an instrument without download support')
+
     # Check that user name and password are passed through the unit tests
     if tag == 'user_password':
         if (not user) and (not password):
@@ -179,11 +192,17 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
         If True, assume that fake data is a cyclic function (ie, longitude,
         slt) that will reset to data_range[0] once it reaches data_range[1].
         If False, continue to monotonically increase
+
+    Returns
+    -------
+    data : array-like
+        Array with fake data
+
     """
 
     if cyclic:
         uts_root = np.mod(t0, period)
-        data = (np.mod(uts_root + num_array, period)
+        data = (np.mod(uts_root + num_array, period) 
                 * (np.diff(data_range)[0] / float(period))) + data_range[0]
     else:
         data = ((t0 + num_array) / period).astype(int)
@@ -204,7 +223,7 @@ def generate_times(fnames, num, freq='1S'):
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
 
-    Outputs
+    Returns
     -------
     uts : array
         Array of integers representing uts for a given day
@@ -212,6 +231,7 @@ def generate_times(fnames, num, freq='1S'):
         The DatetimeIndex to be used in the pysat test instrument objects
     date : datetime
         The requested date reconstructed from the fake file name
+
     """
 
     if isinstance(num, str):
@@ -224,7 +244,7 @@ def generate_times(fnames, num, freq='1S'):
     indices = []
     dates = []
     for loop, fname in enumerate(fnames):
-        # grab date from filename
+        # Grab date from filename
         parts = os.path.split(fname)[-1].split('-')
         yr = int(parts[0])
         month = int(parts[1])
@@ -239,9 +259,11 @@ def generate_times(fnames, num, freq='1S'):
         indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second
                    + 86400. * loop)
-    # combine index times together
+
+    # Combine index times together
     index = pds.DatetimeIndex(indices)
-    # make UTS an array
+
+    # Make UTS an array
     uts = np.array(uts)
 
     return uts, index, dates
@@ -250,13 +272,9 @@ def generate_times(fnames, num, freq='1S'):
 def define_period():
     """Define the default periods for the fake data functions
 
-    Parameters
-    ----------
-    None
-
     Returns
     -------
-    period : dict
+    def_period : dict
         Dictionary of periods to use in test instruments
 
     Note
@@ -265,29 +283,25 @@ def define_period():
 
     """
 
-    period = {'lt': 5820,  # 97 minutes
-              'lon': 6240,  # 104 minutes
-              'angle': 5820}
+    def_period = {'lt': 5820,  # 97 minutes
+                  'lon': 6240,  # 104 minutes
+                  'angle': 5820}
 
-    return period
+    return def_period
 
 
 def define_range():
     """Define the default ranges for the fake data functions
 
-    Parameters
-    ----------
-    None
-
     Returns
     -------
-    range : dict
+    def_range : dict
         Dictionary of periods to use in test instruments
 
     """
 
-    range = {'lt': [0.0, 24.0],
-             'lon': [0.0, 360.0],
-             'angle': [0.0, 2.0 * np.pi]}
+    def_range = {'lt': [0.0, 24.0],
+                 'lon': [0.0, 360.0],
+                 'angle': [0.0, 2.0 * np.pi]}
 
-    return range
+    return def_range
