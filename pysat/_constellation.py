@@ -6,7 +6,6 @@
 """ Created as part of a Spring 2018 UTDesign project.
 """
 
-import importlib
 import numpy as np
 
 
