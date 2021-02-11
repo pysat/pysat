@@ -150,7 +150,8 @@ class Files(object):
 
         # Grab Instrument info
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
-                          'tag': inst.tag, 'inst_id': inst.inst_id}
+                          'tag': inst.tag, 'inst_id': inst.inst_id,
+                          'inst_module': inst.inst_module}
         self.list_files_rtn = inst._list_files_rtn
 
         self.multi_file_day = inst.multi_file_day
