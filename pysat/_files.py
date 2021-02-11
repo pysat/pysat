@@ -238,15 +238,14 @@ class Files(object):
         """
         inst_repr = pysat.Instrument(**self.inst_info).__repr__()
 
-        out_str = "".join(["Files(", inst_repr, ", directory_format=",
+        out_str = "".join(["pysat.Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
                            ", update_files=",
                            "{:}, file_format=".format(self.update_files),
                            "{:}, ".format(self.file_format.__repr__()),
                            "write_to_disk={:}, ".format(self.write_to_disk),
                            "ignore_empty_files=",
-                           "{:})".format(self.ignore_empty_files),
-                           " -> {:d} Local files".format(len(self.files))])
+                           "{:})".format(self.ignore_empty_files)])
 
         return out_str
 
