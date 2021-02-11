@@ -1,5 +1,11 @@
 """
 Create a constellation with one testing instrument
+
+Attributes
+----------
+instruments : list
+    List of pysat.Instrument objects
+
 """
 
 import pysat
