@@ -139,9 +139,9 @@ class Orbits(object):
 
     def __repr__(self):
         """ Print the basic Orbits properties"""
-        out_str = "".join(["Orbits(inst=", self.inst.__repr__(), ", index=",
-                           "{:}, kind=".format(self.orbit_index),
-                           self.kind.__repr__(), ", period=",
+        out_str = "".join(["pysat.Orbits(inst=", self.inst.__repr__(),
+                           ", index=", self.orbit_index.__repr__(),
+                           ", kind=", self.kind.__repr__(), ", period=",
                            self.orbit_period.__repr__(), ")"])
         return out_str
 
