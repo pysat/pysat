@@ -1,4 +1,4 @@
-.. _tut-params:
+.. _tutorial-params:
 
 pysat Parameters
 ================
