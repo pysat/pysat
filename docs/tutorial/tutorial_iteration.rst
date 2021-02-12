@@ -1,4 +1,4 @@
-.. _tut-iter:
+.. _tutorial-iter:
 
 Iteration
 ---------
