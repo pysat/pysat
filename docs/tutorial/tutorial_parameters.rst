@@ -1,7 +1,7 @@
 .. _tutorial-params:
 
-pysat Parameters
-================
+Parameters
+==========
 
 The ``pysat.params`` class provides a central location for storing a variety
 of parameters used by pysat as well as custom user provided settings. An
@@ -63,7 +63,7 @@ unchanged. To clear all parameters,
 A description of each of the parameters and its use in pysat may be found
 using
 
-.. code:: python
+.. code::
 
    help(pysat.params)
 
