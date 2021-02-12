@@ -47,7 +47,8 @@ class InstTestClass():
     """
     module_attrs = ['platform', 'name', 'tags', 'inst_ids',
                     'load', 'list_files', 'download']
-    inst_attrs = ['tag', 'inst_id', 'acknowledgements', 'references']
+    inst_attrs = ['tag', 'inst_id', 'acknowledgements', 'references',
+                  'inst_module']
     inst_callable = ['load', 'list_files', 'download', 'clean', 'default']
     attr_types = {'platform': str, 'name': str, 'tags': dict,
                   'inst_ids': dict, 'tag': str, 'inst_id': str,
@@ -97,8 +98,9 @@ class InstTestClass():
                 # Test the required class attributes
                 for iattr in self.inst_attrs:
                     self.assert_hasattr(inst, iattr)
-                    self.assert_isinstance(getattr(inst, iattr),
-                                           self.attr_types[iattr])
+                    if iattr in self.attr_types:
+                        self.assert_isinstance(getattr(inst, iattr),
+                                               self.attr_types[iattr])
 
     @pytest.mark.all_inst
     def test_standard_function_presence(self, inst_name):

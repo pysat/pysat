@@ -150,7 +150,8 @@ class Files(object):
 
         # Grab Instrument info
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
-                          'tag': inst.tag, 'inst_id': inst.inst_id}
+                          'tag': inst.tag, 'inst_id': inst.inst_id,
+                          'inst_module': inst.inst_module}
         self.list_files_rtn = inst._list_files_rtn
 
         self.multi_file_day = inst.multi_file_day
@@ -237,15 +238,14 @@ class Files(object):
         """
         inst_repr = pysat.Instrument(**self.inst_info).__repr__()
 
-        out_str = "".join(["Files(", inst_repr, ", directory_format=",
+        out_str = "".join(["pysat.Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
                            ", update_files=",
                            "{:}, file_format=".format(self.update_files),
                            "{:}, ".format(self.file_format.__repr__()),
                            "write_to_disk={:}, ".format(self.write_to_disk),
                            "ignore_empty_files=",
-                           "{:})".format(self.ignore_empty_files),
-                           " -> {:d} Local files".format(len(self.files))])
+                           "{:})".format(self.ignore_empty_files)])
 
         return out_str
 
