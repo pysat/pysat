@@ -8,6 +8,7 @@ import datetime as dt
 import pytest
 
 import pysat
+from pysat import constellations
 
 
 class TestConstellation:
@@ -15,12 +16,9 @@ class TestConstellation:
     def setup(self):
         """Create instruments and a constellation for each test
         """
-        self.instruments = [pysat.Instrument('pysat', 'testing',
-                                             clean_level='clean',
-                                             update_files=True)
-                            for i in range(2)]
+        self.instruments = constellations.testing.instruments
         self.in_kwargs = {"instruments": self.instruments,
-                          "const_module": "pysat.constellations.testing"}
+                          "const_module": pysat.constellations.single_test}
         self.const = None
 
     def teardown(self):
@@ -29,9 +27,9 @@ class TestConstellation:
         del self.const, self.instruments, self.in_kwargs
 
     @pytest.mark.parametrize("ikey,ival,ilen",
-                             [("const_module", None, 2),
-                              ("instruments", None, 5),
-                              (None, None, 7)])
+                             [("const_module", None, 5),
+                              ("instruments", None, 1),
+                              (None, None, 6)])
     def test_construct_constellation(self, ikey, ival, ilen):
         """Construct a Constellation with good input
         """
@@ -59,11 +57,8 @@ class TestConstellation:
         """
         self.in_kwargs['const_module'] = None
         self.const = pysat.Constellation(**self.in_kwargs)
-
-        assert self.const[0] == self.instruments[0]
-        assert self.const[1] == self.instruments[1]
-        assert self.const[:] == self.instruments[:]
-        assert self.const[1::-1] == self.instruments[1::-1]
+        tst_get_inst = self.const[:]
+        pysat.utils.testing.assert_lists_equal(self.instruments, tst_get_inst)
 
     def test_repr_w_inst(self):
         """Test Constellation string output with instruments loaded
@@ -73,7 +68,6 @@ class TestConstellation:
         out_str = self.const.__repr__()
 
         assert out_str.find("Constellation(instruments") >= 0
-        assert out_str.find("-> 2 Instruments") > 0
 
     def test_str_w_inst(self):
         """Test Constellation string output with instruments loaded

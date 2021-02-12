@@ -246,42 +246,6 @@ Single Test
 
 .. _api-const-add-opposite:
 
-Add Opposite
-^^^^^^^^^^^^
-
-.. automodule:: pysat.constellations.test_add_opposite
-   :members:
-
-
-.. _api-const-add-similar:
-
-Add Similar
-^^^^^^^^^^^
-
-.. automodule:: pysat.constellations.test_add_similar
-   :members:
-
-
-.. _api-const-diff-same:
-
-Diff Same
-^^^^^^^^^
-
-.. automodule:: pysat.constellations.test_diff_same
-   :members:
-
-
-.. _api-const-diff-similar:
-
-Diff Similar
-^^^^^^^^^^^^
-
-.. automodule:: pysat.constellations.test_diff_similar
-   :members:
-
-
-.. _api-const-testing-empty:
-
 Testing Empty
 ^^^^^^^^^^^^^
 

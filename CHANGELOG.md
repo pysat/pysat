@@ -113,6 +113,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Ensured pysat.Meta instances are immutable at Instrument instantiation
   - Removed weak reference back to Instrument within Files class
   - Fixed access of xarray data with more than one dimension (#471)
+  - Improved robustness of eval(inst.__repr__()) (#636)
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility

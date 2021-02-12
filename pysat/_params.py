@@ -158,7 +158,7 @@ class Parameters(object):
 
         """
         dir_path = os.path.split(self.file_path)[0]
-        out_str = ''.join(('Parameters(path="', dir_path, '")'))
+        out_str = ''.join(('pysat._params.Parameters(path="', dir_path, '")'))
         return out_str
 
     def __str__(self, long_str=True):

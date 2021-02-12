@@ -195,7 +195,7 @@ class Meta(object):
 
         """
         nvar = len([kk for kk in self.keys()])
-        out_str = ''.join(['Meta(metadata=', self._data.__repr__(),
+        out_str = ''.join(['pysat.Meta(metadata=', self._data.__repr__(),
                            ', labels=', self.labels.__repr__(),
                            'export_nan=', self._export_nan.__repr__(),
                            ') -> {:d} Variables'.format(nvar)])
@@ -1423,7 +1423,7 @@ class MetaLabels(object):
         label_str = ', '.join(["{:s}={:} {:}".format(mlab, getattr(self, mlab),
                                                      self.label_type[mlab])
                                for mlab in self.label_type.keys()])
-        out_str = ''.join(['MetaLabels(', label_str, ")"])
+        out_str = ''.join(['pysat.MetaLabels(', label_str, ")"])
         return out_str
 
     def __str__(self):

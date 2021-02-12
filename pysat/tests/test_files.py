@@ -172,23 +172,23 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.out = ''
+
         # Use a two-year as default.  Some tests will use custom ranges.
         self.start = dt.datetime(2008, 1, 1)
         self.stop = dt.datetime(2009, 12, 31)
 
-        # store current pysat directory
+        # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
 
-        # create temporary directory
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
 
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             temporary_file_list=self.temporary_file_list,
-                             update_files=True)
-        # create instrument directories in tempdir
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing, clean_level='clean',
+            temporary_file_list=self.temporary_file_list, update_files=True)
+
+        # Create instrument directories in tempdir
         create_dir(self.testInst)
 
     def teardown(self):
@@ -201,7 +201,7 @@ class TestBasics():
         """The repr output will match the str output"""
         self.out = self.testInst.files.__repr__()
         assert isinstance(self.out, str)
-        assert self.out.find("Local files") > 0
+        assert self.out.find("pysat.Files(") >= 0
 
     def test_basic_str(self):
         """Check for lines from each decision point in str"""
