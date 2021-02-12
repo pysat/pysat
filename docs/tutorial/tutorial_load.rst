@@ -1,3 +1,5 @@
+.. _tutorial-load:
+
 Data Loading
 ============
 
