@@ -15,4 +15,4 @@ Tutorial
    tutorial/tutorial_independence.rst
    tutorial/tutorial_iteration.rst
    tutorial/tutorial_orbit.rst
-   tutorial/tutorial_full_independence.rst
+   tutorial/tutorial_periodic_analysis.rst
