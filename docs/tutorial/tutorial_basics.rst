@@ -239,7 +239,7 @@ When the pysat load routine runs it stores the instrument data into::
 This configuration provides full access to the underlying data library
 functionality. For additional details on loading a range of dates as well as
 support for both pandas and xarray as the underlying data structure,
-see :ref:`tut-load`.
+see :ref:`tutorial-load`.
 
 
 Data Access

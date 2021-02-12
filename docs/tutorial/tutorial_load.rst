@@ -1,4 +1,4 @@
-.. _tut-load:
+.. _tutorial-load:
 
 Data Loading
 ============
