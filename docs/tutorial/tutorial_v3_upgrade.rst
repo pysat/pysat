@@ -78,3 +78,5 @@ registering the necessary packages:
 
    # After the files have been moved, update the directory structure setting
    pysat.params['directory_format'] = new_templ_str
+
+.. note:: By default the `update_data_directory_structure` function runs in test mode.
