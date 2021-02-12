@@ -98,6 +98,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added a style guide for developers
   - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
+  - Updated loading data flow figure
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
