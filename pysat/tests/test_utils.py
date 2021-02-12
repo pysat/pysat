@@ -686,33 +686,28 @@ class TestNetworkLock():
 
     def test_with_timeout(self):
         # Open the file 2 times
-        pysat.params['file_timeout'] = 0.1
         with pytest.raises(portalocker.AlreadyLocked):
-            with pysat.utils.NetworkLock(self.fname) as fh:
+            with pysat.utils.NetworkLock(self.fname, timeout=0.1) as fh:
                 print('writing some stuff to my cache...', file=fh)
-                with pysat.utils.NetworkLock(self.fname, mode='wb',
-                                      fail_when_locked=True):
+                with pysat.utils.NetworkLock(self.fname, mode='wb', timeout=0.1,
+                                             fail_when_locked=True):
                     pass
                 print('writing more stuff to my cache...', file=fh)
 
-
     def test_without_timeout(self):
         # Open the file 2 times
-        pysat.params['file_timeout'] = None
         with pytest.raises(portalocker.LockException):
-            with pysat.utils.NetworkLock(self.fname) as fh:
+            with pysat.utils.NetworkLock(self.fname, timeout=None) as fh:
                 print('writing some stuff to my cache...', file=fh)
-                with pysat.utils.NetworkLock(self.fname,
+                with pysat.utils.NetworkLock(self.fname, timeout=None,
                                              mode='w'):
                     pass
                 print('writing more stuff to my cache...', file=fh)
 
-
     def test_without_fail(self):
         # Open the file 2 times
-        pysat.params['file_timeout'] = 0.1
         with pytest.raises(portalocker.LockException):
-            with pysat.utils.NetworkLock(self.fname) as fh:
+            with pysat.utils.NetworkLock(self.fname, timeout=0.1) as fh:
                 print('writing some stuff to my cache...', file=fh)
-                lock = pysat.utils.NetworkLock(self.fname)
+                lock = pysat.utils.NetworkLock(self.fname, timeout=0.1)
                 lock.acquire(check_interval=0.05, fail_when_locked=False)
