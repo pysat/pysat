@@ -37,7 +37,7 @@ orbit periods aren't constant, a 100% success rate is not be guaranteed.
    orbit_info = {'index': 'gdlat', 'kind': 'polar'}
    f15 = pysat.Instrument(inst_module=pysatMadrigal.instruments.dmsp_ivm,
                           tag='utd', inst_id='f15', orbit_info=orbit_info,
-			  clean_level='none')
+			   clean_level='none')
 
 
 Orbit determination acts upon data loaded in the ivm object, so to begin we
