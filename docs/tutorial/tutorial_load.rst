@@ -78,6 +78,10 @@ distinguish between inclusive and exclusive bounds. Keywords in pysat with
 while those with `stop_*` are an inclusive bound. The starting index is always
 inclusive.
 
+.. note:: Keywords for date or filename ranges that begin with `end` are
+   used as an exclusive terminating bound, while keywords that begin with
+   `stop` are used as an inclusive bound.
+
 Loading a range of data by year and day of year. Termination bounds are exclusive.
 
 .. code:: python
