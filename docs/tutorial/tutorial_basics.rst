@@ -181,23 +181,25 @@ include them here.
    dmsp.download(start, stop, user=username, password=password)
 
 The specific location the data is downloaded to depends upon user settings.
-By default, pysat data directories are organized via top_level/platform/name/tag/inst_id,
-where the top-level is one of the directories in ``pysat.params['data_dirs']``.
-The specific structure for your system is stored in ``pysat.params['directory_format']``.
+By default, pysat data directories are organized via
+top_level/platform/name/tag/inst_id, where the top-level is one of the
+directories in ``pysat.params['data_dirs']``. The specific structure for your
+system is stored in ``pysat.params['directory_format']``.
 
 Presuming defaults, this example downloads DMSP data to
-top_level/dmsp/ivm/utd/f12/. If this is the first download, then the first of the pysat
-data directories will be used by default. If there was already DMSP data on your system
-under one of the ``pysat.params['data_dirs']``, then the same top-level
-directory as existing DMSP data will be used. To pick a different directory to download
-data to, use
+top_level/dmsp/ivm/utd/f12/. If this is the first download, then the first of
+the pysat data directories will be used by default. If there was already DMSP
+data on your system under one of the ``pysat.params['data_dirs']``, then the
+same top-level directory as existing DMSP data will be used. To pick a
+different directory to download data to, use
 
 .. code:: python
 
    dmsp.files.set_top_level_directory(new_path)
 
-At the end of the download, pysat will update the list of files associated with DMSP.
-Note that having multiple directories with data may lead to unexpected results.
+At the end of the download, pysat will update the list of files associated with
+DMSP. Note that having multiple directories with data may lead to unexpected
+results.
 
 Some instruments support an improved download experience that ensures
 the local system is fully up to date compared to the data source. The command,
@@ -494,8 +496,9 @@ Data may be assigned to the instrument, with or without metadata.
 The labels used for identifying metadata may be provided by the user at
 Instrument instantiation and do not need to conform with what is in the file::
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
-                           clean_level='dirty', labels={'units': 'new_units'})
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
+                           inst_id='f12', clean_level='dirty',
+			   labels={'units': 'new_units'})
    dmsp.load(2001, 1)
    dmsp.meta['ti', 'new_units']
    dmsp.meta['ti', dmsp.meta.labels.units]
