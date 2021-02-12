@@ -14,7 +14,7 @@ package data that also makes it possible for users to set values for a
 variety of pysat defaults. pysat stores all of this information in the user's
 home directory under ``~/.pysat``. To get the most benefit from this internal
 reorganization we recommend that you remove any existing ``.pysat`` directories.
-See :ref:`tut-params` for more.
+See :ref:`tutorial-params` for more.
 
 .. note:: Removing the existing .pysat directory will erase all internal
    pysat information and requires resetting user parameters such as the
