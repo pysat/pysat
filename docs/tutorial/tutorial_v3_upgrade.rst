@@ -44,6 +44,8 @@ registering the necessary packages:
 .. code:: python
 
    import os
+   import pysat
+
    templ_str = os.path.sep.join(('{platform}', '{name}', '{tag}'))
    pysat.params['directory_format'] = templ_str
 
@@ -53,6 +55,7 @@ registering the necessary packages:
 
 .. code:: python
 
+   import os
    import pysat
 
    # Update pysat's directory setting to match current file distribution.

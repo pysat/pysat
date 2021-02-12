@@ -4,7 +4,6 @@ include *.txt
 include LICENSE
 include pysat/version.txt
 prune docs
-prune demo
 global-exclude *.pdf
 global-exclude *.png
 
