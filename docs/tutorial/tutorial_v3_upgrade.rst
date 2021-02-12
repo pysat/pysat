@@ -35,6 +35,10 @@ pysat and into a penumbra of supporting packages. These supporting
 packages must be installed and registered with pysat before data may
 be loaded. See :ref:`ecosystem` and :ref:`api-pysat-registry` for more.
 
+.. note:: pysat will only recognize registered instrument modules
+   when running the ``update_data_directory_structure`` function.
+   Files associated with unregistered instruments will not be moved.
+
 There are two main paths forward for restoring access to all data after
 registering the necessary packages:
 
