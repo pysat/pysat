@@ -170,8 +170,3 @@ levels of data: `clean` or `none`.
 
 By default, pysat is configured to use ``'clean'`` as the default value
 for `clean_level`. This setting may be updated using :ref:`tutorial-params`.
-
-Custom Functions
-----------------
-
-See :ref:`tutorial_custom`
