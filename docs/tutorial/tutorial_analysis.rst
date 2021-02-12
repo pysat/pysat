@@ -1,7 +1,7 @@
-.. _tutorial-periodic-mean:
+.. _tutorial-analysis:
 
-Periodic Analysis
------------------
+Analysis
+--------
 
 Because pysat allows you to load and cycle through data from different
 instruments in similar manners, it's easy to write instrument-independent
