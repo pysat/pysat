@@ -49,7 +49,7 @@ the mean every daily or every orbit over the period of time supplied by
            if not inst.empty:
                # Compute mean absolute using pandas functions and store.  The
                # data could be an image, or lower dimension, account for 2D and
-	       # lower
+	        # lower
                data = inst[data_label].dropna()
                data_date = inst.data.index[0]
                mean_val[data_date] = data.mean()
@@ -68,7 +68,7 @@ You may apply this function as demonstrated below.
    orbit_info = {'kind': 'polar', 'index': 'gdlat'}
    f15 = pysat.Instrument(inst_module=pysatMadrigal.instruments.dmsp_ivm,
                           tag='utd', inst_id='f15', orbit_info=orbit_info,
-			  clean_level='none', update_files=True)
+			   clean_level='none', update_files=True)
 
    # Ensure the data is dowloaded
    if len(f15.files[stime:etime + dt.timedelta(days=1)]) < 3:
