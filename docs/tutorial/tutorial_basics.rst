@@ -299,7 +299,7 @@ See the :any:`Instrument` section for more information.
 Simple Analysis Example
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Here we present an example, following fromom the simple workflow above, where
+Here we present an example, following from the simple workflow above, where
 we plot DMSP ion temperature data over a season. pysat provides a function,
 ``pysat.utils.time.create_date_range``, that returns an array of dates
 over a season. This time period does not need to be continuous (e.g.,
