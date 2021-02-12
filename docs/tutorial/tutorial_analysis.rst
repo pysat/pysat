@@ -15,7 +15,7 @@ Sample Period Mean Function
 
 The code below creates a function called ``periodic_mean`` that takes either
 a pysat Instrument or Orbits object connected to an Instrument and calculates
-the mean every daily or every orbit over the period of time supplied by
+the mean every day or every orbit over the period of time supplied by
 `bounds`.
 
 .. code:: python
@@ -31,7 +31,7 @@ the mean every daily or every orbit over the period of time supplied by
        ----------
        inst_iterator : pysat.Instrument iterator
            Expecting either pysat.Instrument for daily or pysat.Orbits for
-	   orbital periods
+	     orbital periods
        data_label : str
            Instrument data label
 
@@ -70,7 +70,7 @@ You may apply this function as demonstrated below.
                           tag='utd', inst_id='f15', orbit_info=orbit_info,
 			   clean_level='none', update_files=True)
 
-   # Ensure the data is dowloaded
+   # Ensure the data is downloaded
    if len(f15.files[stime:etime + dt.timedelta(days=1)]) < 3:
        f15.download(start=stime, stop=etime, user='name', password='email')
 
