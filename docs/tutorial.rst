@@ -11,8 +11,7 @@ Tutorial
    tutorial/tutorial_parameters.rst
    tutorial/tutorial_verbosity.rst
    tutorial/tutorial_load.rst
-   tutorial/tutorial_custom.rst
-   tutorial/tutorial_independence.rst
    tutorial/tutorial_iteration.rst
    tutorial/tutorial_orbit.rst
-   tutorial/tutorial_periodic_analysis.rst
+   tutorial/tutorial_custom.rst
+   tutorial/tutorial_analysis.rst
