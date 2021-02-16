@@ -12,10 +12,10 @@ from io import StringIO
 from importlib import reload
 import numpy as np
 import os
+import portalocker
 import pytest
 import shutil
 import tempfile
-import portalocker
 
 import pysat
 from pysat.tests.registration_test_class import TestWithRegistration
@@ -688,26 +688,21 @@ class TestNetworkLock():
         # Open the file 2 times
         with pytest.raises(portalocker.AlreadyLocked):
             with pysat.utils.NetworkLock(self.fname, timeout=0.1) as fh:
-                print('writing some stuff to my cache...', file=fh)
                 with pysat.utils.NetworkLock(self.fname, mode='wb', timeout=0.1,
                                              fail_when_locked=True):
                     pass
-                print('writing more stuff to my cache...', file=fh)
 
     def test_without_timeout(self):
         # Open the file 2 times
         with pytest.raises(portalocker.LockException):
             with pysat.utils.NetworkLock(self.fname, timeout=None) as fh:
-                print('writing some stuff to my cache...', file=fh)
                 with pysat.utils.NetworkLock(self.fname, timeout=None,
                                              mode='w'):
                     pass
-                print('writing more stuff to my cache...', file=fh)
 
     def test_without_fail(self):
         # Open the file 2 times
         with pytest.raises(portalocker.LockException):
             with pysat.utils.NetworkLock(self.fname, timeout=0.1) as fh:
-                print('writing some stuff to my cache...', file=fh)
                 lock = pysat.utils.NetworkLock(self.fname, timeout=0.1)
                 lock.acquire(check_interval=0.05, fail_when_locked=False)
