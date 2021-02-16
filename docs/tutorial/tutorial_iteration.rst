@@ -1,4 +1,4 @@
-.. _tutorial-iteration:
+.. _tutorial-iter:
 
 Iteration
 ---------
@@ -41,7 +41,7 @@ By default, pysat will iteratively load data at a daily cadance.
        vefi.load(date=load_date)
        print(out_str.format(max=vefi['dB_mer'].max(),
                             units=vefi.meta['dB_mer', vefi.meta.labels.units]),
-			    day=vefi.index[0].strftime('%d %b %Y'))
+			      day=vefi.index[0].strftime('%d %b %Y'))
 
 
 Iteration support is built into the Instrument object to support this and
@@ -58,7 +58,7 @@ using:
    for vefi in vefi:
        print(out_str.format(max=vefi['dB_mer'].max(),
                             units=vefi.meta['dB_mer', vefi.meta.labels.units]),
-			    day=vefi.index[0].strftime('%d %b %Y'))
+			      day=vefi.index[0].strftime('%d %b %Y'))
 
 
 You can also set the bounds to be a range of files:
@@ -72,7 +72,7 @@ You can also set the bounds to be a range of files:
    for vefi in vefi:
        print(out_str.format(max=vefi['dB_mer'].max(),
                             units=vefi.meta['dB_mer', vefi.meta.labels.units]),
-			    day=vefi.index[0].strftime('%d %b %Y'))
+			      day=vefi.index[0].strftime('%d %b %Y'))
 
 
 The output in all the above cases is:
