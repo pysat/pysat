@@ -1,5 +1,6 @@
 .. _introduction:
 
+============
 Introduction
 ============
 
@@ -12,8 +13,8 @@ provides a framework to support this general process that builds upon these
 commonalities.  In doing so, pysat simplifies the process of using new
 instruments, reduces data management overhead, and enables the creation of
 instrument independent analysis routines. Although pysat was initially designed
-for `in situ` satellite measurements, pysat has grown to support both observational
-and modelled space science measurements.
+for `in situ` satellite measurements, pysat has grown to support both
+observational and modelled space science measurements.
 
 The newest incarnation of pysat has been pared down to focus on the core
 elements of our mission: providing a framework for data management and analysis.

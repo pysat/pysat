@@ -3,6 +3,7 @@ tests the pysat coords area
 """
 import datetime as dt
 import numpy as np
+import warnings
 
 import pytest
 

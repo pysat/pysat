@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 platform = 'pysat'
 name = 'testing2d_xarray'
 
+tags = {'': 'Regular testing data set'}
+sat_ids = {'': ['']}
 pandas_format = False
 tags = {'': 'Regular testing data set'}
 inst_ids = {'': ['']}

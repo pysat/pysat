@@ -126,10 +126,11 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
 
     def test_remove_2D_names_w_target(self):
         gen.remove_leading_text(self.testInst, target='variable')
-        # check prepended text removed from variables
+        # Check prepended text removed from variables
         assert '_profiles' in self.testInst.data.variables
         assert self.testInst.data['_profiles'].shape[0] == self.Npts
-        # check prepended text removed from metadata
+
+        # Check prepended text removed from metadata
         assert '_profiles' in self.testInst.meta.keys()
 
     def test_remove_2D_names_w_target_list(self):

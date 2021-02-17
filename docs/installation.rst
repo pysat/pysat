@@ -33,7 +33,7 @@ pysat itself may be installed from a terminal command line via::
    pip install pysat
 
 There are a few packages that pysat depends on that will be installed as
-needed by the installer:
+needed by the installer
 
      * dask
      * netCDF4
@@ -43,7 +43,6 @@ needed by the installer:
      * scipy
      * toolz
      * xarray
-
 
 
 Development Installation
