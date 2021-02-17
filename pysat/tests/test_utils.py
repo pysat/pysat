@@ -687,7 +687,7 @@ class TestNetworkLock():
     def test_with_timeout(self):
         # Open the file 2 times
         with pytest.raises(portalocker.AlreadyLocked):
-            with pysat.utils.NetworkLock(self.fname, timeout=0.1) as fh:
+            with pysat.utils.NetworkLock(self.fname, timeout=0.1):
                 with pysat.utils.NetworkLock(self.fname, mode='wb', timeout=0.1,
                                              fail_when_locked=True):
                     pass
@@ -695,7 +695,7 @@ class TestNetworkLock():
     def test_without_timeout(self):
         # Open the file 2 times
         with pytest.raises(portalocker.LockException):
-            with pysat.utils.NetworkLock(self.fname, timeout=None) as fh:
+            with pysat.utils.NetworkLock(self.fname, timeout=None):
                 with pysat.utils.NetworkLock(self.fname, timeout=None,
                                              mode='w'):
                     pass
@@ -703,6 +703,6 @@ class TestNetworkLock():
     def test_without_fail(self):
         # Open the file 2 times
         with pytest.raises(portalocker.LockException):
-            with pysat.utils.NetworkLock(self.fname, timeout=0.1) as fh:
+            with pysat.utils.NetworkLock(self.fname, timeout=0.1):
                 lock = pysat.utils.NetworkLock(self.fname, timeout=0.1)
                 lock.acquire(check_interval=0.05, fail_when_locked=False)
