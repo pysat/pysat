@@ -10,7 +10,6 @@ Coordinate transformation functions for pysat
 import datetime as dt
 import numpy as np
 import pandas as pds
-import warnings
 
 
 def adjust_cyclic_data(samples, high=(2.0 * np.pi), low=0.0):
@@ -129,4 +128,3 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                            inst.meta.labels.fill_val: np.nan}
 
     return
-

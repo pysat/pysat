@@ -729,4 +729,3 @@ class NetworkLock(Lock):
         os.fsync(self.fh.fileno())
 
         super(NetworkLock, self).release()
-
