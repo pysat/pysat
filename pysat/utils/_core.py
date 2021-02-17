@@ -701,7 +701,9 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
 
 class NetworkLock(Lock):
     def __init__(self, *args, **kwargs):
-        """Lock manager compatible with networked file systems
+        """Lock manager compatible with networked file systems.
+        For a description of acceptable args and kwargs see:
+        :class:`portalocker.utils.Lock`
 
         Parameters
         ----------

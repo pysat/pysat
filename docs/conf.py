@@ -44,6 +44,7 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
     'numpydoc',
     'IPython.sphinxext.ipython_console_highlighting'
 ]
@@ -303,3 +304,7 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# -- Options for Intersphinx connection -----------------------------------
+
+intersphinx_mapping = {'portalocker': ('https://portalocker.readthedocs.io/en/latest', None)}
