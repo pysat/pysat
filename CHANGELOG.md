@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.3.0] - 2021-XX-XX
+- Deprecation warnings added to:
+   - Custom class
+- Documentation
+   - Updated docstrings with deprecation notes
+
 ## [2.2.2] - 2020-11-23
 - New Features
    - netCDF4 files produced using `to_netcdf4()` now have an unlimited
