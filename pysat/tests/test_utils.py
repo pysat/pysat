@@ -238,7 +238,6 @@ class TestBasicNetCDF4():
                                        axis=1)
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
                                           axis=1)
-        keys = self.testInst.data.columns
 
         for key in self.testInst.data.columns:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
