@@ -2,6 +2,7 @@
 # Test some of the basic _core functions
 import numpy as np
 import sys
+import warnings
 
 from nose.tools import raises
 import pandas as pds
@@ -1368,3 +1369,44 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+        self.in_kwargs = {"platform": 'pysat', "name": 'testing',
+                          "sat_id": '10', "clean_level": 'clean'}
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_kwargs
+
+    def test_standard_kwarg_dep(self):
+        """Test deprecation of standard kwarg input
+        """
+        # Define the deprecated attributes that are always defined
+        std_kwargs = {'units_label': False, 'name_label': False,
+                      'notes_label': False, 'desc_label': False,
+                      'min_label': False, 'max_label': False,
+                      'fill_label': False, 'plot_label': False,
+                      'axis_label': False, 'scale_label': False}
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            test_inst = pysat.Instrument(**self.in_kwargs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(std_kwargs.keys())
+
+        # Test the warning messages, ensuring each attribute is present
+        for iwar in war:
+            if iwar.category == DeprecationWarning:
+                for skey in std_kwargs.keys():
+                    if str(iwar.message).find(skey) >= 0:
+                        std_kwargs[skey] = True
+
+        for skey in std_kwargs.keys():
+            assert std_kwargs[skey]
+
+        return
