@@ -702,8 +702,6 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
 class NetworkLock(Lock):
     def __init__(self, *args, **kwargs):
         """Lock manager compatible with networked file systems.
-        See portalocker.utils.Lock for more details
-        (:class:`portalocker.utils.Lock`)
 
         Parameters
         ----------
@@ -711,6 +709,11 @@ class NetworkLock(Lock):
             References a list of input arguments
         **kwargs : dict reference
             References a dict of input keyword argument
+            
+        Note
+        ----
+        See portalocker.utils.Lock for more details
+        (:class:`portalocker.utils.Lock`)
 
         Example
         -------
