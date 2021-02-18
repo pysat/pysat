@@ -3,7 +3,7 @@
 Orbit Support
 =============
 
-pysat can take satellite data break it up into single orbits on the fly.
+pysat can break satellite data into single orbits on the fly.
 These orbits will typically span day breaks, if  needed.  The :ref:`api-orbits`
 class, which is treated as a subclass of the Instrument object performs these
 operations.
