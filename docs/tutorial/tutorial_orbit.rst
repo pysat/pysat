@@ -25,7 +25,7 @@ orbit          Uses any change in value to delineate orbits
 
 Changes in universal time are also used to delineate orbits. pysat compares any
 gaps to the supplied orbital period, nominally assumed to be 97 minutes. As
-orbit periods aren't constant, a 100% success rate is not be guaranteed.
+orbit periods aren't constant, a 100% success rate cannot be guaranteed.
 
 .. code:: python
 
@@ -37,7 +37,7 @@ orbit periods aren't constant, a 100% success rate is not be guaranteed.
    orbit_info = {'index': 'gdlat', 'kind': 'polar'}
    f15 = pysat.Instrument(inst_module=pysatMadrigal.instruments.dmsp_ivm,
                           tag='utd', inst_id='f15', orbit_info=orbit_info,
-			   clean_level='none')
+                          clean_level='none')
 
 
 Orbit determination acts upon data loaded in the ivm object, so to begin we
@@ -47,9 +47,10 @@ must load some data (first downloading it if necessary).
 
    day1 = dt.datetime(2011, 12, 31)
    day2 = day1 + dt.timedelta(days=1)
-   if len(f15.files[day1:day2 + dt.timedelta(days=1)]) < 2:
+   if len(f15.files[day1:day2 + dt.timedelta(days=2)]) < 3:
        # Download stop time is inclusive
-       f15.download(start=day1, stop=day2, user="Name", password="email")
+       f15.download(start=day1, stop=day2 + dt.timedelta(days=1),
+                    user="Name", password="email")
 
    # To ensure we have a complete first orbit
    f15.load(date=day2)
@@ -63,17 +64,22 @@ The data for the orbit is stored in ``f15.data``.
 
 .. code:: ipython
 
+   f15.orbits[0]
+   print(f15.index[0], f15.index[-1])
+
+   2011-12-31 22:30:37 2011-12-31 22:31:05
+
    f15.orbits[1]
    print(f15.index[0], f15.index[-1])
 
-   2012-01-01 00:12:21 2012-01-01 01:03:09
+   2012-01-01 00:02:09 2012-01-01 00:12:17
 
 
 Note that getting the first orbit caused pysat to load the day previous, and
-then back to the current day. This is why the start of the day and the start
-of the first orbit do not coincide.
+then back to the current day.  There is also a data gap over the change of the
+year that makes these first two orbits shorter than expected.
 
-You can go forward an orbit, to see what a full orbit looks like:
+Now, you can also move forward an orbit using the ``next`` command:
 
 .. code:: ipython
 
@@ -82,7 +88,7 @@ You can go forward an orbit, to see what a full orbit looks like:
 
    2012-01-01 01:03:13 2012-01-01 01:54:01
 
-And back an orbit:
+And back an orbit using the ``prev`` command:
 
 .. code:: ipython
 
