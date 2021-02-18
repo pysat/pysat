@@ -32,6 +32,11 @@ from pysat import logger
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
+    .. deprecated:: 2.3.0
+      Several attributes will be removed or replaced in pysat 3.0.0:
+      units_label, name_label, notes_label, desc_label, min_label,
+      max_label, fill_label, plot_label, axis_label, scale_label
+
     Parameters
     ----------
     platform : string
@@ -378,9 +383,29 @@ class Instrument(object):
         # warn about changes coming in the future
         if not self.strict_time_flag:
             warnings.warn('Strict times will eventually be enforced upon all'
-                          ' instruments. (strict_time_flag)', DeprecationWarning,
-                          stacklevel=2)
+                          ' instruments. (strict_time_flag)',
+                          DeprecationWarning, stacklevel=2)
 
+    def __setattr__(self, name, value):
+        """ Customize setattr to raise a deprecation warning when needed
+        """
+        self.__dict__[name] = value
+        dwarn = None
+
+        if name in ['units_label', 'name_label', 'notes_label', 'desc_label',
+                    'min_label', 'max_label', 'fill_label']:
+            dwarn = "".join(["Instrument attribute '", name, "' will be ",
+                             "accessable through `Instrument.meta.labels` or ",
+                             "`Instrument.meta_labels` attributes in pysat ",
+                             "3.0.0"])
+        elif name in ['plot_label', 'axis_label', 'scale_label']:
+            dwarn = "".join(["Meta label '", name, "' is no longer a standard",
+                             " metadata quantity in pysat 3.0.0"])
+
+        if dwarn is not None:
+            warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
+
+        return
 
     def __getitem__(self, key):
         """
