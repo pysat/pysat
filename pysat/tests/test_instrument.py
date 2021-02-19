@@ -1400,7 +1400,7 @@ class TestDeprecation():
         # Test the warning messages, ensuring each attribute is present
         for iwar in war:
             if iwar.category == DeprecationWarning:
-                for i, msg in enumerate(warn_msgs[~found_msgs]):
+                for i, msg in enumerate(warn_msgs):
                     if str(iwar.message).find(msg) >= 0:
                         found_msgs[i] = True
 
