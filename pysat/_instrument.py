@@ -11,7 +11,6 @@ import copy
 import functools
 import inspect
 import os
-import string
 import sys
 import warnings
 
@@ -203,7 +202,7 @@ class Instrument(object):
                                "through `Instrument.meta.labels` or ",
                                "`Instrument.meta_labels` attributes in ",
                                "pysat 3.0.0"]))
-        dep_meta_kwargs = ['plot_label', 'axis_label', 'scale_label']:
+        dep_meta_kwargs = ['plot_label', 'axis_label', 'scale_label']
         dwarns.append("".join(["Meta labels [", ", ".join(dep_meta_kwargs),
                                "] are no longer standard metadata",
                                " quantities in pysat 3.0.0"]))
