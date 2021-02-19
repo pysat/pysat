@@ -709,7 +709,7 @@ class NetworkLock(Lock):
             References a list of input arguments
         **kwargs : dict reference
             References a dict of input keyword argument
-            
+
         Note
         ----
         See portalocker.utils.Lock for more details
