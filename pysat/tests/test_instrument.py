@@ -1386,27 +1386,25 @@ class TestDeprecation():
         """Test deprecation of standard kwarg input
         """
         # Define the deprecated attributes that are always defined
-        std_kwargs = {'units_label': False, 'name_label': False,
-                      'notes_label': False, 'desc_label': False,
-                      'min_label': False, 'max_label': False,
-                      'fill_label': False, 'plot_label': False,
-                      'axis_label': False, 'scale_label': False}
+        warn_msgs = np.array(["accessible through `Instrument.meta.labels`",
+                              "are no longer standard metadata quantities"])
+        found_msgs = np.array([False, False])
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as war:
             test_inst = pysat.Instrument(**self.in_kwargs)
 
         # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(std_kwargs.keys())
+        assert len(war) >= len(warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
         for iwar in war:
             if iwar.category == DeprecationWarning:
-                for skey in std_kwargs.keys():
-                    if str(iwar.message).find(skey) >= 0:
-                        std_kwargs[skey] = True
+                for i, msg in enumerate(warn_msgs[~found_msgs]):
+                    if str(iwar.message).find(msg) >= 0:
+                        found_msgs[i] = True
 
-        for skey in std_kwargs.keys():
-            assert std_kwargs[skey]
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(warn_msgs[i])
 
         return
