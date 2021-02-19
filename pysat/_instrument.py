@@ -194,6 +194,25 @@ class Instrument(object):
                  min_label='value_min', max_label='value_max',
                  fill_label='fill', *arg, **kwargs):
 
+        # Raise warnings about deprecated kwargs
+        dwarns = list()
+        label_kwargs = ['units_label', 'name_label', 'notes_label',
+                        'desc_label', 'min_label', 'max_label', 'fill_label']
+        dwarns.append("".join(["Instrument attributes [",
+                               ", ".join(label_kwargs), "] will be accessible",
+                               "through `Instrument.meta.labels` or ",
+                               "`Instrument.meta_labels` attributes in ",
+                               "pysat 3.0.0"]))
+        dep_meta_kwargs = ['plot_label', 'axis_label', 'scale_label']:
+        dwarns.append("".join(["Meta labels [", ", ".join(dep_meta_kwargs),
+                               "] are no longer standard metadata",
+                               " quantities in pysat 3.0.0"]))
+
+        for dwarn in dwarns:
+            warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
+
+        # Start initialization
+
         if inst_module is None:
             # use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):
@@ -385,27 +404,6 @@ class Instrument(object):
             warnings.warn('Strict times will eventually be enforced upon all'
                           ' instruments. (strict_time_flag)',
                           DeprecationWarning, stacklevel=2)
-
-    def __setattr__(self, name, value):
-        """ Customize setattr to raise a deprecation warning when needed
-        """
-        self.__dict__[name] = value
-        dwarn = None
-
-        if name in ['units_label', 'name_label', 'notes_label', 'desc_label',
-                    'min_label', 'max_label', 'fill_label']:
-            dwarn = "".join(["Instrument attribute '", name, "' will be ",
-                             "accessable through `Instrument.meta.labels` or ",
-                             "`Instrument.meta_labels` attributes in pysat ",
-                             "3.0.0"])
-        elif name in ['plot_label', 'axis_label', 'scale_label']:
-            dwarn = "".join(["Meta label '", name, "' is no longer a standard",
-                             " metadata quantity in pysat 3.0.0"])
-
-        if dwarn is not None:
-            warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
-
-        return
 
     def __getitem__(self, key):
         """
