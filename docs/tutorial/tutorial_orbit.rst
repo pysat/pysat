@@ -145,7 +145,7 @@ loaded, this would be labeled orbit 1.
    Loaded Orbit Number: 30
 
 Orbit iteration is built into f15.orbits just like daily iteration is built
-into f15 (see :ref:`tutorial-iteration`).
+into f15 (see :ref:`tutorial-iter`).
 
 .. code:: python
 
