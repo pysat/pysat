@@ -170,7 +170,7 @@ class Meta(object):
             if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
 
-                # make sure defaults are taken care of for required metadata
+                # Make sure defaults are taken care of for required metadata
                 self.accept_default_labels(self)
             else:
                 raise ValueError(''.join(('Input must be a pandas DataFrame',
@@ -181,7 +181,7 @@ class Meta(object):
                        for mlab in self.labels.label_type.keys()]
             self._data = pds.DataFrame(None, columns=columns)
 
-        # establish attributes intrinsic to object, before user can
+        # Establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
 

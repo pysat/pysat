@@ -52,6 +52,7 @@ for rapid access.  For instance, pysat instruments which handle the outputs
 of geophysical models (such as the TIE-GCM model) reside in the pysatModels
 package.
 
+
 Naming Conventions
 ------------------
 
@@ -69,34 +70,39 @@ Not every data product will need all of these variable names.  Both `inst_id`
 and `tag` can be instantiated as an empty string if unused or used to
 support a 'default' data set if desired. Examples are given below.
 
-**platform**
+platform
+^^^^^^^^
 
 In general, this is the name of the mission or observatory.  Examples include
 ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite,
 a constellation of satellites, a ground-based observatory, or a collaboration
 of ground-based observatories.
 
-**name**
+name
+^^^^
 
 In general, this is the name of the instrument or high-level data product.
 When combined with the platform this forms a unique file in the `instruments`
 directory.  Examples include the EUV instrument on ICON (icon_euv) and the
 Incoherent Scatter Radar at JRO (jro_isr).
 
-**tag**
+tag
+^^^
 
 In general, the tag points to a specific data product.  This could be a
 specific processing level (such as L1, L2), or a product file (such as the
 different profile products for cosmic_gps data, 'ionprf', 'atmprf', ...).
 
-**inst_id**
+inst_id
+^^^^^^^
 
 In general, this is a unique identifier for a satellite in a constellation of
 identical or similar satellites, or multiple instruments on the same satellite
 with different look directions.  For example, the DMSP satellites carry similar
 instrument suites across multiple spacecraft.  These are labeled as f11-f18.
 
-**Naming Requirements in Instrument Module**
+Naming Requirements in Instrument Module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each instrument file must include the platform and name as variables at the
 top-code-level of the file.  Additionally, the tags and inst_ids supported by
@@ -198,7 +204,8 @@ Note that these methods are not directly invoked by the user, but by pysat
 as needed in response to user inputs.
 
 
-**list_files**
+list_files
+^^^^^^^^^^
 
 pysat maintains a list of files to enable data management functionality. To get
 this information pysat expects a module method ``platform_name.list_files`` to
@@ -234,7 +241,8 @@ directory_format at instantiation. The default is recreated using
 Note that pysat handles the path information thus instrument module developers
 do not need to do anything to support the directory_format keyword.
 
-**Pre-Built list_files Methods and Support**
+Pre-Built list_files Methods and Support
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Finding local files is generally similar across data sets thus pysat
 includes a variety of methods to make supporting this functionality easier.
@@ -294,7 +302,9 @@ with an Instrument may be updated by adding ``update_files=True`` to the kwargs.
 The output provided by the ``list_files`` function above can be inspected
 by calling ``inst.files.files``.
 
-**load**
+
+load
+^^^^
 
 Loading data is a fundamental activity for data science and is
 required for all pysat instruments. The work invested by the instrument
@@ -315,7 +325,6 @@ The load module method signature should appear as:
   by month or by year. See ``instruments.methods.nasa_cdaweb.py`` for an example
   of returning daily data when stored by month.
 - tag and inst_id specify the data set to be loaded
-
 - The load routine should return a tuple with (data, pysat metadata object).
 - `data` is a pandas DataFrame, column names are the data labels, rows are
   indexed by datetime objects.
@@ -356,7 +365,8 @@ The load module method signature should appear as:
   to fill out a text file. A basic convenience function is provided for this
   situation. See ``pysat.Meta.from_csv`` for more information.
 
-**download**
+download
+^^^^^^^^
 
 Download support significantly lowers the hassle in dealing with any dataset.
 To fetch data from the internet the download method should have the signature
@@ -379,7 +389,8 @@ Optional Attributes
 Several attributes have default values that you may need to change depending on
 how your data and files are structured.
 
-**directory_format**
+directory_format
+^^^^^^^^^^^^^^^^
 
 Allows the specificaiton of a custom directory naming structure, where the files
 for this Instrument will be stored within the pysat data directory. If not set
@@ -388,7 +399,8 @@ format understands the keys `platform`, `name`, `tag`, and `inst_id`. This may
 also be a function that takes `tag` and `inst_id` as input parameters and
 returns an appropriate string.
 
-**file_format**
+file_format
+^^^^^^^^^^^
 
 Allows the specification of a custom file naming format. If not specified or set
 to ``None``, the file naming provided by the `list_files` method will be used.
@@ -396,28 +408,33 @@ The filename must have some sort of time dependence in the name, and accepts
 all of the datetime temporal attributes in additon to `version`, `revision`,
 and `cycle`.  Wildcards (e.g., '?') may also be included in the filename.
 
-**multi_file_day**
+multi_file_day
+^^^^^^^^^^^^^^
 
 This defaults to ``False``, which means that the files for this data set have
 one or less.  If your data set consists of multiple files per day, this
 attribute should be set to ``True``.
 
-**orbit_info**
+orbit_info
+^^^^^^^^^^
 
 A dictionary of with keys `index`, `kind`, and `period` that specify the
 information needed to create orbits for a satellite Instrument.  See
 :ref:`api-orbits` for more information.
 
-**pandas_format**
+pandas_format
+^^^^^^^^^^^^^
 
 This defaults to ``True`` and assumes the data are organized as a time series,
 allowing them to be stored as a pandas DataFrame. Setting this attribute to
 ``False`` tells pysat that the data will be stored in an xarray Dataset.
 
+
 Optional Routines and Support
 -----------------------------
 
-**Custom Keywords in load Method**
+Custom Keywords in load Method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If provided, pysat supports the definition and use of keywords for an
 instrument module so that users may trigger optional features. All custom
@@ -446,7 +463,8 @@ If a user supplies a keyword that is not supported by pysat or by the
 specific instrument module then an error is raised.
 
 
-**init**
+init
+^^^^
 
 If present, the instrument init method runs once at instrument instantiation.
 
@@ -455,14 +473,14 @@ If present, the instrument init method runs once at instrument instantiation.
    def init(inst):
        return None
 
-`inst` is a ``pysat.Instrument()`` object. ``init`` should modify `inst` in-place as
-needed; equivalent to a custom routine.
+`inst` is a ``pysat.Instrument()`` object. ``init`` should modify `inst`
+in-place as needed; equivalent to a custom routine.
 
 Keywords are not supported within the init module method signature, though
 custom keyword support for instruments is available via inst.kwargs.
 
-**preprocess**
-
+preprocess
+^^^^^^^^^^
 
 First custom function applied, once per instrument load.  Designed for standard
 instrument preprocessing.
@@ -472,11 +490,11 @@ instrument preprocessing.
    def preprocess(inst):
        return None
 
-`inst` is a ``pysat.Instrument()`` object. ``preprocess`` should modify `inst` in-place
-as needed; equivalent to a custom routine.
+`inst` is a ``pysat.Instrument()`` object. ``preprocess`` should modify `inst`
+in-place as needed; equivalent to a custom routine.
 
-**clean**
-
+clean
+^^^^^
 
 Cleans instrument for levels supplied in inst.clean_level.
   * 'clean' : expectation of good data
@@ -489,10 +507,11 @@ Cleans instrument for levels supplied in inst.clean_level.
    def clean(inst):
        return None
 
-`inst` is a ``pysat.Instrument()`` object. ``clean`` should modify `inst` in-place
-as needed; equivalent to a custom routine.
+`inst` is a ``pysat.Instrument()`` object. ``clean`` should modify `inst`
+in-place as needed; equivalent to a custom routine.
 
-**list_remote_files**
+list_remote_files
+^^^^^^^^^^^^^^^^^
 
 Returns a list of available files on the remote server. This method is required
 for the Instrument module to support the ``download_updated_files`` method,
@@ -513,6 +532,30 @@ search for subsets of files through optional keywords, such as
 
     inst.remote_file_list(year=2019)
     inst.remote_file_list(year=2019, month=1, day=1)
+
+
+Logging
+-------
+
+pysat is connected to the Python logging module. This allows users to set
+the desired level of direct feedback, as well as where feedback statements
+are delivered. The following line in each module is encouraged at the top-level
+so that the instrument module can provide feedback using the same mechanism
+
+.. code:: Python
+
+    logger = logging.getLogger(__name__)
+
+
+Within any instrument module,
+
+.. code:: Python
+
+    logger.info(information_string)
+    logger.warning(warning_string)
+    logger.debug(debug_string)
+
+will direct information, warnings, and debug statements appropriately.
 
 
 Testing Support
@@ -575,7 +618,8 @@ test.  If this is not the case, see the next section.
 
 Special Test Configurations
 ---------------------------
-**No Download Available**
+No Download Available
+^^^^^^^^^^^^^^^^^^^^^
 
 Some instruments simply don't have download routines available.  It could be
 that data is not yet publicly available, or it may be a model run that is
@@ -600,6 +644,26 @@ be set up as follows:
    _test_download = {'': {'Level_1': False,
                           'Level_2': True}}
 
+        return
+
+
+Supported Instrument Templates
+------------------------------
+
+Instrument templates may be found at ``pysat.instruments.templates``
+and supporting methods may be found at ``pysat.instruments.methods``.
+
+General
+^^^^^^^
+
+A general instrument template is included with pysat,
+``pysat.instruments.templates.template_instrument``,
+that has the full set
+of required and optional methods, and docstrings, that may be used as a
+starting point for adding a new instrument to pysat.
+
+Note that there are general supporting methods for adding an Instrument.
+See :ref:`rst_general_data_general` for more.
 
 This tells the test routines to skip the download / load tests for Level 1 data.
 Instead, the download function for this flag will be tested to see if it has an
@@ -609,7 +673,8 @@ Note that pysat assumes that this flag is True if no variable is present.
 Thus specifying only ``_test_download = {'': {'Level_1': False}}`` has the
 same effect, and Level 2 tests will still be run.
 
-**FTP Access**
+FTP Access
+^^^^^^^^^^
 
 Another thing to note about testing is that the Travis CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
@@ -632,7 +697,8 @@ tests if run locally.
 Note that here we use the streamlined flag definition and only call out the
 tag that is False.  The other is True by default.
 
-**Password Protected Data**
+Password Protected Data
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Another potential issue is that some instruments have download routines,
 but should not undergo automated download tests because it would require
@@ -651,6 +717,7 @@ present.
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
    _password_req = {'': {'Level_1': False}}
+
 
 Data Acknowledgements
 ---------------------

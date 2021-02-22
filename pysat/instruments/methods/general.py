@@ -8,7 +8,6 @@ import pandas as pds
 
 import pysat
 
-
 logger = pysat.logger
 
 
@@ -163,6 +162,7 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     inst.data[epoch_name] = pds.to_datetime(
         [dt.datetime.utcfromtimestamp(int(np.floor(x * sec_mult)))
          for x in inst.data[epoch_name]])
+
     return
 
 
@@ -199,6 +199,7 @@ def remove_leading_text(inst, target=None):
         inst.meta.data = inst.meta.data.rename(
             index=lambda x: x.split(prepend_str)[-1])
         orig_keys = [kk for kk in inst.meta.keys_nD()]
+
         for keynd in orig_keys:
             if keynd.find(prepend_str) >= 0:
                 new_key = keynd.split(prepend_str)[-1]

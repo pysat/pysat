@@ -690,6 +690,7 @@ class TestBasics():
     # # Test custom attributes
     # #
     # #------------------------------------------------------------------------
+
     def test_retrieve_bad_attribute(self):
         with pytest.raises(AttributeError):
             self.testInst.bad_attr
