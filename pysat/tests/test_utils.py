@@ -12,6 +12,7 @@ from io import StringIO
 from importlib import reload
 import numpy as np
 import os
+import portalocker
 import pytest
 import shutil
 import tempfile
@@ -672,3 +673,36 @@ class TestAvailableInst(TestWithRegistration):
                 assert 'ERROR' in idict[platform][name][
                     'inst_ids_tags']['ERROR']
         return
+
+
+class TestNetworkLock():
+    def setup(self):
+        self.fname = 'temp_lock_file.txt'
+        with open(self.fname, 'w') as fh:
+            fh.write('spam and eggs')
+
+    def teardown(self):
+        os.remove(self.fname)
+
+    def test_with_timeout(self):
+        # Open the file 2 times
+        with pytest.raises(portalocker.AlreadyLocked):
+            with pysat.utils.NetworkLock(self.fname, timeout=0.1):
+                with pysat.utils.NetworkLock(self.fname, mode='wb', timeout=0.1,
+                                             fail_when_locked=True):
+                    pass
+
+    def test_without_timeout(self):
+        # Open the file 2 times
+        with pytest.raises(portalocker.LockException):
+            with pysat.utils.NetworkLock(self.fname, timeout=None):
+                with pysat.utils.NetworkLock(self.fname, timeout=None,
+                                             mode='w'):
+                    pass
+
+    def test_without_fail(self):
+        # Open the file 2 times
+        with pytest.raises(portalocker.LockException):
+            with pysat.utils.NetworkLock(self.fname, timeout=0.1):
+                lock = pysat.utils.NetworkLock(self.fname, timeout=0.1)
+                lock.acquire(check_interval=0.05, fail_when_locked=False)

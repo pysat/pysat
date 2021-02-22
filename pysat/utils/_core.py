@@ -701,10 +701,38 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
 
 class NetworkLock(Lock):
     def __init__(self, *args, **kwargs):
-        """Lock manager compatible with networked file systems
+        """Lock manager compatible with networked file systems.
+
+        Parameters
+        ----------
+        *args : list reference
+            References a list of input arguments
+        **kwargs : dict reference
+            References a dict of input keyword argument
+
+        Note
+        ----
+        See portalocker.utils.Lock for more details
+        (:class:`portalocker.utils.Lock`)
+
+        Example
+        -------
+        ::
+
+            from pysat.utils import NetworkLock
+
+            with NetworkLock(file_to_be_written, 'w') as locked_file:
+                locked_file.write('content')
+
         """
 
-        super(NetworkLock, self).__init__(timeout=pysat.params['file_timeout'],
+        if 'timeout' in kwargs:
+            timeout = kwargs['timeout']
+            del kwargs['timeout']
+        else:
+            timeout = pysat.params['file_timeout']
+
+        super(NetworkLock, self).__init__(timeout=timeout,
                                           *args, **kwargs)
 
     def release(self):
