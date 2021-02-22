@@ -61,11 +61,15 @@ When the pysat load routine runs it stores the instrument data at::
 which maintains full access to the underlying data library functionality.
 
 pysat supports the use of two different data structures. You can either use a
-pandas DataFrame_, a highly capable structure with labeled rows and columns, or
-an xarray DataSet_ for data sets with more dimensions. The type of data
-structure is flagged at the instrument level with the attribute
-``inst.pandas_format``. This is set to True if a DataFrame is returned by the
-corresponding instrument module load method.
+pandas
+`DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_,
+a highly capable structure with labeled rows and columns, or
+an xarray
+`DataSet <http://xarray.pydata.org/en/stable/generated/xarray.Dataset.html>`_
+for data sets with more dimensions. The type of data structure is flagged at
+the instrument level with the attribute ``inst.pandas_format``. This is set to
+True if a DataFrame is returned by the corresponding instrument module load
+method.
 
 Load Data Range
 ---------------
