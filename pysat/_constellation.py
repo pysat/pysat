@@ -52,7 +52,7 @@ class Constellation(object):
 
         Note
         ----
-        Omit `instruments` and `name` to create an empty constellation.
+        Omit `instruments` and `const_module` to create an empty constellation.
 
         """
 
