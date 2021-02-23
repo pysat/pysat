@@ -96,8 +96,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved docstring readability and consistency
   - Added Travis-CI testing for the documentation
   - Added a style guide for developers
+  - Updated loading data flow figure
   - Scrubbed the documentation, ensuring examples, tutorials, and descriptions
-  match the current implementation and code structure
+    match the current implementation and code structure
 - Bug Fix
   - Updated Instrument.concat_func to behave as described in the docstring
   - Fixed custom instrument attribute persistence upon load

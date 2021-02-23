@@ -5,9 +5,6 @@ specific functions for instruments and classes of instruments.
 Each set of methods is contained within a subpackage of this set.
 """
 
-from pysat.instruments.templates import (madrigal_pandas, netcdf_pandas,
-                                         template_instrument,
-                                         template_cdaweb_instrument)
+from pysat.instruments.templates import template_instrument
 
-__all__ = ['madrigal_pandas', 'netcdf_pandas', 'template_instrument',
-           'template_cdaweb_instrument']
+__all__ = ['template_instrument']
