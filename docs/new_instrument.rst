@@ -515,6 +515,30 @@ search for subsets of files through optional keywords, such as
     inst.remote_file_list(year=2019, month=1, day=1)
 
 
+Logging
+-------
+
+pysat is connected to the Python logging module. This allows users to set
+the desired level of direct feedback, as well as where feedback statements
+are delivered. The following line in each module is encouraged at the top-level
+so that the instrument module can provide feedback using the same mechanism
+
+.. code:: Python
+
+    logger = pysat.logger
+
+
+Within any instrument module,
+
+.. code:: Python
+
+    logger.info(information_string)
+    logger.warning(warning_string)
+    logger.debug(debug_string)
+
+will direct information, warnings, and debug statements appropriately.
+
+
 Testing Support
 ===============
 All modules defined in the __init__.py for pysat/instruments are automatically

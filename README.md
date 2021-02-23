@@ -4,11 +4,10 @@
 </div>
 
 # pysat: Python Satellite Data Analysis Toolkit
-[![Build Status](https://travis-ci.com/pysat/pysat.svg?branch=master)](https://travis-ci.com/pysat/pysat)
+[![Build Status](https://travis-ci.org/pysat/pysat.svg?branch=main)](https://travis-ci.org/pysat/pysat)
 [![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/pysat/pysat/badge.svg?branch=master)](https://coveralls.io/github/pysat/pysat?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/pysat/pysat/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysat?branch=main)
 [![DOI](https://zenodo.org/badge/33449914.svg)](https://zenodo.org/badge/latestdoi/33449914)
-
 
 The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simple and flexible interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific
@@ -70,6 +69,6 @@ python setup.py develop
   * xarray
 * The first time the package is run, you will need to specify a directory to store data. In python, run
 ```
-pysat.utils.set_data_dir('path to top level data dir')
+pysat.params['data_dirs'] = 'path/to/directory/that/exists'
 ```
-  * Nominal organization of data is top_dir/platform/name/tag/*/files
+  * Nominal organization of data is top_dir/platform/name/tag/inst_id/*/files

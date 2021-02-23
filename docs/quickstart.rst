@@ -26,7 +26,7 @@ Most people are fine setting a single path for all of their data, but other
 people have a LOT of data and need to store it on multiple disks. pysat supports
 setting the ``data_dirs`` parameter equal to either a string or a list of
 strings, as illustrated in the example below.
-   
+
 .. code:: python
 
    # Set a single directory to store all data
