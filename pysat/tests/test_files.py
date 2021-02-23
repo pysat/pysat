@@ -1,5 +1,5 @@
 """
-tests the pysat meta object and code
+tests the pysat Files object and code
 """
 import datetime as dt
 import functools
@@ -927,12 +927,10 @@ class TestFilesRaceCondition():
     def test_race_condition(self):
         from multiprocessing import Pool
         processes = 5
-        p = Pool(processes)
+        proc_pool = Pool(processes)
         pysat.file_timeout = 1
 
-        print('beginning tests with file_timeout {}'.format(pysat.file_timeout))
-        result = p.map(create_instrument, range(processes))
-        print(result)
+        proc_pool.map(create_instrument, range(processes))
 
 
 class TestCIonly():

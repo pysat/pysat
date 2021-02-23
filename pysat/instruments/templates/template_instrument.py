@@ -368,11 +368,11 @@ def list_remote_files(tag, inst_id, user=None, password=None):
         User password to be passed along to resource with relevant data.
         (default=None)
 
-    Examples
-    --------
-    pandas.Series
-        A Series formatted for the Files class (pysat._files.Files)
-        containing filenames and indexed by date and time
+    Note
+    ----
+    If defined, the expected return variable is a pandas.Series formatted for
+    the Files class (pysat._files.Files) containing filenames and indexed by
+    date and time
 
     """
 

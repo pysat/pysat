@@ -151,11 +151,11 @@ provide their name and email address as their username and password.
 
 .. code:: python
 
-   # set user and password for Madrigal
+   # Set user and password for Madrigal
    username = 'Firstname+Lastname'
    password = 'email@address.com'
 
-   # Initalize the instrument, passing the username and password to the
+   # Initialize the instrument, passing the username and password to the
    # standard routines that need it
    dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
                            inst_id='f12', user=username, password=password)
@@ -173,31 +173,33 @@ include them here.
 
    import datetime as dt
 
-   # define date range to download data
+   # Define date range to download data
    start = dt.datetime(2001, 1, 1)
    stop = dt.datetime(2001, 1, 2)
 
-   # download data, assuming username and password were not set
+   # Download data, assuming username and password were not set
    dmsp.download(start, stop, user=username, password=password)
 
 The specific location the data is downloaded to depends upon user settings.
-By default, pysat data directories are organized via top_level/platform/name/tag/inst_id,
-where the top-level is one of the directories in ``pysat.params['data_dirs']``.
-The specific structure for your system is stored in ``pysat.params['directory_format']``.
+By default, pysat data directories are organized via
+top_level/platform/name/tag/inst_id, where the top-level is one of the
+directories in ``pysat.params['data_dirs']``. The specific structure for your
+system is stored in ``pysat.params['directory_format']``.
 
 Presuming defaults, this example downloads DMSP data to
-top_level/dmsp/ivm/utd/f12/. If this is the first download, then the first of the pysat
-data directories will be used by default. If there was already DMSP data on your system
-under one of the ``pysat.params['data_dirs']``, then the same top-level
-directory as existing DMSP data will be used. To pick a different directory to download
-data to, use
+top_level/dmsp/ivm/utd/f12/. If this is the first download, then the first of
+the pysat data directories will be used by default. If there was already DMSP
+data on your system under one of the ``pysat.params['data_dirs']``, then the
+same top-level directory as existing DMSP data will be used. To pick a
+different directory to download data to, use
 
 .. code:: python
 
    dmsp.files.set_top_level_directory(new_path)
 
-At the end of the download, pysat will update the list of files associated with DMSP.
-Note that having multiple directories with data may lead to unexpected results.
+At the end of the download, pysat will update the list of files associated with
+DMSP. Note that having multiple directories with data may lead to unexpected
+results.
 
 Some instruments support an improved download experience that ensures
 the local system is fully up to date compared to the data source. The command,
@@ -217,7 +219,7 @@ from the server. This command downloads, as needed, the entire dataset.
 Load Data
 ^^^^^^^^^
 
-Data is loaded into a pysat.Instrument object, in this case dmsp, using the
+Data is loaded into a pysat.Instrument object, in this case ``dmsp``, using the
 ``.load`` method using year, day of year; date; or filename.
 
 .. code:: python
@@ -231,84 +233,15 @@ Data is loaded into a pysat.Instrument object, in this case dmsp, using the
    # Load by filename from string
    dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
 
-   # Load by filename in tag
-   dmsp.load(fname=dmsp.files[0])
+When the pysat load routine runs it stores the instrument data into::
 
-   # Load by filename in tag and specify date
-   dmsp.load(fname=dmsp.files[start])
-
-When the pysat load routine runs it stores the instrument data into dmsp.data.
-pysat supports the use of two different data structures. You can either use a
-pandas DataFrame_, a highly capable structure with labeled rows and columns, or
-an xarray DataSet_ for data sets with more dimensions. Either way, the full
-data structure is available at::
-
-   # Display all data
+   # Instrument data
    dmsp.data
 
-This provides full access to the underlying data library functionality. The
-type of data structure is flagged at the instrument level with the attribute
-``inst.pandas_format``. This is set to True if a DataFrame is returned by the
-corresponding instrument module load method.
-
-pysat also supports loading data from a range of files/file dates. Keywords
-in pysat with `end_*` are an exclusive bound, similar to slicing numpy arrays,
-while those with `stop_*` are an inclusive bound.
-
-Loading data by year and day of year.
-
-.. code:: python
-
-   # Load by year, day of year from 2001, 1 up to but not including 2001, 3
-   dmsp.load(2001, 1, end_yr=2001, end_doy=3)
-
-   # The following two load commands are equivalent
-   dmsp.load(2001, 1, end_yr=2001, end_doy2=2)
-   dmsp.load(2001, 1)
-
-Loading data using datetimes.
-
-.. code:: python
-
-   # Load by datetimes
-   dmsp.load(date=dt.datetime(2001, 1, 1),
-             end_date=dt.datetime(2001, 1, 3))
-
-   # The following two load commands are equivalent
-   dmsp.load(date=dt.datetime(2001, 1, 1),
-             end_date=dt.datetime(2001, 1, 2))
-   dmsp.load(date=dt.datetime(2001, 1, 1))
-
-Loading data using filenames.
-
-.. code:: python
-
-   # load a single file
-   dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
-
-   # load by filename, from fname up to and including stop_fname
-   dmsp.load(fname='dms_ut_20010101_12.002.hdf5',
-             stop_fname='dms_ut_20010102_12.002.hdf5')
-
-   # load by filenames using the DMSP object to get valid filenames
-   dmsp.load(fname=dmsp.files[0], stop_fname=dmsp.files[1])
-
-   # load by filenames. Includes data from 2001, 1 up to but not
-   # including 2001, 3
-   dmsp.load(fname=dmsp.files[dt.datetime(2001, 1, 1)],
-             stop_fname=dmsp.files[dt.datetime(2001, 1, 2)])
-
-For small size data sets, such as space weather indices, pysat also supports
-loading all data at once.
-
-.. code:: python
-
-   # F10.7 data
-   import pysatSpaceWeather
-   f107 = pysat.Instrument(inst_module=pysatSpaceWeather.instruments.sw_f107)
-
-   # Load all F10.7 solar flux data, from beginning to end.
-   f107.load()
+This configuration provides full access to the underlying data library
+functionality. For additional details on loading a range of dates as well as
+support for both pandas and xarray as the underlying data structure,
+see :ref:`tutorial-load`.
 
 
 Data Access
@@ -368,8 +301,8 @@ See the :any:`Instrument` section for more information.
 Simple Analysis Example
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Here we present an example, following fromom the simple workflow above, where
-we plot DMSP ion temperature data over a season. pysat provides a function, 
+Here we present an example, following from the simple workflow above, where
+we plot DMSP ion temperature data over a season. pysat provides a function,
 ``pysat.utils.time.create_date_range``, that returns an array of dates
 over a season. This time period does not need to be continuous (e.g.,
 load both the vernal and autumnal equinoxes).
@@ -383,7 +316,7 @@ load both the vernal and autumnal equinoxes).
     # Create empty series to hold result
     mean_ti = pds.Series()
 
-    # get list of dates between start and stop
+    # Get list of dates between start and stop
     start = dt.datetime(2001, 1, 1)
     stop = dt.datetime(2001, 1, 10)
     dmsp.download(start=start, stop=stop, user=username, password=password)
@@ -494,8 +427,9 @@ Data may be assigned to the instrument, with or without metadata.
 The labels used for identifying metadata may be provided by the user at
 Instrument instantiation and do not need to conform with what is in the file::
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
-                           clean_level='dirty', labels={'units': 'new_units'})
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
+                           inst_id='f12', clean_level='dirty',
+			   labels={'units': 'new_units'})
    dmsp.load(2001, 1)
    dmsp.meta['ti', 'new_units']
    dmsp.meta['ti', dmsp.meta.labels.units]

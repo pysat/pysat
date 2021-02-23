@@ -443,6 +443,15 @@ def update_data_directory_structure(new_template, test_run=True,
     # Best solved with an upcoming method in pull #633
     insts = available_instruments()
 
+    if test_run:
+        print('Performing a test run. No files will be moved.\n')
+
+    if len(insts.keys()) == 0:
+        ostr = ''.join(('No registered instruments detected. Please register ',
+                        'supporting instrument modules using the ',
+                        '`pysat.utils.registry` module.'))
+        print(ostr)
+
     for platform in insts.keys():
         for name in insts[platform].keys():
             for inst_id in insts[platform][name]['inst_ids_tags'].keys():
