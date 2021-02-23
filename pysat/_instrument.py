@@ -829,6 +829,7 @@ class Instrument(object):
                 except (TypeError, KeyError):
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
+
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
@@ -1144,7 +1145,7 @@ class Instrument(object):
         if len(missing) > 0:
             logger.debug('Missing Instrument methods: {:}'.format(missing))
 
-        # look for instrument default parameters
+        # Look for instrument default parameters
         missing = list()
         for iattr in inst_attrs.keys():
             if hasattr(inst, iattr):
@@ -2965,7 +2966,7 @@ class Instrument(object):
                                      'download latest data.')))
             return
 
-        # get current list of local files
+        # Get current list of local files
         self.files.refresh()
         local_files = self.files.files
 
@@ -3018,7 +3019,7 @@ class Instrument(object):
         after files are downloaded.
 
         """
-        # make sure directories are there, otherwise create them
+        # Make sure directories are there, otherwise create them
         try:
             os.makedirs(self.files.data_path)
         except OSError as err:
@@ -3338,7 +3339,7 @@ class Instrument(object):
                                                          shuffle=shuffle)
                         # Attach any meta data
                         try:
-                            # attach dimension metadata
+                            # Attach dimension metadata
                             new_dict = export_meta[case_key]
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Display_Type'] = 'Time Series'
@@ -3346,17 +3347,18 @@ class Instrument(object):
                                 coltype)
                             new_dict['Var_Type'] = 'data'
 
-                            # no FillValue or FillVal allowed for strings
+                            # No FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(
                                 new_dict, coltype, remove=True,
                                 export_nan=export_nan)
-                            # really attach metadata now
+
+                            # Really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
                             logger.info(' '.join(('Unable to find MetaData for',
                                                   key)))
 
-                        # time to actually write the data now
+                        # Time to actually write the data now
                         cdfkey[:] = data.values
 
                     # Still dealing with an object, not just a Series of
@@ -3484,7 +3486,8 @@ class Instrument(object):
                                     new_dict = self._filter_netcdf4_metadata(
                                         new_dict, coltype,
                                         export_nan=export_nan)
-                                    # really attach metadata now
+
+                                    # Really attach metadata now
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     logger.info(' '.join((str(err), '\n',
@@ -3740,7 +3743,7 @@ def _check_load_arguments_none(args, raise_error=False):
     ValueError
         If all args aren't None and raise_error is True
 
-    Returns
+    Raises
     -------
     bool
         True, if all args are None

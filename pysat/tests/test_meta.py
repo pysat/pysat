@@ -155,6 +155,13 @@ class TestBasics():
         # Test the Meta settings
         self.check_meta_settings()
 
+    def test_inst_data_assign_meta_empty_list(self):
+        self.testInst.load(2009, 1)
+        self.testInst['help'] = {'data': self.testInst['mlt'],
+                                 'units': [],
+                                 'long_name': 'The Doors'}
+        assert self.testInst.meta['help', 'units'] == ''
+
     def test_inst_data_assign_meta_then_data(self):
         """ Test meta assignment when data updated after metadata
         """
@@ -1106,14 +1113,14 @@ class TestBasics():
         """Test transfer of custom meta attributes"""
         self.meta.mutable = True
 
-        # set non-conflicting attribute
+        # Set non-conflicting attribute
         self.meta.new_attribute = 'hello'
         self.meta.transfer_attributes_to_instrument(self.testInst)
 
-        # test transferred
+        # Test transferred
         assert self.testInst.new_attribute == 'hello'
 
-        # ensure transferred attributes are removed
+        # Ensure transferred attributes are removed
         with pytest.raises(AttributeError):
             self.meta.new_attribute
 
@@ -1121,22 +1128,22 @@ class TestBasics():
         """Ensure private custom meta attributes not transferred"""
         self.meta.mutable = True
 
-        # set private attributes
+        # Set private attributes
         self.meta._yo_yo = 'yo yo'
         self.meta.__yo_yo = 'yo yo'
 
-        # include standard parameters as well
+        # Include standard parameters as well
         self.meta.new_attribute = 'hello'
         self.meta.transfer_attributes_to_instrument(self.testInst)
 
-        # test private not transferred
+        # Test private not transferred
         assert not hasattr(self.testInst, "_yo_yo")
         assert not hasattr(self.testInst, "__yo_yo")
 
         # Check to make sure other values still transferred
         assert self.testInst.new_attribute == 'hello'
 
-        # ensure private attribute still present
+        # Ensure private attribute still present
         assert self.meta._yo_yo == 'yo yo'
         assert self.meta.__yo_yo == 'yo yo'
 
@@ -1239,23 +1246,26 @@ class TestBasics():
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst.load(2009, 1)
-        # normally this parameter would be set at instrument code level
+
+        # Normally this parameter would be set at instrument code level
         self.testInst.meta.mutable = True
         self.testInst.meta._export_nan += ['test_nan_export']
         self.testInst.meta.mutable = False
-        # create new variable
-        self.testInst['test_nan_variable'] = 1.
-        # assign additional metadata
+
+        # Create new variable
+        self.testInst['test_nan_variable'] = 1.0
+
+        # Assign additional metadata
         self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan,
                                                    'no_nan_export': np.nan,
                                                    'extra_check': 1.}
-        # write the file
+        # Write the file
         pysat.tests.test_utils.prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.to_netcdf4(outfile)
 
-        # load file back and test metadata is as expected
+        # Load file back and test metadata is as expected
         f = netCDF4.Dataset(outfile)
 
         pysat.tests.test_utils.remove_files(self.testInst)
@@ -1269,20 +1279,22 @@ class TestBasics():
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst.load(2009, 1)
-        # create new variable
-        self.testInst['test_nan_variable'] = 1.
-        # assign additional metadata
+
+        # Create new variable
+        self.testInst['test_nan_variable'] = 1.0
+
+        # Assign additional metadata
         self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan,
                                                    'no_nan_export': np.nan,
                                                    'extra_check': 1.}
-        # write the file
+        # Write the file
         pysat.tests.test_utils.prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         export_nan = self.testInst.meta._export_nan + ['test_nan_export']
         self.testInst.to_netcdf4(outfile, export_nan=export_nan)
 
-        # load file back and test metadata is as expected
+        # Load file back and test metadata is as expected
         f = netCDF4.Dataset(outfile)
 
         pysat.tests.test_utils.remove_files(self.testInst)

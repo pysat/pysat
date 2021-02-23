@@ -230,11 +230,14 @@ class TestBasicNetCDF4():
         self.testInst.load(date=self.stime)
         self.testInst.to_netcdf4(outfile, unlimited_time=unlimited)
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        loaded_inst, meta = \
+            pysat.utils.load_netcdf4(outfile,
+                                     pandas_format=self.testInst.pandas_format)
         self.testInst.data = \
             self.testInst.data.reindex(sorted(self.testInst.data.columns),
                                        axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
+                                          axis=1)
 
         for key in self.testInst.data.columns:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
@@ -423,7 +426,6 @@ class TestBasicNetCDF4():
         """Test that attributes in netcdf file may be overridden
         """
         self.testInst.load(date=self.stime)
-
         self.testInst.meta.mutable = True
         self.testInst.meta.bespoke = True
 

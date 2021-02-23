@@ -136,7 +136,7 @@ def init(self):
     # Required attribute: references
     self.references = 'These are the instrument references'
 
-    # direct feedback to logging info
+    # Direct feedback to logging info
     logger.info(self.acknowledgements)
     return
 
@@ -217,6 +217,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
         is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
         'v{version:02d}r{revision:04d}.NC'
 
+
     Note
     ----
     The returned Series should not have any duplicate datetimes. If there are
@@ -234,16 +235,17 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
         format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
     # we use a pysat provided function to grab list of files from the
     # local file system that match the format defined above
-    return pysat.Files.from_os(data_path=data_path, format_str=format_str)
+    file_list = pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
+    return file_list
 
 # Required function
 def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
              **kwargs):
     """Placeholder for PLATFORM/NAME downloads.
 
-    This routine is invoked by pysat and is not intended for direct use by the
-    end user.
+    This routine is called as needed by pysat. It is not intended
+    for direct user interaction.
 
     Parameters
     ----------
@@ -365,7 +367,7 @@ def list_remote_files(tag, inst_id, user=None, password=None):
         User password to be passed along to resource with relevant data.
         (default=None)
 
-    Returns
+    Examples
     --------
     pandas.Series
         A Series formatted for the Files class (pysat._files.Files)
@@ -373,4 +375,28 @@ def list_remote_files(tag, inst_id, user=None, password=None):
 
     """
 
-    return
+    # netCDF4 files, particularly those produced
+    # by pysat can be loaded using a pysat provided
+    # function
+    # Metadata in our notional example file is
+    # labeled by strings determined by a standard
+    # we can adapt pysat to the standard by specifying
+    # the string labels used in the file
+    # function below returns both data and metadata
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal',
+                                           pandas_format=pandas_format)
+    # Some variables may need modification.  For example, pysat requires a
+    # variable in the index named 'time' for xarray objects.  These can be set
+    # here
+
+    return data, mdata
