@@ -8,7 +8,6 @@ import datetime as dt
 from functools import partial
 import numpy as np
 import os
-import warnings
 
 import pandas as pds
 import pysat  # Needed to access pysat.params across reimports

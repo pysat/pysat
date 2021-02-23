@@ -7,7 +7,6 @@ from importlib import reload
 import numpy as np
 import os
 import time
-import warnings
 
 import pandas as pds
 import pytest
