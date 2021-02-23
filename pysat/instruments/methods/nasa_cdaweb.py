@@ -96,6 +96,10 @@ def load(fnames, tag=None, sat_id=None,
          flatten_twod=True):
     """Load NASA CDAWeb CDF files.
 
+    .. deprecated:: 2.3.0
+      This routine will be removed in pysat 3.0.0, it will be moved to the
+      pysatNASA repository
+
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
 
@@ -141,6 +145,12 @@ def load(fnames, tag=None, sat_id=None,
 
     import pysatCDF
 
+    warnings.warn(' '.join(["methods.nasa_cdaweb.load has been deprecated and",
+                            "will be removed in pysat 3.0.0. Please use",
+                            "pysatNASA.instruments.methods.cdaweb.load",
+                            "instead"]),
+                  DeprecationWarning, stacklevel=2)
+
     if len(fnames) <= 0:
         return pysat.DataFrame(None), None
     else:
@@ -174,6 +184,10 @@ def download(supported_tags, date_array, tag, sat_id,
              fake_daily_files_from_monthly=False,
              multi_file_day=False):
     """Routine to download NASA CDAWeb CDF data.
+
+    .. deprecated:: 2.3.0
+      This routine will be removed in pysat 3.0.0, it will be moved to the
+      pysatNASA repository
 
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
@@ -232,6 +246,12 @@ def download(supported_tags, date_array, tag, sat_id,
 
     import os
     import requests
+
+    warnings.warn(' '.join(["methods.nasa_cdaweb.download has been deprecated",
+                            "and will be removed in pysat 3.0.0. Please use",
+                            "pysatNASA.instruments.methods.cdaweb.download",
+                            "instead"]),
+                  DeprecationWarning, stacklevel=2)
 
     try:
         inst_dict = supported_tags[sat_id][tag]
@@ -336,9 +356,11 @@ def list_remote_files(tag, sat_id,
                       year=None, month=None, day=None):
     """Return a Pandas Series of every file for chosen remote data.
 
-    .. deprecated:: 2.2.0
-      `year/month/day` keywords will be removed in pysat 3.0.0, they will be
-      replaced with a start/stop syntax consistent with the download routine
+    .. deprecated:: 2.3.0
+      This routine will be removed in pysat 3.0.0, it will be moved to the
+      pysatNASA repository.  Also, as of 2.2.0 the `year/month/day` keywords
+      will be removed in pysat 3.0.0, they will be replaced with a start/stop
+      syntax consistent with the download routine
 
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
@@ -417,6 +439,13 @@ def list_remote_files(tag, sat_id,
     import requests
     import warnings
     from bs4 import BeautifulSoup
+
+
+    warnings.warn(''.join(["methods.nasa_cdaweb.list_remote_files has been ",
+                           "deprecated and will be removed in pysat 3.0.0. ",
+                            "Please use pyspysatNASA.instruments.methods.",
+                            "cdaweb.list_remote_files instead"]),
+                  DeprecationWarning, stacklevel=2)
 
     if tag is None:
         tag = ''
