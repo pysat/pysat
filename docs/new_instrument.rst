@@ -663,7 +663,7 @@ of required and optional methods, and docstrings, that may be used as a
 starting point for adding a new instrument to pysat.
 
 Note that there are general supporting methods for adding an Instrument.
-See :ref:`rst_general_data_general` for more.
+See :ref:`api-methods-general` for more.
 
 This tells the test routines to skip the download / load tests for Level 1 data.
 Instead, the download function for this flag will be tested to see if it has an

@@ -14,7 +14,7 @@ package data that also makes it possible for users to set values for a
 variety of pysat defaults. pysat stores all of this information in the user's
 home directory under ``~/.pysat``. To get the most benefit from this internal
 reorganization we recommend that you remove any existing ``.pysat`` directories.
-See :ref:`tut-params` for more.
+See :ref:`tutorial-params` for more.
 
 .. note:: Removing the existing .pysat directory will erase all internal
    pysat information and requires resetting user parameters such as the
@@ -34,6 +34,10 @@ Additionally, support for individual instruments has been moved out of
 pysat and into a penumbra of supporting packages. These supporting
 packages must be installed and registered with pysat before data may
 be loaded. See :ref:`ecosystem` and :ref:`api-pysat-registry` for more.
+
+.. note:: pysat will only recognize registered instrument modules
+   when running the ``update_data_directory_structure`` function.
+   Files associated with unregistered instruments will not be moved.
 
 There are two main paths forward for restoring access to all data after
 registering the necessary packages:
@@ -81,3 +85,5 @@ registering the necessary packages:
 
    # After the files have been moved, update the directory structure setting
    pysat.params['directory_format'] = new_templ_str
+
+.. note:: By default the `update_data_directory_structure` function runs in test mode.

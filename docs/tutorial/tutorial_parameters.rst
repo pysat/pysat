@@ -1,7 +1,7 @@
-.. _tut-params:
+.. _tutorial-params:
 
-pysat Parameters
-================
+Parameters
+==========
 
 The ``pysat.params`` class provides a central location for storing a variety
 of parameters used by pysat as well as custom user provided settings. An
