@@ -61,7 +61,7 @@ class TestCDAWeb():
             # testing with single day since we just need the warning
             cdw.download(self.supported_tags, [], '', '')
 
-        assert len(war) == 1
+        assert len(war) >= 1
         assert war[0].category == DeprecationWarning
         assert str(war[0].message).find(".download has been deprecated") >= 0
 
