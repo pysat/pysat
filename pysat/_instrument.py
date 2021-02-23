@@ -199,9 +199,8 @@ class Instrument(object):
                         'desc_label', 'min_label', 'max_label', 'fill_label']
         dwarns.append("".join(["Instrument attributes [",
                                ", ".join(label_kwargs), "] will be accessible",
-                               " through `Instrument.meta.labels` or ",
-                               "`Instrument.meta_labels` attributes in ",
-                               "pysat 3.0.0"]))
+                               " through `Instrument.meta.labels` ",
+                               "in pysat 3.0.0"]))
         dep_meta_kwargs = ['plot_label', 'axis_label', 'scale_label']
         dwarns.append("".join(["Meta labels [", ", ".join(dep_meta_kwargs),
                                "] are no longer standard metadata",
