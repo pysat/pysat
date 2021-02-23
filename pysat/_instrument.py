@@ -11,7 +11,6 @@ import copy
 import functools
 import inspect
 import os
-import string
 import sys
 import warnings
 
@@ -31,6 +30,11 @@ from pysat import logger
 # main class for users
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
+
+    .. deprecated:: 2.3.0
+      Several attributes will be removed or replaced in pysat 3.0.0:
+      units_label, name_label, notes_label, desc_label, min_label,
+      max_label, fill_label, plot_label, axis_label, scale_label
 
     Parameters
     ----------
@@ -188,6 +192,24 @@ class Instrument(object):
                  plot_label='label', axis_label='axis', scale_label='scale',
                  min_label='value_min', max_label='value_max',
                  fill_label='fill', *arg, **kwargs):
+
+        # Raise warnings about deprecated kwargs
+        dwarns = list()
+        label_kwargs = ['units_label', 'name_label', 'notes_label',
+                        'desc_label', 'min_label', 'max_label', 'fill_label']
+        dwarns.append("".join(["Instrument attributes [",
+                               ", ".join(label_kwargs), "] will be accessible",
+                               " through `Instrument.meta.labels` ",
+                               "in pysat 3.0.0"]))
+        dep_meta_kwargs = ['plot_label', 'axis_label', 'scale_label']
+        dwarns.append("".join(["Meta labels [", ", ".join(dep_meta_kwargs),
+                               "] are no longer standard metadata",
+                               " quantities in pysat 3.0.0"]))
+
+        for dwarn in dwarns:
+            warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
+
+        # Start initialization
 
         if inst_module is None:
             # use strings to look up module name
@@ -378,9 +400,8 @@ class Instrument(object):
         # warn about changes coming in the future
         if not self.strict_time_flag:
             warnings.warn('Strict times will eventually be enforced upon all'
-                          ' instruments. (strict_time_flag)', DeprecationWarning,
-                          stacklevel=2)
-
+                          ' instruments. (strict_time_flag)',
+                          DeprecationWarning, stacklevel=2)
 
     def __getitem__(self, key):
         """

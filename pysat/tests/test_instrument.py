@@ -2,6 +2,7 @@
 # Test some of the basic _core functions
 import numpy as np
 import sys
+import warnings
 
 from nose.tools import raises
 import pandas as pds
@@ -1368,3 +1369,42 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+        self.in_kwargs = {"platform": 'pysat', "name": 'testing',
+                          "sat_id": '10', "clean_level": 'clean'}
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_kwargs
+
+    def test_standard_kwarg_dep(self):
+        """Test deprecation of standard kwarg input
+        """
+        # Define the deprecated attributes that are always defined
+        warn_msgs = np.array(["accessible through `Instrument.meta.labels`",
+                              "are no longer standard metadata quantities"])
+        found_msgs = np.array([False, False])
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            test_inst = pysat.Instrument(**self.in_kwargs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        for iwar in war:
+            if iwar.category == DeprecationWarning:
+                for i, msg in enumerate(warn_msgs):
+                    if str(iwar.message).find(msg) >= 0:
+                        found_msgs[i] = True
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(warn_msgs[i])
+
+        return
