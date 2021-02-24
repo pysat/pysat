@@ -119,6 +119,7 @@ type of orbit pysat should use.
 A selection of the output looks like:
 
 .. code::
+
    # Print a selection of the output
    for ostr in orbit_strs[:5]:
        print(ostr)

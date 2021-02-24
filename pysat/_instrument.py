@@ -2493,6 +2493,7 @@ class Instrument(object):
         Examples
         --------
         ::
+
             import datetime as dt
             import pysat
 
