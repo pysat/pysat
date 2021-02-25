@@ -64,10 +64,6 @@ class Orbits(object):
     This class should not be called directly by the user, it uses the interface
     provided by inst.orbits where inst = pysat.Instrument()
 
-    Warning
-    -------
-    This class is still under development.
-
     Examples
     --------
     ::
