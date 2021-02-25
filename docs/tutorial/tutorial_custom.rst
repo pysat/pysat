@@ -164,7 +164,8 @@ performed at the same level, so there is no strict gain by using the pysat
 nano-kernel in this simple demonstration. However, we can  use the nano-kernel
 to translate this daily mean into an versatile instrument independent function.
 
-**Attaching Custom Function at Instantiation**
+Attaching Custom Function at Instantiation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Custom methods may also be attached to an Instrument object directly
 at instantiation via the `custom` keyword.

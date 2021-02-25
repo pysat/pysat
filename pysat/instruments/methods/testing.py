@@ -97,7 +97,8 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Returns
     -------
-    Series of filenames indexed by file time, see list_files for more info
+    pds.Series
+        Filenames indexed by file time, see list_files for more info
 
     """
 

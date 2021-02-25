@@ -37,7 +37,7 @@ def create_dir(inst=None, temporary_file_list=False):
 
 def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                  version=False, content=None, timeout=None):
-    """Create year doy file set
+    """Create a file set using the year and day of year
 
     Parameters
     ----------

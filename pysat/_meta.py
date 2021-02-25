@@ -4,7 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 
-from copy import deepcopy as deepcopy
+from copy import deepcopy
 import os
 import warnings
 import numpy as np
@@ -918,7 +918,7 @@ class Meta(object):
         Returns
         -------
         out_name : str
-            string with case preserved as in metaobject
+            String with case preserved as in the meta object
 
         Note
         ----
@@ -933,7 +933,7 @@ class Meta(object):
 
         # Cycle through all places where this variable name could be, returning
         # the variable name whose lower-case version matches the lower-case
-        # vrsion of the variable name supplied.
+        # version of the variable name supplied.
         if name in self:
             for out_name in self.keys():
                 if lower_name == out_name.lower():
@@ -971,7 +971,7 @@ class Meta(object):
         Parameters
         ----------
         attr_name : str
-            name of attribute to find
+            Name of attribute to find
 
         Returns
         -------
@@ -996,12 +996,12 @@ class Meta(object):
         Parameters
         ----------
         name : str
-            name of variable to get stored case form
+            Name of variable to get stored case form
 
         Returns
         -------
         out_name : str
-            name in proper case
+            Name in proper case
 
         Note
         ----
@@ -1035,7 +1035,7 @@ class Meta(object):
         other_meta : Meta
             Meta object to be concatenated
         strict : bool
-            if True, ensure there are no duplicate variable names
+            If True, this flag ensures there are no duplicate variable names
             (default=False)
 
         Returns
@@ -1092,7 +1092,7 @@ class Meta(object):
 
         Returns
         -------
-        output: pandas.Series
+        output : pds.Series
             Series of metadata for variable
 
         """
@@ -1136,7 +1136,8 @@ class Meta(object):
 
         # Save the base Instrument attributes
         banned = inst._base_attr
-        # current attributes
+
+        # Current attributes
         inst_attr = dir(inst)
 
         # Get base attribute set, and attributes attached to instance
