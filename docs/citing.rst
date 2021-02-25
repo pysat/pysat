@@ -29,6 +29,11 @@ Example for citation in BibTex for a generalized version:
     url          = {https://doi.org/10.5281/zenodo.1199703}
   }
 
+A simplified implementation of the citation.
+
+.. include:: ../pysat/citation.txt
+   :literal:
+
 Citing the publication:
 
 .. code::
