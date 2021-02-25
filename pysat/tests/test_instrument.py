@@ -1375,8 +1375,8 @@ class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         warnings.simplefilter("always")
-        self.in_kwargs = {"platform": 'pysat', "name": 'testing',
-                          "sat_id": '10', "clean_level": 'clean'}
+        self.in_kwargs = {"platform": 'pysat', "name": 'testing', "tag": '',
+                          "sat_id": '', "clean_level": 'clean'}
         self.warn_msgs = np.array(
             ["accessible through `Instrument.meta.labels`",
              "are no longer standard metadata quantities",
@@ -1419,7 +1419,9 @@ class TestDeprecation():
         del self.in_kwargs['sat_id']
 
         # Remove associated deprecation warning
-        self.warn_msgs.pop(2)
+        new_msgs = list(self.warn_msgs)
+        new_msgs.pop(2)
+        self.warn_msgs = np.array(new_msgs)
 
         # Evaluate warnings
         self.eval_warnings()
