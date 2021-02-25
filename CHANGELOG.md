@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2021-01-21
+## [3.0.0] - 2021-03-01
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -134,11 +134,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Ensured download start time is used
 
 ## [2.2.2] - 2020-12-31
- - New Features
-    - netCDF4 files produced using `to_netcdf4()` now have an unlimited
-      time dimension
- - Documentation
-    - Updated guidance on numpy version for installation
+- New Features
+   - netCDF4 files produced using `to_netcdf4()` now have an unlimited
+     time dimension
+- Documentation
+   - Updated guidance on numpy version for installation
 - Bug Fix
    - Updated madrigal methods to simplify compound data types and enable
      creation of netCDF4 files using `self.to_netcdf4()`.

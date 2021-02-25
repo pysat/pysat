@@ -544,7 +544,7 @@ so that the instrument module can provide feedback using the same mechanism
 
 .. code:: Python
 
-    logger = logging.getLogger(__name__)
+    logger = pysat.logger
 
 
 Within any instrument module,
