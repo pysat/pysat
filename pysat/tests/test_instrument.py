@@ -1380,7 +1380,7 @@ class TestDeprecation():
         self.warn_msgs = np.array(
             ["accessible through `Instrument.meta.labels`",
              "are no longer standard metadata quantities",
-             "Instrument kwargs `sat_id` has beeen replaced"])
+             "Instrument kwarg `sat_id` has been replaced"])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -1394,7 +1394,7 @@ class TestDeprecation():
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as war:
-            test_inst = pysat.Instrument(**self.in_kwargs)
+            pysat.Instrument(**self.in_kwargs)
 
         # Ensure the minimum number of warnings were raised
         assert len(war) >= len(self.warn_msgs)
