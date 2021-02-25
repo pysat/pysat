@@ -35,7 +35,7 @@ class Meta(object):
     export_nan : list or NoneType
         List of labels that should be exported even if their value is nan or
         None for an empty list. When used, metadata with a value of nan will
-        be exluded from export. Will always allow nan export for labels of
+        be excluded from export. Will always allow nan export for labels of
         the float type (default=None)
 
     Attributes
