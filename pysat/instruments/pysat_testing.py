@@ -5,7 +5,6 @@ Produces fake instrument data for testing.
 
 import datetime as dt
 import functools
-import logging
 import numpy as np
 import warnings
 
