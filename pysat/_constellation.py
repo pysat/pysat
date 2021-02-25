@@ -123,10 +123,6 @@ class Constellation(object):
     def bounds(self, value=None):
         """ Sets boundaries for all Instruments in Constellation
 
-        .. deprecated:: 2.2.0
-          `difference` will be removed in pysat 3.0.0, it will be added to
-          pysatSeasons
-
         Parameters
         ----------
         value : tuple or NoneType
