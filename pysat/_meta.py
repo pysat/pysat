@@ -129,12 +129,14 @@ class Meta(object):
 
 
         # change a label used by Meta object
-        # note that all instances of fill_label
-        # within the meta object are NOT updated FIX??
         meta.labels.fill_val = '_FillValue'
 
-        # this feature is useful when converting metadata within pysat
-        # so that it is consistent with externally imposed file standards
+        # Note that the fill label is intended for use when interacting
+        # with external files. Thus, any fill values (NaN) within the Meta
+        # object are not updated when changing the metadata string label,
+        # or when updating the value representing fill data. A future update
+        # (Issue #707) will expand functionality to include these custom
+        # fill values when producing files.
 
     """
 
@@ -164,8 +166,8 @@ class Meta(object):
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
 
-        # use any user provided data to instantiate object with data
-        # attribute unit and name labels are called within
+        # Use any user provided data to instantiate object with data
+        # Attributes unit and name labels are called within
         if metadata is not None:
             if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
