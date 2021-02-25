@@ -323,25 +323,34 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
 
     """
 
-    # netCDF4 files, particularly those produced
-    # by pysat can be loaded using a pysat provided
-    # function
-    # Metadata in our notional example file is
-    # labeled by strings determined by a standard
-    # we can adapt pysat to the standard by specifying
-    # the string labels used in the file
-    # function below returns both data and metadata
+    # netCDF4 files, particularly those produced by pysat can be loaded using a
+    # pysat provided function, load_netcdf4.
+
+    # Metadata across different files can employ different labels for the
+    # same category of information. In our notional example, the file is
+    # from NASA's CDAWeb and uses their standard for metadata. The dictionary
+    # passed into the labels keyword is keyed by the category type that pysat
+    # tracks, while the value contains a tuple for the string label used
+    # within the file as well as the type of metadata to be tracked.
+    # `load_netcdf4` uses this information to correctly parse metadata within
+    # the file and attach it as appropriate. Once both the data and
+    # metadata are returned by this function, pysat will adapt the metadata
+    # labels to match the standard chosen by the user, not the
+    # labels chosen by CDAWeb.
     data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                           units_label='Units',
-                                           name_label='Long_Name',
-                                           notes_label='Var_Notes',
-                                           desc_label='CatDesc',
-                                           plot_label='FieldNam',
-                                           axis_label='LablAxis',
-                                           scale_label='ScaleTyp',
-                                           min_label='ValidMin',
-                                           max_label='ValidMax',
-                                           fill_label='FillVal',
+                                           labels={'units': ('Units', str),
+                                                   'name': ('Long_Name', str),
+                                                   'notes': ('Var_Notes', str),
+                                                   'desc': ('CatDesc', str),
+                                                   'plot': ('FieldNam', str),
+                                                   'axis': ('LablAxis', str),
+                                                   'scale': ('ScaleTyp', str),
+                                                   'min_val': (
+                                                       'ValidMin', float),
+                                                   'max_val': (
+                                                       'ValidMax', float),
+                                                   'fill_val': (
+                                                       'FillVal', float)},
                                            pandas_format=pandas_format)
     return data, mdata
 
