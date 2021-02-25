@@ -14,7 +14,7 @@ import xarray as xr
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 platform = 'pysat'
 name = 'testmodel'
