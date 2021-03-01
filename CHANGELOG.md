@@ -4,7 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.3.0] - 2021-XX-XX
 - Deprecation warnings added to:
-  - Instrument class (old meta labels)
+   - Instrument class (old meta labels)
+   - Constellation class kwarg `name`
    - Custom class
 - Documentation
    - Updated docstrings with deprecation notes
