@@ -332,7 +332,7 @@ class TestDeprecation():
                 # Setting data_labels to None should produce a TypeError after
                 # warning is generated
                 # ==> Save time in unit tests
-                test_const.difference(self.testC[0], self.testC[1],
+                test_const.difference(self.test_const[0], self.test_const[1],
                                       bounds=None, data_labels=None,
                                       cost_function=None)
             except TypeError:
