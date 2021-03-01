@@ -11,11 +11,18 @@ class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
 
     Created as part of a Spring 2018 UTDesign project.
+
+    .. deprecated:: 2.3.0
+      The `name` kwarg was changed to `const_module` in pysat 3.0.0
+
     """
     def __init__(self, instruments=None, name=None):
         """
         Constructs a Constellation given a list of instruments or the name of
         a file with a pre-defined constellation.
+
+        .. deprecated:: 2.3.0
+          The `name` kwarg was changed to `const_module` in pysat 3.0.0
 
         Parameters
         ----------
@@ -24,13 +31,26 @@ class Constellation(object):
         name : string
             Name of a file in pysat/constellations containing a list of
             instruments.
+        const_module : string or NoneType
+            Name of a pysat constellation module (default=None)
 
         Note
         ----
         The name and instruments parameters should not both be set.
         If neither is given, an empty constellation will be created.
+
         """
 
+        # Raise warnings about deprecated kwargs/attributes
+        if name is None:
+            name = const_module
+        else:
+            dwarn = "".join(["Constellation attribute and kwarg input `name`",
+                             " has been renamed `const_module` in pysat ",
+                             "3.0.0"])
+            warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
+
+        # Start initialization
         if instruments and name:
             raise ValueError('When creating a constellation, please specify '
                              'a list of instruments or a name, not both.')
