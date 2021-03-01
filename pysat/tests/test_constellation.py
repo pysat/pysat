@@ -335,3 +335,33 @@ class TestDeprecation():
 
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
+
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+        self.in_kwargs = {"name": 'single_test'}
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_kwargs
+
+    def test_name_kwarg_dep(self):
+        """Test deprecation of standard kwarg input, `name`
+        """
+        # Define the deprecated attributes that are always defined
+        warn_msg ="Constellation attribute and kwarg input `name` has been"
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            pysat.Constellation(**self.in_kwargs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= 1
+
+        # Test the warning messages, ensuring each attribute is present
+        assert war[0].category == DeprecationWarning:
+        assert str(war[0].message).find(warn_msg) >= 0
+
+        return
