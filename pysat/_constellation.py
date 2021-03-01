@@ -16,7 +16,7 @@ class Constellation(object):
       The `name` kwarg was changed to `const_module` in pysat 3.0.0
 
     """
-    def __init__(self, instruments=None, name=None):
+    def __init__(self, instruments=None, name=None, const_module=None):
         """
         Constructs a Constellation given a list of instruments or the name of
         a file with a pre-defined constellation.
