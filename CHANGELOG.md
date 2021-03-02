@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Instrument class (old meta labels, sat_id)
    - Constellation class kwarg `name`
    - Custom class
+   - functions from `_files` class
 - Documentation
    - Updated docstrings with deprecation notes
 
