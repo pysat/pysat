@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
 - Deprecation warnings added to:
    - Instrument class (old meta labels, sat_id)
+   - Constellation class kwarg `name`
    - Custom class
 - Documentation
    - Updated docstrings with deprecation notes
