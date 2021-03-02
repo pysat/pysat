@@ -288,18 +288,21 @@ class TestDeprecation():
         """Runs before every method to create a clean testing setup"""
         warnings.simplefilter("always")
 
-        instruments = [pysat.Instrument(platform='pysat', name='testing',
-                                        sat_id='10', clean_level='clean')
-                       for i in range(2)]
-        self.testC = pysat.Constellation(instruments)
+        self.instruments = [pysat.Instrument(platform='pysat', name='testing',
+                                             sat_id='10', clean_level='clean')
+                            for i in range(2)]
+        self.in_kwargs = {"name": 'single_test',
+                          'instruments': self.instruments}
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
 
-        del self.testC
+        del self.instruments, self.in_kwargs
 
     def test_deprecation_warning_add(self):
         """Test if constellation.add is deprecated"""
+        del self.in_kwargs['name']
+        test_const = pysat.Constellation(**self.in_kwargs)
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -308,7 +311,7 @@ class TestDeprecation():
                 # Setting data_label to None should produce a ValueError after
                 # warning is generated
                 # ==> Save time in unit tests
-                self.testC.add(bounds1=None, label1=None, bounds2=None,
+                test_const.add(bounds1=None, label1=None, bounds2=None,
                                label2=None, bin3=None, label3=None,
                                data_label=None)
             except ValueError:
@@ -319,6 +322,8 @@ class TestDeprecation():
 
     def test_deprecation_warning_difference(self):
         """Test if constellation.difference is deprecated"""
+        del self.in_kwargs['name']
+        test_const = pysat.Constellation(**self.in_kwargs)
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -327,7 +332,7 @@ class TestDeprecation():
                 # Setting data_labels to None should produce a TypeError after
                 # warning is generated
                 # ==> Save time in unit tests
-                self.testC.difference(self.testC[0], self.testC[1],
+                test_const.difference(test_const[0], test_const[1],
                                       bounds=None, data_labels=None,
                                       cost_function=None)
             except TypeError:
@@ -335,3 +340,23 @@ class TestDeprecation():
 
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
+
+    def test_name_kwarg_dep(self):
+        """Test deprecation of standard kwarg input, `name`
+        """
+        # Define the deprecated attributes that are always defined
+        warn_msg = "Constellation attribute and kwarg input `name` has been"
+        del self.in_kwargs['instruments']
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            pysat.Constellation(**self.in_kwargs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= 1
+
+        # Test the warning messages, ensuring each attribute is present
+        assert war[0].category == DeprecationWarning
+        assert str(war[0].message).find(warn_msg) >= 0
+
+        return
