@@ -862,6 +862,13 @@ class Instrument(object):
                                             '{:s}every instrument.'.format(estr))))
         try:
             self._default_rtn = inst.default
+            
+            warnings.warn(''.join(["The Instrument method `default` has been ",
+                                   "renamed `preprocess` in pysat 3.0.0. ",
+                                   "If this is not a pysat-managed Instrument,",
+                                   " you will need to update this when ",
+                                   "migrating to pysat 3.0.0."]),
+                          DeprecationWarning, stacklevel=2)
         except AttributeError:
             pass
         try:
