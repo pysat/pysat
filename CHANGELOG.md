@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.3.0] - 2021-XX-XX
 - Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
 - Deprecation warnings added to:
-   - Instrument class (old meta labels, sat_id)
+   - Instrument class (old meta labels, sat_id, default)
    - Custom class
 - Documentation
    - Updated docstrings with deprecation notes
