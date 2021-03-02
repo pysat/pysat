@@ -1380,7 +1380,8 @@ class TestDeprecation():
         self.warn_msgs = np.array(
             ["accessible through `Instrument.meta.labels`",
              "are no longer standard metadata quantities",
-             "Instrument kwarg `sat_id` has been replaced"])
+             "Instrument kwarg `sat_id` has been replaced",
+             "Instrument method `default` has been renamed `preprocess`"])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
