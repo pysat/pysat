@@ -32,9 +32,9 @@ class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
     .. deprecated:: 2.3.0
-      Several attributes will be removed or replaced in pysat 3.0.0:
-      sat_id, units_label, name_label, notes_label, desc_label, min_label,
-      max_label, fill_label, plot_label, axis_label, scale_label
+      Several attributes and methods will be removed or replaced in pysat 3.0.0:
+      sat_id, default, units_label, name_label, notes_label, desc_label,
+      min_label, max_label, fill_label, plot_label, axis_label, and scale_label
 
     Parameters
     ----------
