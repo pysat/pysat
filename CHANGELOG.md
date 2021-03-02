@@ -3,8 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.3.0] - 2021-XX-XX
+- Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
 - Deprecation warnings added to:
-   - Instrument class (old meta labels)
+   - Instrument class (old meta labels, sat_id)
    - Constellation class kwarg `name`
    - Custom class
 - Documentation

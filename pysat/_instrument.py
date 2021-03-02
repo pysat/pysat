@@ -33,7 +33,7 @@ class Instrument(object):
 
     .. deprecated:: 2.3.0
       Several attributes will be removed or replaced in pysat 3.0.0:
-      units_label, name_label, notes_label, desc_label, min_label,
+      sat_id, units_label, name_label, notes_label, desc_label, min_label,
       max_label, fill_label, plot_label, axis_label, scale_label
 
     Parameters
@@ -44,6 +44,8 @@ class Instrument(object):
         name of instrument.
     tag : string, optional
         identifies particular subset of instrument data.
+    inst_id : string
+        Replaces `sat_id`
     sat_id : string, optional
         identity within constellation
     clean_level : {'clean','dusty','dirty','none'}, optional
@@ -181,8 +183,8 @@ class Instrument(object):
 
     """
 
-    def __init__(self, platform=None, name=None, tag=None, sat_id=None,
-                 clean_level='clean', update_files=None, pad=None,
+    def __init__(self, platform=None, name=None, tag=None, inst_id=None,
+                 sat_id=None, clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=False,
@@ -205,6 +207,14 @@ class Instrument(object):
         dwarns.append("".join(["Meta labels [", ", ".join(dep_meta_kwargs),
                                "] are no longer standard metadata",
                                " quantities in pysat 3.0.0"]))
+
+        if sat_id is None:
+            # Assign new kwarg to old one if the old one was not used
+            sat_id = inst_id
+        else:
+            # Raise warning if old kwarg used
+            dwarns.append("".join(["Instrument kwarg `sat_id` has been ",
+                                   "replaced with `inst_id` in pysat 3.0.0"]))
 
         for dwarn in dwarns:
             warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
