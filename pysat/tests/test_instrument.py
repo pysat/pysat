@@ -1374,7 +1374,7 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
 class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
+        warnings.simplefilter("always", DeprecationWarning)
         self.in_kwargs = {"platform": 'pysat', "name": 'testing', "tag": '',
                           "sat_id": '', "clean_level": 'clean'}
         self.warn_msgs = np.array(
