@@ -5,6 +5,7 @@ import glob
 import numpy as np
 import os
 import sys
+import warnings
 
 from nose.tools import raises
 import pandas as pds
@@ -982,3 +983,56 @@ class TestInstrumentWithVersionedFiles():
 class TestInstrumentWithVersionedFilesNoFileListStorage(TestInstrumentWithVersionedFiles):
 
     temporary_file_list = True
+
+
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always", DeprecationWarning)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+    def test_deprecation_warning_process_parsed_filenames(self):
+        """Test if _files.process_parsed_filenames is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                pysat._files.process_parsed_filenames({})
+            except KeyError:
+                # Inputting empty dict will produce KeyError
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_parse_fixed_width_filenames(self):
+        """Test if _files.parse_fixed_width_filenames is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.parse_fixed_width_filenames([], '')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_parse_delimited_filenames(self):
+        """Test if _files.parse_delimited_filenames is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.parse_delimited_filenames([], '', '')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_construct_searchstring_from_format(self):
+        """Test if _files.construct_searchstring_from_format is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.construct_searchstring_from_format('')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
