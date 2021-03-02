@@ -1,16 +1,20 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import string
-import os
-import weakref
-import re
+import collections
 import glob
 import numpy as np
-import pandas as pds
-from pysat import data_dir as data_dir
+import os
+import re
+import string
+import warnings
+import weakref
 
+import pandas as pds
+
+from pysat import data_dir as data_dir
 from pysat import logger
+from pysat.utils.time import create_datetime_index
 
 
 class Files(object):
@@ -579,7 +583,6 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     """
 
-    from pysat.utils.time import create_datetime_index
 
     search_dict = construct_searchstring_from_format(stored['format_str'])
     keys = search_dict['keys']
@@ -675,7 +678,6 @@ def parse_fixed_width_filenames(files, format_str):
 
     """
 
-    import collections
 
     # create storage for data to be parsed from filenames
     stored = collections.OrderedDict()
@@ -758,7 +760,6 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     """
 
-    import collections
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
