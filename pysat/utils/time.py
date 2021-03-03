@@ -9,6 +9,8 @@ seasons, and calculation of solar local time
 
 import numpy as np
 import pandas as pds
+import warnings
+
 from pysat import datetime
 
 
@@ -136,9 +138,8 @@ def season_date_range(start, stop, freq='D'):
 
     """
 
-    import warnings
-
-    warnings.warn(' '.join(["utils.time.season_date_range is deprecated, use",
+    warnings.warn(' '.join(["utils.time.season_date_range is deprecated and",
+                            "be removed in pysat 3.0.0, use",
                             "utils.time.create_date_range instead"]),
                   DeprecationWarning, stacklevel=2)
 
