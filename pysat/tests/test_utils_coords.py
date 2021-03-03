@@ -140,7 +140,7 @@ class TestLonSLT():
         # Create a second longitude with a single value
         self.py_inst.data = self.py_inst.data.update({lon_name: (lon_name,
                                                                  [10.0])})
-        py_inst.data = py_inst.data.squeeze(dim=lon_name)
+        self.py_inst.data = self.py_inst.data.squeeze(dim=lon_name)
 
         # Calculate and test the SLT
         coords.calc_solar_local_time(self.py_inst, lon_name=lon_name,
