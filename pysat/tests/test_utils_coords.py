@@ -109,7 +109,7 @@ class TestLonSLT():
         assert (abs(self.py_inst['slt'] - self.py_inst['slt2'])).max() < 1.0e-6
 
     def test_bad_lon_name_calc_solar_local_time(self):
-        """Test calc_solar_local_time with a bad longitude name"""
+        """Test calc_solar_local_time with a bad longitude name."""
 
         self.py_inst = pysat.Instrument(platform='pysat', name="testing")
         self.py_inst.load(date=self.inst_time)
@@ -118,3 +118,14 @@ class TestLonSLT():
             coords.calc_solar_local_time(self.py_inst,
                                          lon_name="not longitude",
                                          slt_name='slt')
+
+    def test_lon_broadcasting_calc_solar_local_time(self):
+        """Test calc_solar_local_time with longitude coordinates."""
+
+        self.py_inst = pysat.Instrument(platform='pysat', name="testmodel")
+        self.py_inst.load(date=self.inst_time)
+        coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
+                                     slt_name='slt')
+
+        assert self.py_inst['slt'].max() < 24.0
+        assert self.py_inst['slt'].min() >= 0.0
