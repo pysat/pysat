@@ -12,7 +12,7 @@ import weakref
 
 import pandas as pds
 
-from pysat import data_dir as data_dir
+from pysat import data_dir
 from pysat import logger
 from pysat.utils.time import create_datetime_index
 
