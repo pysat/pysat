@@ -177,7 +177,7 @@ class TestDeprecation():
     def teardown(self):
         """Runs after every method to clean up previous testing"""
 
-    def test_deprecated_season_date_range():
+    def test_deprecated_season_date_range(self):
         """Tests that deprecation of season_date_range is working"""
 
         start = pds.datetime(2012, 2, 28)
