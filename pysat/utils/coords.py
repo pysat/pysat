@@ -90,11 +90,13 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     slt_name : string
         name of the output solar local time data key (default='slt')
 
-    Returns
-    -------
-    updates instrument data in column specified by slt_name
+    Note
+    ----
+    Updates Instrument data in column specified by slt_name, as well as
+    Metadata
 
     """
+    fill_val = np.nan
 
     if lon_name not in inst.data.keys():
         raise ValueError('unknown longitude variable name')
@@ -107,17 +109,34 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
         ut_hr.append((dtime.hour * 3600.0 + dtime.minute * 60.0
                       + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
+    ut_hr = np.array(ut_hr)
+
     # Calculate solar local time
-    slt = np.array([t + inst[lon_name][i] / 15.0 for i, t in enumerate(ut_hr)])
+    if inst[lon_name].shape == ut_hr.shape or inst[lon_name].shape == ():
+        slt = ut_hr + inst[lon_name] / 15.0
+        coords = inst.data.index
+    else:
+        # Initalize the new shape and coordinates
+        sshape = list(ut_hr.shape)
+        sshape.extend(list(inst[lon_name].shape))
+
+        coords = [inst.index.name]
+        coords.extend([ckey for ckey in inst[lon_name].coords.keys()])
+
+        slt = np.full(shape=sshape, fill_value=fill_val)
+
+        # Calculate for each UT hr
+        for i, t in enumerate(ut_hr):
+            slt[i] = t + inst[lon_name] / 15.0
 
     # Ensure that solar local time falls between 0 and 24 hours
     slt = np.mod(slt, 24.0)
 
     # Add the solar local time to the instrument
     if inst.pandas_format:
-        inst[slt_name] = pds.Series(slt, index=inst.data.index)
+        inst[slt_name] = pds.Series(slt, index=coords)
     else:
-        inst.data = inst.data.assign({slt_name: (inst.data.coords.keys(), slt)})
+        inst.data = inst.data.assign({slt_name: (coords, slt)})
 
     # Add units to the metadata
     inst.meta[slt_name] = {inst.meta.labels.units: 'h',
@@ -125,6 +144,6 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                            inst.meta.labels.desc: "Solar local time in hours",
                            inst.meta.labels.min_val: 0.0,
                            inst.meta.labels.max_val: 24.0,
-                           inst.meta.labels.fill_val: np.nan}
+                           inst.meta.labels.fill_val: fill_val}
 
     return
