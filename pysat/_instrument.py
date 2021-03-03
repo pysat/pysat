@@ -32,9 +32,9 @@ class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
     .. deprecated:: 2.3.0
-      Several attributes will be removed or replaced in pysat 3.0.0:
-      sat_id, units_label, name_label, notes_label, desc_label, min_label,
-      max_label, fill_label, plot_label, axis_label, scale_label
+      Several attributes and methods will be removed or replaced in pysat 3.0.0:
+      sat_id, default, units_label, name_label, notes_label, desc_label,
+      min_label, max_label, fill_label, plot_label, axis_label, and scale_label
 
     Parameters
     ----------
@@ -862,6 +862,14 @@ class Instrument(object):
                                             '{:s}every instrument.'.format(estr))))
         try:
             self._default_rtn = inst.default
+            
+            wstr = ''.join(("The Instrument method `default` has been ",
+                            "renamed `preprocess` in pysat 3.0.0. ",
+                            "If this is not a pysat-managed Instrument,",
+                            " you will need to update this when ",
+                            "migrating to pysat 3.0.0."))
+            warnings.simplefilter('always', DeprecationWarning)
+            warnings.warn(wstr, DeprecationWarning, stacklevel=2)
         except AttributeError:
             pass
         try:

@@ -1374,13 +1374,14 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
 class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
+        warnings.simplefilter("always", DeprecationWarning)
         self.in_kwargs = {"platform": 'pysat', "name": 'testing', "tag": '',
                           "sat_id": '', "clean_level": 'clean'}
         self.warn_msgs = np.array(
             ["accessible through `Instrument.meta.labels`",
              "are no longer standard metadata quantities",
-             "Instrument kwarg `sat_id` has been replaced"])
+             "Instrument kwarg `sat_id` has been replaced",
+             "Instrument method `default` has been renamed `preprocess`"])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
