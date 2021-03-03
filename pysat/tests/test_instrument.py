@@ -1385,7 +1385,7 @@ class TestDeprecation():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.in_kwargs, self.warn_msgs
+        del self.in_args, self.in_kwargs, self.warn_msgs
 
     def eval_warnings(self):
         """Routine to evaluate warnings raised when Instrument instantiated
@@ -1422,6 +1422,20 @@ class TestDeprecation():
         # Remove associated deprecation warning
         new_msgs = list(self.warn_msgs)
         new_msgs.pop(2)
+        self.warn_msgs = np.array(new_msgs)
+
+        # Evaluate warnings
+        self.eval_warnings()
+        return
+
+    def test_extra_kwarg_dep(self):
+        """Test deprecation of optional kwarg input."""
+        self.in_kwargs['multi_file_day'] = False
+        self.in_kwargs['manual_org'] = False
+        new_msgs = list(self.warn_msgs)
+        new_msgs.extend([
+            "Instrument kwarg `multi_file_day` has been deprecated",
+            "Instrument kwarg `manual_org` has been deprecated"])
         self.warn_msgs = np.array(new_msgs)
 
         # Evaluate warnings
