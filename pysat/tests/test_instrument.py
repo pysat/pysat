@@ -1385,7 +1385,7 @@ class TestDeprecation():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.in_args, self.in_kwargs, self.warn_msgs
+        del self.in_kwargs, self.warn_msgs
 
     def eval_warnings(self):
         """Routine to evaluate warnings raised when Instrument instantiated
