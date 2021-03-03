@@ -113,8 +113,13 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
 
     # Calculate solar local time
     if inst[lon_name].shape == ut_hr.shape or inst[lon_name].shape == ():
-        slt = ut_hr + inst[lon_name] / 15.0
-        coords = inst.data.index
+        if inst[lon_name].shape == ():
+            lon = float(inst[lon_name])
+        else:
+            lon = inst[lon_name]
+
+        slt = ut_hr + lon / 15.0
+        coords = inst.index.name
     else:
         # Initalize the new shape and coordinates
         sshape = list(ut_hr.shape)
@@ -134,7 +139,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
 
     # Add the solar local time to the instrument
     if inst.pandas_format:
-        inst[slt_name] = pds.Series(slt, index=coords)
+        inst[slt_name] = pds.Series(slt, index=inst.index)
     else:
         inst.data = inst.data.assign({slt_name: (coords, slt)})
 
