@@ -129,3 +129,23 @@ class TestLonSLT():
 
         assert self.py_inst['slt'].max() < 24.0
         assert self.py_inst['slt'].min() >= 0.0
+
+    def test_single_lon_calc_solar_local_time(self):
+        """Test calc_solar_local_time with a single longitude value."""
+
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing_xarray")
+        self.py_inst.load(date=self.inst_time)
+        lon_name = 'lon2'
+
+        # Create a second longitude with a single value
+        self.py_inst.data = self.py_inst.data.update({lon_name: (lon_name,
+                                                                 [10.0])})
+        py_inst.data = py_inst.data.squeeze(dim=lon_name)
+
+        # Calculate and test the SLT
+        coords.calc_solar_local_time(self.py_inst, lon_name=lon_name,
+                                     slt_name='slt')
+
+        assert self.py_inst['slt'].max() < 24.0
+        assert self.py_inst['slt'].min() >= 0.0
+        assert self.py_inst['slt'].shape == self.py_inst.index.shape
