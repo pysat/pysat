@@ -8,6 +8,10 @@ experiments.
 
 Downloads data from the JRO Madrigal Database.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatMadrigal (https://github.com/pysat/pysatMadrigal)
+
 Properties
 ----------
 platform
@@ -37,6 +41,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import functools
 import numpy as np
+import warnings
 
 import pysat
 from pysat.instruments.methods import madrigal as mad_meth
@@ -112,6 +117,12 @@ def init(self):
         This object
 
     """
+
+    warnings.warn("".join(["jro_isr has been removed from the pysat-managed ",
+                           "Instruments in pysat 3.0.0, and now resides in ",
+                           "pysatMadrigal: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     logger.info("The Jicamarca Radio Observatory is operated by the Instituto " +
           "Geofisico del Peru, Ministry of Education, with support from the" +
@@ -210,6 +221,10 @@ def clean(self):
 def calc_measurement_loc(self):
     """ Calculate the instrument measurement location in geographic coordinates
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.jro.calc_measurement_loc`
+
     Returns
     -------
     Void : adds 'gdlat#', 'gdlon#' to the instrument, for all directions that
@@ -218,6 +233,13 @@ def calc_measurement_loc(self):
     """
 
     from pysat.utils import coords
+
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.jro.",
+                           "calc_measurement_loc` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     az_keys = [kk[5:] for kk in list(self.data.keys())
                if kk.find('azdir') == 0]
