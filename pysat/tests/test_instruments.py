@@ -13,6 +13,9 @@ import tempfile
 import pysat
 import pysat.instruments.pysat_testing
 
+# modules in the list below have deprecation warnings
+dep_list = ['jro_isr', 'dmsp_ivm']
+
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
                 'cosmic2013_gps', 'demeter_iap', 'sport_ivm',
@@ -119,6 +122,8 @@ class TestInstrumentQualifier():
 
     def __init__(self):
         """Iterate through and create all of the test Instruments needed"""
+        warnings.simplefilter("always", DeprecationWarning)
+
         global init_inst
         global init_mod
         global init_names
@@ -141,6 +146,24 @@ class TestInstrumentQualifier():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pass
+
+    def check_init_warning(self, module, name, tag, sat_id):
+        """Check for the existance of a deprecation warning."""
+        if name not in dep_list:
+            warnings.warn('{:} has not yet been deprecated'.format(module))
+        else:
+            wmsg = " ".join([name, "has been removed from the pysat-managed"])
+
+            with warnings.catch_warnings(record=True) as war:
+                pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
+
+            found_war = False
+            for iwar in war:
+                if (iwar.category == DeprecationWarning
+                    and str(iwar.message).find(wmsg) >= 0):
+                    found_war = True
+
+            assert found_war, "didn't find warning about: {:}".format(wmsg)
 
     def check_module_loadable(self, module, tag, sat_id):
         _ = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
