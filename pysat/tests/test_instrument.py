@@ -1428,6 +1428,20 @@ class TestDeprecation():
         self.eval_warnings()
         return
 
+    def test_extra_kwarg_dep(self):
+        """Test deprecation of optional kwarg input."""
+        self.in_kwargs['multi_file_day'] = False
+        self.in_kwargs['manual_org'] = False
+        new_msgs = list(self.warn_msgs)
+        new_msgs.extend([
+            "Instrument kwarg `multi_file_day` has been deprecated",
+            "Instrument kwarg `manual_org` has been deprecated"])
+        self.warn_msgs = np.array(new_msgs)
+
+        # Evaluate warnings
+        self.eval_warnings()
+        return
+
     def test_standard_kwarg_dep(self):
         """Test deprecation of standard kwarg input."""
         # Evaluate warnings

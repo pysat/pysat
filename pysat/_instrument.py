@@ -33,8 +33,9 @@ class Instrument(object):
 
     .. deprecated:: 2.3.0
       Several attributes and methods will be removed or replaced in pysat 3.0.0:
-      sat_id, default, units_label, name_label, notes_label, desc_label,
-      min_label, max_label, fill_label, plot_label, axis_label, and scale_label
+      sat_id, default, multi_file_day, manual_org, units_label, name_label,
+      notes_label, desc_label, min_label, max_label, fill_label, plot_label,
+      axis_label, and scale_label
 
     Parameters
     ----------
@@ -72,10 +73,12 @@ class Instrument(object):
     multi_file_day : boolean, optional
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.
+        with a timestamp of day n-1 or n+1.  Deprecated at this level in
+        pysat 3.0.0.
     manual_org : bool
         if True, then pysat will look directly in pysat data directory
-        for data files and will not use default /platform/name/tag
+        for data files and will not use default /platform/name/tag. Deprecated
+        in pysat 3.0.0, as this flag is not needed to use `directory_format`.
     directory_format : str
         directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
@@ -216,11 +219,21 @@ class Instrument(object):
             dwarns.append("".join(["Instrument kwarg `sat_id` has been ",
                                    "replaced with `inst_id` in pysat 3.0.0"]))
 
+        if multi_file_day is not None:
+            dwarns.append("".join(["Instrument kwarg `multi_file_day` has been",
+                                   " deprecated in pysat 3.0.0 and will only",
+                                   " be allowed to be specified inside ",
+                                   "Instrument sub-modules."]))
+
+        if manual_org is not None:
+            dwarns.append("".join(["Instrument kwarg `manual_org` has been ",
+                                   "deprecated in pysat 3.0.0, use only the ",
+                                   "`directory_format` kwarg instead."]))
+
         for dwarn in dwarns:
             warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
 
         # Start initialization
-
         if inst_module is None:
             # use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):
