@@ -258,7 +258,7 @@ def smooth_ram_drifts(inst, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
 
     """
 
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.dmsp.",
                            "smooth_ram_drifts` instead: ",
@@ -293,7 +293,7 @@ def update_DMSP_ephemeris(inst, ephem=None):
 
     """
 
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.dmsp.",
                            "update_DMSP_ephemeris` instead: ",
@@ -348,7 +348,7 @@ def add_drift_unit_vectors(inst):
 
     """
 
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.dmsp.",
                            "add_drift_unit_vectors` instead: ",
@@ -419,7 +419,7 @@ def add_drifts_polar_cap_x_y(inst, rpa_flag_key=None,
     velocities
     """
 
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.dmsp.",
                            "add_drifts_polar_cap_x_y` instead: ",

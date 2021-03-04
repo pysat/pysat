@@ -40,7 +40,7 @@ def cedar_rules():
         String with general acknowledgement for all CEDAR Madrigal data
 
     """
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.madrigal`",
                            "cedar_rules` instead: ",
@@ -95,7 +95,7 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
         inst.load(2010,18)
 
     """
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.madrigal`",
                            "load` instead: ",
@@ -254,7 +254,7 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
     downloads.
 
     """
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.madrigal`",
                            "download` instead: ",
@@ -357,7 +357,7 @@ def get_remote_filenames(inst_code=None, kindat=None, user=None,
 
 
     """
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.madrigal`",
                            "get_remote_filenames` instead: ",
@@ -441,7 +441,7 @@ def good_exp(exp, date_array=None):
         True if good, False if bad
 
     """
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.madrigal`",
                            "good_exp` instead: ",
@@ -540,7 +540,7 @@ def list_remote_files(tag, sat_id, inst_code=None, kindat=None, user=None,
                                               inst_code=madrigal_inst_code)
 
     """
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.madrigal`",
                            "list_remote_files` instead: ",
@@ -627,7 +627,7 @@ def filter_data_single_date(self):
     at the top level
 
     """
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.madrigal`",
                            "filter_data_single_date` instead: ",

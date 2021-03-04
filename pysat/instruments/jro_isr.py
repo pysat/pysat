@@ -234,7 +234,7 @@ def calc_measurement_loc(self):
 
     from pysat.utils import coords
 
-    warnings.warn("".join(["This funciton is deprecated here and will be ",
+    warnings.warn("".join(["This function is deprecated here and will be ",
                            "removed in pysat 3.0.0. Please use ",
                            "`pysatMadrigal.instruments.methods.jro.",
                            "calc_measurement_loc` instead: ",
