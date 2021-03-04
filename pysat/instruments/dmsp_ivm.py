@@ -66,6 +66,7 @@ from __future__ import absolute_import
 import functools
 import numpy as np
 import pandas as pds
+import warnings
 
 import pysat
 from pysat.instruments.methods import madrigal as mad_meth
