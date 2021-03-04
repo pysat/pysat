@@ -2,6 +2,10 @@
 """Provides default routines for integrating CEDAR Madrigal instruments into
 pysat, reducing the amount of user intervention.
 
+.. deprecated:: 2.3.0
+  This module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatMadrigal (https://github.com/pysat/pysatMadrigal)
+
  """
 
 from __future__ import absolute_import
@@ -14,6 +18,7 @@ import os
 import pandas as pds
 import subprocess
 import sys
+import warnings
 
 import h5py
 from madrigalWeb import madrigalWeb
@@ -25,12 +30,23 @@ logger = logging.getLogger(__name__)
 def cedar_rules():
     """ General acknowledgement statement for Madrigal data.
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.madrigal`
+
     Returns
     -------
     ackn : string
         String with general acknowledgement for all CEDAR Madrigal data
 
     """
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.madrigal`",
+                           "cedar_rules` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
+
     ackn = "Contact the PI when using this data, in accordance with the CEDAR"
     ackn += " 'Rules of the Road'"
     return ackn
@@ -39,6 +55,10 @@ def cedar_rules():
 # support load routine
 def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     """Loads data from Madrigal into Pandas.
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.madrigal`
 
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.
@@ -75,6 +95,12 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
         inst.load(2010,18)
 
     """
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.madrigal`",
+                           "load` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Ensure 'time' wasn't included as a coordinate, since it is the default
     if 'time' in xarray_coords:
@@ -181,6 +207,10 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
              file_format='hdf5'):
     """Downloads data from Madrigal.
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.madrigal`
+
     Parameters
     ----------
     date_array : array-like
@@ -224,6 +254,12 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
     downloads.
 
     """
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.madrigal`",
+                           "download` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     if inst_code is None:
         raise ValueError("Must supply Madrigal instrument code")
@@ -269,6 +305,10 @@ def get_remote_filenames(inst_code=None, kindat=None, user=None,
                          date_array=None):
     """Retrieve the remote filenames for a specified Madrigal instrument
     (and experiment)
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.madrigal`
 
     Parameters
     ----------
@@ -317,6 +357,12 @@ def get_remote_filenames(inst_code=None, kindat=None, user=None,
 
 
     """
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.madrigal`",
+                           "get_remote_filenames` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     if inst_code is None:
         raise ValueError("Must supply Madrigal instrument code")
@@ -377,6 +423,10 @@ def get_remote_filenames(inst_code=None, kindat=None, user=None,
 def good_exp(exp, date_array=None):
     """ Determine if a Madrigal experiment has good data for specified dates
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.madrigal`
+
     Parameters
     ----------
     exp : MadrigalExperimentFile
@@ -391,6 +441,12 @@ def good_exp(exp, date_array=None):
         True if good, False if bad
 
     """
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.madrigal`",
+                           "good_exp` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     gflag = False
 
@@ -416,6 +472,10 @@ def list_remote_files(tag, sat_id, inst_code=None, kindat=None, user=None,
                       two_digit_year_break=None, start=dt.datetime(1900,1,1),
                       stop=dt.datetime.now()):
     """List files available from Madrigal.
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.madrigal`
 
     Parameters
     ----------
@@ -480,6 +540,13 @@ def list_remote_files(tag, sat_id, inst_code=None, kindat=None, user=None,
                                               inst_code=madrigal_inst_code)
 
     """
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.madrigal`",
+                           "list_remote_files` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
+
     if inst_code is None:
         raise ValueError("Must supply Madrigal instrument code")
 
@@ -516,6 +583,10 @@ def list_remote_files(tag, sat_id, inst_code=None, kindat=None, user=None,
 
 def filter_data_single_date(self):
     """Filters data to a single date.
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.madrigal`
 
     Parameters
     ----------
@@ -556,6 +627,12 @@ def filter_data_single_date(self):
     at the top level
 
     """
+    warnings.warn("".join(["This funciton is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.madrigal`",
+                           "filter_data_single_date` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     # only do this if loading by date!
     if self._load_by_date and self.pad is None:
