@@ -149,6 +149,7 @@ class TestInstrumentQualifier():
 
     def check_init_warning(self, module, name, tag, sat_id):
         """Check for the existance of a deprecation warning."""
+        global dep_list
         if name not in dep_list:
             warnings.warn('{:} has not yet been deprecated'.format(module))
         else:
