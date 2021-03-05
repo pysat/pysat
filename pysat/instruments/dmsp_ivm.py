@@ -16,6 +16,10 @@ The routine is configured to utilize data files with instrument
 performance flags generated at the Center for Space Sciences at the
 University of Texas at Dallas.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatMadrigal (https://github.com/pysat/pysatMadrigal)
+
 Properties
 ----------
 platform
@@ -62,6 +66,7 @@ from __future__ import absolute_import
 import functools
 import numpy as np
 import pandas as pds
+import warnings
 
 import pysat
 from pysat.instruments.methods import madrigal as mad_meth
@@ -131,6 +136,12 @@ def init(self):
         This object
 
     """
+
+    warnings.warn("".join(["dmsp_ivm has been removed from the pysat-managed ",
+                           "Instruments in pysat 3.0.0, and now resides in ",
+                           "pysatMadrigal ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     logger.info(mad_meth.cedar_rules())
     self.acknowledgements = "".join(("See 'self.Experiment_Notes' for ",
@@ -229,6 +240,10 @@ def clean(inst):
 def smooth_ram_drifts(inst, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
     """ Smooth the ram drifts using a rolling mean
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.dmsp.smooth_ram_drifts`
+
     Parameters
     -----------
     rpa_flag_key : string or NoneType
@@ -243,6 +258,13 @@ def smooth_ram_drifts(inst, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
 
     """
 
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.dmsp.",
+                           "smooth_ram_drifts` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
+
     if rpa_flag_key in list(inst.data.keys()):
         rpa_idx, = np.where(inst[rpa_flag_key] == 1)
     else:
@@ -256,6 +278,10 @@ def smooth_ram_drifts(inst, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
 def update_DMSP_ephemeris(inst, ephem=None):
     """Updates DMSP instrument data with DMSP ephemeris
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.dmsp.update_DMSP_ephemeris`
+
     Parameters
     ----------
     ephem : pysat.Instrument or NoneType
@@ -266,6 +292,13 @@ def update_DMSP_ephemeris(inst, ephem=None):
     Updates 'mlt' and 'mlat'
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.dmsp.",
+                           "update_DMSP_ephemeris` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Ensure the right ephemera is loaded
     if ephem is None:
@@ -298,6 +331,10 @@ def update_DMSP_ephemeris(inst, ephem=None):
 def add_drift_unit_vectors(inst):
     """ Add unit vectors for the satellite velocity
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.dmsp.add_drift_unit_vectors`
+
     Returns
     ---------
     Adds unit vectors in cartesian and polar coordinates for RAM and
@@ -310,6 +347,14 @@ def add_drift_unit_vectors(inst):
     Assumes that the RAM vector is pointed perfectly forward
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.dmsp.",
+                           "add_drift_unit_vectors` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
+
     # Calculate theta and R in radians from MLT and MLat, respectively
     theta = inst['mlt'] * (np.pi / 12.0) - np.pi * 0.5
     r = np.radians(90.0 - inst['mlat'].abs())
@@ -349,6 +394,10 @@ def add_drifts_polar_cap_x_y(inst, rpa_flag_key=None,
                              cross_vel_key='ion_v_sat_left'):
     """ Add polar cap drifts in cartesian coordinates
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatMadrigal.instruments.methods.dmsp.add_drifts_polar_cap_x_y`
+
     Parameters
     ------------
     rpa_flag_key : string or NoneType
@@ -369,6 +418,13 @@ def add_drifts_polar_cap_x_y(inst, rpa_flag_key=None,
     Polar cap drifts assume there is no vertical component to the X-Y
     velocities
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatMadrigal.instruments.methods.dmsp.",
+                           "add_drifts_polar_cap_x_y` instead: ",
+                           "https://github.com/pysat/pysatMadrigal"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Get the good RPA data, if available
     if rpa_flag_key in list(inst.data.keys()):

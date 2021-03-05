@@ -9,7 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
      and manual_org)
    - Constellation class kwarg `name`
    - Custom class
-   - functions from `_files` class
+  - functions from `_files` class
+  - Instrument modules:
+    - the pysatMadrigal: jro_isr, dmsp_ivm
+  - Madrigal instrument methods
 - Documentation
    - Updated docstrings with deprecation notes
 
