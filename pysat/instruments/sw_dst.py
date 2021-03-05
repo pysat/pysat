@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """Supports Dst values. Downloads data from NGDC.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatSpaceWeather
+  (https://github.com/pysat/pysatSpaceWeather)
+
 Properties
 ----------
 platform
@@ -29,6 +34,7 @@ of the National Science Foundation.
 import os
 import pandas as pds
 import numpy as np
+import warnings
 
 import pysat
 
@@ -40,6 +46,19 @@ name = 'dst'
 tags = {'': ''}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+
+
+def init(self):
+    """Initializes the Instrument object
+    """
+
+    warnings.warn("".join(["sw_dst has been removed from the pysat-managed ",
+                           "Instruments in pysat 3.0.0, and now resides in ",
+                           "pysatSpaceWeather: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
+
+    return
 
 
 def load(fnames, tag=None, sat_id=None):

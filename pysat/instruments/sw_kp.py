@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 """Supports Kp index values. Downloads data from ftp.gfz-potsdam.de or SWPC.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatSpaceWeather
+  (https://github.com/pysat/pysatSpaceWeather)
+
+
 Parameters
 ----------
 platform
@@ -62,6 +68,7 @@ filter_geoquiet
 import functools
 import numpy as np
 import os
+import warnings
 
 import pandas as pds
 
@@ -84,6 +91,19 @@ today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
 _test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                     'forecast': today + pds.DateOffset(days=1)}}
+
+
+def init(self):
+    """Initializes the Instrument object
+    """
+
+    warnings.warn("".join(["sw_kp has been removed from the pysat-managed ",
+                           "Instruments in pysat 3.0.0, and now resides in ",
+                           "pysatSpaceWeather: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
+
+    return
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -406,6 +426,12 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
                     kp_inst=None):
     """Filters pysat.Instrument data for given time after Kp drops below gate.
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and has been replaced
+      with the more adaptable function,
+      `pysatSpaceWeather.instruments.methods.kp_ap.filter_geomag`. Be sure to
+      update to use the new kwargs.
+
     Parameters
     ----------
     sat : pysat.Instrument
@@ -430,6 +456,14 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     data.
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.methods.kp_ap.",
+                           "filter_geomag` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
+
     if kp_inst is not None:
         kp_inst.load(date=sat.date, verifyPad=True)
         kpData = kp_inst
@@ -461,6 +495,10 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
 def initialize_kp_metadata(meta, data_key, fill_val=-1):
     """ Initialize the Kp meta data using our knowledge of the index
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and has been replaced
+      with `pysatSpaceWeather.instruments.methods.kp_ap.initialize_kp_metadata`
+
     Parameters
     ----------
     meta : pysat._meta.Meta
@@ -471,6 +509,13 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
         File-specific fill value (default=-1)
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.methods.kp_ap.",
+                           "initialize_kp_metadata` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     data_label = data_key.replace("_", " ")
     format_label = data_label[0].upper() + data_label[1:]
@@ -488,6 +533,10 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
 def convert_3hr_kp_to_ap(kp_inst):
     """ Calculate 3 hour ap from 3 hour Kp index
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and has been replaced
+      with `pysatSpaceWeather.instruments.methods.kp_ap.convert_3hr_kp_to_ap`
+
     Parameters
     ----------
     kp_inst : pysat.Instrument
@@ -503,6 +552,13 @@ def convert_3hr_kp_to_ap(kp_inst):
     https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.methods.kp_ap.",
+                           "convert_3hr_kp_to_ap` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Kp are keys, where n.3 = n+ and n.6 = (n+1)-. E.g., 0.6 = 1-
     kp_to_ap = {0: 0, 0.3: 2, 0.6: 3, 1: 4, 1.3: 5, 1.6: 6, 2: 7, 2.3: 9,
