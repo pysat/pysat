@@ -12,7 +12,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - functions from `_files` class
   - Instrument modules:
     - the pysatMadrigal: jro_isr, dmsp_ivm
-  - Madrigal instrument methods
+    - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
+  - SpaceWeather and Madrigal instrument methods
 - Documentation
    - Updated docstrings with deprecation notes
 
