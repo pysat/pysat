@@ -25,6 +25,7 @@ else:
 
 class TestBasics():
     def setup(self):
+        warnings.simplefilter("ignore")
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
