@@ -12,6 +12,7 @@ from importlib import reload
 import os
 import pytest
 import shutil
+import tempfile
 
 import pysat  # required for reimporting pysat
 from pysat._params import Parameters  # required for eval statements
@@ -27,19 +28,31 @@ class TestBasics():
         # Set up default values
         pysat.params.restore_defaults()
 
+        # Get a temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.wd = os.getcwd()
+
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.params = copy.deepcopy(self.stored_params)
         pysat.params.store()
         reload(pysat)
+        self.tempdir.cleanup()
+        os.chdir(self.wd)
 
     @pytest.mark.parametrize("paths, check",
                              [('.', ['.']),
+                              ('./hi', ['./hi']),
+                              ('./', ['./']),
                               (['.', '.'], None)])
     def test_set_data_dirs(self, paths, check):
         """Update pysat directory via params"""
         if check is None:
             check = paths
+
+        # Switch working directory to temp directory
+        os.chdir(self.tempdir.name)
 
         # Assign path
         pysat.params['data_dirs'] = paths
