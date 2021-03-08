@@ -32,7 +32,6 @@ class TestBasics():
         self.tempdir = tempfile.TemporaryDirectory()
         self.wd = os.getcwd()
 
-
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.params = copy.deepcopy(self.stored_params)
