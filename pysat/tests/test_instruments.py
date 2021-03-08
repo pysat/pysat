@@ -122,6 +122,8 @@ class TestInstrumentQualifier():
 
     def __init__(self):
         """Iterate through and create all of the test Instruments needed"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         global init_inst
         global init_mod
         global init_names

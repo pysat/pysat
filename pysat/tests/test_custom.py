@@ -10,7 +10,7 @@ import pysat
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
                                          clean_level='clean')
 
@@ -312,7 +312,7 @@ class TestBasics():
 class TestBasicsXarray(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', tag='10',
                                          clean_level='clean')
 
@@ -324,7 +324,7 @@ class TestBasicsXarray(TestBasics):
 class ConstellationTestBasics(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         for i in range(5):
             insts.append(pysat.Instrument('pysat', 'testing', tag='10',

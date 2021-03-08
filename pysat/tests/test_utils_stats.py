@@ -10,6 +10,7 @@ from pysat.utils import stats as pystats
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
 
         # Add testing data for circular statistics
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
@@ -62,7 +63,7 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""

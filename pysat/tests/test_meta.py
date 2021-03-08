@@ -15,7 +15,7 @@ import pysat.tests.test_utils
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.meta = pysat.Meta()
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
@@ -1135,7 +1135,7 @@ class TestBasics():
 class TestBasicsImmuatble(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.meta = pysat.Meta()
         # disable mutability
         self.meta.mutable = False

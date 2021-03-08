@@ -46,7 +46,7 @@ def test_deprecation_warning_computational_form():
     """Test if computational form in utils is deprecated"""
 
     data = pds.Series([0, 1, 2])
-    warnings.simplefilter("always")
+    warnings.filterwarnings('always', category=DeprecationWarning)
     dslice1 = pysat.ssnl.computational_form(data)
     with warnings.catch_warnings(record=True) as war:
         dslice2 = pysat.utils.computational_form(data)
@@ -59,6 +59,7 @@ def test_deprecation_warning_computational_form():
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -127,6 +128,7 @@ class TestBasics():
 class TestScaleUnits():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
@@ -231,6 +233,8 @@ class TestScaleUnits():
 class TestBasicNetCDF4():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -479,6 +483,8 @@ class TestBasicNetCDF4():
 class TestBasicNetCDF4xarray():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -528,7 +534,7 @@ class TestBasicNetCDF4xarray():
         self.testInst.data.attrs['new_attr'] = 1
         self.testInst.data.to_netcdf(outfile)
 
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
         with warnings.catch_warnings(record=True) as war:
             loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                          epoch_name='time',

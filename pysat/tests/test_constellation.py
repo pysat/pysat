@@ -9,7 +9,7 @@ class TestConstellation:
     """Test the Constellation class."""
     def setup(self):
         """Create instruments and a constellation for each test."""
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.instruments = [pysat.Instrument('pysat', 'testing',
                                              clean_level='clean')
                             for i in range(2)]
@@ -108,7 +108,7 @@ class TestAdditionOppositeInstruments:
         length of the other data, descend has the same data but negative.
         The addition of these two signals should be zero everywhere.
         """
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testC = pysat.Constellation(name='test_add_opposite')
 
     def teardown(self):
@@ -138,7 +138,7 @@ class TestAdditionSimilarInstruments:
         more than 10 off from the addition of just 'ascend'
         TODO: actually check the math on this
         """
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testC = pysat.Constellation(name='test_add_similar')
         self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testing',
                                                           tag='ascend')])
@@ -177,7 +177,7 @@ class TestAdditionSingleInstrument:
         addition on it should just return the instrument's data within
         the bounds
         """
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         self.testInst = pysat.Instrument('pysat', 'testing', 'fives',
                                          clean_level='clean')
@@ -208,7 +208,7 @@ class TestAdditionSingleInstrument:
 
 class TestDifferenceSameInstrument:
     def setup(self):
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.const = pysat.Constellation(name='test_diff_same')
 
     def teardown(self):
@@ -232,7 +232,7 @@ class TestDifferenceSameInstrument:
 
 class TestDifferenceSimilarInstruments:
     def setup(self):
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.const = pysat.Constellation(name='test_diff_similar')
 
     def teardown(self):
@@ -261,7 +261,7 @@ class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("ignore")
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testConst = \
             pysat.Constellation([pysat.Instrument('pysat', 'testing',
                                                   sat_id='10',
