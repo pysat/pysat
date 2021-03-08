@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-.
 """Provides default routines for solar wind and geospace indices
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatSpaceWeather
+  (https://github.com/pysat/pysatSpaceWeather)
+
 """
 
 from __future__ import print_function
@@ -8,12 +13,18 @@ from __future__ import absolute_import
 
 import pandas as pds
 import numpy as np
+import warnings
+
 import pysat
 
 
 def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                start=None, stop=None, fill_val=np.nan):
     """ Combine the output from the different Kp sources for a range of dates
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and has been replaced
+      with `pysatSpaceWeather.instruments.methods.kp_ap.combine_kp`
 
     Parameters
     ----------
@@ -51,6 +62,14 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     Will not attempt to download any missing data, but will load data
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.methods.kp_ap.",
+                           "combine_kp` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
+
     notes = "Combines data from"
 
     # Create an ordered list of the Instruments, excluding any that are None
@@ -241,6 +260,10 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     """ Combine the output from the measured and forecasted F10.7 sources
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and has been replaced
+      with `pysatSpaceWeather.instruments.methods.f107.combine_f107`
+
     Parameters
     ----------
     standard_inst : (pysat.Instrument or NoneType)
@@ -271,6 +294,14 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     Will not attempt to download any missing data, but will load data
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.methods.f107.",
+                           "combine_f107` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
+
     # Initialize metadata and flags
     notes = "Combines data from"
     stag = standard_inst.tag if len(standard_inst.tag) > 0 else 'default'
@@ -437,6 +468,10 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                   running_name=None):
     """ Calculate the daily Ap index from the 3hr ap index
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and has been replaced
+      with `pysatSpaceWeather.instruments.methods.kp_ap.calc_daily_Ap`
+
     Parameters
     ----------
     ap_inst : (pysat.Instrument)
@@ -461,6 +496,13 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     by MSIS when running with sub-daily geophysical inputs
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.methods.kp_ap.",
+                           "calc_daily_Ap` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Test that the necessary data is available
     if ap_name not in ap_inst.data.columns:
@@ -528,6 +570,10 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
 def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
     """ Convert Ap into Kp
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and has been replaced
+      with `pysatSpaceWeather.instruments.methods.kp_ap.convert_ap_to_kp`
+
     Parameters
     ----------
     ap_data : array-like
@@ -545,6 +591,13 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
         Metadata object containing information about transformed data
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.methods.kp_ap.",
+                           "convert_ap_to_kp` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Ap are keys, Kp returned as double (N- = N.6667, N+=N.3333333)
     one_third = 1.0 / 3.0

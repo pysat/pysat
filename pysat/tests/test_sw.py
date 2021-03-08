@@ -1,6 +1,7 @@
 import datetime as dt
 import numpy as np
 import os
+import warnings
 
 from nose.tools import assert_raises
 from nose.plugins import skip
@@ -38,6 +39,24 @@ class TestSWKp():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.testMeta
+
+    def test_convert_kp_to_ap_warning(self):
+        """ Test conversion of Kp to ap raises deprecation warning"""
+        warnings.simplefilter("always", DeprecationWarning)
+        wmsg = "function is deprecated here and will be removed in pysat 3.0.0."
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            sw_kp.convert_3hr_kp_to_ap(self.testInst)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msg = False
+        for iwar in war:
+            if(iwar.category == DeprecationWarning
+               and str(iwar.message).find(wmsg) >= 0):
+                found_msg = True
+
+        assert found_msg, "warning was not raised: {:}".format(wmsg)
 
     def test_convert_kp_to_ap(self):
         """ Test conversion of Kp to ap"""
@@ -79,6 +98,24 @@ class TestSWKp():
         self.testInst.data.rename(columns={"Kp": "bad"}, inplace=True)
 
         assert_raises(ValueError, sw_kp.convert_3hr_kp_to_ap, self.testInst)
+
+    def test_initialize_kp_metadata_warning(self):
+        """ Test initialize_kp_metadata raises deprecation warning"""
+        warnings.simplefilter("always", DeprecationWarning)
+        wmsg = "function is deprecated here and will be removed in pysat 3.0.0."
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            sw_kp.initialize_kp_metadata(self.testInst.meta, 'Kp')
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msg = False
+        for iwar in war:
+            if(iwar.category == DeprecationWarning
+               and str(iwar.message).find(wmsg) >= 0):
+                found_msg = True
+
+        assert found_msg, "warning was not raised: {:}".format(wmsg)
 
     def test_initialize_kp_metadata(self):
         """Test default Kp metadata initialization"""
@@ -162,6 +199,24 @@ class TestSWKp():
 
         del kp_out, kp_meta
 
+    def test_convert_ap_to_kp_warning(self):
+        """ Test convert_ap_to_kp raises deprecation warning"""
+        warnings.simplefilter("always", DeprecationWarning)
+        wmsg = "function is deprecated here and will be removed in pysat 3.0.0."
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            sw_meth.convert_ap_to_kp(self.testInst['ap_nan'])
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msg = False
+        for iwar in war:
+            if(iwar.category == DeprecationWarning
+               and str(iwar.message).find(wmsg) >= 0):
+                found_msg = True
+
+        assert found_msg, "warning was not raised: {:}".format(wmsg)
+
     def test_convert_ap_to_kp_nan_input(self):
         """ Test conversion of ap to Kp where ap is NaN"""
 
@@ -236,6 +291,28 @@ class TestSwKpCombine():
         """ Test combine_kp failure when no input is provided"""
 
         assert_raises(ValueError, sw_meth.combine_kp)
+
+    def test_combine_kp_warning(self):
+        """ Test combine_kp raises deprecation warning"""
+        warnings.simplefilter("always", DeprecationWarning)
+        wmsg = "function is deprecated here and will be removed in pysat 3.0.0."
+
+        # Catch the warnings
+        combo_in = {kk: self.combine['forecast_inst'] for kk in
+                    ['standard_inst', 'recent_inst', 'forecast_inst']}
+        combo_in['start'] = pysat.datetime(2014, 2, 19)
+        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        with warnings.catch_warnings(record=True) as war:
+            sw_meth.combine_kp(**combo_in)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msg = False
+        for iwar in war:
+            if(iwar.category == DeprecationWarning
+               and str(iwar.message).find(wmsg) >= 0):
+                found_msg = True
+
+        assert found_msg, "warning was not raised: {:}".format(wmsg)
 
     def test_combine_kp_one(self):
         """ Test combine_kp failure when only one instrument is provided"""
@@ -398,6 +475,25 @@ class TestSWF107():
         assert_raises(ValueError, sw_f107.calc_f107a, self.testInst, 'f107',
                       'f107')
 
+    def test_calc_f107a_warning(self):
+        """ Test calc_f107a raises deprecation warning"""
+        warnings.simplefilter("always", DeprecationWarning)
+        wmsg = "function is deprecated here and will be removed in pysat 3.0.0."
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            sw_f107.calc_f107a(self.testInst, f107_name='f107',
+                               f107a_name='f107a')
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msg = False
+        for iwar in war:
+            if(iwar.category == DeprecationWarning
+               and str(iwar.message).find(wmsg) >= 0):
+                found_msg = True
+
+        assert found_msg, "warning was not raised: {:}".format(wmsg)
+
     def test_calc_f107a_daily(self):
         """ Test the calc_f107a routine with daily data"""
 
@@ -487,6 +583,28 @@ class TestSWF107Combine():
         assert_raises(ValueError, sw_meth.combine_f107,
                       self.combineInst[''], self.combineInst['forecast'])
 
+    def test_combine_f107_warning(self):
+        """ Test combine_f107 raises deprecation warning"""
+        warnings.simplefilter("always", DeprecationWarning)
+        wmsg = "function is deprecated here and will be removed in pysat 3.0.0."
+
+        # Catch the warnings
+        combo_in = {kk: self.combineInst['forecast'] for kk in
+                    ['standard_inst', 'forecast_inst']}
+        combo_in['start'] = pysat.datetime(2014, 2, 19)
+        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        with warnings.catch_warnings(record=True) as war:
+            sw_meth.combine_f107(**combo_in)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msg = False
+        for iwar in war:
+            if(iwar.category == DeprecationWarning
+               and str(iwar.message).find(wmsg) >= 0):
+                found_msg = True
+
+        assert found_msg, "warning was not raised: {:}".format(wmsg)
+
     def test_combine_f107_no_data(self):
         """Test combine_f107 when no data is present for specified times"""
 
@@ -558,6 +676,24 @@ class TestSWAp():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.meta_dict
+
+    def test_calc_daily_Ap_warning(self):
+        """ Test calc_daily_Ap raises deprecation warning"""
+        warnings.simplefilter("always", DeprecationWarning)
+        wmsg = "function is deprecated here and will be removed in pysat 3.0.0."
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            sw_meth.calc_daily_Ap(self.testInst)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msg = False
+        for iwar in war:
+            if(iwar.category == DeprecationWarning
+               and str(iwar.message).find(wmsg) >= 0):
+                found_msg = True
+
+        assert found_msg, "warning was not raised: {:}".format(wmsg)
 
     def test_calc_daily_Ap(self):
         """ Test daily Ap calculation"""
