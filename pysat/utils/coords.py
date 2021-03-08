@@ -130,7 +130,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
 
             # Calculate for each UT hr
             for i, hr in enumerate(ut_hr):
-                lon = inst[lon_name][inst.index.name==inst.index[0]]
+                lon = inst[lon_name][inst.index.name == inst.index[0]]
                 slt[i] = hr + lon / 15.0
         else:
             # Initalize the new shape and coordinates
