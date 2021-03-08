@@ -122,8 +122,6 @@ class TestInstrumentQualifier():
 
     def __init__(self):
         """Iterate through and create all of the test Instruments needed"""
-        warnings.simplefilter("always", DeprecationWarning)
-
         global init_inst
         global init_mod
         global init_names
@@ -149,7 +147,9 @@ class TestInstrumentQualifier():
 
     def check_init_warning(self, module, name, tag, sat_id):
         """Check for the existance of a deprecation warning."""
+        warnings.simplefilter("always", DeprecationWarning)
         global dep_list
+
         if name not in dep_list:
             warnings.warn('{:} has not yet been deprecated'.format(module))
         else:

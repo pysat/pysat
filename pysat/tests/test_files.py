@@ -94,6 +94,7 @@ class TestNoDataDir():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("ignore")
         self.temporary_file_list = False
         # store current pysat directory
         self.saved_data_path = pysat.data_dir
@@ -117,6 +118,7 @@ class TestBasics():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("ignore")
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -379,6 +381,7 @@ class TestInstrumentWithFiles():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("ignore")
         # store current pysat directory
         self.data_path = pysat.data_dir
         # create temporary directory
@@ -729,6 +732,7 @@ class TestInstrumentWithVersionedFiles():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("ignore")
         # store current pysat directory
         self.data_path = pysat.data_dir
         # create temporary directory

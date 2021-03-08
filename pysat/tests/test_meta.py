@@ -6,6 +6,7 @@ import netCDF4
 from nose.tools import raises
 import numpy as np
 import pandas as pds
+import warnings
 
 import pysat
 import pysat.instruments.pysat_testing
@@ -14,6 +15,7 @@ import pysat.tests.test_utils
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("ignore")
         self.meta = pysat.Meta()
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
@@ -1133,6 +1135,7 @@ class TestBasics():
 class TestBasicsImmuatble(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("ignore")
         self.meta = pysat.Meta()
         # disable mutability
         self.meta.mutable = False
