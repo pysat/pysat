@@ -11,6 +11,7 @@ import os
 
 from portalocker import Lock
 
+from pysat.utils.files import check_and_make_path
 
 class Parameters(object):
     """Stores user parameters used by pysat.
@@ -265,7 +266,10 @@ class Parameters(object):
         # Ensure paths have some consistency despite user input
         paths = [os.path.normpath(path) for path in paths]
 
-        # Ensure all paths are valid
+        # Ensure all paths are valid, create if not
+        [check_and_make_path(path) for path in paths]
+
+        # Test for all valid paths
         paths_check = [os.path.isdir(path) for path in paths]
 
         if np.all(paths_check):
@@ -281,6 +285,8 @@ class Parameters(object):
             estr = ' '.join(("Paths {:s} don't lead to a valid",
                              "directory.")).format(": ".join(paths[idx]))
             raise OSError(estr)
+
+        return
 
     def clear_and_restart(self):
         """Clears all stored settings and sets pysat defaults

@@ -50,13 +50,13 @@ class TestBasics():
         assert pysat.params['data_dirs'] == check
 
     @pytest.mark.parametrize("path",
-                             ['/fake/directory/path',
+                             ['no_path',
                               'not_a_directory'])
     def test_set_data_dir_bad_directory(self, path):
         """Ensure you can't set data_dirs to a bad path"""
-        with pytest.raises(OSError) as excinfo:
+        with pytest.raises(ValueError) as excinfo:
             pysat.params['data_dirs'] = path
-        assert str(excinfo.value).find("don't lead to a valid") >= 0
+        assert str(excinfo.value).find("Invalid path") >= 0
         return
 
     def test_repr(self):
