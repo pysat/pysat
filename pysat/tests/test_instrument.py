@@ -1387,15 +1387,25 @@ class TestDeprecation():
         """Runs after every method to clean up previous testing."""
         del self.in_kwargs, self.warn_msgs
 
-    def eval_warnings(self):
+    def eval_warnings(self, load=False):
         """Routine to evaluate warnings raised when Instrument instantiated
+
+        Parameters
+        ----------
+        load : boolean
+            Flag indicating whether or not data needs to be loaded into
+            the test instrument (default=False)
+
         """
         # Define the deprecated attributes that are always defined
         found_msgs = np.full(shape=self.warn_msgs.shape, fill_value=False)
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as war:
-            pysat.Instrument(**self.in_kwargs)
+            tinst = pysat.Instrument(**self.in_kwargs)
+
+            if load:
+                tinst.load(2009, 1)
 
         # Ensure the minimum number of warnings were raised
         assert len(war) >= len(self.warn_msgs)
@@ -1440,6 +1450,17 @@ class TestDeprecation():
 
         # Evaluate warnings
         self.eval_warnings()
+        return
+
+    def test_filter_datetime_input_dep(self):
+        """Test deprecation of filter_datetime_input method."""
+        new_msgs = list(self.warn_msgs)
+        new_msgs.append("".join(["it has been replaced with the function ",
+                                 "`pysat.utils.time.filter_datetime_input`"]))
+        self.warn_msgs = np.array(new_msgs)
+
+        # Evaluate warnings
+        self.eval_warnings(load=True)
         return
 
     def test_standard_kwarg_dep(self):
