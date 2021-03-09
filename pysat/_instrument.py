@@ -881,7 +881,7 @@ class Instrument(object):
                             "If this is not a pysat-managed Instrument,",
                             " you will need to update this when ",
                             "migrating to pysat 3.0.0."))
-            warnings.warn(wstr, DeprecationWarning, stacklevel=1)
+            warnings.warn(wstr, DeprecationWarning, stacklevel=2)
         except AttributeError:
             pass
         try:
@@ -1015,7 +1015,7 @@ class Instrument(object):
         wstr = ''.join(("Class method deprecated, in pysat 3.0.0. it has been",
                         " replaced with the function ",
                         "`pysat.utils.time.filter_datetime_input`"))
-        warnings.warn(wstr, DeprecationWarning, stacklevel=1)
+        warnings.warn(wstr, DeprecationWarning, stacklevel=2)
 
         if date is None:
             return date
