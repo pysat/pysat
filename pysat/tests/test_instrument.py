@@ -1390,11 +1390,15 @@ class TestDeprecation():
         warnings.simplefilter("always", DeprecationWarning)
         self.in_kwargs = {"platform": 'pysat', "name": 'testing', "tag": '',
                           "sat_id": '', "clean_level": 'clean'}
-        self.warn_msgs = np.array(
-            ["accessible through `Instrument.meta.labels`",
-             "are no longer standard metadata quantities",
-             "Instrument kwarg `sat_id` has been replaced",
-             "Instrument method `default` has been renamed `preprocess`"])
+        self.warn_msgs = ["accessible through `Instrument.meta.labels`",
+                          "are no longer standard metadata quantities",
+                          "Instrument kwarg `sat_id` has been replaced"]
+        if sys.version_info.major >= 3:
+            # Python 2 on Travis doesn't pick up warnings from hidden methods
+            self.warn_msgs.append(
+                "Instrument method `default` has been renamed `preprocess`")
+
+        self.warn_msgs = np.array(self.warn_msgs)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -1467,24 +1471,20 @@ class TestDeprecation():
 
     def test_filter_datetime_input_dep(self):
         """Test deprecation of filter_datetime_input method."""
-        new_msgs = list(self.warn_msgs)
-        new_msgs.append("".join(["it has been replaced with the function ",
-                                 "`pysat.utils.time.filter_datetime_input`"]))
-        self.warn_msgs = np.array(new_msgs)
-
         # Evaluate warnings if this is Python 3+
         if sys.version_info.major > 2:
+            new_msgs = list(self.warn_msgs)
+            new_msgs.append("".join(
+                ["it has been replaced with the function ",
+                 "`pysat.utils.time.filter_datetime_input`"]))
+            self.warn_msgs = np.array(new_msgs)
+
             self.eval_warnings(load=True)
+
         return
 
     def test_standard_kwarg_dep(self):
         """Test deprecation of standard kwarg input."""
-        if sys.version_info.major < 3:
-            # Python 2 on Travis doesn't pick up warnings from hidden methods
-            new_msgs = list(self.warn_msgs)
-            new_msgs.pop(3)
-            self.warn_msgs = np.array(new_msgs)
-        
         # Evaluate warnings
         self.eval_warnings()
         return
