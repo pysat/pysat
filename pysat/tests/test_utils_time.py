@@ -18,7 +18,7 @@ class TestUtilsTime():
     ###########
     # getyrdoy
 
-    def test_getyrdoy_1():
+    def test_getyrdoy_1(self):
         """Test the date to year, day of year code functionality"""
 
         date = pds.datetime(2009, 1, 1)
@@ -26,7 +26,7 @@ class TestUtilsTime():
 
         assert ((yr == 2009) & (doy == 1))
 
-    def test_getyrdoy_leap_year():
+    def test_getyrdoy_leap_year(self):
         """Test the date to year, day of year code functionality (leap_year)
         """
 
@@ -38,14 +38,14 @@ class TestUtilsTime():
     #############
     # parse_date
 
-    def test_parse_date_2_digit_year():
+    def test_parse_date_2_digit_year(self):
         """Test the ability to parse a str to produce a pandas datetime"""
 
         date = pytime.parse_date('14', '10', '31')
 
         assert date == pds.datetime(2014, 10, 31)
 
-    def test_parse_date_2_digit_year_last_century():
+    def test_parse_date_2_digit_year_last_century(self):
         """Test the ability to parse a str to produce a pandas datetime
         pre-2000"""
 
@@ -53,7 +53,7 @@ class TestUtilsTime():
 
         assert date == pds.datetime(1994, 10, 31)
 
-    def test_parse_date_4_digit_year():
+    def test_parse_date_4_digit_year(self):
         """Test the ability to parse a str to produce a pandas datetime"""
 
         date = pytime.parse_date('1994', '10', '31')
@@ -61,7 +61,7 @@ class TestUtilsTime():
         assert date == pds.datetime(1994, 10, 31)
 
     @raises(ValueError)
-    def test_parse_date_bad_input():
+    def test_parse_date_bad_input(self):
         """Test the ability to idenitfy a non-physical date"""
 
         _ = pytime.parse_date('194', '15', '31')
@@ -69,7 +69,7 @@ class TestUtilsTime():
     ############
     # calc_freq
 
-    def test_calc_freq():
+    def test_calc_freq(self):
         """Test index frequency calculation"""
 
         tind = pytime.create_datetime_index(year=np.ones(shape=(4,))*2001,
@@ -79,7 +79,7 @@ class TestUtilsTime():
 
         assert freq.find("1S") == 0
 
-    def test_calc_freq_ns():
+    def test_calc_freq_ns(self):
         """Test index frequency calculation with nanosecond output"""
 
         tind = pytime.create_datetime_index(year=np.ones(shape=(4,))*2001,
@@ -90,13 +90,13 @@ class TestUtilsTime():
         assert freq.find("10000000N") == 0
 
     @raises(ValueError)
-    def test_calc_freq_len_fail():
+    def test_calc_freq_len_fail(self):
         """Test index frequency calculation with empty list"""
 
         pytime.calc_freq(list())
 
     @raises(AttributeError)
-    def test_calc_freq_type_fail():
+    def test_calc_freq_type_fail(self):
         """Test index frequency calculation with non-datetime list"""
 
         pytime.calc_freq([1, 2, 3, 4])
@@ -104,7 +104,7 @@ class TestUtilsTime():
     ####################
     # create_date_range
 
-    def test_create_date_range():
+    def test_create_date_range(self):
         """Test ability to generate season list"""
 
         start = pds.datetime(2012, 2, 28)
@@ -115,7 +115,7 @@ class TestUtilsTime():
         assert season[-1] == stop
         assert len(season) == 3
 
-    def test_create_date_range_w_gaps():
+    def test_create_date_range_w_gaps(self):
         """Test ability to generate season list"""
 
         start = [pds.datetime(2012, 2, 28), pds.datetime(2013, 2, 28)]
@@ -129,7 +129,7 @@ class TestUtilsTime():
     #########################
     # create_datetime_index
 
-    def test_create_datetime_index():
+    def test_create_datetime_index(self):
         """Tests ability to create an array of datetime objects from distinct
         arrays of input paramters"""
 
@@ -143,12 +143,12 @@ class TestUtilsTime():
         assert len(dates) == 4
 
     @raises(ValueError)
-    def test_create_datetime_index_wo_year():
+    def test_create_datetime_index_wo_year(self):
         """Must include a year"""
 
         _ = pytime.create_datetime_index()
 
-    def test_create_datetime_index_wo_month_day_uts():
+    def test_create_datetime_index_wo_month_day_uts(self):
         """Tests ability to generate missing paramters"""
 
         arr = np.ones(4)
