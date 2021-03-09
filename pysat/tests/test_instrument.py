@@ -1472,12 +1472,19 @@ class TestDeprecation():
                                  "`pysat.utils.time.filter_datetime_input`"]))
         self.warn_msgs = np.array(new_msgs)
 
-        # Evaluate warnings
-        self.eval_warnings(load=True)
+        # Evaluate warnings if this is Python 3+
+        if sys.version_info.major > 2:
+            self.eval_warnings(load=True)
         return
 
     def test_standard_kwarg_dep(self):
         """Test deprecation of standard kwarg input."""
+        if sys.version_info.major < 3:
+            # Python 2 on Travis doesn't pick up warnings from hidden methods
+            new_msgs = list(self.warn_msgs)
+            new_msgs.pop(3)
+            self.warn_msgs = np.array(new_msgs)
+        
         # Evaluate warnings
         self.eval_warnings()
         return
