@@ -43,6 +43,7 @@ class TestLonSLT():
         """Runs after every method to clean up previous testing."""
         self.py_inst = None
         self.inst_time = dt.datetime(2009, 1, 1)
+        self.inst_2_time = dt.datetime(2009, 1, 3)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -130,6 +131,36 @@ class TestLonSLT():
                                      slt_name='slt')
 
         assert self.py_inst['slt'].max() < 24.0
+        assert self.py_inst['slt'].min() >= 0.0
+
+    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
+                                      "testing2d_xarray"])
+    def test_lon_broadcasting_calc_solar_local_time_no_mod_multiday(self, name):
+        """Test calc_solar_local_time with longitude coordinates, no mod, 2 days
+        """
+
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst.load(date=self.inst_time, end_date=self.inst_2_time)
+        coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
+                                     slt_name='slt', apply_modulus=False)
+
+        assert self.py_inst['slt'].max() > 48.0
+        assert self.py_inst['slt'].max() < 72.0
+        assert self.py_inst['slt'].min() >= 0.0
+
+    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
+                                      "testing2d_xarray"])
+    def test_lon_broadcasting_calc_solar_local_time_no_mod(self, name):
+        """Test calc_solar_local_time with longitude coordinates, no modulus
+        """
+
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst.load(date=self.inst_time)
+        coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
+                                     slt_name='slt', apply_modulus=False)
+
+        assert self.py_inst['slt'].max() > 24.0
+        assert self.py_inst['slt'].max() < 48.0
         assert self.py_inst['slt'].min() >= 0.0
 
     def test_single_lon_calc_solar_local_time(self):
