@@ -60,7 +60,7 @@ before_script:
 
 # command to run tests
 script:
- - nosetests -q --with-coverage --cover-package=pysat
+ - nosetests -vs --with-coverage --cover-package=pysat
 
 after_success:
  - coveralls
