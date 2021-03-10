@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Instrument modules:
     - the pysatMadrigal: jro_isr, dmsp_ivm
     - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
+    - the pysatModels: ucar_tiegcm
   - SpaceWeather and Madrigal instrument methods
 - Documentation
    - Updated docstrings with deprecation notes

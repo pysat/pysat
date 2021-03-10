@@ -4,6 +4,10 @@ Supports loading data from files generated using TIEGCM
 (Thermosphere Ionosphere Electrodynamics General Circulation Model) model.
 TIEGCM file is a netCDF file with multiple dimensions for some variables.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatModels (https://github.com/pysat/pysatModels)
+
 Properties
 ----------
 platform
@@ -62,6 +66,12 @@ def init(self):
         This object
 
     """
+
+    warnings.warn("".join(["ucar_tiegcm has been removed from the pysat-",
+                           "managed Instruments in pysat 3.0.0, and now ",
+                           "resides in pysatModels: ",
+                           "https://github.com/pysat/pysatModels"]),
+                  DeprecationWarning, stacklevel=2)
 
     logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
