@@ -264,6 +264,10 @@ class Parameters(object):
         # Account for the presence of $HOME or similar
         paths = [os.path.expandvars(path) for path in paths]
 
+        # Make sure paths don't end with path separator for consistency
+        paths = [path if path[-1] != os.path.sep else path[:-1]
+                 for path in paths]
+
         # Ensure all paths are valid, create if not
         [check_and_make_path(path) for path in paths]
 
