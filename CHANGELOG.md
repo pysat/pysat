@@ -46,6 +46,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Allow `directory_format` input to `Instrument` to be a function
   - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
+  - Added support for SLT calculations outside [0, 24)
+  - Added support for continuous SLT calculations when loading multiple days
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
