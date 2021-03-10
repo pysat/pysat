@@ -3,10 +3,13 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.3.0] - 2021-XX-XX
-- Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
+  - Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
+  - Allow limited use of new list_files kwarg, `file_cadance`
 - Deprecation warnings added to:
    - Instrument class (old meta labels, sat_id, default, multi_file_day,
      and manual_org)
+   - pysat.instruments.methods.general.list_files kwarg
+     `fake_montly_files_from_daily`
    - Constellation class kwarg `name`
    - Custom class
   - functions from `_files` class
