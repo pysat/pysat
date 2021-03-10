@@ -15,6 +15,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Madrigal instrument methods
 - Documentation
    - Updated docstrings with deprecation notes
+- Bug Fix
+   - Closes files after download in NASA CDAWeb methods
 
 ## [2.2.2] - 2020-11-23
 - New Features
