@@ -123,7 +123,8 @@ class TestDeprecation():
 
         with warnings.catch_warnings(record=True) as war:
             try:
-                gen.list_files(tag=self.tag, sat_id=self.sat_id)
+                gen.list_files(tag=self.tag, sat_id=self.sat_id,
+                               fake_daily_files_from_monthly=True)
             except ValueError as verr:
                 # Ensure the expected ValueError for no data path was raised
                 if verr.message.find('A directory must be passed') < 0:
