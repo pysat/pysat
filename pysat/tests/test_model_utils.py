@@ -8,6 +8,7 @@ from pysat import model_utils as mu
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
                                          clean_level='clean')
@@ -39,7 +40,7 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""

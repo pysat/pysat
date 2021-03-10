@@ -5,8 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.3.0] - 2021-XX-XX
 - Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
 - Deprecation warnings added to:
-   - Instrument class (old meta labels, sat_id, default, multi_file_day,
-     and manual_org)
+   - Instrument class (old meta labels, `sat_id`, `default`, `multi_file_day`,
+     `manual_org`, and `_filter_datetime_input`)
    - Constellation class kwarg `name`
    - Custom class
   - functions from `_files` class

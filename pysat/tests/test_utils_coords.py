@@ -14,6 +14,7 @@ from pysat.utils import coords, time
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
 
         self.testInst = pysat.Instrument(platform='pysat',
@@ -442,7 +443,7 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""

@@ -5,6 +5,7 @@ from nose.tools import raises
 import numpy as np
 import pandas as pds
 import warnings
+
 import pysat
 from pysat.ssnl import avg
 
@@ -12,6 +13,7 @@ from pysat.ssnl import avg
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
@@ -93,7 +95,7 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
@@ -174,6 +176,7 @@ class TestDeprecation():
 class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
@@ -224,6 +227,7 @@ class TestFrameProfileAverages():
 class TestSeriesProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
@@ -267,6 +271,7 @@ class TestSeriesProfileAverages():
 
 class TestConstellation:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         for i in range(5):
             insts.append(pysat.Instrument('pysat', 'testing',
@@ -323,6 +328,7 @@ class TestConstellation:
 
 class TestHeterogenousConstellation:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         for i in range(2):
             r_date = pysat.datetime(2009, 1, i+1)
@@ -396,6 +402,7 @@ class TestHeterogenousConstellation:
 
 class Test2DConstellation:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         insts.append(pysat.Instrument(platform='pysat', name='testing2D',
                                       clean_level='clean'))
@@ -448,6 +455,7 @@ class Test2DConstellation:
 class TestSeasonalAverageUnevenBins:
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
@@ -525,6 +533,7 @@ class TestSeasonalAverageUnevenBins:
 class TestInstMed1D():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          update_files=True)

@@ -35,7 +35,7 @@ class Instrument(object):
       Several attributes and methods will be removed or replaced in pysat 3.0.0:
       sat_id, default, multi_file_day, manual_org, units_label, name_label,
       notes_label, desc_label, min_label, max_label, fill_label, plot_label,
-      axis_label, and scale_label
+      axis_label, scale_label, and _filter_datetime_input
 
     Parameters
     ----------
@@ -881,7 +881,6 @@ class Instrument(object):
                             "If this is not a pysat-managed Instrument,",
                             " you will need to update this when ",
                             "migrating to pysat 3.0.0."))
-            warnings.simplefilter('always', DeprecationWarning)
             warnings.warn(wstr, DeprecationWarning, stacklevel=2)
         except AttributeError:
             pass
@@ -998,6 +997,10 @@ class Instrument(object):
         """
         Returns datetime that only includes year, month, and day.
 
+        .. deprecated:: 2.3.0
+          This method has been deprecated in pysat 3.0.0 and replaced with
+          a new routine: `pysat.utils.time.filter_datetime_input(date)`
+
         Parameters
         ----------
         date : datetime (array_like or single input)
@@ -1008,6 +1011,11 @@ class Instrument(object):
             Only includes year, month, and day from original input
 
         """
+
+        wstr = ''.join(("Class method deprecated, in pysat 3.0.0. it has been",
+                        " replaced with the function ",
+                        "`pysat.utils.time.filter_datetime_input`"))
+        warnings.warn(wstr, DeprecationWarning, stacklevel=2)
 
         if date is None:
             return date

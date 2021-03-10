@@ -1,5 +1,6 @@
 import datetime as dt
 import numpy as np
+import warnings
 
 import pandas as pds
 
@@ -11,6 +12,8 @@ from pysat.instruments import omni_hro
 class TestOMNICustom():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', sat_id='12',
                                          tag='1min', clean_level='clean')

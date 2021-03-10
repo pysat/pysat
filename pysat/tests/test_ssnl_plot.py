@@ -5,6 +5,7 @@ tests the pysat averaging code
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import warnings
+
 import pysat
 from pysat.ssnl import plot
 
@@ -12,6 +13,7 @@ from pysat.ssnl import plot
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
@@ -76,7 +78,7 @@ class TestBasics():
 class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""

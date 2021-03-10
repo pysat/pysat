@@ -16,6 +16,7 @@ class TestSWKp():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         # Load a test instrument
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
                                             'ap_nan': np.full(shape=12, \
@@ -268,6 +269,7 @@ class TestSWKp():
 class TestSwKpCombine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         # Switch to test_data directory
         self.saved_path = pysat.data_dir
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
@@ -453,6 +455,7 @@ class TestSwKpCombine():
 class TestSWF107():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         # Load a test instrument
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
@@ -556,6 +559,8 @@ class TestSWF107():
 class TestSWF107Combine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         # Switch to test_data directory
         self.saved_path = pysat.data_dir
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
@@ -652,6 +657,8 @@ class TestSWF107Combine():
 class TestSWAp():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         # Load a test instrument with 3hr ap data
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,

@@ -4,6 +4,7 @@ tests the pysat occur_prob object and code
 
 from nose.tools import raises
 import warnings
+
 import pysat
 from pysat.ssnl import occur_prob
 
@@ -11,6 +12,7 @@ from pysat.ssnl import occur_prob
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         orbit_info = {'index': 'longitude', 'kind': 'longitude'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -112,7 +114,7 @@ class TestBasics():
 class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
