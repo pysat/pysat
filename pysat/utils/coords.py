@@ -121,18 +121,30 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         slt = ut_hr + lon / 15.0
         coords = inst.index.name
     else:
-        # Initalize the new shape and coordinates
-        sshape = list(ut_hr.shape)
-        sshape.extend(list(inst[lon_name].shape))
+        # This can only be accessed by xarray input, but longitude may or
+        # may not depend on time
+        if inst.index.name in inst[lon_name].coords:
+            # Initalize the new shape and coordinatesx
+            coords = [ckey for ckey in inst[lon_name].dims]
+            slt = np.full(shape=inst[lon_name].shape, fill_value=fill_val)
 
-        coords = [inst.index.name]
-        coords.extend([ckey for ckey in inst[lon_name].coords.keys()])
+            # Calculate for each UT hr
+            for i, hr in enumerate(ut_hr):
+                lon = inst[lon_name][inst.index.name == inst.index[0]]
+                slt[i] = hr + lon / 15.0
+        else:
+            # Initalize the new shape and coordinates
+            sshape = list(ut_hr.shape)
+            sshape.extend(list(inst[lon_name].shape))
 
-        slt = np.full(shape=sshape, fill_value=fill_val)
+            coords = [ckey for ckey in inst[lon_name].dims]
+            coords.insert(0, inst.index.name)
 
-        # Calculate for each UT hr
-        for i, t in enumerate(ut_hr):
-            slt[i] = t + inst[lon_name] / 15.0
+            slt = np.full(shape=sshape, fill_value=fill_val)
+
+            # Calculate for each UT hr
+            for i, hr in enumerate(ut_hr):
+                slt[i] = hr + inst[lon_name] / 15.0
 
     # Ensure that solar local time falls between 0 and 24 hours
     slt = np.mod(slt, 24.0)

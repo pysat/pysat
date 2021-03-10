@@ -119,10 +119,12 @@ class TestLonSLT():
                                          lon_name="not longitude",
                                          slt_name='slt')
 
-    def test_lon_broadcasting_calc_solar_local_time(self):
+    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
+                                      "testing2d_xarray"])
+    def test_lon_broadcasting_calc_solar_local_time(self, name):
         """Test calc_solar_local_time with longitude coordinates."""
 
-        self.py_inst = pysat.Instrument(platform='pysat', name="testmodel")
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time)
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt')
