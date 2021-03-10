@@ -78,7 +78,8 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     return
 
 
-def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
+def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
+                          apply_modulus=True):
     """ Append solar local time to an instrument object
 
     Parameters
@@ -89,6 +90,9 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         name of the longtiude data key (assumes data are in degrees)
     slt_name : string
         name of the output solar local time data key (default='slt')
+    apply_modulus : bool
+        If True, slt values are confined to [0, 24) via a modulus operation.
+        If False, no modulus applied. (default=True)
 
     Note
     ----
@@ -103,12 +107,18 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
     ut_hr = list()
+    first_time = inst.index.values[:1].astype(int)[0]
     for nptime in inst.index.values.astype(int):
+        # Account for any difference in days across loaded data (multi-day span)
+        day_diff = np.floor((nptime - first_time) * 1.0e-9 / 86400.)
+
         # Numpy times come out in nanoseconds and timestamp converts
         # from seconds
         dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
         ut_hr.append((dtime.hour * 3600.0 + dtime.minute * 60.0
-                      + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
+                      + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0
+                     + day_diff * 24.)
+
     ut_hr = np.array(ut_hr)
 
     # Calculate solar local time
@@ -147,7 +157,13 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                 slt[i] = hr + inst[lon_name] / 15.0
 
     # Ensure that solar local time falls between 0 and 24 hours
-    slt = np.mod(slt, 24.0)
+    if apply_modulus:
+        slt = np.mod(slt, 24.0)
+        min_val = 0.0
+        max_val = 0.0
+    else:
+        min_val = np.nan
+        max_val = np.nan
 
     # Add the solar local time to the instrument
     if inst.pandas_format:
@@ -159,8 +175,8 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     inst.meta[slt_name] = {inst.meta.labels.units: 'h',
                            inst.meta.labels.name: "Solar Local Time",
                            inst.meta.labels.desc: "Solar local time in hours",
-                           inst.meta.labels.min_val: 0.0,
-                           inst.meta.labels.max_val: 24.0,
+                           inst.meta.labels.min_val: min_val,
+                           inst.meta.labels.max_val: max_val,
                            inst.meta.labels.fill_val: fill_val}
 
     return
