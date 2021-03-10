@@ -9,8 +9,7 @@ class TestCDAWeb():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.simplefilter("always")
-
+        warnings.filterwarnings("always", category=DeprecationWarning)
         self.supported_tags = pysat.instruments.cnofs_plp.supported_tags
 
     def teardown(self):

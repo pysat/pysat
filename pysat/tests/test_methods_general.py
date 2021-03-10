@@ -10,6 +10,7 @@ class TestGenMethods():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         fname = 'fake_data_{year:04d}{month:02d}{day:02d}_v05.cdf'
         self.kwargs = {'tag': '', 'sat_id': '', 'data_path': '/fake/path/',
                        'format_str': None,
@@ -24,6 +25,7 @@ class TestRemoveLeadText():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing', sat_id='12',
                                          clean_level='clean')
         self.testInst.load(2009, 1)
@@ -75,6 +77,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
                                          sat_id='12',
                                          clean_level='clean')

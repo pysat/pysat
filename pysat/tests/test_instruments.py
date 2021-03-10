@@ -14,7 +14,7 @@ import pysat
 import pysat.instruments.pysat_testing
 
 # modules in the list below have deprecation warnings
-dep_list = ['jro_isr', 'dmsp_ivm', 'sw_dst', 'sw_kp', 'sw_f107']
+dep_list = ['jro_isr', 'dmsp_ivm', 'sw_dst', 'sw_kp', 'sw_f107', 'ucar_tiegcm']
 
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
@@ -122,7 +122,7 @@ class TestInstrumentQualifier():
 
     def __init__(self):
         """Iterate through and create all of the test Instruments needed"""
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
 
         global init_inst
         global init_mod
@@ -149,7 +149,9 @@ class TestInstrumentQualifier():
 
     def check_init_warning(self, module, name, tag, sat_id):
         """Check for the existance of a deprecation warning."""
+        warnings.simplefilter("always", DeprecationWarning)
         global dep_list
+
         if name not in dep_list:
             warnings.warn('{:} has not yet been deprecated'.format(module))
         else:

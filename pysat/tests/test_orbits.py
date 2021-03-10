@@ -2,11 +2,15 @@ from dateutil.relativedelta import relativedelta as relativedelta
 from nose.tools import raises
 import numpy as np
 import pandas as pds
+import warnings
 
 import pysat
 
 
 class TestOrbitsUserInterface():
+
+    def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
 
     @raises(ValueError)
     def test_orbit_w_bad_kind(self):
@@ -108,6 +112,7 @@ class TestSpecificUTOrbits():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -241,6 +246,7 @@ class TestSpecificUTOrbits():
 class TestGeneralOrbitsMLT():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -461,6 +467,7 @@ class TestGeneralOrbitsMLT():
 class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -475,6 +482,7 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'longitude', 'kind': 'longitude'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -489,6 +497,7 @@ class TestGeneralOrbitsLongxarray(TestGeneralOrbitsMLT):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'longitude', 'kind': 'longitude'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -503,6 +512,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'orbit_num', 'kind': 'orbit'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -517,6 +527,7 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'orbit_num', 'kind': 'orbit'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -531,6 +542,7 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'latitude', 'kind': 'polar'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -545,6 +557,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'latitude', 'kind': 'polar'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -591,6 +604,7 @@ def filter_data2(inst, times=None):
 class TestOrbitsGappyData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -605,6 +619,7 @@ class TestOrbitsGappyData(TestGeneralOrbitsMLT):
 class TestOrbitsGappyDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -618,6 +633,7 @@ class TestOrbitsGappyDataXarray(TestGeneralOrbitsMLT):
 class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -645,6 +661,7 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
 class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -672,6 +689,7 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
 class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'longitude', 'kind': 'longitude'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -686,6 +704,7 @@ class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
 class TestOrbitsGappyLongDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'longitude', 'kind': 'longitude'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -700,6 +719,7 @@ class TestOrbitsGappyLongDataXarray(TestGeneralOrbitsMLT):
 class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'orbit_num', 'kind': 'orbit'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -714,6 +734,7 @@ class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
 class TestOrbitsGappyOrbitNumDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'orbit_num', 'kind': 'orbit'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
@@ -728,6 +749,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestGeneralOrbitsMLT):
 class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'latitude', 'kind': 'polar'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
@@ -742,6 +764,7 @@ class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
 class TestOrbitsGappyOrbitLatDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         info = {'index': 'latitude', 'kind': 'polar'}
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
