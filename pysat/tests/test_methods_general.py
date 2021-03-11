@@ -130,7 +130,7 @@ class TestDeprecation():
                                fake_daily_files_from_monthly=True)
             except ValueError as verr:
                 # Ensure the expected ValueError for no data path was raised
-                if verr.message.find('A directory must be passed') < 0:
+                if str(verr).find('A directory must be passed') < 0:
                     raise ValueError(verr)
 
         found_msg = False
