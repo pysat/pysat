@@ -62,6 +62,7 @@ from requests.auth import HTTPBasicAuth
 import shutil
 import sys
 import tarfile
+import warnings
 
 import netCDF4
 import pysat
