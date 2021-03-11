@@ -595,6 +595,31 @@ class TestBasics():
 
     # -------------------------------------------------------------------------
     #
+    # Test copy method
+    #
+    # -------------------------------------------------------------------------
+
+    def test_copy(self):
+        """Test .copy()"""
+        inst_copy = self.testInst.copy()
+        assert inst_copy == self.testInst
+        return
+
+    def test_copy_w_inst_module(self):
+        """Test .copy() with inst_module != None"""
+        # Assign module to inst_module
+        self.testInst.inst_module = pysat.instruments.pysat_testing
+
+        inst_copy = self.testInst.copy()
+
+        # Confirm equality and that module is still present
+        assert inst_copy == self.testInst
+        assert inst_copy.inst_module == pysat.instruments.pysat_testing
+        assert self.testInst.inst_module == pysat.instruments.pysat_testing
+        return
+
+    # -------------------------------------------------------------------------
+    #
     # Test concat_data method
     #
     # -------------------------------------------------------------------------
