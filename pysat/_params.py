@@ -273,6 +273,7 @@ class Parameters(object):
 
         # Assign updated and validated paths
         self.data['data_dirs'] = paths
+
         # Optionally store information
         if store:
             self.store()

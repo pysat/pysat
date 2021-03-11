@@ -46,7 +46,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Allow `directory_format` input to `Instrument` to be a function
   - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
-  - Paths provided for pysat.params['data_dirs'] are created if they don't
+  - Updated Parameters to ensure paths provided for pysat.params['data_dirs'] are created if they don't
     already exist
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
