@@ -1678,7 +1678,7 @@ class TestBasics():
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
 
-    @pytest.mark.parametrize("start,stop", [(dt.datetime(2008, 1, 1),
+    @pytest.mark.parametrize("start,stop", [(dt.datetime(2010, 12, 1),
                                              dt.datetime(2010, 12, 31)),
                                             (dt.datetime(2009, 1, 1),
                                              dt.datetime(2009, 1, 15))
@@ -1693,13 +1693,16 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_iterate_over_default_bounds(self):
-        start = self.testInst.files.start_date
-        stop = self.testInst.files.stop_date
+        """Test iterating over default bounds"""
+        date_range = pds.date_range(self.ref_time,
+                                    self.ref_time + dt.timedelta(days=10))
+        self.testInst.kwargs['load']['file_date_range'] = date_range
+        self.testInst._init_rtn()
         self.testInst.bounds = (None, None)
         dates = []
         for inst in self.testInst:
             dates.append(inst.date)
-        out = pds.date_range(start, stop).tolist()
+        out = date_range.tolist()
         assert np.all(dates == out)
 
     def test_set_bounds_by_date_season(self):
