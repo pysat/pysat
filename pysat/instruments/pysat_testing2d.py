@@ -38,6 +38,19 @@ def init(self):
     logger.info(mm_test.ackn_str)
     self.acknowledgements = mm_test.ackn_str
     self.references = mm_test.refs
+
+    # work on file index if keyword present
+    if self.kwargs['load']['file_date_range'] is not None:
+        # set list files routine to desired date range
+        # attach to the instrument object
+        fdr = self.kwargs['load']['file_date_range']
+        self._list_files_rtn = functools.partial(list_files,
+                                                 file_date_range=fdr)
+        # update files version as well
+        self.files.list_files_rtn = functools.partial(list_files,
+                                                      file_date_range=fdr)
+        self.files.refresh()
+
     return
 
 
@@ -62,7 +75,7 @@ def preprocess(self):
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None):
+         num_samples=None, file_date_range=None):
     """ Loads the test files
 
     Parameters
@@ -78,6 +91,10 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         (default=False)
     num_samples : int
         Number of samples
+    file_date_range : pds.date_range or NoneType
+        Range of dates for files or None, if this optional argument is not
+        used. Shift actually performed by the init function.
+        (default=None)
 
     Returns
     -------
