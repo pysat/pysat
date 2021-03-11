@@ -1860,13 +1860,23 @@ class Instrument(object):
 
     def copy(self):
         """Deep copy of the entire Instrument object."""
-        # Copy doesn't work with module objects. Store module, set
-        # module variable to `None`, make the copy, reassign the module.
+        # Copy doesn't work with module objects. Store module and files class,
+        # set module variable/files to `None`, make the copy, reassign the
+        # saved modules.
         saved_module = self.inst_module
+        saved_files = self.files
+
         self.inst_module = None
+        self.files = None
+
         inst_copy = copy.deepcopy(self)
+
         inst_copy.inst_module = saved_module
         self.inst_module = saved_module
+
+        inst_copy.files = saved_files.copy()
+        self.files = saved_files
+
         return inst_copy
 
     def concat_data(self, new_data, prepend=False, **kwargs):

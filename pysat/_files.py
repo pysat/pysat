@@ -4,6 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 
+import copy
 import datetime as dt
 from functools import partial
 import numpy as np
@@ -544,6 +545,18 @@ class Files(object):
 
     # -----------------------------------------------------------------------
     # Define the public methods and properties
+
+    def copy(self):
+        """Returns deepcopy of Files object"""
+        saved_info = self.inst_info
+        self.inst_info = None
+
+        files_copy = copy.deepcopy(self)
+
+        files_copy.inst_info = saved_info
+        self.inst_info = saved_info
+
+        return files_copy
 
     def refresh(self):
         """Update list of files, if there are changes.
