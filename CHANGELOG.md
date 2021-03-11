@@ -88,6 +88,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed unnecessary Instrument attribute `labels`
   - Removed unnecessary Instrument kwargs
   - Removed the Custom class, incorporating it into Instrument
+  - Added support for pysat.Instrument equality comparisons
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of `tag` and `inst_id` behaviour in testing instruments
@@ -119,6 +120,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed access of xarray data with more than one dimension (#471)
   - Improved robustness of eval(inst.__repr__()) (#636)
   - Fixed `calc_solar_local_time` for data sets with longitude coordinates
+  - Fixed .copy() when pysat.Instrument instantiated with `inst_module` (#728)
 - Maintenance
   - nose dependency removed from unit tests
   - Specified `dtype` for empty pandas.Series for forward compatibility
