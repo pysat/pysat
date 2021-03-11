@@ -71,6 +71,9 @@ def init(self):
         fdr = self.kwargs['load']['file_date_range']
         self._list_files_rtn = functools.partial(list_files,
                                                  file_date_range=fdr)
+        # update files version as well
+        self.files.list_files_rtn = functools.partial(list_files,
+                                                      file_date_range=fdr)
         self.files.refresh()
 
     # mess with file dates if kwarg option present
