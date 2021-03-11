@@ -129,8 +129,6 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         Optional central date, uses _test_dates if not specified.
         (default=None)
     file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional arguement is not
-    file_date_range : pds.date_range or NoneType
         Range of dates for files or None, if this optional argument is not
         used. Shift actually performed by the init function.
         (default=None)
