@@ -632,8 +632,15 @@ class TestBasics():
 
     def test_eq_different_object(self):
         """Test equality using different pysat.Instrument objects"""
-        obj1 = pysat.Instrument('pysat', 'testing')
-        obj2 = pysat.Instrument('pysat', 'testing_xarray')
+        reload(pysat.instruments.pysat_testing)
+        obj1 = pysat.Instrument(platform='pysat', name='testing',
+                                num_samples=10, clean_level='clean',
+                                update_files=True)
+
+        reload(pysat.instruments.pysat_testing_xarray)
+        obj2 = pysat.Instrument(platform='pysat', name='testing_xarray',
+                                num_samples=10, clean_level='clean',
+                                update_files=True)
         assert not (obj1 == obj2)
 
     # -------------------------------------------------------------------------
