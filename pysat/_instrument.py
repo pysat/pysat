@@ -461,6 +461,12 @@ class Instrument(object):
         # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
+    def __eq__(self, other):
+        """Check equality between Instrument objects"""
+        test_repr = self.__repr__() == other.__repr__()
+        test_data = np.all(self.data == other.data)
+        return test_repr and test_data
+
     def __repr__(self):
         """ Print the basic Instrument properties"""
 
@@ -1836,8 +1842,14 @@ class Instrument(object):
 
     def copy(self):
         """Deep copy of the entire Instrument object."""
-
-        return copy.deepcopy(self)
+        # Copy doesn't work with module objects. Store module, set
+        # module variable to `None`, make the copy, reassign the module.
+        saved_module = self.inst_module
+        self.inst_module = None
+        inst_copy = copy.deepcopy(self)
+        inst_copy.inst_module = saved_module
+        self.inst_module = saved_module
+        return inst_copy
 
     def concat_data(self, new_data, prepend=False, **kwargs):
         """Concats new_data to self.data for xarray or pandas as needed
