@@ -464,7 +464,25 @@ class Instrument(object):
     def __eq__(self, other):
         """Check equality between Instrument objects"""
         test_repr = self.__repr__() == other.__repr__()
-        test_data = np.all(self.data == other.data)
+
+        if test_repr and (self.pandas_format == other.pandas_format):
+            # Both the same data type and same textual representation
+            if self.empty and other.empty:
+                # Both empty
+                test_data = True
+            elif not self.empty and (not other.empty):
+                # Both have data
+                if self.pandas_format:
+                    test_data = np.all(self.data == other.data)
+                else:
+                    test_data = xr.Dataset.equals(self.data, other.data)
+            elif self.empty or other.empty:
+                # Only one has data
+                test_data = False
+        else:
+            # Different data types or different text representation
+            test_data = False
+
         return test_repr and test_data
 
     def __repr__(self):
