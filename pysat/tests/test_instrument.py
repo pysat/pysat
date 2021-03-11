@@ -7,6 +7,7 @@ import numpy as np
 
 import pandas as pds
 import pytest
+import xarray as xr
 
 import pysat
 import pysat.instruments.pysat_testing
@@ -592,6 +593,48 @@ class TestBasics():
                                self.ref_time.day)
         self.testInst.date = self.ref_time
         assert self.out == self.testInst.date
+
+    # -------------------------------------------------------------------------
+    #
+    # Test __eq__ method
+    #
+    # -------------------------------------------------------------------------
+
+    def test_eq_no_data(self):
+        """Test equality when the same object"""
+        inst_copy = self.testInst.copy()
+        assert inst_copy == self.testInst
+
+    def test_eq_both_with_data(self):
+        """Test equality when the same object with loaded data"""
+        self.testInst.load(date=self.ref_time)
+        inst_copy = self.testInst.copy()
+        assert inst_copy == self.testInst
+
+    def test_eq_one_with_data(self):
+        """Test equality when the same objects but only one with loaded data"""
+        self.testInst.load(date=self.ref_time)
+        inst_copy = self.testInst.copy()
+        inst_copy.data = self.testInst._null_data
+        assert not (inst_copy == self.testInst)
+
+    def test_eq_different_data_type(self):
+        """Test equality different data type"""
+        self.testInst.load(date=self.ref_time)
+        inst_copy = self.testInst.copy()
+        if self.testInst.pandas_format:
+            inst_copy.pandas_format = False
+            inst_copy.data = xr.Dataset()
+        else:
+            inst_copy.pandas_format = True
+            inst_copy.data = pds.DataFrame()
+        assert not (inst_copy == self.testInst)
+
+    def test_eq_different_object(self):
+        """Test equality using different pysat.Instrument objects"""
+        obj1 = pysat.Instrument('pysat', 'testing')
+        obj2 = pysat.Instrument('pysat', 'testing_xarray')
+        assert not (obj1 == obj2)
 
     # -------------------------------------------------------------------------
     #
@@ -2331,6 +2374,29 @@ class TestBasics():
             self.testInst._get_var_type_code(type(None))
         estr = 'Unknown Variable'
         assert str(err).find(estr) >= 0
+
+
+# -----------------------------------------------------------------------------
+#
+# Repeat tests above with Instrument instantiated via inst_module
+#
+# -----------------------------------------------------------------------------
+class TestBasicsInstModule(TestBasics):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        """Runs before every method to create a clean testing setup."""
+        imod = pysat.instruments.pysat_testing
+        self.testInst = pysat.Instrument(inst_module=imod,
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True)
+        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_doy = 1
+        self.out = None
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst, self.out, self.ref_time, self.ref_doy
 
 
 # -----------------------------------------------------------------------------
