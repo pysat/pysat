@@ -4,18 +4,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.3.0] - 2021-XX-XX
 - Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
+- Allow limited use of new list_files kwarg, `file_cadance`
 - Deprecation warnings added to:
-  - Instrument class (old meta labels, `sat_id`, `default`, `multi_file_day`,
-    `manual_org`, and `_filter_datetime_input`)
-  - Constellation class kwarg `name`
-  - Custom class
-  - functions from `_files` class
-  - Instrument modules:
-    - the pysatCDAAC: cosmic_gps
-    - the pysatMadrigal: jro_isr, dmsp_ivm
-    - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
-    - the pysatModels: ucar_tiegcm
-  - SpaceWeather and Madrigal instrument methods
+   - Instrument class (old meta labels, `sat_id`, `default`, `multi_file_day`,
+     `manual_org`, and `_filter_datetime_input`)
+   - pysat.instruments.methods.general.list_files kwarg
+     `fake_montly_files_from_daily`
+   - Constellation class kwarg `name`
+   - Custom class
+   - functions from `_files` class
+   - Instrument modules:
+     - the pysatCDAAC: cosmic_gps
+     - the pysatMadrigal: jro_isr, dmsp_ivm
+     - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
+     - the pysatModels: ucar_tiegcm
+   - SpaceWeather and Madrigal instrument methods
 - Documentation
    - Updated docstrings with deprecation notes
 
