@@ -84,7 +84,7 @@ def preprocess(self):
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None, file_date_range=None):
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -100,10 +100,6 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         If True, the time index will be non-unique and non-monotonic.
     num_samples : int
         Number of samples
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional argument is not
-        used. Shift actually performed by the init function.
-        (default=None)
 
     Returns
     -------
