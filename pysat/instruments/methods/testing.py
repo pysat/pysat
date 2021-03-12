@@ -1,4 +1,5 @@
 import datetime as dt
+import functools
 import numpy as np
 import os
 import warnings
@@ -308,3 +309,26 @@ def define_range():
                  'angle': [0.0, 2.0 * np.pi]}
 
     return def_range
+
+
+def modify_file_list_support(self):
+    """Support modifying file lists for testing Instruments
+    """
+    # Work on file index if keyword present
+    if self.kwargs['init']['file_date_range'] is not None:
+        # Set list files routine to desired date range and
+        # attach to the instrument object.
+        fdr = self.kwargs['load']['file_date_range']
+        self._list_files_rtn = functools.partial(list_files,
+                                                 file_date_range=fdr)
+        # Update files version as well
+        self.files.list_files_rtn = functools.partial(list_files,
+                                                      file_date_range=fdr)
+        self.files.refresh()
+
+    # Mess with file dates if kwarg option present
+    if self.kwargs['init']['mangle_file_dates']:
+        self.files.files.index = \
+            self.files.files.index + dt.timedelta(minutes=5)
+
+    return

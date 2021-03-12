@@ -362,7 +362,7 @@ class Instrument(object):
         partial_func = ['list_files', 'download', 'preprocess', 'clean']
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
-                    'list_remote_files', 'clean']
+                    'list_remote_files', 'clean', 'init']
         for fkey in exp_keys:
             func_name = _kwargs_keys_to_func_name(fkey)
             func = getattr(self, func_name)

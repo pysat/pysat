@@ -36,7 +36,7 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1),
 _test_download = {'': {'no_download': False}}
 
 
-def init(self):
+def init(self, file_date_range=None, mangle_file_dates=False):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -49,11 +49,12 @@ def init(self):
 
     Parameters
     ----------
-    inst : pysat.Instrument
+    self : pysat.Instrument
         This object
-    file_date_range : pds.date_range
-        Optional keyword argument that specifies the range of dates for which
-        test files will be created
+    file_date_range : pds.date_range or NoneType
+        Range of dates for files or None, if this optional argument is not
+        used.
+        (default=None)
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
 
@@ -64,22 +65,9 @@ def init(self):
     self.acknowledgements = mm_test.ackn_str
     self.references = mm_test.refs
 
-    # Work on file index if keyword present
-    if self.kwargs['load']['file_date_range'] is not None:
-        # Set list files routine to desired date range and
-        # attach to the instrument object.
-        fdr = self.kwargs['load']['file_date_range']
-        self._list_files_rtn = functools.partial(list_files,
-                                                 file_date_range=fdr)
-        # Update files version as well
-        self.files.list_files_rtn = functools.partial(list_files,
-                                                      file_date_range=fdr)
-        self.files.refresh()
+    # Support file modification kwarg options
+    mm_test.modify_file_list_support(self)
 
-    # Mess with file dates if kwarg option present
-    if self.kwargs['load']['mangle_file_dates']:
-        self.files.files.index = \
-            self.files.files.index + dt.timedelta(minutes=5)
     return
 
 
@@ -104,9 +92,8 @@ def preprocess(self):
 
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
-         sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False, num_samples=None,
-         multi_file_day=False):
+         sim_multi_file_left=False, root_date=None, malformed_index=False,
+         num_samples=None, multi_file_day=False):
     """ Loads the test files
 
     Parameters
@@ -128,15 +115,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     root_date : NoneType
         Optional central date, uses _test_dates if not specified.
         (default=None)
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional argument is not
-        used. Shift actually performed by the init function.
-        (default=None)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic (default=False)
-    mangle_file_dates : bool
-        If True, the loaded file list time index is shifted by 5-minutes.
-        This shift is actually performed by the init function.
     num_samples : int
         Number of samples per day
 

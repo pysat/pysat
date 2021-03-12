@@ -22,15 +22,27 @@ inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
-def init(self):
+def init(self, file_date_range=None, mangle_file_dates=False):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
+
+    Shifts time index of files by 5-minutes if mangle_file_dates
+    set to True at pysat.Instrument instantiation.
+
+    Creates a file list for a given range if the file_date_range
+    keyword is set at instantiation.
 
     Parameters
     ----------
     self : pysat.Instrument
         This object
+    file_date_range : pds.date_range or NoneType
+        Range of dates for files or None, if this optional argument is not
+        used.
+        (default=None)
+    mangle_file_dates : bool
+        If True, the loaded file list time index is shifted by 5-minutes.
 
     """
 
@@ -39,17 +51,8 @@ def init(self):
     self.acknowledgements = mm_test.ackn_str
     self.references = mm_test.refs
 
-    # work on file index if keyword present
-    if self.kwargs['load']['file_date_range'] is not None:
-        # set list files routine to desired date range
-        # attach to the instrument object
-        fdr = self.kwargs['load']['file_date_range']
-        self._list_files_rtn = functools.partial(list_files,
-                                                 file_date_range=fdr)
-        # update files version as well
-        self.files.list_files_rtn = functools.partial(list_files,
-                                                      file_date_range=fdr)
-        self.files.refresh()
+    # Support file modification kwarg options
+    mm_test.modify_file_list_support(self)
 
     return
 
@@ -75,7 +78,7 @@ def preprocess(self):
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None, file_date_range=None):
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -91,10 +94,6 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         (default=False)
     num_samples : int
         Number of samples
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional argument is not
-        used. Shift actually performed by the init function.
-        (default=None)
 
     Returns
     -------
