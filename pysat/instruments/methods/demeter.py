@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Provides non-instrument routines for DEMETER microsatellite data"""
+"""Provides non-instrument routines for DEMETER microsatellite data
+
+.. deprecated:: 2.3.0
+  This module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatIncubator)
+
+"""
 
 from __future__ import absolute_import, division, print_function
 
+import logging
 import numpy as np
 import pysat
+import warnings
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +21,18 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
     """ Download
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
+
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "download` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
+
     url = 'https://cdpp-archive.cnes.fr/'
     logger.info('Data must be downloaded by registered users at: {:s}'.format(url))
     return
@@ -22,6 +40,10 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
 def list_remote_files(tag, sat_id):
     """Lists files available for Demeter.
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
 
     Note
     ----
@@ -39,6 +61,12 @@ def list_remote_files(tag, sat_id):
         (default=None)
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "list_remote_files` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     logger.info('Remote file lists are not supported for Demeter.')
     return
@@ -46,6 +74,10 @@ def list_remote_files(tag, sat_id):
 
 def bytes_to_float(chunk):
     """ Convert a chunk of bytes to a float
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
 
     Parameters
     ----------
@@ -61,6 +93,12 @@ def bytes_to_float(chunk):
     import sys
     import struct
     import codecs
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "bytes_to_float` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     chunk_code = codecs.encode(chunk, 'hex')
 
@@ -76,6 +114,10 @@ def bytes_to_float(chunk):
 
 def load_general_header(fhandle):
     """ Load the general header block (block 1 for each time)
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
 
     Parameters
     ----------
@@ -97,6 +139,12 @@ def load_general_header(fhandle):
     """
     import codecs  # ensures encode is python 2/3 compliant
     import datetime as dt
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "load_general_header` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     block_size = 38  # Position block is 38 bytes
     chunk = fhandle.read(block_size)
@@ -144,6 +192,10 @@ def load_location_parameters(fhandle):
     """ Load the orbital and geomagnetic parameter block (block 1 for each
     time)
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
+
     Parameters
     ----------
     fhandle : (file handle)
@@ -164,6 +216,12 @@ def load_location_parameters(fhandle):
 
     """
     import codecs  # ensures encode is python 2/3 compliant
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "load_location_parameters` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     block_size = 90  # Position block is 90 bytes
     chunk = fhandle.read(block_size)
@@ -233,6 +291,10 @@ def load_location_parameters(fhandle):
 def load_attitude_parameters(fhandle):
     """ Load the attitude parameter block (block 1 for each time)
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
+
     Parameters
     ----------
     fhandle : (file handle)
@@ -251,6 +313,12 @@ def load_attitude_parameters(fhandle):
 
     """
     import codecs  # ensures encode is python 2/3 compliant
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "load_attitude_parameters` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     block_size = 76  # Position block is 76 bytes
     chunk = fhandle.read(block_size)
@@ -299,6 +367,10 @@ def load_attitude_parameters(fhandle):
 def load_binary_file(fname, load_experiment_data):
     """ Load the binary data from a DEMETER file
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
+
     Parameters
     ----------
     fname : string
@@ -313,6 +385,12 @@ def load_binary_file(fname, load_experiment_data):
     meta : dict
         Meta data for file, including data names and units
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "load_binary_file` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     data = list()
     meta = dict()
@@ -361,6 +439,10 @@ def set_metadata(name, meta_dict):
     """ Set metadata for each DEMETER instrument, using dict containing
     metadata
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatIncubator.instruments.methods.demeter`
+
     Parameters
     ----------
     name : string
@@ -375,6 +457,12 @@ def set_metadata(name, meta_dict):
         Meta class boject
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatIncubator.instruments.methods.demeter.",
+                           "set_metadata` instead: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Define the acknowledgements and references
     ackn = {'iap': ' '.join(["This work is based on observations with the",
