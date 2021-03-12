@@ -312,8 +312,15 @@ def define_range():
 
 
 def modify_file_list_support(self):
-    """Support modifying file lists for testing Instruments
+    """Support modifying file lists for testing Instruments for unit tests.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
     """
+
     # Work on file index if keyword present
     if self.kwargs['init']['file_date_range'] is not None:
         # Set list files routine to desired date range and
