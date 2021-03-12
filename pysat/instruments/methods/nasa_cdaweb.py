@@ -305,7 +305,8 @@ def download(supported_tags, date_array, tag, sat_id,
                                         formatted_remote_fname))
                 req = requests.get(remote_path)
                 if req.status_code != 404:
-                    open(saved_local_fname, 'wb').write(req.content)
+                    with open(saved_local_fname, 'wb') as open_f:
+                        open_f.write(req.content)
                     logger.info('Finished.')
                 else:
                     logger.info(' '.join(('File not available for',
@@ -336,7 +337,8 @@ def download(supported_tags, date_array, tag, sat_id,
                     saved_local_fname = os.path.join(data_path, remote_file)
                     req = requests.get(remote_file_path)
                     if req.status_code != 404:
-                        open(saved_local_fname, 'wb').write(req.content)
+                        with open(saved_local_fname, 'wb') as open_f:
+                            open_f.write(req.content)
                         i += 1
                     else:
                         logger.info(' '.join(('File not available for',
