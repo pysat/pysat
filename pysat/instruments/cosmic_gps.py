@@ -12,6 +12,10 @@ Default behavior is to search for the 2013 re-processed data first, then the
 post-processed data as recommended on
 https://cdaac-www.cosmic.ucar.edu/cdaac/products.html
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatCDAAC (https://github.com/pysat/pysatCDAAC)
+
 Properties
 ----------
 platform
@@ -58,6 +62,7 @@ from requests.auth import HTTPBasicAuth
 import shutil
 import sys
 import tarfile
+import warnings
 
 import netCDF4
 import pysat
@@ -77,6 +82,16 @@ _test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
                     'wetprf': pysat.datetime(2008, 1, 1),
                     'atmprf': pysat.datetime(2008, 1, 1),
                     'scnlv1': pysat.datetime(2008, 1, 1)}}
+
+def init(self):
+    """Initializes the Instrument object
+    """
+
+    warnings.warn("".join(["cosmic_gps has been removed from the pysat-managed",
+                           " Instruments in pysat 3.0.0, and now resides in ",
+                           "pysatCDAAC: https://github.com/pysat/pysatCDAAC"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):

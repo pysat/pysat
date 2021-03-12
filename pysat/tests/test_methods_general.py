@@ -1,3 +1,4 @@
+import datetime as dt
 from nose.tools import raises
 import warnings
 
@@ -105,3 +106,46 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         # check prepended text removed from metadata
         assert '_profiles' in self.testInst.meta.keys()
         assert 'ages' in self.testInst.meta.keys()
+
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always", DeprecationWarning)
+        self.tag = ''
+        self.sat_id = ''
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.tag, self.sat_id
+
+    def test_list_files_kwarg_dep(self):
+        """Test the deprecation of kwargs in list_files routine"""
+
+        wmsg = "list_files kwarg `fake_daily_files_from_monthly` has been dep"
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                gen.list_files(tag=self.tag, sat_id=self.sat_id,
+                               fake_daily_files_from_monthly=True)
+            except ValueError as verr:
+                # Ensure the expected ValueError for no data path was raised
+                if str(verr).find('A directory must be passed') < 0:
+                    raise ValueError(verr)
+
+        found_msg = False
+        for iwar in war:
+            if iwar.category == DeprecationWarning \
+               and str(iwar.message).find(wmsg) >= 0:
+                found_msg = True
+
+        assert found_msg, "didn't find warning about: {:}".format(wmsg)
+        return
+
+    @raises(ValueError)
+    def test_list_files_cadance_future_error(self):
+        """Test raises ValueError if future behaviour attempted"""
+
+        gen.list_files(tag=self.tag, sat_id=self.sat_id,
+                       file_cadance=dt.timedelta(days=47))
+        return
