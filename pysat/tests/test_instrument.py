@@ -1708,7 +1708,7 @@ class TestBasics():
         """Test iterating over default bounds"""
         date_range = pds.date_range(self.ref_time,
                                     self.ref_time + dt.timedelta(days=10))
-        self.testInst.kwargs['load']['file_date_range'] = date_range
+        self.testInst.kwargs['init']['file_date_range'] = date_range
         self.testInst._init_rtn()
         self.testInst.bounds = (None, None)
         dates = []
