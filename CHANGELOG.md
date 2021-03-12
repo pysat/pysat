@@ -11,10 +11,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Custom class
   - functions from `_files` class
   - Instrument modules:
+    - the pysatIncubator: champ_star, demeter_iap, superdarn_grdex,
+      supermag_magnetometer
     - the pysatMadrigal: jro_isr, dmsp_ivm
     - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
     - the pysatModels: ucar_tiegcm
-  - SpaceWeather and Madrigal instrument methods
+  - SpaceWeather, Incubator (DEMETER), and Madrigal instrument methods
 - Documentation
    - Updated docstrings with deprecation notes
 
