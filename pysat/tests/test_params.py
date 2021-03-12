@@ -42,9 +42,11 @@ class TestBasics():
 
     @pytest.mark.parametrize("paths, check",
                              [('.', ['.']),
-                              ('./hi', ['./hi']),
-                              ('./hi/', ['./hi']),
-                              ('./', ['.']),
+                              (os.path.join('.', 'hi'),
+                               [os.path.join('.', 'hi')]),
+                              (os.path.join('.', 'hi', ''),
+                               [os.path.join('.', 'hi')]),
+                              (os.path.join('.', ''), ['.']),
                               (['.', '.'], None)])
     def test_set_data_dirs(self, paths, check):
         """Update pysat directory via params"""
