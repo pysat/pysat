@@ -881,6 +881,11 @@ class TestBasics():
         """Test if init function supplied by instrument can modify object"""
         assert self.testInst.new_thing
 
+    def test_instrument_init_keyword(self):
+        """Test if init keywords are registered by pysat"""
+        # Test for file_date_range keyword
+        assert 'file_date_range' in self.kwargs['init']
+
     def test_custom_instrument_load(self):
         """
         Test if the correct day is being loaded (End-to-End),

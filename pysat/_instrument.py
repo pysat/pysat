@@ -3725,7 +3725,7 @@ def _get_supported_keywords(local_func):
     # account for keywords already set since input was a partial function
     pre_kws.extend(existing_kws.keys())
 
-    # Get the lists of arguements and defaults
+    # Get the lists of arguments and defaults
     # The args and kwargs are both in the args list, and args are placed first
     #
     # modified from code on
@@ -3745,8 +3745,8 @@ def _get_supported_keywords(local_func):
     while len(func_args) > len(func_defaults):
         func_args.pop(0)
 
-    # remove pre-existing keywords from output
-    # first identify locations
+    # Remove pre-existing keywords from output
+    # First, identify locations
     pop_list = [i for i, arg in enumerate(func_args) if arg in pre_kws]
 
     # Remove pre-selected by cycling backwards through the list of indices
