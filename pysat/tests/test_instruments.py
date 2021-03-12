@@ -14,7 +14,9 @@ import pysat
 import pysat.instruments.pysat_testing
 
 # modules in the list below have deprecation warnings
-dep_list = ['jro_isr', 'dmsp_ivm', 'sw_dst', 'sw_kp', 'sw_f107', 'ucar_tiegcm']
+dep_list = ['jro_isr', 'dmsp_ivm', 'sw_dst', 'sw_kp', 'sw_f107', 'ucar_tiegcm',
+            'champ_star', 'demeter_iap', 'superdarn_grdex',
+            'supermag_magnetometer']
 
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
