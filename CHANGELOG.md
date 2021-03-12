@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Custom class
    - functions from `_files` class
    - Instrument modules:
+     - the pysatCDAAC: cosmic_gps
      - the pysatMadrigal: jro_isr, dmsp_ivm
      - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
      - the pysatModels: ucar_tiegcm
