@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """SuperDARN data support for grdex files(Alpha Level!)
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatIncubator)
+
 Properties
 ----------
 platform
@@ -34,14 +38,15 @@ are constituted from what it is thought to be good data.
 
 from __future__ import print_function
 from __future__ import absolute_import
-import functools
 
-import pandas as pds
+import logging
+import functools
 import numpy as np
+import pandas as pds
+import warnings
 
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -56,20 +61,6 @@ _test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     # reset the list_remote_files routine to include the data path
@@ -88,6 +79,12 @@ def init(self):
           'funding agencies of Australia, Canada, China, France, Italy, ' +
           'Japan, Norway, South Africa, United Kingdom and the United States ' +
           'of America.')
+
+    warnings.warn("".join(["superdarn_grdex has been removed from the pysat-",
+                           "managed Instruments in pysat 3.0.0, and now ",
+                           "resides in pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
     return
 
 

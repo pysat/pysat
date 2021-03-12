@@ -12,13 +12,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
      `fake_montly_files_from_daily`
    - Constellation class kwarg `name`
    - Custom class
-   - functions from `_files` class
-   - Instrument modules:
-     - the pysatCDAAC: cosmic_gps
-     - the pysatMadrigal: jro_isr, dmsp_ivm
-     - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
-     - the pysatModels: ucar_tiegcm
-   - SpaceWeather and Madrigal instrument methods
+  - functions from `_files` class
+  - Instrument modules:
+    - the pysatCDAAC: cosmic_gps
+    - the pysatIncubator: champ_star, demeter_iap, superdarn_grdex,
+      supermag_magnetometer
+    - the pysatMadrigal: jro_isr, dmsp_ivm
+    - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
+    - the pysatModels: ucar_tiegcm
+  - SpaceWeather, Incubator (DEMETER), and Madrigal instrument method
 - Documentation
    - Updated docstrings with deprecation notes
 

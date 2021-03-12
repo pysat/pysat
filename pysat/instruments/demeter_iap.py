@@ -15,6 +15,10 @@ physique des plasmas, CDPP), the French national data center for natural
 plasmas of the solar system.  This data product requires registration and user
 initiated downloading after ordering a data product.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatIncubator)
+
 Properties
 ----------
 platform
@@ -49,6 +53,7 @@ from __future__ import print_function, absolute_import
 
 import pandas as pds
 import numpy as np
+import warnings
 
 import pysat
 from pysat.instruments.methods import demeter
@@ -76,12 +81,21 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
+    """Initializes the Instrument object with values
+    """
     logger.info(' '.join(("When using this data please include a version of the,"
                     "acknowledgement outlined in the metadata attribute",
                     "'info.acknowledgements'.  We recommend that data users",
                     "contact the experiment PI early in their study. ",
                     "Experiment reference information is available in the",
                     "metadata attribute 'info.reference'")))
+
+    warnings.warn("".join(["demeter_iap has been removed from the pysat-",
+                           "managed Instruments in pysat 3.0.0, and now ",
+                           "resides in pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
@@ -293,6 +307,10 @@ def clean(inst):
 def add_drift_sat_coord(inst):
     """ Calculate the ion velocity in satellite x,y,z coordinates
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     ----------
     inst : pysat.Instrument
@@ -303,6 +321,12 @@ def add_drift_sat_coord(inst):
     Adds data values iv_Ox, iv_Oy
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Because np.radians isn't working for data coming from the DataFrame :(
     rad = np.array([np.radians(rr) for rr in inst['iv_negOz_angle']])
@@ -326,6 +350,10 @@ def add_drift_sat_coord(inst):
 def add_drift_lgm_coord(inst):
     """ Calcuate the ion velocity in local geomagneic coordinates
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     ----------
     inst : pysat.Instrument
@@ -339,6 +367,12 @@ def add_drift_lgm_coord(inst):
     do not exist yet, adds them as well
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
 
@@ -375,6 +409,10 @@ def add_drift_lgm_coord(inst):
 def add_drift_geo_coord(inst):
     """ Calcuate the ion velocity in geographic coordinates
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     ----------
     inst : pysat.Instrument
@@ -388,6 +426,12 @@ def add_drift_geo_coord(inst):
     If iv_Ox,y do not exist yet, adds them as well
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
 
