@@ -269,7 +269,8 @@ class Parameters(object):
                  for path in paths]
 
         # Ensure all paths are valid, create if not
-        [check_and_make_path(path) for path in paths]
+        for path in paths:
+            check_and_make_path(path)
 
         # Assign updated and validated paths
         self.data['data_dirs'] = paths
