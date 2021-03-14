@@ -9,6 +9,9 @@ import pandas as pds
 from pysat.utils import NetworkLock
 from pysat import here
 
+import pysat
+logger = pysat.logger
+
 ackn_str = ' '.join(("Test instruments provided through the pysat project.",
                      "https://www.github.com/pysat/pysat"))
 
@@ -17,8 +20,90 @@ with NetworkLock(os.path.join(here, 'citation.txt'), 'r') as locked_file:
     refs = locked_file.read()
 
 
+def init(self, file_date_range=None, mangle_file_dates=False,
+         test_init_kwrd=None):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    Shifts time index of files by 5-minutes if mangle_file_dates
+    set to True at pysat.Instrument instantiation.
+
+    Creates a file list for a given range if the file_date_range
+    keyword is set at instantiation.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+    file_date_range : pds.date_range or NoneType
+        Range of dates for files or None, if this optional argument is not
+        used.
+        (default=None)
+    mangle_file_dates : bool
+        If True, the loaded file list time index is shifted by 5-minutes.
+    test_init_kwrd : any or NoneType
+        Testing keyword (default=None)
+
+    """
+
+    logger.info(ackn_str)
+    self.acknowledgements = ackn_str
+    self.references = refs
+
+    # Support file modification kwarg options
+    modify_file_list_support(self, file_date_range=file_date_range,
+                             mangle_file_dates=mangle_file_dates)
+
+    # Assign parameters for testing purposes
+    self.new_thing = True
+    self.test_init_kwrd = test_init_kwrd
+
+    return
+
+
+def clean(self, test_clean_kwrd=None):
+    """Cleaning function
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+    test_clean_kwrd : any or NoneType
+        Testing keyword (default=None)
+
+    """
+
+    self.test_clean_kwrd = test_clean_kwrd
+
+    return
+
+
+# Optional method
+def preprocess(self, test_preprocess_kwrd=None):
+    """Customization method that performs standard preprocessing.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+    test_preprocess_kwrd : any or NoneType
+        Testing keyword (default=None)
+
+    """
+
+    self.test_preprocess_kwrd = test_preprocess_kwrd
+
+    return
+
+
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
-               file_date_range=None, test_dates=None):
+               file_date_range=None, test_dates=None,
+               test_list_files_kwrd=None):
     """Produce a fake list of files spanning three years
 
     Parameters
@@ -39,12 +124,18 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         (default=None)
     test_dates : dt.datetime
         Pass the _test_date object through from the test instrument files
+    test_list_files_kwrd : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
     Series of filenames indexed by file time
 
     """
+
+    # Support keyword testing
+    logger.info(''.join(('test_list_files_kwrd = ',
+                         str(test_list_files_kwrd))))
 
     if data_path is None:
         data_path = ''
@@ -67,7 +158,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
 def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
                       start=None, stop=None, test_dates=None, user=None,
-                      password=None):
+                      password=None, test_list_remote_kwrd=None):
     """Produce a fake list of files spanning three years and one month to
     simulate new data files on a remote server
 
@@ -97,6 +188,8 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         error if user not supplied. (default=None)
     password : string
         Password for data download. (default=None)
+    test_list_remote_kwrd : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -104,6 +197,10 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         Filenames indexed by file time, see list_files for more info
 
     """
+
+    # Support keyword testing
+    logger.info(''.join(('test_list_remote_kwrd = ',
+                         str(test_list_remote_kwrd))))
 
     # Determine the appropriate date range for the fake files
     if start is None:
@@ -121,7 +218,7 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
 
 def download(date_array, tag, inst_id, data_path=None, user=None,
-             password=None):
+             password=None, test_download_kwrd=None):
     """Simple pass function for pysat compatibility for test instruments.
 
     This routine is invoked by pysat and is not intended for direct use by the
@@ -136,7 +233,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
         Tag identifier used for particular dataset. This input is provided by
         pysat. (default='')
     inst_id : string
-        Satellite ID string identifier used for particular dataset. This input
+        Instrument ID string identifier used for particular dataset. This input
         is provided by pysat. (default='')
     data_path : string
         Path to directory to download data to. (default=None)
@@ -146,10 +243,8 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
         error if user not supplied. (default=None)
     password : string
         Password for data download. (default=None)
-    **kwargs : dict
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine via kwargs.
+    test_download_kwrd : any or NoneType
+        Testing keyword (default=None)
 
     Raises
     ------
@@ -161,6 +256,9 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
     When no download support will be provided
 
     """
+
+    # Support keyword testing
+    logger.info(''.join(('test_download_kwrd = ', str(test_download_kwrd))))
 
     if tag == 'no_download':
         warnings.warn('This simulates an instrument without download support')
@@ -311,7 +409,8 @@ def define_range():
     return def_range
 
 
-def modify_file_list_support(self):
+def modify_file_list_support(self, file_date_range=None,
+                             mangle_file_dates=None):
     """Support modifying file lists for testing Instruments for unit tests.
 
     Parameters
@@ -322,10 +421,10 @@ def modify_file_list_support(self):
     """
 
     # Work on file index if keyword present
-    if self.kwargs['init']['file_date_range'] is not None:
+    if file_date_range is not None:
         # Set list files routine to desired date range and
-        # attach to the instrument object.
-        fdr = self.kwargs['load']['file_date_range']
+        # attach to the Instrument object.
+        fdr = file_date_range
         self._list_files_rtn = functools.partial(list_files,
                                                  file_date_range=fdr)
         # Update files version as well
@@ -334,7 +433,7 @@ def modify_file_list_support(self):
         self.files.refresh()
 
     # Mess with file dates if kwarg option present
-    if self.kwargs['init']['mangle_file_dates']:
+    if mangle_file_dates is not None:
         self.files.files.index = \
             self.files.files.index + dt.timedelta(minutes=5)
 

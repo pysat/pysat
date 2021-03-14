@@ -23,49 +23,19 @@ pandas_format = False
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
-def init(self, file_date_range=None, mangle_file_dates=False):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Shifts time index of files by 5-minutes if mangle_file_dates
-    set to True at pysat.Instrument instantiation.
-
-    Creates a file list for a given range if the file_date_range
-    keyword is set at instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional argument is not
-        used.
-        (default=None)
-    mangle_file_dates : bool
-        If True, the loaded file list time index is shifted by 5-minutes.
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-
-    # Support file modification kwarg options
-    mm_test.modify_file_list_support(self)
-
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    pass
+# Clean method
+clean = mm_test.clean
 
 
-def load(fnames, tag=None, inst_id=None, num_samples=None):
+# Optional method, preprocess
+preprocess = mm_test.preprocess
+
+
+def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwrd=None):
     """ Loads the test files
 
     Parameters
@@ -78,6 +48,8 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
         Instrument satellite ID (accepts '')
     num_samples : int
         Number of samples
+    test_load_kwrd : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -87,6 +59,9 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
         Metadata
 
     """
+
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwrd = ', str(test_load_kwrd))))
 
     if num_samples is None:
         if inst_id != '':

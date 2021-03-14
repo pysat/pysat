@@ -19,6 +19,13 @@ from pysat.utils.time import filter_datetime_input
 
 xarray_epoch_name = 'time'
 
+testing_kwrds = {'test_init_kwrd': True, 'test_clean_kwrd': False,
+                 'test_preprocess_kwrd': 'test_phrase',
+                 'test_load_kwrd': 'bright_light',
+                 'test_list_files_kwrd': 'sleep_tight',
+                 'test_list_remote_kwrd': 'one_eye_open',
+                 'test_download_kwrd': 'exit_night'}
+
 
 # -----------------------------------------------------------------------------
 #
@@ -27,12 +34,14 @@ xarray_epoch_name = 'time'
 # -----------------------------------------------------------------------------
 class TestBasics():
     def setup(self):
+        global testing_kwrds
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=10,
                                          clean_level='clean',
-                                         update_files=True)
+                                         update_files=True,
+                                         **testing_kwrds)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -881,11 +890,6 @@ class TestBasics():
         """Test if init function supplied by instrument can modify object"""
         assert self.testInst.new_thing
 
-    def test_instrument_init_keyword(self):
-        """Test if init keywords are registered by pysat"""
-        # Test for file_date_range keyword
-        assert 'file_date_range' in self.kwargs['init']
-
     def test_custom_instrument_load(self):
         """
         Test if the correct day is being loaded (End-to-End),
@@ -922,6 +926,147 @@ class TestBasics():
         with pytest.raises(AttributeError):
             pysat.Instrument(inst_module=test, tag='',
                              clean_level='clean')
+
+    # -------------------------------------------------------------------------
+    #
+    # test instrument initialization keyword mapping to instrument functions
+    #
+    # -------------------------------------------------------------------------
+    @pytest.mark.parametrize("func, kwarg, val", [('init', 'test_init_kwrd',
+                                                   True),
+                                                  ('clean', 'test_clean_kwrd',
+                                                   False),
+                                                  ('preprocess',
+                                                   'test_preprocess_kwrd',
+                                                   'test_phrase')])
+    def test_instrument_function_keywords(self, func, kwarg, val):
+        """Test if Instrument function keywords are registered by pysat"""
+        self.testInst.load(date=self.ref_time)
+        assert kwarg in self.testInst.kwargs[func]
+        assert self.testInst.kwargs[func][kwarg] == val
+        assert getattr(self.testInst, kwarg) == val
+
+        return
+
+    @pytest.mark.parametrize("func, kwarg", [('clean', 'test_clean_kwrd'),
+                                             ('preprocess',
+                                              'test_preprocess_kwrd')])
+    def test_instrument_function_keyword_liveness(self, func, kwarg):
+        """Test if changed keywords are propagated by pysat to functions"""
+
+        self.testInst.kwargs[func][kwarg] = 'live_value'
+        self.testInst.load(date=self.ref_time)
+        # The passed parameter should be set on Instrument
+        assert getattr(self.testInst, kwarg) == 'live_value'
+
+        return
+
+    @pytest.mark.parametrize("func, kwarg, val", [('load', 'test_load_kwrd',
+                                                   'bright_light'),
+                                                  ('list_files',
+                                                   'test_list_files_kwrd',
+                                                   'sleep_tight'),
+                                                  ('list_remote_files',
+                                                   'test_list_remote_kwrd',
+                                                   'one_eye_open'),
+                                                  ('download',
+                                                   'test_download_kwrd',
+                                                   'exit_night')
+                                                  ])
+    def test_instrument_partial_function_keywords(self, func, kwarg, val,
+                                                  caplog):
+        """Test if init keywords (partial funcs) are registered by pysat"""
+        # Test for file_date_range keyword
+        saved_level = pysat.logger.level
+        pysat.logger.setLevel(1)
+        caplog.set_level(logging.INFO)
+
+        try:
+            # Load data to trigger some functions
+            self.testInst.load(date=self.ref_time)
+            # Refresh files to trigger other functions
+            self.testInst.files.refresh()
+            # Get remote file list
+            self.testInst.download_updated_files()
+        finally:
+            # Ensure logging level reset
+            pysat.logger.setLevel(saved_level)
+
+        captured = caplog.text
+
+        assert kwarg in self.testInst.kwargs[func]
+        assert self.testInst.kwargs[func][kwarg] == val
+        test_str = ''.join((kwarg, ' = ', str(val)))
+        assert captured.find(test_str) >= 0
+
+        return
+
+    @pytest.mark.parametrize("func, kwarg", [('load', 'test_load_kwrd'),
+                                             ('list_files',
+                                              'test_list_files_kwrd'),
+                                             ('list_remote_files',
+                                              'test_list_remote_kwrd'),
+                                             ('download',
+                                              'test_download_kwrd')])
+    def test_instrument_partial_keywords_liveness(self, func, kwarg, caplog):
+        """Test if changes to keywords (partial funcs) are propagated by pysat
+        """
+        # Test for file_date_range keyword
+        saved_level = pysat.logger.level
+        pysat.logger.setLevel(1)
+        caplog.set_level(logging.INFO)
+
+        self.testInst.kwargs[func][kwarg] = 'live_value'
+
+        try:
+            # Load data to trigger some functions
+            self.testInst.load(date=self.ref_time)
+            # Refresh files to trigger other functions
+            self.testInst.files.refresh()
+            # Get remote file list
+            self.testInst.download_updated_files()
+        finally:
+            # Ensure logging level reset
+            pysat.logger.setLevel(saved_level)
+
+        captured = caplog.text
+
+        test_str = ''.join((kwarg, ' = ', 'live_value'))
+        if func != 'list_files':
+            assert captured.find(test_str) >= 0
+        else:
+            # list_files is not live given that method is used at the Files
+            # class.
+            assert captured.find(test_str) < 0
+        return
+
+    def test_error_undefined_input_keyword(self):
+        """Test for error if undefined keyword provided at instantiation"""
+
+        # Add a new keyword
+        self.testInst.kwargs['load']['undefined_keyword'] = True
+
+        with pytest.raises(ValueError) as err:
+            # Instantiate instrument with new undefined keyword involved
+            eval(self.testInst.__repr__())
+
+        estr = "unknown keyword supplied: ['undefined_keyword']"
+        assert str(err).find(estr) >= 0
+
+    def test_error_undefined_input_keywords(self):
+        """Test for error if undefined keywords provided at instantiation"""
+
+        # Add a new keyword
+        self.testInst.kwargs['load']['undefined_keyword1'] = True
+        self.testInst.kwargs['load']['undefined_keyword2'] = False
+
+        with pytest.raises(ValueError) as err:
+            # Instantiate instrument with new undefined keyword involved
+            eval(self.testInst.__repr__())
+
+        estr = "".join(("unknown keywords supplied: ['undefined_keyword1',",
+                        " 'undefined_keyword2']"))
+        assert str(err).find(estr) >= 0
 
     # -------------------------------------------------------------------------
     #
@@ -1709,7 +1854,7 @@ class TestBasics():
         date_range = pds.date_range(self.ref_time,
                                     self.ref_time + dt.timedelta(days=10))
         self.testInst.kwargs['init']['file_date_range'] = date_range
-        self.testInst._init_rtn()
+        self.testInst._init_rtn(**self.testInst.kwargs['init'])
         self.testInst.bounds = (None, None)
         dates = []
         for inst in self.testInst:
@@ -2398,13 +2543,15 @@ class TestBasics():
 # -----------------------------------------------------------------------------
 class TestBasicsInstModule(TestBasics):
     def setup(self):
+        global testing_kwrds
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         imod = pysat.instruments.pysat_testing
         self.testInst = pysat.Instrument(inst_module=imod,
                                          num_samples=10,
                                          clean_level='clean',
-                                         update_files=True)
+                                         update_files=True,
+                                         **testing_kwrds)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -2421,13 +2568,15 @@ class TestBasicsInstModule(TestBasics):
 # -----------------------------------------------------------------------------
 class TestBasicsXarray(TestBasics):
     def setup(self):
+        global testing_kwrds
         reload(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          num_samples=10,
                                          clean_level='clean',
-                                         update_files=True)
+                                         update_files=True,
+                                         **testing_kwrds)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -2444,12 +2593,14 @@ class TestBasicsXarray(TestBasics):
 # -----------------------------------------------------------------------------
 class TestBasics2D(TestBasics):
     def setup(self):
+        global testing_kwrds
         reload(pysat.instruments.pysat_testing2d)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
                                          num_samples=50,
                                          clean_level='clean',
-                                         update_files=True)
+                                         update_files=True,
+                                         **testing_kwrds)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -2466,13 +2617,15 @@ class TestBasics2D(TestBasics):
 # -----------------------------------------------------------------------------
 class TestBasics2DXarray(TestBasics):
     def setup(self):
+        global testing_kwrds
         reload(pysat.instruments.pysat_testing2d_xarray)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
                                          num_samples=10,
                                          clean_level='clean',
-                                         update_files=True)
+                                         update_files=True,
+                                         **testing_kwrds)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -2547,6 +2700,7 @@ class TestBasics2DXarray(TestBasics):
 
 class TestBasicsShiftedFileDates(TestBasics):
     def setup(self):
+        global testing_kwrds
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
@@ -2554,7 +2708,8 @@ class TestBasicsShiftedFileDates(TestBasics):
                                          clean_level='clean',
                                          update_files=True,
                                          mangle_file_dates=True,
-                                         strict_time_flag=True)
+                                         strict_time_flag=True,
+                                         **testing_kwrds)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None

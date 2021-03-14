@@ -359,7 +359,8 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         saved_keys = []
-        partial_func = ['list_files', 'download', 'preprocess', 'clean']
+        partial_func = ['list_files', 'list_remote_files', 'download',
+                        'preprocess', 'clean']
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
                     'list_remote_files', 'clean', 'init']
@@ -377,6 +378,9 @@ class Instrument(object):
             # Store appropriate user supplied keywords for this function
             self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
 
+            # Keep a copy of user provided values
+            user_values = copy.deepcopy(self.kwargs[fkey])
+
             # Add in defaults if not already present
             for dkey in default_kwargs.keys():
                 if dkey not in good_kwargs:
@@ -392,12 +396,15 @@ class Instrument(object):
                 saved_keys.extend(fkwargs)
 
                 # If the function can't access this dict, use partial
+                # The functions that truly can't access the dict are load,
+                # list_files, list_remote_files, download.
                 if fkey in partial_func:
                     pfunc = functools.partial(func, **self.kwargs[fkey])
                     setattr(self, func_name, pfunc)
-                    del self.kwargs[fkey]
-            else:
-                del self.kwargs[fkey]
+                    # Only retain the user provided keywords. These partial
+                    # keywords need to be retained so that __repr__ can
+                    # provide an accurate reconstruction.
+                    self.kwargs[fkey] = user_values
 
         # Test for user supplied keys that are not used
         missing_keys = []
@@ -456,7 +463,7 @@ class Instrument(object):
 
         # Run instrument init function, a basic pass function is used if the
         # user doesn't supply the init function
-        self._init_rtn()
+        self._init_rtn(**self.kwargs['init'])
 
         # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
@@ -1241,13 +1248,9 @@ class Instrument(object):
         if len(fname) > 0:
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             try:
-                if 'load' in self.kwargs.keys():
-                    load_kwargs = self.kwargs['load']
-                else:
-                    load_kwargs = {}
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                              inst_id=self.inst_id,
-                                             **load_kwargs)
+                                             **self.kwargs['load'])
 
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
@@ -2605,7 +2608,7 @@ class Instrument(object):
             self._set_load_parameters(date=date, fid=None)
             date = filter_datetime_input(date)
 
-            # Increment after determining the desird step size
+            # Increment after determining the desired step size
             if end_date is not None:
                 # Support loading a range of dates
                 self.load_step = end_date - date
@@ -2879,11 +2882,11 @@ class Instrument(object):
         # Apply the instrument preprocess routine, if data present
         if not self.empty:
             # Does not require self as input, as it is a partial func
-            self._preprocess_rtn()
+            self._preprocess_rtn(**self.kwargs['preprocess'])
 
         # Clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
-            self._clean_rtn()
+            self._clean_rtn(**self.kwargs['clean'])
 
         # Apply custom functions via the nanokernel in self.custom
         if not self.empty:
@@ -3099,6 +3102,9 @@ class Instrument(object):
         kwargs['tag'] = self.tag
         kwargs['inst_id'] = self.inst_id
         kwargs['data_path'] = self.files.data_path
+        for kwrd in self.kwargs['download']:
+            if kwrd not in kwargs:
+                kwargs[kwrd] = self.kwargs['download'][kwrd]
 
         # Download the data
         self._download_rtn(date_array, **kwargs)

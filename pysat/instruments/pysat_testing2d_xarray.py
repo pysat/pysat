@@ -28,63 +28,20 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 epoch_name = u'time'
 
 
-def init(self, file_date_range=None, mangle_file_dates=False):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Shifts time index of files by 5-minutes if mangle_file_dates
-    set to True at pysat.Instrument instantiation.
-
-    Creates a file list for a given range if the file_date_range
-    keyword is set at instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional argument is not
-        used.
-        (default=None)
-    mangle_file_dates : bool
-        If True, the loaded file list time index is shifted by 5-minutes.
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-
-    # Support file modification kwarg options
-    mm_test.modify_file_list_support(self)
-
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    pass
+# Clean method
+clean = mm_test.clean
 
 
-# Optional method
-def preprocess(self):
-    """Customization method that performs standard preprocessing.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). Object
-    modified in place.
-
-    """
-
-    return
+# Optional method, preprocess
+preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None):
+         num_samples=None, test_load_kwrd=None):
     """ Loads the test files
 
     Parameters
@@ -100,6 +57,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         If True, the time index will be non-unique and non-monotonic.
     num_samples : int
         Number of samples
+    test_load_kwrd : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -109,6 +68,9 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         Testing metadata
 
     """
+
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwrd = ', str(test_load_kwrd))))
 
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
