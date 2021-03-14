@@ -421,7 +421,7 @@ def modify_file_list_support(self, file_date_range=None,
     """
 
     # Work on file index if keyword present
-    if file_date_range is not None:
+    if file_date_range:
         # Set list files routine to desired date range and
         # attach to the Instrument object.
         fdr = file_date_range
@@ -433,7 +433,7 @@ def modify_file_list_support(self, file_date_range=None,
         self.files.refresh()
 
     # Mess with file dates if kwarg option present
-    if mangle_file_dates is not None:
+    if mangle_file_dates:
         self.files.files.index = \
             self.files.files.index + dt.timedelta(minutes=5)
 
