@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import absolute_import
 """
 Instrument independent seasonal averaging routine. Supports averaging
 1D and 2D data.
+
+.. deprecated:: 2.2.0
+  `ssnl.avg` will be removed in pysat 3.0.0, it will be added to pysatSeasons:
+  https://github.com/pysat/pysatSeasons
+
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import pysat
 import numpy as np
@@ -223,6 +228,19 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
 
 def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
                     numy, numz, returnData=False):
+    """Calculate 2D Medians
+
+    .. deprecated:: 2.2.0
+      Routine will be removed in pysat 3.0.0, it will be added to pysatSeasons:
+      https://github.com/pysat/pysatSeasons
+
+    """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning, stacklevel=2)
 
     # set up output arrays
     medianAns = [[[None for i in xarr] for j in yarr] for k in zarr]
@@ -418,6 +436,19 @@ def mean_by_file(inst, data_label):
 
 
 def _core_mean(inst, data_label, by_orbit=False, by_day=False, by_file=False):
+    """ Core mean
+
+    .. deprecated:: 2.2.0
+      Routine will be removed in pysat 3.0.0, it will be added to pysatSeasons:
+      https://github.com/pysat/pysatSeasons
+
+    """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning, stacklevel=2)
 
     if by_orbit:
         iterator = inst.orbits
@@ -454,6 +485,10 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
                     returnData=False):
     """Calculate the 1D median
 
+    .. deprecated:: 2.2.0
+      Routine will be removed in pysat 3.0.0, it will be added to pysatSeasons:
+      https://github.com/pysat/pysatSeasons
+
     Parameters
     ----------
 
@@ -465,6 +500,12 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
     This is an overcomplicated way of doing this.  Try and simplify later
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning, stacklevel=2)
 
     # set up output arrays
     medianAns = [[None for i in xarr] for k in zarr]
