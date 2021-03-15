@@ -302,8 +302,8 @@ class Files(object):
                             check = False
                         checks.append(check)
                     else:
-                        test = str(self.__dict__[item]) == \
-                               str(other.__dict__[item])
+                        test = str(self.__dict__[item]) \
+                               == str(other.__dict__[item])
                         checks.append(test)
             else:
                 checks.append(False)

@@ -176,8 +176,8 @@ class Orbits(object):
                 elif item in ['full_day_data']:
                     if isinstance(self.__dict__[item], pds.DataFrame):
                         try:
-                            check = np.all(self.__dict__[item] ==
-                                           other.__dict__[item])
+                            check = np.all(self.__dict__[item]
+                                           == other.__dict__[item])
                         except ValueError:
                             check = False
                         checks.append(check)

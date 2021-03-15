@@ -500,12 +500,12 @@ class Instrument(object):
                 if item in other.__dict__:
                     if item in partial_funcs:
                         # Partial function comparison doesn't work directly
-                        checks.append(str(self.__dict__[item]) ==
-                                      str(other.__dict__[item]))
+                        checks.append(str(self.__dict__[item])
+                                      == str(other.__dict__[item]))
                     else:
                         # General check for everything else.
-                        checks.append(np.all(self.__dict__[item] ==
-                                             other.__dict__[item]))
+                        checks.append(np.all(self.__dict__[item]
+                                             == other.__dict__[item]))
                 else:
                     # Both objects don't have the same attached objects
                     checks.append(False)
@@ -516,8 +516,8 @@ class Instrument(object):
                     try:
                         # Check is sensitive to the index labels. Errors
                         # if index is not identical.
-                        checks.append(np.all(self.__dict__[item] ==
-                                             other.__dict__[item]))
+                        checks.append(np.all(self.__dict__[item]
+                                             == other.__dict__[item]))
                     except ValueError:
                         return False
                 else:
