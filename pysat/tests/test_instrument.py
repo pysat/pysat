@@ -1044,19 +1044,6 @@ class TestBasics():
             assert captured.find(test_str) < 0
         return
 
-    def test_error_undefined_input_keyword(self):
-        """Test for error if undefined keyword provided at instantiation"""
-
-        # Add a new keyword
-        self.testInst.kwargs['load']['undefined_keyword'] = True
-
-        with pytest.raises(ValueError) as err:
-            # Instantiate instrument with new undefined keyword involved
-            eval(self.testInst.__repr__())
-
-        estr = "unknown keyword supplied: ['undefined_keyword']"
-        assert str(err).find(estr) >= 0
-
     def test_error_undefined_input_keywords(self):
         """Test for error if undefined keywords provided at instantiation"""
 
