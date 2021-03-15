@@ -18,8 +18,7 @@ with pysat.utils.NetworkLock(os.path.join(pysat.here, 'citation.txt'), 'r') as \
     refs = locked_file.read()
 
 
-def init(self, file_date_range=None, mangle_file_dates=False,
-         test_init_kwrd=None):
+def init(self, test_init_kwrd=None):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -34,12 +33,6 @@ def init(self, file_date_range=None, mangle_file_dates=False,
     ----------
     self : pysat.Instrument
         This object
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional argument is not
-        used.
-        (default=None)
-    mangle_file_dates : bool
-        If True, the loaded file list time index is shifted by 5-minutes.
     test_init_kwrd : any or NoneType
         Testing keyword (default=None)
 
@@ -48,10 +41,6 @@ def init(self, file_date_range=None, mangle_file_dates=False,
     logger.info(ackn_str)
     self.acknowledgements = ackn_str
     self.references = refs
-
-    # Support file modification kwarg options
-    modify_file_list_support(self, file_date_range=file_date_range,
-                             mangle_file_dates=mangle_file_dates)
 
     # Assign parameters for testing purposes
     self.new_thing = True
@@ -100,19 +89,19 @@ def preprocess(self, test_preprocess_kwrd=None):
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
-               file_date_range=None, test_dates=None,
+               file_date_range=None, test_dates=None, mangle_file_dates=False,
                test_list_files_kwrd=None):
     """Produce a fake list of files spanning three years
 
     Parameters
     ----------
-    tag : str
+    tag : str or NoneType
         pysat instrument tag (default=None)
     inst_id : str
         pysat satellite ID tag (default=None)
-    data_path : str
+    data_path : str or NoneType
         pysat data path (default=None)
-    format_str : str
+    format_str : str or NoneType
         file format string (default=None)
     file_date_range : pds.date_range
         File date range. The default mode generates a list of 3 years of daily
@@ -122,6 +111,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         (default=None)
     test_dates : dt.datetime
         Pass the _test_date object through from the test instrument files
+    mangle_file_dates : bool
+        If True, file dates are shifted by 5 minutes. (default=False)
     test_list_files_kwrd : any or NoneType
         Testing keyword (default=None)
 
@@ -146,6 +137,10 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         file_date_range = pds.date_range(start, stop)
 
     index = file_date_range
+
+    # Mess with file dates if kwarg option set
+    if mangle_file_dates:
+        index = index + dt.timedelta(minutes=5)
 
     # Create the list of fake filenames
     names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
@@ -405,39 +400,3 @@ def define_range():
                  'angle': [0.0, 2.0 * np.pi]}
 
     return def_range
-
-
-def modify_file_list_support(self, file_date_range=None,
-                             mangle_file_dates=None):
-    """Support modifying file lists for testing Instruments for unit tests.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-    file_date_range : pandas.date_range or NoneType
-        Dates to generate a list of files. If None, method will employ
-        internal default for file list timespan. (default=None)
-    mangle_file_dates : bool or NoneType
-        If True, file dates are shifted by 5 minutes. (default=None)
-
-    """
-
-    # Work on file index if keyword present
-    if file_date_range is not None:
-        # Set list files routine to desired date range and
-        # attach to the Instrument object.
-        fdr = file_date_range
-        self._list_files_rtn = functools.partial(list_files,
-                                                 file_date_range=fdr)
-        # Update files version as well
-        self.files.list_files_rtn = functools.partial(list_files,
-                                                      file_date_range=fdr)
-        self.files.refresh()
-
-    # Mess with file dates if kwarg option present
-    if mangle_file_dates:
-        self.files.files.index = \
-            self.files.files.index + dt.timedelta(minutes=5)
-
-    return
