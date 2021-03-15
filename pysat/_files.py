@@ -9,6 +9,7 @@ import datetime as dt
 from functools import partial
 import numpy as np
 import os
+import weakref
 
 import pandas as pds
 
@@ -153,7 +154,7 @@ class Files(object):
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
                           'tag': inst.tag, 'inst_id': inst.inst_id,
                           'inst_module': inst.inst_module,
-                          'inst': inst}
+                          'inst': weakref.proxy(inst)}
 
         self.multi_file_day = inst.multi_file_day
 

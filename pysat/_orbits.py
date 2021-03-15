@@ -10,6 +10,7 @@ import functools
 import numpy as np
 import pandas as pds
 import xarray as xr
+import weakref
 
 from pysat import logger
 
@@ -106,7 +107,7 @@ class Orbits(object):
     def __init__(self, inst, index=None, kind='local time', period=None):
 
         # Set the class attributes
-        self.inst = inst  # In the past weakref was used to create a proxy
+        self.inst = weakref.proxy(inst)
         self.kind = kind.lower()
 
         if period is None:
