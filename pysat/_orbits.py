@@ -183,8 +183,6 @@ class Orbits(object):
                     test = np.all(self.__dict__[item] == other.__dict__[item])
                     checks.append(test)
                     item_check.append(item)
-                    # if not test:
-                    #     print(test, self.__dict__[item], other.__dict__[item])
                 elif item in ['full_day_data']:
                     if isinstance(self.__dict__[item], pds.DataFrame):
                         try:
