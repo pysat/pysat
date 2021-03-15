@@ -115,7 +115,7 @@ class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         warnings.filterwarnings('always', category=DeprecationWarning)
-        self.ssnl_msg = "This function is deprecated here and will be removed"
+        self.ssnl_msg = "is deprecated here and will be removed in pysat 3.0.0"
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
