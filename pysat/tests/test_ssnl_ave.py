@@ -96,12 +96,14 @@ class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         warnings.filterwarnings('always', category=DeprecationWarning)
+        self.ssnl_msg = "This function is deprecated here and will be removed"
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
+        del self.ssnl_msg
 
     def test_median1D_deprecation_warning(self):
-        """Test generation of deprecation warning for median1D"""
+        """Test raises deprecation warning for median1D and _calc_1d_median"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -112,11 +114,16 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+        assert len(war) >= 2
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg, self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_median2D_deprecation_warning(self):
-        """Test generation of deprecation warning for median1D"""
+        """Test raises deprecation warning for median2D and _calc_2d_median"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -127,11 +134,16 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+        assert len(war) >= 2
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg, self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_mean_by_day_deprecation_warning(self):
-        """Test generation of deprecation warning for mean_by_day"""
+        """Test raises deprecation warning for mean_by_day and _core_mean"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -141,11 +153,16 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+        assert len(war) >= 2
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg, self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_mean_by_orbit_deprecation_warning(self):
-        """Test generation of deprecation warning for mean_by_orbit"""
+        """Test raises deprecation warning for mean_by_orbit and _core_mean"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -155,11 +172,16 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+        assert len(war) >= 2
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg, self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_mean_by_file_deprecation_warning(self):
-        """Test generation of deprecation warning for mean_by_file"""
+        """Test raises deprecation warning for mean_by_file and _core_mean"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -169,8 +191,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+        assert len(war) >= 2
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg, self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
 
 class TestFrameProfileAverages():
