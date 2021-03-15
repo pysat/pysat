@@ -415,6 +415,11 @@ def modify_file_list_support(self, file_date_range=None,
     ----------
     self : pysat.Instrument
         This object
+    file_date_range : pandas.date_range or NoneType
+        Dates to produce a list of files for. If None, method will employ
+        internal default for file list timespan. (default=None)
+    mangle_file_dates : bool or NoneType
+        If True, file dates are shifted by 5 minutes. (default=None)
 
     """
 
