@@ -1,3 +1,7 @@
+from pandas import DataFrame, Series, Panel
+import warnings
+
+
 def computational_form(data):
     """
     Repackages numbers, Series, or DataFrames
@@ -26,9 +30,6 @@ def computational_form(data):
     pandas.Series, DataFrame, or Panel
         repacked data, aligned by indices, ready for calculation
     """
-
-    from pysat import DataFrame, Series, Panel
-    import warnings
 
     warnings.warn(' '.join(["This function is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
