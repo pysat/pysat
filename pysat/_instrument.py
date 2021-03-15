@@ -3,7 +3,6 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-import collections
 import copy
 import datetime as dt
 import errno
@@ -502,7 +501,7 @@ class Instrument(object):
         # required their own path for equality, string comparisons!
         partial_funcs = ['_init_rtn', '_clean_rtn', '_preprocess_rtn',
                          '_list_files_rtn', '_download_rtn',
-                         '_list_remote_files_rtn']
+                         '_list_remote_files_rtn', '_load_rtn']
 
         checks = []
         item_check = []
