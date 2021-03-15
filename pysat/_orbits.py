@@ -4,10 +4,12 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 
+import copy
 import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
+import xarray as xr
 
 from pysat import logger
 
@@ -154,6 +156,51 @@ class Orbits(object):
             self._current.__repr__())
 
         return output_str
+
+    def __eq__(self, other):
+        """Check equality between Orbit objects"""
+
+        if not isinstance(other, self.__class__):
+            return False
+
+        checks = []
+        item_check = []
+        for item in self.__dict__:
+            if item in other.__dict__:
+                if item not in ['_full_day_data', 'inst', '_det_breaks']:
+                    test = np.all(self.__dict__[item] == other.__dict__[item])
+                    checks.append(test)
+                    item_check.append(item)
+                    # if not test:
+                    #     print(test, self.__dict__[item], other.__dict__[item])
+                elif item in ['full_day_data']:
+                    if isinstance(self.__dict__[item], pds.DataFrame):
+                        try:
+                            check = np.all(self.__dict__[item] ==
+                                           other.__dict__[item])
+                        except ValueError:
+                            check = False
+                        checks.append(check)
+                        item_check.append(item)
+
+                    else:
+                        test = xr.Dataset.equals(self.__dict__[item],
+                                                 other.__dict__[item])
+                        checks.append(test)
+                        item_check.append(item)
+                elif item == '_det_breaks':
+                    check = str(self._det_breaks) == str(other._det_breaks)
+                    checks.append(check)
+                    item_check.append(item)
+
+            else:
+                checks.append(False)
+                item_check.append(item)
+                break
+
+        test_data = np.all(checks)
+
+        return test_data
 
     def __getitem__(self, orbit_key):
         """Enable convenience notation for loading orbit into parent object.
@@ -585,6 +632,26 @@ class Orbits(object):
 
     # -----------------------------------------------------------------------
     # Define the public methods and properties
+
+    def copy(self):
+        """Provide a copy of object
+
+        Returns
+        -------
+        Orbits class instance
+            Copy of self
+
+        """
+
+        inst = self.inst
+        self.inst = None
+
+        orbits_copy = copy.deepcopy(self)
+
+        orbits_copy.inst = inst
+        self.inst = inst
+
+        return orbits_copy
 
     @property
     def current(self):

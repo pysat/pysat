@@ -652,6 +652,10 @@ class TestBasics():
                                 update_files=True)
         assert not (obj1 == obj2)
 
+    def test_eq_different_type(self):
+        """Test equality False when non-Instrument object"""
+        assert self.testInst != np.array([])
+
     # -------------------------------------------------------------------------
     #
     # Test copy method

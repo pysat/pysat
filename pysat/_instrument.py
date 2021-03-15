@@ -470,27 +470,63 @@ class Instrument(object):
 
     def __eq__(self, other):
         """Check equality between Instrument objects"""
-        test_repr = self.__repr__() == other.__repr__()
 
-        if test_repr and (self.pandas_format == other.pandas_format):
-            # Both the same data type and same textual representation
-            if self.empty and other.empty:
-                # Both empty
-                test_data = True
-            elif not self.empty and (not other.empty):
-                # Both have data
-                if self.pandas_format:
-                    test_data = np.all(self.data == other.data)
+        if not isinstance(other, self.__class__):
+            return False
+
+        if self.pandas_format != other.pandas_format:
+            return False
+
+        # Both the same data type, do both have data?
+        if self.empty and other.empty:
+            # This check needed to establish next check
+            pass
+        elif self.empty or other.empty:
+            # Only one has data
+            return False
+
+        # If data is the same, check other attributes. Partial functions
+        # required their own path for equality, string comparisons!
+        partial_funcs = ['_init_rtn', '_clean_rtn', '_preprocess_rtn',
+                         '_list_files_rtn', '_download_rtn',
+                         '_list_remote_files_rtn']
+
+        checks = []
+        item_check = []
+        for item in self.__dict__:
+            if item not in ['data', '_null_data', '_next_data',
+                            '_curr_data', '_prev_data']:
+                item_check.append(item)
+                if item in other.__dict__:
+                    if item in partial_funcs:
+                        # Partial function comparison doesn't work directly
+                        checks.append(str(self.__dict__[item]) ==
+                                      str(other.__dict__[item]))
+                    else:
+                        # General check for everything else.
+                        checks.append(np.all(self.__dict__[item] ==
+                                             other.__dict__[item]))
                 else:
-                    test_data = xr.Dataset.equals(self.data, other.data)
-            elif self.empty or other.empty:
-                # Only one has data
-                test_data = False
-        else:
-            # Different data types or different text representation
-            test_data = False
+                    # Both objects don't have the same attached objects
+                    checks.append(False)
+                    break
+            else:
+                # Data comparison area. Established earlier both have data.
+                if self.pandas_format:
+                    try:
+                        # Check is sensitive to the index labels. Errors
+                        # if index is not identical.
+                        checks.append(np.all(self.__dict__[item] ==
+                                             other.__dict__[item]))
+                    except ValueError:
+                        return False
+                else:
+                    checks.append(xr.Dataset.equals(self.data,
+                                                    other.data))
 
-        return test_repr and test_data
+        test_data = np.all(checks)
+
+        return test_data
 
     def __repr__(self):
         """ Print the basic Instrument properties"""

@@ -202,6 +202,17 @@ class TestBasics():
         assert isinstance(self.out, str)
         assert self.out.find("pysat.Files(") >= 0
 
+    def test_eval_repr(self):
+        """Test eval of repr recreates object"""
+        self.out = eval(self.testInst.files.__repr__())
+        assert self.out == self.testInst.files
+
+    def test_eval_repr_and_copy(self):
+        """Test eval of repr consistent with object copy"""
+        self.out = eval(self.testInst.files.__repr__())
+        second_out = self.testInst.files.copy()
+        assert self.out == second_out
+
     def test_basic_str(self):
         """Check for lines from each decision point in str"""
         self.out = self.testInst.files.__str__()
@@ -210,6 +221,21 @@ class TestBasics():
         assert self.out.find('Number of files') > 0
         # Test no files
         assert self.out.find('Date Range') > 0
+
+    def test_equality_with_copy(self):
+        """Test that copy is the same as original"""
+        self.out = self.testInst.files.copy()
+        assert self.out == self.testInst.files
+
+    def test_inequality_different_data(self):
+        """Test that equality is false if different data"""
+        self.out = self.testInst.files.copy()
+        self.out.files = pds.Series()
+        assert self.out != self.testInst.files
+
+    def test_inequality_different_type(self):
+        """Test that equality is false if different type"""
+        assert self.testInst.files != self.testInst
 
     def test_from_os_requires_data_path(self):
         """Check that path required for from_os"""

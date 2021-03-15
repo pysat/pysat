@@ -267,6 +267,52 @@ class Files(object):
 
         return output_str
 
+    def __eq__(self, other):
+        """Perform equality check
+
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical
+
+        """
+        if not isinstance(other, self.__class__):
+            return False
+
+        checks = []
+        item_check = []
+        for item in self.__dict__:
+            item_check.append(item)
+            if item in other.__dict__:
+                if item not in ['files', 'list_files_rtn']:
+                    test = np.all(self.__dict__[item] == other.__dict__[item])
+                    checks.append(test)
+                else:
+                    if item == 'files':
+                        try:
+                            # Comparison only works for identically-labeled
+                            # series.
+                            check = np.all(self.files == other.files)
+                        except ValueError:
+                            check = False
+                        checks.append(check)
+                    else:
+                        test = str(self.__dict__[item]) == \
+                               str(other.__dict__[item])
+                        checks.append(test)
+            else:
+                checks.append(False)
+                break
+
+        test_data = np.all(checks)
+
+        return test_data
+
     def __getitem__(self, key):
         """ Retrieve items from the files attribute
 

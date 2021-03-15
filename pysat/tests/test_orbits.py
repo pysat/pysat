@@ -239,6 +239,37 @@ class TestGeneralOrbitsMLT():
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime
 
+    def test_equality_with_copy(self):
+        """Test that copy is the same as original"""
+        self.out = self.testInst.orbits.copy()
+        assert self.out == self.testInst.orbits
+
+    def test_inequality_different_data(self):
+        """Test that equality is false if different data"""
+        self.out = self.testInst.orbits.copy()
+        self.out._full_day_data = self.testInst._null_data
+        assert self.out != self.testInst.orbits
+
+    def test_inequality_different_type(self):
+        """Test that equality is false if different type"""
+        assert self.testInst.orbits != self.testInst
+
+    def test_eval_repr(self):
+        """Test eval of repr recreates object"""
+        # Doesn't work because of issues with datetime
+        with pytest.raises(NameError) as err:
+            self.out = eval(self.testInst.orbits.__repr__())
+
+        estr = "name 'Timedelta' is not defined"
+        assert str(err).find(estr) >= 0
+
+    def test_repr_and_copy(self):
+        """Test repr consistent with object copy"""
+        # Not tested with eval due to issues with datetime
+        self.out = self.testInst.orbits.__repr__()
+        second_out = self.testInst.orbits.copy().__repr__()
+        assert self.out == second_out
+
     def test_load_orbits_w_empty_data(self):
         """ Test orbit loading outside of the instrument data range
         """
