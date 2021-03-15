@@ -3,6 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
+import collections
 import copy
 import datetime as dt
 import errno
@@ -223,6 +224,7 @@ class Instrument(object):
         self.inst_id = inst_id.lower() if inst_id is not None else ''
         self.inst_module = inst_module
 
+
         if self.inst_module is None:
             # Use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):
@@ -360,7 +362,7 @@ class Instrument(object):
         self.kwargs = {}
         saved_keys = []
         partial_func = ['list_files', 'list_remote_files', 'download',
-                        'preprocess', 'clean']
+                        'preprocess', 'clean', 'load', 'init']
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
                     'list_remote_files', 'clean', 'init']
@@ -3713,12 +3715,11 @@ class Instrument(object):
 
             # check for binary types, convert when found
             for key in adict.keys():
-                if isinstance(adict[key], bool):
+                if adict[key] is None:
+                    adict[key] = ''
+                elif isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
-            # Check for booleans in stored keyword args
-            for key in adict['kwargs']:
-                if isinstance(adict['kwargs'][key], bool):
-                    adict['kwargs'][key] = int(adict['kwargs'][key])
+
             # attach attributes
             out_data.setncatts(adict)
         return
