@@ -152,7 +152,8 @@ class Files(object):
         # Grab Instrument info
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
                           'tag': inst.tag, 'inst_id': inst.inst_id,
-                          'inst_module': inst.inst_module}
+                          'inst_module': inst.inst_module,
+                          'inst': inst}
         self.list_files_rtn = inst._list_files_rtn
 
         self.multi_file_day = inst.multi_file_day
@@ -237,7 +238,7 @@ class Files(object):
     def __repr__(self):
         """ Representation of the class and its current state
         """
-        inst_repr = pysat.Instrument(**self.inst_info).__repr__()
+        inst_repr = self.inst_info['inst'].__repr__()
 
         out_str = "".join(["pysat.Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
@@ -633,10 +634,13 @@ class Files(object):
         # Check all potential directory locations for files.
         # Stop as soon as we find some.
         for path in self.data_paths:
-            new_files = self.list_files_rtn(tag=self.inst_info['tag'],
-                                            inst_id=self.inst_info['inst_id'],
-                                            data_path=path,
-                                            format_str=self.file_format)
+            list_files_rtn = self.inst_info['inst']._list_files_rtn
+            kwarg_inputs = self.inst_info['inst'].kwargs['list_files']
+            new_files = list_files_rtn(tag=self.inst_info['tag'],
+                                       inst_id=self.inst_info['inst_id'],
+                                       data_path=path,
+                                       format_str=self.file_format,
+                                       **kwarg_inputs)
 
             # Check if list_files_rtn is actually returning filename or a
             # dict to be passed to filename creator function.

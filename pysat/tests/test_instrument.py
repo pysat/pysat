@@ -1036,12 +1036,7 @@ class TestBasics():
         captured = caplog.text
 
         test_str = ''.join((kwarg, ' = ', 'live_value'))
-        if func != 'list_files':
-            assert captured.find(test_str) >= 0
-        else:
-            # list_files is not live given that method is used at the Files
-            # class.
-            assert captured.find(test_str) < 0
+        assert captured.find(test_str) >= 0
         return
 
     def test_error_undefined_input_keywords(self):
@@ -1846,7 +1841,8 @@ class TestBasics():
         date_range = pds.date_range(self.ref_time,
                                     self.ref_time + dt.timedelta(days=10))
         self.testInst.kwargs['list_files']['file_date_range'] = date_range
-        self.testInst = eval(self.testInst.__repr__())
+        # self.testInst = eval(self.testInst.__repr__())
+        self.testInst.files.refresh()
         self.testInst.bounds = (None, None)
         dates = []
         for inst in self.testInst:
