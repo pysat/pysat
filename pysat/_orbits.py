@@ -158,7 +158,19 @@ class Orbits(object):
         return output_str
 
     def __eq__(self, other):
-        """Check equality between Orbit objects"""
+        """Perform equality check
+
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical
+
+        """
 
         if not isinstance(other, self.__class__):
             return False

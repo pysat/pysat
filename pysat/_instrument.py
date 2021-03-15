@@ -469,7 +469,19 @@ class Instrument(object):
         self._base_attr = dir(self)
 
     def __eq__(self, other):
-        """Check equality between Instrument objects"""
+        """Perform equality check
+
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical
+
+        """
 
         if not isinstance(other, self.__class__):
             return False
