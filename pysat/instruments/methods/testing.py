@@ -2,21 +2,19 @@ import datetime as dt
 import functools
 import numpy as np
 import os
+import pandas as pds
 import warnings
 
-import pandas as pds
-
-from pysat.utils import NetworkLock
-from pysat import here
-
 import pysat
+
 logger = pysat.logger
 
 ackn_str = ' '.join(("Test instruments provided through the pysat project.",
                      "https://www.github.com/pysat/pysat"))
 
 # Load up citation information
-with NetworkLock(os.path.join(here, 'citation.txt'), 'r') as locked_file:
+with pysat.utils.NetworkLock(os.path.join(pysat.here, 'citation.txt'), 'r') as \
+        locked_file:
     refs = locked_file.read()
 
 
