@@ -146,7 +146,7 @@ class TestDeprecation():
 
         with warnings.catch_warnings(record=True) as war:
             try:
-                avg._calc_2d_median(*[None for i in range(9)])
+                avg._calc_2d_median(*[None for i in range(10)])
             except TypeError:
                 # Setting inputs to None should produce a
                 # TypeError after the warning is generated
