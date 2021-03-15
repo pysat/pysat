@@ -199,10 +199,11 @@ class Orbits(object):
                         checks.append(test)
                         item_check.append(item)
                 elif item == '_det_breaks':
+                    # Equality of partial functions does not work well.
+                    # Using a string comparison instead.
                     check = str(self._det_breaks) == str(other._det_breaks)
                     checks.append(check)
                     item_check.append(item)
-
             else:
                 checks.append(False)
                 item_check.append(item)
