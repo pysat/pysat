@@ -151,7 +151,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
 def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
                       start=None, stop=None, test_dates=None, user=None,
-                      password=None, test_list_remote_kwrd=None):
+                      password=None, mangle_file_dates=False,
+                      test_list_remote_kwrd=None):
     """Produce a fake list of files spanning three years and one month to
     simulate new data files on a remote server
 
@@ -181,6 +182,8 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         error if user not supplied. (default=None)
     password : string
         Password for data download. (default=None)
+    mangle_file_dates : bool
+        If True, file dates are shifted by 5 minutes. (default=False)
     test_list_remote_kwrd : any or NoneType
         Testing keyword (default=None)
 
@@ -207,6 +210,7 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     return list_files(tag=tag, inst_id=inst_id, data_path=data_path,
                       format_str=format_str, file_date_range=file_date_range,
+                      mangle_file_dates=mangle_file_dates,
                       test_dates=test_dates)
 
 
