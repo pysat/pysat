@@ -154,7 +154,6 @@ class Files(object):
                           'tag': inst.tag, 'inst_id': inst.inst_id,
                           'inst_module': inst.inst_module,
                           'inst': inst}
-        self.list_files_rtn = inst._list_files_rtn
 
         self.multi_file_day = inst.multi_file_day
 
@@ -290,22 +289,30 @@ class Files(object):
         for item in self.__dict__:
             item_check.append(item)
             if item in other.__dict__:
-                if item not in ['files', 'list_files_rtn']:
+                if item not in ['files', '_previous_file_list',
+                                '_current_file_list', 'inst_info']:
                     test = np.all(self.__dict__[item] == other.__dict__[item])
                     checks.append(test)
                 else:
-                    if item == 'files':
+                    if item not in ['inst_info']:
                         try:
                             # Comparison only works for identically-labeled
                             # series.
-                            check = np.all(self.files == other.files)
+                            check = np.all(self.__dict__[item]
+                                           == other.__dict__[item])
                         except ValueError:
                             check = False
                         checks.append(check)
-                    else:
-                        test = str(self.__dict__[item]) \
-                            == str(other.__dict__[item])
-                        checks.append(test)
+                    elif item == 'inst_info':
+                        ichecks = []
+                        for sitem in self.inst_info:
+                            if sitem != 'inst':
+                                ichecks.append(self.inst_info[sitem]
+                                               == other.inst_info[sitem])
+                            else:
+                                ichecks.append(str(self.inst_info[sitem])
+                                               == str(other.inst_info[sitem]))
+                        checks.append(np.all(ichecks))
             else:
                 checks.append(False)
                 break
