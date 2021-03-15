@@ -646,7 +646,7 @@ class Orbits(object):
     # Define the public methods and properties
 
     def copy(self):
-        """Provide a copy of object
+        """Provide a deep copy of object
 
         Returns
         -------

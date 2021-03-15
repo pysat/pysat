@@ -593,7 +593,14 @@ class Files(object):
     # Define the public methods and properties
 
     def copy(self):
-        """Returns deepcopy of Files object"""
+        """Provide a deep copy of object
+
+        Returns
+        -------
+        Files class instance
+            Copy of self
+
+        """
         saved_info = self.inst_info
         self.inst_info = None
 

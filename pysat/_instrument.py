@@ -1910,7 +1910,13 @@ class Instrument(object):
             return list(self.data.variables.keys())
 
     def copy(self):
-        """Deep copy of the entire Instrument object."""
+        """Deep copy of the entire Instrument object.
+
+        Returns
+        -------
+        pysat.Instrument
+
+        """
         # Copy doesn't work with module objects. Store module and files class,
         # set module variable/files to `None`, make the copy, reassign the
         # saved modules.
