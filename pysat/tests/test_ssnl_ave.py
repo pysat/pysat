@@ -128,8 +128,8 @@ class TestDeprecation():
         with warnings.catch_warnings(record=True) as war:
             try:
                 avg._calc_1d_median(*[None for i in range(7)])
-            except ValueError or TypeError:
-                # Setting inputs to None should produce a ValueError or
+            except TypeError:
+                # Setting inputs to None should produce a
                 # TypeError after the warning is generated
                 pass
 
@@ -147,8 +147,8 @@ class TestDeprecation():
         with warnings.catch_warnings(record=True) as war:
             try:
                 avg._calc_2d_median(*[None for i in range(9)])
-            except ValueError or TypeError:
-                # Setting inputs to None should produce a ValueError or
+            except TypeError:
+                # Setting inputs to None should produce a
                 # TypeError after the warning is generated
                 pass
 
