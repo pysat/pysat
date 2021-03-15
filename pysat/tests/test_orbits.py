@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 
 import pandas as pds
+from pandas import Timedelta
 import pytest
 
 import pysat
@@ -256,12 +257,12 @@ class TestGeneralOrbitsMLT():
 
     def test_eval_repr(self):
         """Test eval of repr recreates object"""
-        # Doesn't work because of issues with datetime
-        with pytest.raises(NameError) as err:
-            self.out = eval(self.testInst.orbits.__repr__())
+        # eval and repr don't play nice for custom functions
+        if len(self.testInst.custom_functions) != 0:
+            self.testInst.custom_clear()
 
-        estr = "name 'Timedelta' is not defined"
-        assert str(err).find(estr) >= 0
+        self.out = eval(self.testInst.orbits.__repr__())
+        assert self.out == self.testInst.orbits
 
     def test_repr_and_copy(self):
         """Test repr consistent with object copy"""
