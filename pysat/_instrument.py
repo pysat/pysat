@@ -3697,7 +3697,10 @@ class Instrument(object):
             for key in adict.keys():
                 if isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
-
+            # Check for booleans in stored keyword args
+            for key in adict['kwargs']:
+                if isinstance(adict['kwargs'][key], bool):
+                    adict['kwargs'][key] = int(adict['kwargs'][key])
             # attach attributes
             out_data.setncatts(adict)
         return
