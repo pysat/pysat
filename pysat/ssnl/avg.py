@@ -51,7 +51,7 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`median1D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -144,7 +144,7 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`median2D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -236,7 +236,7 @@ def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`_calc_2d_median` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -370,7 +370,7 @@ def mean_by_day(inst, data_label):
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -398,7 +398,7 @@ def mean_by_orbit(inst, data_label):
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`mean_by_orbit` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -426,7 +426,7 @@ def mean_by_file(inst, data_label):
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`mean_by_file` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -444,7 +444,7 @@ def _core_mean(inst, data_label, by_orbit=False, by_day=False, by_file=False):
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`_core_mean` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -501,7 +501,7 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`_calc_1d_median` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),

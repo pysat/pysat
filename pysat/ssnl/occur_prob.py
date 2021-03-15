@@ -68,7 +68,7 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`daily2D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -121,7 +121,7 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`by_orbit2D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -141,7 +141,7 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`_occurrence2D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -253,7 +253,7 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`daily3D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -306,7 +306,7 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`by_orbit3D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -327,7 +327,7 @@ def _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`_occurrence3D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),

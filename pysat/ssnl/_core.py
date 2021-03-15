@@ -31,8 +31,8 @@ def computational_form(data):
         repacked data, aligned by indices, ready for calculation
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
-                            "removed in pysat 3.0.0. Please use",
+    warnings.warn(' '.join(["`computational_form` is deprecated here and will",
+                            "be removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
                   DeprecationWarning, stacklevel=2)
