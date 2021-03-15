@@ -3181,11 +3181,26 @@ class Instrument(object):
                     self.bounds = (self.files.start_date, self.files.stop_date,
                                    curr_bound[2], curr_bound[3])
             if self._iter_type == 'file':
-                if (curr_bound[0][0] == self.files[first_date]
-                        and curr_bound[1][0] == self.files[last_date]):
+                # Account for the fact the file datetimes may not land
+                # exactly at start or end of a day.
+                dsel1 = slice(first_date, first_date + dt.timedelta(hours=23,
+                                                                    minutes=59,
+                                                                    seconds=59))
+                dsel2 = slice(last_date, last_date + dt.timedelta(hours=23,
+                                                                  minutes=59,
+                                                                  seconds=59))
+                if (curr_bound[0][0] == self.files[dsel1][0]
+                        and curr_bound[1][0] == self.files[dsel2][-1]):
                     logger.info('Updating instrument object bounds by file.')
-                    self.bounds = (self.files[self.files.start_date],
-                                   self.files[self.files.stop_date],
+                    dsel1 = slice(self.files.start_date,
+                                  self.files.start_date
+                                  + dt.timedelta(hours=23, minutes=59,
+                                                 seconds=59))
+                    dsel2 = slice(self.files.stop_date, self.files.stop_date
+                                  + dt.timedelta(hours=23, minutes=59,
+                                                 seconds=59))
+                    self.bounds = (self.files[dsel1][0],
+                                   self.files[dsel2][-1],
                                    curr_bound[2], curr_bound[3])
 
         return
