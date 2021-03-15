@@ -1842,10 +1842,11 @@ class TestBasics():
 
     def test_iterate_over_default_bounds(self):
         """Test iterating over default bounds"""
+        from pandas import DatetimeIndex
         date_range = pds.date_range(self.ref_time,
                                     self.ref_time + dt.timedelta(days=10))
-        self.testInst.kwargs['init']['file_date_range'] = date_range
-        self.testInst._init_rtn(**self.testInst.kwargs['init'])
+        self.testInst.kwargs['list_files']['file_date_range'] = date_range
+        self.testInst = eval(self.testInst.__repr__())
         self.testInst.bounds = (None, None)
         dates = []
         for inst in self.testInst:
