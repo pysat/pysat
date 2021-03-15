@@ -224,7 +224,6 @@ class Instrument(object):
         self.inst_id = inst_id.lower() if inst_id is not None else ''
         self.inst_module = inst_module
 
-
         if self.inst_module is None:
             # Use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):
