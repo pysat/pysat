@@ -287,7 +287,7 @@ class TestGeneralOrbitsMLT():
             """
             inst.data = inst[0:20]
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
 
@@ -298,7 +298,7 @@ class TestGeneralOrbitsMLT():
     def test_less_than_one_orbit_of_data_two_ways(self):
         def filter_data(inst):
             inst.data = inst[0:5]
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.testInst.load(date=self.stime)
         # starting from no orbit calls next loads first orbit
         self.testInst.orbits.next()
@@ -325,7 +325,7 @@ class TestGeneralOrbitsMLT():
                 inst.data = inst[-20:]
             return
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime += dt.timedelta(days=3)
         self.testInst.load(date=self.stime)
 
@@ -696,7 +696,7 @@ class TestOrbitsGappyData(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -711,7 +711,7 @@ class TestOrbitsGappyDataXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -779,7 +779,7 @@ class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'})
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -794,7 +794,7 @@ class TestOrbitsGappyLongDataXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'})
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -809,7 +809,7 @@ class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'})
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -824,7 +824,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'})
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -840,7 +840,7 @@ class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'})
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -856,7 +856,7 @@ class TestOrbitsGappyOrbitLatDataXarray(TestGeneralOrbitsMLT):
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'})
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
