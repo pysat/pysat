@@ -162,13 +162,10 @@ class TestInstrumentQualifier():
             with warnings.catch_warnings(record=True) as war:
                 pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
 
-            found_war = False
-            for iwar in war:
-                if (iwar.category == DeprecationWarning
-                    and str(iwar.message).find(wmsg) >= 0):
-                    found_war = True
+            found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+                war, [wmsg])
 
-            assert found_war, "didn't find warning about: {:}".format(wmsg)
+            assert found_war[0], "didn't find warning about: {:}".format(wmsg)
 
     def check_module_loadable(self, module, tag, sat_id):
         _ = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
