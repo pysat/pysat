@@ -3,7 +3,7 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 
 import pandas as pds
-from pandas import Timedelta
+from pandas import Timedelta # noqa
 import pytest
 
 import pysat
