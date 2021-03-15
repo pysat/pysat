@@ -486,19 +486,20 @@ class TestBasics():
         assert isinstance(files, pds.Series)
 
     def test_remote_file_list(self):
+        """Test remote_file_list for valid list of files"""
         stop = self.ref_time + dt.timedelta(days=30)
         self.out = self.testInst.remote_file_list(start=self.ref_time,
                                                   stop=stop)
-        assert self.out.index[0] == self.ref_time
-        assert self.out.index[-1] == stop
+        assert filter_datetime_input(self.out.index[0]) == self.ref_time
+        assert filter_datetime_input(self.out.index[-1]) == stop
 
     def test_remote_date_range(self):
         stop = self.ref_time + dt.timedelta(days=30)
         self.out = self.testInst.remote_date_range(start=self.ref_time,
                                                    stop=stop)
         assert len(self.out) == 2
-        assert self.out[0] == self.ref_time
-        assert self.out[-1] == stop
+        assert filter_datetime_input(self.out[0]) == self.ref_time
+        assert filter_datetime_input(self.out[-1]) == stop
 
     @pytest.mark.parametrize("file_bounds, non_default",
                              [(False, False), (True, False), (False, True),
@@ -2550,6 +2551,31 @@ class TestBasicsInstModule(TestBasics):
 # -----------------------------------------------------------------------------
 #
 # Repeat tests above with xarray data
+#
+# -----------------------------------------------------------------------------
+class TestBasicsXarray(TestBasics):
+    def setup(self):
+        global testing_kwrds
+        reload(pysat.instruments.pysat_testing_xarray)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True,
+                                         **testing_kwrds)
+        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_doy = 1
+        self.out = None
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst, self.out, self.ref_time, self.ref_doy
+
+
+# -----------------------------------------------------------------------------
+#
+# Repeat tests above with 2d data
 #
 # -----------------------------------------------------------------------------
 class TestBasicsXarray(TestBasics):
