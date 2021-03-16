@@ -169,7 +169,7 @@ def generate_times(fnames, sat_id, freq='1S'):
         # non-integer sat_id produces ValueError
         pass
 
-    uts = index.hour*3600 + index.minute*60 + index.second
+    uts = index.hour * 3600 + index.minute * 60 + index.second
 
     return uts, index, date
 
@@ -188,8 +188,8 @@ def define_period():
 
     """
 
-    period = {'lt': 5820, # 97 minutes
-              'lon': 6240, # 104 minutes
+    period = {'lt': 5820,  # 97 minutes
+              'lon': 6240,  # 104 minutes
               'angle': 5820}
 
     return period
@@ -198,19 +198,46 @@ def define_period():
 def define_range():
     """Define the default ranges for the fake data functions
 
-    Parameters
-    ----------
-    None
-
     Returns
     -------
-    range : dict
+    def_range : dict
         Dictionary of periods to use in test instruments
 
     """
 
-    range = {'lt': [0.0, 24.0],
-             'lon': [0.0, 360.0],
-             'angle': [0.0, 2.0*np.pi]}
+    def_range = {'lt': [0.0, 24.0],
+                 'lon': [0.0, 360.0],
+                 'angle': [0.0, 2.0 * np.pi]}
 
-    return range
+    return def_range
+
+
+def eval_dep_warnings(warns, check_msgs):
+    """Evaluate deprecation warnings by category and message
+
+    Parameters
+    ----------
+    warns : list
+        List of warnings.WarningMessage objects
+    check_msgs : list
+        List of strings containing the expected warning messages
+
+    Returns
+    -------
+    found_msgs : list
+        List of booleans corresponding to `check_msgs`, which are True when
+        the messages are found and False when they are not
+
+    """
+
+    # Initialize the output
+    found_msgs = [False for msg in check_msgs]
+
+    # Test the warning messages, ensuring each attribute is present
+    for iwar in warns:
+        if iwar.category == DeprecationWarning:
+            for i, msg in enumerate(check_msgs):
+                if str(iwar.message).find(msg) >= 0:
+                    found_msgs[i] = True
+
+    return found_msgs

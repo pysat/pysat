@@ -115,12 +115,56 @@ class TestDeprecation():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         warnings.filterwarnings('always', category=DeprecationWarning)
+        self.ssnl_msg = "is deprecated here and will be removed in pysat 3.0.0"
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        del self.ssnl_msg
+
+    def test_deprecation_warning_occurrence2D(self):
+        """Test that _occurrence2D is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                occur_prob._occurrence2D(None, [0, 24, 2], 'slt',
+                                         [-60, 60, 3], 'latitude', ['slt'],
+                                         [12.])
+            except TypeError or ValueError:
+                # Setting inst to None should produce a TypeError or ValueError
+                # after warning is generated
+                pass
+
+        assert len(war) >= 1
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
+
+    def test_deprecation_warning_occurrence3D(self):
+        """Test that _occurrenc3D is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                occur_prob._occurrence3D(None, [0, 360, 4], 'longitude',
+                                         [-60, 60, 3], 'latitude', [0, 24, 2],
+                                         'slt', ['slt'], [12.])
+            except TypeError or ValueError:
+                # Setting inst to None should produce a TypeError or ValueError
+                # after warning is generated
+                pass
+
+        assert len(war) >= 1
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_deprecation_warning_daily_2D(self):
-        """Test if occur_prob.daily2D is deprecated"""
+        """Test that occur_prob.daily2D is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -132,10 +176,15 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_deprecation_warning_by_orbit_2D(self):
-        """Test if occur_prob.by_orbit2D is deprecated"""
+        """Test that occur_prob.by_orbit2D is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -147,10 +196,15 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_deprecation_warning_daily_3D(self):
-        """Test if occur_prob.daily3D is deprecated"""
+        """Test that occur_prob.daily3D is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -163,10 +217,15 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_deprecation_warning_by_orbit_3D(self):
-        """Test if occur_prob.by_orbit3D is deprecated"""
+        """Test that occur_prob.by_orbit3D is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -179,4 +238,9 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)

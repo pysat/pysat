@@ -1414,9 +1414,6 @@ class TestDeprecation():
             the test instrument (default=False)
 
         """
-        # Define the deprecated attributes that are always defined
-        found_msgs = np.full(shape=self.warn_msgs.shape, fill_value=False)
-
         # Catch the warnings
         with warnings.catch_warnings(record=True) as war:
             tinst = pysat.Instrument(**self.in_kwargs)
@@ -1428,11 +1425,8 @@ class TestDeprecation():
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        for iwar in war:
-            if iwar.category == DeprecationWarning:
-                for i, msg in enumerate(self.warn_msgs):
-                    if str(iwar.message).find(msg) >= 0:
-                        found_msgs[i] = True
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
 
         for i, good in enumerate(found_msgs):
             assert good, "didn't find warning about: {:}".format(
