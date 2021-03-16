@@ -13,6 +13,7 @@ import os
 import sys
 import types
 import warnings
+import weakref
 
 import netCDF4
 import numpy as np
@@ -1932,6 +1933,8 @@ class Instrument(object):
         self.inst_module = saved_module
 
         inst_copy.files = saved_files.copy()
+        inst_copy.inst_info['inst'] = weakref.proxy(inst_copy)
+        inst_copy.orbits.inst = weakref.proxy(inst_copy)
         self.files = saved_files
 
         return inst_copy
