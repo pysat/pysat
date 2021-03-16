@@ -405,7 +405,7 @@ class TestInstrumentDeprectaion():
     def test_deprecated_season_date_range(self):
         """Tests that deprecation of season_date_range is working"""
 
-        fnames = ['fake_name.txt']
+        fnames = ['2009-01-01.nofile']
         with warnings.catch_warnings(record=True) as war:
             uts, index, date = mm_test.generate_times(fnames, '100', freq='1S')
 
