@@ -66,6 +66,11 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         If True, the time index will be non-unique and non-monotonic.
         (default=False)
 
+    .. deprecated:: 2.3.0
+      The ability to use a numeric string as `sat_id` to specify the number
+      of data points has been removed from pysat in the 3.0.0 release and
+      will be replaced by the `num_samples` keyword)
+
     Returns
     -------
     data : pds.DataFrame

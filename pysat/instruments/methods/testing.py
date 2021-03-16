@@ -142,6 +142,11 @@ def generate_times(fnames, sat_id, freq='1S'):
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
 
+    .. deprecated:: 2.3.0
+      The ability to use a numeric string as `sat_id` to specify the number
+      of data points has been removed from pysat in the 3.0.0 release and
+      will be replaced by the `num` keyword as an integer)
+
     Outputs
     -------
     uts : (array)

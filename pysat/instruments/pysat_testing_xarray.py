@@ -80,6 +80,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         Additional unspecified keywords supplied to pysat.Instrument upon
         instantiation are passed here.
 
+    .. deprecated:: 2.3.0
+      The ability to use a numeric string as `sat_id` to specify the number
+      of data points has been removed from pysat in the 3.0.0 release and
+      will be replaced by the `num_samples` keyword)
+
     Returns
     -------
     data : (xr.Dataset)
