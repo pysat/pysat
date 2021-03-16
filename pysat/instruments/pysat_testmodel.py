@@ -94,11 +94,12 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
 
     # Fake 3D data consisting of values between 0 and 21 everywhere
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)
-    data['dummy1'] = (('time', 'latitude', 'longitude'), dummy1)
+    data['dummy1'] = (('time', 'latitude', 'longitude'), dummy1.data)
 
     # Fake 4D data consisting of between 0 and 21 everywhere
     dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
-    data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'), dummy2)
+    data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'),
+                      dummy2.data)
 
     # Set the metadata
     meta = pysat.Meta()
