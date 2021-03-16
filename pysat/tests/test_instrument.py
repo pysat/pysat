@@ -1071,6 +1071,25 @@ class TestBasics():
                         " 'undefined_keyword2']"))
         assert str(err).find(estr) >= 0
 
+    def test_supported_input_keywords(self):
+        """Test that supported keywords exist"""
+
+        funcs = ['load', 'init', 'list_remote_files', 'list_files', 'download',
+                 'preprocess', 'clean']
+
+        # Test instruments all have a supported keyword. Ensure keyword
+        # present for all functions.
+        for func in funcs:
+            assert func in self.testInst.kwargs_supported
+            assert len(self.testInst.kwargs_supported[func]) > 0
+
+        # Confirm all user provided keywords are in the supported keywords
+        for func in funcs:
+            for kwrd in self.testInst.kwargs[func]:
+                assert kwrd in self.testInst.kwargs_supported[func]
+
+        return
+
     # -------------------------------------------------------------------------
     #
     # Test basic data access features, both getting and setting data

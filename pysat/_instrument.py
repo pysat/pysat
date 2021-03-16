@@ -359,6 +359,7 @@ class Instrument(object):
 
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
+        self.kwargs_supported = {}
         saved_keys = []
         partial_func = ['list_files', 'list_remote_files', 'download',
                         'preprocess', 'clean', 'load', 'init']
@@ -378,6 +379,9 @@ class Instrument(object):
 
             # Store appropriate user supplied keywords for this function
             self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
+
+            # Store all supported keywords for user edification
+            self.kwargs_supported[fkey] = default_kwargs
 
             # Keep a copy of user provided values
             user_values = copy.deepcopy(self.kwargs[fkey])
