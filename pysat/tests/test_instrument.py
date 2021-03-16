@@ -669,6 +669,15 @@ class TestBasics():
         assert inst_copy == self.testInst
         return
 
+    def test_copy_from_reference(self):
+        """Test .copy() if a user invokes from a weakref.proxy of Instrument"""
+        inst_copy = self.testInst.orbits.inst.copy()
+        inst_copy2 = self.testInst.files.inst_info['inst'].copy()
+        assert inst_copy == self.testInst
+        assert inst_copy == inst_copy2
+        assert inst_copy2 == self.testInst
+        return
+
     def test_copy_w_inst_module(self):
         """Test .copy() with inst_module != None"""
         # Assign module to inst_module
