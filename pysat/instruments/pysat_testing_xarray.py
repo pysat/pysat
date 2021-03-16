@@ -6,7 +6,6 @@ Produces fake instrument data for testing.
 import datetime as dt
 import functools
 import numpy as np
-import warnings
 
 import xarray as xr
 
@@ -105,13 +104,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 86400
+        num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
 

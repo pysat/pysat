@@ -6,7 +6,6 @@ Produces fake instrument data for testing.
 import datetime as dt
 import functools
 import numpy as np
-import warnings
 
 import xarray as xr
 
@@ -73,13 +72,7 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
     """
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 96
+        num_samples = 96
     # create an artifical satellite data set
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='900S')
