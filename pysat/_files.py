@@ -279,7 +279,7 @@ class Files(object):
         Returns
         -------
         bool
-            True if objects are identical
+            True if objects are identical, False if they are not
 
         """
         if not isinstance(other, self.__class__):

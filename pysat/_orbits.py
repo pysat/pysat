@@ -169,7 +169,7 @@ class Orbits(object):
         Returns
         -------
         bool
-            True if objects are identical
+            True if objects are identical, False if they are not
 
         """
 

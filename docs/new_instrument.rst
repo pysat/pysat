@@ -36,7 +36,7 @@ part of pysat's user instrument registry using the following syntax:
   registry.register_from_module(my_package.instruments)
 
 After registry the instrument module name is stored in the user's home
-directory under :code:`~.pysat`. The instrument may then
+directory in a hidden directory named :code:`~.pysat`. The instrument may then
 be instantiated with the instrument's platform and name:
 
 .. code-block:: python
@@ -437,7 +437,7 @@ Custom Keywords in Support Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If provided, pysat supports the definition and use of keywords for an
-instrument module so that users may trigger optional features. A custom
+instrument module so that users may define their preferred default values. A custom
 keyword for an instrument module must be defined in each function that
 will receive that keyword argument if provided by the user. All instrument
 functions, ``init``, ``preprocess``, ``load``, ``clean``, ``list_files``,
