@@ -39,7 +39,6 @@ strings, as illustrated in the example below.
    # If no files are found, the first path is selected by default.
    pysat.params['data_dirs'] = [path_1, path_2, ..., path_n]
 
-Note the directory path supplied must already exist or an error will be raised.
 To check the currently set data directory,
 
 .. code:: python
