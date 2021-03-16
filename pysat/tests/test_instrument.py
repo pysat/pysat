@@ -1006,14 +1006,22 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("func, kwarg", [('load', 'test_load_kwrd'),
-                                             ('list_files',
-                                              'test_list_files_kwrd'),
-                                             ('list_remote_files',
-                                              'test_list_remote_kwrd'),
-                                             ('download',
-                                              'test_download_kwrd')])
-    def test_instrument_partial_keywords_liveness(self, func, kwarg, caplog):
+    @pytest.mark.parametrize("func, kwarg, cflag", [('load',
+                                                     'test_load_kwrd', False),
+                                                    ('list_files',
+                                                     'test_list_files_kwrd',
+                                                     False),
+                                                    ('list_files',
+                                                     'test_list_files_kwrd',
+                                                     True),
+                                                    ('list_remote_files',
+                                                     'test_list_remote_kwrd',
+                                                     False),
+                                                    ('download',
+                                                     'test_download_kwrd',
+                                                     False)])
+    def test_instrument_partial_keywords_liveness(self, func, kwarg, cflag,
+                                                  caplog):
         """Test if changes to keywords (partial funcs) are propagated by pysat
         """
         # Test for file_date_range keyword
@@ -1021,15 +1029,23 @@ class TestBasics():
         pysat.logger.setLevel(1)
         caplog.set_level(logging.INFO)
 
-        self.testInst.kwargs[func][kwarg] = 'live_value'
+        if cflag:
+            # Perform test using a copy of Instrument to ensure
+            # that the weakref points to the correct place
+            tinst = self.testInst.copy()
+        else:
+            # Perform test using standard Instrument
+            tinst = self.testInst
+        # Assign value via kwargs
+        tinst.kwargs[func][kwarg] = 'live_value'
 
         try:
             # Load data to trigger some functions
-            self.testInst.load(date=self.ref_time)
+            tinst.load(date=self.ref_time)
             # Refresh files to trigger other functions
-            self.testInst.files.refresh()
+            tinst.files.refresh()
             # Get remote file list
-            self.testInst.download_updated_files()
+            tinst.download_updated_files()
         finally:
             # Ensure logging level reset
             pysat.logger.setLevel(saved_level)
