@@ -52,6 +52,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     Instrument.kwargs
   - Added support for pysat.Instrument, Files, and Orbits equality comparisons
   - Added .copy function to Instrument, Files, and Orbits classes
+  - Updated Parameters to ensure paths provided for pysat.params['data_dirs'] are created if they don't
+    already exist
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -130,6 +132,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Modified storage of Instrument.kwargs to only include user supplied keywords
   - Improved robustness when working with file dates that aren't centered on 
     midnight
+  - Added basic valid path check to `pysat.utils.files.check_and_make_path`
 - Maintenance
   - nose dependency removed from unit tests
   - Specified `dtype` for empty pandas.Series for forward compatibility

@@ -654,19 +654,25 @@ def check_and_make_path(path):
     """
 
     if not os.path.exists(path):
-        # make path, checking to see that each level exists before attempting
+        # Make path, checking to see that each level exists before attempting
         root_path, local_dir = os.path.split(path)
+
+        # Check that we have a remotely valid path
+        if len(root_path) == 0:
+            raise ValueError('Invalid path specification.')
+
+        # Iterate through given path until we hit a directory that exists.
         make_dir = list()
         while not os.path.exists(root_path):
             if len(local_dir) > 0:
-                # avoid case where input is path=/stuff/level/
-                # trailing / leads to a local_dir=''
+                # Avoid case where input is path='/stuff/level/'.
+                # The trailing '/' leads to a local_dir=''
                 make_dir.append(local_dir)
             root_path, local_dir = os.path.split(root_path)
 
         if len(local_dir) > 0:
-            # avoid case where input is path=/stuff/level/
-            # trailing / leads to a local_dir=''
+            # Avoid case where input is path='/stuff/level/'.
+            # The trailing '/' leads to a local_dir=''
             make_dir.append(local_dir)
 
         while len(make_dir) > 0:
