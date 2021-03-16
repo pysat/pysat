@@ -10,6 +10,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
      `manual_org`, and `_filter_datetime_input`)
    - pysat.instruments.methods.general.list_files kwarg
      `fake_montly_files_from_daily`
+   - pysat.instruments.methods.testing.generate_times kwarg
+     `sat_id`
    - Constellation class kwarg `name`
    - Custom class
    - functions from `_files` class
@@ -21,6 +23,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
       - the pysatMadrigal: jro_isr, dmsp_ivm
       - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
       - the pysatModels: ucar_tiegcm
+   - Test instruments
+     - The usage of a numeric string for `sat_id` to specify number of points
    - SpaceWeather, Incubator (DEMETER), and Madrigal instrument method
 - Documentation
    - Updated docstrings with deprecation notes
