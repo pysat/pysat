@@ -227,7 +227,7 @@ class TestBasics():
         self.out = self.testInst.files.copy()
         assert self.out == self.testInst.files
 
-    def test_equality_with_copy(self):
+    def test_equality_with_copy_with_data(self):
         """Test that copy is the same as original, loaded inst.data"""
         self.testInst.load(date=self.start)
         self.out = self.testInst.files.copy()
