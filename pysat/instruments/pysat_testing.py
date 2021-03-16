@@ -23,7 +23,8 @@ name = 'testing'
 tags = {'': 'Regular testing data set',
         'no_download': 'simulate an instrument without download support',
         'non_strict': 'simulate an instrument without strict_time_flag',
-        'user_password': 'simulates an instrument that requires a password'}
+        'user_password': 'simulates an instrument that requires a password',
+        'default_meta': 'simulates an instrument using the defualt meta'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
@@ -31,7 +32,8 @@ inst_ids = {'': ['', 'no_download', 'non_strict', 'user_password']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'no_download': dt.datetime(2009, 1, 1),
                     'non_strict': dt.datetime(2009, 1, 1),
-                    'user_password': dt.datetime(2009, 1, 1)}}
+                    'user_password': dt.datetime(2009, 1, 1),
+                    'default_meta': dt.datetime(2009, 1, 1)}}
 _test_download = {'': {'no_download': False}}
 
 
@@ -262,9 +264,10 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    for var in data.keys():
-        if var.find('dummy') >= 0:
-            meta[var] = {'units': 'none', 'notes': 'Dummy variable'}
+    if tag != 'default_meta':
+        for var in data.keys():
+            if var.find('dummy') >= 0:
+                meta[var] = {'units': 'none', 'notes': 'Dummy variable'}
 
     return data, meta
 
