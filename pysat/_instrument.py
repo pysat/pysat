@@ -1926,20 +1926,39 @@ class Instrument(object):
         # set module variable/files to `None`, make the copy, reassign the
         # saved modules.
         saved_module = self.inst_module
+
+        # The files/orbits class copy() not invoked with deepcopy
         saved_files = self.files
+        saved_orbits = self.orbits
 
         self.inst_module = None
         self.files = None
+        self.orbits = None
 
+        # Copy non-problematic parameters
         inst_copy = copy.deepcopy(self)
 
+        # Restore links to the instrument support functions module
         inst_copy.inst_module = saved_module
         self.inst_module = saved_module
 
+        # Reattach files and copy
         inst_copy.files = saved_files.copy()
-        inst_copy.files.inst_info['inst'] = weakref.proxy(inst_copy)
-        inst_copy.orbits.inst = weakref.proxy(inst_copy)
         self.files = saved_files
+
+        # Reattach orbits and copy
+        inst_copy.orbits = saved_orbits.copy()
+        self.orbits = saved_orbits
+
+        # Support a copy if a user does something like,
+        # self.orbits.inst.copy(), or
+        # self.files.inst_info['inst'].copy()
+        if not isinstance(inst_copy, weakref.ProxyType):
+            inst_copy.files.inst_info['inst'] = weakref.proxy(inst_copy)
+            inst_copy.orbits.inst = weakref.proxy(inst_copy)
+        else:
+            inst_copy.files.inst_info['inst'] = inst_copy
+            inst_copy.orbits.inst = inst_copy
 
         return inst_copy
 

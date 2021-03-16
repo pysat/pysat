@@ -180,21 +180,30 @@ class Orbits(object):
         item_check = []
         for item in self.__dict__:
             if item in other.__dict__:
+                # partial function comparisons (_det_breaks), data
+                # objects (_full_daya_data), and the pysat.Instrument ref
+                # require different treatment.
                 if item not in ['_full_day_data', 'inst', '_det_breaks']:
+                    # Standard equality comparison
                     test = np.all(self.__dict__[item] == other.__dict__[item])
                     checks.append(test)
                     item_check.append(item)
                 elif item in ['full_day_data']:
+                    # Compare data
                     if isinstance(self.__dict__[item], pds.DataFrame):
                         try:
+                            # Comparisons can error simply for having
+                            # different DataFrames
                             check = np.all(self.__dict__[item]
                                            == other.__dict__[item])
                         except ValueError:
+                            # If there is an error they aren't the same
                             check = False
                         checks.append(check)
                         item_check.append(item)
 
                     else:
+                        # xarray comparison
                         test = xr.Dataset.equals(self.__dict__[item],
                                                  other.__dict__[item])
                         checks.append(test)
@@ -654,12 +663,15 @@ class Orbits(object):
             Copy of self
 
         """
-
+        # pysat.Instrument has a link to orbits, so copying the referenced
+        # self.inst would lead to infinite recursion.
         inst = self.inst
         self.inst = None
 
+        # Copy everything else
         orbits_copy = copy.deepcopy(self)
 
+        # Both this object and the copy refer back to the same pysat.Instrument
         orbits_copy.inst = inst
         self.inst = inst
 

@@ -289,34 +289,51 @@ class Files(object):
         item_check = []
         for item in self.__dict__:
             item_check.append(item)
+            # Confirm each object has the same items
             if item in other.__dict__:
+                # Define default comparison. Series comparisons can error
+                # for simply being different (files, _*_file_list).
+                # 'inst_info' contains a weakref back to Instrument that
+                # requires a different check.
                 if item not in ['files', '_previous_file_list',
                                 '_current_file_list', 'inst_info']:
                     test = np.all(self.__dict__[item] == other.__dict__[item])
                     checks.append(test)
                 else:
                     if item not in ['inst_info']:
+                        # Comparing one of the stored pandas Series
                         try:
                             # Comparison only works for identically-labeled
                             # series.
                             check = np.all(self.__dict__[item]
                                            == other.__dict__[item])
                         except ValueError:
+                            # If there is an error they aren't the same.
                             check = False
                         checks.append(check)
                     elif item == 'inst_info':
                         ichecks = []
                         for sitem in self.inst_info:
                             if sitem != 'inst':
+                                # Standard check
                                 ichecks.append(self.inst_info[sitem]
                                                == other.inst_info[sitem])
                             else:
+                                # Don't want a recursive check on 'inst', which
+                                # contains Files. If the string representations
+                                # are the same we consider them the same.
                                 ichecks.append(str(self.inst_info[sitem])
                                                == str(other.inst_info[sitem]))
                         checks.append(np.all(ichecks))
             else:
+                # other did not have an item that self did
                 checks.append(False)
                 break
+
+        # Confirm that other doesn't have extra terms
+        for item in other.__dict__:
+            if item not in self.__dict__:
+                return False
 
         test_data = np.all(checks)
 
@@ -610,14 +627,26 @@ class Files(object):
             Copy of self
 
         """
+        # The copy module does not copy modules. Treat self.inst_info
+        # differently since it possibly contains a python module, plus
+        # it also contains a weakref back to Instrument, which contains Files,
+        # resulting in an infinite recusive copy.
         saved_info = self.inst_info
         self.inst_info = None
 
+        # Copy everything but the problematic info
         files_copy = copy.deepcopy(self)
 
-        files_copy.inst_info = saved_info
+        # Restore the saved information, then copy over items that can be copied
         self.inst_info = saved_info
-
+        files_copy.inst_info = {}
+        for item in saved_info:
+            if item not in ['inst', 'inst_module']:
+                files_copy.inst_info[item] = copy.deepcopy(self.inst_info[item])
+        # Can't copy the weakreference
+        files_copy.inst_info['inst'] = self.inst_info['inst']
+        # Can't copy the module
+        files_copy.inst_info['inst_module'] = self.inst_info['inst_module']
         return files_copy
 
     def refresh(self):
