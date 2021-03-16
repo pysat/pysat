@@ -516,17 +516,20 @@ class Instrument(object):
                 item_check.append(item)
                 if item in other.__dict__:
                     if item in partial_funcs:
-                        # Partial function comparison doesn't work directly
-                        checks.append(str(self.__dict__[item])
-                                      == str(other.__dict__[item]))
+                        # Partial function comparison doesn't work directly.
+                        try:
+                            checks.append(str(self.__dict__[item])
+                                          == str(other.__dict__[item]))
+                        except AttributeError:
+                            # If an item missing a required attribute
+                            return False
                     else:
                         # General check for everything else.
                         checks.append(np.all(self.__dict__[item]
                                              == other.__dict__[item]))
                 else:
                     # Both objects don't have the same attached objects
-                    checks.append(False)
-                    break
+                    return False
             else:
                 # Data comparison area. Established earlier both have data.
                 if self.pandas_format:
@@ -540,6 +543,11 @@ class Instrument(object):
                 else:
                     checks.append(xr.Dataset.equals(self.data,
                                                     other.data))
+
+        # Confirm that other doesn't have extra terms
+        for item in other.__dict__:
+            if item not in self.__dict__:
+                return False
 
         test_data = np.all(checks)
 

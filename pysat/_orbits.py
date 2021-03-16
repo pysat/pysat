@@ -188,7 +188,7 @@ class Orbits(object):
                     test = np.all(self.__dict__[item] == other.__dict__[item])
                     checks.append(test)
                     item_check.append(item)
-                elif item in ['full_day_data']:
+                elif item in ['_full_day_data']:
                     # Compare data
                     if isinstance(self.__dict__[item], pds.DataFrame):
                         try:
@@ -198,10 +198,9 @@ class Orbits(object):
                                            == other.__dict__[item])
                         except ValueError:
                             # If there is an error they aren't the same
-                            check = False
+                            return False
                         checks.append(check)
                         item_check.append(item)
-
                     else:
                         # xarray comparison
                         test = xr.Dataset.equals(self.__dict__[item],
@@ -210,14 +209,24 @@ class Orbits(object):
                         item_check.append(item)
                 elif item == '_det_breaks':
                     # Equality of partial functions does not work well.
-                    # Using a string comparison instead.
-                    check = str(self._det_breaks) == str(other._det_breaks)
+                    # Using a string comparison instead. This can also break
+                    # if one of the objects is missing some attributes.
+                    try:
+                        check = str(self._det_breaks) == str(other._det_breaks)
+                    except AttributeError:
+                        # One object is missing a required attribute
+                        return False
                     checks.append(check)
                     item_check.append(item)
             else:
                 checks.append(False)
                 item_check.append(item)
-                break
+                return False
+
+        # Confirm that other doesn't have extra terms
+        for item in other.__dict__:
+            if item not in self.__dict__:
+                return False
 
         test_data = np.all(checks)
 

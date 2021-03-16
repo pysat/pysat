@@ -309,7 +309,7 @@ class Files(object):
                                            == other.__dict__[item])
                         except ValueError:
                             # If there is an error they aren't the same.
-                            check = False
+                            return False
                         checks.append(check)
                     elif item == 'inst_info':
                         ichecks = []
@@ -322,13 +322,17 @@ class Files(object):
                                 # Don't want a recursive check on 'inst', which
                                 # contains Files. If the string representations
                                 # are the same we consider them the same.
-                                ichecks.append(str(self.inst_info[sitem])
-                                               == str(other.inst_info[sitem]))
+                                try:
+                                    oitem = other.inst_info[sitem]
+                                    ichecks.append(str(self.inst_info[sitem])
+                                                   == str(oitem))
+                                except AttributeError:
+                                    # If one object is missing a required item
+                                    return False
                         checks.append(np.all(ichecks))
             else:
                 # other did not have an item that self did
-                checks.append(False)
-                break
+                return False
 
         # Confirm that other doesn't have extra terms
         for item in other.__dict__:
