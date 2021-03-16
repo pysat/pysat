@@ -41,10 +41,10 @@ class Orbits(object):
     kind : str
         Kind of orbit, which specifies how orbital breaks are determined.
         Expects one of: 'local time', 'longitude', 'polar', or 'orbit'
-        - local time: negative gradients in lt or breaks in inst.data.index
-        - longitude: negative gradients or breaks in inst.data.index
-        - polar: zero crossings in latitude or breaks in inst.data.index
-        - orbit: uses unique values of orbit number
+        - local time : negative gradients in lt or breaks in inst.data.index
+        - longitude : negative gradients or breaks in inst.data.index
+        - polar : zero crossings in latitude or breaks in inst.data.index
+        - orbit : uses unique values of orbit number
         (default='local time')
     orbit_period : pds.Timedelta
         Pandas Timedelta that specifies the orbit period.  Used instead of
@@ -63,10 +63,6 @@ class Orbits(object):
 
     This class should not be called directly by the user, it uses the interface
     provided by inst.orbits where inst = pysat.Instrument()
-
-    Warning
-    -------
-    This class is still under development.
 
     Examples
     --------

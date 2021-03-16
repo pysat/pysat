@@ -21,7 +21,8 @@ becomes available for use in  ``inst.data``.
    itself.
 
 
-**Example Function**
+Example Function
+^^^^^^^^^^^^^^^^^^
 
 If a custom function is attached to an Instrument, when asking to load data
 into the Instrument, the Instrument object is passed to function in place. There
@@ -55,7 +56,8 @@ any information.
 
        return
 
-**Attaching Custom Function**
+Attaching Custom Function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Custom methods must be attached to an Instrument object for pysat
 to automatically apply the method upon every load.
@@ -162,7 +164,8 @@ performed at the same level, so there is no strict gain by using the pysat
 nano-kernel in this simple demonstration. However, we can  use the nano-kernel
 to translate this daily mean into an versatile instrument independent function.
 
-**Attaching Custom Function at Instantiation**
+Attaching Custom Function at Instantiation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Custom methods may also be attached to an Instrument object directly
 at instantiation via the `custom` keyword.

@@ -4,7 +4,7 @@
 </div>
 
 # pysat: Python Satellite Data Analysis Toolkit
-[![Build Status](https://travis-ci.com/pysat/pysat.svg?branch=master)](https://travis-ci.com/pysat/pysat)
+[![Build Status](https://travis-ci.com/pysat/pysat.svg?branch=main)](https://travis-ci.com/pysat/pysat)
 [![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysat/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysat?branch=main)
 [![DOI](https://zenodo.org/badge/33449914.svg)](https://zenodo.org/badge/latestdoi/33449914)
@@ -85,6 +85,6 @@ python setup.py develop
 * The first time the package is run, you will need to specify a directory to
   store data. In python, run:
 ```
-pysat.utils.set_data_dir('path to top level data dir')
+pysat.params['data_dirs'] = 'path/to/directory/that/exists'
 ```
   * Nominal organization of data is top_dir/platform/name/tag/inst_id/files

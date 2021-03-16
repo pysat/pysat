@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2021-01-21
+## [3.0.0] - 2021-03-01
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -46,6 +46,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Allow `directory_format` input to `Instrument` to be a function
   - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
+  - Updated Parameters to ensure paths provided for pysat.params['data_dirs'] are created if they don't
+    already exist
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -116,6 +118,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed weak reference back to Instrument within Files class
   - Fixed access of xarray data with more than one dimension (#471)
   - Improved robustness of eval(inst.__repr__()) (#636)
+  - Fixed `calc_solar_local_time` for data sets with longitude coordinates
+  - Added basic valid path check to `pysat.utils.files.check_and_make_path`
 - Maintenance
   - nose dependency removed from unit tests
   - Specified `dtype` for empty pandas.Series for forward compatibility
@@ -134,11 +138,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Ensured download start time is used
 
 ## [2.2.2] - 2020-12-31
- - New Features
-    - netCDF4 files produced using `to_netcdf4()` now have an unlimited
-      time dimension
- - Documentation
-    - Updated guidance on numpy version for installation
+- New Features
+   - netCDF4 files produced using `to_netcdf4()` now have an unlimited
+     time dimension
+- Documentation
+   - Updated guidance on numpy version for installation
 - Bug Fix
    - Updated madrigal methods to simplify compound data types and enable
      creation of netCDF4 files using `self.to_netcdf4()`.

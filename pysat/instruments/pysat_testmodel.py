@@ -5,7 +5,6 @@ Produces fake instrument data for testing.
 
 import datetime as dt
 import functools
-import logging
 import numpy as np
 import warnings
 
@@ -14,7 +13,7 @@ import xarray as xr
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 platform = 'pysat'
 name = 'testmodel'

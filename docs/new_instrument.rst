@@ -61,8 +61,8 @@ In order this is:
 
 * platform
 * name
-* inst_id
 * tag
+* inst_id
 
 The exact usage of these can be tailored to the nature of the mission and data
 products.  In general, each combination should point to a unique data file.
@@ -544,7 +544,7 @@ so that the instrument module can provide feedback using the same mechanism
 
 .. code:: Python
 
-    logger = logging.getLogger(__name__)
+    logger = pysat.logger
 
 
 Within any instrument module,

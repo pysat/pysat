@@ -5,13 +5,15 @@ import warnings
 
 import pandas as pds
 
+from pysat.utils import NetworkLock
+from pysat import here
 
 ackn_str = ' '.join(("Test instruments provided through the pysat project.",
                      "https://www.github.com/pysat/pysat"))
-refs = ' '.join(("Russell Stoneback, Jeff Klenzing, Angeline Burrell, Carey",
-                 "Spence, Asher Pembroke, Matthew Depew, … Asher Pembroke.",
-                 "(2019, November 18). pysat/pysat v2.1 (Version v2.1).",
-                 "Zenodo. http://doi.org/10.5281/zenodo.3546270"))
+
+# Load up citation information
+with NetworkLock(os.path.join(here, 'citation.txt'), 'r') as locked_file:
+    refs = locked_file.read()
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
@@ -97,7 +99,8 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Returns
     -------
-    Series of filenames indexed by file time, see list_files for more info
+    pds.Series
+        Filenames indexed by file time, see list_files for more info
 
     """
 
