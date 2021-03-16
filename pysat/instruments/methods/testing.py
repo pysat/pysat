@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import warnings
 
 import pandas as pds
 
@@ -165,6 +166,12 @@ def generate_times(fnames, sat_id, freq='1S'):
     # Allow numeric string to select first set of data
     try:
         index = index[0:int(sat_id)]
+        warnings.warn(' '.join(["The ability to use a numeric string as",
+                                "`sat_id` to specify the number of data points",
+                                "has been removed from pysat in the 3.0.0",
+                                "release and will be replaced by the",
+                                "`num_samples` keyword"]),
+                      DeprecationWarning, stacklevel=2)
     except ValueError:
         # non-integer sat_id produces ValueError
         pass
