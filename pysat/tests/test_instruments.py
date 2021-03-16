@@ -12,6 +12,7 @@ import tempfile
 
 import pysat
 import pysat.instruments.pysat_testing
+from pysat.instruments.methods import testing as mm_test
 
 # modules in the list below have deprecation warnings
 dep_list = ['cosmic_gps', 'dmsp_ivm', 'jro_isr', 'sw_dst', 'sw_kp', 'sw_f107',
@@ -391,15 +392,22 @@ class TestInstrumentQualifier():
                                         inst.name, inst.tag, inst.sat_id,
                                         'was not successful.')))
 
-    # Optional support
 
-    # directory_format string
+class TestInstrumentDeprectaion():
 
-    # multiple file days
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
-    # orbit information
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
 
-        # self.directory_format = None
-        # self.file_format = None
-        # self.multi_file_day = False
-        # self.orbit_info = None
+    def test_deprecated_season_date_range(self):
+        """Tests that deprecation of season_date_range is working"""
+
+        fnames = ['fake_name.txt']
+        with warnings.catch_warnings(record=True) as war:
+            uts, index, date = mm_test.generate_times(fnames, '100', freq='1S')
+
+        assert len(war) == 1
+        assert war[0].category == DeprecationWarning
