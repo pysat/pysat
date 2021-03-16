@@ -203,6 +203,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     # create very limited metadata
     meta = pysat.Meta()
+    meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
     meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
@@ -222,6 +223,22 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     image_meta['density'] = {'long_name': 'profiles'}
     image_meta['fraction'] = {'long_name': 'profiles'}
     meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
+    for var in data.keys():
+        if var.find('dummy') >= 0:
+            meta[var] = {'units': 'none', 'long_name': var,
+                         'notes': 'Dummy variable'}
+    meta['x'] = {'long_name': 'x-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['y'] = {'long_name': 'y-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['z'] = {'long_name': 'z-value of profile height',
+                 'notes': 'Dummy Variable'}
+    meta['image_lat'] = {'long_name': 'Latitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['image_lon'] = {'long_name': 'Longitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     return data, meta
 
