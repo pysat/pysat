@@ -243,7 +243,7 @@ class TestBasics():
         """Test that equality is false if self missing attributes"""
         self.out = self.testInst.files.copy()
         self.out.hi_there = 'hi'
-        assert  self.testInst.files != self.out
+        assert self.testInst.files != self.out
 
     def test_inequality_different_data(self):
         """Test that equality is false if different data"""
