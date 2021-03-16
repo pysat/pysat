@@ -152,8 +152,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data['altitude'] = ((epoch_name), altitude)
 
     # create some fake data to support testing of averaging routines
-    mlt_int = data['mlt'].astype(int)
-    long_int = (data['longitude'] / 15.).astype(int)
+    mlt_int = data['mlt'].astype(int).data
+    long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)
     data['dummy2'] = ((epoch_name), long_int)
     data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
