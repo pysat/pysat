@@ -48,6 +48,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     exclusive
   - Added support for SLT calculations outside [0, 24)
   - Added support for continuous SLT calculations when loading multiple days
+  - Instrument support functions now respond to local changes in 
+    Instrument.kwargs
+  - Added support for pysat.Instrument, Files, and Orbits equality comparisons
+  - Added .copy function to Instrument, Files, and Orbits classes
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -88,7 +92,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed unnecessary Instrument attribute `labels`
   - Removed unnecessary Instrument kwargs
   - Removed the Custom class, incorporating it into Instrument
-  - Added support for pysat.Instrument equality comparisons
+  - Removed deprecated calls to 'modify' type custom functions
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of `tag` and `inst_id` behaviour in testing instruments
@@ -121,6 +125,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved robustness of eval(inst.__repr__()) (#636)
   - Fixed `calc_solar_local_time` for data sets with longitude coordinates
   - Fixed .copy() when pysat.Instrument instantiated with `inst_module` (#728)
+  - Modified storage of Instrument.kwargs to include all methods so that
+    eval(Instrument.__repr__()) works in more cases
+  - Modified storage of Instrument.kwargs to only include user supplied keywords
+  - Improved robustness when working with file dates that aren't centered on 
+    midnight
 - Maintenance
   - nose dependency removed from unit tests
   - Specified `dtype` for empty pandas.Series for forward compatibility
@@ -137,6 +146,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Reduced code duplication throughout package
   - Reduced unused code snippets throughout
   - Ensured download start time is used
+  - Condensed testing support functions into methods/testing.py
 
 ## [2.2.2] - 2020-12-31
 - New Features
