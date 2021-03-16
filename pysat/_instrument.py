@@ -1933,7 +1933,7 @@ class Instrument(object):
         self.inst_module = saved_module
 
         inst_copy.files = saved_files.copy()
-        inst_copy.inst_info['inst'] = weakref.proxy(inst_copy)
+        inst_copy.files.inst_info['inst'] = weakref.proxy(inst_copy)
         inst_copy.orbits.inst = weakref.proxy(inst_copy)
         self.files = saved_files
 
