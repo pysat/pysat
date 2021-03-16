@@ -370,7 +370,7 @@ def mean_by_day(inst, data_label):
 
     """
 
-    warnings.warn(' '.join(["`` is deprecated here and will be",
+    warnings.warn(' '.join(["`_calc_2d_median` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),

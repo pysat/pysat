@@ -8,7 +8,7 @@ If a property of a 2D or higher dataset is needed attach a custom function
 that performs the check and returns a 1D Series.
 
 .. deprecated:: 2.2.0
-  `ssnl.occur_prog` will be removed in pysat 3.0.0, it will be added to
+  `ssnl.occur_prob` will be removed in pysat 3.0.0, it will be added to
   pysatSeasons: https://github.com/pysat/pysatSeasons
 
 Note
