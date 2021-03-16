@@ -2578,31 +2578,6 @@ class TestBasicsXarray(TestBasics):
 # Repeat tests above with 2d data
 #
 # -----------------------------------------------------------------------------
-class TestBasicsXarray(TestBasics):
-    def setup(self):
-        global testing_kwrds
-        reload(pysat.instruments.pysat_testing_xarray)
-        """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
-                                         num_samples=10,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         **testing_kwrds)
-        self.ref_time = dt.datetime(2009, 1, 1)
-        self.ref_doy = 1
-        self.out = None
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        del self.testInst, self.out, self.ref_time, self.ref_doy
-
-
-# -----------------------------------------------------------------------------
-#
-# Repeat tests above with 2d data
-#
-# -----------------------------------------------------------------------------
 class TestBasics2D(TestBasics):
     def setup(self):
         global testing_kwrds
