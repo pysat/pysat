@@ -227,6 +227,24 @@ class TestBasics():
         self.out = self.testInst.files.copy()
         assert self.out == self.testInst.files
 
+    def test_equality_with_copy(self):
+        """Test that copy is the same as original, loaded inst.data"""
+        self.testInst.load(date=self.start)
+        self.out = self.testInst.files.copy()
+        assert self.out == self.testInst.files
+
+    def test_inequality_modified_object(self):
+        """Test that equality is false if other missing attributes"""
+        self.out = self.testInst.files.copy()
+        del self.out.start_date
+        assert self.testInst.files != self.out
+
+    def test_inequality_reduced_object(self):
+        """Test that equality is false if self missing attributes"""
+        self.out = self.testInst.files.copy()
+        self.out.hi_there = 'hi'
+        assert  self.testInst.files != self.out
+
     def test_inequality_different_data(self):
         """Test that equality is false if different data"""
         self.out = self.testInst.files.copy()

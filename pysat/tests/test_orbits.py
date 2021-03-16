@@ -245,11 +245,39 @@ class TestGeneralOrbitsMLT():
         self.out = self.testInst.orbits.copy()
         assert self.out == self.testInst.orbits
 
+    def test_equality_with_data_with_copy(self):
+        """Test that copy is the same as original"""
+        # Load data
+        self.testInst.load(date=self.stime)
+        # Load up an orbit
+        self.testInst.orbits[0]
+        self.out = self.testInst.orbits.copy()
+        assert self.out == self.testInst.orbits
+
     def test_inequality_different_data(self):
         """Test that equality is false if different data"""
+        # Load data
+        self.testInst.load(date=self.stime)
+        # Load up an orbit
+        self.testInst.orbits[0]
+        # Make copy
         self.out = self.testInst.orbits.copy()
+        # Modify data
         self.out._full_day_data = self.testInst._null_data
         assert self.out != self.testInst.orbits
+
+    def test_inequality_modified_object(self):
+        """Test that equality is false if other missing attributes"""
+        self.out = self.testInst.orbits.copy()
+        # Remove attribute
+        del self.out.orbit_index
+        assert self.testInst.orbits != self.out
+
+    def test_inequality_reduced_object(self):
+        """Test that equality is false if self missing attributes"""
+        self.out = self.testInst.orbits.copy()
+        self.out.hi_there = 'hi'
+        assert self.testInst.orbits != self.out
 
     def test_inequality_different_type(self):
         """Test that equality is false if different type"""

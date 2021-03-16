@@ -657,6 +657,19 @@ class TestBasics():
         """Test equality False when non-Instrument object"""
         assert self.testInst != np.array([])
 
+    def test_inequality_modified_object(self):
+        """Test that equality is false if other missing attributes"""
+        self.out = self.testInst.copy()
+        # Remove attribute
+        del self.out.platform
+        assert self.testInst != self.out
+
+    def test_inequality_reduced_object(self):
+        """Test that equality is false if self missing attributes"""
+        self.out = self.testInst.copy()
+        self.out.hi_there = 'hi'
+        assert self.testInst != self.out
+
     # -------------------------------------------------------------------------
     #
     # Test copy method
