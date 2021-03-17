@@ -6,7 +6,6 @@ Produces fake instrument data for testing.
 import datetime as dt
 import functools
 import numpy as np
-import warnings
 
 import pandas as pds
 
@@ -24,15 +23,13 @@ name = 'testing'
 tags = {'': 'Regular testing data set',
         'no_download': 'simulate an instrument without download support',
         'non_strict': 'simulate an instrument without strict_time_flag',
-        'user_password': 'simulates an instrument that requires a password'}
+        'user_password': 'simulates an instrument that requires a password',
+        'default_meta': 'simulates an instrument using the defualt meta'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
-inst_ids = {'': ['', 'no_download', 'non_strict', 'user_password']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1),
-                    'no_download': dt.datetime(2009, 1, 1),
-                    'non_strict': dt.datetime(2009, 1, 1),
-                    'user_password': dt.datetime(2009, 1, 1)}}
+inst_ids = {'': [tag for tag in tags.keys()]}
+_test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 _test_download = {'': {'no_download': False}}
 
 
@@ -112,10 +109,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         List of filenames
     tag : str or NoneType
         Instrument tag (accepts '' or a string to change the behaviour of
-        dummy1 for constellation testing)
+        certain instrument aspects for testing)
     inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        Instrument satellite ID (accepts '')
     sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
@@ -153,13 +149,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 86400
+        # Default to 1 day at a frequency of 1S
+        num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
 
@@ -270,6 +261,11 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    if tag != 'default_meta':
+        for var in data.keys():
+            if var.find('dummy') >= 0:
+                meta[var] = {'units': 'none',
+                             'notes': 'Dummy variable for testing'}
 
     return data, meta
 

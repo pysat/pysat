@@ -6,7 +6,6 @@ Produces fake instrument data for testing.
 import datetime as dt
 import functools
 import numpy as np
-import warnings
 
 import xarray as xr
 
@@ -105,13 +104,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 86400
+        # Default to 1 day at a frequency of 1S
+        num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
 
@@ -176,8 +170,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     data['orbit_num'] = ((epoch_name), orbit_num)
 
     # create some fake data to support testing of averaging routines
-    mlt_int = data['mlt'].astype(int)
-    long_int = (data['longitude'] / 15.).astype(int)
+    mlt_int = data['mlt'].astype(int).data
+    long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)
     data['dummy2'] = ((epoch_name), long_int)
     data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
@@ -236,6 +230,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    for var in data.keys():
+        if var.find('dummy') >= 0:
+            meta[var] = {'units': 'none', 'notes': 'Dummy variable'}
 
     return data, meta
 
