@@ -267,7 +267,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     if tag != 'default_meta':
         for var in data.keys():
             if var.find('dummy') >= 0:
-                meta[var] = {'units': 'none', 'notes': 'Dummy variable'}
+                meta[var] = {'units': 'none', 'notes': 'Dummy variable for type and other testing'}
 
     return data, meta
 

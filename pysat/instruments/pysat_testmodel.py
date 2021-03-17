@@ -113,7 +113,7 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
                                      '(zenith angle of sun) of the given ',
                                      'locaiton. Overhead noon, +/- 90 is 6, ',
                                      '18 SLT .'])}
-    meta['mlt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
                    'desc': 'Magentic Local Time', 'value_min': 0.0,
                    'value_max': 24.0}
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
