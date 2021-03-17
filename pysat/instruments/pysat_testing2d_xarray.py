@@ -52,7 +52,8 @@ def default(inst):
     pass
 
 
-def load(fnames, tag=None, sat_id=None, malformed_index=False):
+def load(fnames, tag=None, sat_id=None, malformed_index=False,
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -66,6 +67,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         specifies the number of data points to include in the test instrument)
     malformed_index : bool False
         If True, the time index will be non-unique and non-monotonic.
+    num_samples : int
+        Number of samples per day (default=None)
 
     .. deprecated:: 2.3.0
       The ability to use a numeric string as `sat_id` to specify the number
@@ -85,7 +88,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S',
+                                              num=num_samples)
 
     if malformed_index:
         index = index.tolist()

@@ -6,9 +6,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import functools
 import numpy as np
-import os
 
-import pandas as pds
 import xarray as xr
 
 import pysat
@@ -38,7 +36,7 @@ def init(self):
     self.new_thing = True
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -50,6 +48,8 @@ def load(fnames, tag=None, sat_id=None):
     sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
+    num_samples : int
+        Number of samples per day (default=None)
 
     .. deprecated:: 2.3.0
       The ability to use a numeric string as `sat_id` to specify the number
@@ -66,7 +66,8 @@ def load(fnames, tag=None, sat_id=None):
     """
 
     # create an artifical satellite data set
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='900S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='900S',
+                                              num=num_samples)
 
     # Define range of simulated 3D model
     latitude = np.linspace(-50, 50, 21)

@@ -88,7 +88,7 @@ def default(self):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False):
+         malformed_index=False, mangle_file_dates=False, num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -118,6 +118,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
+    num_samples : int
+        Number of samples per day (default=None)
 
     .. deprecated:: 2.3.0
       The ability to use a numeric string as `sat_id` to specify the number
@@ -136,7 +138,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S',
+                                              num=num_samples)
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = pds.DateOffset(hours=12)

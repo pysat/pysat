@@ -127,7 +127,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, sat_id, freq='1S'):
+def generate_times(fnames, sat_id, freq='1S', num=None):
     """Construct list of times for simulated instruments
 
     Parameters
@@ -168,8 +168,8 @@ def generate_times(fnames, sat_id, freq='1S'):
     # Create one day of data at desired frequency
     index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399),
                            freq=freq)
-    # Allow numeric string to select first set of data
     try:
+        # Allow numeric string to select first set of data
         index = index[0:int(sat_id)]
         warnings.warn(' '.join(["The ability to use a numeric string as",
                                 "`sat_id` to specify the number of data points",
@@ -179,7 +179,9 @@ def generate_times(fnames, sat_id, freq='1S'):
                       DeprecationWarning, stacklevel=2)
     except ValueError:
         # non-integer sat_id produces ValueError
-        pass
+        # Check if manual number if passed through
+        if isinstance(num, int):
+            index = index[0:num]
 
     uts = index.hour * 3600 + index.minute * 60 + index.second
 
