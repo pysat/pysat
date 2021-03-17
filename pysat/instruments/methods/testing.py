@@ -141,6 +141,8 @@ def generate_times(fnames, sat_id, freq='1S', num=None):
     freq : string
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
+    num : int or NoneType
+        Number of times to generate
 
     .. deprecated:: 2.3.0
       The ability to use a numeric string as `sat_id` to specify the number
