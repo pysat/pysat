@@ -398,6 +398,7 @@ class TestInstrumentDeprectaion():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         warnings.filterwarnings('always', category=DeprecationWarning)
+        self.warn_msgs = ["The ability to use a numeric string as"]
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
@@ -409,5 +410,13 @@ class TestInstrumentDeprectaion():
         with warnings.catch_warnings(record=True) as war:
             uts, index, date = mm_test.generate_times(fnames, '100', freq='1S')
 
-        assert len(war) == 1
-        assert war[0].category == DeprecationWarning
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
