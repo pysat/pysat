@@ -23,8 +23,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
       - the pysatMadrigal: jro_isr, dmsp_ivm
       - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
       - the pysatModels: ucar_tiegcm
-   - Test instruments
-     - The usage of a numeric string for `sat_id` to specify number of points
+   - The usage of a numeric string for `sat_id` to specify number of points
+     in test instruments
    - SpaceWeather, Incubator (DEMETER), and Madrigal instrument method
 - Documentation
    - Updated docstrings with deprecation notes
