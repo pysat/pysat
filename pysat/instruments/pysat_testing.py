@@ -29,11 +29,7 @@ tags = {'': 'Regular testing data set',
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
 inst_ids = {'': [tag for tag in tags.keys()]}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1),
-                    'no_download': dt.datetime(2009, 1, 1),
-                    'non_strict': dt.datetime(2009, 1, 1),
-                    'user_password': dt.datetime(2009, 1, 1),
-                    'default_meta': dt.datetime(2009, 1, 1)}}
+_test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 _test_download = {'': {'no_download': False}}
 
 
@@ -153,6 +149,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     drange = mm_test.define_range()
 
     if num_samples is None:
+        # Default to 1 day at a frequency of 1S
         num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
@@ -267,7 +264,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     if tag != 'default_meta':
         for var in data.keys():
             if var.find('dummy') >= 0:
-                meta[var] = {'units': 'none', 'notes': 'Dummy variable for type and other testing'}
+                meta[var] = {'units': 'none',
+                             'notes': 'Dummy variable for testing'}
 
     return data, meta
 

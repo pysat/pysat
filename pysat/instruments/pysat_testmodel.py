@@ -72,6 +72,7 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
     """
 
     if num_samples is None:
+        # Default to 1 day at a frequency of 900S
         num_samples = 96
     # create an artifical satellite data set
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
@@ -92,11 +93,13 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
     data['slt'] = (('time', 'longitude'), slt)
     data['mlt'] = (('time', 'longitude'), np.mod(slt + 0.2, 24.0))
 
-    # Fake 3D data consisting of values between 0 and 21 everywhere
+    # Fake 3D data consisting of non-physical values between 0 and 21 everywhere
+    # Used for interpolation routines in pysatModels
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)
     data['dummy1'] = (('time', 'latitude', 'longitude'), dummy1.data)
 
-    # Fake 4D data consisting of between 0 and 21 everywhere
+    # Fake 4D data consisting of non-physical values between 0 and 21 everywhere
+    # Used for interpolation routines in pysatModels
     dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
     data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'),
                       dummy2.data)

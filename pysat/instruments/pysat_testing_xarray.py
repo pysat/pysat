@@ -104,6 +104,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     drange = mm_test.define_range()
 
     if num_samples is None:
+        # Default to 1 day at a frequency of 1S
         num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
