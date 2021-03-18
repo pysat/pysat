@@ -58,6 +58,7 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import logging
+import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
@@ -152,6 +153,12 @@ def init(self):
     self.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['mighti']))
 
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
     pass
 
 

@@ -63,6 +63,20 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
+def init(self):
+    """Initializes the Instrument object with values
+    """
+
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA",
+                            "as `formosat1_ivm`"]),
+                  DeprecationWarning, stacklevel=2)
+    return
+
+
 def clean(inst):
     """Routine to return ROCSAT-1 IVM data cleaned to the specified level
 

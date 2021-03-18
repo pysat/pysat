@@ -42,6 +42,7 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import functools
+import warnings
 
 import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
@@ -77,6 +78,19 @@ list_remote_files = functools.partial(cdw.list_remote_files,
 # support load routine
 # use the default CDAWeb method
 load = functools.partial(cdw.load, fake_daily_files_from_monthly=True)
+
+
+def init(self):
+    """Initializes the Instrument object with values
+    """
+
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def clean(inst):

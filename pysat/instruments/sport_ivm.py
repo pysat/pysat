@@ -49,8 +49,13 @@ def init(self):
 
     logger.info(' '.join(("Mission acknowledgements and data restrictions will",
                           "be printed here when available.")))
-
-    pass
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def load(fnames, tag=None, sat_id=None, **kwargs):
