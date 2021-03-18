@@ -55,9 +55,14 @@ def default(inst):
 
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-         sim_multi_file_left=False, malformed_index=False,
+         sim_multi_file_left=False, malformed_index=False, num_samples=None,
          **kwargs):
     """ Loads the test files
+
+    .. deprecated:: 2.3.0
+      The ability to use a numeric string as `sat_id` to specify the number
+      of data points has been removed from pysat in the 3.0.0 release and
+      will be replaced by the `num_samples` keyword)
 
     Parameters
     ----------
@@ -76,6 +81,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         root_date (default=False)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
+    num_samples : int
+        Number of samples per day (default=None)
     kwargs : dict
         Additional unspecified keywords supplied to pysat.Instrument upon
         instantiation are passed here.
@@ -92,7 +99,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id=sat_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id=sat_id, freq='1S',
+                                              num=num_samples)
 
     if sim_multi_file_right:
         root_date = pysat.datetime(2009, 1, 1, 12)

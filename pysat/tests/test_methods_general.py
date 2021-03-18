@@ -26,7 +26,7 @@ class TestRemoveLeadText():
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
         warnings.filterwarnings('ignore', category=DeprecationWarning)
-        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='12',
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.Npts = len(self.testInst['uts'])
@@ -79,7 +79,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         # Load a test instrument
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
-                                         sat_id='12',
+                                         num_samples=12,
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.Npts = len(self.testInst['uts'])

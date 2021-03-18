@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import warnings
 
 import pandas as pds
 
@@ -126,8 +127,13 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, sat_id, freq='1S'):
+def generate_times(fnames, sat_id, freq='1S', num=None):
     """Construct list of times for simulated instruments
+
+    .. deprecated:: 2.3.0
+      The ability to use a numeric string as `sat_id` to specify the number
+      of data points has been removed from pysat in the 3.0.0 release and
+      will be replaced by the `num` keyword as an integer)
 
     Parameters
     ----------
@@ -140,6 +146,8 @@ def generate_times(fnames, sat_id, freq='1S'):
     freq : string
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
+    num : int or NoneType
+        Number of times to generate
 
     Outputs
     -------
@@ -162,12 +170,20 @@ def generate_times(fnames, sat_id, freq='1S'):
     # Create one day of data at desired frequency
     index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399),
                            freq=freq)
-    # Allow numeric string to select first set of data
     try:
+        # Allow numeric string to select first set of data
         index = index[0:int(sat_id)]
+        warnings.warn(' '.join(["The ability to use a numeric string as",
+                                "`sat_id` to specify the number of data points",
+                                "has been removed from pysat in the 3.0.0",
+                                "release and will be replaced by the",
+                                "`num_samples` keyword"]),
+                      DeprecationWarning, stacklevel=2)
     except ValueError:
         # non-integer sat_id produces ValueError
-        pass
+        # Check if manual number if passed through
+        if isinstance(num, int):
+            index = index[0:num]
 
     uts = index.hour * 3600 + index.minute * 60 + index.second
 

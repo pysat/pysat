@@ -15,7 +15,7 @@ class TestOMNICustom():
         warnings.filterwarnings('ignore', category=DeprecationWarning)
 
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='12',
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
                                          tag='1min', clean_level='clean')
         self.testInst.load(2009, 1)
 

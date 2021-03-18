@@ -264,7 +264,7 @@ class TestDataMod:
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testConst = \
             pysat.Constellation([pysat.Instrument('pysat', 'testing',
-                                                  sat_id='10',
+                                                  num_samples=10,
                                                   clean_level='clean')])
 
     def teardown(self):
@@ -297,7 +297,8 @@ class TestDeprecation():
         warnings.simplefilter("always")
 
         self.instruments = [pysat.Instrument(platform='pysat', name='testing',
-                                             sat_id='10', clean_level='clean')
+                                             num_samples=10,
+                                             clean_level='clean')
                             for i in range(2)]
         self.in_kwargs = {"name": 'single_test',
                           'instruments': self.instruments}
