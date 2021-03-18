@@ -244,7 +244,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
-                                         sat_id='100',
+                                         num_samples=100,
                                          clean_level='clean')
         self.testInst.pandas_format = True
 
@@ -494,7 +494,7 @@ class TestBasicNetCDF4xarray():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
-                                         sat_id='100',
+                                         num_samples=100,
                                          clean_level='clean')
         self.testInst.pandas_format = False
 
