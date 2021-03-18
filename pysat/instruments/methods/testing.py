@@ -130,6 +130,11 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
 def generate_times(fnames, sat_id, freq='1S', num=None):
     """Construct list of times for simulated instruments
 
+    .. deprecated:: 2.3.0
+      The ability to use a numeric string as `sat_id` to specify the number
+      of data points has been removed from pysat in the 3.0.0 release and
+      will be replaced by the `num` keyword as an integer)
+
     Parameters
     ----------
     fnames : (list)
@@ -143,11 +148,6 @@ def generate_times(fnames, sat_id, freq='1S', num=None):
         [default : '1S']
     num : int or NoneType
         Number of times to generate
-
-    .. deprecated:: 2.3.0
-      The ability to use a numeric string as `sat_id` to specify the number
-      of data points has been removed from pysat in the 3.0.0 release and
-      will be replaced by the `num` keyword as an integer)
 
     Outputs
     -------

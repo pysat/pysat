@@ -39,6 +39,11 @@ def init(self):
 def load(fnames, tag=None, sat_id=None, num_samples=None):
     """ Loads the test files
 
+    .. deprecated:: 2.3.0
+      The ability to use a numeric string as `sat_id` to specify the number
+      of data points has been removed from pysat in the 3.0.0 release and
+      will be replaced by the `num_samples` keyword)
+
     Parameters
     ----------
     fnames : list
@@ -50,11 +55,6 @@ def load(fnames, tag=None, sat_id=None, num_samples=None):
         specifies the number of data points to include in the test instrument)
     num_samples : int
         Number of samples per day (default=None)
-
-    .. deprecated:: 2.3.0
-      The ability to use a numeric string as `sat_id` to specify the number
-      of data points has been removed from pysat in the 3.0.0 release and
-      will be replaced by the `num_samples` keyword)
 
     Returns
     -------
