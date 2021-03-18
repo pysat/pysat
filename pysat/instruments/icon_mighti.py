@@ -4,6 +4,10 @@ Thermospheric Imaging (MIGHTI) instrument onboard the Ionospheric
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+
 Properties
 ----------
 platform

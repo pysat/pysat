@@ -40,6 +40,10 @@ W. B. Hanson, R. A. Heelis, R. A. Power, C. R. Lippincott, D. R. Zuccaro,
 B. J. Holt, L. H. Harmon, and S. Sanatani, “The retarding potential analyzer
 for dynamics explorer-B,” Space Sci. Instrum. 5, 503–510 (1981).
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+
 Properties
 ----------
 platform

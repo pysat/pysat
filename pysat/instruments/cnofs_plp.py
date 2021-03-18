@@ -34,6 +34,10 @@ de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
 scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
 doi:10.1016/j.jastp.2004.07.030.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+
 Properties
 ----------
 platform

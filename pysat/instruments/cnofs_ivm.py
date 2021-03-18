@@ -32,6 +32,10 @@ duskside topside ionosphere with CINDI and DMSP, J. Geophys. Res.,115,
 A08324, doi:10.1029/2009JA015051.
 
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+
 Properties
 ----------
 platform
