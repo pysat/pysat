@@ -369,3 +369,25 @@ class TestDeprecation():
         assert str(war[0].message).find(warn_msg) >= 0
 
         return
+
+    def test_deprecation_constellations(self):
+        """Test the deprecation of migrated constellation objects"""
+
+        # Define the deprecated attributes that are always defined
+        warn_msg = "This constellation has been removed from"
+        del self.in_kwargs['instruments']
+
+        # Catch the warnings
+        const_names = ['de2', 'icon']
+        for const_name in const_names:
+            with warnings.catch_warnings(record=True) as war:
+                pysat.Constellation(const_name)
+
+            # Ensure the minimum number of warnings were raised
+            assert len(war) >= 1
+
+            # Test the warning messages, ensuring each attribute is present
+            assert war[0].category == DeprecationWarning
+            assert str(war[0].message).find(warn_msg) >= 0
+
+        return
