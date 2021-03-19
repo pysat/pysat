@@ -97,8 +97,9 @@ def load(fnames, tag=None, sat_id=None,
     """Load NASA CDAWeb CDF files.
 
     .. deprecated:: 2.3.0
-      This routine will be removed in pysat 3.0.0, it will be moved to the
-      pysatNASA repository
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatNASA.instruments.methods.cdaweb`
+
 
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
@@ -186,8 +187,8 @@ def download(supported_tags, date_array, tag, sat_id,
     """Routine to download NASA CDAWeb CDF data.
 
     .. deprecated:: 2.3.0
-      This routine will be removed in pysat 3.0.0, it will be moved to the
-      pysatNASA repository
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatNASA.instruments.methods.cdaweb`
 
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
@@ -442,11 +443,10 @@ def list_remote_files(tag, sat_id,
     import warnings
     from bs4 import BeautifulSoup
 
-
     warnings.warn(''.join(["methods.nasa_cdaweb.list_remote_files has been ",
                            "deprecated and will be removed in pysat 3.0.0. ",
-                            "Please use pyspysatNASA.instruments.methods.",
-                            "cdaweb.list_remote_files instead"]),
+                           "Please use pyspysatNASA.instruments.methods.",
+                           "cdaweb.list_remote_files instead"]),
                   DeprecationWarning, stacklevel=2)
 
     if tag is None:
