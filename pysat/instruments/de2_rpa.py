@@ -42,7 +42,7 @@ for dynamics explorer-B,” Space Sci. Instrum. 5, 503–510 (1981).
 
 .. deprecated:: 2.3.0
   This Instrument module has been removed from pysat in the 3.0.0 release and
-  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
 
 Properties
 ----------

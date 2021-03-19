@@ -33,7 +33,7 @@ doi:10.1016/j.jastp.2004.07.030.
 
 .. deprecated:: 2.3.0
   This Instrument module has been removed from pysat in the 3.0.0 release and
-  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
 
 Properties
 ----------

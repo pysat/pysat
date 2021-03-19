@@ -54,7 +54,7 @@ Space Sci. Instrum., v. 5, n. 4, p. 417, 1981.
 
 .. deprecated:: 2.3.0
   This Instrument module has been removed from pysat in the 3.0.0 release and
-  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
 
 Properties
 ----------
