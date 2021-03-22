@@ -374,7 +374,7 @@ class TestDeprecation():
         """Test the deprecation of migrated constellation objects"""
 
         # Define the deprecated attributes that are always defined
-        warn_msg = "This constellation has been removed from"
+        self.warn_msg = "This constellation has been removed from"
         del self.in_kwargs['instruments']
 
         # Catch the warnings
@@ -387,7 +387,10 @@ class TestDeprecation():
             assert len(war) >= 1
 
             # Test the warning messages, ensuring each attribute is present
-            assert war[0].category == DeprecationWarning
-            assert str(war[0].message).find(warn_msg) >= 0
+            found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+                war, [self.warn_msg])
+
+            for fwar in found_war:
+                assert fwar, "didn't find warning about: {:}".format(self.warn_msg)
 
         return
