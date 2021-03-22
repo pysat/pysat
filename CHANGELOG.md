@@ -28,9 +28,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
         omni_hro, rocsat1_ivm, sport_ivm, timed_saber, timed_see
    - The usage of a numeric string for `sat_id` to specify number of points
      in test instruments
-   - SpaceWeather, Incubator (DEMETER), Madrigal, cdaweb, and icon instrument
+   - SpaceWeather, Incubator (DEMETER), Madrigal, CDAWeb, and ICON instrument
      methods
-   - The de2 and icon constellation objects
+   - The DE2 and ICON Constellation objects
 - Documentation
    - Updated docstrings with deprecation notes
 - Bug Fix
