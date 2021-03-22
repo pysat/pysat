@@ -5,7 +5,10 @@ onboard the Ionospheric Connections (ICON) Explorer.
 
 .. deprecated:: 2.3.0
   This Instrument module has been removed from pysat in the 3.0.0 release and
-  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA).  Note that
+  the ICON files are retrieved from different servers here and in pysatNASA,
+  resulting in a difference in local file names. Please see the migration guide
+  there for more details.
 
 Properties
 ----------
@@ -58,6 +61,7 @@ import numpy as np
 import warnings
 
 import pysat
+from pysat.instruments.methods import nasa_cdaweb as cdw
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
 
@@ -77,33 +81,26 @@ sat_ids = {'a': [''],
            'b': ['']}
 _test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
                'b': {'': dt.datetime(2020, 1, 1)}}  # IVM-B not yet engaged
-_test_download_travis = {'a': {kk: False for kk in tags.keys()}}
-_test_download = {'b': {kk: False for kk in tags.keys()}}
-_password_req = {'b': {kk: True for kk in tags.keys()}}
 
-aname = ''.join(('ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_',
-                 'v{version:02d}r{revision:03d}.NC'))
-bname = ''.join(('ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_',
-                 'v{version:02d}r{revision:03d}.NC'))
-supported_tags = {'a': {'': aname},
-                  'b': {'': bname}}
+# Set the list_files routine
+fname = ''.join(('icon_l2-7_ivm-{id:s}_{{year:04d}}{{month:02d}}{{day:02d}}_',
+                'v04r000.nc'))
+supported_tags = {id: {'': fname.format(id=id)}
+                  for id in ['a', 'b']}
 
-# use the general methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
-# support download routine
-basic_tag_a = {'dir': '/pub/LEVEL.2/IVM-A',
-               'remote_fname': 'ZIP/' + aname[:-2] + 'ZIP'}
-basic_tag_b = {'dir': '/pub/LEVEL.2/IVM-B',
-               'remote_fname': 'ZIP/' + bname[:-2] + 'ZIP'}
+# Set the download routine
+dirstr = '/pub/data/icon/l2/l2-7_ivm-{id:s}'
+download_tags = {id: {'': {'dir': dirstr.format(id=id),
+                           'remote_fname': '{year:4d}/' + supported_tags[id][''],
+                           'local_fname': supported_tags[id]['']}}
+                 for id in ['a', 'b']}
+download = functools.partial(cdw.download, download_tags)
 
-download_tags = {'a': {'': basic_tag_a},
-                 'b': {'': basic_tag_b}}
-download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
-
-# support listing files on SSL
-list_remote_files = functools.partial(mm_icon.list_remote_files,
+# Set the list_remote_files routine
+list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=download_tags)
 
 
@@ -128,7 +125,11 @@ def init(self):
                             "has been removed from the pysat-managed",
                             "Instruments in pysat 3.0.0, and now resides in",
                             "pysatNASA:",
-                            "https://github.com/pysat/pysatNASA"]),
+                            "https://github.com/pysat/pysatNASA",
+                            "Note that the ICON files are retrieved from",
+                            "different servers here and in pysatNASA, resulting",
+                            "in a difference in local file names. Please see",
+                            "the migration guide there for more details."]),
                   DeprecationWarning, stacklevel=2)
     pass
 
@@ -201,7 +202,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                     fill_label='FillVal')
 
 
-def clean(inst):
+def clean(self):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -234,7 +235,7 @@ def clean(inst):
     rpa_variables = ['Ion_Temperature', 'Ion_Density',
                      'Fractional_Ion_Density_H',
                      'Fractional_Ion_Density_O']
-    if 'RPA_Flag' in inst.variables:
+    if 'RPA_Flag' in self.variables:
         rpa_flag = 'RPA_Flag'
         dm_flag = 'DM_Flag'
     else:
@@ -244,20 +245,19 @@ def clean(inst):
         cross_drift_variables = ['ICON_L27_' + x for x in cross_drift_variables]
         rpa_variables = ['ICON_L27_' + x for x in rpa_variables]
 
-    if inst.clean_level in ['clean', 'dusty']:
+    if self.clean_level in ['clean', 'dusty']:
         # remove drift values impacted by RPA
-        idx, = np.where(inst[rpa_flag] >= 1)
+        idx, = np.where(self[rpa_flag] >= 1)
         for var in drift_variables:
-            inst[idx, var] = np.nan
+            self[idx, var] = np.nan
         # DM values
-        idx, = np.where(inst[dm_flag] >= 1)
+        idx, = np.where(self[dm_flag] >= 1)
         for var in cross_drift_variables:
-            inst[idx, var] = np.nan
+            self[idx, var] = np.nan
 
-    if inst.clean_level == 'clean':
+    if self.clean_level == 'clean':
         # other RPA parameters
-        idx, = np.where(inst[rpa_flag] >= 2)
+        idx, = np.where(self[rpa_flag] >= 2)
         for var in rpa_variables:
-            inst[idx, var] = np.nan
-
+            self[idx, var] = np.nan
     return
