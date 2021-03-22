@@ -381,7 +381,7 @@ class TestDeprecation():
         const_names = ['de2', 'icon']
         for const_name in const_names:
             with warnings.catch_warnings(record=True) as war:
-                pysat.Constellation(const_name)
+                pysat.Constellation(name=const_name)
 
             # Ensure the minimum number of warnings were raised
             assert len(war) >= 1
