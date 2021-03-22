@@ -20,10 +20,14 @@ class TestICON():
         """Test deprecation warnings for remote_file_list routine and kwargs
         """
         with warnings.catch_warnings(record=True) as war:
-            # testing with single day since we just need the warning
-            mm_icon.list_remote_files(tag='', sat_id='a',
-                                      supported_tags=self.supported_tags,
-                                      year=2009, month=1, day=1)
+            # testing with non-supported user since we just need the warning
+            try:
+                mm_icon.list_remote_files(tag='', sat_id='a',
+                                          supported_tags=self.supported_tags,
+                                          user='break_the_test')
+            except(ValueError):
+                # If a user-name is supplied, the test will error
+                pass
 
         self.warn_msg = ".icon.list_remote_files` instead"
         assert len(war) >= 1
