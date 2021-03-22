@@ -65,6 +65,15 @@ class Constellation(object):
         else:
             self.instruments = []
 
+        if self.instruments and self.instruments[0].platform in ['icon',
+                                                                 'de2']:
+            warnings.warn(" ".join(["This constellation",
+                                    "has been removed from the pysat-managed",
+                                    "Instruments in pysat 3.0.0, and now",
+                                    "resides in pysatNASA:",
+                                    "https://github.com/pysat/pysatNASA"]),
+                          DeprecationWarning, stacklevel=2)
+
     def __getitem__(self, *args, **kwargs):
         """
         Look up a member Instrument by index.
