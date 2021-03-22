@@ -36,6 +36,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bug Fix
    - Closes files after download in NASA CDAWeb methods
    - Updated the ICON constellation object to reflect new instrument standards
+- Added version cap for numpy
 
 ## [2.2.2] - 2020-11-23
 - New Features
