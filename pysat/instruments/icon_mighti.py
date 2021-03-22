@@ -4,6 +4,13 @@ Thermospheric Imaging (MIGHTI) instrument onboard the Ionospheric
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA).  Note that
+  the ICON files are retrieved from different servers here and in pysatNASA,
+  resulting in a difference in local file names. Please see the migration guide
+  there for more details.
+
 Properties
 ----------
 platform
@@ -58,8 +65,10 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import logging
+import warnings
 
 import pysat
+from pysat.instruments.methods import nasa_cdaweb as cdw
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
 
@@ -78,60 +87,56 @@ sat_ids = {'': ['vector_wind_green', 'vector_wind_red'],
            'b': ['los_wind_green', 'los_wind_red', 'temperature']}
 _test_dates = {jj: {kk: dt.datetime(2020, 1, 2) for kk in sat_ids[jj]}
                for jj in sat_ids.keys()}
-_test_download_travis = {jj: {kk: False for kk in sat_ids[jj]}
-                         for jj in sat_ids.keys()}
 pandas_format = False
 
-datestr = '{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}'
-fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}.NC'
-fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}.NC'
-fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}.NC'
-supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
+# Set the list_files routine
+datestr = '{year:04d}{month:02d}{day:02d}'
+fname1 = 'icon_l2-1_mighti-{id:s}_los-wind-{color:s}_{date:s}_v04r001.nc'
+fname2 = 'icon_l2-2_mighti_vector-wind-{color:s}_{date:s}_v04r000.nc'
+fname3 = 'icon_l2-3_mighti-{id:s}_temperature_{date:s}_v04r000.nc'
+supported_tags = {'': {'vector_wind_green': fname2.format(color='green',
                                                           date=datestr),
-                       'vector_wind_red': fname2.format(color='Red',
+                       'vector_wind_red': fname2.format(color='red',
                                                         date=datestr)},
-                  'a': {'los_wind_green': fname1.format(id='A', color='Green',
+                  'a': {'los_wind_green': fname1.format(id='a', color='green',
                                                         date=datestr),
-                        'los_wind_red': fname1.format(id='A', color='Red',
+                        'los_wind_red': fname1.format(id='a', color='red',
                                                       date=datestr),
-                        'temperature': fname3.format(id='A', date=datestr)},
-                  'b': {'los_wind_green': fname1.format(id='B', color='Green',
+                        'temperature': fname3.format(id='a', date=datestr)},
+                  'b': {'los_wind_green': fname1.format(id='b', color='green',
                                                         date=datestr),
-                        'los_wind_red': fname1.format(id='B', color='Red',
+                        'los_wind_red': fname1.format(id='b', color='red',
                                                       date=datestr),
-                        'temperature': fname3.format(id='B', date=datestr)}}
+                        'temperature': fname3.format(id='b', date=datestr)}}
 
-# use the CDAWeb methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
-# support download routine
-dirstr = '/pub/LEVEL.2/MIGHTI{id:s}'
-dirdatestr = '{year:4d}/{doy:03d}/'
-ids = {'': '',
-       'a': '-A',
-       'b': '-B'}
-products = {'vector_wind_green': 'Vector-Winds/',
-            'vector_wind_red': 'Vector-Winds/',
-            'los_wind_green': 'LOS-Winds/',
-            'los_wind_red': 'LOS-Winds/',
-            'temperature': 'Temperature/'}
-datestr = '{year:04d}-{month:02d}-{day:02d}'
+# Set the download routine
+dirstr1 = '/pub/data/icon/l2/l2-1_mighti-{{id:s}}_los-wind-{color:s}/'
+dirstr2 = '/pub/data/icon/l2/l2-2_mighti_vector-wind-{color:s}/'
+dirstr3 = '/pub/data/icon/l2/l2-3_mighti-{id:s}_temperature/'
+dirnames = {'los_wind_green': dirstr1.format(color='green'),
+            'los_wind_red': dirstr1.format(color='red'),
+            'vector_wind_green': dirstr2.format(color='green'),
+            'vector_wind_red': dirstr2.format(color='red'),
+            'temperature': dirstr3}
 
 download_tags = {}
-for skey in supported_tags.keys():
-    download_tags[skey] = {}
-    for tkey in supported_tags[skey].keys():
-        fname = ''.join((supported_tags[skey][tkey][:-2], 'ZIP'))
+for inst_id in supported_tags.keys():
+    download_tags[inst_id] = {}
+    for tag in supported_tags[inst_id].keys():
+        fname = supported_tags[inst_id][tag]
 
-        download_tags[skey][tkey] = {'dir': dirstr.format(id=ids[skey]),
-                                     'remote_fname': ''.join((products[tkey],
-                                                              fname))}
+        download_tags[inst_id][tag] = \
+            {'dir': dirnames[tag].format(id=inst_id),
+             'remote_fname': '{year:04d}/' + fname,
+             'local_fname': fname}
 
-download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
+download = functools.partial(cdw.download, download_tags)
 
-# support listing files on SSL
-list_remote_files = functools.partial(mm_icon.list_remote_files,
+# Set the list_remote_files routine
+list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=download_tags)
 
 
@@ -152,6 +157,16 @@ def init(self):
     self.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['mighti']))
 
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA",
+                            "Note that the ICON files are retrieved from",
+                            "different servers here and in pysatNASA, resulting",
+                            "in a difference in local file names. Please see",
+                            "the migration guide there for more details."]),
+                  DeprecationWarning, stacklevel=2)
     pass
 
 
@@ -239,7 +254,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     return data, mdata
 
 
-def clean(inst):
+def clean(self):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -264,33 +279,30 @@ def clean(inst):
 
     """
 
-    if inst.tag.find('los') >= 0:
+    if self.tag.find('los') >= 0:
         # dealing with LOS winds
         wind_flag = 'Wind_Quality'
         ver_flag = 'VER_Quality'
         wind_vars = ['Line_of_Sight_Wind', 'Line_of_Sight_Wind_Error']
         ver_vars = ['Fringe_Amplitude', 'Fringe_Amplitude_Error',
                     'Relative_VER', 'Relative_VER_Error']
-        if wind_flag not in inst.variables:
+        if wind_flag not in self.variables:
             wind_flag = '_'.join(('ICON_L21', wind_flag))
             ver_flag = '_'.join(('ICON_L21', ver_flag))
             wind_vars = ['ICON_L21_' + var for var in wind_vars]
             ver_vars = ['ICON_L21_' + var for var in ver_vars]
         min_val = {'clean': 1.0,
                    'dusty': 0.5}
-        if inst.clean_level in ['clean', 'dusty']:
+        if self.clean_level in ['clean', 'dusty']:
             # find location with any of the flags set
             for var in wind_vars:
-                inst[var] = inst[var].where(inst[wind_flag]
-                                            >= min_val[inst.clean_level])
+                self[var] = self[var].where(self[wind_flag]
+                                            >= min_val[self.clean_level])
             for var in ver_vars:
-                inst[var] = inst[var].where(inst[ver_flag]
-                                            >= min_val[inst.clean_level])
-        else:
-            # dirty and worse lets everything through
-            pass
+                self[var] = self[var].where(self[ver_flag]
+                                            >= min_val[self.clean_level])
 
-    elif inst.tag.find('vector') >= 0:
+    elif self.tag.find('vector') >= 0:
         # vector winds area
         wind_flag = 'Wind_Quality'
         ver_flag = 'VER_Quality'
@@ -298,45 +310,38 @@ def clean(inst):
                      'Meridional_Wind', 'Meridional_Wind_Error']
         ver_vars = ['Fringe_Amplitude', 'Fringe_Amplitude_Error',
                     'Relative_VER', 'Relative_VER_Error']
-        if wind_flag not in inst.variables:
+        if wind_flag not in self.variables:
             wind_flag = '_'.join(('ICON_L22', wind_flag))
             ver_flag = '_'.join(('ICON_L22', ver_flag))
             wind_vars = ['ICON_L22_' + var for var in wind_vars]
             ver_vars = ['ICON_L22_' + var for var in ver_vars]
         min_val = {'clean': 1.0,
                    'dusty': 0.5}
-        if inst.clean_level in ['clean', 'dusty']:
+        if self.clean_level in ['clean', 'dusty']:
             # find location with any of the flags set
             for var in wind_vars:
-                inst[var] = inst[var].where(inst[wind_flag]
-                                            >= min_val[inst.clean_level])
+                self[var] = self[var].where(self[wind_flag]
+                                            >= min_val[self.clean_level])
             for var in ver_vars:
-                inst[var] = inst[var].where(inst[ver_flag]
-                                            >= min_val[inst.clean_level])
-        else:
-            # dirty lets everything through
-            pass
+                self[var] = self[var].where(self[ver_flag]
+                                            >= min_val[self.clean_level])
 
-    elif inst.tag.find('temp') >= 0:
+    elif self.tag.find('temp') >= 0:
         # neutral temperatures
         var = 'Temperature'
         saa_flag = 'Quality_Flag_South_Atlantic_Anomaly'
         cal_flag = 'Quality_Flag_Bad_Calibration'
-        if saa_flag not in inst.variables:
-            saa_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
-                                 saa_flag))
-            cal_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
-                                 cal_flag))
-            var = '_'.join(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
-        if inst.clean_level in ['clean', 'dusty']:
+        if saa_flag not in self.variables:
+            id_str = self.inst_id.upper()
+            saa_flag = '_'.join(('ICON_L1_MIGHTI', id_str, saa_flag))
+            cal_flag = '_'.join(('ICON_L1_MIGHTI', id_str, cal_flag))
+            var = '_'.join(('ICON_L23_MIGHTI', id_str, var))
+        if self.clean_level in ['clean', 'dusty']:
             # filter out areas with bad calibration data
             # as well as data marked in the SAA
-            inst[var] = inst[var].where((inst[saa_flag] == 0)
-                                        & (inst[cal_flag] == 0))
+            self[var] = self[var].where((self[saa_flag] == 0)
+                                        & (self[cal_flag] == 0))
             # filter out negative temperatures
-            inst[var] = inst[var].where(inst[var] > 0)
-        else:
-            # dirty and worse lets everything through
-            pass
+            self[var] = self[var].where(self[var] > 0)
 
     return

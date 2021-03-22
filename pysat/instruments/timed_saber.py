@@ -3,6 +3,10 @@
 (SABER) instrument on the Thermosphere Ionosphere Mesosphere Energetics
 Dynamics (TIMED) satellite.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
 Properties
 ----------
 platform
@@ -51,6 +55,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
+import warnings
 
 import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
@@ -86,6 +91,19 @@ download = functools.partial(cdw.download, supported_tags, multi_file_day=True)
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
+
+
+def init(self):
+    """Initializes the Instrument object with values
+    """
+
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def clean(inst):

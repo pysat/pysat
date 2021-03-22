@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Provides non-instrument specific routines for ICON data"""
+"""Provides non-instrument specific routines for ICON data
+
+.. deprecated:: 2.3.0
+  This module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatNASA)
+
+"""
 
 import fnmatch
 import ftplib
@@ -7,6 +13,7 @@ import logging
 import numpy as np
 import os
 import shutil
+import warnings
 from zipfile import ZipFile
 
 import pysat
@@ -120,6 +127,10 @@ def list_remote_files(tag, sat_id, user=None, password=None,
     This routine is intended to be used by pysat instrument modules supporting
     a particular UC-Berkeley SSL dataset related to ICON.
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatNASA.instruments.methods.icon`
+
     Parameters
     ----------
     tag : string or NoneType
@@ -150,6 +161,13 @@ def list_remote_files(tag, sat_id, user=None, password=None,
         containing filenames and indexed by date and time
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatNASA.instruments.methods.icon.",
+                           "list_remote_files` instead: ",
+                           "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
 
     if (user is not None) or (password is not None):
         raise ValueError('User account information must not be provided.')
@@ -260,6 +278,10 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
                  user=None, password=None, supported_tags=None):
     """Download ICON data from public area of SSL ftp server
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0.  It is replaced by the
+      pysatNASA.instruments.methods.cdaweb.download method.
+
     Parameters
     ----------
     date_array : array-like
@@ -285,6 +307,13 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
         routine via kwargs.
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatNASA.instruments.methods.cdaweb.",
+                           "download` instead: ",
+                           "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
 
     # get a list of remote files
     remote_files = list_remote_files(tag, sat_id,

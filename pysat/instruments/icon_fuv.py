@@ -3,6 +3,13 @@
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA).  Note that
+  the ICON files are retrieved from different servers here and in pysatNASA,
+  resulting in a difference in local file names. Please see the migration guide
+  there for more details.
+
 Properties
 ----------
 platform
@@ -54,6 +61,7 @@ import logging
 import warnings
 
 import pysat
+from pysat.instruments.methods import nasa_cdaweb as cdw
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
 
@@ -66,33 +74,31 @@ tags = {'day': 'Level 2 daytime O/N2',
         'night': 'Level 2 nighttime O profile'}
 sat_ids = {'': ['day', 'night']}
 _test_dates = {'': {kk: dt.datetime(2020, 1, 1) for kk in tags.keys()}}
-_test_download_travis = {'': {kk: False for kk in tags.keys()}}
 pandas_format = False
 
-fname24 = ''.join(('ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_',
-                   'v{version:02d}r{revision:03d}.NC'))
-fname25 = ''.join(('ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_',
-                   'v{version:02d}r{revision:03d}.NC'))
-supported_tags = {'': {'day': fname24,
-                       'night': fname25}}
+# Set the list_files routine
+fname24 = ''.join(('icon_l2-4_fuv_day_{year:04d}{month:02d}{day:02d}_',
+                   'v04r000.nc'))
+fname25 = ''.join(('icon_l2-5_fuv_night_{year:04d}{month:02d}{day:02d}_',
+                   'v04r000.nc'))
+supported_tags = {'': {'day': fname24, 'night': fname25}}
 
-# use the standard methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
-# support download routine
-basic_tag24 = {'dir': '/pub/LEVEL.2/FUV',
-               'remote_fname': fname24}
-basic_tag25 = {'dir': '/pub/LEVEL.2/FUV',
-               'remote_fname': fname25}
+# Set the download routine
+basic_tag24 = {'dir': '/pub/data/icon/l2/l2-4_fuv_day',
+               'remote_fname': '{year:04d}/' + fname24,
+               'local_fname': fname24}
+basic_tag25 = {'dir': '/pub/data/icon/l2/l2-5_fuv_night',
+               'remote_fname': '{year:04d}/' + fname25,
+               'local_fname': fname25}
+download_tags = {'': {'day': basic_tag24, 'night': basic_tag25}}
 
-download_tags = {'': {'day': basic_tag24,
-                      'night': basic_tag25}}
+download = functools.partial(cdw.download, download_tags)
 
-download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
-
-# support listing files on SSL
-list_remote_files = functools.partial(mm_icon.list_remote_files,
+# Set the list_remote_files routine
+list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=download_tags)
 
 
@@ -113,6 +119,16 @@ def init(self):
     self.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['fuv']))
 
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA",
+                            "Note that the ICON files are retrieved from",
+                            "different servers here and in pysatNASA, resulting",
+                            "in a difference in local file names. Please see",
+                            "the migration guide there for more details."]),
+                  DeprecationWarning, stacklevel=2)
     pass
 
 

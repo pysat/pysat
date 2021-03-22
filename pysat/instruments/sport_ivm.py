@@ -5,6 +5,10 @@ Ion Velocity Meter (IVM) support for the NASA/INPE SPORT CubeSat.
 This mission is still in development. This routine is here to help
 with the development of code associated with SPORT and the IVM.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
 """
 
 import functools
@@ -49,8 +53,13 @@ def init(self):
 
     logger.info(' '.join(("Mission acknowledgements and data restrictions will",
                           "be printed here when available.")))
-
-    pass
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def load(fnames, tag=None, sat_id=None, **kwargs):

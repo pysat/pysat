@@ -3,6 +3,13 @@
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA).  Note that
+  the ICON files are retrieved from different servers here and in pysatNASA,
+  resulting in a difference in local file names. Please see the migration guide
+  there for more details.
+
 Properties
 ----------
 platform
@@ -49,8 +56,10 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import logging
+import warnings
 
 import pysat
+from pysat.instruments.methods import nasa_cdaweb as cdw
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
 
@@ -62,25 +71,24 @@ name = 'euv'
 tags = {'': 'Level 2 public geophysical data'}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2020, 1, 1)}}
-_test_download_travis = {'': {kk: False for kk in tags.keys()}}
 pandas_format = False
 
-fname = ''.join(('ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_',
-                 'v{version:02d}r{revision:03d}.NC'))
+# Set the list_files routine
+fname = ''.join(('icon_l2-6_euv_{year:04d}{month:02d}{day:02d}_',
+                 'v02r002.nc'))
 supported_tags = {'': {'': fname}}
-
-# use the CDAWeb methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
-# support download routine
-basic_tag = {'dir': '/pub/LEVEL.2/EUV',
-             'remote_fname': ''.join(('ZIP/', fname[:-2], 'ZIP'))}
+# Set the download routine
+basic_tag = {'dir': '/pub/data/icon/l2/l2-6_euv',
+             'remote_fname': '{year:04d}/' + fname,
+             'local_fname': fname}
 download_tags = {'': {'': basic_tag}}
-download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
+download = functools.partial(cdw.download, download_tags)
 
-# support listing files on SSL
-list_remote_files = functools.partial(mm_icon.list_remote_files,
+# Set the list_remote_files routine
+list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=download_tags)
 
 
@@ -100,6 +108,16 @@ def init(self):
     self.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['euv']))
 
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA",
+                            "Note that the ICON files are retrieved from",
+                            "different servers here and in pysatNASA, resulting",
+                            "in a difference in local file names. Please see",
+                            "the migration guide there for more details."]),
+                  DeprecationWarning, stacklevel=2)
     pass
 
 
@@ -180,7 +198,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     return data, mdata
 
 
-def clean(inst):
+def clean(self):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -207,19 +225,16 @@ def clean(inst):
     """
 
     vars = ['HmF2', 'NmF2', 'Oplus']
-    if 'Flags' in inst.variables:
-        icon_flag = 'Flags'
+    if 'Flag' in self.variables:
+        icon_flag = 'Flag'
     else:
-        icon_flag = 'ICON_L26_Flags'
+        icon_flag = 'ICON_L26_Flag'
         vars = ['ICON_L26_' + x for x in vars]
 
     min_val = {'clean': 1.0,
                'dusty': 2.0}
-    if inst.clean_level in ['clean', 'dusty']:
+    if self.clean_level in ['clean', 'dusty']:
         for var in vars:
-            inst[var] = inst[var].where(inst[icon_flag]
-                                        <= min_val[inst.clean_level])
-    else:
-        # dirty and worse lets everything through
-        pass
+            self[var] = self[var].where(self[icon_flag]
+                                        <= min_val[self.clean_level])
     return

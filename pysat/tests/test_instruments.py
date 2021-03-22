@@ -15,7 +15,11 @@ import pysat.instruments.pysat_testing
 from pysat.instruments.methods import testing as mm_test
 
 # modules in the list below have deprecation warnings
-dep_list = ['cosmic_gps', 'dmsp_ivm', 'jro_isr', 'sw_dst', 'sw_kp', 'sw_f107',
+dep_list = ['cosmic_gps', 'cnofs_ivm', 'cnofs_plp', 'cnofs_vefi', 'de2_lang',
+            'de2_nacs', 'de2_rpa', 'de2_wats', 'dmsp_ivm', 'icon_euv',
+            'icon_fuv', 'icon_ivm', 'icon_mighti', 'iss_fpmu', 'jro_isr',
+            'omni_hro', 'rocsat1_ivm', 'sport_ivm', 'sw_dst', 'sw_kp',
+            'sw_f107', 'timed_saber', 'timed_see',
             'ucar_tiegcm', 'champ_star', 'demeter_iap', 'superdarn_grdex',
             'supermag_magnetometer']
 
