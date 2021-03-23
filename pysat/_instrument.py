@@ -523,10 +523,12 @@ class Instrument(object):
                         except AttributeError:
                             # If an item missing a required attribute
                             return False
+
                     else:
                         # General check for everything else.
                         checks.append(np.all(self.__dict__[key]
                                              == other.__dict__[key]))
+
                 else:
                     # Both objects don't have the same attached objects
                     return False
@@ -540,6 +542,7 @@ class Instrument(object):
                                              == other.__dict__[key]))
                     except ValueError:
                         return False
+
                 else:
                     checks.append(xr.Dataset.equals(self.data,
                                                     other.data))

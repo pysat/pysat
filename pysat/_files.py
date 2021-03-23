@@ -302,6 +302,7 @@ class Files(object):
                                '_current_file_list', 'inst_info']:
                     test = np.all(self.__dict__[key] == other.__dict__[key])
                     checks.append(test)
+
                 else:
                     if key not in ['inst_info']:
                         # Comparing one of the stored pandas Series
@@ -314,6 +315,7 @@ class Files(object):
                         except ValueError:
                             # If there is an error they aren't the same.
                             return False
+
                     elif key == 'inst_info':
                         ichecks = []
                         for ii_key in self.inst_info.keys():
@@ -321,6 +323,7 @@ class Files(object):
                                 # Standard check
                                 ichecks.append(self.inst_info[ii_key]
                                                == other.inst_info[ii_key])
+
                             else:
                                 # Don't want a recursive check on 'inst', which
                                 # contains Files. If the string representations
@@ -333,6 +336,7 @@ class Files(object):
                                     # If one object is missing a required key
                                     return False
                         checks.append(np.all(ichecks))
+
             else:
                 # other did not have an key that self did
                 return False
