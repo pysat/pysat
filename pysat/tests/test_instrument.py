@@ -614,12 +614,14 @@ class TestBasics():
         """Test equality when the same object"""
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
+        return
 
     def test_eq_both_with_data(self):
         """Test equality when the same object with loaded data"""
         self.testInst.load(date=self.ref_time)
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
+        return
 
     def test_eq_one_with_data(self):
         """Test equality when the same objects but only one with loaded data"""
@@ -627,6 +629,7 @@ class TestBasics():
         inst_copy = self.testInst.copy()
         inst_copy.data = self.testInst._null_data
         assert not (inst_copy == self.testInst)
+        return
 
     def test_eq_different_data_type(self):
         """Test equality different data type"""
@@ -639,6 +642,7 @@ class TestBasics():
             inst_copy.pandas_format = True
             inst_copy.data = pds.DataFrame()
         assert not (inst_copy == self.testInst)
+        return
 
     def test_eq_different_object(self):
         """Test equality using different pysat.Instrument objects"""
@@ -652,23 +656,29 @@ class TestBasics():
                                 num_samples=10, clean_level='clean',
                                 update_files=True)
         assert not (obj1 == obj2)
+        return
 
     def test_eq_different_type(self):
         """Test equality False when non-Instrument object"""
         assert self.testInst != np.array([])
+        return
 
     def test_inequality_modified_object(self):
         """Test that equality is false if other missing attributes"""
         self.out = self.testInst.copy()
+
         # Remove attribute
         del self.out.platform
+
         assert self.testInst != self.out
+        return
 
     def test_inequality_reduced_object(self):
         """Test that equality is false if self missing attributes"""
         self.out = self.testInst.copy()
         self.out.hi_there = 'hi'
         assert self.testInst != self.out
+        return
 
     # -------------------------------------------------------------------------
     #
