@@ -509,24 +509,24 @@ class Instrument(object):
                          '_list_remote_files_rtn', '_load_rtn']
 
         checks = []
-        item_check = []
-        for item in self.__dict__:
-            if item not in ['data', '_null_data', '_next_data',
-                            '_curr_data', '_prev_data']:
-                item_check.append(item)
-                if item in other.__dict__:
-                    if item in partial_funcs:
+        key_check = []
+        for key in self.__dict__:
+            if key not in ['data', '_null_data', '_next_data',
+                           '_curr_data', '_prev_data']:
+                key_check.append(key)
+                if key in other.__dict__:
+                    if key in partial_funcs:
                         # Partial function comparison doesn't work directly.
                         try:
-                            checks.append(str(self.__dict__[item])
-                                          == str(other.__dict__[item]))
+                            checks.append(str(self.__dict__[key])
+                                          == str(other.__dict__[key]))
                         except AttributeError:
                             # If an item missing a required attribute
                             return False
                     else:
                         # General check for everything else.
-                        checks.append(np.all(self.__dict__[item]
-                                             == other.__dict__[item]))
+                        checks.append(np.all(self.__dict__[key]
+                                             == other.__dict__[key]))
                 else:
                     # Both objects don't have the same attached objects
                     return False
@@ -536,19 +536,20 @@ class Instrument(object):
                     try:
                         # Check is sensitive to the index labels. Errors
                         # if index is not identical.
-                        checks.append(np.all(self.__dict__[item]
-                                             == other.__dict__[item]))
+                        checks.append(np.all(self.__dict__[key]
+                                             == other.__dict__[key]))
                     except ValueError:
                         return False
                 else:
                     checks.append(xr.Dataset.equals(self.data,
                                                     other.data))
 
-        # Confirm that other doesn't have extra terms
-        for item in other.__dict__:
-            if item not in self.__dict__:
+        # Confirm that other Instrument object doesn't have extra terms
+        for key in other.__dict__:
+            if key not in self.__dict__:
                 return False
 
+        # Confirm all checks are True
         test_data = np.all(checks)
 
         return test_data
