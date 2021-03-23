@@ -286,33 +286,33 @@ class Files(object):
             return False
 
         checks = []
-        item_check = []
-        for item in self.__dict__:
-            item_check.append(item)
-            # Confirm each object has the same items
-            if item in other.__dict__:
+        key_check = []
+        for key in self.__dict__:
+            key_check.append(key)
+            # Confirm each object has the same keys
+            if key in other.__dict__:
                 # Define default comparison. Testing equality between two Series
                 # will produce an error if they don't have the same index
                 # (files, _*_file_list).
                 # 'inst_info' contains a weakref back to Instrument that
                 # requires a different check.
-                if item not in ['files', '_previous_file_list',
-                                '_current_file_list', 'inst_info']:
-                    test = np.all(self.__dict__[item] == other.__dict__[item])
+                if key not in ['files', '_previous_file_list',
+                               '_current_file_list', 'inst_info']:
+                    test = np.all(self.__dict__[key] == other.__dict__[key])
                     checks.append(test)
                 else:
-                    if item not in ['inst_info']:
+                    if key not in ['inst_info']:
                         # Comparing one of the stored pandas Series
                         try:
                             # Comparison only works for identically-labeled
                             # series.
-                            check = np.all(self.__dict__[item]
-                                           == other.__dict__[item])
+                            check = np.all(self.__dict__[key]
+                                           == other.__dict__[key])
+                            checks.append(check)
                         except ValueError:
                             # If there is an error they aren't the same.
                             return False
-                        checks.append(check)
-                    elif item == 'inst_info':
+                    elif key == 'inst_info':
                         ichecks = []
                         for ii_key in self.inst_info.keys():
                             if ii_key != 'inst':
@@ -328,16 +328,16 @@ class Files(object):
                                     ichecks.append(str(self.inst_info[ii_key])
                                                    == str(oinst))
                                 except AttributeError:
-                                    # If one object is missing a required item
+                                    # If one object is missing a required key
                                     return False
                         checks.append(np.all(ichecks))
             else:
-                # other did not have an item that self did
+                # other did not have an key that self did
                 return False
 
         # Confirm that other doesn't have extra terms
-        for item in other.__dict__:
-            if item not in self.__dict__:
+        for key in other.__dict__:
+            if key not in self.__dict__:
                 return False
 
         test_data = np.all(checks)
