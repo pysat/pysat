@@ -641,8 +641,8 @@ class Files(object):
         # The copy module does not copy modules. Treat self.inst_info
         # differently since it possibly contains a python module, plus
         # it also contains a weakref back to Instrument.  Because the Instrument
-        # reference contains another Files object, it could cause the creation of
-        # an infinite, recursive copy.
+        # reference contains another Files object, it could cause the creation
+        # of an infinite, recursive copy.
         saved_info = self.inst_info
         self.inst_info = None
 
@@ -652,9 +652,9 @@ class Files(object):
         # Restore the saved information, then copy over items that can be copied
         self.inst_info = saved_info
         files_copy.inst_info = {}
-        for item in saved_info:
-            if item not in ['inst', 'inst_module']:
-                files_copy.inst_info[item] = copy.deepcopy(self.inst_info[item])
+        for key in saved_info.keys():
+            if key not in ['inst', 'inst_module']:
+                files_copy.inst_info[key] = copy.deepcopy(self.inst_info[key])
 
         # Can't copy the weakreference
         files_copy.inst_info['inst'] = self.inst_info['inst']
