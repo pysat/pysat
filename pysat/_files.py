@@ -287,7 +287,7 @@ class Files(object):
 
         checks = []
         key_check = []
-        for key in self.__dict__:
+        for key in self.__dict__.keys():
             key_check.append(key)
             # Confirm each object has the same keys
             if key in other.__dict__:
@@ -336,7 +336,7 @@ class Files(object):
                 return False
 
         # Confirm that other doesn't have extra terms
-        for key in other.__dict__:
+        for key in other.__dict__.keys():
             if key not in self.__dict__:
                 return False
 
