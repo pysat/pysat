@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 
 import pandas as pds
+# Import below is needed for tests on __repr__
 from pandas import Timedelta # noqa
 import pytest
 
