@@ -79,7 +79,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
 
 
 def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
-                          apply_modulus=True):
+                          apply_modulus=True, ref_date=None):
     """ Append solar local time to an instrument object
 
     Parameters
@@ -91,7 +91,13 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
     slt_name : string
         name of the output solar local time data key (default='slt')
     apply_modulus : bool
-        If True, SLT values are confined to [0, 24), if False they may be positive or negative based on the value of their universal time relative to that of the first point included in the Instrument object. (default=True)
+        If True, SLT values are confined to [0, 24), if False they may be
+        positive or negative based on the value of their universal time
+        relative to that of the reference date `ref_date`.
+        (default=True)
+    ref_date : dt.datetime or NoneType
+        Reference initial date. If None, will use the date found at
+        `inst.date`. Only valid if apply_modulus is True. (default=None)
 
     Note
     ----
@@ -104,21 +110,33 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
     if lon_name not in inst.data.keys():
         raise ValueError('unknown longitude variable name')
 
+    if ref_date is not None and apply_modulus:
+        estr = 'Keyword `ref_date` only supported if `apply_modulus`=False.'
+        raise ValueError(estr)
+
+    if ref_date is None:
+        # Use date information attached to Instrument object
+        ref_date = pds.Timestamp(inst.date)
+    else:
+        # Use user supplied reference date.
+        ref_date = pds.Timestamp(ref_date)
+
     # Convert from numpy epoch nanoseconds to UT seconds of day
     ut_hr = list()
-    first_time = inst.index.values[:1].astype(int)[0]
     for nptime in inst.index.values.astype(int):
-        # Account for any difference in days across loaded data (multi-day span)
-        day_diff = np.floor((nptime - first_time) * 1.0e-9 / 86400.)
-
         # Numpy times come out in nanoseconds and timestamp converts
         # from seconds
         dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
         ut_hr.append((dtime.hour * 3600.0 + dtime.minute * 60.0
-                      + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0
-                     + day_diff * 24.)
+                      + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
 
     ut_hr = np.array(ut_hr)
+
+    # Account for difference in days for calculations without modulus
+    if not apply_modulus:
+        day_diff = inst.index - ref_date
+        day_diff = np.array([diff.days for diff in day_diff])
+        ut_hr += day_diff * 24.
 
     # Calculate solar local time
     if inst[lon_name].shape == ut_hr.shape or inst[lon_name].shape == ():
@@ -142,7 +160,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
                 lon = inst[lon_name][inst.index.name == inst.index[0]]
                 slt[i] = hr + lon / 15.0
         else:
-            # Initalize the new shape and coordinates
+            # Initialize the new shape and coordinates
             sshape = list(ut_hr.shape)
             sshape.extend(list(inst[lon_name].shape))
 
@@ -155,14 +173,15 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
             for i, hr in enumerate(ut_hr):
                 slt[i] = hr + inst[lon_name] / 15.0
 
-    # Ensure that solar local time falls between 0 and 24 hours
     if apply_modulus:
+        # Ensure that solar local time falls between 0 and 24 hours
         slt = np.mod(slt, 24.0)
         min_val = 0.0
-        max_val = 0.0
+        max_val = 24.0
     else:
-        min_val = np.nan
-        max_val = np.nan
+        # No modulus applied. Values are unbounded.
+        min_val = -np.inf
+        max_val = np.inf
 
     # Add the solar local time to the instrument
     if inst.pandas_format:
