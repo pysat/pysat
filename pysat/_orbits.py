@@ -200,8 +200,10 @@ class Orbits(object):
                         except ValueError:
                             # If there is an error they aren't the same
                             return False
+
                         checks.append(check)
                         key_check.append(key)
+
                     else:
                         # xarray comparison
                         test = xr.Dataset.equals(self.__dict__[key],
@@ -218,6 +220,7 @@ class Orbits(object):
                     except AttributeError:
                         # One object is missing a required attribute
                         return False
+
                     checks.append(check)
                     key_check.append(key)
 
