@@ -96,7 +96,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     ----------
     tag : str or NoneType
         pysat instrument tag (default=None)
-    inst_id : str
+    inst_id : str or NoneType
         pysat satellite ID tag (default=None)
     data_path : str or NoneType
         pysat data path (default=None)
@@ -108,7 +108,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         through below.  Otherwise, accepts a range of files specified by the
         user.
         (default=None)
-    test_dates : dt.datetime
+    test_dates : dt.datetime or NoneType
         Pass the _test_date object through from the test instrument files
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
@@ -157,13 +157,13 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : str
+    tag : str or NoneType
         pysat instrument tag (default=None)
-    inst_id : str
+    inst_id : str or NoneType
         pysat satellite ID tag (default=None)
-    data_path : str
+    data_path : str or NoneType
         pysat data path (default=None)
-    format_str : str
+    format_str : str or NoneType
         file format string (default=None)
     start : dt.datetime or NoneType
         Starting time for file list. A None value will start 1 year before
@@ -173,13 +173,13 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         Ending time for the file list.  A None value will stop 2 years 1 month
         after test_date
         (default=None)
-    test_dates : dt.datetime
+    test_dates : dt.datetime or NoneType
         Pass the _test_date object through from the test instrument files
-    user : string
+    user : string or NoneType
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
         error if user not supplied. (default=None)
-    password : string
+    password : string or NoneType
         Password for data download. (default=None)
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
@@ -231,13 +231,13 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
     inst_id : string
         Instrument ID string identifier used for particular dataset. This input
         is provided by pysat. (default='')
-    data_path : string
+    data_path : string or NoneType
         Path to directory to download data to. (default=None)
-    user : string
+    user : string or NoneType
         User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
+        pysat. If an account is required for downloads this routine here must
         error if user not supplied. (default=None)
-    password : string
+    password : string or NoneType
         Password for data download. (default=None)
     test_download_kwrd : any or NoneType
         Testing keyword (default=None)
