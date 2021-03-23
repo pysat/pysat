@@ -314,18 +314,18 @@ class Files(object):
                         checks.append(check)
                     elif item == 'inst_info':
                         ichecks = []
-                        for sitem in self.inst_info:
-                            if sitem != 'inst':
+                        for ii_key in self.inst_info.keys():
+                            if ii_key != 'inst':
                                 # Standard check
-                                ichecks.append(self.inst_info[sitem]
-                                               == other.inst_info[sitem])
+                                ichecks.append(self.inst_info[ii_key]
+                                               == other.inst_info[ii_key])
                             else:
                                 # Don't want a recursive check on 'inst', which
                                 # contains Files. If the string representations
                                 # are the same we consider them the same.
                                 try:
-                                    oitem = other.inst_info[sitem]
-                                    ichecks.append(str(self.inst_info[sitem])
+                                    oitem = other.inst_info[ii_key]
+                                    ichecks.append(str(self.inst_info[ii_key])
                                                    == str(oitem))
                                 except AttributeError:
                                     # If one object is missing a required item
