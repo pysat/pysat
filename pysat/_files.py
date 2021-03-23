@@ -291,8 +291,9 @@ class Files(object):
             item_check.append(item)
             # Confirm each object has the same items
             if item in other.__dict__:
-                # Define default comparison. Series comparisons can error
-                # for simply being different (files, _*_file_list).
+                # Define default comparison. Testing equality between two Series
+                # will produce an error if they don't have the same index
+                # (files, _*_file_list).
                 # 'inst_info' contains a weakref back to Instrument that
                 # requires a different check.
                 if item not in ['files', '_previous_file_list',
