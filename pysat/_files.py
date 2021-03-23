@@ -324,9 +324,9 @@ class Files(object):
                                 # contains Files. If the string representations
                                 # are the same we consider them the same.
                                 try:
-                                    oitem = other.inst_info[ii_key]
+                                    oinst = other.inst_info[ii_key]
                                     ichecks.append(str(self.inst_info[ii_key])
-                                                   == str(oitem))
+                                                   == str(oinst))
                                 except AttributeError:
                                     # If one object is missing a required item
                                     return False
