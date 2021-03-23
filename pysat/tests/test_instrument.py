@@ -494,6 +494,7 @@ class TestBasics():
         assert filter_datetime_input(self.out.index[-1]) == stop
 
     def test_remote_date_range(self):
+        """Test remote_date_range for valid pair of dates"""
         stop = self.ref_time + dt.timedelta(days=30)
         self.out = self.testInst.remote_date_range(start=self.ref_time,
                                                    stop=stop)
