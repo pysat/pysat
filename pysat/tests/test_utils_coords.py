@@ -95,6 +95,24 @@ class TestLonSLT():
         assert (abs(self.py_inst['slt'].values
                     - self.py_inst['longitude'].values / 15.0)).max() < 1.0e-6
 
+    @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
+    def test_calc_solar_local_time_inconsistent_keywords(self, name):
+        """Test that ref_date only allowed when apply_modulus=False"""
+
+        self.py_inst = pysat.Instrument(platform='pysat', name=name,
+                                        num_samples=1)
+        self.py_inst.load(date=self.inst_time)
+
+        with pytest.raises(ValueError) as err:
+            coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
+                                         slt_name='slt',
+                                         ref_date=self.py_inst.date,
+                                         apply_modulus=True)
+
+        # Confirm we have the correct error
+        assert str(err).find('Keyword `ref_date` only supported if') >= 0
+        return
+
     def test_calc_solar_local_time_w_neg_longitude(self):
         """Test calc_solar_local_time with longitudes from -180 to 180 deg"""
 
@@ -147,6 +165,23 @@ class TestLonSLT():
         assert self.py_inst['slt'].max() > 48.0
         assert self.py_inst['slt'].max() < 72.0
         assert self.py_inst['slt'].min() >= 0.0
+
+    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
+                                      "testing2d_xarray"])
+    def test_lon_broadcasting_calc_solar_local_time_no_mod_ref_date(self, name):
+        """Test calc_solar_local_time with longitude coordinates, no mod, 2 days
+        """
+
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst.load(date=self.inst_time, end_date=self.inst_time_2)
+        coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
+                                     slt_name='slt', apply_modulus=False,
+                                     ref_date=self.inst_time
+                                              - dt.timedelta(days=1))
+
+        assert self.py_inst['slt'].max() > 72.0
+        assert self.py_inst['slt'].max() < 96.0
+        assert self.py_inst['slt'].min() >= 24.0
 
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
                                       "testing2d_xarray"])
