@@ -43,7 +43,7 @@ class TestLonSLT():
         """Runs after every method to clean up previous testing."""
         self.py_inst = None
         self.inst_time = dt.datetime(2009, 1, 1)
-        self.inst_2_time = dt.datetime(2009, 1, 3)
+        self.inst_time_2 = dt.datetime(2009, 1, 3)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -140,7 +140,7 @@ class TestLonSLT():
         """
 
         self.py_inst = pysat.Instrument(platform='pysat', name=name)
-        self.py_inst.load(date=self.inst_time, end_date=self.inst_2_time)
+        self.py_inst.load(date=self.inst_time, end_date=self.inst_time_2)
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt', apply_modulus=False)
 
