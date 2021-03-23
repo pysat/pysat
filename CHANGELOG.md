@@ -124,11 +124,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Ensured pysat.Meta instances are immutable at Instrument instantiation
   - Removed weak reference back to Instrument within Files class
   - Fixed access of xarray data with more than one dimension (#471)
-  - Improved robustness of eval(inst.__repr__()) (#636)
+  - Improved robustness of `eval(inst.__repr__())` (#636)
   - Fixed `calc_solar_local_time` for data sets with longitude coordinates
   - Fixed .copy() when pysat.Instrument instantiated with `inst_module` (#728)
   - Modified storage of Instrument.kwargs to include all methods so that
-    eval(Instrument.__repr__()) works in more cases
+    `eval(Instrument.__repr__())` works in more cases
   - Modified storage of Instrument.kwargs to only include user supplied keywords
   - Improved robustness when working with file dates that aren't centered on 
     midnight
