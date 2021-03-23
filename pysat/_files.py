@@ -282,9 +282,11 @@ class Files(object):
             True if objects are identical, False if they are not
 
         """
+        # Check if the other object has the same type
         if not isinstance(other, self.__class__):
             return False
 
+        # If the type is the same CHECK FOR ALL THESE THINGS
         checks = []
         item_check = []
         for item in self.__dict__:
@@ -334,7 +336,7 @@ class Files(object):
                 # other did not have an item that self did
                 return False
 
-        # Confirm that other doesn't have extra terms
+        # Confirm that Files object `other` doesn't have extra terms
         for item in other.__dict__:
             if item not in self.__dict__:
                 return False
@@ -633,8 +635,9 @@ class Files(object):
         """
         # The copy module does not copy modules. Treat self.inst_info
         # differently since it possibly contains a python module, plus
-        # it also contains a weakref back to Instrument, which contains Files,
-        # resulting in an infinite recusive copy.
+        # it also contains a weakref back to Instrument.  Because the Instrument
+        # reference contains another Files object, it could cause the creation of
+        # an infinite, recursive copy.
         saved_info = self.inst_info
         self.inst_info = None
 
@@ -647,8 +650,10 @@ class Files(object):
         for item in saved_info:
             if item not in ['inst', 'inst_module']:
                 files_copy.inst_info[item] = copy.deepcopy(self.inst_info[item])
+
         # Can't copy the weakreference
         files_copy.inst_info['inst'] = self.inst_info['inst']
+
         # Can't copy the module
         files_copy.inst_info['inst_module'] = self.inst_info['inst_module']
         return files_copy

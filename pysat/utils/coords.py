@@ -91,8 +91,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
     slt_name : string
         name of the output solar local time data key (default='slt')
     apply_modulus : bool
-        If True, slt values are confined to [0, 24) via a modulus operation.
-        If False, no modulus applied. (default=True)
+        If True, SLT values are confined to [0, 24), if False they may be positive or negative based on the value of their universal time relative to that of the first point included in the Instrument object. (default=True)
 
     Note
     ----

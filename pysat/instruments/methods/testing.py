@@ -96,7 +96,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     ----------
     tag : str or NoneType
         pysat instrument tag (default=None)
-    inst_id : str
+    inst_id : str or NoneType
         pysat satellite ID tag (default=None)
     data_path : str or NoneType
         pysat data path (default=None)
