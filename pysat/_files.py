@@ -294,11 +294,7 @@ class Files(object):
             key_check.append(key)
             # Confirm each object has the same keys
             if key in other.__dict__.keys():
-                # Define default comparison. Testing equality between two Series
-                # will produce an error if they don't have the same index
-                # (files, _*_file_list) instead of False.
-                # 'inst_info' contains a weakref back to Instrument that
-                # requires a different check.
+                # Define default comparison.
                 if key not in ['files', '_previous_file_list',
                                '_current_file_list', 'inst_info']:
                     test = np.all(self.__dict__[key] == other.__dict__[key])

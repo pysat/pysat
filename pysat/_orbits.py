@@ -182,9 +182,6 @@ class Orbits(object):
         key_check = []
         for key in self.__dict__.keys():
             if key in other.__dict__.keys():
-                # partial function comparisons (_det_breaks), data
-                # objects (_full_daya_data), and the pysat.Instrument ref
-                # require different treatment.
                 if key not in ['_full_day_data', 'inst', '_det_breaks']:
                     # Standard equality comparison
                     test = np.all(self.__dict__[key] == other.__dict__[key])
