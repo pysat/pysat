@@ -712,6 +712,7 @@ class TestBasics():
         assert inst_copy == self.testInst
         assert inst_copy.inst_module == pysat.instruments.pysat_testing
         assert self.testInst.inst_module == pysat.instruments.pysat_testing
+
         return
 
     # -------------------------------------------------------------------------
