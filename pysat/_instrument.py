@@ -1493,7 +1493,7 @@ class Instrument(object):
                      np.uint16: 'u2', np.uint8: 'u1', np.float64: 'f8',
                      np.float32: 'f4'}
 
-        if type(coltype) is np.dtype:
+        if isinstance(coltype, np.dtype):
             var_type = coltype.kind + str(coltype.itemsize)
             return var_type
         else:

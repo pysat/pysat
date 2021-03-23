@@ -150,6 +150,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Reduced unused code snippets throughout
   - Ensured download start time is used
   - Condensed testing support functions into methods/testing.py
+  - Fixed a bug with usage of numpy.dtype for numpy 1.20 compatibility
 
 ## [2.2.2] - 2020-12-31
 - New Features

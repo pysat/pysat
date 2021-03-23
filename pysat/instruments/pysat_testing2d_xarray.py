@@ -6,7 +6,6 @@ Produces fake instrument data for testing.
 import datetime as dt
 import functools
 import numpy as np
-import warnings
 
 import xarray as xr
 
@@ -51,8 +50,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     tag : str or NoneType
         Instrument tag (accepts '')
     inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        Instrument satellite ID (accepts '')
     malformed_index : bool False
         If True, the time index will be non-unique and non-monotonic.
     num_samples : int
@@ -77,13 +75,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 864
+        # Default to 1 day at a frequency of 100S
+        num_samples = 864
     # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='100S')
@@ -138,8 +131,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data['altitude'] = ((epoch_name), altitude)
 
     # create some fake data to support testing of averaging routines
-    mlt_int = data['mlt'].astype(int)
-    long_int = (data['longitude'] / 15.).astype(int)
+    mlt_int = data['mlt'].astype(int).data
+    long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)
     data['dummy2'] = ((epoch_name), long_int)
     data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
@@ -180,6 +173,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     # create very limited metadata
     meta = pysat.Meta()
+    meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
     meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
@@ -199,6 +193,22 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     image_meta['density'] = {'long_name': 'profiles'}
     image_meta['fraction'] = {'long_name': 'profiles'}
     meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
+    for var in data.keys():
+        if var.find('dummy') >= 0:
+            meta[var] = {'units': 'none', 'long_name': var,
+                         'notes': 'Dummy variable'}
+    meta['x'] = {'long_name': 'x-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['y'] = {'long_name': 'y-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['z'] = {'long_name': 'z-value of profile height',
+                 'notes': 'Dummy Variable'}
+    meta['image_lat'] = {'long_name': 'Latitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['image_lon'] = {'long_name': 'Longitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     return data, meta
 

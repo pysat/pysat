@@ -134,6 +134,7 @@ class TestBasics():
 
         with warnings.catch_warnings(record=True) as war:
             self.testInst = pysat.Instrument('pysat', 'testing',
+                                             tag='default_meta',
                                              clean_level='clean',
                                              labels=self.meta_labels)
             self.testInst.load(date=self.stime)

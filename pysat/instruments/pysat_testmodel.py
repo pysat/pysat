@@ -6,7 +6,6 @@ Produces fake instrument data for testing.
 import datetime as dt
 import functools
 import numpy as np
-import warnings
 
 import xarray as xr
 
@@ -64,13 +63,8 @@ def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwrd=None):
     logger.info(''.join(('test_load_kwrd = ', str(test_load_kwrd))))
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 96
+        # Default to 1 day at a frequency of 900S
+        num_samples = 96
     # create an artifical satellite data set
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='900S')
@@ -90,16 +84,20 @@ def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwrd=None):
     data['slt'] = (('time', 'longitude'), slt)
     data['mlt'] = (('time', 'longitude'), np.mod(slt + 0.2, 24.0))
 
-    # Fake 3D data consisting of values between 0 and 21 everywhere
+    # Fake 3D data consisting of non-physical values between 0 and 21 everywhere
+    # Used for interpolation routines in pysatModels
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)
-    data['dummy1'] = (('time', 'latitude', 'longitude'), dummy1)
+    data['dummy1'] = (('time', 'latitude', 'longitude'), dummy1.data)
 
-    # Fake 4D data consisting of between 0 and 21 everywhere
+    # Fake 4D data consisting of non-physical values between 0 and 21 everywhere
+    # Used for interpolation routines in pysatModels
     dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
-    data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'), dummy2)
+    data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'),
+                      dummy2.data)
 
     # Set the metadata
     meta = pysat.Meta()
+    meta['time'] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'custom': False}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
@@ -109,9 +107,16 @@ def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwrd=None):
                                      '(zenith angle of sun) of the given ',
                                      'locaiton. Overhead noon, +/- 90 is 6, ',
                                      '18 SLT .'])}
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
+                   'desc': 'Magentic Local Time', 'value_min': 0.0,
+                   'value_max': 24.0}
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    for var in data.keys():
+        if var.find('dummy') >= 0:
+            meta[var] = {'units': 'none', 'long_name': var,
+                         'notes': 'Dummy variable'}
 
     return data, meta
 
