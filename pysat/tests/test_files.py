@@ -217,8 +217,10 @@ class TestBasics():
         """Check for lines from each decision point in str"""
         self.out = self.testInst.files.__str__()
         assert isinstance(self.out, str)
+
         # Test basic file output
         assert self.out.find('Number of files') > 0
+
         # Test no files
         assert self.out.find('Date Range') > 0
 
