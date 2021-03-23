@@ -176,6 +176,8 @@ class Orbits(object):
         if not isinstance(other, self.__class__):
             return False
 
+        # If the type is the same then check everything that is attached to
+        # the Orbits object. Includes attributes, methods, variables, etc.
         checks = []
         key_check = []
         for key in self.__dict__.keys():

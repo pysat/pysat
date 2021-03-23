@@ -508,6 +508,8 @@ class Instrument(object):
                          '_list_files_rtn', '_download_rtn',
                          '_list_remote_files_rtn', '_load_rtn']
 
+        # If the type is the same then check everything that is attached to
+        # the Instrument object. Includes attributes, methods, variables, etc.
         checks = []
         key_check = []
         for key in self.__dict__.keys():
