@@ -177,37 +177,39 @@ class Orbits(object):
             return False
 
         checks = []
-        item_check = []
-        for item in self.__dict__:
-            if item in other.__dict__:
+        key_check = []
+        for key in self.__dict__.keys():
+            if key in other.__dict__:
                 # partial function comparisons (_det_breaks), data
                 # objects (_full_daya_data), and the pysat.Instrument ref
                 # require different treatment.
-                if item not in ['_full_day_data', 'inst', '_det_breaks']:
+                if key not in ['_full_day_data', 'inst', '_det_breaks']:
                     # Standard equality comparison
-                    test = np.all(self.__dict__[item] == other.__dict__[item])
+                    test = np.all(self.__dict__[key] == other.__dict__[key])
                     checks.append(test)
-                    item_check.append(item)
-                elif item in ['_full_day_data']:
+                    key_check.append(key)
+
+                elif key in ['_full_day_data']:
                     # Compare data
-                    if isinstance(self.__dict__[item], pds.DataFrame):
+                    if isinstance(self.__dict__[key], pds.DataFrame):
                         try:
                             # Comparisons can error simply for having
                             # different DataFrames
-                            check = np.all(self.__dict__[item]
-                                           == other.__dict__[item])
+                            check = np.all(self.__dict__[key]
+                                           == other.__dict__[key])
                         except ValueError:
                             # If there is an error they aren't the same
                             return False
                         checks.append(check)
-                        item_check.append(item)
+                        key_check.append(key)
                     else:
                         # xarray comparison
-                        test = xr.Dataset.equals(self.__dict__[item],
-                                                 other.__dict__[item])
+                        test = xr.Dataset.equals(self.__dict__[key],
+                                                 other.__dict__[key])
                         checks.append(test)
-                        item_check.append(item)
-                elif item == '_det_breaks':
+                        key_check.append(key)
+
+                elif key == '_det_breaks':
                     # Equality of partial functions does not work well.
                     # Using a string comparison instead. This can also break
                     # if one of the objects is missing some attributes.
@@ -217,15 +219,16 @@ class Orbits(object):
                         # One object is missing a required attribute
                         return False
                     checks.append(check)
-                    item_check.append(item)
+                    key_check.append(key)
+
             else:
                 checks.append(False)
-                item_check.append(item)
+                key_check.append(key)
                 return False
 
-        # Confirm that other doesn't have extra terms
-        for item in other.__dict__:
-            if item not in self.__dict__:
+        # Confirm that Orbits object `other` doesn't have extra terms
+        for key in other.__dict__.keys():
+            if key not in self.__dict__:
                 return False
 
         test_data = np.all(checks)
