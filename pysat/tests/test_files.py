@@ -201,17 +201,29 @@ class TestBasics():
         self.out = self.testInst.files.__repr__()
         assert isinstance(self.out, str)
         assert self.out.find("pysat.Files(") >= 0
+        return
 
     def test_eval_repr(self):
         """Test eval of repr recreates object"""
+        # Evaluate __repr__ string
         self.out = eval(self.testInst.files.__repr__())
+
+        # Confirm new Instrument equal to original
         assert self.out == self.testInst.files
+        return
 
     def test_eval_repr_and_copy(self):
         """Test eval of repr consistent with object copy"""
+        # Evaluate __repr__ string
         self.out = eval(self.testInst.files.__repr__())
+
+        # Get copy of original object
         second_out = self.testInst.files.copy()
+
+        # Confirm new object equal to copy
         assert self.out == second_out
+
+        return
 
     def test_basic_str(self):
         """Check for lines from each decision point in str"""
@@ -223,45 +235,66 @@ class TestBasics():
 
         # Test no files
         assert self.out.find('Date Range') > 0
+        return
 
     def test_equality_with_copy(self):
         """Test that copy is the same as original"""
+        # Create copy
         self.out = self.testInst.files.copy()
+
+        # Confirm equal to original
         assert self.out == self.testInst.files
+        return
 
     def test_equality_with_copy_with_data(self):
         """Test that copy is the same as original, loaded inst.data"""
+        # Load data
         self.testInst.load(date=self.start)
+
+        # Make copy
         self.out = self.testInst.files.copy()
+
+        # Test for equality
         assert self.out == self.testInst.files
+        return
 
     def test_inequality_modified_object(self):
         """Test that equality is false if other missing attributes"""
+        # Copy files class
         self.out = self.testInst.files.copy()
+
+        # Remove attribute
         del self.out.start_date
+
+        # Confirm not equal
         assert self.testInst.files != self.out
+        return
 
     def test_inequality_reduced_object(self):
         """Test that equality is false if self missing attributes"""
         self.out = self.testInst.files.copy()
         self.out.hi_there = 'hi'
         assert self.testInst.files != self.out
+        return
 
     def test_inequality_different_data(self):
         """Test that equality is false if different data"""
         self.out = self.testInst.files.copy()
         self.out.files = pds.Series()
         assert self.out != self.testInst.files
+        return
 
     def test_inequality_different_type(self):
         """Test that equality is false if different type"""
         assert self.testInst.files != self.testInst
+        return
 
     def test_from_os_requires_data_path(self):
         """Check that path required for from_os"""
         with pytest.raises(ValueError) as war:
             self.testInst.files.from_os()
         assert str(war).find('Must supply instrument') > 0
+        return
 
     def test_year_doy_files_directly_call_from_os(self):
         """Check that Files.from_os generates file list"""
