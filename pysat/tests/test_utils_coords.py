@@ -2,6 +2,7 @@
 tests the pysat coords area
 """
 import datetime as dt
+import logging
 import numpy as np
 
 import pytest
@@ -96,21 +97,33 @@ class TestLonSLT():
                     - self.py_inst['longitude'].values / 15.0)).max() < 1.0e-6
 
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
-    def test_calc_solar_local_time_inconsistent_keywords(self, name):
-        """Test that ref_date only allowed when apply_modulus=False"""
+    def test_calc_solar_local_time_inconsistent_keywords(self, name, caplog):
+        """Test that ref_date only works when apply_modulus=False"""
 
+        # Prep to capture logging information
+        saved_level = pysat.logger.level
+        pysat.logger.setLevel(1)
+        caplog.set_level(logging.INFO)
+
+        # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
                                         num_samples=1)
         self.py_inst.load(date=self.inst_time)
 
-        with pytest.raises(ValueError) as err:
+        try:
+            # Apply solar local time method
             coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                          slt_name='slt',
                                          ref_date=self.py_inst.date,
                                          apply_modulus=True)
+        finally:
+            # Ensure logging level reset
+            pysat.logger.setLevel(saved_level)
 
-        # Confirm we have the correct error
-        assert str(err).find('Keyword `ref_date` only supported if') >= 0
+        captured = caplog.text
+
+        # Confirm we have the correct informational message
+        assert captured.find('Keyword `ref_date` only supported if') >= 0
         return
 
     def test_calc_solar_local_time_w_neg_longitude(self):
