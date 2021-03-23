@@ -292,7 +292,7 @@ class Files(object):
         for key in self.__dict__.keys():
             key_check.append(key)
             # Confirm each object has the same keys
-            if key in other.__dict__:
+            if key in other.__dict__.keys():
                 # Define default comparison. Testing equality between two Series
                 # will produce an error if they don't have the same index
                 # (files, _*_file_list).
@@ -343,7 +343,7 @@ class Files(object):
 
         # Confirm that Files object `other` doesn't have extra terms
         for key in other.__dict__.keys():
-            if key not in self.__dict__:
+            if key not in self.__dict__.keys():
                 return False
 
         test_data = np.all(checks)

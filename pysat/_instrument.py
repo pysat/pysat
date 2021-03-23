@@ -514,7 +514,7 @@ class Instrument(object):
             if key not in ['data', '_null_data', '_next_data',
                            '_curr_data', '_prev_data']:
                 key_check.append(key)
-                if key in other.__dict__:
+                if key in other.__dict__.keys():
                     if key in partial_funcs:
                         # Partial function comparison doesn't work directly.
                         try:
@@ -549,7 +549,7 @@ class Instrument(object):
 
         # Confirm that other Instrument object doesn't have extra terms
         for key in other.__dict__.keys():
-            if key not in self.__dict__:
+            if key not in self.__dict__.keys():
                 return False
 
         # Confirm all checks are True

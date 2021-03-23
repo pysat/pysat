@@ -179,7 +179,7 @@ class Orbits(object):
         checks = []
         key_check = []
         for key in self.__dict__.keys():
-            if key in other.__dict__:
+            if key in other.__dict__.keys():
                 # partial function comparisons (_det_breaks), data
                 # objects (_full_daya_data), and the pysat.Instrument ref
                 # require different treatment.
@@ -231,7 +231,7 @@ class Orbits(object):
 
         # Confirm that Orbits object `other` doesn't have extra terms
         for key in other.__dict__.keys():
-            if key not in self.__dict__:
+            if key not in self.__dict__.keys():
                 return False
 
         test_data = np.all(checks)
