@@ -286,7 +286,8 @@ class Files(object):
         if not isinstance(other, self.__class__):
             return False
 
-        # If the type is the same CHECK FOR ALL THESE THINGS
+        # If the type is the same then check everything that is attached to
+        # the Files object. Includes attributes, methods, variables, etc.
         checks = []
         key_check = []
         for key in self.__dict__.keys():
@@ -295,7 +296,7 @@ class Files(object):
             if key in other.__dict__.keys():
                 # Define default comparison. Testing equality between two Series
                 # will produce an error if they don't have the same index
-                # (files, _*_file_list).
+                # (files, _*_file_list) instead of False.
                 # 'inst_info' contains a weakref back to Instrument that
                 # requires a different check.
                 if key not in ['files', '_previous_file_list',
@@ -320,7 +321,7 @@ class Files(object):
                         ichecks = []
                         for ii_key in self.inst_info.keys():
                             if ii_key != 'inst':
-                                # Standard check
+                                # Standard attribute check
                                 ichecks.append(self.inst_info[ii_key]
                                                == other.inst_info[ii_key])
 
