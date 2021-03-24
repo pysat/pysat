@@ -3,8 +3,10 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 
 import pandas as pds
-# Import below is needed for tests on __repr__
-from pandas import Timedelta # noqa
+# Orbits period is a pandas.Timedelta kwarg, and the pandas repr
+# does not include a module name. Import required to run eval
+# on Orbit representation
+from pandas import Timedelta  # noqa: F401
 import pytest
 
 import pysat
