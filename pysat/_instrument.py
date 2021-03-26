@@ -488,9 +488,11 @@ class Instrument(object):
 
         """
 
+        # Check if other is the same class (Instrument). Exit early if not.
         if not isinstance(other, self.__class__):
             return False
 
+        # Check if both objects are the same data type. Exit early if not.
         if self.pandas_format != other.pandas_format:
             return False
 
@@ -499,7 +501,7 @@ class Instrument(object):
             # This check needed to establish next check
             pass
         elif self.empty or other.empty:
-            # Only one has data
+            # Only one has data, exit early.
             return False
 
         # If data is the same, check other attributes. Partial functions
