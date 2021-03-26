@@ -137,6 +137,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Reduced unused code snippets throughout
   - Ensured download start time is used
   - Fixed a bug with usage of numpy.dtype for numpy 1.20 compatibility
+  - Updated usage of pds.index.to_native_types() to pds.index.astype(str)
+    for pandas 2.0 compatibility (#737)
+  - Check type as float rather than np.float for future numpy compatibility
+    (#740)
+  - Verified usage of inst.loc[slice, keyword] will continue to work in
+    pandas 2.0 (#738)
 
 ## [2.2.2] - 2020-12-31
 - New Features
