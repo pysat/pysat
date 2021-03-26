@@ -20,7 +20,7 @@ See :ref:`tutorial-params` for more.
    pysat information and requires resetting user parameters such as the
    top-level directory that stores relevant science data. To set this top-level
    directory run ``pysat.params['data_dirs'] = new_path`` where ``new_path``
-   is a string or list of strings for existing directories that pysat
+   is a string or list of strings for directories that pysat
    can use to store science data.
 
 pysat v3.0 now supports more than one top-level directory to store science

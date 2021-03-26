@@ -46,6 +46,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Allow `directory_format` input to `Instrument` to be a function
   - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
+  - Updated Parameters to ensure paths provided for pysat.params['data_dirs'] are created if they don't
+    already exist
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -117,6 +119,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed access of xarray data with more than one dimension (#471)
   - Improved robustness of eval(inst.__repr__()) (#636)
   - Fixed `calc_solar_local_time` for data sets with longitude coordinates
+  - Added basic valid path check to `pysat.utils.files.check_and_make_path`
 - Maintenance
   - nose dependency removed from unit tests
   - Specified `dtype` for empty pandas.Series for forward compatibility
@@ -133,6 +136,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Reduced code duplication throughout package
   - Reduced unused code snippets throughout
   - Ensured download start time is used
+  - Fixed a bug with usage of numpy.dtype for numpy 1.20 compatibility
+  - Updated usage of pds.index.to_native_types() to pds.index.astype(str)
+    for pandas 2.0 compatibility (#737)
+  - Check type as float rather than np.float for future numpy compatibility
+    (#740)
+  - Verified usage of inst.loc[slice, keyword] will continue to work in
+    pandas 2.0 (#738)
 
 ## [2.2.2] - 2020-12-31
 - New Features
