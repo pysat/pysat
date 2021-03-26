@@ -100,26 +100,16 @@ class TestLonSLT():
     def test_calc_solar_local_time_inconsistent_keywords(self, name, caplog):
         """Test that ref_date only works when apply_modulus=False"""
 
-        # Prep to capture logging information
-        saved_level = pysat.logger.level
-        pysat.logger.setLevel(1)
-        caplog.set_level(logging.INFO)
-
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
                                         num_samples=1)
         self.py_inst.load(date=self.inst_time)
-
-        try:
+        with caplog.at_level(logging.INFO, logger='pysat'):
             # Apply solar local time method
             coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                          slt_name='slt',
                                          ref_date=self.py_inst.date,
                                          apply_modulus=True)
-        finally:
-            # Ensure logging level reset
-            pysat.logger.setLevel(saved_level)
-
         captured = caplog.text
 
         # Confirm we have the correct informational message

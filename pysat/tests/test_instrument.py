@@ -1016,20 +1016,15 @@ class TestBasics():
                                                   caplog):
         """Test if init keywords (partial funcs) are registered by pysat"""
         # Test for file_date_range keyword
-        saved_level = pysat.logger.level
-        pysat.logger.setLevel(1)
-        caplog.set_level(logging.INFO)
-
-        try:
+        with caplog.at_level(logging.INFO, logger='pysat'):
             # Load data to trigger some functions
             self.testInst.load(date=self.ref_time)
+
             # Refresh files to trigger other functions
             self.testInst.files.refresh()
+
             # Get remote file list
             self.testInst.download_updated_files()
-        finally:
-            # Ensure logging level reset
-            pysat.logger.setLevel(saved_level)
 
         captured = caplog.text
 
