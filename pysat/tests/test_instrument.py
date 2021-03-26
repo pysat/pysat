@@ -20,11 +20,11 @@ from pysat.utils.time import filter_datetime_input
 xarray_epoch_name = 'time'
 
 testing_kwargs = {'test_init_kwarg': True, 'test_clean_kwarg': False,
-                 'test_preprocess_kwarg': 'test_phrase',
-                 'test_load_kwarg': 'bright_light',
-                 'test_list_files_kwarg': 'sleep_tight',
-                 'test_list_remote_kwarg': 'one_eye_open',
-                 'test_download_kwarg': 'exit_night'}
+                  'test_preprocess_kwarg': 'test_phrase',
+                  'test_load_kwarg': 'bright_light',
+                  'test_list_files_kwarg': 'sleep_tight',
+                  'test_list_remote_kwarg': 'one_eye_open',
+                  'test_download_kwarg': 'exit_night'}
 
 
 # -----------------------------------------------------------------------------
