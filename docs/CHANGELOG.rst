@@ -1,0 +1,3 @@
+CHANGELOG
+---------
+.. include:: ../CHANGELOG.md
