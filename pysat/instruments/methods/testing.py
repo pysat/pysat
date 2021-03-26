@@ -17,7 +17,7 @@ with pysat.utils.NetworkLock(os.path.join(pysat.here, 'citation.txt'), 'r') as \
     refs = locked_file.read()
 
 
-def init(self, test_init_kwrd=None):
+def init(self, test_init_kwarg=None):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -32,7 +32,7 @@ def init(self, test_init_kwrd=None):
     ----------
     self : pysat.Instrument
         This object
-    test_init_kwrd : any or NoneType
+    test_init_kwarg : any or NoneType
         Testing keyword (default=None)
 
     """
@@ -43,30 +43,30 @@ def init(self, test_init_kwrd=None):
 
     # Assign parameters for testing purposes
     self.new_thing = True
-    self.test_init_kwrd = test_init_kwrd
+    self.test_init_kwarg = test_init_kwarg
 
     return
 
 
-def clean(self, test_clean_kwrd=None):
+def clean(self, test_clean_kwarg=None):
     """Cleaning function
 
     Parameters
     ----------
     self : pysat.Instrument
         This object
-    test_clean_kwrd : any or NoneType
+    test_clean_kwarg : any or NoneType
         Testing keyword (default=None)
 
     """
 
-    self.test_clean_kwrd = test_clean_kwrd
+    self.test_clean_kwarg = test_clean_kwarg
 
     return
 
 
 # Optional method
-def preprocess(self, test_preprocess_kwrd=None):
+def preprocess(self, test_preprocess_kwarg=None):
     """Customization method that performs standard preprocessing.
 
     This routine is automatically applied to the Instrument object
@@ -77,19 +77,19 @@ def preprocess(self, test_preprocess_kwrd=None):
     ----------
     self : pysat.Instrument
         This object
-    test_preprocess_kwrd : any or NoneType
+    test_preprocess_kwarg : any or NoneType
         Testing keyword (default=None)
 
     """
 
-    self.test_preprocess_kwrd = test_preprocess_kwrd
+    self.test_preprocess_kwarg = test_preprocess_kwarg
 
     return
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                file_date_range=None, test_dates=None, mangle_file_dates=False,
-               test_list_files_kwrd=None):
+               test_list_files_kwarg=None):
     """Produce a fake list of files spanning three years
 
     Parameters
@@ -112,7 +112,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         Pass the _test_date object through from the test instrument files
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_files_kwrd : any or NoneType
+    test_list_files_kwarg : any or NoneType
         Testing keyword (default=None)
 
     Returns
@@ -122,8 +122,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_list_files_kwrd = ',
-                         str(test_list_files_kwrd))))
+    logger.info(''.join(('test_list_files_kwarg = ',
+                         str(test_list_files_kwarg))))
 
     if data_path is None:
         data_path = ''
@@ -151,7 +151,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
                       start=None, stop=None, test_dates=None, user=None,
                       password=None, mangle_file_dates=False,
-                      test_list_remote_kwrd=None):
+                      test_list_remote_kwarg=None):
     """Produce a fake list of files spanning three years and one month to
     simulate new data files on a remote server
 
@@ -183,7 +183,7 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         Password for data download. (default=None)
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_remote_kwrd : any or NoneType
+    test_list_remote_kwarg : any or NoneType
         Testing keyword (default=None)
 
     Returns
@@ -194,8 +194,8 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_list_remote_kwrd = ',
-                         str(test_list_remote_kwrd))))
+    logger.info(''.join(('test_list_remote_kwarg = ',
+                         str(test_list_remote_kwarg))))
 
     # Determine the appropriate date range for the fake files
     if start is None:
@@ -214,7 +214,7 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
 
 def download(date_array, tag, inst_id, data_path=None, user=None,
-             password=None, test_download_kwrd=None):
+             password=None, test_download_kwarg=None):
     """Simple pass function for pysat compatibility for test instruments.
 
     This routine is invoked by pysat and is not intended for direct use by the
@@ -239,7 +239,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
         error if user not supplied. (default=None)
     password : string or NoneType
         Password for data download. (default=None)
-    test_download_kwrd : any or NoneType
+    test_download_kwarg : any or NoneType
         Testing keyword (default=None)
 
     Raises
@@ -254,7 +254,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_download_kwrd = ', str(test_download_kwrd))))
+    logger.info(''.join(('test_download_kwarg = ', str(test_download_kwarg))))
 
     if tag == 'no_download':
         warnings.warn('This simulates an instrument without download support')
