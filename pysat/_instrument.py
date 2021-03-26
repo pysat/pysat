@@ -762,12 +762,13 @@ class Instrument(object):
             if isinstance(key, tuple):
                 try:
                     # Pass directly through to loc
-                    # This line raises a FutureWarning, but will be caught
-                    # by TypeError, so may not be an issue
+                    # This line raises a FutureWarning if key[0] is a slice
+                    # The future behavior is TypeError, which is already
+                    # handled correctly below
                     self.data.loc[key[0], key[1]] = new
                 except (KeyError, TypeError):
-                    # TypeError for single integer
-                    # KeyError for list, array, slice of integers
+                    # TypeError for single integer, slice (pandas 2.0)
+                    # KeyError for list, array
                     # Assume key[0] is integer (including list or slice)
                     self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
@@ -1450,7 +1451,7 @@ class Instrument(object):
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, np.float):
+                    if not isinstance(data_type, float):
                         break
             datetime_flag = False
 
@@ -3567,7 +3568,7 @@ class Instrument(object):
                                 (num, dims[0])).astype(coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = \
-                                    self[key].iloc[i].index.to_native_types()
+                                    self[key].iloc[i].index.astype(str)
                             cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
             # Store any non standard attributes. Compare this Instrument's
