@@ -1119,8 +1119,8 @@ class TestBasics():
 
         # Confirm all user provided keywords are in the supported keywords
         for func in funcs:
-            for kwrd in self.testInst.kwargs[func]:
-                assert kwrd in self.testInst.kwargs_supported[func]
+            for kwarg in self.testInst.kwargs[func]:
+                assert kwarg in self.testInst.kwargs_supported[func]
 
         return
 
