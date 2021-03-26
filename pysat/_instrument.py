@@ -3567,7 +3567,7 @@ class Instrument(object):
                                 (num, dims[0])).astype(coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = \
-                                    self[key].iloc[i].index.to_native_types()
+                                    self[key].iloc[i].index.astype(str)
                             cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
             # Store any non standard attributes. Compare this Instrument's
