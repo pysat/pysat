@@ -394,15 +394,13 @@ class Instrument(object):
             # Determine the number of kwargs in this function
             fkwargs = [gkey for gkey in self.kwargs[fkey].keys()]
 
-            # Only save the kwargs if they exist and have not been assigned
-            # through partial
+            # Keep only the user provided kwargs
             if len(fkwargs) > 0:
-                # Store the saved keys
+                # Store these keys so they may be used as part of a comparison
+                # test to ensure all user supplied keys are used.
                 saved_keys.extend(fkwargs)
 
-                # If the function can't access this dict, use partial
-                # The functions that truly can't access the dict are load,
-                # list_files, list_remote_files, download.
+                # Assign user keywords to relevant function
                 if fkey in partial_func:
                     pfunc = functools.partial(func, **self.kwargs[fkey])
                     setattr(self, func_name, pfunc)
