@@ -34,7 +34,8 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwarg=None):
+def load(fnames, tag=None, inst_id=None, num_samples=None,
+         test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
