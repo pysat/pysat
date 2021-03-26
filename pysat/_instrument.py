@@ -762,12 +762,13 @@ class Instrument(object):
             if isinstance(key, tuple):
                 try:
                     # Pass directly through to loc
-                    # This line raises a FutureWarning, but will be caught
-                    # by TypeError, so may not be an issue
+                    # This line raises a FutureWarning if key[0] is a slice
+                    # The future behavior is TypeError, which is already
+                    # handled correctly below
                     self.data.loc[key[0], key[1]] = new
                 except (KeyError, TypeError):
-                    # TypeError for single integer
-                    # KeyError for list, array, slice of integers
+                    # TypeError for single integer, slice (pandas 2.0)
+                    # KeyError for list, array
                     # Assume key[0] is integer (including list or slice)
                     self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
