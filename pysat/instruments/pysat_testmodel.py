@@ -34,7 +34,7 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwrd=None):
+def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -47,7 +47,7 @@ def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwrd=None):
         Instrument satellite ID (accepts '')
     num_samples : int
         Number of samples
-    test_load_kwrd : any or NoneType
+    test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
     Returns
@@ -60,7 +60,7 @@ def load(fnames, tag=None, inst_id=None, num_samples=None, test_load_kwrd=None):
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_load_kwrd = ', str(test_load_kwrd))))
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     if num_samples is None:
         # Default to 1 day at a frequency of 900S

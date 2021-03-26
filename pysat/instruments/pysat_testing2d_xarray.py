@@ -40,7 +40,7 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None, test_load_kwrd=None):
+         num_samples=None, test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -55,7 +55,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         If True, the time index will be non-unique and non-monotonic.
     num_samples : int
         Number of samples
-    test_load_kwrd : any or NoneType
+    test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
     Returns
@@ -68,7 +68,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_load_kwrd = ', str(test_load_kwrd))))
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
