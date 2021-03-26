@@ -3196,9 +3196,9 @@ class Instrument(object):
         kwargs['tag'] = self.tag
         kwargs['inst_id'] = self.inst_id
         kwargs['data_path'] = self.files.data_path
-        for kwrd in self.kwargs['download']:
-            if kwrd not in kwargs:
-                kwargs[kwrd] = self.kwargs['download'][kwrd]
+        for kwarg in self.kwargs['download']:
+            if kwarg not in kwargs:
+                kwargs[kwarg] = self.kwargs['download'][kwarg]
 
         # Download the data
         self._download_rtn(date_array, **kwargs)
