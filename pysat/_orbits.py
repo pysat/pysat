@@ -173,6 +173,7 @@ class Orbits(object):
 
         """
 
+        # Check if other is the same class (Orbits). Exit early if not.
         if not isinstance(other, self.__class__):
             return False
 
