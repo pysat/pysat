@@ -1450,7 +1450,7 @@ class Instrument(object):
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, np.float):
+                    if not isinstance(data_type, float):
                         break
             datetime_flag = False
 
