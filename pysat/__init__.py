@@ -193,6 +193,7 @@ from ._orbits import Orbits
 from ._params import Parameters
 from . import instruments
 from . import ssnl
+from . import tests
 
 # Add simplified Parameters class to support upcoming switch away from
 # data_dir in favor of pysat.params['data_dirs']
