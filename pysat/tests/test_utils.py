@@ -150,6 +150,18 @@ class TestBasics():
         import pysat
         pysat.utils.set_data_dir('not_a_directory', store=False)
 
+    def test_set_params_data_dirs(self):
+        """update data_dir via `pysat.params['data_dirs']`"""
+        import pysat
+        pysat.params['data_dirs'] = '.'
+        assert pysat.data_dir == '.'
+
+        # Check if next load of pysat remembers the change
+        pysat.pysat_reload()
+        pysat = sys.modules['pysat']
+        assert pysat.data_dir == '.'
+        assert pysat.params['data_dirs'] == '.'
+
     def test_initial_pysat_load(self):
         import shutil
         saved = False
