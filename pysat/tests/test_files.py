@@ -111,6 +111,8 @@ class TestNoDataDir():
 
     @raises(Exception)
     def test_no_data_dir(self):
+
+        pysat.files.data_dir = pysat.data_dir
         _ = pysat.Instrument()
 
 
