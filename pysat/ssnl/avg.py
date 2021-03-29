@@ -66,7 +66,7 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
         const = [const]
     elif not isinstance(const, pysat.Constellation):
         estr = ''.join(("Parameter must be an Instrument or a Constellation.",
-                        " Received: ", type(const)))
+                        " Received: ", str(type(const))))
         raise ValueError(estr)
 
     # create bins
@@ -161,7 +161,7 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
         const = [const]
     elif not isinstance(const, pysat.Constellation):
         estr = ''.join(("Parameter must be an Instrument or a Constellation.",
-                        " Received: ", type(const)))
+                        " Received: ", str(type(const))))
         raise ValueError(estr)
 
     # create bins
