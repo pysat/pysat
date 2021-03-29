@@ -3862,8 +3862,7 @@ def _get_supported_keywords(local_func):
     while len(func_args) > len(func_defaults):
         func_args.pop(0)
 
-    # Remove pre-existing keywords from output
-    # First, identify locations
+    # Remove pre-existing keywords from output. Start by identifying locations
     pop_list = [i for i, arg in enumerate(func_args) if arg in pre_kws]
 
     # Remove pre-selected by cycling backwards through the list of indices
