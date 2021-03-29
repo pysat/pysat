@@ -308,3 +308,34 @@ def define_range():
                  'angle': [0.0, 2.0 * np.pi]}
 
     return def_range
+
+
+def eval_dep_warnings(warns, check_msgs):
+    """Evaluate deprecation warnings by category and message
+
+    Parameters
+    ----------
+    warns : list
+        List of warnings.WarningMessage objects
+    check_msgs : list
+        List of strings containing the expected warning messages
+
+    Returns
+    -------
+    found_msgs : list
+        List of booleans corresponding to `check_msgs`, which are True when
+        the messages are found and False when they are not
+
+    """
+
+    # Initialize the output
+    found_msgs = [False for msg in check_msgs]
+
+    # Test the warning messages, ensuring each attribute is present
+    for iwar in warns:
+        if iwar.category == DeprecationWarning:
+            for i, msg in enumerate(check_msgs):
+                if str(iwar.message).find(msg) >= 0:
+                    found_msgs[i] = True
+
+    return found_msgs
