@@ -160,7 +160,9 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     if isinstance(const, pysat.Instrument):
         const = [const]
     elif not isinstance(const, pysat.Constellation):
-        raise ValueError("Parameter must be an Instrument or a Constellation.")
+        estr = ''.join(("Parameter must be an Instrument or a Constellation.",
+                        " Received: ", type(const)))
+        raise ValueError(estr)
 
     # create bins
     # seems to create the boundaries used for sorting into bins
