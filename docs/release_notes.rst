@@ -1,16 +1,12 @@
 
 Release Notes
-=============
-
-.. toctree::
-
-   CHANGELOG.rst
+*************
 
 Narrative
----------
+=========
 
 v3.0 Release
-^^^^^^^^^^^^
+------------
 The Python Satellite Data Analysis Toolkit (pysat) v3.0.0 release is a
 substantive release intended to support pysat in operational environments,
 as well as expand community oriented capabilities for space science data
@@ -36,3 +32,8 @@ robust state-of-the-art scientific analyses. We encourage community
 engagement with pysat v3.0.0, and look forward to supporting external
 developers with their pysat-based packages for data handling or analysis.
 
+v2.3 Release
+------------
+Might as well draft something up here
+
+.. mdinclude:: ../CHANGELOG.md
