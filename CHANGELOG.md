@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2021-03-01
+## [3.0.0] - 2021-04-01
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -157,6 +157,43 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     (#740)
   - Verified usage of inst.loc[slice, keyword] will continue to work in
     pandas 2.0 (#738)
+
+## [2.3.0] - 2021-04-01
+- Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
+- Allow limited use of new list_files kwarg, `file_cadance`
+- Deprecation warnings added to:
+   - Instrument class (old meta labels, `sat_id`, `default`, `multi_file_day`,
+     `manual_org`, and `_filter_datetime_input`)
+   - pysat.instruments.methods.general.list_files kwarg
+     `fake_montly_files_from_daily`
+   - pysat.instruments.methods.testing.generate_times kwarg
+     `sat_id`
+   - Constellation class kwarg `name`
+   - Custom class
+   - functions from `_files` class
+   - functions from `ssnl` module
+   - Instrument modules:
+      - the pysatCDAAC: cosmic_gps
+      - the pysatIncubator: champ_star, demeter_iap, superdarn_grdex,
+        supermag_magnetometer
+      - the pysatMadrigal: jro_isr, dmsp_ivm
+      - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
+      - the pysatModels: ucar_tiegcm
+      - the pysatNASA: cnofs_ivm, cnofs_plp, cnofs_vefi, de2_lang, de2_nacs,
+        de2_rpa, de2_wats, icon_euv, icon_fuv, icon_ivm, icon_might, iss_fpmu,
+        omni_hro, rocsat1_ivm, sport_ivm, timed_saber, timed_see
+   - The usage of a numeric string for `sat_id` to specify number of points
+     in test instruments
+   - SpaceWeather, Incubator (DEMETER), Madrigal, CDAWeb, and ICON instrument
+     methods
+   - The DE2 and ICON Constellation objects
+- Documentation
+   - Updated docstrings with deprecation notes
+- Bug Fix
+   - Closes files after download in NASA CDAWeb methods
+   - Updated the ICON constellation object to reflect new instrument standards
+- Added version cap for numpy
+
 
 ## [2.2.2] - 2020-12-31
 - New Features
