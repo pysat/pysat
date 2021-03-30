@@ -5,9 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.3.0] - 2021-XX-XX
 - Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
 - Allow limited use of new list_files kwarg, `file_cadance`
+- Added support for `pysat.params['data_dirs']`, the replacement
+  for `pysat.data_dir` in pysat 3.0.0
 - Deprecation warnings added to:
    - Instrument class (old meta labels, `sat_id`, `default`, `multi_file_day`,
-     `manual_org`, and `_filter_datetime_input`)
+     `manual_org`, and `_filter_datetime_input`, `data_dir`)
    - pysat.instruments.methods.general.list_files kwarg
      `fake_montly_files_from_daily`
    - pysat.instruments.methods.testing.generate_times kwarg
@@ -31,6 +33,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - SpaceWeather, Incubator (DEMETER), Madrigal, CDAWeb, and ICON instrument
      methods
    - The DE2 and ICON Constellation objects
+   - pysat.utils.set_data_dir
 - Documentation
    - Updated docstrings with deprecation notes
 - Bug Fix
