@@ -566,7 +566,7 @@ class TestSWF107Combine():
         import sys
         self.saved_path = pysat.data_dir
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
-        pysat.reload()
+        pysat.pysat_reload()
         pysat = sys.modules['pysat']
 
         # Set combination testing input
