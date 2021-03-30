@@ -57,7 +57,7 @@ class Parameters(object):
 
     def __getitem__(self, item):
         if item == 'data_dirs':
-            return pysat.data_dir
+            return [pysat.data_dir]
         else:
             estr = ''.join(('This class will be fully implemented in '
                             'pysat v3.0'))

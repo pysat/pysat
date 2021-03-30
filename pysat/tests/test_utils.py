@@ -149,7 +149,7 @@ class TestBasics():
         pysat.pysat_reload()
         pysat = sys.modules['pysat']
         assert pysat.data_dir == '.'
-        assert pysat.params['data_dirs'] == '.'
+        assert pysat.params['data_dirs'] == ['.']
 
     def test_initial_pysat_load(self):
         import shutil
