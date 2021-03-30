@@ -2,6 +2,7 @@
 tests the pysat coords area
 """
 import datetime as dt
+import logging
 import numpy as np
 
 import pytest
@@ -43,7 +44,7 @@ class TestLonSLT():
         """Runs after every method to clean up previous testing."""
         self.py_inst = None
         self.inst_time = dt.datetime(2009, 1, 1)
-        self.inst_2_time = dt.datetime(2009, 1, 3)
+        self.inst_time_2 = dt.datetime(2009, 1, 3)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -95,6 +96,26 @@ class TestLonSLT():
         assert (abs(self.py_inst['slt'].values
                     - self.py_inst['longitude'].values / 15.0)).max() < 1.0e-6
 
+    @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
+    def test_calc_solar_local_time_inconsistent_keywords(self, name, caplog):
+        """Test that ref_date only works when apply_modulus=False"""
+
+        # Instantiate instrument and load data
+        self.py_inst = pysat.Instrument(platform='pysat', name=name,
+                                        num_samples=1)
+        self.py_inst.load(date=self.inst_time)
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            # Apply solar local time method
+            coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
+                                         slt_name='slt',
+                                         ref_date=self.py_inst.date,
+                                         apply_modulus=True)
+        captured = caplog.text
+
+        # Confirm we have the correct informational message
+        assert captured.find('Keyword `ref_date` only supported if') >= 0
+        return
+
     def test_calc_solar_local_time_w_neg_longitude(self):
         """Test calc_solar_local_time with longitudes from -180 to 180 deg"""
 
@@ -140,13 +161,30 @@ class TestLonSLT():
         """
 
         self.py_inst = pysat.Instrument(platform='pysat', name=name)
-        self.py_inst.load(date=self.inst_time, end_date=self.inst_2_time)
+        self.py_inst.load(date=self.inst_time, end_date=self.inst_time_2)
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt', apply_modulus=False)
 
         assert self.py_inst['slt'].max() > 48.0
         assert self.py_inst['slt'].max() < 72.0
         assert self.py_inst['slt'].min() >= 0.0
+
+    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
+                                      "testing2d_xarray"])
+    def test_lon_broadcasting_calc_solar_local_time_no_mod_ref_date(self, name):
+        """Test calc_solar_local_time with longitude coordinates, no mod, 2 days
+        """
+
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst.load(date=self.inst_time, end_date=self.inst_time_2)
+        coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
+                                     slt_name='slt', apply_modulus=False,
+                                     ref_date=self.inst_time
+                                              - dt.timedelta(days=1))
+
+        assert self.py_inst['slt'].max() > 72.0
+        assert self.py_inst['slt'].max() < 96.0
+        assert self.py_inst['slt'].min() >= 24.0
 
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
                                       "testing2d_xarray"])

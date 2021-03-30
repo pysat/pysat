@@ -22,33 +22,20 @@ pandas_format = False
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    pass
+# Clean method
+clean = mm_test.clean
 
 
-def load(fnames, tag=None, inst_id=None, num_samples=None):
+# Optional method, preprocess
+preprocess = mm_test.preprocess
+
+
+def load(fnames, tag=None, inst_id=None, num_samples=None,
+         test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -61,6 +48,8 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
         Instrument satellite ID (accepts '')
     num_samples : int
         Number of samples
+    test_load_kwarg : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -70,6 +59,9 @@ def load(fnames, tag=None, inst_id=None, num_samples=None):
         Metadata
 
     """
+
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     if num_samples is None:
         # Default to 1 day at a frequency of 900S
