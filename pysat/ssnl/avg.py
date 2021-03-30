@@ -66,9 +66,9 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
     print('Checking against: ', str(type(pysat.Instrument())))
     print('Checking against: ', str(type(pysat.Constellation())))
     print('Test eval: ', isinstance(pysat.Instrument(), pysat.Instrument))
-    if isinstance(const, pysat.Instrument):
+    if str(type(const)) == str(type(pysat.Instrument())):
         const = [const]
-    elif not isinstance(const, pysat.Constellation):
+    elif not (str(type(const)) == str(type(pysat.Constellation()))):
         estr = ''.join(("Parameter must be an Instrument or a Constellation.",
                         " Received: ", str(type(const)),
                         str(type(pysat.Instrument())),
@@ -163,11 +163,13 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     # If it's a Constellation, then we can do that as is, but if it's
     #  an Instrument, we just have to put that Instrument into something
     #  that will yeild that Instrument, like a list.
-    if isinstance(const, pysat.Instrument):
+    if str(type(const)) == str(type(pysat.Instrument())):
         const = [const]
-    elif not isinstance(const, pysat.Constellation):
+    elif not (str(type(const)) == str(type(pysat.Constellation()))):
         estr = ''.join(("Parameter must be an Instrument or a Constellation.",
-                        " Received: ", str(type(const))))
+                        " Received: ", str(type(const)),
+                        str(type(pysat.Instrument())),
+                        str(type(pysat.Constellation()))))
         raise ValueError(estr)
 
     # create bins
