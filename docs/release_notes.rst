@@ -38,6 +38,11 @@ The Python Satellite Data Analysis Toolkit (pysat) v2.3.0 release is intended
 to be the last release of the v2.x series and the last release to
 include support for Python 2.x. pysat v2.3.0 primarily features
 DeprecationWarnings for pysat functions that are changing as part
-of the 3.0.0 release.
+of the 3.0.0 release. This version also includes some of the changes
+employed for 3.0.0 so that some limited code bases may work with both
+pysat 2.3.0 and 3.0.0. These include updating `sat_id` to `inst_id` within
+`pyast.Instrument`, as well as including support for both the old and new methods
+for storing the pysat data directory, namely `pysat.data_dir` and
+`pysat.params['data_dirs']`.
 
 .. mdinclude:: ../CHANGELOG.md
