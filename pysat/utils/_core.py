@@ -76,7 +76,7 @@ def _set_data_dir(path=None, store=True):
         pysat._data_dir = path
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
-        pysat.pysat_reload()
+        # pysat.pysat_reload()
     else:
         raise ValueError('Path %s does not lead to a valid directory.' % path)
 
