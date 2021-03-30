@@ -98,6 +98,8 @@ else:
 def pysat_reload():
     """Enable most of the underlying functionality of reload.
 
+    Note
+    -----
     To provide a deprecation notice for `pysat.data_dir` the pysat module
     needed to be wrapped within a class. This technique presents a challenge
     for reloading the pysat module since it is no longer a module. As reloading
