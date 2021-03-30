@@ -562,8 +562,12 @@ class TestSWF107Combine():
         warnings.filterwarnings('ignore', category=DeprecationWarning)
 
         # Switch to test_data directory
+        import pysat
+        import sys
         self.saved_path = pysat.data_dir
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
+        pysat.reload()
+        pysat = sys.modules['pysat']
 
         # Set combination testing input
         self.test_day = pysat.datetime(2019, 3, 16)
