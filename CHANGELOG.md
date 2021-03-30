@@ -46,6 +46,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Allow `directory_format` input to `Instrument` to be a function
   - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
+  - Added support for SLT calculations outside [0, 24)
+  - Added support for continuous SLT calculations when loading multiple days
+  - Instrument support functions now respond to local changes in 
+    Instrument.kwargs
+  - Added support for pysat.Instrument, Files, and Orbits equality comparisons
+  - Added .copy function to Instrument, Files, and Orbits classes
   - Updated Parameters to ensure paths provided for pysat.params['data_dirs'] are created if they don't
     already exist
 - Deprecations
@@ -88,6 +94,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed unnecessary Instrument attribute `labels`
   - Removed unnecessary Instrument kwargs
   - Removed the Custom class, incorporating it into Instrument
+  - Removed deprecated calls to 'modify' type custom functions
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of `tag` and `inst_id` behaviour in testing instruments
@@ -117,8 +124,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Ensured pysat.Meta instances are immutable at Instrument instantiation
   - Removed weak reference back to Instrument within Files class
   - Fixed access of xarray data with more than one dimension (#471)
-  - Improved robustness of eval(inst.__repr__()) (#636)
+  - Improved robustness of `eval(inst.__repr__())` (#636)
   - Fixed `calc_solar_local_time` for data sets with longitude coordinates
+  - Fixed .copy() when pysat.Instrument instantiated with `inst_module` (#728)
+  - Modified storage of Instrument.kwargs to include all methods so that
+    `eval(Instrument.__repr__())` works in more cases
+  - Modified storage of Instrument.kwargs to only include user supplied keywords
+  - Improved robustness when working with file dates that aren't centered on 
+    midnight
   - Added basic valid path check to `pysat.utils.files.check_and_make_path`
 - Maintenance
   - nose dependency removed from unit tests
@@ -136,6 +149,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Reduced code duplication throughout package
   - Reduced unused code snippets throughout
   - Ensured download start time is used
+  - Condensed testing support functions into methods/testing.py
   - Fixed a bug with usage of numpy.dtype for numpy 1.20 compatibility
   - Updated usage of pds.index.to_native_types() to pds.index.astype(str)
     for pandas 2.0 compatibility (#737)

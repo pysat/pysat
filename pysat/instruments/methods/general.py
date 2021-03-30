@@ -49,7 +49,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                two_digit_year_break=None, delimiter=None):
     """Return a Pandas Series of every file for chosen Instrument data.
 
-    This routine provides a standard interfacefor pysat instrument modules.
+    This routine provides a standard interface for pysat instrument modules.
 
     Parameters
     ----------

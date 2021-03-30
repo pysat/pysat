@@ -27,48 +27,21 @@ pandas_format = False
 epoch_name = u'time'
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    return
+# Clean method
+clean = mm_test.clean
 
 
-# Optional method
-def preprocess(self):
-    """Customization method that performs standard preprocessing.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). Object
-    modified in place.
-
-    """
-
-    return
+# Optional method, preprocess
+preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         num_samples=None):
+         num_samples=None, test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -89,6 +62,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         If True, time index will be non-unique and non-monotonic.
     num_samples : int
         Number of samples
+    test_load_kwarg : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -98,6 +73,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         Metadata
 
     """
+
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     # create an artifical satellite data set
     iperiod = mm_test.define_period()

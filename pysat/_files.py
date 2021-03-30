@@ -4,10 +4,12 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 
+import copy
 import datetime as dt
 from functools import partial
 import numpy as np
 import os
+import weakref
 
 import pandas as pds
 
@@ -151,8 +153,8 @@ class Files(object):
         # Grab Instrument info
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
                           'tag': inst.tag, 'inst_id': inst.inst_id,
-                          'inst_module': inst.inst_module}
-        self.list_files_rtn = inst._list_files_rtn
+                          'inst_module': inst.inst_module,
+                          'inst': weakref.proxy(inst)}
 
         self.multi_file_day = inst.multi_file_day
 
@@ -236,7 +238,7 @@ class Files(object):
     def __repr__(self):
         """ Representation of the class and its current state
         """
-        inst_repr = pysat.Instrument(**self.inst_info).__repr__()
+        inst_repr = self.inst_info['inst'].__repr__()
 
         out_str = "".join(["pysat.Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
@@ -265,6 +267,85 @@ class Files(object):
             output_str += self.files.index[-1].strftime('%d %B %Y')
 
         return output_str
+
+    def __eq__(self, other):
+        """Perform equality check
+
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical, False if they are not
+
+        """
+        # Check if the other object has the same type
+        if not isinstance(other, self.__class__):
+            return False
+
+        # If the type is the same then check everything that is attached to
+        # the Files object. Includes attributes, methods, variables, etc.
+        checks = []
+        key_check = []
+        for key in self.__dict__.keys():
+            key_check.append(key)
+            # Confirm each object has the same keys
+            if key in other.__dict__.keys():
+                # Define default comparison.
+                if key not in ['files', '_previous_file_list',
+                               '_current_file_list', 'inst_info']:
+                    test = np.all(self.__dict__[key] == other.__dict__[key])
+                    checks.append(test)
+
+                else:
+                    if key not in ['inst_info']:
+                        # Comparing one of the stored pandas Series
+                        try:
+                            # Comparison only works for identically-labeled
+                            # series.
+                            check = np.all(self.__dict__[key]
+                                           == other.__dict__[key])
+                            checks.append(check)
+                        except ValueError:
+                            # If there is an error they aren't the same.
+                            return False
+
+                    elif key == 'inst_info':
+                        ichecks = []
+                        for ii_key in self.inst_info.keys():
+                            if ii_key != 'inst':
+                                # Standard attribute check
+                                ichecks.append(self.inst_info[ii_key]
+                                               == other.inst_info[ii_key])
+
+                            else:
+                                # Don't want a recursive check on 'inst', which
+                                # contains Files. If the string representations
+                                # are the same we consider them the same.
+                                try:
+                                    oinst = other.inst_info[ii_key]
+                                    ichecks.append(str(self.inst_info[ii_key])
+                                                   == str(oinst))
+                                except AttributeError:
+                                    # If one object is missing a required key
+                                    return False
+                        checks.append(np.all(ichecks))
+
+            else:
+                # other did not have an key that self did
+                return False
+
+        # Confirm that Files object `other` doesn't have extra terms
+        for key in other.__dict__.keys():
+            if key not in self.__dict__.keys():
+                return False
+
+        test_data = np.all(checks)
+
+        return test_data
 
     def __getitem__(self, key):
         """ Retrieve items from the files attribute
@@ -545,6 +626,40 @@ class Files(object):
     # -----------------------------------------------------------------------
     # Define the public methods and properties
 
+    def copy(self):
+        """Provide a deep copy of object
+
+        Returns
+        -------
+        Files class instance
+            Copy of self
+
+        """
+        # The copy module does not copy modules. Treat self.inst_info
+        # differently since it possibly contains a python module, plus
+        # it also contains a weakref back to Instrument.  Because the Instrument
+        # reference contains another Files object, it could cause the creation
+        # of an infinite, recursive copy.
+        saved_info = self.inst_info
+        self.inst_info = None
+
+        # Copy everything but the problematic info
+        files_copy = copy.deepcopy(self)
+
+        # Restore the saved information, then copy over items that can be copied
+        self.inst_info = saved_info
+        files_copy.inst_info = {}
+        for key in saved_info.keys():
+            if key not in ['inst', 'inst_module']:
+                files_copy.inst_info[key] = copy.deepcopy(self.inst_info[key])
+
+        # Can't copy the weakreference
+        files_copy.inst_info['inst'] = self.inst_info['inst']
+
+        # Can't copy the module
+        files_copy.inst_info['inst_module'] = self.inst_info['inst_module']
+        return files_copy
+
     def refresh(self):
         """Update list of files, if there are changes.
 
@@ -567,10 +682,13 @@ class Files(object):
         # Check all potential directory locations for files.
         # Stop as soon as we find some.
         for path in self.data_paths:
-            new_files = self.list_files_rtn(tag=self.inst_info['tag'],
-                                            inst_id=self.inst_info['inst_id'],
-                                            data_path=path,
-                                            format_str=self.file_format)
+            list_files_rtn = self.inst_info['inst']._list_files_rtn
+            kwarg_inputs = self.inst_info['inst'].kwargs['list_files']
+            new_files = list_files_rtn(tag=self.inst_info['tag'],
+                                       inst_id=self.inst_info['inst_id'],
+                                       data_path=path,
+                                       format_str=self.file_format,
+                                       **kwarg_inputs)
 
             # Check if list_files_rtn is actually returning filename or a
             # dict to be passed to filename creator function.
