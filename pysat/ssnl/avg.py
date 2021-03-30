@@ -63,15 +63,16 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
     #  an Instrument, we just have to put that Instrument into something
     #  that will yeild that Instrument, like a list.
     print('Received: ', str(type(const)))
-    print('Checking against: ', str(type(pysat.Instrument)))
-    print('Checking against: ', str(type(pysat.Constellation)))
+    print('Checking against: ', str(type(pysat.Instrument())))
+    print('Checking against: ', str(type(pysat.Constellation())))
+    print('Test eval: ', isinstance(pysat.Instrument(), pysat.Instrument))
     if isinstance(const, pysat.Instrument):
         const = [const]
     elif not isinstance(const, pysat.Constellation):
         estr = ''.join(("Parameter must be an Instrument or a Constellation.",
                         " Received: ", str(type(const)),
-                        str(type(pysat.Instrument)),
-                        str(type(pysat.Constellation))))
+                        str(type(pysat.Instrument())),
+                        str(type(pysat.Constellation()))))
         raise ValueError(estr)
 
     # create bins
