@@ -26,7 +26,6 @@ class TestBasics():
     def test_basic_seasonal_median2D(self):
         """ Test the basic seasonal 2D median"""
         self.testInst.bounds = self.bounds1
-        print('test ', self.testInst, str(type(self.testInst)))
         results = avg.median2D(self.testInst, [0., 360., 24], 'longitude',
                                [0., 24, 24], 'mlt',
                                ['dummy1', 'dummy2', 'dummy3'])
