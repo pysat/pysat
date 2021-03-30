@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
+from pysat.instruments.methods.testing import eval_dep_warnings
 
 import sys
 if sys.version_info[0] >= 3:
@@ -75,14 +76,8 @@ class TestDeprecation():
         with warnings.catch_warnings(record=True) as war:
             pysat.utils.set_data_dir('.')
 
-        found_msg = False
-        for iwar in war:
-            print(iwar.message)
-            if iwar.category == DeprecationWarning \
-                    and str(iwar.message).find(wmsg) >= 0:
-                found_msg = True
+        eval_dep_warnings(war, wmsg)
 
-        assert found_msg, "didn't find warning about: {:}".format(wmsg)
         return
 
     def test_get_data_dir_deprecation(self):
@@ -93,14 +88,8 @@ class TestDeprecation():
         with warnings.catch_warnings(record=True) as war:
             pysat.data_dir
 
-        found_msg = False
-        for iwar in war:
-            print(iwar.message)
-            if iwar.category == DeprecationWarning \
-                    and str(iwar.message).find(wmsg) >= 0:
-                found_msg = True
+        eval_dep_warnings(war, wmsg)
 
-        assert found_msg, "didn't find warning about: {:}".format(wmsg)
         return
 
 
