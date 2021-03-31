@@ -4,7 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 """
-tests the pysat parameters storage area
+Tests the pysat parameters storage area
 """
 
 import copy
