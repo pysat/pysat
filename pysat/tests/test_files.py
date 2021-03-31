@@ -99,7 +99,9 @@ class TestNoDataDir():
         # store current pysat directory
         self.saved_data_path = pysat.data_dir
 
-        pysat.data_dir = ''
+        # Setting pysat.data_dir directly now contains built in checks
+        # Setting the underlying ._data_dir as a bypass.
+        pysat._data_dir = ''
         re_load(pysat._files)
 
     def teardown(self):
@@ -109,6 +111,8 @@ class TestNoDataDir():
 
     @raises(Exception)
     def test_no_data_dir(self):
+
+        pysat.files.data_dir = pysat.data_dir
         _ = pysat.Instrument()
 
 
