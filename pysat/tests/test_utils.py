@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
+from pysat.instruments.methods.testing import eval_dep_warnings
 
 import sys
 if sys.version_info[0] >= 3:
@@ -56,10 +57,46 @@ def test_deprecation_warning_computational_form():
     assert war[0].category == DeprecationWarning
 
 
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("always", DeprecationWarning)
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        pysat.utils.set_data_dir(self.data_path)
+
+    def test_set_data_dir_deprecation(self):
+        """Test for deprecation warning when setting data_dir path"""
+
+        wmsg = 'In 3.0.0 pysat will move to a central location for storing'
+
+        with warnings.catch_warnings(record=True) as war:
+            pysat.utils.set_data_dir('.')
+
+        eval_dep_warnings(war, wmsg)
+
+        return
+
+    def test_get_data_dir_deprecation(self):
+        """Test for deprecation warning when getting data_dir path"""
+
+        wmsg = '`pysat.data_dir` has been deprecated in pysat'
+
+        with warnings.catch_warnings(record=True) as war:
+            pysat.data_dir
+
+        eval_dep_warnings(war, wmsg)
+
+        return
+
+
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        warnings.filterwarnings('ignore', category=DeprecationWarning)
+        warnings.simplefilter("ignore", category=DeprecationWarning)
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -71,26 +108,27 @@ class TestBasics():
     # test pysat data dir options
     def test_set_data_dir(self):
         """update data_dir"""
+        import pysat
         pysat.utils.set_data_dir('.')
         check1 = (pysat.data_dir == '.')
+        assert check1
 
         # Check if next load of pysat remembers the change
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat.pysat_reload()
+        pysat = sys.modules['pysat']
         check2 = (pysat.data_dir == '.')
 
-        assert check1 & check2
+        assert check2
 
     def test_set_data_dir_no_store(self):
         """update data_dir without storing"""
+        import pysat
         pysat.utils.set_data_dir('.', store=False)
         check1 = (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers old settings
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat.pysat_reload()
+        pysat = sys.modules['pysat']
         check2 = (pysat.data_dir == self.data_path)
 
         assert check1 & check2
@@ -98,7 +136,20 @@ class TestBasics():
     @raises(ValueError)
     def test_set_data_dir_wrong_path(self):
         """update data_dir with an invalid path"""
+        import pysat
         pysat.utils.set_data_dir('not_a_directory', store=False)
+
+    def test_set_params_data_dirs(self):
+        """update data_dir via `pysat.params['data_dirs']`"""
+        import pysat
+        pysat.params['data_dirs'] = '.'
+        assert pysat.data_dir == '.'
+
+        # Check if next load of pysat remembers the change
+        pysat.pysat_reload()
+        pysat = sys.modules['pysat']
+        assert pysat.data_dir == '.'
+        assert pysat.params['data_dirs'] == ['.']
 
     def test_initial_pysat_load(self):
         import shutil
@@ -111,7 +162,8 @@ class TestBasics():
         except:
             pass
 
-        re_load(pysat)
+        import pysat
+        pysat.pysat_reload()
 
         try:
             if saved:
