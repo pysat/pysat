@@ -13,7 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - New flags added to instruments to streamline unit testing:
     `_test_download`, `_test_download_travis`, `_password_req`
   - `strict_time_flag` now defaults to True
-  - Use of start / stop notation in remote_file_list
+  - Use of start/stop notation in remote_file_list
   - Added variable rename method to Instrument object (#91)
   - Added support for loading more than one day/file (#56)
   - Added support for iterating over a dataset a with a loaded data width and

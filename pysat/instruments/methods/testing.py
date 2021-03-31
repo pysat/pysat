@@ -75,8 +75,6 @@ def preprocess(self, test_preprocess_kwarg=None):
 
     Parameters
     ----------
-    self : pysat.Instrument
-        This object
     test_preprocess_kwarg : any or NoneType
         Testing keyword (default=None)
 
