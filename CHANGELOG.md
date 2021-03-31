@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2021-03-01
+## [3.0.0] - 2021-04-01
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -13,7 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - New flags added to instruments to streamline unit testing:
     `_test_download`, `_test_download_travis`, `_password_req`
   - `strict_time_flag` now defaults to True
-  - Use of start / stop notation in remote_file_list
+  - Use of start/stop notation in remote_file_list
   - Added variable rename method to Instrument object (#91)
   - Added support for loading more than one day/file (#56)
   - Added support for iterating over a dataset a with a loaded data width and
@@ -157,6 +157,46 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     (#740)
   - Verified usage of inst.loc[slice, keyword] will continue to work in
     pandas 2.0 (#738)
+
+## [2.3.0] - 2021-04-01
+- Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
+- Allow limited use of new list_files kwarg, `file_cadance`
+- Added support for `pysat.params['data_dirs']`, the replacement
+  for `pysat.data_dir` in pysat 3.0.0
+- Deprecation warnings added to:
+   - Instrument class (old meta labels, `sat_id`, `default`, `multi_file_day`,
+     `manual_org`, and `_filter_datetime_input`, `data_dir`)
+   - pysat.instruments.methods.general.list_files kwarg
+     `fake_montly_files_from_daily`
+   - pysat.instruments.methods.testing.generate_times kwarg
+     `sat_id`
+   - Constellation class kwarg `name`
+   - Custom class
+   - functions from `_files` class
+   - functions from `ssnl` module
+   - Instrument modules:
+      - the pysatCDAAC: cosmic_gps
+      - the pysatIncubator: champ_star, demeter_iap, superdarn_grdex,
+        supermag_magnetometer
+      - the pysatMadrigal: jro_isr, dmsp_ivm
+      - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
+      - the pysatModels: ucar_tiegcm
+      - the pysatNASA: cnofs_ivm, cnofs_plp, cnofs_vefi, de2_lang, de2_nacs,
+        de2_rpa, de2_wats, icon_euv, icon_fuv, icon_ivm, icon_might, iss_fpmu,
+        omni_hro, rocsat1_ivm, sport_ivm, timed_saber, timed_see
+   - The usage of a numeric string for `sat_id` to specify number of points
+     in test instruments
+   - SpaceWeather, Incubator (DEMETER), Madrigal, CDAWeb, and ICON instrument
+     methods
+   - The DE2 and ICON Constellation objects
+   - pysat.utils.set_data_dir
+- Documentation
+   - Updated docstrings with deprecation notes
+- Bug Fix
+   - Closes files after download in NASA CDAWeb methods
+   - Updated the ICON constellation object to reflect new instrument standards
+- Added version cap for numpy
+
 
 ## [2.2.2] - 2020-12-31
 - New Features
@@ -433,20 +473,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Added support for higher order MetaData objects, needed for DataFrame within DataFrames
  - Windows compatibility
  - Additional scientific instrument support
-
-
-### Changed
  - Initial support for sat_id in Instrument
  - Files class will now remove duplicate file times rather than simply raise an exception
 
 ## [0.3.3] - 2016-01-07
-### Changed
  - Added manual_org flag to Instrument instantion. Simple file management flag.
  - Improved COSMIC demo plotting
  - Improved support for instruments with no files
 
 ## [0.3.2] - 2015-12-01
-### Changed
  - Fixed error raised by pysat.utils.set_data_dir
  - Partial unit test coverage for files class
  - File tracking more robust
@@ -454,7 +489,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Improved to_netcdf3 and load_netcdf3 routines, netcdf files produced pass standards check
 
 ## [0.3.1] - 2015-07-21
-### Changed
  - Added missing file close statement in SuperDARN load command
  - Fixed COSMIC UTS bug
  - Fixed check for unique datetimes associated with files
@@ -468,7 +502,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Doubled loading performance for SuperDARN grdex files (3 seconds down to 1.5)
 
 ## [0.3] - 2015-06-18
-### Changed
  - Improved polar orbit determination
  - Added file sorting in files.from_os constructor to ensure datetime index is correct
  - Added Instrument instantiation option, multi_file_day
@@ -485,7 +518,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Improved performance of comsic 2013 data loading
 
 ## [0.2.2] - 2015-05-17
-### Changed
  - Expanded coverage in tutorial documentation
  - Expanded test coverage for pysat.Meta()
  - Improved robustness of Meta __setitem__
@@ -500,14 +532,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Improved docstrings
 
 ## [0.2.1] - 2015-04-29
-### Changed
 - Removed spacepy and netCDF from setup.py requirements. Both of
   these packages require non-python code to function properly.
   pysat now builds correctly as determined by travis-cl.
   Installation instructions have been updated.
 
 ## [0.2.0] - 2015-04-27
-### Changed
 - Added information to docstrings.
 - Expanded unit test coverage and associated bugs.
 - Changed signature for pysat.Instrument, orbit information

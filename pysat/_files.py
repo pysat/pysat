@@ -416,6 +416,8 @@ class Files(object):
         ----------
         path : str
             Path to top-level containing files
+
+
         """
 
         keep_index = []

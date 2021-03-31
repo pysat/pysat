@@ -51,8 +51,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     keys = search_dict['keys']
 
     if len(stored['files']) > 0:
-        # deal with the possibility of two digit years
-        # years above or equal to break are considered to be 1900+
+        # Deal with the possibility of two digit years. Years above
+        # or equal to break are considered to be 1900+, while
         # years below break are considered to be 2000+
         if two_digit_year_break is not None:
             idx, = np.where(np.array(stored['year'])
@@ -61,12 +61,12 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             idx, = np.where(np.array(stored['year']) < two_digit_year_break)
             stored['year'][idx] = stored['year'][idx] + 2000
 
-        # need to sort the information for things to work
+        # Need to sort the information for things to work
         rec_arr = [stored[key] for key in keys]
         rec_arr.append(stored['files'])
-        # sort all arrays
-        # create a sortable records array
-        # keys with files
+
+        # Sort all arrays by creating a sortable records array
+        # withs keys corresponding to the files
         val_keys = keys + ['files']
         rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
         rec_arr.sort(order=val_keys, axis=0)

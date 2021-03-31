@@ -1,5 +1,5 @@
 """
-tests the pysat Files object and code
+Tests the pysat Files object and code
 """
 import datetime as dt
 import functools
