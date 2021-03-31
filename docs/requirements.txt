@@ -5,3 +5,4 @@ pandas
 portalocker
 pytest
 xarray
+m2r2

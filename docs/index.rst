@@ -21,3 +21,4 @@ Welcome to pysat's documentation!
    api.rst
    contributing.rst
    faq.rst
+   release_notes.rst
