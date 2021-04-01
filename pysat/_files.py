@@ -668,7 +668,7 @@ class Files(object):
         ----
         Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
-        pysat_data_dir/platform/name/tag/, where pysat_data_dir is set by
+        pysat_data_dir/platform/name/tag/inst_id, where pysat_data_dir is set by
         pysat.utils.set_data_dir(path=path).
 
         """
