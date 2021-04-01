@@ -14,6 +14,7 @@ from pysat.utils import coords, time
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
 
         self.testInst = pysat.Instrument(platform='pysat',
@@ -109,20 +110,6 @@ class TestBasics():
 
         coords.calc_solar_local_time(self.testInst, lon_name="not longitude",
                                      slt_name='slt')
-
-    def test_deprecation_warning_scale_units(self):
-        """Test deprecation warning for this function"""
-
-        import warnings
-
-        warnings.simplefilter("always")
-        scale1 = pysat.utils.scale_units("happy", "happy")
-        with warnings.catch_warnings(record=True) as war:
-            scale2 = coords.scale_units("happy", "happy")
-
-        assert scale1 == scale2
-        assert len(war) == 1
-        assert war[0].category == DeprecationWarning
 
     ###################################
     # Geodetic / Geocentric conversions
@@ -456,10 +443,21 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
+
+    def test_deprecation_warning_scale_units(self):
+        """Test deprecation warning for scale_units"""
+
+        scale1 = pysat.utils.scale_units("happy", "happy")
+        with warnings.catch_warnings(record=True) as war:
+            scale2 = coords.scale_units("happy", "happy")
+
+        assert scale1 == scale2
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_geodetic_to_geocentric(self):
         """Test if geodetic_to_geocentric in coords is deprecated"""

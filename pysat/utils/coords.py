@@ -135,12 +135,31 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
 
 
 def scale_units(out_unit, in_unit):
-    """Deprecated function, moved to pysat.utils._core"""
+    """ Determine the scaling factor between two units
+
+    .. deprecated:: 2.2.0
+      `utils.coords.scale_units` will be removed in pysat 3.0.0, it will be
+      moved to `utils.scale_units`
+
+    Parameters
+    -------------
+    out_unit : str
+        Desired unit after scaling
+    in_unit : str
+        Unit to be scaled
+
+    Returns
+    -----------
+    unit_scale : float
+        Scaling factor that will convert from in_units to out_units
+
+    """
 
     import warnings
     from pysat import utils
 
-    warnings.warn(' '.join(["utils.coords.scale_units is deprecated, use",
+    warnings.warn(' '.join(["utils.coords.scale_units is deprecated and will",
+                            "be removed in pysat 3.0.0, use",
                             "pysat.utils.scale_units instead"]),
                   DeprecationWarning, stacklevel=2)
     unit_scale = utils.scale_units(out_unit, in_unit)

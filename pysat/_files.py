@@ -1,16 +1,20 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import string
-import os
-import weakref
-import re
+import collections
 import glob
 import numpy as np
-import pandas as pds
-from pysat import data_dir as data_dir
+import os
+import re
+import string
+import warnings
+import weakref
 
+import pandas as pds
+
+from pysat import data_dir
 from pysat import logger
+from pysat.utils.time import create_datetime_index
 
 
 class Files(object):
@@ -555,6 +559,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     """Accepts dict with data parsed from filenames and creates
     a pandas Series object formatted for the Files class.
 
+    .. deprecated:: 2.3.0
+      `_files.process_parsed_filenames` will be removed in pysat 3.0.0, it will
+      be moved to `pysat.utils.files.process_parsed_filenames`
+
     Parameters
     ----------
     stored : orderedDict
@@ -579,7 +587,11 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     """
 
-    from pysat.utils.time import create_datetime_index
+    warnings.warn(' '.join(["_files.process_parsed_filenames is deprecated and",
+                            "will be moved to",
+                            "pysat.utils.files.process_parsed_filenames",
+                            "in pysat 3.0.0."]),
+                  DeprecationWarning, stacklevel=2)
 
     search_dict = construct_searchstring_from_format(stored['format_str'])
     keys = search_dict['keys']
@@ -654,6 +666,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 def parse_fixed_width_filenames(files, format_str):
     """Parses list of files, extracting data identified by format_str
 
+    .. deprecated:: 2.3.0
+      `_files.parse_fixed_width_filenames` will be removed in pysat 3.0.0, it
+      will be moved to `pysat.utils.files.parse_fixed_width_filenames`
+
     Parameters
     ----------
     files : list
@@ -675,7 +691,11 @@ def parse_fixed_width_filenames(files, format_str):
 
     """
 
-    import collections
+    warnings.warn(' '.join(["_files.parse_fixed_width_filenames is deprecated",
+                            "and will be moved to",
+                            "pysat.utils.files.parse_fixed_width_filenames",
+                            "in pysat 3.0.0."]),
+                  DeprecationWarning, stacklevel=2)
 
     # create storage for data to be parsed from filenames
     stored = collections.OrderedDict()
@@ -736,6 +756,10 @@ def parse_fixed_width_filenames(files, format_str):
 def parse_delimited_filenames(files, format_str, delimiter):
     """Parses list of files, extracting data identified by format_str
 
+    .. deprecated:: 2.3.0
+      `_files.parse_delimited_filenames` will be removed in pysat 3.0.0, it
+      will be moved to `pysat.utils.files.parse_delimited_filenames`
+
     Parameters
     ----------
     files : list
@@ -758,7 +782,11 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     """
 
-    import collections
+    warnings.warn(' '.join(["_files.parse_delimited_filenames is deprecated",
+                            "and will be moved to",
+                            "pysat.utils.files.parse_delimited_filenames",
+                            "in pysat 3.0.0."]),
+                  DeprecationWarning, stacklevel=2)
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
@@ -825,6 +853,11 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     """
     Parses format file string and returns string formatted for searching.
 
+    .. deprecated:: 2.3.0
+      `_files.construct_searchstring_from_format` will be removed in
+      pysat 3.0.0, it will be moved to
+      `pysat.utils.files.construct_searchstring_from_format`
+
     Parameters
     ----------
     format_str : string with python format codes
@@ -857,6 +890,12 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
 
     """
+
+    warnings.warn(' '.join(["_files.construct_searchstring_from_format is",
+                            "deprecated and will be moved to",
+                            "pysat.utils.files.construct_searchstring_from_format",
+                            "in pysat 3.0.0."]),
+                  DeprecationWarning, stacklevel=2)
 
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
@@ -907,6 +946,11 @@ def search_local_system_formatted_filename(data_path, search_str):
     """
     Parses format file string and returns string formatted for searching.
 
+    .. deprecated:: 2.3.0
+      `_files.search_local_system_formatted_filename` will be removed in
+      pysat 3.0.0, it will be moved to
+      `pysat.utils.files.search_local_system_formatted_filename`
+
     Parameters
     ----------
     data_path : string
@@ -930,6 +974,12 @@ def search_local_system_formatted_filename(data_path, search_str):
     false positive rate.
 
     """
+
+    warnings.warn(' '.join(["_files.search_local_system_formatted_filename is",
+                            "deprecated and will be moved to",
+                            "pysat.utils.files.search_local_system_formatted_filename",
+                            "in pysat 3.0.0."]),
+                  DeprecationWarning, stacklevel=2)
 
     # perform local file search
     abs_search_str = os.path.join(data_path, search_str)

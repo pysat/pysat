@@ -5,6 +5,7 @@ from nose.tools import raises
 import numpy as np
 import pandas as pds
 import warnings
+
 import pysat
 from pysat.ssnl import avg
 
@@ -12,6 +13,7 @@ from pysat.ssnl import avg
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
@@ -93,13 +95,15 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
+        self.ssnl_msg = "is deprecated here and will be removed in pysat 3.0.0"
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
+        del self.ssnl_msg
 
     def test_median1D_deprecation_warning(self):
-        """Test generation of deprecation warning for median1D"""
+        """Test raises deprecation warning for median1D"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -111,10 +115,53 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
+
+    def test_calc_median1D_deprecation_warning(self):
+        """Test raises deprecation warning for _calc_1d_median"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg._calc_1d_median(*[None for i in range(7)])
+            except TypeError:
+                # Setting inputs to None should produce a
+                # TypeError after the warning is generated
+                pass
+
+        assert len(war) >= 1
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
+
+    def test_calc_median2D_deprecation_warning(self):
+        """Test raises deprecation warning for _calc_2d_median"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg._calc_2d_median(*[None for i in range(10)])
+            except TypeError:
+                # Setting inputs to None should produce a
+                # TypeError after the warning is generated
+                pass
+
+        assert len(war) >= 1
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_median2D_deprecation_warning(self):
-        """Test generation of deprecation warning for median1D"""
+        """Test raises deprecation warning for median2D"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -126,10 +173,34 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
+
+    def test_core_mean_deprecation_warning(self):
+        """Test raises deprecation warning for _core_mean"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg._core_mean(*[None for i in range(2)])
+            except ValueError:
+                # Setting inputs to None should produce a ValueError
+                # after the warning is generated
+                pass
+
+        assert len(war) >= 1
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_mean_by_day_deprecation_warning(self):
-        """Test generation of deprecation warning for mean_by_day"""
+        """Test raises deprecation warning for mean_by_day"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -140,10 +211,15 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_mean_by_orbit_deprecation_warning(self):
-        """Test generation of deprecation warning for mean_by_orbit"""
+        """Test raises deprecation warning for mean_by_orbit"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -154,10 +230,15 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
     def test_mean_by_file_deprecation_warning(self):
-        """Test generation of deprecation warning for mean_by_file"""
+        """Test raises deprecation warning for mean_by_file"""
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -168,12 +249,18 @@ class TestDeprecation():
                 pass
 
         assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+
+        found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, [self.ssnl_msg])
+
+        for fwar in found_war:
+            assert fwar, "didn't find warning about: {:}".format(self.ssnl_msg)
 
 
 class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
@@ -224,6 +311,7 @@ class TestFrameProfileAverages():
 class TestSeriesProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
@@ -267,6 +355,7 @@ class TestSeriesProfileAverages():
 
 class TestConstellation:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         for i in range(5):
             insts.append(pysat.Instrument('pysat', 'testing',
@@ -323,6 +412,7 @@ class TestConstellation:
 
 class TestHeterogenousConstellation:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         for i in range(2):
             r_date = pysat.datetime(2009, 1, i+1)
@@ -396,6 +486,7 @@ class TestHeterogenousConstellation:
 
 class Test2DConstellation:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         insts.append(pysat.Instrument(platform='pysat', name='testing2D',
                                       clean_level='clean'))
@@ -448,6 +539,7 @@ class Test2DConstellation:
 class TestSeasonalAverageUnevenBins:
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
@@ -525,6 +617,7 @@ class TestSeasonalAverageUnevenBins:
 class TestInstMed1D():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          update_files=True)

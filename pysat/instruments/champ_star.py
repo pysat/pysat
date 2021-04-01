@@ -3,6 +3,10 @@
 onboard the Challenging Minipayload (CHAMP) satellite.  Accesses local data in
 ASCII format.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatIncubator)
+
 Properties
 ----------
 platform
@@ -40,6 +44,18 @@ name = 'star'
 tags = {'': ''}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+
+
+def init(self):
+    """Initializes the Instrument object with values
+    """
+
+    warnings.warn("".join(["champ_star has been removed from the pysat-managed",
+                           " Instruments in pysat 3.0.0, and now resides in ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):

@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
+from pysat.instruments.methods.testing import eval_dep_warnings
 
 import sys
 if sys.version_info[0] >= 3:
@@ -46,7 +47,7 @@ def test_deprecation_warning_computational_form():
     """Test if computational form in utils is deprecated"""
 
     data = pds.Series([0, 1, 2])
-    warnings.simplefilter("always")
+    warnings.filterwarnings('always', category=DeprecationWarning)
     dslice1 = pysat.ssnl.computational_form(data)
     with warnings.catch_warnings(record=True) as war:
         dslice2 = pysat.utils.computational_form(data)
@@ -56,9 +57,46 @@ def test_deprecation_warning_computational_form():
     assert war[0].category == DeprecationWarning
 
 
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("always", DeprecationWarning)
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        pysat.utils.set_data_dir(self.data_path)
+
+    def test_set_data_dir_deprecation(self):
+        """Test for deprecation warning when setting data_dir path"""
+
+        wmsg = 'In 3.0.0 pysat will move to a central location for storing'
+
+        with warnings.catch_warnings(record=True) as war:
+            pysat.utils.set_data_dir('.')
+
+        eval_dep_warnings(war, wmsg)
+
+        return
+
+    def test_get_data_dir_deprecation(self):
+        """Test for deprecation warning when getting data_dir path"""
+
+        wmsg = '`pysat.data_dir` has been deprecated in pysat'
+
+        with warnings.catch_warnings(record=True) as war:
+            pysat.data_dir
+
+        eval_dep_warnings(war, wmsg)
+
+        return
+
+
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("ignore", category=DeprecationWarning)
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -70,26 +108,27 @@ class TestBasics():
     # test pysat data dir options
     def test_set_data_dir(self):
         """update data_dir"""
+        import pysat
         pysat.utils.set_data_dir('.')
         check1 = (pysat.data_dir == '.')
+        assert check1
 
         # Check if next load of pysat remembers the change
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat.pysat_reload()
+        pysat = sys.modules['pysat']
         check2 = (pysat.data_dir == '.')
 
-        assert check1 & check2
+        assert check2
 
     def test_set_data_dir_no_store(self):
         """update data_dir without storing"""
+        import pysat
         pysat.utils.set_data_dir('.', store=False)
         check1 = (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers old settings
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat.pysat_reload()
+        pysat = sys.modules['pysat']
         check2 = (pysat.data_dir == self.data_path)
 
         assert check1 & check2
@@ -97,7 +136,20 @@ class TestBasics():
     @raises(ValueError)
     def test_set_data_dir_wrong_path(self):
         """update data_dir with an invalid path"""
+        import pysat
         pysat.utils.set_data_dir('not_a_directory', store=False)
+
+    def test_set_params_data_dirs(self):
+        """update data_dir via `pysat.params['data_dirs']`"""
+        import pysat
+        pysat.params['data_dirs'] = '.'
+        assert pysat.data_dir == '.'
+
+        # Check if next load of pysat remembers the change
+        pysat.pysat_reload()
+        pysat = sys.modules['pysat']
+        assert pysat.data_dir == '.'
+        assert pysat.params['data_dirs'] == ['.']
 
     def test_initial_pysat_load(self):
         import shutil
@@ -110,7 +162,8 @@ class TestBasics():
         except:
             pass
 
-        re_load(pysat)
+        import pysat
+        pysat.pysat_reload()
 
         try:
             if saved:
@@ -127,6 +180,7 @@ class TestBasics():
 class TestScaleUnits():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
@@ -231,6 +285,8 @@ class TestScaleUnits():
 class TestBasicNetCDF4():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -240,7 +296,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
-                                         sat_id='100',
+                                         num_samples=100,
                                          clean_level='clean')
         self.testInst.pandas_format = True
 
@@ -479,6 +535,8 @@ class TestBasicNetCDF4():
 class TestBasicNetCDF4xarray():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -488,7 +546,7 @@ class TestBasicNetCDF4xarray():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
-                                         sat_id='100',
+                                         num_samples=100,
                                          clean_level='clean')
         self.testInst.pandas_format = False
 
@@ -528,7 +586,7 @@ class TestBasicNetCDF4xarray():
         self.testInst.data.attrs['new_attr'] = 1
         self.testInst.data.to_netcdf(outfile)
 
-        warnings.simplefilter("always")
+        warnings.filterwarnings('always', category=DeprecationWarning)
         with warnings.catch_warnings(record=True) as war:
             loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                          epoch_name='time',

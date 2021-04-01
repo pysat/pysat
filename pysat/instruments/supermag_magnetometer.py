@@ -3,6 +3,10 @@
 Downloading is supported; please follow their rules of the road:
 http://supermag.jhuapl.edu/info/?page=rulesoftheroad
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatIncubator (https://github.com/pysat/pysatIncubator)
+
 Properties
 ----------
 platform
@@ -58,15 +62,12 @@ _test_dates = {'': {kk: pysat.datetime(2009, 1, 1) for kk in tags.keys()}}
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
     """
+    warnings.warn("".join(["supermag_magnetometer has been removed from the ",
+                           "pysat-managed Instruments in pysat 3.0.0, and now",
+                           " resides in pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     # if the tag is 'indices', update data_path to reflect this
     # both 'indices' and 'all' are stored under 'all'
@@ -308,6 +309,10 @@ def load(fnames, tag='', sat_id=None):
 def load_csv_data(fname, tag):
     """Load data from a comma separated SuperMAG file
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     ------------
     fname : str
@@ -322,6 +327,11 @@ def load_csv_data(fname, tag):
         Pandas DataFrame
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     if tag == "stations":
         # Because there may be multiple operators, the default pandas reader
@@ -373,6 +383,10 @@ def load_csv_data(fname, tag):
 def load_ascii_data(fname, tag):
     """Load data from a self-documenting ASCII SuperMAG file
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     ------------
     fname : str
@@ -390,6 +404,11 @@ def load_ascii_data(fname, tag):
         baselines for each file.  None of not present or not applicable.
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     ndata = {"indices": 2, "": 4, "all": 4, "stations": 8}
     dkeys = {'stations': list(), '': ['IAGA', 'N', 'E', 'Z']}
@@ -530,6 +549,10 @@ def load_ascii_data(fname, tag):
 def update_smag_metadata(col_name):
     """Update SuperMAG metadata
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     -----------
     col_name : str
@@ -541,6 +564,11 @@ def update_smag_metadata(col_name):
        Dictionary of strings detailing the units and long-form name of the data
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     smag_units = {'IAGA': 'none', 'N': 'nT', 'E': 'nT', 'Z': 'nT',
                   'MLT': 'hours', 'MLAT': 'degrees', 'SZA': 'degrees',
@@ -612,6 +640,10 @@ def format_baseline_list(baseline_list):
     """Format the list of baseline information from the loaded files into a
     cohesive, informative string
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     ------------
     baseline_list : list
@@ -624,6 +656,11 @@ def format_baseline_list(baseline_list):
         Single string containing the relevent data
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     uniq_base = dict()
     uniq_delta = dict()
@@ -696,6 +733,10 @@ def download(date_array):
 def append_data(file_strings, file_fmt, tag):
     """ Load the SuperMAG files
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     -----------
     file_strings : array-like
@@ -712,6 +753,12 @@ def append_data(file_strings, file_fmt, tag):
         String with all data, ready for output to a file
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
+
     # Determine the right appending routine for the file type
     if file_fmt.lower() == "csv":
         return append_csv_data(file_strings)
@@ -721,6 +768,10 @@ def append_data(file_strings, file_fmt, tag):
 
 def append_ascii_data(file_strings, tag):
     """ Append data from multiple files for the same time period
+
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
 
     Parameters
     -----------
@@ -736,6 +787,11 @@ def append_ascii_data(file_strings, tag):
         String with all data, ready for output to a file
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Start with data from the first list element
     out_lines = file_strings[0].split('\n')
@@ -833,6 +889,10 @@ def append_ascii_data(file_strings, tag):
 def append_csv_data(file_strings):
     """ Append data from multiple csv files for the same time period
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in pysatIncubator
+
     Parameters
     -----------
     file_strings : array-like
@@ -844,6 +904,12 @@ def append_csv_data(file_strings):
         String with all data, ready for output to a file
 
     """
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatIncubator: ",
+                           "https://github.com/pysat/pysatIncubator"]),
+                  DeprecationWarning, stacklevel=2)
+
     # Start with data from the first list element
     out_lines = list()
     head_line = None

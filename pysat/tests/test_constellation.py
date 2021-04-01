@@ -9,6 +9,7 @@ class TestConstellation:
     """Test the Constellation class."""
     def setup(self):
         """Create instruments and a constellation for each test."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.instruments = [pysat.Instrument('pysat', 'testing',
                                              clean_level='clean')
                             for i in range(2)]
@@ -65,6 +66,7 @@ class TestConstellation:
 
 class TestAdditionIdenticalInstruments:
     def setup(self):
+        warnings.simplefilter("ignore")
         self.const1 = pysat.Constellation(name='testing')
         self.const2 = pysat.Constellation(name='single_test')
 
@@ -106,6 +108,7 @@ class TestAdditionOppositeInstruments:
         length of the other data, descend has the same data but negative.
         The addition of these two signals should be zero everywhere.
         """
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testC = pysat.Constellation(name='test_add_opposite')
 
     def teardown(self):
@@ -135,6 +138,7 @@ class TestAdditionSimilarInstruments:
         more than 10 off from the addition of just 'ascend'
         TODO: actually check the math on this
         """
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testC = pysat.Constellation(name='test_add_similar')
         self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testing',
                                                           tag='ascend')])
@@ -173,6 +177,7 @@ class TestAdditionSingleInstrument:
         addition on it should just return the instrument's data within
         the bounds
         """
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         self.testInst = pysat.Instrument('pysat', 'testing', 'fives',
                                          clean_level='clean')
@@ -203,6 +208,7 @@ class TestAdditionSingleInstrument:
 
 class TestDifferenceSameInstrument:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.const = pysat.Constellation(name='test_diff_same')
 
     def teardown(self):
@@ -226,6 +232,7 @@ class TestDifferenceSameInstrument:
 
 class TestDifferenceSimilarInstruments:
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.const = pysat.Constellation(name='test_diff_similar')
 
     def teardown(self):
@@ -254,9 +261,10 @@ class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testConst = \
             pysat.Constellation([pysat.Instrument('pysat', 'testing',
-                                                  sat_id='10',
+                                                  num_samples=10,
                                                   clean_level='clean')])
 
     def teardown(self):
@@ -288,18 +296,22 @@ class TestDeprecation():
         """Runs before every method to create a clean testing setup"""
         warnings.simplefilter("always")
 
-        instruments = [pysat.Instrument(platform='pysat', name='testing',
-                                        sat_id='10', clean_level='clean')
-                       for i in range(2)]
-        self.testC = pysat.Constellation(instruments)
+        self.instruments = [pysat.Instrument(platform='pysat', name='testing',
+                                             num_samples=10,
+                                             clean_level='clean')
+                            for i in range(2)]
+        self.in_kwargs = {"name": 'single_test',
+                          'instruments': self.instruments}
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
 
-        del self.testC
+        del self.instruments, self.in_kwargs
 
     def test_deprecation_warning_add(self):
         """Test if constellation.add is deprecated"""
+        del self.in_kwargs['name']
+        test_const = pysat.Constellation(**self.in_kwargs)
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -308,7 +320,7 @@ class TestDeprecation():
                 # Setting data_label to None should produce a ValueError after
                 # warning is generated
                 # ==> Save time in unit tests
-                self.testC.add(bounds1=None, label1=None, bounds2=None,
+                test_const.add(bounds1=None, label1=None, bounds2=None,
                                label2=None, bin3=None, label3=None,
                                data_label=None)
             except ValueError:
@@ -319,6 +331,8 @@ class TestDeprecation():
 
     def test_deprecation_warning_difference(self):
         """Test if constellation.difference is deprecated"""
+        del self.in_kwargs['name']
+        test_const = pysat.Constellation(**self.in_kwargs)
 
         with warnings.catch_warnings(record=True) as war:
             try:
@@ -327,7 +341,7 @@ class TestDeprecation():
                 # Setting data_labels to None should produce a TypeError after
                 # warning is generated
                 # ==> Save time in unit tests
-                self.testC.difference(self.testC[0], self.testC[1],
+                test_const.difference(test_const[0], test_const[1],
                                       bounds=None, data_labels=None,
                                       cost_function=None)
             except TypeError:
@@ -335,3 +349,48 @@ class TestDeprecation():
 
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
+
+    def test_name_kwarg_dep(self):
+        """Test deprecation of standard kwarg input, `name`
+        """
+        # Define the deprecated attributes that are always defined
+        warn_msg = "Constellation attribute and kwarg input `name` has been"
+        del self.in_kwargs['instruments']
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            pysat.Constellation(**self.in_kwargs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= 1
+
+        # Test the warning messages, ensuring each attribute is present
+        assert war[0].category == DeprecationWarning
+        assert str(war[0].message).find(warn_msg) >= 0
+
+        return
+
+    def test_deprecation_constellations(self):
+        """Test the deprecation of migrated constellation objects"""
+
+        # Define the deprecated attributes that are always defined
+        self.warn_msg = "This constellation has been removed from"
+        del self.in_kwargs['instruments']
+
+        # Catch the warnings
+        const_names = ['de2', 'icon']
+        for const_name in const_names:
+            with warnings.catch_warnings(record=True) as war:
+                pysat.Constellation(name=const_name)
+
+            # Ensure the minimum number of warnings were raised
+            assert len(war) >= 1
+
+            # Test the warning messages, ensuring each attribute is present
+            found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+                war, [self.warn_msg])
+
+            for fwar in found_war:
+                assert fwar, "didn't find warning about: {:}".format(self.warn_msg)
+
+        return

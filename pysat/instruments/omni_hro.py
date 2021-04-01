@@ -4,6 +4,10 @@ Proton Fluxes, Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar
 and Magnetic Indices. Downloads data from the NASA Coordinated Data Analysis
 Web (CDAWeb). Supports both 5 and 1 minute files.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
 Properties
 ----------
 platform
@@ -56,10 +60,13 @@ import functools
 import logging
 import numpy as np
 import pandas as pds
+import warnings
 
 import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
 from pysat.instruments.methods import general as mm_gen
+from pysat.utils import stats as pystats
+
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +110,19 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
+def init(self):
+    """Initializes the Instrument object with values
+    """
+
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
+    return
+
+
 def clean(omni):
     for fill_attr in ["fillval", "fill"]:
         # case insensitive check for attribute name
@@ -120,6 +140,10 @@ def time_shift_to_magnetic_poles(inst):
     """ OMNI data is time-shifted to bow shock. Time shifted again
     to intersections with magnetic pole.
 
+    .. deprecated:: 2.3.0
+      This function has been removed from pysat in the 3.0.0 release and
+      can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
     Parameters
     -----------
     inst : Instrument class object
@@ -135,6 +159,12 @@ def time_shift_to_magnetic_poles(inst):
     Use at own risk.
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatNASA: ",
+                           "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
 
     # need to fill in Vx to get an estimate of what is going on
     inst['Vx'] = inst['Vx'].interpolate('nearest')
@@ -167,12 +197,22 @@ def time_shift_to_magnetic_poles(inst):
 def calculate_clock_angle(inst):
     """ Calculate IMF clock angle and magnitude of IMF in GSM Y-Z plane
 
+    .. deprecated:: 2.3.0
+      This function has been removed from pysat in the 3.0.0 release and
+      can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
     Parameters
     -----------
     inst : pysat.Instrument
         Instrument with OMNI HRO data
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatNASA: ",
+                           "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Calculate clock angle in degrees
     clock_angle = np.degrees(np.arctan2(inst['BY_GSM'], inst['BZ_GSM']))
@@ -192,6 +232,10 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     """ Calculate IMF steadiness using clock angle standard deviation and
     the coefficient of variation of the IMF magnitude in the GSM Y-Z plane
 
+    .. deprecated:: 2.3.0
+      This function has been removed from pysat in the 3.0.0 release and
+      can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
     Parameters
     -----------
     inst : pysat.Instrument
@@ -209,7 +253,11 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     """
 
-    from pysat.utils import stats as pystats
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatNASA: ",
+                           "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
 
     # We are not going to interpolate through missing values
     sample_rate = int(inst.tag[0])
@@ -267,6 +315,10 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 def calculate_dayside_reconnection(inst):
     """ Calculate the dayside reconnection rate (Milan et al. 2014)
 
+    .. deprecated:: 2.3.0
+      This function has been removed from pysat in the 3.0.0 release and
+      can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
     Parameters
     -----------
     inst : pysat.Instrument
@@ -277,6 +329,12 @@ def calculate_dayside_reconnection(inst):
     recon_day = 3.8 Re (Vx / 4e5 m/s)^1/3 Vx B_yz (sin(theta/2))^9/2
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "pysatNASA: ",
+                           "https://github.com/pysat/pysatNASA"]),
+                  DeprecationWarning, stacklevel=2)
 
     rearth = 6371008.8
     sin_htheta = np.power(np.sin(np.radians(0.5 * inst['clock_angle'])), 4.5)

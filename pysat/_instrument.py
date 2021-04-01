@@ -11,7 +11,6 @@ import copy
 import functools
 import inspect
 import os
-import string
 import sys
 import warnings
 
@@ -32,6 +31,12 @@ from pysat import logger
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
+    .. deprecated:: 2.3.0
+      Several attributes and methods will be removed or replaced in pysat 3.0.0:
+      sat_id, default, multi_file_day, manual_org, units_label, name_label,
+      notes_label, desc_label, min_label, max_label, fill_label, plot_label,
+      axis_label, scale_label, and _filter_datetime_input
+
     Parameters
     ----------
     platform : string
@@ -40,6 +45,8 @@ class Instrument(object):
         name of instrument.
     tag : string, optional
         identifies particular subset of instrument data.
+    inst_id : string
+        Replaces `sat_id`
     sat_id : string, optional
         identity within constellation
     clean_level : {'clean','dusty','dirty','none'}, optional
@@ -66,10 +73,12 @@ class Instrument(object):
     multi_file_day : boolean, optional
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.
+        with a timestamp of day n-1 or n+1.  Deprecated at this level in
+        pysat 3.0.0.
     manual_org : bool
         if True, then pysat will look directly in pysat data directory
-        for data files and will not use default /platform/name/tag
+        for data files and will not use default /platform/name/tag. Deprecated
+        in pysat 3.0.0, as this flag is not needed to use `directory_format`.
     directory_format : str
         directory naming structure in string format. Variables such as
         platform, name, and tag will be filled in as needed using python
@@ -177,8 +186,8 @@ class Instrument(object):
 
     """
 
-    def __init__(self, platform=None, name=None, tag=None, sat_id=None,
-                 clean_level='clean', update_files=None, pad=None,
+    def __init__(self, platform=None, name=None, tag=None, inst_id=None,
+                 sat_id=None, clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=False,
@@ -189,6 +198,42 @@ class Instrument(object):
                  min_label='value_min', max_label='value_max',
                  fill_label='fill', *arg, **kwargs):
 
+        # Raise warnings about deprecated kwargs
+        dwarns = list()
+        label_kwargs = ['units_label', 'name_label', 'notes_label',
+                        'desc_label', 'min_label', 'max_label', 'fill_label']
+        dwarns.append("".join(["Instrument attributes [",
+                               ", ".join(label_kwargs), "] will be accessible",
+                               " through `Instrument.meta.labels` ",
+                               "in pysat 3.0.0"]))
+        dep_meta_kwargs = ['plot_label', 'axis_label', 'scale_label']
+        dwarns.append("".join(["Meta labels [", ", ".join(dep_meta_kwargs),
+                               "] are no longer standard metadata",
+                               " quantities in pysat 3.0.0"]))
+
+        if sat_id is None:
+            # Assign new kwarg to old one if the old one was not used
+            sat_id = inst_id
+        else:
+            # Raise warning if old kwarg used
+            dwarns.append("".join(["Instrument kwarg `sat_id` has been ",
+                                   "replaced with `inst_id` in pysat 3.0.0"]))
+
+        if multi_file_day is not None:
+            dwarns.append("".join(["Instrument kwarg `multi_file_day` has been",
+                                   " deprecated in pysat 3.0.0 and will only",
+                                   " be allowed to be specified inside ",
+                                   "Instrument sub-modules."]))
+
+        if manual_org is not None:
+            dwarns.append("".join(["Instrument kwarg `manual_org` has been ",
+                                   "deprecated in pysat 3.0.0, use only the ",
+                                   "`directory_format` kwarg instead."]))
+
+        for dwarn in dwarns:
+            warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
+
+        # Start initialization
         if inst_module is None:
             # use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):
@@ -378,9 +423,8 @@ class Instrument(object):
         # warn about changes coming in the future
         if not self.strict_time_flag:
             warnings.warn('Strict times will eventually be enforced upon all'
-                          ' instruments. (strict_time_flag)', DeprecationWarning,
-                          stacklevel=2)
-
+                          ' instruments. (strict_time_flag)',
+                          DeprecationWarning, stacklevel=2)
 
     def __getitem__(self, key):
         """
@@ -831,6 +875,13 @@ class Instrument(object):
                                             '{:s}every instrument.'.format(estr))))
         try:
             self._default_rtn = inst.default
+            
+            wstr = ''.join(("The Instrument method `default` has been ",
+                            "renamed `preprocess` in pysat 3.0.0. ",
+                            "If this is not a pysat-managed Instrument,",
+                            " you will need to update this when ",
+                            "migrating to pysat 3.0.0."))
+            warnings.warn(wstr, DeprecationWarning, stacklevel=2)
         except AttributeError:
             pass
         try:
@@ -946,6 +997,10 @@ class Instrument(object):
         """
         Returns datetime that only includes year, month, and day.
 
+        .. deprecated:: 2.3.0
+          This method has been deprecated in pysat 3.0.0 and replaced with
+          a new routine: `pysat.utils.time.filter_datetime_input(date)`
+
         Parameters
         ----------
         date : datetime (array_like or single input)
@@ -956,6 +1011,11 @@ class Instrument(object):
             Only includes year, month, and day from original input
 
         """
+
+        wstr = ''.join(("Class method deprecated, in pysat 3.0.0. it has been",
+                        " replaced with the function ",
+                        "`pysat.utils.time.filter_datetime_input`"))
+        warnings.warn(wstr, DeprecationWarning, stacklevel=2)
 
         if date is None:
             return date

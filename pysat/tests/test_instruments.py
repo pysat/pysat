@@ -12,6 +12,16 @@ import tempfile
 
 import pysat
 import pysat.instruments.pysat_testing
+from pysat.instruments.methods import testing as mm_test
+
+# modules in the list below have deprecation warnings
+dep_list = ['cosmic_gps', 'cnofs_ivm', 'cnofs_plp', 'cnofs_vefi', 'de2_lang',
+            'de2_nacs', 'de2_rpa', 'de2_wats', 'dmsp_ivm', 'icon_euv',
+            'icon_fuv', 'icon_ivm', 'icon_mighti', 'iss_fpmu', 'jro_isr',
+            'omni_hro', 'rocsat1_ivm', 'sport_ivm', 'sw_dst', 'sw_kp',
+            'sw_f107', 'timed_saber', 'timed_see',
+            'ucar_tiegcm', 'champ_star', 'demeter_iap', 'superdarn_grdex',
+            'supermag_magnetometer']
 
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
@@ -119,6 +129,8 @@ class TestInstrumentQualifier():
 
     def __init__(self):
         """Iterate through and create all of the test Instruments needed"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
+
         global init_inst
         global init_mod
         global init_names
@@ -141,6 +153,24 @@ class TestInstrumentQualifier():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pass
+
+    def check_init_warning(self, module, name, tag, sat_id):
+        """Check for the existance of a deprecation warning."""
+        warnings.simplefilter("always", DeprecationWarning)
+        global dep_list
+
+        if name not in dep_list:
+            warnings.warn('{:} has not yet been deprecated'.format(module))
+        else:
+            wmsg = " ".join([name, "has been removed from the pysat-managed"])
+
+            with warnings.catch_warnings(record=True) as war:
+                pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
+
+            found_war = pysat.instruments.methods.testing.eval_dep_warnings(
+                war, [wmsg])
+
+            assert found_war[0], "didn't find warning about: {:}".format(wmsg)
 
     def check_module_loadable(self, module, tag, sat_id):
         _ = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
@@ -366,15 +396,31 @@ class TestInstrumentQualifier():
                                         inst.name, inst.tag, inst.sat_id,
                                         'was not successful.')))
 
-    # Optional support
 
-    # directory_format string
+class TestInstrumentDeprectaion():
 
-    # multiple file days
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('always', category=DeprecationWarning)
+        self.warn_msgs = ["The ability to use a numeric string as"]
 
-    # orbit information
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
 
-        # self.directory_format = None
-        # self.file_format = None
-        # self.multi_file_day = False
-        # self.orbit_info = None
+    def test_deprecated_season_date_range(self):
+        """Tests that deprecation of season_date_range is working"""
+
+        fnames = ['2009-01-01.nofile']
+        with warnings.catch_warnings(record=True) as war:
+            uts, index, date = mm_test.generate_times(fnames, '100', freq='1S')
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])

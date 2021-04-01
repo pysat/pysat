@@ -37,7 +37,7 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`scatterplot` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),

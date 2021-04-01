@@ -2,6 +2,7 @@
 # Test some of the basic _core functions
 import numpy as np
 import sys
+import warnings
 
 from nose.tools import raises
 import pandas as pds
@@ -24,10 +25,11 @@ else:
 
 class TestBasics():
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         sat_id='10',
+                                         num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
 
@@ -54,7 +56,7 @@ class TestBasics():
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
         testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    sat_id='10',
+                                    num_samples=10,
                                     clean_level='clean',
                                     unsupported_keyword_yeah=True)
 
@@ -69,7 +71,7 @@ class TestBasics():
     @raises(Exception)
     def test_basic_instrument_load_by_file_and_multifile(self):
         testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    sat_id='10',
+                                    num_samples=10,
                                     clean_level='clean',
                                     update_files=True,
                                     multi_file_day=True)
@@ -340,7 +342,7 @@ class TestBasics():
                       'kind': 'local time',
                       'period': np.timedelta64(97, 'm')}
         testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    sat_id='10',
+                                    num_samples=10,
                                     clean_level='clean',
                                     update_files=True,
                                     orbit_info=orbit_info)
@@ -883,11 +885,12 @@ class TestBasics():
 # ------------------------------------------------------------------------------
 class TestBasicsXarray(TestBasics):
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
-                                         sat_id='10',
+                                         num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
 
@@ -907,7 +910,7 @@ class TestBasicsShiftedFileDates(TestBasics):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         sat_id='10',
+                                         num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
                                          mangle_file_dates=True,
@@ -927,10 +930,11 @@ class TestBasicsShiftedFileDates(TestBasics):
 
 class TestMalformedIndex():
     def setup(self):
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         sat_id='10',
+                                         num_samples=10,
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
@@ -962,7 +966,7 @@ class TestMalformedIndexXarray(TestMalformedIndex):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
-                                         sat_id='10',
+                                         num_samples=10,
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
@@ -980,8 +984,9 @@ class TestMalformedIndexXarray(TestMalformedIndex):
 # ------------------------------------------------------------------------------
 class TestDataPaddingbyFile():
     def setup(self):
-        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
+        re_load(pysat.instruments.pysat_testing)
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad={'minutes': 5},
@@ -1088,6 +1093,7 @@ class TestDataPaddingbyFileXarray():
     def setup(self):
         re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          clean_level='clean',
@@ -1129,6 +1135,7 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
     def setup(self):
         re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          clean_level='clean',
@@ -1148,6 +1155,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          update_files=True,
@@ -1165,6 +1173,7 @@ class TestDataPadding():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad={'minutes': 5},
@@ -1296,6 +1305,7 @@ class TestDataPaddingXarray(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          clean_level='clean',
@@ -1307,6 +1317,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          update_files=True,
@@ -1323,6 +1334,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          clean_level='clean',
@@ -1340,6 +1352,7 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
                                          clean_level='clean',
@@ -1357,6 +1370,7 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          clean_level='clean',
@@ -1368,3 +1382,103 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always", DeprecationWarning)
+        self.in_kwargs = {"platform": 'pysat', "name": 'testing', "tag": '',
+                          "sat_id": '', "clean_level": 'clean'}
+        self.warn_msgs = ["accessible through `Instrument.meta.labels`",
+                          "are no longer standard metadata quantities",
+                          "Instrument kwarg `sat_id` has been replaced"]
+        if sys.version_info.major >= 3:
+            # Python 2 on Travis doesn't pick up warnings from hidden methods
+            self.warn_msgs.append(
+                "Instrument method `default` has been renamed `preprocess`")
+
+        self.warn_msgs = np.array(self.warn_msgs)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_kwargs, self.warn_msgs
+
+    def eval_warnings(self, load=False):
+        """Routine to evaluate warnings raised when Instrument instantiated
+
+        Parameters
+        ----------
+        load : boolean
+            Flag indicating whether or not data needs to be loaded into
+            the test instrument (default=False)
+
+        """
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            tinst = pysat.Instrument(**self.in_kwargs)
+
+            if load:
+                tinst.load(2009, 1)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
+
+        return
+
+    def test_new_inst_id(self):
+        """Test use of new `inst_id` kwarg."""
+        # Reassign input to use new kwarg
+        self.in_kwargs['inst_id'] = self.in_kwargs['sat_id']
+        del self.in_kwargs['sat_id']
+
+        # Remove associated deprecation warning
+        new_msgs = list(self.warn_msgs)
+        new_msgs.pop(2)
+        self.warn_msgs = np.array(new_msgs)
+
+        # Evaluate warnings
+        self.eval_warnings()
+        return
+
+    def test_extra_kwarg_dep(self):
+        """Test deprecation of optional kwarg input."""
+        self.in_kwargs['multi_file_day'] = False
+        self.in_kwargs['manual_org'] = False
+        new_msgs = list(self.warn_msgs)
+        new_msgs.extend([
+            "Instrument kwarg `multi_file_day` has been deprecated",
+            "Instrument kwarg `manual_org` has been deprecated"])
+        self.warn_msgs = np.array(new_msgs)
+
+        # Evaluate warnings
+        self.eval_warnings()
+        return
+
+    def test_filter_datetime_input_dep(self):
+        """Test deprecation of filter_datetime_input method."""
+        # Evaluate warnings if this is Python 3+
+        if sys.version_info.major > 2:
+            new_msgs = list(self.warn_msgs)
+            new_msgs.append("".join(
+                ["it has been replaced with the function ",
+                 "`pysat.utils.time.filter_datetime_input`"]))
+            self.warn_msgs = np.array(new_msgs)
+
+            self.eval_warnings(load=True)
+
+        return
+
+    def test_standard_kwarg_dep(self):
+        """Test deprecation of standard kwarg input."""
+        # Evaluate warnings
+        self.eval_warnings()
+        return

@@ -10,6 +10,7 @@ import pysat
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
                                          clean_level='clean')
 
@@ -311,6 +312,7 @@ class TestBasics():
 class TestBasicsXarray(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', tag='10',
                                          clean_level='clean')
 
@@ -322,6 +324,7 @@ class TestBasicsXarray(TestBasics):
 class ConstellationTestBasics(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        warnings.filterwarnings('ignore', category=DeprecationWarning)
         insts = []
         for i in range(5):
             insts.append(pysat.Instrument('pysat', 'testing', tag='10',
@@ -338,29 +341,47 @@ class ConstellationTestBasics(TestBasics):
         self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
 
 class TestDeprecation():
-
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         warnings.simplefilter("always")
+        self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
+                                         clean_level='clean')
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
+        del self.testInst
+        
+    def custom_func(inst):
+        """Custom function to attach, using default kind 'add'
+        """
+        out = (inst.data.mlt * 2).values
+        return {'data': out, 'long_name': 'doubleMLTlong',
+                'units': 'hours1', 'name': 'doubleMLT'}
 
     def test_deprecation_warning_custom_add(self):
         """Test if custom.add is deprecated"""
 
-        def func():
-            """Fake function to attach"""
-            print('Hi!')
-
-        testInst = pysat.Instrument(platform='pysat', name='testing')
         with warnings.catch_warnings(record=True) as war:
-            try:
-                testInst.custom.add(func)
-            except AttributeError:
-                # Setting inst to None should produce a AttributeError after
-                # warning is generated
-                pass
+            self.testInst.custom.add(self.custom_func)
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_custom_attach(self):
+        """Test if custom.attach is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            self.testInst.custom.attach(self.custom_func)
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_custom_clear(self):
+        """Test if custom.clear is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            # Will also clear an empty list
+            self.testInst.custom.clear()
 
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning

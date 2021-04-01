@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """Supports F10.7 index values. Downloads data from LASP and the SWPC.
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatSpaceWeather
+  (https://github.com/pysat/pysatSpaceWeather)
+
 Properties
 ----------
 platform
@@ -77,6 +82,19 @@ _test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                     'daily': tomorrow,
                     'forecast': tomorrow,
                     '45day': tomorrow}}
+
+
+def init(self):
+    """Initializes the Instrument object
+    """
+
+    warnings.warn("".join(["sw_f107 has been removed from the pysat-managed ",
+                           "Instruments in pysat 3.0.0, and now resides in ",
+                           "pysatSpaceWeather: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
+
+    return
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -618,6 +636,10 @@ def parse_45day_block(block_lines):
     """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast
     file
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatSpaceWeather.instruments.sw_f107.parse_45day_block`
+
     Parameters
     ----------
     block_lines : list
@@ -631,6 +653,13 @@ def parse_45day_block(block_lines):
         List of values for each date/data pair in this block
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.sw_f107.",
+                           "parse_45day_block` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Initialize the output
     dates = list()
@@ -654,6 +683,10 @@ def parse_45day_block(block_lines):
 def rewrite_daily_file(year, outfile, lines):
     """ Rewrite the SWPC Daily Solar Data files
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatSpaceWeather.instruments.sw_f107.rewrite_daily_file`
+
     Parameters
     ----------
     year : int
@@ -664,6 +697,13 @@ def rewrite_daily_file(year, outfile, lines):
         String containing all output data (result of 'read')
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.sw_f107.",
+                           "rewrite_daily_file` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     # get to the solar index data
     if year > 2000:
@@ -694,6 +734,10 @@ def rewrite_daily_file(year, outfile, lines):
 def parse_daily_solar_data(data_lines, year, optical):
     """ Parse the data in the SWPC daily solar index file
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatSpaceWeather.instruments.sw_f107.parse_daily_solar_data`
+
     Parameters
     ----------
     data_lines : list
@@ -711,6 +755,13 @@ def parse_daily_solar_data(data_lines, year, optical):
         Dict of lists of values, where each key is the value name
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.sw_f107.",
+                           "parse_daily_solar_data` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Initialize the output
     dates = list()
@@ -757,6 +808,10 @@ def parse_daily_solar_data(data_lines, year, optical):
 def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     """ Calculate the 81 day mean F10.7
 
+    .. deprecated:: 2.3.0
+      This routine has been deprecated in pysat 3.0.0, and will be accessible
+      in `pysatSpaceWeather.instruments.sw_f107.calc_f107a`
+
     Parameters
     ----------
     f107_inst : pysat.Instrument
@@ -777,6 +832,13 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     Will not pad data on its own
 
     """
+
+    warnings.warn("".join(["This function is deprecated here and will be ",
+                           "removed in pysat 3.0.0. Please use ",
+                           "`pysatSpaceWeather.instruments.sw_f107.",
+                           "calc_f107a` instead: ",
+                           "https://github.com/pysat/pysatSpaceWeather"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Test to see that the input data is present
     if f107_name not in f107_inst.data.columns:

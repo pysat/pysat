@@ -9,6 +9,7 @@ class TestCDAWeb():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        warnings.filterwarnings("always", category=DeprecationWarning)
         self.supported_tags = pysat.instruments.cnofs_plp.supported_tags
 
     def teardown(self):
@@ -29,25 +30,43 @@ class TestCDAWeb():
         else:
             raise(ValueError, 'Test was expected to raise an Exception.')
 
-    def test_remote_file_list_deprecation_warning(self):
-        """Test generation of deprecation warning for remote_file_list kwargs
+    def test_list_remote_files_deprecation_warning(self):
+        """Test deprecation warnings for remote_file_list routine and kwargs
         """
-        warnings.simplefilter("always")
-
         with warnings.catch_warnings(record=True) as war:
             # testing with single day since we just need the warning
             cdw.list_remote_files(tag='', sat_id='',
                                   supported_tags=self.supported_tags,
                                   year=2009, month=1, day=1)
 
+        assert len(war) >= 2
+        assert war[0].category == DeprecationWarning
+
+    def test_load_deprecation_warning(self):
+        """Test generation of deprecation warning for load
+        """
+        with warnings.catch_warnings(record=True) as war:
+            # testing with single day since we just need the warning
+            cdw.load([], tag='', sat_id='')
+
+        assert len(war) == 1
+        assert war[0].category == DeprecationWarning
+        assert str(war[0].message).find(".load has been deprecated") >= 0
+
+    def test_download_deprecation_warning(self):
+        """Test generation of deprecation warning for download
+        """
+        with warnings.catch_warnings(record=True) as war:
+            # testing with single day since we just need the warning
+            cdw.download(self.supported_tags, [], '', '')
+
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
+        assert str(war[0].message).find(".download has been deprecated") >= 0
 
     def test_list_files_deprecation_warning(self):
         """Test generation of deprecation warning for list_files kwargs
         """
-        warnings.simplefilter("always")
-
         with warnings.catch_warnings(record=True) as war1:
             # testing with single day since we just need the warning
             try:

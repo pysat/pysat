@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 import datetime as dt
 import logging
 import pandas as pds
+import warnings
 
 import pysat
 
@@ -16,10 +17,14 @@ logger = logging.getLogger(__name__)
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
-               two_digit_year_break=None):
+               two_digit_year_break=None, file_cadance=dt.timedelta(days=1)):
     """Return a Pandas Series of every file for chosen satellite data.
 
     This routine provides a standard interfacefor pysat instrument modules.
+
+    .. deprecated:: 2.3.0
+      The fake_daily_files_from_monthly kwarg has been deprecated and replaced
+      with file_cadance in pysat 3.0.0.
 
     Parameters
     -----------
@@ -42,11 +47,21 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         Some CDAWeb instrument data files are stored by month, interfering
         with pysat's functionality of loading by day. This flag, when true,
         appends daily dates to monthly files internally. These dates are
-        used by load routine in this module to provide data by day.
+        used by load routine in this module to provide data by day. 
+        This keyword arg has been deprecated. In pysat 2.3.0, setting
+        file_cadance=dt.datetime(days=1) is equivalent to setting this to False,
+        while using file_cadance=pds.DateOffset(months=1) is equivalent to
+        setting this to True. (default=False)
     two_digit_year_break : int
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
+    file_cadence : dt.timedelta or pds.DateOffset
+        pysat assumes a daily file cadence, but some instrument data file
+        contain longer periods of time.  This parameter allows the specification
+        of regular file cadences greater than or equal to a day (e.g., weekly,
+        monthly, or yearly). In pysat 2.3.0, only daily and monthly cadances
+        are supported. (default=dt.timedelta(days=1))
 
     Returns
     --------
@@ -69,6 +84,18 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     """
 
+    if fake_daily_files_from_monthly:
+        file_cadance = pds.DateOffset(months=1)
+        dwarn = "".join(["list_files kwarg `fake_daily_files_from_monthly` ",
+                         "has been deprecated in pysat 3.0.0, and replaced ",
+                         "with `file_cadance`."])
+        warnings.warn(dwarn, DeprecationWarning, stacklevel=2)
+
+    if file_cadance not in [dt.timedelta(days=1), pds.DateOffset(months=1),
+                            pds.DateOffset(days=1)]:
+        raise ValueError("".join(["pysat 2.3.0 only supports daily and ",
+                                  "monthly file cadances"]))
+
     if data_path is not None:
         if format_str is None:
             try:
@@ -79,8 +106,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         out = pysat.Files.from_os(data_path=data_path,
                                   format_str=format_str)
 
-        if (not out.empty) and fake_daily_files_from_monthly:
-            out.loc[out.index[-1] + pds.DateOffset(months=1)
+        if not out.empty and file_cadance == pds.DateOffset(months=1):
+            out.loc[out.index[-1] + file_cadance
                     - pds.DateOffset(days=1)] = out.iloc[-1]
             out = out.asfreq('D', 'pad')
             out = out + '_' + out.index.strftime('%Y-%m-%d')

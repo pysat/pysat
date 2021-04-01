@@ -3,6 +3,10 @@
 onboard the Republic of China Satellite (ROCSAT-1). Downloads data from the
 NASA Coordinated Data Analysis Web (CDAWeb).
 
+.. deprecated:: 2.3.0
+  This Instrument module has been removed from pysat in the 3.0.0 release and
+  can now be found in pysatNASA (https://github.com/pysat/pysatNASA)
+
 Properties
 ----------
 platform
@@ -61,6 +65,20 @@ download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
+
+
+def init(self):
+    """Initializes the Instrument object with values
+    """
+
+    warnings.warn(" ".join(["_".join([self.platform, self.name]),
+                            "has been removed from the pysat-managed",
+                            "Instruments in pysat 3.0.0, and now resides in",
+                            "pysatNASA:",
+                            "https://github.com/pysat/pysatNASA",
+                            "as `formosat1_ivm`"]),
+                  DeprecationWarning, stacklevel=2)
+    return
 
 
 def clean(inst):

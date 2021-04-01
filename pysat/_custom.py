@@ -15,6 +15,10 @@ class Custom(object):
     """
     Applies a queue of functions when instrument.load called.
 
+    .. deprecated:: 2.3.0
+        `Custom` will be removed in pysat 3.0.0, it is incorporated into
+        `Instrument`
+
     Nano-kernel functionality enables instrument objects that are
     'set and forget'. The functions are always run whenever
     the instrument load routine is called so instrument objects may
@@ -27,22 +31,23 @@ class Custom(object):
 
         def custom_func(inst, opt_param1=False, opt_param2=False):
             return None
-        instrument.custom.add(custom_func, 'modify', opt_param1=True)
+        instrument.custom.attach(custom_func, 'modify', opt_param1=True)
 
         def custom_func2(inst, opt_param1=False, opt_param2=False):
             return data_to_be_added
-        instrument.custom.add(custom_func2, 'add', opt_param2=True)
+        instrument.custom.attach(custom_func2, 'add', opt_param2=True)
         instrument.load(date=date)
         print(instrument['data_to_be_added'])
 
     See Also
     --------
-    Custom.add
+    Custom.attach
 
     Note
     ----
     User should interact with Custom through pysat.Instrument instance's
     attribute, instrument.custom
+
     """
 
     def __init__(self):
@@ -59,8 +64,8 @@ class Custom(object):
         """Add a function to custom processing queue.
 
         .. deprecated:: 2.2.0
-          `add` will be removed in pysat 3.0.0, it is replaced by
-          `attach` to clarify the syntax
+          `Custom.add` will be removed in pysat 3.0.0, it is replaced by
+          `Instrument.custom_attach` to clarify the syntax
 
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
@@ -104,14 +109,19 @@ class Custom(object):
         - (string/list of strings, numpy array/list of arrays)
         """
 
-        warnings.warn(' '.join(["custom.add is deprecated and will be",
-                                "renamed in pysat 3.0.0 as custom.attach"]),
+        warnings.warn(' '.join(["Custom.add is deprecated and will be",
+                                "renamed in pysat 3.0.0 as",
+                                "Instrument.custom_attach"]),
                       DeprecationWarning, stacklevel=2)
         self.attach(function, kind=kind, at_pos=at_pos, *args, **kwargs)
         return
 
     def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
         """Attach a function to custom processing queue.
+
+        .. deprecated:: 2.3.0
+          `Custom.attach` will be removed in pysat 3.0.0, it is replaced by
+          `Instrument.custom_attach`
 
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
@@ -154,6 +164,11 @@ class Custom(object):
 
         - (string/list of strings, numpy array/list of arrays)
         """
+
+        warnings.warn(' '.join(["Custom.attach is deprecated and will be",
+                                "renamed in pysat 3.0.0 as",
+                                "Instrument.custom_attach"]),
+                      DeprecationWarning, stacklevel=2)
 
         if isinstance(function, str):
             # convert string to function object
@@ -291,7 +306,19 @@ class Custom(object):
                                                       'return.')))
 
     def clear(self):
-        """Clear custom function list."""
+        """Clear custom function list.
+
+        .. deprecated:: 2.3.0
+          `Custom.clear` will be removed in pysat 3.0.0, it is replaced by
+          `Instrument.custom_clear`
+
+        """
+        
+        warnings.warn(' '.join(["Custom.clear is deprecated and will be",
+                                "renamed in pysat 3.0.0 as",
+                                "Instrument.custom_clear"]),
+                      DeprecationWarning, stacklevel=2)
+
         self._functions = []
         self._args = []
         self._kwargs = []

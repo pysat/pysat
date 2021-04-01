@@ -13,12 +13,46 @@ def set_data_dir(path=None, store=True):
     """
     Set the top level directory pysat uses to look for data and reload.
 
+    .. deprecated:: 2.3.0
+       This routine has been deprecated in pysat 3.0.0, and equivalent
+       functionality will be accessible using `pysat.params['data_dirs'] = path`
+
     Parameters
     ----------
     path : string
         valid path to directory pysat uses to look for data
     store : bool
         if True, store data directory for future runs
+
+
+    """
+
+    estr = ''.join(('In 3.0.0 pysat will move to a central location for ',
+                    'storing and managing pysat parameters. Please switch to ',
+                    '`pysat.params["data_dirs"] = path` instead.'))
+    warnings.warn(estr, DeprecationWarning, stacklevel=2)
+
+    _set_data_dir(path, store)
+
+    return
+
+
+def _set_data_dir(path=None, store=True):
+    """
+    Set the top level directory pysat uses to look for data and reload.
+
+    .. deprecated:: 2.3.0
+       This routine has been deprecated in pysat 3.0.0, and equivalent
+       functionality will be accessible using `pysat.params['data_dirs'] = path`
+
+    Parameters
+    ----------
+    path : string
+        valid path to directory pysat uses to look for data
+    store : bool
+        if True, store data directory for future runs
+
+
     """
 
     import os
@@ -39,7 +73,7 @@ def set_data_dir(path=None, store=True):
             with open(os.path.join(os.path.expanduser('~'), '.pysat',
                                    'data_path.txt'), 'w') as f:
                 f.write(path)
-        pysat.data_dir = path
+        pysat._data_dir = path
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
     else:

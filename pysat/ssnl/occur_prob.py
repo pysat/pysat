@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 """Occurrence probability routines, daily or by orbit.
 
 Routines calculate the occurrence of an event greater than a supplied gate
@@ -10,12 +7,18 @@ of times in the bin).The data used to determine the occurrence must be 1D.
 If a property of a 2D or higher dataset is needed attach a custom function
 that performs the check and returns a 1D Series.
 
+.. deprecated:: 2.2.0
+  `ssnl.occur_prob` will be removed in pysat 3.0.0, it will be added to
+  pysatSeasons: https://github.com/pysat/pysatSeasons
+
 Note
 ----
 The included routines use the bounds attached to the supplied instrument
 object as the season of interest.
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 import warnings
@@ -65,7 +68,7 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`daily2D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -118,7 +121,7 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`by_orbit2D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -130,6 +133,20 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate,
 
 def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                   by_orbit=False, returnBins=False):
+    """ Find 2D occurrence
+
+    .. deprecated:: 2.2.0
+      Routine will be removed in pysat 3.0.0, it will be added to pysatSeasons:
+      https://github.com/pysat/pysatSeasons
+
+    """
+
+    warnings.warn(' '.join(["`_occurrence2D` is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning, stacklevel=2)
+
     if not hasattr(data_label, '__iter__'):
         raise ValueError('Data label must be list-like group of variable ' +
                          'names.')
@@ -236,7 +253,7 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`daily3D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -289,7 +306,7 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     """
 
-    warnings.warn(' '.join(["This function is deprecated here and will be",
+    warnings.warn(' '.join(["`by_orbit3D` is deprecated here and will be",
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
@@ -302,6 +319,19 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
 def _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
                   data_label, gate, returnBins=False, by_orbit=False):
+    """Find occurence in 3D
+
+    .. deprecated:: 2.2.0
+      Routine will be removed in pysat 3.0.0, it will be added to pysatSeasons:
+      https://github.com/pysat/pysatSeasons
+
+    """
+
+    warnings.warn(' '.join(["`_occurrence3D` is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning, stacklevel=2)
 
     if not hasattr(data_label, '__iter__'):
         raise ValueError('Data label must be list-like group of variable ' +
