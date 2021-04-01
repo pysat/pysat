@@ -44,7 +44,7 @@ instruments and construct a list of instruments to aid in the testing.
     __all__ = ['lib_inst1', 'lib_inst2']
 
 The tests folder contains an empty __init__ file to be compliant with ``pytest``
-and the test_instruments script.  Pysat includes a standard suite of instrument
+and the test_instruments script.  pysat includes a standard suite of instrument
 tests to run on instruments.  These are imported from the
 ``instrument_test_class`` in the main pysat test library.  The
 ``test_instruments.py`` file can be copied directly into the library, updating
@@ -141,30 +141,43 @@ generally be unchanged.  Instruments are grouped in three lists:
                                              instruments['no_download'])
               getattr(InstTestClass, method).pytestmark.append(mark)
 
-Finally, the ``setup`` function under the ``TestInstruments`` class should be
-updated with the location of the instrument subpackage.
+Finally, the ``setup_class`` function under the ``TestInstruments`` class should be
+updated with the location of the instrument subpackage.  Note that the routine uses 
+temporary directories to store downloaded files to avoid breaking user's directory 
+structure.
 
 .. code:: Python
 
   class TestInstruments(InstTestClass):
+      """Uses class level setup and teardown so that all tests use the same
+      temporary directory. We do not want to geneate a new tempdir for each test,
+      as the load tests need to be the same as the download tests.
+      """
 
-      def setup(self):
-          """Runs before every method to create a clean testing setup."""
-          # Developers for instrument libraries should update the following line
-          # to point to the location of the subpackage. For example,
-          # self.inst_loc = mypackage.instruments
-          self.inst_loc = customLibrary.instruments
+    def setup_class(self):
+        """Runs once before the tests to initialize the testing setup."""
+        # Make sure to use a temporary directory so that the user's setup is not
+        # altered
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params['data_dirs'] = self.tempdir.name
+        # Developers for instrument libraries should update the following line
+        # to point to their own subpackage location, e.g.,
+        # self.inst_loc = mypackage.instruments
+        self.inst_loc = pysat.instruments
 
-      def teardown(self):
-          """Runs after every method to clean up previous testing."""
-          del self.inst_loc
+    def teardown_class(self):
+        """Runs once to clean up testing from this class."""
+        pysat.params['data_dirs'] = self.saved_path
+        self.tempdir.cleanup()
+        del self.inst_loc, self.saved_path, self.tempdir
 
 
 Testing custom analysis routines
 --------------------------------
 
 What if you are developing analysis routines or instruments with special
-functions?  Pysat includes a series of test instrument objects that can be
+functions?  pysat includes a series of test instrument objects that can be
 imported by other packages to test those functions.  For instance,
 `pysatModels <https://github.com/pysat/pysatModels>`_ contains a series of
 routines to collect similar measurements between instruments and models.
