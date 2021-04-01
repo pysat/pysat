@@ -157,12 +157,12 @@ maintaining different data sets they must be defined for every instrument.
   tags = {'': ''}
   inst_ids = {'': ['']}
 
-Pysat also requires that instruments include information pertaining to
+pysat also requires that instruments include information pertaining to
 acknowledgements and references for an instrument.  These are simply defined as
 strings at the instrument level.  In the most basic case, these can be defined
 with the data information at the top.
 
-Pysat also requires that a logger handle be defined and instrumentment
+pysat also requires that a logger handle be defined and instrumentment
 information pertaining to acknowledgements and references be included.  These
 ensure that people using the data know who to contact with questions and what
 they should reference when publishing their results.  The logging handle should
@@ -227,7 +227,7 @@ that must be supported. Sometimes users obtain files from non-traditional
 sources and format_str makes it easier for those users to use an existing
 instrument module to work with those files.
 
-pysat will by default store data in pysat_data_dir/platform/name/tag,
+pysat will by default store data in pysat_data_dir/platform/name/tag/inst_id,
 helpfully provided in data_path, where pysat_data_dir is specified by using
 ``pysat.params['data_dirs'] = pysat_data_dir``. Note that an alternative
 directory structure may be specified using the pysat.Instrument keyword
@@ -392,9 +392,9 @@ how your data and files are structured.
 directory_format
 ^^^^^^^^^^^^^^^^
 
-Allows the specificaiton of a custom directory naming structure, where the files
+Allows the specification of a custom directory naming structure, where the files
 for this Instrument will be stored within the pysat data directory. If not set
-or if set to ``None``, it defaults to '{platform}/{name}/{tag}'. The string
+or if set to ``None``, it defaults to '{platform}/{name}/{tag}/{inst_id}'. The string
 format understands the keys `platform`, `name`, `tag`, and `inst_id`. This may
 also be a function that takes `tag` and `inst_id` as input parameters and
 returns an appropriate string.
@@ -412,7 +412,7 @@ multi_file_day
 ^^^^^^^^^^^^^^
 
 This defaults to ``False``, which means that the files for this data set have
-one or less.  If your data set consists of multiple files per day, this
+one or less.  If your data set consists of multiple files per day, and the files contain data across daybreaks, this
 attribute should be set to ``True``.
 
 orbit_info
@@ -622,7 +622,7 @@ The standardized pysat tests are available in pysat.tests.instrument_test_class.
 The test collection test_instruments.py imports this class, collects a list of
 all available instruments (including potential tag / inst_id combinations),
 and runs the tests using pytestmark.  By default, pysat assumes that your
-instrument has a fully functional download  routine, and will run an end-to-end
+instrument has a fully functional download routine, and will run an end-to-end
 test.  If this is not the case, see the next section.
 
 Special Test Configurations
