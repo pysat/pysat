@@ -30,8 +30,8 @@ class Files(object):
         Instrument object
     directory_format : str or NoneType
         Directory naming structure in string format. Variables such as
-        platform, name, tag, and inst_id will be filled in as needed using python
-        string formatting. The default directory structure would be
+        platform, name, tag, and inst_id will be filled in as needed using
+        python string formatting. The default directory structure would be
         expressed as '{platform}/{name}/{tag}/{inst_id}'. If None, the default
         directory structure is used (default=None)
     update_files : boolean
