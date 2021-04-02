@@ -23,10 +23,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     Parameters
     ----------
-    stored : orderedDict
+    stored : collections.orderedDict
         Dict produced by parse_fixed_width_filenames or
         parse_delimited_filenames
-    two_digit_year_break : int or None
+    two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
@@ -35,7 +35,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     Returns
     -------
-    pandas.Series
+    pds.Series
         Series, indexed by datetime, with file strings
 
     Note
@@ -127,16 +127,16 @@ def parse_fixed_width_filenames(files, format_str):
     ----------
     files : list
         List of files
-    format_str : string with python format codes
+    format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'. For example,
+        Supports string formatting codes 'year', 'month', 'day', 'hour',
+        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
         `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
 
     Returns
     -------
-    stored : OrderedDict
+    stored : collections.OrderedDict
         Information parsed from filenames that inclues: 'year', 'month', 'day',
         'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
         includes 'files', an input list of files, and 'format_str', a formatted
@@ -201,18 +201,18 @@ def parse_delimited_filenames(files, format_str, delimiter):
     ----------
     files : list
         List of files
-    format_str : string with python format codes
+    format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'. For example,
+        Supports string formatting codes 'year', 'month', 'day', 'hour',
+        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
         `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
     delimiter : string
         Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
-    stored : OrderedDict
+    stored : collections.OrderedDict
         Information parsed from filenames that inclues: 'year', 'month', 'day',
         'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
         includes 'files', an input list of files, and 'format_str', a formatted

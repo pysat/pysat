@@ -37,7 +37,7 @@ the mean every day or every orbit over the period of time supplied by
 
        Returns
        -------
-       mean_val : pandas Series
+       mean_val : pds.Series
            Pandas time series containing periodic means of the desired value
 
        """

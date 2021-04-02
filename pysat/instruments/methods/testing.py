@@ -323,7 +323,7 @@ def generate_times(fnames, num, freq='1S'):
     -------
     uts : array
         Array of integers representing uts for a given day
-    index : DatetimeIndex
+    index : pds.DatetimeIndex
         The DatetimeIndex to be used in the pysat test instrument objects
     date : datetime
         The requested date reconstructed from the fake file name
