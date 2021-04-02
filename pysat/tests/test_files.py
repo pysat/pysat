@@ -7,11 +7,11 @@ from importlib import reload
 from multiprocessing import Pool
 import numpy as np
 import os
+import pandas as pds
+import tempfile
 import time
 
-import pandas as pds
 import pytest
-import tempfile
 
 import pysat
 import pysat.instruments.pysat_testing
