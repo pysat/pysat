@@ -36,12 +36,10 @@ Main Features
 
 """
 
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import absolute_import
-import os
-
 import logging
+import os
+from portalocker import Lock
+
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
@@ -49,49 +47,75 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
+# Import and set user and pysat parameters object
+from pysat import _params
+
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'version.txt')) as version_file:
-    __version__ = version_file.read().strip()
+version_filename = os.path.join(here, 'version.txt')
 
-
-# get home directory
+# Get home directory
 home_dir = os.path.expanduser('~')
+
+# Set pysat directory path in home directory
+pysat_dir = os.path.join(home_dir, '.pysat')
+
 # Set directory for test data
 test_data_path = os.path.join(here, 'tests', 'test_data')
-# set pysat directory path in home directory
-pysat_dir = os.path.join(home_dir, '.pysat')
-# make sure a pysat directory exists
-if not os.path.isdir(pysat_dir):
-    # create directory
-    os.mkdir(pysat_dir)
-    print('Created .pysat directory in user home directory to store settings.')
-    # create file with default data directory
+
+# Create a .pysat directory or parameters file if one doesn't exist.
+# pysat_settings did not exist pre v3 thus this provides a check against
+# v2 users that are upgrading. Those users need the settings file plus
+# new internal directories.
+if not os.path.isdir(pysat_dir) or \
+        (not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json'))):
+
+    # Make a .pysat directory if not already present
+    if not os.path.isdir(pysat_dir):
+        os.mkdir(pysat_dir)
+        ostr = ''.join(('Created .pysat directory in home directory to store ',
+                        'settings.'))
+        logger.info(ostr)
+
+    # Make additional internal directories
+    if not os.path.isdir(os.path.join(pysat_dir, 'instruments')):
+        os.mkdir(os.path.join(pysat_dir, 'instruments'))
+
+    if not os.path.isdir(os.path.join(pysat_dir, 'instruments', 'archive')):
+        os.mkdir(os.path.join(pysat_dir, 'instruments', 'archive'))
+
+    # Create parameters file
+    if not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json')):
+        params = _params.Parameters(path=pysat_dir, create_new=True)
+
+    # Set initial data directory if we are on Travis
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
-    else:
-        data_dir = ''
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
-        f.write(data_dir)
-    print(''.join(("\nHi there!  Please inform pysat where you will store "
-                   "(or are storing) science data by "
-                   "running pysat.utils.set_data_dir and specifying "
-                   "a location.")))
+        params['data_dirs'] = [data_dir]
+
+    print(''.join(("\nHi there!  pysat will nominally store data in a ",
+                   "'pysatData' directory which needs to be assigned. ",
+                   "Please run `pysat.params['data_dirs'] = path` where path ",
+                   "specifies one or more existing top-level directories that ",
+                   "may be used to store science data. `path` may either be ",
+                   "a single string or a list of strings.")))
 else:
-    # load up stored data path
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
-        data_dir = f.readline()
+    # Load up existing parameters file
+    params = _params.Parameters()
 
-import netCDF4
-from pandas import Panel, DataFrame, Series, datetime
-from . import utils, model_utils
-from ._constellation import Constellation
-from ._instrument import Instrument
-from ._meta import Meta
-from ._files import Files
-from ._custom import Custom
-from ._orbits import Orbits
-from . import instruments
-from . import ssnl
+# Load up version information
+with Lock(version_filename, 'r', params['file_timeout']) as version_file:
+    __version__ = version_file.read().strip()
 
-__all__ = ['ssnl', 'instruments', 'utils']
+from pysat import utils
+from pysat._constellation import Constellation
+from pysat._instrument import Instrument
+from pysat._meta import Meta, MetaLabels
+from pysat._files import Files
+from pysat._orbits import Orbits
+from pysat import instruments
+
+__all__ = ['instruments', 'utils']
+
+# Cleanup
+del here

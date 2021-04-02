@@ -1,8 +1,8 @@
-numpydoc
 ipython
-h5py
 netCDF4
-xarray
+numpydoc
 pandas
-madrigalWeb
-PyForecastTools
+portalocker
+pytest
+xarray
+m2r2

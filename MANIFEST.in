@@ -1,12 +1,9 @@
-include *.py
-include *.f
-include *.c
-recursive-include pysat *.py
+global-include *.py
 include *.md
-include description.txt
+include *.txt
 include LICENSE
 include pysat/version.txt
+include pysat/citation.txt
 prune docs
-prune demo
-exclude *.pdf
-exclude *.png
+global-exclude *.pdf
+global-exclude *.png

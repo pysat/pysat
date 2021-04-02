@@ -1,3 +1,4 @@
+.. _tutorial:
 
 Tutorial
 ========
@@ -5,11 +6,12 @@ Tutorial
 .. toctree::
    :maxdepth: 2
 
-   tutorial_basics.rst
-   tutorial_verbosity.rst
-   tutorial_custom.rst
-   tutorial_independence.rst
-   tutorial_iteration.rst
-   tutorial_orbit.rst
-   tutorial_full_independence.rst
-   tutorial_flow.rst
+   tutorial/tutorial_v3_upgrade.rst
+   tutorial/tutorial_basics.rst
+   tutorial/tutorial_parameters.rst
+   tutorial/tutorial_verbosity.rst
+   tutorial/tutorial_load.rst
+   tutorial/tutorial_iteration.rst
+   tutorial/tutorial_orbit.rst
+   tutorial/tutorial_custom.rst
+   tutorial/tutorial_analysis.rst

@@ -1,337 +1,130 @@
-import warnings
-from nose.tools import raises
-import numpy as np
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+
+import datetime as dt
+import pytest
 
 import pysat
+from pysat import constellations
 
 
 class TestConstellation:
     """Test the Constellation class."""
     def setup(self):
-        """Create instruments and a constellation for each test."""
-        self.instruments = [pysat.Instrument('pysat', 'testing',
-                                             clean_level='clean')
-                            for i in range(2)]
-        self.const = pysat.Constellation(self.instruments)
+        """Create instruments and a constellation for each test
+        """
+        self.instruments = constellations.testing.instruments
+        self.in_kwargs = {"instruments": self.instruments,
+                          "const_module": pysat.constellations.single_test}
+        self.const = None
 
     def teardown(self):
-        """Clean up after each test."""
-        del self.const
+        """Clean up after each test
+        """
+        del self.const, self.instruments, self.in_kwargs
 
-    def test_construct_by_list(self):
-        """Construct a Constellation with a list."""
-        const = pysat.Constellation(self.instruments)
-        assert len(const.instruments) == 2
+    @pytest.mark.parametrize("ikey,ival,ilen",
+                             [("const_module", None, 5),
+                              ("instruments", None, 1),
+                              (None, None, 6)])
+    def test_construct_constellation(self, ikey, ival, ilen):
+        """Construct a Constellation with good input
+        """
+        if ikey is not None:
+            self.in_kwargs[ikey] = ival
+        self.const = pysat.Constellation(**self.in_kwargs)
+        assert len(self.const.instruments) == ilen
 
-    def test_construct_by_name(self):
-        """Construct a Constellation by name.
+    def test_construct_raises_noniterable_error(self):
+        """Attempt to construct a Constellation by const_module and list
+        """
+        with pytest.raises(ValueError) as verr:
+            self.const = pysat.Constellation(instruments=self.instruments[0])
 
-        Should access a predefined Constellation."""
-        const = pysat.Constellation(name='testing')
-        assert len(const.instruments) == 5
-
-    @raises(ValueError)
-    def test_construct_both(self):
-        """Attempt to construct a Constellation by name and list.
-        Raises an error."""
-        pysat.Constellation(
-            instruments=self.instruments,
-            name='testing')
-
-    @raises(ValueError)
-    def test_construct_bad_instruments(self):
-        """Attempt to construct a Constellation with
-        a bad instrument 'list.'"""
-        pysat.Constellation(instruments=42)
+        assert str(verr).find("instruments argument must be list-like")
 
     def test_construct_null(self):
-        """Attempt to construct a Constellation with
-        no arguments."""
-        const = pysat.Constellation()
-        assert len(const.instruments) == 0
+        """Attempt to construct a Constellation with no arguments
+        """
+        self.const = pysat.Constellation()
+        assert len(self.const.instruments) == 0
 
     def test_getitem(self):
-        """Test Constellation:__getitem__."""
-        assert self.const[0] == self.instruments[0]
-        assert self.const[1] == self.instruments[1]
-        assert self.const[:] == self.instruments[:]
-        assert self.const[1::-1] == self.instruments[1::-1]
-
-    def test_str(self):
-        """Test Constellation:__str__."""
-        assert str(self.const) == \
-            "\npysat Constellation object:\ntesting\ntesting\n"
-
-
-class TestAdditionIdenticalInstruments:
-    def setup(self):
-        self.const1 = pysat.Constellation(name='testing')
-        self.const2 = pysat.Constellation(name='single_test')
-
-    def teardown(self):
-        del self.const1
-        del self.const2
-
-    def test_addition_identical(self):
-        self.const1.set_bounds(pysat.datetime(2008, 1, 1),
-                               pysat.datetime(2008, 2, 1))
-        self.const2.set_bounds(pysat.datetime(2008, 1, 1),
-                               pysat.datetime(2008, 2, 1))
-
-        bounds1 = [0, 360]
-        label1 = 'longitude'
-        bounds2 = [-90, 90]
-        label2 = 'latitude'
-        bins3 = [0, 24, 24]
-        label3 = 'mlt'
-        data_label = ['dummy1']
-        results1 = self.const1.add(bounds1, label1, bounds2, label2, bins3,
-                                   label3, data_label)
-        results2 = self.const2.add(bounds1, label1, bounds2, label2, bins3,
-                                   label3, data_label)
-        med1 = results1['dummy1']['median']
-        med2 = results2['dummy1']['median']
-        for (left, right) in zip(med1, med2):
-            assert left == right or \
-                   (np.isnan(left) and np.isnan(right))
-
-        # for i in range(len(med1)):
-        #    assert med1[i] == med2[i]
-
-
-class TestAdditionOppositeInstruments:
-    def setup(self):
+        """Test Constellation iteration through instruments attribute
         """
-        The data in ascend['dummy1'] is just ascending integers 0 to the
-        length of the other data, descend has the same data but negative.
-        The addition of these two signals should be zero everywhere.
+        self.in_kwargs['const_module'] = None
+        self.const = pysat.Constellation(**self.in_kwargs)
+        tst_get_inst = self.const[:]
+        pysat.utils.testing.assert_lists_equal(self.instruments, tst_get_inst)
+
+    def test_repr_w_inst(self):
+        """Test Constellation string output with instruments loaded
         """
-        self.testC = pysat.Constellation(name='test_add_opposite')
+        self.in_kwargs['const_module'] = None
+        self.const = pysat.Constellation(**self.in_kwargs)
+        out_str = self.const.__repr__()
 
-    def teardown(self):
-        del self.testC
+        assert out_str.find("Constellation(instruments") >= 0
 
-    def test_addition_opposite_instruments(self):
-        self.testC.set_bounds(pysat.datetime(2008, 1, 1),
-                              pysat.datetime(2008, 2, 1))
-        bounds1 = [0, 360]
-        label1 = 'longitude'
-        bounds2 = [-90, 90]
-        label2 = 'latitude'
-        bins3 = [0, 24, 24]
-        label3 = 'mlt'
-        data_label = 'dummy1'
-        results = self.testC.add(bounds1, label1, bounds2, label2, bins3,
-                                 label3, data_label)
-        med = np.array(results['dummy1']['median'])
-        assert abs(med).max() == 0
-
-
-class TestAdditionSimilarInstruments:
-    def setup(self):
+    def test_str_w_inst(self):
+        """Test Constellation string output with instruments loaded
         """
-        All the data in dummy1 of 'plus10' is the data in default + 10
-        So the addition of 'ascend' and 'plus10' should be no
-        more than 10 off from the addition of just 'ascend'
-        TODO: actually check the math on this
+        self.in_kwargs['const_module'] = None
+        self.const = pysat.Constellation(**self.in_kwargs)
+        out_str = self.const.__str__()
+
+        assert out_str.find("pysat Constellation ") >= 0
+        assert out_str.find("Index Platform") > 0
+
+    def test_str_wo_inst(self):
+        """Test Constellation string output without instruments loaded
         """
-        self.testC = pysat.Constellation(name='test_add_similar')
-        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testing',
-                                                          tag='ascend')])
+        self.const = pysat.Constellation()
+        out_str = self.const.__str__()
 
-    def teardown(self):
-        del self.testC
-        del self.refC
+        assert out_str.find("pysat Constellation ") >= 0
+        assert out_str.find("No loaded Instruments") > 0
 
-    def test_addition_similar_instruments(self):
-        self.testC.set_bounds(pysat.datetime(2008, 1, 1),
-                              pysat.datetime(2008, 2, 1))
-        self.refC.set_bounds(pysat.datetime(2008, 1, 1),
-                             pysat.datetime(2008, 2, 1))
-        bounds1 = [0, 360]
-        label1 = 'longitude'
-        bounds2 = [-90, 90]
-        label2 = 'latitude'
-        bins3 = [0, 24, 24]
-        label3 = 'mlt'
-        data_label = 'dummy1'
-        results = self.testC.add(bounds1, label1, bounds2, label2, bins3,
-                                 label3, data_label)
-        refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3,
-                                   label3, data_label)
-        med = np.array(results['dummy1']['median'])
-        refmed = np.array(refresults['dummy1']['median'])
-        diff = med - refmed
-        assert diff.min() >= 0
-        assert diff.max() <= 10
-
-
-class TestAdditionSingleInstrument:
-    def setup(self):
+    def test_single_attachment_of_custom_function(self):
+        """Test successful attachment of custom function
         """
-        The constellation consists of a single instrument, so performing
-        addition on it should just return the instrument's data within
-        the bounds
-        """
-        insts = []
-        self.testInst = pysat.Instrument('pysat', 'testing', 'fives',
-                                         clean_level='clean')
-        insts.append(self.testInst)
-        self.testConst = pysat.Constellation(insts)
+        # Define a custom function
+        def double_mlt(inst):
+            dmlt = 2.0 * inst.data.mlt
+            dmlt.name = 'doubleMLT'
+            inst.data[dmlt.name] = dmlt
+            return
 
-    def teardown(self):
-        del self.testConst
+        # Initialize the constellation
+        self.in_kwargs['const_module'] = None
+        self.const = pysat.Constellation(**self.in_kwargs)
 
-    def test_addition_single_instrument(self):
-        for inst in self.testConst:
-            inst.bounds = (pysat.datetime(2008, 1, 1),
-                           pysat.datetime(2008, 2, 1))
-        bounds1 = [0, 360]
-        label1 = 'longitude'
-        bounds2 = [-90, 90]
-        label2 = 'latitude'
-        bins3 = [0, 24, 24]
-        label3 = 'mlt'
-        data_label = 'dummy1'
-        results = self.testConst.add(bounds1, label1, bounds2, label2, bins3,
-                                     label3, data_label)
+        # Add the custom function
+        self.const.custom_attach(double_mlt, at_pos='end')
+        self.const.load(2009, 1)
 
-        med = results['dummy1']['median']
-        for i in med:
-            assert i == 5
+        # Test the added value
+        for inst in self.const:
+            assert 'doubleMLT' in inst.data.columns
+            assert (inst['doubleMLT'] == 2.0 * inst['mlt']).all()
 
+    def test_bounds_passthrough(self):
+        """Ensure bounds are applied to each instrument within Constellation"""
 
-class TestDifferenceSameInstrument:
-    def setup(self):
-        self.const = pysat.Constellation(name='test_diff_same')
+        # Create costellation
+        self.const = pysat.Constellation(instruments=self.instruments)
 
-    def teardown(self):
-        del self.const
+        # Set bounds
+        self.start_date = dt.datetime(2009, 1, 1)
+        self.stop_date = dt.datetime(2010, 1, 1)
+        self.const.bounds = (self.start_date, self.stop_date)
 
-    def test_diff_same_instruments(self):
-        self.const.load(date=pysat.datetime(2008, 1, 1))
-        bounds = [('longitude', 'longitude', 0, 360, .5),
-                  ('latitude', 'latitude', -90, 90, .5),
-                  ('mlt', 'mlt', 0, 24, .1)]
-        results = self.const.difference(self.const[0], self.const[1],
-                                        bounds, [('dummy1', 'dummy1')],
-                                        cost_function)
-        diff = results['dummy1']
-        dist = results['dist']
-        # the instruments are identical, so the difference should be 0
-        # everywhere
-        assert abs(diff).max() == 0
-        assert abs(dist).max() == 0
+        # Ensure constellation reports correct dates
+        assert self.const.bounds[0:2] == ([self.start_date], [self.stop_date])
 
-
-class TestDifferenceSimilarInstruments:
-    def setup(self):
-        self.const = pysat.Constellation(name='test_diff_similar')
-
-    def teardown(self):
-        del self.const
-
-    def test_diff_similar_instruments(self):
-        self.const.load(date=pysat.datetime(2008, 1, 1))
-        bounds = [('longitude', 'longitude', 0, 360, .5),
-                  ('latitude', 'latitude', -90, 90, .5),
-                  ('mlt', 'mlt', 0, 24, .1)]
-        results = self.const.difference(self.const[0], self.const[1],
-                                        bounds, [('dummy1', 'dummy1')],
-                                        cost_function)
-        diff = results['dummy1']
-        assert np.all(abs(diff - 5)) == 0
-
-
-# test cost function for testing difference
-def cost_function(point1, point2):
-    lat_diff = point1['latitude'] - point2['latitude']
-    long_diff = point1['longitude'] - point2['longitude']
-    return lat_diff*lat_diff + long_diff*long_diff
-
-
-class TestDataMod:
-    """Test adapted from test_custom.py."""
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        self.testConst = \
-            pysat.Constellation([pysat.Instrument('pysat', 'testing',
-                                                  sat_id='10',
-                                                  clean_level='clean')])
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        del self.testConst
-
-    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
-        """Adds a function to the object's custom queue"""
-        self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
-
-    def test_single_adding_custom_function(self):
-        """Test if custom function works correctly. Add function that returns
-        pandas object."""
-        def custom1(inst):
-            d = 2. * inst.data.mlt
-            d.name = 'doubleMLT'
-            return d
-
-        self.add(custom1, 'add')
-        self.testConst.load(2009, 1)
-        ans = (self.testConst[0].data['doubleMLT'].values ==
-               2. * self.testConst[0].data.mlt.values).all()
-        assert ans
-
-
-class TestDeprecation():
-
-    def setup(self):
-        """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
-
-        instruments = [pysat.Instrument(platform='pysat', name='testing',
-                                        sat_id='10', clean_level='clean')
-                       for i in range(2)]
-        self.testC = pysat.Constellation(instruments)
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing"""
-
-        del self.testC
-
-    def test_deprecation_warning_add(self):
-        """Test if constellation.add is deprecated"""
-
-        with warnings.catch_warnings(record=True) as war:
-            try:
-                # initiate function with NoneTypes since function does not
-                # need to run for DeprecationWarning to be thrown
-                # Setting data_label to None should produce a ValueError after
-                # warning is generated
-                # ==> Save time in unit tests
-                self.testC.add(bounds1=None, label1=None, bounds2=None,
-                               label2=None, bin3=None, label3=None,
-                               data_label=None)
-            except ValueError:
-                pass
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
-
-    def test_deprecation_warning_difference(self):
-        """Test if constellation.difference is deprecated"""
-
-        with warnings.catch_warnings(record=True) as war:
-            try:
-                # initiate function with NoneTypes since function does not
-                # need to run for DeprecationWarning to be thrown
-                # Setting data_labels to None should produce a TypeError after
-                # warning is generated
-                # ==> Save time in unit tests
-                self.testC.difference(self.testC[0], self.testC[1],
-                                      bounds=None, data_labels=None,
-                                      cost_function=None)
-            except TypeError:
-                pass
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
+        # Test bounds are the same for all instruments
+        for instrument in self.const:
+            assert instrument.bounds == self.const.bounds

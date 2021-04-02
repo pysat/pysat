@@ -2,7 +2,203 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.2] - 2020-11-23
+## [3.0.0] - 2021-04-01
+- New Features
+  - Added registry module for registering custom external instruments
+  - Added Meta.mutable flag to control attribute mutability
+  - Added MetaLabels class to manage metadata labeling
+  - Unit tests are now pytest compatible, use parametrize, and have improved
+    messages when failures are encountered
+  - Added altitudes to test instruments
+  - New flags added to instruments to streamline unit testing:
+    `_test_download`, `_test_download_travis`, `_password_req`
+  - `strict_time_flag` now defaults to True
+  - Use of start/stop notation in remote_file_list
+  - Added variable rename method to Instrument object (#91)
+  - Added support for loading more than one day/file (#56)
+  - Added support for iterating over a dataset a with a loaded data width and
+    stepsize larger than a single day/file
+  - Added check for inconsistent inputs when loading data via Instrument
+  - Added file locking for thread-safe behavior (#304)
+  - Allow the Instrument object to be initialized with optional kwargs for any
+    of the standard methods (not just load).
+  - Added support for 'cycle' in addition to 'version' and 'revision' for
+    filename conventions.
+  - Integrated Custom class directly into Instrument to support mixed use
+    of Constellation/Instrument objects in code (#540)
+  - Made underlying custom data structures visible (#529)
+  - Updated data_mode method name to custom_attach for the Constellation
+    object (#540)
+  - Added a display utility for discovering pysat Instrument data sets.
+  - Added testing utility functions.
+  - Added support for multiple pysat data directories
+  - Reorganized .pysat directory to store instrument information under
+    .pysat/instruments and .pysat/instruments/archive
+  - Added pysat.params, a central location to store and modify pysat default
+    parameters. File stored at .pysat/pysat_settings.json
+  - Added `warn_empty_file_list` to pysat.params to provide a warning if no
+    Instrument files are found. Default is False.
+  - Updated default pysat directory organization template
+  - Added support for dual specification of Instruments to include in a
+    Constellation
+  - Added function to transition pysat managed data files to a user
+    provided template.
+  - Allow `directory_format` input to `Instrument` to be a function
+  - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
+    exclusive
+  - Added support for SLT calculations outside [0, 24)
+  - Added support for continuous SLT calculations when loading multiple days
+  - Instrument support functions now respond to local changes in 
+    Instrument.kwargs
+  - Added support for pysat.Instrument, Files, and Orbits equality comparisons
+  - Added .copy function to Instrument, Files, and Orbits classes
+  - Updated Parameters to ensure paths provided for pysat.params['data_dirs'] are created if they don't
+    already exist
+- Deprecations
+  - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
+    pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
+  - Migrated file methods to pysat.utils.files (#336)
+  - Renamed `sat_id` Instrument keyword argument to `inst_id`
+  - Removed ssnl
+  - Removed utils.stats
+  - Removed model_utils
+  - Removed deprecated pandas.Panel
+  - Import datetime class from datetime module, not pandas
+  - Import DataFrame and Series classes directly from pandas, not pysat
+  - Removed coords.scale_units
+  - Removed time.season_date_range
+  - Moved methods.nasa_cdaweb.list_files to methods.general
+  - DeprecationWarning for strict_time_flag only triggered if sloppy data is
+    found
+  - Changed the custom function attachment input to allow keyword argument use
+    when additional function input is required
+  - Removed python 2.7 syntax
+  - Removed utils.coords.geodetic_to_geocentric
+  - Removed utils.coords.geodetic_to_geocentric_horizontal
+  - Removed utils.coords.spherical_to_cartesian
+  - Removed utils.coords.global_to_local_cartesian
+  - Removed utils.coords.local_horizontal_to_global_geo
+  - Addressed several Warnings raised by incorrect use of dependent packages
+  - Deprecated use of `inst_id` for number of simulated samples for test
+    instruments
+  - Removed writing of custom Meta attributes when producing netCDF4 files
+  - Removed unneeded description.txt file, using README instead
+  - Changed `pysat.instruments.methods.general.list_files` kwarg
+    `fake_monthly_files_from_daily` to `file_cadence`
+  - Changed name of Instrument method `default` to `preprocess`
+  - Removed `pysat.data_dir`. Information now at `pysat.params['data_dirs']`.
+  - Moved `pysat.Instrument._filter_datetime_input` to
+    `pysat.utils.time.filter_datetime_input`
+  - Deprecated `pysat.utils.set_data_dir`
+  - Changed `name` kwarg in Constellation to `const_module`
+  - Removed unnecessary Instrument attribute `labels`
+  - Removed unnecessary Instrument kwargs
+  - Removed the Custom class, incorporating it into Instrument
+  - Removed deprecated calls to 'modify' type custom functions
+- Documentation
+  - Added info on how to register new instruments
+  - Fixed description of `tag` and `inst_id` behaviour in testing instruments
+  - Added a tutorial for developers of instrument libraries for pysat
+  - Updated instrument templates
+  - Added .zenodo.json file, to improve specification of authors in citation
+  - Improved `__str__` and `__repr__` functions for basic classes
+  - Improved docstring readability and consistency
+  - Added Travis-CI testing for the documentation
+  - Added a style guide for developers
+  - Updated loading data flow figure
+  - Scrubbed the documentation, ensuring examples, tutorials, and descriptions
+    match the current implementation and code structure
+- Bug Fix
+  - Updated Instrument.concat_func to behave as described in the docstring
+  - Fixed custom instrument attribute persistence upon load
+  - Improved string handling robustness when writing netCDF4 files in Python 3
+  - Improved pandas 1.1.0 compatibility in tests
+  - Fixed coupling of two_digit_year_break keyword to underlying method in
+    methods.general.list_files
+  - Fixed additional file date range for monthly data with gaps
+  - Fixed custom Meta attributes removal when transferred to instrument (#615)
+  - Corrected iteration over Instrument within list comprehension
+  - Removed unused input arguments
+  - Corrects Instrument today, yesterday, and tomorrow methods by implementing
+    datetime.datetime.utcnow
+  - Ensured pysat.Meta instances are immutable at Instrument instantiation
+  - Removed weak reference back to Instrument within Files class
+  - Fixed access of xarray data with more than one dimension (#471)
+  - Improved robustness of `eval(inst.__repr__())` (#636)
+  - Fixed `calc_solar_local_time` for data sets with longitude coordinates
+  - Fixed .copy() when pysat.Instrument instantiated with `inst_module` (#728)
+  - Modified storage of Instrument.kwargs to include all methods so that
+    `eval(Instrument.__repr__())` works in more cases
+  - Modified storage of Instrument.kwargs to only include user supplied keywords
+  - Improved robustness when working with file dates that aren't centered on 
+    midnight
+  - Added basic valid path check to `pysat.utils.files.check_and_make_path`
+- Maintenance
+  - nose dependency removed from unit tests
+  - Specified `dtype` for empty pandas.Series for forward compatibility
+  - Removed wildcard imports, relative imports
+  - Include flake8 check as part of testing suites
+  - Improved unit testing coverage of instrument functions and instrument object
+  - Added tests for Instrument attributes `acknowledgements` and `references`
+  - Removed implicit conversion to integers in
+    methods.general.convert_timestamp_to_datetime
+  - Simplified internal logic in Instrument class
+  - Moved setup metadata to setup.cfg
+  - Improved instrument tests for files
+  - Used dt.timedelta instead of pds.DateOffSet where possible
+  - Reduced code duplication throughout package
+  - Reduced unused code snippets throughout
+  - Ensured download start time is used
+  - Condensed testing support functions into methods/testing.py
+  - Fixed a bug with usage of numpy.dtype for numpy 1.20 compatibility
+  - Updated usage of pds.index.to_native_types() to pds.index.astype(str)
+    for pandas 2.0 compatibility (#737)
+  - Check type as float rather than np.float for future numpy compatibility
+    (#740)
+  - Verified usage of inst.loc[slice, keyword] will continue to work in
+    pandas 2.0 (#738)
+
+## [2.3.0] - 2021-04-01
+- Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
+- Allow limited use of new list_files kwarg, `file_cadance`
+- Added support for `pysat.params['data_dirs']`, the replacement
+  for `pysat.data_dir` in pysat 3.0.0
+- Deprecation warnings added to:
+   - Instrument class (old meta labels, `sat_id`, `default`, `multi_file_day`,
+     `manual_org`, and `_filter_datetime_input`, `data_dir`)
+   - pysat.instruments.methods.general.list_files kwarg
+     `fake_montly_files_from_daily`
+   - pysat.instruments.methods.testing.generate_times kwarg
+     `sat_id`
+   - Constellation class kwarg `name`
+   - Custom class
+   - functions from `_files` class
+   - functions from `ssnl` module
+   - Instrument modules:
+      - the pysatCDAAC: cosmic_gps
+      - the pysatIncubator: champ_star, demeter_iap, superdarn_grdex,
+        supermag_magnetometer
+      - the pysatMadrigal: jro_isr, dmsp_ivm
+      - the pysatSpaceWeather: sw_dst, sw_f107, sw_kp
+      - the pysatModels: ucar_tiegcm
+      - the pysatNASA: cnofs_ivm, cnofs_plp, cnofs_vefi, de2_lang, de2_nacs,
+        de2_rpa, de2_wats, icon_euv, icon_fuv, icon_ivm, icon_might, iss_fpmu,
+        omni_hro, rocsat1_ivm, sport_ivm, timed_saber, timed_see
+   - The usage of a numeric string for `sat_id` to specify number of points
+     in test instruments
+   - SpaceWeather, Incubator (DEMETER), Madrigal, CDAWeb, and ICON instrument
+     methods
+   - The DE2 and ICON Constellation objects
+   - pysat.utils.set_data_dir
+- Documentation
+   - Updated docstrings with deprecation notes
+- Bug Fix
+   - Closes files after download in NASA CDAWeb methods
+   - Updated the ICON constellation object to reflect new instrument standards
+- Added version cap for numpy
+
+
+## [2.2.2] - 2020-12-31
 - New Features
    - netCDF4 files produced using `to_netcdf4()` now have an unlimited
      time dimension
@@ -277,20 +473,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Added support for higher order MetaData objects, needed for DataFrame within DataFrames
  - Windows compatibility
  - Additional scientific instrument support
-
-
-### Changed
  - Initial support for sat_id in Instrument
  - Files class will now remove duplicate file times rather than simply raise an exception
 
 ## [0.3.3] - 2016-01-07
-### Changed
  - Added manual_org flag to Instrument instantion. Simple file management flag.
  - Improved COSMIC demo plotting
  - Improved support for instruments with no files
 
 ## [0.3.2] - 2015-12-01
-### Changed
  - Fixed error raised by pysat.utils.set_data_dir
  - Partial unit test coverage for files class
  - File tracking more robust
@@ -298,7 +489,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Improved to_netcdf3 and load_netcdf3 routines, netcdf files produced pass standards check
 
 ## [0.3.1] - 2015-07-21
-### Changed
  - Added missing file close statement in SuperDARN load command
  - Fixed COSMIC UTS bug
  - Fixed check for unique datetimes associated with files
@@ -312,7 +502,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Doubled loading performance for SuperDARN grdex files (3 seconds down to 1.5)
 
 ## [0.3] - 2015-06-18
-### Changed
  - Improved polar orbit determination
  - Added file sorting in files.from_os constructor to ensure datetime index is correct
  - Added Instrument instantiation option, multi_file_day
@@ -329,7 +518,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Improved performance of comsic 2013 data loading
 
 ## [0.2.2] - 2015-05-17
-### Changed
  - Expanded coverage in tutorial documentation
  - Expanded test coverage for pysat.Meta()
  - Improved robustness of Meta __setitem__
@@ -344,14 +532,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Improved docstrings
 
 ## [0.2.1] - 2015-04-29
-### Changed
 - Removed spacepy and netCDF from setup.py requirements. Both of
   these packages require non-python code to function properly.
   pysat now builds correctly as determined by travis-cl.
   Installation instructions have been updated.
 
 ## [0.2.0] - 2015-04-27
-### Changed
 - Added information to docstrings.
 - Expanded unit test coverage and associated bugs.
 - Changed signature for pysat.Instrument, orbit information

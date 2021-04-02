@@ -1,0 +1,9 @@
+coveralls
+pytest-cov
+pytest-flake8
+pytest-ordering
+sphinx
+sphinx_rtd_theme
+numpydoc
+ipython
+m2r2

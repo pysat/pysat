@@ -3,31 +3,36 @@ Citations in the pysat ecosystem
 
 When referring to this software package, please cite the original paper by
 Stoneback et al [2018] `<https://doi.org/10.1029/2018JA025297>`_ as well as the
-package `<https://doi.org/10.5281/zenodo.1199703>`_. Note that this doi will
-always point to the latest version of the code.  A list of dois for all
-versions can be found at the
-`Zenodo page <https://zenodo.org/record/1199703)>`_.
+package `<https://doi.org/10.5281/zenodo.1199703>`_. Note that this DOI will
+always point to the latest version of the code.  A list of DOIs for all
+versions can be found at the Zenodo page above.
 
 Example for citation in BibTex for a generalized version:
 
 .. code::
 
-  @misc{pysat200,
+  @misc{pysatcode,
     author       = {Stoneback, R.A. and
                     Klenzing, J.H. and
                     Burrell, A.G. and
                     Spence, C. and
                     Depew, M. and
                     Hargrave, N. and
+		    Smith, J. and
                     von Bose, V. and
-                    Luis, S. and
-                    Iyer, G.},
+		    Pembroke, A. and
+		    Iyer, G. and
+                    Luis, S.},
     title        = {Python Satellite Data Analysis Toolkit (pysat) vX.Y.Z},
-    month        = jul,
-    year         = 2019,
+    year         = 2021,
     doi          = {10.5281/zenodo.1199703},
     url          = {https://doi.org/10.5281/zenodo.1199703}
   }
+
+A simplified implementation of the citation.
+
+.. include:: ../pysat/citation.txt
+   :literal:
 
 Citing the publication:
 
@@ -53,7 +58,7 @@ publications that use this code.  This can be found by invoking
 ``pysat.__version__``.
 
 Information for appropriately acknowledging and citing the different instruments
-accessed through pysat is sometimes available in the metadata through
-``inst.meta.acknowledgements`` and ``inst.meta.references``.
+accessed through pysat is available as Instrument attributes
+``inst.acknowledgements`` and ``inst.references``.
 If this information is missing, please consider improving pysat by either
 submitting an issue or adding the information yourself.

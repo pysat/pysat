@@ -1,15 +1,15 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """
-pysat.utils.time - date and time operations in pysat
-====================================================
-
-pysat.utils.time contains a number of functions used throughout
-the pysat package, including interactions with datetime objects,
-seasons, and calculation of solar local time
+pysat date and time utilities
 """
 
+import datetime as dt
 import numpy as np
 import pandas as pds
-from pysat import datetime
 
 
 def getyrdoy(date):
@@ -30,10 +30,10 @@ def getyrdoy(date):
     """
 
     try:
-        doy = date.toordinal() - datetime(date.year, 1, 1).toordinal() + 1
+        doy = date.toordinal() - dt.datetime(date.year, 1, 1).toordinal() + 1
     except AttributeError:
-        raise AttributeError("Must supply a pandas datetime object or " +
-                             "equivalent")
+        raise AttributeError(' '.join(("Must supply a pandas datetime object",
+                                       "or equivalent")))
     else:
         return date.year, doy
 
@@ -50,25 +50,25 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
         String containing month digits
     str_day : string
         String containing day of month digits
-    str_hr : string ('0')
-        String containing the hour of day
-    str_min : string ('0')
-        String containing the minutes of hour
-    str_sec : string ('0')
-        String containing the seconds of minute
-    century : int (2000)
-        Century, only used if str_yr is a 2-digit year
+    str_hr : string
+        String containing the hour of day (default='0')
+    str_min : string
+        String containing the minutes of hour (default='0')
+    str_sec : string
+        String containing the seconds of minute (default='0')
+    century : int
+        Century, only used if str_yr is a 2-digit year (default=2000)
 
     Returns
     -------
-    out_date : pds.datetime
-        Pandas datetime object
+    out_date : dt.datetime
+        datetime object
 
     """
 
     yr = int(str_yr) + century if len(str_yr) == 2 else int(str_yr)
-    out_date = pds.datetime(yr, int(str_mo), int(str_day), int(str_hr),
-                            int(str_min), int(str_sec))
+    out_date = dt.datetime(yr, int(str_mo), int(str_day), int(str_hr),
+                           int(str_min), int(str_sec))
 
     return out_date
 
@@ -78,16 +78,16 @@ def calc_freq(index):
 
     Parameters
     ----------
-    index : (array-like)
+    index : array-like
         Datetime list, array, or Index
 
     Returns
     -------
-    freq : (str)
+    freq : str
        Frequency string as described in Pandas Offset Aliases
 
-    Notes
-    -----
+    Note
+    ----
     Calculates the minimum time difference and sets that as the frequency.
 
     To reduce the amount of calculations done, the returned frequency is
@@ -122,29 +122,6 @@ def calc_freq(index):
         freq = "{:.0f}N".format(freq_sec * 1.0e9)
 
     return freq
-
-
-def season_date_range(start, stop, freq='D'):
-    """
-    Deprecated Function, will be removed in future version.
-
-    .. deprecated:: 2.1.0
-      `season_date_range` will be removed in pysat 3.0.0, this will be
-      replaced by create_date_range
-
-
-
-    """
-
-    import warnings
-
-    warnings.warn(' '.join(["utils.time.season_date_range is deprecated, use",
-                            "utils.time.create_date_range instead"]),
-                  DeprecationWarning, stacklevel=2)
-
-    season = create_date_range(start, stop, freq=freq)
-
-    return season
 
 
 def create_date_range(start, stop, freq='D'):
@@ -218,20 +195,65 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     uts_del = uts.copy().astype(float)
     # determine where there are changes in year and month that need to be
     # accounted for
-    _, idx = np.unique(year*100.+month, return_index=True)
+    _, idx = np.unique((year * 100. + month), return_index=True)
     # create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
     # computes UTC seconds offset for each unique set of year and month
     for _idx, _idx2 in zip(idx[1:], idx2[2:]):
-        temp = (datetime(year[_idx], month[_idx], 1) -
-                datetime(year[0], month[0], 1))
+        temp = (dt.datetime(year[_idx], month[_idx], 1)
+                - dt.datetime(year[0], month[0], 1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (day - 1) * 86400
     # add in seconds since unix epoch to first day
-    uts_del += (datetime(year[0], month[0], 1) -
-                datetime(1970, 1, 1)).total_seconds()
+    uts_del += (dt.datetime(year[0], month[0], 1)
+                - dt.datetime(1970, 1, 1)).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
+
+
+def filter_datetime_input(date):
+    """
+    Returns datetime that only includes year, month, and day.
+
+    Parameters
+    ----------
+    date : NoneType, array-like, or datetime
+        Single or sequence of datetime inputs
+
+    Returns
+    -------
+    out_date: NoneType, datetime, or list of datetimes
+        NoneType input yeilds NoneType output, array-like yeilds list,
+        datetime object yeilds like.  All datetime output excludes the
+        sub-daily temporal increments (keeps only date information).
+
+    Note
+    ----
+    Checks for timezone information not in UTC
+
+    """
+
+    if date is None:
+        out_date = None
+    else:
+        # Check for timezone information and remove time of day for
+        # single datetimes and iterable containers of datetime objects
+        if hasattr(date, '__iter__'):
+            out_date = []
+            for in_date in date:
+                if(in_date.tzinfo is not None
+                   and in_date.utcoffset() is not None):
+                    in_date = in_date.astimezone(tz=dt.timezone.utc)
+
+                out_date.append(dt.datetime(in_date.year, in_date.month,
+                                            in_date.day))
+        else:
+            if date.tzinfo is not None and date.utcoffset() is not None:
+                date = date.astimezone(tz=dt.timezone.utc)
+
+            out_date = dt.datetime(date.year, date.month, date.day)
+
+    return out_date
