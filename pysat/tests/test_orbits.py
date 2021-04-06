@@ -3,6 +3,10 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 
 import pandas as pds
+# Orbits period is a pandas.Timedelta kwarg, and the pandas repr
+# does not include a module name. Import required to run eval
+# on Orbit representation
+from pandas import Timedelta  # noqa: F401
 import pytest
 
 import pysat
@@ -234,10 +238,87 @@ class TestGeneralOrbitsMLT():
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime
+        return
+
+    def test_equality_with_copy(self):
+        """Test that copy is the same as original"""
+        self.out = self.testInst.orbits.copy()
+        assert self.out == self.testInst.orbits
+        return
+
+    def test_equality_with_data_with_copy(self):
+        """Test that copy is the same as original"""
+        # Load data
+        self.testInst.load(date=self.stime)
+
+        # Load up an orbit
+        self.testInst.orbits[0]
+        self.out = self.testInst.orbits.copy()
+
+        assert self.out == self.testInst.orbits
+        return
+
+    def test_inequality_different_data(self):
+        """Test that equality is false if different data"""
+        # Load data
+        self.testInst.load(date=self.stime)
+
+        # Load up an orbit
+        self.testInst.orbits[0]
+
+        # Make copy
+        self.out = self.testInst.orbits.copy()
+
+        # Modify data
+        self.out._full_day_data = self.testInst._null_data
+
+        assert self.out != self.testInst.orbits
+        return
+
+    def test_inequality_modified_object(self):
+        """Test that equality is false if other missing attributes"""
+        self.out = self.testInst.orbits.copy()
+
+        # Remove attribute
+        del self.out.orbit_index
+
+        assert self.testInst.orbits != self.out
+        return
+
+    def test_inequality_reduced_object(self):
+        """Test that equality is false if self missing attributes"""
+        self.out = self.testInst.orbits.copy()
+        self.out.hi_there = 'hi'
+        assert self.testInst.orbits != self.out
+        return
+
+    def test_inequality_different_type(self):
+        """Test that equality is false if different type"""
+        assert self.testInst.orbits != self.testInst
+        return
+
+    def test_eval_repr(self):
+        """Test eval of repr recreates object"""
+        # eval and repr don't play nice for custom functions
+        if len(self.testInst.custom_functions) != 0:
+            self.testInst.custom_clear()
+
+        self.out = eval(self.testInst.orbits.__repr__())
+        assert self.out == self.testInst.orbits
+        return
+
+    def test_repr_and_copy(self):
+        """Test repr consistent with object copy"""
+        # Not tested with eval due to issues with datetime
+        self.out = self.testInst.orbits.__repr__()
+        second_out = self.testInst.orbits.copy().__repr__()
+        assert self.out == second_out
+        return
 
     def test_load_orbits_w_empty_data(self):
         """ Test orbit loading outside of the instrument data range
@@ -256,7 +337,7 @@ class TestGeneralOrbitsMLT():
             """
             inst.data = inst[0:20]
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
 
@@ -267,7 +348,7 @@ class TestGeneralOrbitsMLT():
     def test_less_than_one_orbit_of_data_two_ways(self):
         def filter_data(inst):
             inst.data = inst[0:5]
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.testInst.load(date=self.stime)
         # starting from no orbit calls next loads first orbit
         self.testInst.orbits.next()
@@ -294,7 +375,7 @@ class TestGeneralOrbitsMLT():
                 inst.data = inst[-20:]
             return
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime += dt.timedelta(days=3)
         self.testInst.load(date=self.stime)
 
@@ -665,7 +746,7 @@ class TestOrbitsGappyData(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -680,7 +761,7 @@ class TestOrbitsGappyDataXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -748,7 +829,7 @@ class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'})
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -763,7 +844,7 @@ class TestOrbitsGappyLongDataXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'})
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -778,7 +859,7 @@ class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'})
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -793,7 +874,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'})
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -809,7 +890,7 @@ class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'})
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
@@ -825,7 +906,7 @@ class TestOrbitsGappyOrbitLatDataXarray(TestGeneralOrbitsMLT):
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'})
 
-        self.testInst.custom_attach(filter_data, 'modify')
+        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):

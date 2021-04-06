@@ -4,7 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 """
-tests the pysat parameters storage area
+Tests the pysat parameters storage area
 """
 
 import copy
@@ -12,6 +12,7 @@ from importlib import reload
 import os
 import pytest
 import shutil
+import tempfile
 
 import pysat  # required for reimporting pysat
 from pysat._params import Parameters  # required for eval statements
@@ -27,19 +28,33 @@ class TestBasics():
         # Set up default values
         pysat.params.restore_defaults()
 
+        # Get a temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.wd = os.getcwd()
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.params = copy.deepcopy(self.stored_params)
         pysat.params.store()
         reload(pysat)
+        self.tempdir.cleanup()
+        os.chdir(self.wd)
 
     @pytest.mark.parametrize("paths, check",
                              [('.', ['.']),
+                              (os.path.join('.', 'hi'),
+                               [os.path.join('.', 'hi')]),
+                              (os.path.join('.', 'hi', ''),
+                               [os.path.join('.', 'hi')]),
+                              (os.path.join('.', ''), ['.']),
                               (['.', '.'], None)])
     def test_set_data_dirs(self, paths, check):
         """Update pysat directory via params"""
         if check is None:
             check = paths
+
+        # Switch working directory to temp directory
+        os.chdir(self.tempdir.name)
 
         # Assign path
         pysat.params['data_dirs'] = paths
@@ -50,13 +65,13 @@ class TestBasics():
         assert pysat.params['data_dirs'] == check
 
     @pytest.mark.parametrize("path",
-                             ['/fake/directory/path',
+                             ['no_path',
                               'not_a_directory'])
     def test_set_data_dir_bad_directory(self, path):
         """Ensure you can't set data_dirs to a bad path"""
-        with pytest.raises(OSError) as excinfo:
+        with pytest.raises(ValueError) as excinfo:
             pysat.params['data_dirs'] = path
-        assert str(excinfo.value).find("don't lead to a valid") >= 0
+        assert str(excinfo.value).find("Invalid path") >= 0
         return
 
     def test_repr(self):

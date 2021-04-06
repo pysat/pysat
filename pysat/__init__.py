@@ -63,18 +63,26 @@ pysat_dir = os.path.join(home_dir, '.pysat')
 # Set directory for test data
 test_data_path = os.path.join(here, 'tests', 'test_data')
 
-# Create a .pysat directory or parameters file if one doesn't exist
+# Create a .pysat directory or parameters file if one doesn't exist.
+# pysat_settings did not exist pre v3 thus this provides a check against
+# v2 users that are upgrading. Those users need the settings file plus
+# new internal directories.
 if not os.path.isdir(pysat_dir) or \
         (not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json'))):
 
     # Make a .pysat directory if not already present
     if not os.path.isdir(pysat_dir):
         os.mkdir(pysat_dir)
-        os.mkdir(os.path.join(pysat_dir, 'instruments'))
-        os.mkdir(os.path.join(pysat_dir, 'instruments', 'archive'))
         ostr = ''.join(('Created .pysat directory in home directory to store ',
                         'settings.'))
         logger.info(ostr)
+
+    # Make additional internal directories
+    if not os.path.isdir(os.path.join(pysat_dir, 'instruments')):
+        os.mkdir(os.path.join(pysat_dir, 'instruments'))
+
+    if not os.path.isdir(os.path.join(pysat_dir, 'instruments', 'archive')):
+        os.mkdir(os.path.join(pysat_dir, 'instruments', 'archive'))
 
     # Create parameters file
     if not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json')):

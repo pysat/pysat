@@ -5,16 +5,14 @@ Produces fake instrument data for testing.
 
 import datetime as dt
 import functools
-import logging
 import numpy as np
-import warnings
 
 import xarray as xr
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 platform = 'pysat'
 name = 'testing2d_xarray'
@@ -29,47 +27,20 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 epoch_name = u'time'
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    pass
+# Clean method
+clean = mm_test.clean
 
 
-# Optional method
-def preprocess(self):
-    """Customization method that performs standard preprocessing.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). Object
-    modified in place.
-
-    """
-
-    return
+# Optional method, preprocess
+preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None):
+         num_samples=None, test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -79,12 +50,13 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     tag : str or NoneType
         Instrument tag (accepts '')
     inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        Instrument satellite ID (accepts '')
     malformed_index : bool False
         If True, the time index will be non-unique and non-monotonic.
     num_samples : int
         Number of samples
+    test_load_kwarg : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -95,18 +67,16 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     """
 
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
+
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 864
+        # Default to 1 day at a frequency of 100S
+        num_samples = 864
     # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='100S')
@@ -161,8 +131,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data['altitude'] = ((epoch_name), altitude)
 
     # create some fake data to support testing of averaging routines
-    mlt_int = data['mlt'].astype(int)
-    long_int = (data['longitude'] / 15.).astype(int)
+    mlt_int = data['mlt'].astype(int).data
+    long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)
     data['dummy2'] = ((epoch_name), long_int)
     data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
@@ -203,6 +173,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     # create very limited metadata
     meta = pysat.Meta()
+    meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
     meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
@@ -222,6 +193,22 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     image_meta['density'] = {'long_name': 'profiles'}
     image_meta['fraction'] = {'long_name': 'profiles'}
     meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
+    for var in data.keys():
+        if var.find('dummy') >= 0:
+            meta[var] = {'units': 'none', 'long_name': var,
+                         'notes': 'Dummy variable'}
+    meta['x'] = {'long_name': 'x-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['y'] = {'long_name': 'y-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['z'] = {'long_name': 'z-value of profile height',
+                 'notes': 'Dummy Variable'}
+    meta['image_lat'] = {'long_name': 'Latitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['image_lon'] = {'long_name': 'Longitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     return data, meta
 

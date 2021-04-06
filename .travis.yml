@@ -43,8 +43,6 @@ install:
   - while read requirement; do conda install --yes $requirement; done < requirements.txt
   # Get dependencies not provided by conda from pip (testing dependencies)
   - pip install -r test_requirements.txt
-  # set up data directory
-  - mkdir /home/travis/build/pysatData
   # install pysat
   - python setup.py install
   # install pysatSpaceWeather after pysat until pysat v3.0 released

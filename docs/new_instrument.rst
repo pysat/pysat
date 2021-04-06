@@ -36,7 +36,7 @@ part of pysat's user instrument registry using the following syntax:
   registry.register_from_module(my_package.instruments)
 
 After registry the instrument module name is stored in the user's home
-directory under :code:`~.pysat/user_modules.txt`. The instrument may then
+directory in a hidden directory named :code:`~.pysat`. The instrument may then
 be instantiated with the instrument's platform and name:
 
 .. code-block:: python
@@ -47,8 +47,8 @@ be instantiated with the instrument's platform and name:
 Instrument Libraries
 --------------------
 pysat instruments can reside in external libraries.  The registry methods
-described  above can be used to provide links to these instrument libraries
-for rapid access.  For instance, pysat instruments which handle the outputs
+described above can be used to provide links to these instrument libraries
+for rapid access. For instance, pysat instruments which handle the outputs
 of geophysical models (such as the TIE-GCM model) reside in the pysatModels
 package.
 
@@ -61,8 +61,8 @@ In order this is:
 
 * platform
 * name
-* inst_id
 * tag
+* inst_id
 
 The exact usage of these can be tailored to the nature of the mission and data
 products.  In general, each combination should point to a unique data file.
@@ -157,12 +157,12 @@ maintaining different data sets they must be defined for every instrument.
   tags = {'': ''}
   inst_ids = {'': ['']}
 
-Pysat also requires that instruments include information pertaining to
+pysat also requires that instruments include information pertaining to
 acknowledgements and references for an instrument.  These are simply defined as
 strings at the instrument level.  In the most basic case, these can be defined
 with the data information at the top.
 
-Pysat also requires that a logger handle be defined and instrumentment
+pysat also requires that a logger handle be defined and instrumentment
 information pertaining to acknowledgements and references be included.  These
 ensure that people using the data know who to contact with questions and what
 they should reference when publishing their results.  The logging handle should
@@ -227,15 +227,15 @@ that must be supported. Sometimes users obtain files from non-traditional
 sources and format_str makes it easier for those users to use an existing
 instrument module to work with those files.
 
-pysat will by default store data in pysat_data_dir/platform/name/tag,
+pysat will by default store data in pysat_data_dir/platform/name/tag/inst_id,
 helpfully provided in data_path, where pysat_data_dir is specified by using
-``pysat.utils.set_data_dir(pysat_data_dir)``. Note that an alternative
+``pysat.params['data_dirs'] = pysat_data_dir``. Note that an alternative
 directory structure may be specified using the pysat.Instrument keyword
 directory_format at instantiation. The default is recreated using
 
 .. code:: python
 
-    dformat = '{platform}/{name}/{tag}'
+    dformat = '{platform}/{name}/{tag}/{inst_id}'
     inst=pysat.Instrument(platform, name, directory_format=dformat)
 
 Note that pysat handles the path information thus instrument module developers
@@ -392,9 +392,9 @@ how your data and files are structured.
 directory_format
 ^^^^^^^^^^^^^^^^
 
-Allows the specificaiton of a custom directory naming structure, where the files
+Allows the specification of a custom directory naming structure, where the files
 for this Instrument will be stored within the pysat data directory. If not set
-or if set to ``None``, it defaults to '{platform}/{name}/{tag}'. The string
+or if set to ``None``, it defaults to '{platform}/{name}/{tag}/{inst_id}'. The string
 format understands the keys `platform`, `name`, `tag`, and `inst_id`. This may
 also be a function that takes `tag` and `inst_id` as input parameters and
 returns an appropriate string.
@@ -412,7 +412,7 @@ multi_file_day
 ^^^^^^^^^^^^^^
 
 This defaults to ``False``, which means that the files for this data set have
-one or less.  If your data set consists of multiple files per day, this
+one or less.  If your data set consists of multiple files per day, and the files contain data across daybreaks, this
 attribute should be set to ``True``.
 
 orbit_info
@@ -433,33 +433,44 @@ allowing them to be stored as a pandas DataFrame. Setting this attribute to
 Optional Routines and Support
 -----------------------------
 
-Custom Keywords in load Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Custom Keywords in Support Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If provided, pysat supports the definition and use of keywords for an
-instrument module so that users may trigger optional features. All custom
-keywords for an instrument module must be defined in the ``load`` method.
+instrument module so that users may define their preferred default values. A custom
+keyword for an instrument module must be defined in each function that
+will receive that keyword argument if provided by the user. All instrument
+functions, ``init``, ``preprocess``, ``load``, ``clean``, ``list_files``,
+``list_remote_files``, and ``download`` support custom keywords. The same
+keyword may be used in more than one function but the same value will be passed
+to each.
 
+An example ``load`` function definition with two custom keyword arguments.
 .. code:: python
 
    def load(fnames, tag=None, inst_id=None, custom1=default1, custom2=default2):
        return data, meta
 
-pysat passes any supported custom keywords and values to ``load`` with every
-call. All custom keywords along with the assigned defaults are copied into the
-Instrument object itself under inst.kwargs for use in other areas.
+If a user provides ``custom1`` or ``custom2`` at instantiation, then pysat will
+pass those custom keyword arguments to ``load`` with every call.
+All user provided custom keywords are copied into the
+Instrument object itself under ``inst.kwargs`` for use in other areas. All
+available keywords, including default values, are also grouped by relevant
+function in a dictionary, ``inst.kwargs_supported``, attached to the Instrument
+object. Updates to values in ``inst.kwargs`` will be propagated to the relevant
+function the next time that function is invoked.
 
 .. code:: python
 
    inst = pysat.Instrument(platform, name, custom1=new_value)
 
-   # Show user supplied value for custom1 keyword
-   print(inst.kwargs['custom1'])
+   # Show user supplied value for custom1 keyword for the 'load' function
+   print(inst.kwargs['load']['custom1'])
 
    # Show default value applied for custom2 keyword
-   print(inst.kwargs['custom2'])
+   print(inst.kwargs_supported['load']['custom2'])
 
-If a user supplies a keyword that is not supported by pysat or by the
+If a user supplies a keyword that is not supported by pysat or by any
 specific instrument module then an error is raised.
 
 
@@ -476,8 +487,6 @@ If present, the instrument init method runs once at instrument instantiation.
 `inst` is a ``pysat.Instrument()`` object. ``init`` should modify `inst`
 in-place as needed; equivalent to a custom routine.
 
-Keywords are not supported within the init module method signature, though
-custom keyword support for instruments is available via inst.kwargs.
 
 preprocess
 ^^^^^^^^^^
@@ -544,7 +553,7 @@ so that the instrument module can provide feedback using the same mechanism
 
 .. code:: Python
 
-    logger = logging.getLogger(__name__)
+    logger = pysat.logger
 
 
 Within any instrument module,
@@ -613,7 +622,7 @@ The standardized pysat tests are available in pysat.tests.instrument_test_class.
 The test collection test_instruments.py imports this class, collects a list of
 all available instruments (including potential tag / inst_id combinations),
 and runs the tests using pytestmark.  By default, pysat assumes that your
-instrument has a fully functional download  routine, and will run an end-to-end
+instrument has a fully functional download routine, and will run an end-to-end
 test.  If this is not the case, see the next section.
 
 Special Test Configurations

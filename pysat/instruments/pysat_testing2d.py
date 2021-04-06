@@ -5,16 +5,14 @@ Produces fake instrument data for testing.
 
 import datetime as dt
 import functools
-import logging
 import numpy as np
-import warnings
 
 import pandas as pds
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 platform = 'pysat'
 name = 'testing2d'
@@ -23,47 +21,20 @@ inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    return
+# Clean method
+clean = mm_test.clean
 
 
-# Optional method
-def preprocess(self):
-    """Customization method that performs standard preprocessing.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). Object
-    modified in place.
-
-    """
-
-    return
+# Optional method, preprocess
+preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None):
+         num_samples=None, test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -79,6 +50,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         (default=False)
     num_samples : int
         Number of samples
+    test_load_kwarg : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -89,17 +62,15 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     """
 
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
+
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 864
+        # Default to 1 day at a frequency of 100S
+        num_samples = 864
 
     # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, dates = mm_test.generate_times(fnames, num_samples,

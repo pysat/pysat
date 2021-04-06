@@ -61,7 +61,7 @@ the pysat ecosystem can be found on the
 `wiki <https://github.com/pysat/pysat/wiki/Pysat-Ecosystem-Status-Chart>`_.
 
 You can learn about the different Instruments in an instrument package using
-the utility display_available_instruments.  When providing an Instrument
+the utility ``display_available_instruments``.  When providing an Instrument
 submodule as input, this will list the Instrument module name, and all possible
 combinations of tags, inst_ids, and a description of the data (if available).
 This example will use the ``pysatMadrigal`` package.
@@ -106,7 +106,7 @@ Simple Workflow
 ---------------
 
 A simpler example, that presents a pysat workflow involving retrieving and
-loadiing data from a single Instrument, is presented below.
+loading data from a single Instrument, is presented below.
 
 .. _instantiation:
 

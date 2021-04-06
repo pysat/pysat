@@ -4,7 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 
-from copy import deepcopy as deepcopy
+from copy import deepcopy
 import os
 import warnings
 import numpy as np
@@ -35,7 +35,7 @@ class Meta(object):
     export_nan : list or NoneType
         List of labels that should be exported even if their value is nan or
         None for an empty list. When used, metadata with a value of nan will
-        be exluded from export. Will always allow nan export for labels of
+        be excluded from export. Will always allow nan export for labels of
         the float type (default=None)
 
     Attributes
@@ -129,12 +129,14 @@ class Meta(object):
 
 
         # change a label used by Meta object
-        # note that all instances of fill_label
-        # within the meta object are NOT updated FIX??
         meta.labels.fill_val = '_FillValue'
 
-        # this feature is useful when converting metadata within pysat
-        # so that it is consistent with externally imposed file standards
+        # Note that the fill label is intended for use when interacting
+        # with external files. Thus, any fill values (NaN) within the Meta
+        # object are not updated when changing the metadata string label,
+        # or when updating the value representing fill data. A future update
+        # (Issue #707) will expand functionality to include these custom
+        # fill values when producing files.
 
     """
 
@@ -164,8 +166,8 @@ class Meta(object):
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
 
-        # use any user provided data to instantiate object with data
-        # attribute unit and name labels are called within
+        # Use any user provided data to instantiate object with data
+        # Attributes unit and name labels are called within
         if metadata is not None:
             if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
@@ -918,7 +920,7 @@ class Meta(object):
         Returns
         -------
         out_name : str
-            string with case preserved as in metaobject
+            String with case preserved as in the meta object
 
         Note
         ----
@@ -933,7 +935,7 @@ class Meta(object):
 
         # Cycle through all places where this variable name could be, returning
         # the variable name whose lower-case version matches the lower-case
-        # vrsion of the variable name supplied.
+        # version of the variable name supplied.
         if name in self:
             for out_name in self.keys():
                 if lower_name == out_name.lower():
@@ -971,7 +973,7 @@ class Meta(object):
         Parameters
         ----------
         attr_name : str
-            name of attribute to find
+            Name of attribute to find
 
         Returns
         -------
@@ -996,12 +998,12 @@ class Meta(object):
         Parameters
         ----------
         name : str
-            name of variable to get stored case form
+            Name of variable to get stored case form
 
         Returns
         -------
         out_name : str
-            name in proper case
+            Name in proper case
 
         Note
         ----
@@ -1035,7 +1037,7 @@ class Meta(object):
         other_meta : Meta
             Meta object to be concatenated
         strict : bool
-            if True, ensure there are no duplicate variable names
+            If True, this flag ensures there are no duplicate variable names
             (default=False)
 
         Returns
@@ -1092,7 +1094,7 @@ class Meta(object):
 
         Returns
         -------
-        output: pandas.Series
+        output : pds.Series
             Series of metadata for variable
 
         """
@@ -1136,7 +1138,8 @@ class Meta(object):
 
         # Save the base Instrument attributes
         banned = inst._base_attr
-        # current attributes
+
+        # Current attributes
         inst_attr = dir(inst)
 
         # Get base attribute set, and attributes attached to instance

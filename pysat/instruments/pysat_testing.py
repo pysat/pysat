@@ -5,16 +5,14 @@ Produces fake instrument data for testing.
 
 import datetime as dt
 import functools
-import logging
 import numpy as np
-import warnings
 
 import pandas as pds
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 # pysat required parameters
 platform = 'pysat'
@@ -25,86 +23,31 @@ name = 'testing'
 tags = {'': 'Regular testing data set',
         'no_download': 'simulate an instrument without download support',
         'non_strict': 'simulate an instrument without strict_time_flag',
-        'user_password': 'simulates an instrument that requires a password'}
+        'user_password': 'simulates an instrument that requires a password',
+        'default_meta': 'simulates an instrument using the defualt meta'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
-inst_ids = {'': ['', 'no_download', 'non_strict', 'user_password']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1),
-                    'no_download': dt.datetime(2009, 1, 1),
-                    'non_strict': dt.datetime(2009, 1, 1),
-                    'user_password': dt.datetime(2009, 1, 1)}}
+inst_ids = {'': [tag for tag in tags.keys()]}
+_test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 _test_download = {'': {'no_download': False}}
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Shifts time index of files by 5-minutes if mangle_file_dates
-    set to True at pysat.Instrument instantiation.
-
-    Creates a file list for a given range if the file_date_range
-    keyword is set at instantiation.
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        This object
-    file_date_range : pds.date_range
-        Optional keyword argument that specifies the range of dates for which
-        test files will be created
-    mangle_file_dates : bool
-        If True, the loaded file list time index is shifted by 5-minutes.
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-
-    # work on file index if keyword present
-    if self.kwargs['load']['file_date_range'] is not None:
-        # set list files routine to desired date range
-        # attach to the instrument object
-        fdr = self.kwargs['load']['file_date_range']
-        self._list_files_rtn = functools.partial(list_files,
-                                                 file_date_range=fdr)
-        self.files.refresh()
-
-    # mess with file dates if kwarg option present
-    if self.kwargs['load']['mangle_file_dates']:
-        self.files.files.index = \
-            self.files.files.index + dt.timedelta(minutes=5)
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    return
+# Clean method
+clean = mm_test.clean
 
 
-# Optional method
-def preprocess(self):
-    """Customization method that performs standard preprocessing.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). Object
-    modified in place.
-
-    """
-
-    return
+# Optional method, preprocess
+preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
-         sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False, num_samples=None,
-         multi_file_day=False):
+         sim_multi_file_left=False, root_date=None, malformed_index=False,
+         num_samples=None, test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -113,10 +56,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         List of filenames
     tag : str or NoneType
         Instrument tag (accepts '' or a string to change the behaviour of
-        dummy1 for constellation testing)
+        certain instrument aspects for testing)
     inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        Instrument satellite ID (accepts '')
     sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
@@ -126,19 +68,12 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     root_date : NoneType
         Optional central date, uses _test_dates if not specified.
         (default=None)
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional arguement is not
-    file_date_range : pds.date_range or NoneType
-        Range of dates for files or None, if this optional argument is not
-        used. Shift actually performed by the init function.
-        (default=None)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic (default=False)
-    mangle_file_dates : bool
-        If True, the loaded file list time index is shifted by 5-minutes.
-        This shift is actually performed by the init function.
     num_samples : int
         Number of samples per day
+    test_load_kwarg : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -149,18 +84,16 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     """
 
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
+
     # create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 86400
+        # Default to 1 day at a frequency of 1S
+        num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
 
@@ -271,6 +204,11 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    if tag != 'default_meta':
+        for var in data.keys():
+            if var.find('dummy') >= 0:
+                meta[var] = {'units': 'none',
+                             'notes': 'Dummy variable for testing'}
 
     return data, meta
 

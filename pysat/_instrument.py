@@ -13,6 +13,7 @@ import os
 import sys
 import types
 import warnings
+import weakref
 
 import netCDF4
 import numpy as np
@@ -358,11 +359,13 @@ class Instrument(object):
 
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
+        self.kwargs_supported = {}
         saved_keys = []
-        partial_func = ['list_files', 'download', 'preprocess', 'clean']
+        partial_func = ['list_files', 'list_remote_files', 'download',
+                        'preprocess', 'clean', 'load', 'init']
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
-                    'list_remote_files', 'clean']
+                    'list_remote_files', 'clean', 'init']
         for fkey in exp_keys:
             func_name = _kwargs_keys_to_func_name(fkey)
             func = getattr(self, func_name)
@@ -377,6 +380,12 @@ class Instrument(object):
             # Store appropriate user supplied keywords for this function
             self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
 
+            # Store all supported keywords for user edification
+            self.kwargs_supported[fkey] = default_kwargs
+
+            # Keep a copy of user provided values
+            user_values = copy.deepcopy(self.kwargs[fkey])
+
             # Add in defaults if not already present
             for dkey in default_kwargs.keys():
                 if dkey not in good_kwargs:
@@ -385,19 +394,20 @@ class Instrument(object):
             # Determine the number of kwargs in this function
             fkwargs = [gkey for gkey in self.kwargs[fkey].keys()]
 
-            # Only save the kwargs if they exist and have not been assigned
-            # through partial
+            # Keep only the user provided kwargs
             if len(fkwargs) > 0:
-                # Store the saved keys
+                # Store these keys so they may be used as part of a comparison
+                # test to ensure all user supplied keys are used.
                 saved_keys.extend(fkwargs)
 
-                # If the function can't access this dict, use partial
+                # Assign user keywords to relevant function
                 if fkey in partial_func:
                     pfunc = functools.partial(func, **self.kwargs[fkey])
                     setattr(self, func_name, pfunc)
-                    del self.kwargs[fkey]
-            else:
-                del self.kwargs[fkey]
+                    # Only retain the user provided keywords. These partial
+                    # keywords need to be retained so that __repr__ can
+                    # provide an accurate reconstruction.
+                    self.kwargs[fkey] = user_values
 
         # Test for user supplied keys that are not used
         missing_keys = []
@@ -456,10 +466,98 @@ class Instrument(object):
 
         # Run instrument init function, a basic pass function is used if the
         # user doesn't supply the init function
-        self._init_rtn()
+        self._init_rtn(**self.kwargs['init'])
 
         # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
+
+    def __eq__(self, other):
+        """Perform equality check
+
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical, False if they are not.
+
+        """
+
+        # Check if other is the same class (Instrument). Exit early if not.
+        if not isinstance(other, self.__class__):
+            return False
+
+        # Check if both objects are the same data type. Exit early if not.
+        if self.pandas_format != other.pandas_format:
+            return False
+
+        # Both the same data type, do both have data?
+        if self.empty and other.empty:
+            # This check needed to establish next check
+            pass
+        elif self.empty or other.empty:
+            # Only one has data, exit early.
+            return False
+
+        # If data is the same, check other attributes. Partial functions
+        # required their own path for equality, string comparisons!
+        partial_funcs = ['_init_rtn', '_clean_rtn', '_preprocess_rtn',
+                         '_list_files_rtn', '_download_rtn',
+                         '_list_remote_files_rtn', '_load_rtn']
+
+        # If the type is the same then check everything that is attached to
+        # the Instrument object. Includes attributes, methods, variables, etc.
+        checks = []
+        key_check = []
+        for key in self.__dict__.keys():
+            if key not in ['data', '_null_data', '_next_data',
+                           '_curr_data', '_prev_data']:
+                key_check.append(key)
+                if key in other.__dict__.keys():
+                    if key in partial_funcs:
+                        # Partial function comparison doesn't work directly.
+                        try:
+                            checks.append(str(self.__dict__[key])
+                                          == str(other.__dict__[key]))
+                        except AttributeError:
+                            # If an item missing a required attribute
+                            return False
+
+                    else:
+                        # General check for everything else.
+                        checks.append(np.all(self.__dict__[key]
+                                             == other.__dict__[key]))
+
+                else:
+                    # Both objects don't have the same attached objects
+                    return False
+            else:
+                # Data comparison area. Established earlier both have data.
+                if self.pandas_format:
+                    try:
+                        # Check is sensitive to the index labels. Errors
+                        # if index is not identical.
+                        checks.append(np.all(self.__dict__[key]
+                                             == other.__dict__[key]))
+                    except ValueError:
+                        return False
+
+                else:
+                    checks.append(xr.Dataset.equals(self.data,
+                                                    other.data))
+
+        # Confirm that other Instrument object doesn't have extra terms
+        for key in other.__dict__.keys():
+            if key not in self.__dict__.keys():
+                return False
+
+        # Confirm all checks are True
+        test_data = np.all(checks)
+
+        return test_data
 
     def __repr__(self):
         """ Print the basic Instrument properties"""
@@ -762,12 +860,13 @@ class Instrument(object):
             if isinstance(key, tuple):
                 try:
                     # Pass directly through to loc
-                    # This line raises a FutureWarning, but will be caught
-                    # by TypeError, so may not be an issue
+                    # This line raises a FutureWarning if key[0] is a slice
+                    # The future behavior is TypeError, which is already
+                    # handled correctly below
                     self.data.loc[key[0], key[1]] = new
                 except (KeyError, TypeError):
-                    # TypeError for single integer
-                    # KeyError for list, array, slice of integers
+                    # TypeError for single integer, slice (pandas 2.0)
+                    # KeyError for list, array
                     # Assume key[0] is integer (including list or slice)
                     self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
@@ -919,15 +1018,17 @@ class Instrument(object):
                 yield local_inst
 
         elif self._iter_type == 'date':
-            # iterate over dates
-            # list of dates generated whenever bounds are set
+            # Iterate over dates. A list of dates is generated whenever
+            # bounds are set
             for date in self._iter_list:
-                # do copy trick, starting with null data in object
+                # Use a copy trick, starting with null data in object
                 self.data = self._null_data
                 local_inst = self.copy()
-                # user specified range of dates
+
+                # Set the user-specified range of dates
                 end_date = date + self._iter_width
-                # load range of dates
+
+                # Load the range of dates
                 local_inst.load(date=date, end_date=end_date)
                 yield local_inst
 
@@ -1217,13 +1318,9 @@ class Instrument(object):
         if len(fname) > 0:
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             try:
-                if 'load' in self.kwargs.keys():
-                    load_kwargs = self.kwargs['load']
-                else:
-                    load_kwargs = {}
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                              inst_id=self.inst_id,
-                                             **load_kwargs)
+                                             **self.kwargs['load'])
 
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
@@ -1401,7 +1498,7 @@ class Instrument(object):
                      np.uint16: 'u2', np.uint8: 'u1', np.float64: 'f8',
                      np.float32: 'f4'}
 
-        if type(coltype) is np.dtype:
+        if isinstance(coltype, np.dtype):
             var_type = coltype.kind + str(coltype.itemsize)
             return var_type
         else:
@@ -1430,7 +1527,7 @@ class Instrument(object):
             True if data is np.datetime64, False otherwise
 
         """
-        # get type of data
+        # Get the data type
         data_type = data.dtype
 
         # Check for object type
@@ -1443,14 +1540,14 @@ class Instrument(object):
             else:
                 datetime_flag = False
         else:
-            # dealing with a more complicated object
-            # iterate over elements until we hit something that is something,
+            # We're dealing with a more complicated object. Iterate
+            # over elements until we hit something that is something,
             # and not NaN
             data_type = type(data.iloc[0])
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, np.float):
+                    if not isinstance(data_type, float):
                         break
             datetime_flag = False
 
@@ -1486,7 +1583,7 @@ class Instrument(object):
 
         """
 
-        # remove any metadata with a value of nan not present in export_nan
+        # Remove any metadata with a value of NaN not present in export_nan
         filtered_dict = mdata_dict.copy()
         for key, value in mdata_dict.items():
             try:
@@ -1494,7 +1591,7 @@ class Instrument(object):
                     if key not in export_nan:
                         filtered_dict.pop(key)
             except TypeError:
-                # if typerror thrown, it's not nan
+                # If a TypeError thrown, it's not NaN
                 pass
         mdata_dict = filtered_dict
 
@@ -1502,7 +1599,7 @@ class Instrument(object):
         for key in mdata_dict:
             if type(mdata_dict[key]) == bool:
                 mdata_dict[key] = int(mdata_dict[key])
-        if (coltype == str):
+        if coltype == str:
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings - it will be removed')
@@ -1627,15 +1724,15 @@ class Instrument(object):
                                        'date/file. Supply None if you want the',
                                        'first/last possible.')))
         elif len(value) == 2:
-            # includes start and stop only
+            # Includes start and stop only
             self._iter_step = None
             self._iter_width = None
         elif len(value) == 3:
-            # also includes step size
+            # Also includes step size
             self._iter_step = value[2]
             self._iter_width = None
         elif len(value) == 4:
-            # also includes loading window (data width)
+            # Also includes loading window (data width)
             self._iter_step = value[2]
             self._iter_width = value[3]
         else:
@@ -1664,13 +1761,14 @@ class Instrument(object):
                                                                ustops,
                                                                freq=ufreq)
             else:
-                # instrument has no files
+                # Instrument has no files
                 self._iter_list = []
         else:
-            # user provided some inputs
+            # User provided some inputs
             starts = np.asarray([start])
             stops = np.asarray([stop])
-            # ensure consistency if list-like already
+
+            # Ensure consistency if list-like already
             if len(starts.shape) > 1:
                 starts = starts[0]
             if len(stops.shape) > 1:
@@ -1835,9 +1933,52 @@ class Instrument(object):
             return list(self.data.variables.keys())
 
     def copy(self):
-        """Deep copy of the entire Instrument object."""
+        """Deep copy of the entire Instrument object.
 
-        return copy.deepcopy(self)
+        Returns
+        -------
+        pysat.Instrument
+
+        """
+        # Copy doesn't work with module objects. Store module and files class,
+        # set module variable/files to `None`, make the copy, reassign the
+        # saved modules.
+        saved_module = self.inst_module
+
+        # The files/orbits class copy() not invoked with deepcopy
+        saved_files = self.files
+        saved_orbits = self.orbits
+
+        self.inst_module = None
+        self.files = None
+        self.orbits = None
+
+        # Copy non-problematic parameters
+        inst_copy = copy.deepcopy(self)
+
+        # Restore links to the instrument support functions module
+        inst_copy.inst_module = saved_module
+        self.inst_module = saved_module
+
+        # Reattach files and copy
+        inst_copy.files = saved_files.copy()
+        self.files = saved_files
+
+        # Reattach orbits and copy
+        inst_copy.orbits = saved_orbits.copy()
+        self.orbits = saved_orbits
+
+        # Support a copy if a user does something like,
+        # self.orbits.inst.copy(), or
+        # self.files.inst_info['inst'].copy()
+        if not isinstance(inst_copy, weakref.ProxyType):
+            inst_copy.files.inst_info['inst'] = weakref.proxy(inst_copy)
+            inst_copy.orbits.inst = weakref.proxy(inst_copy)
+        else:
+            inst_copy.files.inst_info['inst'] = inst_copy
+            inst_copy.orbits.inst = inst_copy
+
+        return inst_copy
 
     def concat_data(self, new_data, prepend=False, **kwargs):
         """Concats new_data to self.data for xarray or pandas as needed
@@ -2493,6 +2634,7 @@ class Instrument(object):
         Examples
         --------
         ::
+
             import datetime as dt
             import pysat
 
@@ -2564,7 +2706,7 @@ class Instrument(object):
             self._set_load_parameters(date=date, fid=None)
             date = filter_datetime_input(date)
 
-            # Increment after determining the desird step size
+            # Increment after determining the desired step size
             if end_date is not None:
                 # Support loading a range of dates
                 self.load_step = end_date - date
@@ -2838,11 +2980,11 @@ class Instrument(object):
         # Apply the instrument preprocess routine, if data present
         if not self.empty:
             # Does not require self as input, as it is a partial func
-            self._preprocess_rtn()
+            self._preprocess_rtn(**self.kwargs['preprocess'])
 
         # Clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
-            self._clean_rtn()
+            self._clean_rtn(**self.kwargs['clean'])
 
         # Apply custom functions via the nanokernel in self.custom
         if not self.empty:
@@ -3058,6 +3200,9 @@ class Instrument(object):
         kwargs['tag'] = self.tag
         kwargs['inst_id'] = self.inst_id
         kwargs['data_path'] = self.files.data_path
+        for kwarg in self.kwargs['download']:
+            if kwarg not in kwargs:
+                kwargs[kwarg] = self.kwargs['download'][kwarg]
 
         # Download the data
         self._download_rtn(date_array, **kwargs)
@@ -3080,11 +3225,26 @@ class Instrument(object):
                     self.bounds = (self.files.start_date, self.files.stop_date,
                                    curr_bound[2], curr_bound[3])
             if self._iter_type == 'file':
-                if (curr_bound[0][0] == self.files[first_date]
-                        and curr_bound[1][0] == self.files[last_date]):
+                # Account for the fact the file datetimes may not land
+                # exactly at start or end of a day.
+                dsel1 = slice(first_date, first_date + dt.timedelta(hours=23,
+                                                                    minutes=59,
+                                                                    seconds=59))
+                dsel2 = slice(last_date, last_date + dt.timedelta(hours=23,
+                                                                  minutes=59,
+                                                                  seconds=59))
+                if (curr_bound[0][0] == self.files[dsel1][0]
+                        and curr_bound[1][0] == self.files[dsel2][-1]):
                     logger.info('Updating instrument object bounds by file.')
-                    self.bounds = (self.files[self.files.start_date],
-                                   self.files[self.files.stop_date],
+                    dsel1 = slice(self.files.start_date,
+                                  self.files.start_date
+                                  + dt.timedelta(hours=23, minutes=59,
+                                                 seconds=59))
+                    dsel2 = slice(self.files.stop_date, self.files.stop_date
+                                  + dt.timedelta(hours=23, minutes=59,
+                                                 seconds=59))
+                    self.bounds = (self.files[dsel1][0],
+                                   self.files[dsel2][-1],
                                    curr_bound[2], curr_bound[3])
 
         return
@@ -3566,7 +3726,7 @@ class Instrument(object):
                                 (num, dims[0])).astype(coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = \
-                                    self[key].iloc[i].index.to_native_types()
+                                    self[key].iloc[i].index.astype(str)
                             cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
             # Store any non standard attributes. Compare this Instrument's
@@ -3612,7 +3772,9 @@ class Instrument(object):
 
             # check for binary types, convert when found
             for key in adict.keys():
-                if isinstance(adict[key], bool):
+                if adict[key] is None:
+                    adict[key] = ''
+                elif isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
 
             # attach attributes
@@ -3684,7 +3846,7 @@ def _get_supported_keywords(local_func):
     # account for keywords already set since input was a partial function
     pre_kws.extend(existing_kws.keys())
 
-    # Get the lists of arguements and defaults
+    # Get the lists of arguments and defaults
     # The args and kwargs are both in the args list, and args are placed first
     #
     # modified from code on
@@ -3704,8 +3866,7 @@ def _get_supported_keywords(local_func):
     while len(func_args) > len(func_defaults):
         func_args.pop(0)
 
-    # remove pre-existing keywords from output
-    # first identify locations
+    # Remove pre-existing keywords from output. Start by identifying locations
     pop_list = [i for i, arg in enumerate(func_args) if arg in pre_kws]
 
     # Remove pre-selected by cycling backwards through the list of indices

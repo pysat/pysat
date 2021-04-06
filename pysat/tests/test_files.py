@@ -1,17 +1,17 @@
 """
-tests the pysat Files object and code
+Tests the pysat Files object and code
 """
 import datetime as dt
 import functools
 from importlib import reload
+from multiprocessing import Pool
 import numpy as np
 import os
-import time
-import warnings
-
 import pandas as pds
-import pytest
 import tempfile
+import time
+
+import pytest
 
 import pysat
 import pysat.instruments.pysat_testing
@@ -38,7 +38,7 @@ def create_dir(inst=None, temporary_file_list=False):
 
 def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                  version=False, content=None, timeout=None):
-    """Create year doy file set
+    """Create a file set using the year and day of year
 
     Parameters
     ----------
@@ -202,21 +202,100 @@ class TestBasics():
         self.out = self.testInst.files.__repr__()
         assert isinstance(self.out, str)
         assert self.out.find("pysat.Files(") >= 0
+        return
+
+    def test_eval_repr(self):
+        """Test eval of repr recreates object"""
+        # Evaluate __repr__ string
+        self.out = eval(self.testInst.files.__repr__())
+
+        # Confirm new Instrument equal to original
+        assert self.out == self.testInst.files
+        return
+
+    def test_eval_repr_and_copy(self):
+        """Test eval of repr consistent with object copy"""
+        # Evaluate __repr__ string
+        self.out = eval(self.testInst.files.__repr__())
+
+        # Get copy of original object
+        second_out = self.testInst.files.copy()
+
+        # Confirm new object equal to copy
+        assert self.out == second_out
+
+        return
 
     def test_basic_str(self):
         """Check for lines from each decision point in str"""
         self.out = self.testInst.files.__str__()
         assert isinstance(self.out, str)
+
         # Test basic file output
         assert self.out.find('Number of files') > 0
+
         # Test no files
         assert self.out.find('Date Range') > 0
+        return
+
+    def test_equality_with_copy(self):
+        """Test that copy is the same as original"""
+        # Create copy
+        self.out = self.testInst.files.copy()
+
+        # Confirm equal to original
+        assert self.out == self.testInst.files
+        return
+
+    def test_equality_with_copy_with_data(self):
+        """Test that copy is the same as original, loaded inst.data"""
+        # Load data
+        self.testInst.load(date=self.start)
+
+        # Make copy
+        self.out = self.testInst.files.copy()
+
+        # Test for equality
+        assert self.out == self.testInst.files
+        return
+
+    def test_inequality_modified_object(self):
+        """Test that equality is false if other missing attributes"""
+        # Copy files class
+        self.out = self.testInst.files.copy()
+
+        # Remove attribute
+        del self.out.start_date
+
+        # Confirm not equal
+        assert self.testInst.files != self.out
+        return
+
+    def test_inequality_reduced_object(self):
+        """Test that equality is false if self missing attributes"""
+        self.out = self.testInst.files.copy()
+        self.out.hi_there = 'hi'
+        assert self.testInst.files != self.out
+        return
+
+    def test_inequality_different_data(self):
+        """Test that equality is false if different data"""
+        self.out = self.testInst.files.copy()
+        self.out.files = pds.Series()
+        assert self.out != self.testInst.files
+        return
+
+    def test_inequality_different_type(self):
+        """Test that equality is false if different type"""
+        assert self.testInst.files != self.testInst
+        return
 
     def test_from_os_requires_data_path(self):
         """Check that path required for from_os"""
         with pytest.raises(ValueError) as war:
             self.testInst.files.from_os()
         assert str(war).find('Must supply instrument') > 0
+        return
 
     def test_year_doy_files_directly_call_from_os(self):
         """Check that Files.from_os generates file list"""
@@ -926,76 +1005,11 @@ class TestFilesRaceCondition():
 # TODO: This needs to be replaced or expanded based on the tests that
 # portalocker uses
     def test_race_condition(self):
-        from multiprocessing import Pool
         processes = 5
         proc_pool = Pool(processes)
         pysat.file_timeout = 1
 
         proc_pool.map(create_instrument, range(processes))
-
-
-class TestDeprecation():
-
-    def setup(self):
-        """Runs before every method to create a clean testing setup"""
-        warnings.simplefilter("always")
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing"""
-
-    def test_deprecation_warning_process_parsed_filenames(self):
-        """Test if _files.process_parsed_filenames is deprecated"""
-
-        with warnings.catch_warnings(record=True) as war:
-            try:
-                pysat._files.process_parsed_filenames({})
-            except KeyError:
-                # Inputting empty dict will produce KeyError
-                pass
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
-
-    def test_deprecation_warning_parse_fixed_width_filenames(self):
-        """Test if _files.parse_fixed_width_filenames is deprecated"""
-
-        with warnings.catch_warnings(record=True) as war:
-            # Empty input produces empty output
-            pysat._files.parse_fixed_width_filenames([], '')
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
-
-    def test_deprecation_warning_parse_delimited_filenames(self):
-        """Test if _files.parse_delimited_filenames is deprecated"""
-
-        with warnings.catch_warnings(record=True) as war:
-            # Empty input produces empty output
-            pysat._files.parse_delimited_filenames([], '', '')
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
-
-    def test_deprecation_warning_construct_searchstring_from_format(self):
-        """Test if _files.construct_searchstring_from_format is deprecated"""
-
-        with warnings.catch_warnings(record=True) as war:
-            # Empty input produces empty output
-            pysat._files.construct_searchstring_from_format('')
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
-
-    def test_deprecation_warning_search_local_system_formatted_filename(self):
-        """Test if _files.search_local_system_formatted_filename is deprecated
-        """
-
-        with warnings.catch_warnings(record=True) as war:
-            # Empty input produces empty output
-            pysat._files.search_local_system_formatted_filename('', '')
-
-        assert len(war) >= 1
-        assert war[0].category == DeprecationWarning
 
 
 class TestCIonly():

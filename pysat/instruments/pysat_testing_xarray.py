@@ -5,16 +5,14 @@ Produces fake instrument data for testing.
 
 import datetime as dt
 import functools
-import logging
 import numpy as np
-import warnings
 
 import xarray as xr
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
 
 # pysat required parameters
 platform = 'pysat'
@@ -29,48 +27,21 @@ pandas_format = False
 epoch_name = u'time'
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-
-    self.new_thing = True
-    logger.info(mm_test.ackn_str)
-    self.acknowledgements = mm_test.ackn_str
-    self.references = mm_test.refs
-    return
+# Init method
+init = mm_test.init
 
 
-def clean(self):
-    """Cleaning function
-    """
-
-    return
+# Clean method
+clean = mm_test.clean
 
 
-# Optional method
-def preprocess(self):
-    """Customization method that performs standard preprocessing.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). Object
-    modified in place.
-
-    """
-
-    return
+# Optional method, preprocess
+preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         num_samples=None):
+         num_samples=None, test_load_kwarg=None):
     """ Loads the test files
 
     Parameters
@@ -91,6 +62,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         If True, time index will be non-unique and non-monotonic.
     num_samples : int
         Number of samples
+    test_load_kwarg : any or NoneType
+        Testing keyword (default=None)
 
     Returns
     -------
@@ -101,18 +74,16 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     """
 
+    # Support keyword testing
+    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
+
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if inst_id != '':
-            estr = ' '.join(('inst_id will no longer be supported',
-                             'for setting the number of samples per day.'))
-            warnings.warn(estr, DeprecationWarning)
-            num_samples = int(inst_id)
-        else:
-            num_samples = 86400
+        # Default to 1 day at a frequency of 1S
+        num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
 
@@ -177,8 +148,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     data['orbit_num'] = ((epoch_name), orbit_num)
 
     # create some fake data to support testing of averaging routines
-    mlt_int = data['mlt'].astype(int)
-    long_int = (data['longitude'] / 15.).astype(int)
+    mlt_int = data['mlt'].astype(int).data
+    long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)
     data['dummy2'] = ((epoch_name), long_int)
     data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
@@ -237,6 +208,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    for var in data.keys():
+        if var.find('dummy') >= 0:
+            meta[var] = {'units': 'none', 'notes': 'Dummy variable'}
 
     return data, meta
 

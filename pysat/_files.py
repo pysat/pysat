@@ -4,13 +4,15 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 
+import copy
 import datetime as dt
 from functools import partial
 import numpy as np
 import os
-import warnings
+import weakref
 
 import pandas as pds
+
 import pysat  # Needed to access pysat.params across reimports
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
@@ -28,8 +30,8 @@ class Files(object):
         Instrument object
     directory_format : str or NoneType
         Directory naming structure in string format. Variables such as
-        platform, name, and tag will be filled in as needed using python
-        string formatting. The default directory structure would be
+        platform, name, tag, and inst_id will be filled in as needed using
+        python string formatting. The default directory structure would be
         expressed as '{platform}/{name}/{tag}/{inst_id}'. If None, the default
         directory structure is used (default=None)
     update_files : boolean
@@ -37,7 +39,7 @@ class Files(object):
         store (default=False)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
-        month, and inst_id will be filled in as needed using python string
+        month, day, and inst_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
         instrument list_files routine. (default=None)
     write_to_disk : boolean
@@ -151,8 +153,8 @@ class Files(object):
         # Grab Instrument info
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
                           'tag': inst.tag, 'inst_id': inst.inst_id,
-                          'inst_module': inst.inst_module}
-        self.list_files_rtn = inst._list_files_rtn
+                          'inst_module': inst.inst_module,
+                          'inst': weakref.proxy(inst)}
 
         self.multi_file_day = inst.multi_file_day
 
@@ -236,7 +238,7 @@ class Files(object):
     def __repr__(self):
         """ Representation of the class and its current state
         """
-        inst_repr = pysat.Instrument(**self.inst_info).__repr__()
+        inst_repr = self.inst_info['inst'].__repr__()
 
         out_str = "".join(["pysat.Files(", inst_repr, ", directory_format=",
                            "'{:}'".format(self.directory_format),
@@ -265,6 +267,85 @@ class Files(object):
             output_str += self.files.index[-1].strftime('%d %B %Y')
 
         return output_str
+
+    def __eq__(self, other):
+        """Perform equality check
+
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical, False if they are not
+
+        """
+        # Check if the other object has the same type
+        if not isinstance(other, self.__class__):
+            return False
+
+        # If the type is the same then check everything that is attached to
+        # the Files object. Includes attributes, methods, variables, etc.
+        checks = []
+        key_check = []
+        for key in self.__dict__.keys():
+            key_check.append(key)
+            # Confirm each object has the same keys
+            if key in other.__dict__.keys():
+                # Define default comparison.
+                if key not in ['files', '_previous_file_list',
+                               '_current_file_list', 'inst_info']:
+                    test = np.all(self.__dict__[key] == other.__dict__[key])
+                    checks.append(test)
+
+                else:
+                    if key not in ['inst_info']:
+                        # Comparing one of the stored pandas Series
+                        try:
+                            # Comparison only works for identically-labeled
+                            # series.
+                            check = np.all(self.__dict__[key]
+                                           == other.__dict__[key])
+                            checks.append(check)
+                        except ValueError:
+                            # If there is an error they aren't the same.
+                            return False
+
+                    elif key == 'inst_info':
+                        ichecks = []
+                        for ii_key in self.inst_info.keys():
+                            if ii_key != 'inst':
+                                # Standard attribute check
+                                ichecks.append(self.inst_info[ii_key]
+                                               == other.inst_info[ii_key])
+
+                            else:
+                                # Don't want a recursive check on 'inst', which
+                                # contains Files. If the string representations
+                                # are the same we consider them the same.
+                                try:
+                                    oinst = other.inst_info[ii_key]
+                                    ichecks.append(str(self.inst_info[ii_key])
+                                                   == str(oinst))
+                                except AttributeError:
+                                    # If one object is missing a required key
+                                    return False
+                        checks.append(np.all(ichecks))
+
+            else:
+                # other did not have an key that self did
+                return False
+
+        # Confirm that Files object `other` doesn't have extra terms
+        for key in other.__dict__.keys():
+            if key not in self.__dict__.keys():
+                return False
+
+        test_data = np.all(checks)
+
+        return test_data
 
     def __getitem__(self, key):
         """ Retrieve items from the files attribute
@@ -335,6 +416,7 @@ class Files(object):
         ----------
         path : str
             Path to top-level containing files
+
         """
 
         keep_index = []
@@ -545,6 +627,40 @@ class Files(object):
     # -----------------------------------------------------------------------
     # Define the public methods and properties
 
+    def copy(self):
+        """Provide a deep copy of object
+
+        Returns
+        -------
+        Files class instance
+            Copy of self
+
+        """
+        # The copy module does not copy modules. Treat self.inst_info
+        # differently since it possibly contains a python module, plus
+        # it also contains a weakref back to Instrument.  Because the Instrument
+        # reference contains another Files object, it could cause the creation
+        # of an infinite, recursive copy.
+        saved_info = self.inst_info
+        self.inst_info = None
+
+        # Copy everything but the problematic info
+        files_copy = copy.deepcopy(self)
+
+        # Restore the saved information, then copy over items that can be copied
+        self.inst_info = saved_info
+        files_copy.inst_info = {}
+        for key in saved_info.keys():
+            if key not in ['inst', 'inst_module']:
+                files_copy.inst_info[key] = copy.deepcopy(self.inst_info[key])
+
+        # Can't copy the weakreference
+        files_copy.inst_info['inst'] = self.inst_info['inst']
+
+        # Can't copy the module
+        files_copy.inst_info['inst_module'] = self.inst_info['inst_module']
+        return files_copy
+
     def refresh(self):
         """Update list of files, if there are changes.
 
@@ -552,7 +668,7 @@ class Files(object):
         ----
         Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
-        pysat_data_dir/platform/name/tag/, where pysat_data_dir is set by
+        pysat_data_dir/platform/name/tag/inst_id, where pysat_data_dir is set by
         pysat.utils.set_data_dir(path=path).
 
         """
@@ -567,10 +683,13 @@ class Files(object):
         # Check all potential directory locations for files.
         # Stop as soon as we find some.
         for path in self.data_paths:
-            new_files = self.list_files_rtn(tag=self.inst_info['tag'],
-                                            inst_id=self.inst_info['inst_id'],
-                                            data_path=path,
-                                            format_str=self.file_format)
+            list_files_rtn = self.inst_info['inst']._list_files_rtn
+            kwarg_inputs = self.inst_info['inst'].kwargs['list_files']
+            new_files = list_files_rtn(tag=self.inst_info['tag'],
+                                       inst_id=self.inst_info['inst_id'],
+                                       data_path=path,
+                                       format_str=self.file_format,
+                                       **kwarg_inputs)
 
             # Check if list_files_rtn is actually returning filename or a
             # dict to be passed to filename creator function.
@@ -835,220 +954,3 @@ class Files(object):
 
         # Process the parsed filenames and return a properly formatted Series
         return futils.process_parsed_filenames(stored, two_digit_year_break)
-
-# --------------------------------------------------------
-#   Utilities supporting the Files Object (all deprecated)
-
-
-def process_parsed_filenames(stored, two_digit_year_break=None):
-    """Accepts dict with data parsed from filenames and creates
-    a pandas Series object formatted for the Files class.
-
-    .. deprecated:: 3.0.0
-      This function will be removed in pysat 4.0.0, please use the version under
-      pysat.utils.files
-
-    Parameters
-    ----------
-    stored : orderedDict
-        Dict produced by parse_fixed_width_filenames or
-        parse_delimited_filenames
-    two_digit_year_break : int
-        If filenames only store two digits for the year, then
-        '1900' will be added for years >= two_digit_year_break
-        and '2000' will be added for years < two_digit_year_break.
-
-    Returns
-    -------
-    pandas.Series
-        Series, indexed by datetime, with file strings
-
-    Note
-    ----
-    If two files have the same date and time information in the filename then
-    the file with the higher version/revision/cycle is used. Series returned
-    only has one file der datetime. Version is required for this filtering,
-    revision and cycle are optional.
-
-    """
-
-    funcname = "process_parsed_filenames"
-    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
-                            "deprecated and will be removed in a future",
-                            "version. Please use",
-                            "pysat.utils.files.{:s}.".format(funcname)]),
-                  DeprecationWarning, stacklevel=2)
-
-    return futils.process_parsed_filenames(stored, two_digit_year_break)
-
-
-def parse_fixed_width_filenames(files, format_str):
-    """Parses list of files, extracting data identified by format_str
-
-    .. deprecated:: 3.0.0
-      This function will be removed in pysat 4.0.0, please use the version under
-      pysat.utils.files
-
-    Parameters
-    ----------
-    files : list
-        List of files
-    format_str : string with python format codes
-        Provides the naming pattern of the instrument files and the
-        locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'
-        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
-
-    Returns
-    -------
-    OrderedDict
-        Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', 'cycle'
-        'files' - input list of files
-
-    """
-
-    funcname = "parse_fixed_width_filenames"
-    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
-                            "deprecated and will be removed in a future",
-                            "version. Please use",
-                            "pysat.utils.files.{:s}.".format(funcname)]),
-                  DeprecationWarning, stacklevel=2)
-
-    return futils.parse_fixed_width_filenames(files, format_str)
-
-
-def parse_delimited_filenames(files, format_str, delimiter):
-    """Parses list of files, extracting data identified by format_str
-
-    .. deprecated:: 3.0.0
-      This function will be removed in pysat 4.0.0, please use the version under
-      pysat.utils.files
-
-    Parameters
-    ----------
-    files : list
-        List of files
-    format_str : string with python format codes
-        Provides the naming pattern of the instrument files and the
-        locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', 'cycle'
-        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
-    delimiter : string
-        Delimiter string upon which files will be split (e.g., '.')
-
-    Returns
-    -------
-    OrderedDict
-        Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', 'cycle'
-        'files' - input list of files
-        'format_str' - formatted string from input
-
-    """
-
-    funcname = "parse_delimited_filenames"
-    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
-                            "deprecated and will be removed in a future",
-                            "version. Please use",
-                            "pysat.utils.files.{:s}.".format(funcname)]),
-                  DeprecationWarning, stacklevel=2)
-
-    return futils.parse_delimited_filenames(files, format_str, delimiter)
-
-
-def construct_searchstring_from_format(format_str, wildcard=False):
-    """
-    Parses format file string and returns string formatted for searching.
-
-    .. deprecated:: 3.0.0
-      This function will be removed in pysat 4.0.0, please use the version under
-      pysat.utils.files
-
-    Parameters
-    ----------
-    format_str : string with python format codes
-        Provides the naming pattern of the instrument files and the
-        locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'
-        Ex: 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-    wildcard : bool
-        if True, replaces the ? sequence with a * . This option may be well
-        suited when dealing with delimited filenames.
-
-    Returns
-    -------
-    dict
-        'search_string' format_str with data to be parsed replaced with ?
-        'keys' keys for data to be parsed
-        'lengths' string length for data to be parsed
-        'string_blocks' the filenames are broken down into fixed width
-            segments and '' strings are placed in locations where data will
-            eventually be parsed from a list of filenames. A standards
-            compliant filename can be constructed by starting with
-            string_blocks, adding keys in order, and replacing the '' locations
-            with data of length length.
-
-    Note
-    ----
-    The '?' may be used to indicate a set number of spaces for a variable
-    part of the name that need not be extracted.
-    'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
-
-    """
-
-    funcname = "construct_searchstring_from_format"
-    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
-                            "deprecated and will be removed in a future",
-                            "version. Please use",
-                            "pysat.utils.files.{:s}.".format(funcname)]),
-                  DeprecationWarning, stacklevel=2)
-
-    return futils.construct_searchstring_from_format(format_str, wildcard)
-
-
-def search_local_system_formatted_filename(data_path, search_str):
-    """
-    Parses format file string and returns string formatted for searching.
-
-    .. deprecated:: 3.0.0
-      This function will be removed in pysat 4.0.0, please use the version under
-      pysat.utils.files
-
-    Parameters
-    ----------
-    data_path : string
-        Top level directory to search files for. This directory
-        is provided by pysat to the instrument_module.list_files
-        functions as data_path.
-    search_str : string
-        String to search local file system for
-        Ex: 'cnofs_cindi_ivm_500ms_????????_v??.cdf'
-            'cnofs_cinfi_ivm_500ms_*_v??.cdf'
-
-    Returns
-    -------
-    list
-        list of files matching the format_str
-
-    Note
-    ----
-    The use of ?s (1 ? per character) rather than the full wildcard *
-    provides a more specific filename search string that limits the
-    false positive rate.
-
-    """
-
-    funcname = "search_local_system_formatted_filename"
-    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
-                            "deprecated and will be removed in a future",
-                            "version. Please use",
-                            "pysat.utils.files.{:s}.".format(funcname)]),
-                  DeprecationWarning, stacklevel=2)
-
-    return futils.search_local_system_formatted_filename(data_path, search_str)

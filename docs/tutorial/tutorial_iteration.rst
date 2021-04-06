@@ -85,8 +85,7 @@ The output in all the above cases is:
    Maximum meridional magnetic perturbation: 29.63 nT on 04 Jan 2010
    Maximum meridional magnetic perturbation: 21.67 nT on 05 Jan 2010
 
-If you forget to set `bounds`, then each iteration of the "for" loop initiates
-a vefi.load() for all locally availble data.
+By default, `bounds` is set to the first and last date of the locally available instrument files, all of which are listed in ``vefi.files.files``.
 
 
 Orbit Iteration
@@ -119,6 +118,7 @@ type of orbit pysat should use.
 A selection of the output looks like:
 
 .. code::
+
    # Print a selection of the output
    for ostr in orbit_strs[:5]:
        print(ostr)

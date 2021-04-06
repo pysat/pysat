@@ -69,7 +69,7 @@ Parameters
 
 
 .. _api-instrument-methods:
-      
+
 Instrument Methods
 ------------------
 

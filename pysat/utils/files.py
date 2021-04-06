@@ -23,10 +23,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     Parameters
     ----------
-    stored : orderedDict
+    stored : collections.orderedDict
         Dict produced by parse_fixed_width_filenames or
         parse_delimited_filenames
-    two_digit_year_break : int or None
+    two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
@@ -35,7 +35,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     Returns
     -------
-    pandas.Series
+    pds.Series
         Series, indexed by datetime, with file strings
 
     Note
@@ -51,8 +51,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     keys = search_dict['keys']
 
     if len(stored['files']) > 0:
-        # deal with the possibility of two digit years
-        # years above or equal to break are considered to be 1900+
+        # Deal with the possibility of two digit years. Years above
+        # or equal to break are considered to be 1900+, while
         # years below break are considered to be 2000+
         if two_digit_year_break is not None:
             idx, = np.where(np.array(stored['year'])
@@ -61,12 +61,12 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             idx, = np.where(np.array(stored['year']) < two_digit_year_break)
             stored['year'][idx] = stored['year'][idx] + 2000
 
-        # need to sort the information for things to work
+        # Need to sort the information for things to work
         rec_arr = [stored[key] for key in keys]
         rec_arr.append(stored['files'])
-        # sort all arrays
-        # create a sortable records array
-        # keys with files
+
+        # Sort all arrays by creating a sortable records array
+        # withs keys corresponding to the files
         val_keys = keys + ['files']
         rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
         rec_arr.sort(order=val_keys, axis=0)
@@ -127,16 +127,16 @@ def parse_fixed_width_filenames(files, format_str):
     ----------
     files : list
         List of files
-    format_str : string with python format codes
+    format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'. For example,
+        Supports string formatting codes 'year', 'month', 'day', 'hour',
+        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
         `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
 
     Returns
     -------
-    stored : OrderedDict
+    stored : collections.OrderedDict
         Information parsed from filenames that inclues: 'year', 'month', 'day',
         'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
         includes 'files', an input list of files, and 'format_str', a formatted
@@ -201,18 +201,18 @@ def parse_delimited_filenames(files, format_str, delimiter):
     ----------
     files : list
         List of files
-    format_str : string with python format codes
+    format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'. For example,
+        Supports string formatting codes 'year', 'month', 'day', 'hour',
+        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
         `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
     delimiter : string
         Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
-    stored : OrderedDict
+    stored : collections.OrderedDict
         Information parsed from filenames that inclues: 'year', 'month', 'day',
         'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
         includes 'files', an input list of files, and 'format_str', a formatted
@@ -430,7 +430,8 @@ def update_data_directory_structure(new_template, test_run=True,
     Note
     ----
     After updating the data directory structures users should nominally
-    assign `new_template` as the directory format via:
+    assign `new_template` as the directory format via
+    ::
 
         pysat.params['directory_format'] = new_template
 
@@ -653,19 +654,25 @@ def check_and_make_path(path):
     """
 
     if not os.path.exists(path):
-        # make path, checking to see that each level exists before attempting
+        # Make path, checking to see that each level exists before attempting
         root_path, local_dir = os.path.split(path)
+
+        # Check that we have a remotely valid path
+        if len(root_path) == 0:
+            raise ValueError('Invalid path specification.')
+
+        # Iterate through given path until we hit a directory that exists.
         make_dir = list()
         while not os.path.exists(root_path):
             if len(local_dir) > 0:
-                # avoid case where input is path=/stuff/level/
-                # trailing / leads to a local_dir=''
+                # Avoid case where input is path='/stuff/level/'.
+                # The trailing '/' leads to a local_dir=''
                 make_dir.append(local_dir)
             root_path, local_dir = os.path.split(root_path)
 
         if len(local_dir) > 0:
-            # avoid case where input is path=/stuff/level/
-            # trailing / leads to a local_dir=''
+            # Avoid case where input is path='/stuff/level/'.
+            # The trailing '/' leads to a local_dir=''
             make_dir.append(local_dir)
 
         while len(make_dir) > 0:

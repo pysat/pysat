@@ -4,10 +4,13 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 
+import copy
 import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
+import xarray as xr
+import weakref
 
 from pysat import logger
 
@@ -41,10 +44,10 @@ class Orbits(object):
     kind : str
         Kind of orbit, which specifies how orbital breaks are determined.
         Expects one of: 'local time', 'longitude', 'polar', or 'orbit'
-        - local time: negative gradients in lt or breaks in inst.data.index
-        - longitude: negative gradients or breaks in inst.data.index
-        - polar: zero crossings in latitude or breaks in inst.data.index
-        - orbit: uses unique values of orbit number
+        - local time : negative gradients in lt or breaks in inst.data.index
+        - longitude : negative gradients or breaks in inst.data.index
+        - polar : zero crossings in latitude or breaks in inst.data.index
+        - orbit : uses unique values of orbit number
         (default='local time')
     orbit_period : pds.Timedelta
         Pandas Timedelta that specifies the orbit period.  Used instead of
@@ -63,10 +66,6 @@ class Orbits(object):
 
     This class should not be called directly by the user, it uses the interface
     provided by inst.orbits where inst = pysat.Instrument()
-
-    Warning
-    -------
-    This class is still under development.
 
     Examples
     --------
@@ -108,7 +107,7 @@ class Orbits(object):
     def __init__(self, inst, index=None, kind='local time', period=None):
 
         # Set the class attributes
-        self.inst = inst  # In the past weakref was used to create a proxy
+        self.inst = weakref.proxy(inst)
         self.kind = kind.lower()
 
         if period is None:
@@ -158,6 +157,86 @@ class Orbits(object):
             self._current.__repr__())
 
         return output_str
+
+    def __eq__(self, other):
+        """Perform equality check
+
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical, False if they are not
+
+        """
+
+        # Check if other is the same class (Orbits). Exit early if not.
+        if not isinstance(other, self.__class__):
+            return False
+
+        # If the type is the same then check everything that is attached to
+        # the Orbits object. Includes attributes, methods, variables, etc.
+        checks = []
+        key_check = []
+        for key in self.__dict__.keys():
+            if key in other.__dict__.keys():
+                if key not in ['_full_day_data', 'inst', '_det_breaks']:
+                    # Standard equality comparison
+                    test = np.all(self.__dict__[key] == other.__dict__[key])
+                    checks.append(test)
+                    key_check.append(key)
+
+                elif key in ['_full_day_data']:
+                    # Compare data
+                    if isinstance(self.__dict__[key], pds.DataFrame):
+                        try:
+                            # Comparisons can error simply for having
+                            # different DataFrames
+                            check = np.all(self.__dict__[key]
+                                           == other.__dict__[key])
+                        except ValueError:
+                            # If there is an error they aren't the same
+                            return False
+
+                        checks.append(check)
+                        key_check.append(key)
+
+                    else:
+                        # xarray comparison
+                        test = xr.Dataset.equals(self.__dict__[key],
+                                                 other.__dict__[key])
+                        checks.append(test)
+                        key_check.append(key)
+
+                elif key == '_det_breaks':
+                    # Equality of partial functions does not work well.
+                    # Using a string comparison instead. This can also break
+                    # if one of the objects is missing some attributes.
+                    try:
+                        check = str(self._det_breaks) == str(other._det_breaks)
+                    except AttributeError:
+                        # One object is missing a required attribute
+                        return False
+
+                    checks.append(check)
+                    key_check.append(key)
+
+            else:
+                checks.append(False)
+                key_check.append(key)
+                return False
+
+        # Confirm that Orbits object `other` doesn't have extra terms
+        for key in other.__dict__.keys():
+            if key not in self.__dict__.keys():
+                return False
+
+        test_data = np.all(checks)
+
+        return test_data
 
     def __getitem__(self, orbit_key):
         """Enable convenience notation for loading orbit into parent object.
@@ -589,6 +668,29 @@ class Orbits(object):
 
     # -----------------------------------------------------------------------
     # Define the public methods and properties
+
+    def copy(self):
+        """Provide a deep copy of object
+
+        Returns
+        -------
+        Orbits class instance
+            Copy of self
+
+        """
+        # pysat.Instrument has a link to orbits, so copying the referenced
+        # self.inst would lead to infinite recursion.
+        inst = self.inst
+        self.inst = None
+
+        # Copy everything else
+        orbits_copy = copy.deepcopy(self)
+
+        # Both this object and the copy refer back to the same pysat.Instrument
+        orbits_copy.inst = inst
+        self.inst = inst
+
+        return orbits_copy
 
     @property
     def current(self):

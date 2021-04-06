@@ -52,7 +52,7 @@ class Constellation(object):
 
         Note
         ----
-        Omit `instruments` and `name` to create an empty constellation.
+        Omit `instruments` and `const_module` to create an empty constellation.
 
         """
 
@@ -122,10 +122,6 @@ class Constellation(object):
     @bounds.setter
     def bounds(self, value=None):
         """ Sets boundaries for all Instruments in Constellation
-
-        .. deprecated:: 2.2.0
-          `difference` will be removed in pysat 3.0.0, it will be added to
-          pysatSeasons
 
         Parameters
         ----------
