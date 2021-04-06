@@ -977,30 +977,8 @@ class TestBasics():
                                                    False),
                                                   ('preprocess',
                                                    'test_preprocess_kwarg',
-                                                   'test_phrase')])
-    def test_instrument_function_keywords(self, func, kwarg, val):
-        """Test if Instrument function keywords are registered by pysat"""
-        self.testInst.load(date=self.ref_time)
-        assert kwarg in self.testInst.kwargs[func]
-        assert self.testInst.kwargs[func][kwarg] == val
-        assert getattr(self.testInst, kwarg) == val
-
-        return
-
-    @pytest.mark.parametrize("func, kwarg", [('clean', 'test_clean_kwarg'),
-                                             ('preprocess',
-                                              'test_preprocess_kwarg')])
-    def test_instrument_function_keyword_liveness(self, func, kwarg):
-        """Test if changed keywords are propagated by pysat to functions"""
-
-        self.testInst.kwargs[func][kwarg] = 'live_value'
-        self.testInst.load(date=self.ref_time)
-        # The passed parameter should be set on Instrument
-        assert getattr(self.testInst, kwarg) == 'live_value'
-
-        return
-
-    @pytest.mark.parametrize("func, kwarg, val", [('load', 'test_load_kwarg',
+                                                   'test_phrase'),
+                                                  ('load', 'test_load_kwarg',
                                                    'bright_light'),
                                                   ('list_files',
                                                    'test_list_files_kwarg',
@@ -1012,12 +990,11 @@ class TestBasics():
                                                    'test_download_kwarg',
                                                    'exit_night')
                                                   ])
-    def test_instrument_partial_function_keywords(self, func, kwarg, val,
-                                                  caplog):
-        """Test if init keywords (partial funcs) are registered by pysat"""
-        # Test for file_date_range keyword
+    def test_instrument_function_keywords(self, func, kwarg, val, caplog):
+        """Test if Instrument function keywords are registered by pysat"""
+
         with caplog.at_level(logging.INFO, logger='pysat'):
-            # Load data to trigger some functions
+            # Trigger load functions
             self.testInst.load(date=self.ref_time)
 
             # Refresh files to trigger other functions
@@ -1026,63 +1003,75 @@ class TestBasics():
             # Get remote file list
             self.testInst.download_updated_files()
 
-        captured = caplog.text
-
+        # Confirm kwargs made it where they should be
         assert kwarg in self.testInst.kwargs[func]
         assert self.testInst.kwargs[func][kwarg] == val
-        test_str = ''.join((kwarg, ' = ', str(val)))
-        assert captured.find(test_str) >= 0
+
+        # Check if function under test can assign attributes, not all can
+        live_check = hasattr(self.testInst, kwarg)
+
+        if live_check:
+            # Confirm attribute value
+            assert getattr(self.testInst, kwarg) == val
+        else:
+            # Confirm value echoed to log for functions that can't assign
+            # attributes.
+            # Get log text
+            captured = caplog.text
+
+            # Test for expected string
+            test_str = ''.join((kwarg, ' = ', str(val)))
+            assert captured.find(test_str) >= 0
 
         return
 
-    @pytest.mark.parametrize("func, kwarg, cflag", [('load',
-                                                     'test_load_kwarg', False),
-                                                    ('list_files',
-                                                     'test_list_files_kwarg',
-                                                     False),
-                                                    ('list_files',
-                                                     'test_list_files_kwarg',
-                                                     True),
-                                                    ('list_remote_files',
-                                                     'test_list_remote_kwarg',
-                                                     False),
-                                                    ('download',
-                                                     'test_download_kwarg',
-                                                     False)])
-    def test_instrument_partial_keywords_liveness(self, func, kwarg, cflag,
-                                                  caplog):
-        """Test if changes to keywords (partial funcs) are propagated by pysat
-        """
-        # Test for file_date_range keyword
-        saved_level = pysat.logger.level
-        pysat.logger.setLevel(1)
-        caplog.set_level(logging.INFO)
+    @pytest.mark.parametrize("func, kwarg", [('clean', 'test_clean_kwarg'),
+                                             ('preprocess',
+                                              'test_preprocess_kwarg'),
+                                             ('load',
+                                              'test_load_kwarg'),
+                                             ('list_files',
+                                              'test_list_files_kwarg'),
+                                             ('list_files',
+                                              'test_list_files_kwarg'),
+                                             ('list_remote_files',
+                                              'test_list_remote_kwarg'),
+                                             ('download',
+                                              'test_download_kwarg')
+                                             ])
+    def test_instrument_function_keyword_liveness(self, func, kwarg, caplog):
+        """Test if changed keywords are propagated by pysat to functions"""
 
-        if cflag:
-            # Perform test using a copy of Instrument to ensure
-            # that the weakref points to the correct place
-            tinst = self.testInst.copy()
-        else:
-            # Perform test using standard Instrument
-            tinst = self.testInst
-        # Assign value via kwargs
-        tinst.kwargs[func][kwarg] = 'live_value'
+        # Assign a new value to a keyword argument
+        val ='live_value'
+        self.testInst.kwargs[func][kwarg] = val
 
-        try:
-            # Load data to trigger some functions
-            tinst.load(date=self.ref_time)
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            # Trigger load functions
+            self.testInst.load(date=self.ref_time)
+
             # Refresh files to trigger other functions
-            tinst.files.refresh()
+            self.testInst.files.refresh()
+
             # Get remote file list
-            tinst.download_updated_files()
-        finally:
-            # Ensure logging level reset
-            pysat.logger.setLevel(saved_level)
+            self.testInst.download_updated_files()
 
-        captured = caplog.text
+        # The passed parameter should be set on Instrument, if a full function
+        live_check = hasattr(self.testInst, kwarg)
 
-        test_str = ''.join((kwarg, ' = ', 'live_value'))
-        assert captured.find(test_str) >= 0
+        # Not all functions are passed the instrument object
+        if live_check:
+            # Confirm attribute value
+            assert getattr(self.testInst, kwarg) == val
+        else:
+            # Confirm value echoed to log for functions that can't assign
+            # attributes.
+            captured = caplog.text
+
+            # Confirm presence of test string in log
+            test_str = ''.join((kwarg, ' = ', str(val)))
+            assert captured.find(test_str) >= 0
+
         return
 
     def test_error_undefined_input_keywords(self):
