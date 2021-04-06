@@ -428,9 +428,9 @@ class Instrument(object):
             self.orbit_info = orbit_info
         self.orbits = pysat.Orbits(self, **self.orbit_info)
 
-        # Create empty placeholder for meta translation table
-        # gives information about how to label metadata for netcdf export
-        # if None, pysat metadata labels will be used
+        # Create empty placeholder for the meta translation table, which
+        # provides information about how to label metadata for netcdf export.
+        # If None, pysat metadata labels will be used instead.
         self._meta_translation_table = None
 
         # Create a placeholder for a post-processing function to be applied
