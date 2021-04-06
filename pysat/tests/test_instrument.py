@@ -1043,7 +1043,7 @@ class TestBasics():
         """Test if changed keywords are propagated by pysat to functions"""
 
         # Assign a new value to a keyword argument
-        val ='live_value'
+        val = 'live_value'
         self.testInst.kwargs[func][kwarg] = val
 
         with caplog.at_level(logging.INFO, logger='pysat'):
