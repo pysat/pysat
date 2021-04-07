@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.1] - 2021-XX-XX
+- New Features
+- Deprecations
+- Documentation
+- Bug Fix 
+- Maintenance
+  - Changed setting all instrument support functions as partial functions to
+    retain form provided by developer
+  
 ## [3.0.0] - 2021-03-01
 - New Features
   - Added registry module for registering custom external instruments
