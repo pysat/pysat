@@ -75,8 +75,6 @@ def preprocess(self, test_preprocess_kwarg=None):
 
     Parameters
     ----------
-    self : pysat.Instrument
-        This object
     test_preprocess_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -325,7 +323,7 @@ def generate_times(fnames, num, freq='1S'):
     -------
     uts : array
         Array of integers representing uts for a given day
-    index : DatetimeIndex
+    index : pds.DatetimeIndex
         The DatetimeIndex to be used in the pysat test instrument objects
     date : datetime
         The requested date reconstructed from the fake file name
@@ -403,3 +401,34 @@ def define_range():
                  'angle': [0.0, 2.0 * np.pi]}
 
     return def_range
+
+
+def eval_dep_warnings(warns, check_msgs):
+    """Evaluate deprecation warnings by category and message
+
+    Parameters
+    ----------
+    warns : list
+        List of warnings.WarningMessage objects
+    check_msgs : list
+        List of strings containing the expected warning messages
+
+    Returns
+    -------
+    found_msgs : list
+        List of booleans corresponding to `check_msgs`, which are True when
+        the messages are found and False when they are not
+
+    """
+
+    # Initialize the output
+    found_msgs = [False for msg in check_msgs]
+
+    # Test the warning messages, ensuring each attribute is present
+    for iwar in warns:
+        if iwar.category == DeprecationWarning:
+            for i, msg in enumerate(check_msgs):
+                if str(iwar.message).find(msg) >= 0:
+                    found_msgs[i] = True
+
+    return found_msgs

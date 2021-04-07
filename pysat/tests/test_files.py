@@ -1,16 +1,17 @@
 """
-tests the pysat Files object and code
+Tests the pysat Files object and code
 """
 import datetime as dt
 import functools
 from importlib import reload
+from multiprocessing import Pool
 import numpy as np
 import os
+import pandas as pds
+import tempfile
 import time
 
-import pandas as pds
 import pytest
-import tempfile
 
 import pysat
 import pysat.instruments.pysat_testing
@@ -1004,7 +1005,6 @@ class TestFilesRaceCondition():
 # TODO: This needs to be replaced or expanded based on the tests that
 # portalocker uses
     def test_race_condition(self):
-        from multiprocessing import Pool
         processes = 5
         proc_pool = Pool(processes)
         pysat.file_timeout = 1

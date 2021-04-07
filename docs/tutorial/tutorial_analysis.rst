@@ -23,7 +23,7 @@ the mean every day or every orbit over the period of time supplied by
    import datetime as dt
    import pysat
    import pandas as pds
-	  
+
    def periodic_mean(inst_iterator, data_label):
        """ Calculate the periodic mean over a range of dates
 
@@ -37,7 +37,7 @@ the mean every day or every orbit over the period of time supplied by
 
        Returns
        -------
-       mean_val : pandas Series
+       mean_val : pds.Series
            Pandas time series containing periodic means of the desired value
 
        """
@@ -49,7 +49,7 @@ the mean every day or every orbit over the period of time supplied by
            if not inst.empty:
                # Compute mean absolute using pandas functions and store.  The
                # data could be an image, or lower dimension, account for 2D and
-	        # lower
+	           # lower
                data = inst[data_label].dropna()
                data_date = inst.data.index[0]
                mean_val[data_date] = data.mean()
@@ -79,7 +79,7 @@ You may apply this function as demonstrated below.
    f15.bounds = (stime, etime)
    daily_mean_ti = periodic_mean(f15, 'ti')
    print(daily_mean_ti)
-   
+
    2011-12-31 00:00:05    2153.001641
    2012-01-01 00:02:09    2111.060398
    2012-01-02 00:00:05    2137.508402

@@ -837,12 +837,13 @@ class Instrument(object):
             if isinstance(key, tuple):
                 try:
                     # Pass directly through to loc
-                    # This line raises a FutureWarning, but will be caught
-                    # by TypeError, so may not be an issue
+                    # This line raises a FutureWarning if key[0] is a slice
+                    # The future behavior is TypeError, which is already
+                    # handled correctly below
                     self.data.loc[key[0], key[1]] = new
                 except (KeyError, TypeError):
-                    # TypeError for single integer
-                    # KeyError for list, array, slice of integers
+                    # TypeError for single integer, slice (pandas 2.0)
+                    # KeyError for list, array
                     # Assume key[0] is integer (including list or slice)
                     self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
@@ -994,15 +995,17 @@ class Instrument(object):
                 yield local_inst
 
         elif self._iter_type == 'date':
-            # iterate over dates
-            # list of dates generated whenever bounds are set
+            # Iterate over dates. A list of dates is generated whenever
+            # bounds are set
             for date in self._iter_list:
-                # do copy trick, starting with null data in object
+                # Use a copy trick, starting with null data in object
                 self.data = self._null_data
                 local_inst = self.copy()
-                # user specified range of dates
+
+                # Set the user-specified range of dates
                 end_date = date + self._iter_width
-                # load range of dates
+
+                # Load the range of dates
                 local_inst.load(date=date, end_date=end_date)
                 yield local_inst
 
@@ -1501,7 +1504,7 @@ class Instrument(object):
             True if data is np.datetime64, False otherwise
 
         """
-        # get type of data
+        # Get the data type
         data_type = data.dtype
 
         # Check for object type
@@ -1514,14 +1517,14 @@ class Instrument(object):
             else:
                 datetime_flag = False
         else:
-            # dealing with a more complicated object
-            # iterate over elements until we hit something that is something,
+            # We're dealing with a more complicated object. Iterate
+            # over elements until we hit something that is something,
             # and not NaN
             data_type = type(data.iloc[0])
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, np.float):
+                    if not isinstance(data_type, float):
                         break
             datetime_flag = False
 
@@ -1557,7 +1560,7 @@ class Instrument(object):
 
         """
 
-        # remove any metadata with a value of nan not present in export_nan
+        # Remove any metadata with a value of NaN not present in export_nan
         filtered_dict = mdata_dict.copy()
         for key, value in mdata_dict.items():
             try:
@@ -1565,7 +1568,7 @@ class Instrument(object):
                     if key not in export_nan:
                         filtered_dict.pop(key)
             except TypeError:
-                # if typerror thrown, it's not nan
+                # If a TypeError thrown, it's not NaN
                 pass
         mdata_dict = filtered_dict
 
@@ -1573,7 +1576,7 @@ class Instrument(object):
         for key in mdata_dict:
             if type(mdata_dict[key]) == bool:
                 mdata_dict[key] = int(mdata_dict[key])
-        if (coltype == str):
+        if coltype == str:
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings - it will be removed')
@@ -1698,15 +1701,15 @@ class Instrument(object):
                                        'date/file. Supply None if you want the',
                                        'first/last possible.')))
         elif len(value) == 2:
-            # includes start and stop only
+            # Includes start and stop only
             self._iter_step = None
             self._iter_width = None
         elif len(value) == 3:
-            # also includes step size
+            # Also includes step size
             self._iter_step = value[2]
             self._iter_width = None
         elif len(value) == 4:
-            # also includes loading window (data width)
+            # Also includes loading window (data width)
             self._iter_step = value[2]
             self._iter_width = value[3]
         else:
@@ -1735,13 +1738,14 @@ class Instrument(object):
                                                                ustops,
                                                                freq=ufreq)
             else:
-                # instrument has no files
+                # Instrument has no files
                 self._iter_list = []
         else:
-            # user provided some inputs
+            # User provided some inputs
             starts = np.asarray([start])
             stops = np.asarray([stop])
-            # ensure consistency if list-like already
+
+            # Ensure consistency if list-like already
             if len(starts.shape) > 1:
                 starts = starts[0]
             if len(stops.shape) > 1:
@@ -3699,7 +3703,7 @@ class Instrument(object):
                                 (num, dims[0])).astype(coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = \
-                                    self[key].iloc[i].index.to_native_types()
+                                    self[key].iloc[i].index.astype(str)
                             cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
             # Store any non standard attributes. Compare this Instrument's
@@ -3839,8 +3843,7 @@ def _get_supported_keywords(local_func):
     while len(func_args) > len(func_defaults):
         func_args.pop(0)
 
-    # Remove pre-existing keywords from output
-    # First, identify locations
+    # Remove pre-existing keywords from output. Start by identifying locations
     pop_list = [i for i, arg in enumerate(func_args) if arg in pre_kws]
 
     # Remove pre-selected by cycling backwards through the list of indices

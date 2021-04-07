@@ -30,8 +30,8 @@ class Files(object):
         Instrument object
     directory_format : str or NoneType
         Directory naming structure in string format. Variables such as
-        platform, name, and tag will be filled in as needed using python
-        string formatting. The default directory structure would be
+        platform, name, tag, and inst_id will be filled in as needed using
+        python string formatting. The default directory structure would be
         expressed as '{platform}/{name}/{tag}/{inst_id}'. If None, the default
         directory structure is used (default=None)
     update_files : boolean
@@ -39,7 +39,7 @@ class Files(object):
         store (default=False)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
-        month, and inst_id will be filled in as needed using python string
+        month, day, and inst_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
         instrument list_files routine. (default=None)
     write_to_disk : boolean
@@ -416,6 +416,7 @@ class Files(object):
         ----------
         path : str
             Path to top-level containing files
+
         """
 
         keep_index = []
@@ -667,7 +668,7 @@ class Files(object):
         ----
         Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
-        pysat_data_dir/platform/name/tag/, where pysat_data_dir is set by
+        pysat_data_dir/platform/name/tag/inst_id, where pysat_data_dir is set by
         pysat.utils.set_data_dir(path=path).
 
         """
