@@ -8,8 +8,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation
 - Bug Fix 
 - Maintenance
-  - Changed setting all instrument support functions as partial functions to
-    retain form provided by developer
+  - Changed setting all pysat.Instrument support functions as partial functions 
+  to retain form provided by developer
   
 ## [3.0.0] - 2021-03-01
 - New Features
