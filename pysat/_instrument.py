@@ -361,8 +361,7 @@ class Instrument(object):
         self.kwargs = {}
         self.kwargs_supported = {}
         saved_keys = []
-        partial_func = ['list_files', 'list_remote_files', 'download',
-                        'preprocess', 'clean', 'load', 'init']
+
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
                     'list_remote_files', 'clean', 'init']
@@ -383,31 +382,9 @@ class Instrument(object):
             # Store all supported keywords for user edification
             self.kwargs_supported[fkey] = default_kwargs
 
-            # Keep a copy of user provided values
-            user_values = copy.deepcopy(self.kwargs[fkey])
-
-            # Add in defaults if not already present
-            for dkey in default_kwargs.keys():
-                if dkey not in good_kwargs:
-                    self.kwargs[fkey][dkey] = default_kwargs[dkey]
-
-            # Determine the number of kwargs in this function
-            fkwargs = [gkey for gkey in self.kwargs[fkey].keys()]
-
-            # Keep only the user provided kwargs
-            if len(fkwargs) > 0:
-                # Store these keys so they may be used as part of a comparison
-                # test to ensure all user supplied keys are used.
-                saved_keys.extend(fkwargs)
-
-                # Assign user keywords to relevant function
-                if fkey in partial_func:
-                    pfunc = functools.partial(func, **self.kwargs[fkey])
-                    setattr(self, func_name, pfunc)
-                    # Only retain the user provided keywords. These partial
-                    # keywords need to be retained so that __repr__ can
-                    # provide an accurate reconstruction.
-                    self.kwargs[fkey] = user_values
+            # Store keys to support check that all user supplied
+            # keys are used.
+            saved_keys.extend(default_kwargs.keys())
 
         # Test for user supplied keys that are not used
         missing_keys = []
@@ -451,9 +428,9 @@ class Instrument(object):
             self.orbit_info = orbit_info
         self.orbits = pysat.Orbits(self, **self.orbit_info)
 
-        # Create empty placeholder for meta translation table
-        # gives information about how to label metadata for netcdf export
-        # if None, pysat metadata labels will be used
+        # Create empty placeholder for the meta translation table, which
+        # provides information about how to label metadata for netcdf export.
+        # If None, pysat metadata labels will be used instead.
         self._meta_translation_table = None
 
         # Create a placeholder for a post-processing function to be applied

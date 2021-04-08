@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.1] - 2021-XX-XX
+- New Features
+- Deprecations
+- Documentation
+- Bug Fix 
+- Maintenance
+  - Changed pysat.Instrument from treating all support functions as partial functions 
+  to retaining the original form provided by developer
+  
 ## [3.0.0] - 2021-04-01
 - New Features
   - Added registry module for registering custom external instruments
