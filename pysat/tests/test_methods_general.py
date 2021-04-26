@@ -94,6 +94,7 @@ class TestRemoveLeadText():
 
         # Check prepended text removed
         assert len(self.testInst['_Blurp']) == self.npts
+
         # Check other names untouched
         assert len(self.testInst['dummy1']) == self.npts
 
