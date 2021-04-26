@@ -160,8 +160,8 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     """
 
     inst.data[epoch_name] = pds.to_datetime(
-        [dt.datetime.utcfromtimestamp(int(np.floor(x * sec_mult)))
-         for x in inst.data[epoch_name]])
+        [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
+         for epoch_time in inst.data[epoch_name]])
 
     return
 
@@ -186,7 +186,6 @@ def remove_leading_text(inst, target=None):
         raise ValueError('target must be a string or list of strings')
 
     for prepend_str in target:
-
         if isinstance(inst.data, pds.DataFrame):
             inst.data = inst.data.rename(
                 columns=lambda x: x.split(prepend_str)[-1])
@@ -219,11 +218,11 @@ def filename_creator(value, format_str=None, start_date=None, stop_date=None):
     value : slice
         Datetime slice, see _instrument.py,
         fname = self.files[date:(date + inc)]
-    format_str : str
+    format_str : str or NoneType
         File format template string (default=None)
-    start_date : datetime.datetime or None
+    start_date : datetime.datetime or NoneType
         First date supported (default=None)
-    stop_date: datetime.datetime or None
+    stop_date: datetime.datetime or NoneType
         Last date supported (default=None)
 
     Returns
@@ -248,3 +247,42 @@ def filename_creator(value, format_str=None, start_date=None, stop_date=None):
     raise NotImplementedError(estr)
 
     return
+
+
+def load_csv_data(fnames, read_csv_kwargs=None):
+    """Load CSV data from a list of files into a single DataFrame
+
+    Parameters
+    ----------
+    fnames : array-like
+        Series, list, or array of filenames
+    read_csv_kwargs : dict or NoneType
+        Dict of kwargs to apply to `pds.read_csv`. (default=None)
+
+    Returns
+    -------
+    data : pds.DataFrame
+        Data frame with data from all files in the fnames list
+
+    See Also
+    --------
+    pds.read_csv
+
+    """
+    # Ensure the filename input is array-like
+    fnames = np.asarray(fnames)
+    if fnames.shape == ():
+        fnames = np.asarray([fnames])
+
+    # Initialize the optional kwargs
+    if read_csv_kwargs is None:
+        read_csv_kwargs = {}
+
+    # Create a list of data frames from each file
+    fdata = []
+    for fname in fnames:
+        fdata.append(pds.read_csv(fname, **read_csv_kwargs))
+
+    data = pds.DataFrame() if len(fdata) == 0 else pds.concat(fdata, axis=0)
+    return data
+
