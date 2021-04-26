@@ -285,4 +285,3 @@ def load_csv_data(fnames, read_csv_kwargs=None):
 
     data = pds.DataFrame() if len(fdata) == 0 else pds.concat(fdata, axis=0)
     return data
-
