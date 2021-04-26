@@ -1,4 +1,5 @@
 import datetime as dt
+from os import path
 import pandas as pds
 import pytest
 
@@ -66,11 +67,11 @@ class TestRemoveLeadText():
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
                                          clean_level='clean')
         self.testInst.load(2009, 1)
-        self.Npts = len(self.testInst['uts'])
+        self.npts = len(self.testInst['uts'])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.Npts
+        del self.testInst, self.npts
 
     def test_remove_prefix_w_bad_target(self):
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
@@ -80,19 +81,23 @@ class TestRemoveLeadText():
     def test_remove_names_wo_target(self):
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
         gen.remove_leading_text(self.testInst)
-        # check variables unchanged
-        assert (len(self.testInst['ICON_L27_Blurp']) == self.Npts)
-        # check other names untouched
-        assert (len(self.testInst['dummy1']) == self.Npts)
+
+        # Check variables unchanged
+        assert (len(self.testInst['ICON_L27_Blurp']) == self.npts)
+
+        # Check other names untouched
+        assert (len(self.testInst['dummy1']) == self.npts)
 
     def test_remove_names_w_target(self):
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
         gen.remove_leading_text(self.testInst, target='ICON_L27')
-        # check prepended text removed
-        assert len(self.testInst['_Blurp']) == self.Npts
-        # check other names untouched
-        assert len(self.testInst['dummy1']) == self.Npts
-        # check prepended text removed from metadata
+
+        # Check prepended text removed
+        assert len(self.testInst['_Blurp']) == self.npts
+        # Check other names untouched
+        assert len(self.testInst['dummy1']) == self.npts
+
+        # Check prepended text removed from metadata
         assert '_Blurp' in self.testInst.meta.keys()
 
     def test_remove_names_w_target_list(self):
@@ -100,12 +105,15 @@ class TestRemoveLeadText():
         self.testInst['ICON_L23_Bloop'] = self.testInst['dummy1']
         gen.remove_leading_text(self.testInst,
                                 target=['ICON_L27', 'ICON_L23_B'])
-        # check prepended text removed
-        assert len(self.testInst['_Blurp']) == self.Npts
-        assert len(self.testInst['loop']) == self.Npts
-        # check other names untouched
-        assert len(self.testInst['dummy1']) == self.Npts
-        # check prepended text removed from metadata
+
+        # Check prepended text removed
+        assert len(self.testInst['_Blurp']) == self.npts
+        assert len(self.testInst['loop']) == self.npts
+
+        # Check other names untouched
+        assert len(self.testInst['dummy1']) == self.npts
+
+        # Check prepended text removed from metadata
         assert '_Blurp' in self.testInst.meta.keys()
         assert 'loop' in self.testInst.meta.keys()
 
@@ -118,17 +126,18 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
                                          num_samples=12,
                                          clean_level='clean')
         self.testInst.load(2009, 1)
-        self.Npts = len(self.testInst['uts'])
+        self.npts = len(self.testInst['uts'])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.Npts
+        del self.testInst, self.npts
 
     def test_remove_2D_names_w_target(self):
         gen.remove_leading_text(self.testInst, target='variable')
+
         # Check prepended text removed from variables
         assert '_profiles' in self.testInst.data.variables
-        assert self.testInst.data['_profiles'].shape[0] == self.Npts
+        assert self.testInst.data['_profiles'].shape[0] == self.npts
 
         # Check prepended text removed from metadata
         assert '_profiles' in self.testInst.meta.keys()
@@ -136,10 +145,62 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
     def test_remove_2D_names_w_target_list(self):
         gen.remove_leading_text(self.testInst,
                                 target=['variable', 'im'])
-        # check prepended text removed from variables
+
+        # Check prepended text removed from variables
         assert '_profiles' in self.testInst.data.variables
-        assert self.testInst.data['_profiles'].shape[0] == self.Npts
+        assert self.testInst.data['_profiles'].shape[0] == self.npts
         assert 'ages' in self.testInst.data.variables
-        # check prepended text removed from metadata
+
+        # Check prepended text removed from metadata
         assert '_profiles' in self.testInst.meta.keys()
         assert 'ages' in self.testInst.meta.keys()
+
+
+class TestLoadCSVData():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # Load a test instrument
+        self.csv_file = path.join(path.abspath(path.dirname(__file__)),
+                                  'test_data', 'sw', 'kp', 'recent',
+                                  'kp_recent_2019-03-18.txt')
+        self.data_cols = ['mid_lat_Kp', 'high_lat_Kp', 'Kp']
+        self.data = None
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.csv_file, self.data, self.data_cols
+
+    def eval_data_cols(self):
+        """Evaluate the data columns in the output."""
+        for dcol in self.data_cols:
+            assert dcol in self.data.columns
+        return
+
+    def test_load_single_file(self):
+        """Test the CVS data load with a single file."""
+
+        self.data = gen.load_csv_data(self.csv_file)
+        assert isinstance(self.data.index, pds.RangeIndex)
+        self.eval_data_cols()
+        assert len(self.data.columns) == len(self.data_cols) + 1
+        return
+
+    def test_load_file_list(self):
+        """Test the CVS data load with multiple files."""
+
+        self.data = gen.load_csv_data([self.csv_file, self.csv_file])
+        assert isinstance(self.data.index, pds.Int64Index)
+        self.eval_data_cols()
+        assert len(self.data.columns) == len(self.data_cols) + 1
+        return
+
+    def test_load_file_with_kwargs(self):
+        """Test the CVS data load with kwargs."""
+
+        self.data = gen.load_csv_data([self.csv_file],
+                                      read_csv_kwargs={"parse_dates": True,
+                                                       "index_col": 0})
+        assert isinstance(self.data.index, pds.DatetimeIndex)
+        self.eval_data_cols()
+        assert len(self.data.columns) == len(self.data_cols)
+        return
