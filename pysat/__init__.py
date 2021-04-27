@@ -48,7 +48,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
 # Import and set user and pysat parameters object
-from pysat import _params
+from pysat import _params  # noqa F401
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
@@ -107,13 +107,13 @@ else:
 with Lock(version_filename, 'r', params['file_timeout']) as version_file:
     __version__ = version_file.read().strip()
 
-from pysat import utils
-from pysat._constellation import Constellation
-from pysat._instrument import Instrument
-from pysat._meta import Meta, MetaLabels
-from pysat._files import Files
-from pysat._orbits import Orbits
-from pysat import instruments
+from pysat import utils  # noqa E402 F401
+from pysat._constellation import Constellation  # noqa E402 F401
+from pysat._instrument import Instrument  # noqa E402 F401
+from pysat._meta import Meta, MetaLabels  # noqa E402 F401
+from pysat._files import Files  # noqa E402 F401
+from pysat._orbits import Orbits  # noqa E402 F401
+from pysat import instruments  # noqa E402 F401
 
 __all__ = ['instruments', 'utils']
 
