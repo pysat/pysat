@@ -446,6 +446,7 @@ keyword may be used in more than one function but the same value will be passed
 to each.
 
 An example ``load`` function definition with two custom keyword arguments.
+
 .. code:: python
 
    def load(fnames, tag=None, inst_id=None, custom1=default1, custom2=default2):
@@ -470,8 +471,10 @@ function the next time that function is invoked.
    # Show default value applied for custom2 keyword
    print(inst.kwargs_supported['load']['custom2'])
 
-If a user supplies a keyword that is not supported by pysat or by any
-specific instrument module then an error is raised.
+If a user supplies a keyword that is reserved or not supported by pysat, or by
+any specific instrument module function, then an error is raised. Reserved
+keywords are 'fnames', 'inst_id', 'tag', 'date_array', 'data_path',
+'format_str', 'supported_tags', 'start', 'stop', and 'freq'.
 
 
 init
