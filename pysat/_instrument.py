@@ -372,6 +372,14 @@ class Instrument(object):
             # Get dict of supported keywords and values
             default_kwargs = _get_supported_keywords(func)
 
+            # Confirm there are no reserved keywords present
+            reserved_kwargs = _return_reserved_keywords()
+            for kwarg in kwargs.keys():
+                if kwarg in reserved_kwargs:
+                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                                    'allowed at instantiation.'))
+                    raise ValueError(estr)
+
             # Check if kwargs are in list
             good_kwargs = [ckey for ckey in kwargs.keys()
                            if ckey in default_kwargs]
@@ -3785,6 +3793,20 @@ def _kwargs_keys_to_func_name(kwargs_key):
     return func_name
 
 
+def _return_reserved_keywords():
+    """Return list of pysat reserved keywords
+
+    Returns
+    -------
+    out_list : list
+       List of strings for reserved keywords
+
+    """
+
+    return ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
+            'format_str', 'supported_tags', 'start', 'stop', 'freq']
+
+
 def _get_supported_keywords(local_func):
     """Return a dict of supported keywords
 
@@ -3798,7 +3820,6 @@ def _get_supported_keywords(local_func):
     out_dict : dict
         dict of supported keywords and default values
 
-
     Note
     ----
     If the input is a partial function then the list of keywords returned only
@@ -3806,9 +3827,8 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
-    # account for keywords that are treated by Instrument as args
-    pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
-               'format_str', 'supported_tags', 'start', 'stop', 'freq']
+    # Account for keywords that are treated by Instrument as args
+    pre_kws = _return_reserved_keywords()
 
     # check if partial function
     if isinstance(local_func, functools.partial):
