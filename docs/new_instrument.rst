@@ -324,25 +324,26 @@ The load module method signature should appear as:
   data by day. This can present some issues for data sets that are stored
   by month or by year. See ``instruments.methods.nasa_cdaweb.py`` for an example
   of returning daily data when stored by month.
-- tag and inst_id specify the data set to be loaded
+- tag and inst_id are always available as inputs, as they commmonnly specify
+  the data set to be loaded
 - The load routine should return a tuple with (data, pysat metadata object).
-- `data` is a pandas DataFrame, column names are the data labels, rows are
-  indexed by datetime objects.
-- For multi-dimensional data, an xarray can be
-  used instead. When returning xarray data, a variable at the top-level of the
-  instrument module must be set:
+- For simple time-series data sets, `data` is a pandas DataFrame, column names
+  are the data labels, rows are indexed by datetime objects.
+- For multi-dimensional data, `data` can be set to an xarray Dataset instead.
+  When returning xarray data, a variable at the top-level of the instrument
+  module must be set:
 
 .. code:: python
 
    pandas_format = False
 
-- The pandas DataFrame or xarray needs to be indexed with datetime objects. For
-  xarray objects this index needs to be named 'Epoch' or 'time'. In a future
-  version the supported names for the time index may be reduced. 'Epoch'
-  should be used for pandas though wider compatibility is expected.
+- The pandas DataFrame or xarray Dataset needs to be indexed with datetime
+  objects. This index needs to be named 'Epoch' or 'time'.
 - ``pysat.utils.create_datetime_index`` provides quick generation of an
   appropriate datetime index for irregularly sampled data sets with gaps
-
+- If your data is a CSV formatted file, you can incorporate the
+  ``pysat.instruments.methods.general.load_csv_data`` routine (see
+  :ref:`api--methods-general`) into your load method.
 - A pysat meta object may be obtained from ``pysat.Meta()``. The :ref:`api-meta`
   object uses a pandas DataFrame indexed by variable name with columns for
   metadata parameters associated with that variable, including items like
