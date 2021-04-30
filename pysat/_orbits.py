@@ -295,6 +295,7 @@ class Orbits(object):
                 data = self.inst.data
                 self.inst.data = self.inst._null_data
                 local_inst = self.inst.copy()
+                self.inst.data = data
                 local_inst.data = data
                 yield local_inst
             except StopIteration:
