@@ -151,7 +151,7 @@ class TestSpecificUTOrbits():
         for i, inst in enumerate(self.testInst.orbits):
             if i > 14:
                 break
-            test_vals.append(self.testInst.orbits.current)
+            test_vals.append(inst.orbits.current)
 
         assert np.all(test_vals == true_vals)
 
@@ -166,11 +166,11 @@ class TestSpecificUTOrbits():
 
             # Test the start index
             self.etime = self.stime + i * relativedelta(minutes=self.inc_min)
-            assert self.testInst.index[0] == self.etime
+            assert inst.index[0] == self.etime
 
             # Test the end index
             self.etime += relativedelta(seconds=((self.inc_min * 60) - 1))
-            assert self.testInst.index[-1] == self.etime
+            assert inst.index[-1] == self.etime
 
     def test_orbit_next_call_no_loaded_data(self):
         """ Test orbit next call without loading data
