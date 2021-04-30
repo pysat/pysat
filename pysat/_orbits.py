@@ -289,7 +289,14 @@ class Orbits(object):
         while True:
             try:
                 self.next()
-                yield self.inst
+
+                # Ensure that garbage collection doesn't delete self.inst
+                # by yielding a copy, without spending time on copying data
+                data = self.inst.data
+                self.inst.data = self.inst._null_data
+                local_inst = self.inst.copy()
+                local_inst.data = data
+                yield local_inst
             except StopIteration:
                 return
 
