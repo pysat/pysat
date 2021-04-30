@@ -218,7 +218,8 @@ class TestListify():
         """ Test listify with various np.arrays of numbers"""
 
         new_iterable = pysat.utils.listify(iterable)
-        assert np.isnan(new_iterable[0])
+        for item in new_iterable:
+            assert np.isnan(item)
         assert len(new_iterable) == np.product(np.shape(iterable))
         return
 
