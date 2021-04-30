@@ -116,6 +116,30 @@ def scale_units(out_unit, in_unit):
     return unit_scale
 
 
+def listify(iterable):
+    """Returns a flattened list of iterable if not already a list
+
+    Parameters
+    ----------
+    iterable : iter-like
+        An iterable object that will be wrapped within a list
+
+    Returns
+    -------
+    list
+        An enclosing 1-D list of iterable if not already a list
+
+    """
+
+    arr_iter = np.asarray(iterable)
+    if arr_iter.shape == ():
+        list_iter = [arr_iter.tolist()]
+    elif arr_iter.shape[0] >= 1:
+        list_iter = arr_iter.flatten().tolist()
+
+    return list_iter
+
+
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                  epoch_name='Epoch', pandas_format=True,
                  labels={'units': ('units', str), 'name': ('long_name', str),
