@@ -222,6 +222,7 @@ class TestListify():
         assert len(new_iterable) == np.product(np.shape(iterable))
         return
 
+
 class TestBasicNetCDF4():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
