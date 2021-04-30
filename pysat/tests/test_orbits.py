@@ -168,12 +168,12 @@ class TestSpecificUTOrbits():
             # Test the start index
             self.etime = self.stime + i * relativedelta(minutes=self.inc_min)
             assert inst.index[0] == self.etime
-            assert self.testInst.orbits.index[0] == self.etime
+            assert self.testInst.index[0] == self.etime
 
             # Test the end index
             self.etime += relativedelta(seconds=((self.inc_min * 60) - 1))
             assert inst.index[-1] == self.etime
-            assert self.testInst.orbits.index[-1] == self.etime
+            assert self.testInst.index[-1] == self.etime
 
     def test_orbit_next_call_no_loaded_data(self):
         """ Test orbit next call without loading data
