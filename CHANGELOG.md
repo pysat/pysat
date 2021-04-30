@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Deprecations
 - Documentation
 - Bug Fix
+  - Changed pysat.Instruments.orbits iteration to return a copy of the Instrument
+  rather than the Instrument itself. Provides robustness against garbage collection.
 - Maintenance
   - Changed pysat.Instrument from treating all support functions as partial functions
   to retaining the original form provided by developer
