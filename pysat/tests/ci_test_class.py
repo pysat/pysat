@@ -13,7 +13,7 @@ import shutil
 import pysat
 
 
-class TravisCICleanSetup():
+class CICleanSetup():
     """ Tests where local settings are altered.
 
     These only run in CI environments such as Travis and Appveyor to avoid
