@@ -5,7 +5,7 @@ import os
 
 import pysat
 from pysat.utils import files as futils
-from pysat.tests.travisci_test_class import CICleanSetup
+from pysat.tests.sci_test_class import CICleanSetup
 
 
 class TestBasics():
