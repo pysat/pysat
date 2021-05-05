@@ -16,7 +16,7 @@ import pytest
 import pysat
 import pysat.instruments.pysat_testing
 from pysat.utils import NetworkLock
-from pysat.tests.travisci_test_class import TravisCICleanSetup
+from pysat.tests.ci_test_class import CICleanSetup
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -1019,8 +1019,8 @@ class TestCIonly():
     """
 
     # Set setup/teardown to the class defaults
-    setup = TravisCICleanSetup.setup
-    teardown = TravisCICleanSetup.teardown
+    setup = CICleanSetup.setup
+    teardown = CICleanSetup.teardown
 
     def test_initial_pysat_load(self, capsys):
         """Ensure data_dirs check in Files works"""
