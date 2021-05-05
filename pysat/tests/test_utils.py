@@ -57,13 +57,13 @@ class TestBasics():
 
 class TestCIonly():
     """Tests where we mess with local settings.
-    These only run in CI environments such as Travis and Appveyor to avoid
-    breaking an end user's setup
+    These only run in CI environments such as Github Actions and Appveyor to
+    avoid breaking an end user's setup
     """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        self.ci_env = (os.environ.get('CI') == 'true')
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
 

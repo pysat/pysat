@@ -24,7 +24,7 @@ class TravisCICleanSetup():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
 
-        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        self.ci_env = (os.environ.get('CI') == 'true')
 
         reload(pysat)
         # Store directory paths
