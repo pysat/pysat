@@ -44,17 +44,6 @@ def remove_files(inst):
                 os.unlink(file_path)
 
 
-class TestBasics():
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
-        self.data_path = pysat.params['data_dirs']
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        pysat.params['data_dirs'] = self.data_path
-
-
 class TestCIonly():
     """Tests where we mess with local settings.
     These only run in CI environments such as Github Actions and Appveyor to
