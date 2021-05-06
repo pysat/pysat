@@ -1119,7 +1119,8 @@ class TestBasics():
     def test_basic_data_access_by_name(self, labels):
         """Check that data can be accessed at the instrument level"""
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[labels] == self.testInst.data[labels])
+        assert np.all((self.testInst[labels]
+                       == self.testInst.data[labels]).values)
 
     @pytest.mark.parametrize("index", [(0),
                                        ([0, 1, 2, 3]),
