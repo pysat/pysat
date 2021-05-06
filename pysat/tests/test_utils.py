@@ -82,6 +82,9 @@ class TestCIonly():
         shutil.rmtree(root)
         shutil.move(new_root, root)
 
+        # Make sure pysat reloads settings
+        reload(pysat)
+
 
 class TestScaleUnits():
     def setup(self):
@@ -614,10 +617,6 @@ class TestFmtCols():
 
 
 class TestAvailableInst(TestWithRegistration):
-
-    # Set setup/teardown to the class defaults
-    setup = TestWithRegistration.setup
-    teardown = TestWithRegistration.teardown
 
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",
