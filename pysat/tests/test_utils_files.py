@@ -64,7 +64,6 @@ class TestFileDirectoryTranslations(CICleanSetup):
         CICleanSetup.setup(self)
         reload(pysat)
 
-
         # create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
