@@ -46,8 +46,8 @@ def remove_files(inst):
 
 class TestCIonly():
     """Tests where we mess with local settings.
-    These only run in CI environments such as Github Actions and Appveyor to
-    avoid breaking an end user's setup
+    These only run in CI environments such as Github Actions to avoid breaking
+    an end user's setup
     """
 
     def setup(self):

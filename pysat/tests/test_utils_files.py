@@ -64,9 +64,6 @@ class TestFileDirectoryTranslations(CICleanSetup):
         CICleanSetup.setup(self)
         reload(pysat)
 
-        # Note, if testing locally, after setting self.ci_env = True
-        # in CICleanSetup.setup then a data directory needs to be
-        # set here.
 
         # create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
