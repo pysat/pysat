@@ -36,7 +36,8 @@ jobs:
 
     - name: Install NEP29 dependencies
       if: ${{ matrix.numpy_ver != 'latest'}}
-      - run: pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
+      run: |
+        pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
 
     - name: Set up pysat
       run: |
