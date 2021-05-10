@@ -56,7 +56,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --cov=pysat/ pysat/tests/test_utils_files.py::TestFileDirectoryTranslations
+        pytest --cov=pysat/
 
     - name: Publish results to coveralls
       env:
