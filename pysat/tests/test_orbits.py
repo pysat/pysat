@@ -446,103 +446,36 @@ class TestGeneralOrbitsMLT():
             self.testInst.orbits.prev()
         assert all(control.data == self.testInst.data)
 
-    def test_repeated_orbit_calls_symmetric_single_day_0_UT(self):
+    @pytest.mark.parametrize("iterations", [(10), (20)])
+    @pytest.mark.parametrize("offut", [(False), (True)])
+    def test_repeated_orbit_calls(self, iterations, offut):
+        """Test that repeated orbit calls are reversible"""
+        if offut:
+            self.stime -= dt.timedelta(days=1)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
-        for j in range(10):
+        for j in range(iterations):
             self.testInst.orbits.next()
-        for j in range(10):
+        for j in range(iterations):
             self.testInst.orbits.prev()
         assert all(control.data == self.testInst.data)
 
-    def test_repeated_orbit_calls_symmetric_multi_day_0_UT(self):
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(20):
-            self.testInst.orbits.next()
-        for j in range(20):
-            self.testInst.orbits.prev()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeated_orbit_calls_symmetric_single_day_off_0_UT(self):
-        """ Test successful orbit calls for a day about a time off 00:00 UT
+    @pytest.mark.parametrize("iterations", [(10), (20)])
+    @pytest.mark.parametrize("offut", [(False), (True)])
+    def test_repeated_orbit_calls_alternative(self, iterations, offut):
+        """ Test repeated orbit calls are reversible when applied alternatively
         """
-        self.stime -= dt.timedelta(days=1)
+        if offut:
+            self.stime -= dt.timedelta(days=1)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
-        for j in range(10):
+        for j in range(iterations):
             self.testInst.orbits.next()
-        for j in range(10):
+        for j in range(2 * iterations):
             self.testInst.orbits.prev()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeated_orbit_calls_symmetric_multi_day_off_0_UT(self):
-        """ Test successful orbit calls for days about a time off 00:00 UT
-        """
-        self.stime -= dt.timedelta(days=1)
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(20):
-            self.testInst.orbits.next()
-        for j in range(20):
-            self.testInst.orbits.prev()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeated_orbit_calls_antisymmetric_multi_day_off_0_UT(self):
-        """ Test successful orbit calls for different days about a time off 0 UT
-        """
-        self.stime -= dt.timedelta(days=1)
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(10):
-            self.testInst.orbits.next()
-        for j in range(20):
-            self.testInst.orbits.prev()
-        for j in range(10):
-            self.testInst.orbits.next()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeated_orbit_calls_antisymmetric_multi_multi_day_off_0_UT(self):
-        """ Test successful orbit calls for more days about a time off 0 UT
-        """
-        self.stime -= dt.timedelta(days=1)
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(20):
-            self.testInst.orbits.next()
-        for j in range(40):
-            self.testInst.orbits.prev()
-        for j in range(20):
-            self.testInst.orbits.next()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeated_orbit_calls_antisymmetric_multi_day_0_UT(self):
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(10):
-            self.testInst.orbits.next()
-        for j in range(20):
-            self.testInst.orbits.prev()
-        for j in range(10):
-            self.testInst.orbits.next()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeated_orbit_calls_antisymmetric_multi_multi_day_0_UT(self):
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(20):
-            self.testInst.orbits.next()
-        for j in range(40):
-            self.testInst.orbits.prev()
-        for j in range(20):
+        for j in range(iterations):
             self.testInst.orbits.next()
         assert all(control.data == self.testInst.data)
 
