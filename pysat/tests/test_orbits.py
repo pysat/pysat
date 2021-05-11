@@ -434,24 +434,9 @@ class TestGeneralOrbitsMLT():
         d1check = self.testInst.date == saved_data.date
         assert d1check
 
-    def test_repeated_orbit_calls_symmetric_single_day_start_with_last(self):
-        self.testInst.load(date=self.stime)
-        # start on last orbit of last day
-        self.testInst.orbits[0]
-        self.testInst.orbits.prev()
-        control = self.testInst.copy()
-        for j in range(10):
-            self.testInst.orbits.next()
-        for j in range(10):
-            self.testInst.orbits.prev()
-        assert all(control.data == self.testInst.data)
-
     @pytest.mark.parametrize("iterations", [(10), (20)])
-    @pytest.mark.parametrize("offut", [(False), (True)])
-    def test_repeated_orbit_calls(self, iterations, offut):
+    def test_repeated_orbit_calls(self, iterations):
         """Test that repeated orbit calls are reversible"""
-        if offut:
-            self.stime -= dt.timedelta(days=1)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -462,12 +447,9 @@ class TestGeneralOrbitsMLT():
         assert all(control.data == self.testInst.data)
 
     @pytest.mark.parametrize("iterations", [(10), (20)])
-    @pytest.mark.parametrize("offut", [(False), (True)])
-    def test_repeated_orbit_calls_alternative(self, iterations, offut):
+    def test_repeated_orbit_calls_alternative(self, iterations):
         """ Test repeated orbit calls are reversible when applied alternatively
         """
-        if offut:
-            self.stime -= dt.timedelta(days=1)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
