@@ -12,6 +12,21 @@ import pytest
 import pysat
 
 
+def filter_data(inst, times=None):
+    """Remove data from instrument, simulating gaps in the dataset"""
+
+    if times is None:
+
+        times = [[dt.datetime(2009, 1, 1, 1), dt.datetime(2009, 1, 1, 2)],
+                 [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
+                 [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
+                 [dt.datetime(2009, 1, 4), dt.datetime(2009, 1, 6)]
+                 ]
+    for time in times:
+        idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
+        inst.data = inst[idx]
+
+
 class TestOrbitsUserInterface():
     def setup(self):
         """ Set up User Interface unit tests
@@ -332,12 +347,12 @@ class TestGeneralOrbitsMLT():
     def test_less_than_one_orbit_of_data(self):
         """Test successful load with less than one orbit of data
         """
-        def filter_data(inst):
+        def truncate_data(inst):
             """ Local helper function to reduce available data
             """
             inst.data = inst[0:20]
 
-        self.testInst.custom_attach(filter_data)
+        self.testInst.custom_attach(truncate_data)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
 
@@ -346,9 +361,12 @@ class TestGeneralOrbitsMLT():
         assert self.testInst.date == self.stime
 
     def test_less_than_one_orbit_of_data_two_ways(self):
-        def filter_data(inst):
+        def truncate_data(inst):
+            """ Local helper function to reduce available data
+            """
             inst.data = inst[0:5]
-        self.testInst.custom_attach(filter_data)
+
+        self.testInst.custom_attach(truncate_data)
         self.testInst.load(date=self.stime)
         # starting from no orbit calls next loads first orbit
         self.testInst.orbits.next()
@@ -366,7 +384,7 @@ class TestGeneralOrbitsMLT():
         """ Test successful loading of different parital orbits
         """
         # create situation where the < 1 orbit split across two days
-        def filter_data(inst):
+        def manual_orbits(inst):
             """Local function for breaking up orbits
             """
             if inst.date == dt.datetime(2009, 1, 5):
@@ -375,7 +393,7 @@ class TestGeneralOrbitsMLT():
                 inst.data = inst[-20:]
             return
 
-        self.testInst.custom_attach(filter_data)
+        self.testInst.custom_attach(manual_orbits)
         self.stime += dt.timedelta(days=3)
         self.testInst.load(date=self.stime)
 
@@ -516,46 +534,6 @@ class TestGeneralOrbitsMLT():
         for j in range(20):
             self.testInst.orbits.next()
         assert all(control.data == self.testInst.data)
-
-    def test_repeat_orbit_calls_asym_multi_day_0_UT_long_time_gap(self):
-        """Test successful orbit calls for many different days with a long gap
-        """
-        self.stime += dt.timedelta(days=334)
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(20):
-            self.testInst.orbits.next()
-        for j in range(20):
-            self.testInst.orbits.prev()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeat_orbit_calls_asym_multi_day_0_UT_really_long_time_gap(self):
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(400):
-            self.testInst.orbits.next()
-        for j in range(400):
-            self.testInst.orbits.prev()
-        assert all(control.data == self.testInst.data)
-
-    def test_repeat_orbit_calls_asym_multi_day_0_UT_multiple_time_gaps(self):
-        self.testInst.load(date=self.stime)
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        n_time = []
-        p_time = []
-        for j in range(40):
-            n_time.append(self.testInst.index[0])
-            self.testInst.orbits.next()
-
-        for j in range(40):
-            self.testInst.orbits.prev()
-            p_time.append(self.testInst.index[0])
-
-        check = np.all(p_time == n_time[::-1])
-        assert all(control.data == self.testInst.data) & check
 
 
 class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
@@ -716,30 +694,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-def filter_data(inst):
-    """Remove data from instrument, simulating gaps"""
-
-    times = [[dt.datetime(2009, 1, 1, 1, 37), dt.datetime(2009, 1, 1, 3, 14)],
-             [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
-             [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
-             [dt.datetime(2009, 1, 13), dt.datetime(2009, 1, 15)],
-             [dt.datetime(2009, 1, 20, 1), dt.datetime(2009, 1, 25, 23)],
-             [dt.datetime(2009, 1, 25, 23, 30), dt.datetime(2009, 1, 26, 3)]
-             ]
-    for time in times:
-        idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
-        inst.data = inst[idx]
-
-
-def filter_data2(inst, times=None):
-    """Remove data from instrument, simulating gaps"""
-
-    for time in times:
-        idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
-        inst.data = inst[idx]
-
-
-class TestOrbitsGappyData(TestGeneralOrbitsMLT):
+class TestOrbitsGappyData():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -753,8 +708,38 @@ class TestOrbitsGappyData(TestGeneralOrbitsMLT):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime
 
+    def test_repeat_orbit_calls_asym_multi_day_0_UT_really_long_time_gap(self):
+        """Test successful orbit calls over a series of lengthening gaps
+        """
+        self.testInst.load(date=self.stime)
+        self.testInst.orbits.next()
+        control = self.testInst.copy()
+        for j in range(100):
+            self.testInst.orbits.next()
+        for j in range(100):
+            self.testInst.orbits.prev()
+        assert all(control.data == self.testInst.data)
 
-class TestOrbitsGappyDataXarray(TestGeneralOrbitsMLT):
+    def test_repeat_orbit_calls_asym_multi_day_0_UT_multiple_time_gaps(self):
+        """Test that orbits are selected at same cutoffs backward and forward"""
+        self.testInst.load(date=self.stime)
+        self.testInst.orbits.next()
+        control = self.testInst.copy()
+        n_time = []
+        p_time = []
+        for j in range(40):
+            n_time.append(self.testInst.index[0])
+            self.testInst.orbits.next()
+
+        for j in range(40):
+            self.testInst.orbits.prev()
+            p_time.append(self.testInst.index[0])
+
+        check = np.all(p_time == n_time[::-1])
+        assert all(control.data == self.testInst.data) & check
+
+
+class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -769,7 +754,7 @@ class TestOrbitsGappyDataXarray(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
+class TestOrbitsGappyData2(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -788,14 +773,14 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                                          seconds=int(seconds))
                           - dt.timedelta(seconds=20)])
 
-        self.testInst.custom_attach(filter_data2, kwargs={'times': times})
+        self.testInst.custom_attach(filter_data, kwargs={'times': times})
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
+class TestOrbitsGappyData2Xarray(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -814,14 +799,14 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
                                          seconds=int(seconds))
                           - dt.timedelta(seconds=20)])
 
-        self.testInst.custom_attach(filter_data2, kwargs={'times': times})
+        self.testInst.custom_attach(filter_data, kwargs={'times': times})
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
+class TestOrbitsGappyLongData(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -837,7 +822,7 @@ class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyLongDataXarray(TestGeneralOrbitsMLT):
+class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -852,7 +837,7 @@ class TestOrbitsGappyLongDataXarray(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
+class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -867,7 +852,7 @@ class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyOrbitNumDataXarray(TestGeneralOrbitsMLT):
+class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -882,7 +867,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
+class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -898,7 +883,7 @@ class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyOrbitLatDataXarray(TestGeneralOrbitsMLT):
+class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
