@@ -392,7 +392,7 @@ class TestGeneralOrbitsMLT():
         assert d1check
 
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
-        """ Test successful loading of different parital orbits
+        """ Test successful loading of different partial orbits
         """
         # create situation where the < 1 orbit split across two days
         def manual_orbits(inst):
