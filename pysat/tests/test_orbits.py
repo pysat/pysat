@@ -16,18 +16,21 @@ def filter_data(inst, times=None):
     """Remove data from instrument, simulating gaps in the dataset"""
 
     if times is None:
-
         times = [[dt.datetime(2009, 1, 1, 1), dt.datetime(2009, 1, 1, 2)],
                  [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
                  [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
                  [dt.datetime(2009, 1, 4), dt.datetime(2009, 1, 6)]
                  ]
+
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
         inst.data = inst[idx]
 
 
 class TestOrbitsUserInterface():
+    """Tests the user interface for orbits, including error handling
+    """
+
     def setup(self):
         """ Set up User Interface unit tests
         """
@@ -109,6 +112,9 @@ class TestOrbitsUserInterface():
 
 
 class TestSpecificUTOrbits():
+    """Run the tests for specific behaviour in the MLT orbits
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup
         """
@@ -246,6 +252,9 @@ class TestSpecificUTOrbits():
 
 
 class TestGeneralOrbitsMLT():
+    """Run the general orbit tests for orbits defined by MLT -- pandas
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -267,7 +276,7 @@ class TestGeneralOrbitsMLT():
         return
 
     def test_equality_with_data_with_copy(self):
-        """Test that copy is the same as original"""
+        """Test that copy is the same as original if data is loaded"""
         # Load data
         self.testInst.load(date=self.stime)
 
@@ -361,6 +370,8 @@ class TestGeneralOrbitsMLT():
         assert self.testInst.date == self.stime
 
     def test_less_than_one_orbit_of_data_two_ways(self):
+        """ Can this function be combined with test_less_than_one_orbit_of_data?
+        """
         def truncate_data(inst):
             """ Local helper function to reduce available data
             """
@@ -537,6 +548,9 @@ class TestGeneralOrbitsMLT():
 
 
 class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
+    """Run the general orbit tests for orbits defined by MLT -- xarray
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -599,6 +613,7 @@ class TestGeneralOrbitsNonStandardIteration():
 
 
 class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
+    """Run the general orbit tests for orbits defined by Longitude -- pandas"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -614,7 +629,8 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
         del self.testInst, self.stime
 
 
-class TestGeneralOrbitsLongxarray(TestGeneralOrbitsMLT):
+class TestGeneralOrbitsLongXarray(TestGeneralOrbitsMLT):
+    """Run the general orbit tests for orbits defined by Longitude -- xarray"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -631,6 +647,8 @@ class TestGeneralOrbitsLongxarray(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
+    """Run the general orbit tests for orbits defined by Orbit Number -- pandas
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -647,6 +665,8 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
+    """Run the general orbit tests for orbits defined by Orbit Number -- xarray
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -663,6 +683,8 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
+    """Run the general orbit tests for orbits defined by Latitude -- pandas
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -679,6 +701,8 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
+    """Run the general orbit tests for orbits defined by Latitude -- xarray
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -695,6 +719,9 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 
 
 class TestOrbitsGappyData():
+    """Run the gappy orbit tests for orbits defined by MLT -- pandas
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -740,6 +767,9 @@ class TestOrbitsGappyData():
 
 
 class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
+    """Run the gappy orbit tests for orbits defined by MLT -- xarray
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -755,6 +785,9 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyData2(TestOrbitsGappyData):
+    """Run additional gappy orbit tests for orbits defined by MLT -- pandas
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -781,6 +814,9 @@ class TestOrbitsGappyData2(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyData2Xarray(TestOrbitsGappyData):
+    """Run additional gappy orbit tests for orbits defined by MLT -- xarray
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -807,6 +843,9 @@ class TestOrbitsGappyData2Xarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyLongData(TestOrbitsGappyData):
+    """Run the gappy orbit tests for orbits defined by Longitude -- pandas
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -823,6 +862,9 @@ class TestOrbitsGappyLongData(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
+    """Run the gappy orbit tests for orbits defined by Longitude -- xarray
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -838,6 +880,9 @@ class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
+    """Run the gappy orbit tests for orbits defined by Orbit Number -- pandas
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -853,6 +898,9 @@ class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
+    """Run the gappy orbit tests for orbits defined by Orbit Number -- xarray
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -868,6 +916,9 @@ class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
+    """Run the gappy orbit tests for orbits defined by Latitude -- pandas
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -884,6 +935,9 @@ class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
+    """Run the gappy orbit tests for orbits defined by Latitude -- xarray
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
