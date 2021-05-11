@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Changed pysat.Instrument from treating all support functions as partial
     functions to retaining the original form provided by developer
   - Migrates CI testing to Github Actions
+  - Standardize and streamline CI testing for orbits
 
 ## [3.0.0] - 2021-04-01
 - New Features
