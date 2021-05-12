@@ -178,6 +178,14 @@ texinfo_documents = [
      'Space Physics'),
 ]
 
+# -- Options for Epub output ----------------------------------------------
+
+# Bibliographic Dublin Core info.
+epub_title = project
+epub_author = author
+epub_publisher = author
+epub_copyright = copyright
+
 # -- Options for Intersphinx connection -----------------------------------
 
 intersphinx_mapping = {'portalocker':
