@@ -690,7 +690,7 @@ class Instrument(object):
                     except (IndexError) as err2:
                         print(str(err1))
                         print(str(err2))
-                        err_message = '\n'.join(("orignal messages:",
+                        err_message = '\n'.join(("original messages:",
                                                  str(err1), str(err2)))
                         raise ValueError(' '.join(("Check your indexing! Data",
                                                    "requested may not exist.",
