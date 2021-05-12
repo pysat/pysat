@@ -69,9 +69,9 @@ master_doc = 'index'
 zenodo = json.loads(open('../.zenodo.json').read())
 project = 'pysat'
 author = ', '.join([x['name'] for x in zenodo['creators']])
-manual_copyright = ', '.join(['2021', author])
+copyright = ', '.join(['2021', author])
 title = '{:s} Documentation'.format(project)
-description = ''
+description = 'Supports science analysis across disparate data platforms'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
