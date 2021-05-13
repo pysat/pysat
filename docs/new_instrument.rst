@@ -343,7 +343,7 @@ The load module method signature should appear as:
   appropriate datetime index for irregularly sampled data sets with gaps
 - If your data is a CSV formatted file, you can incorporate the
   ``pysat.instruments.methods.general.load_csv_data`` routine (see
-  :ref:`api--methods-general`) into your load method.
+  :ref:`api-methods-general`) into your load method.
 - A pysat meta object may be obtained from ``pysat.Meta()``. The :ref:`api-meta`
   object uses a pandas DataFrame indexed by variable name with columns for
   metadata parameters associated with that variable, including items like
