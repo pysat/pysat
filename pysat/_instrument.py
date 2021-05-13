@@ -681,11 +681,20 @@ class Instrument(object):
                 try:
                     # Pass keys directly through
                     return self.data.loc[key[0], key[1]]
-                except (KeyError, TypeError):
+                except (KeyError, TypeError) as err1:
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
                     # Assume key[0] is integer (including list or slice)
-                    return self.data.loc[self.data.index[key[0]], key[1]]
+                    try:
+                        return self.data.loc[self.data.index[key[0]], key[1]]
+                    except (IndexError) as err2:
+                        print(str(err1))
+                        print(str(err2))
+                        err_message = '\n'.join(("original messages:",
+                                                 str(err1), str(err2)))
+                        raise ValueError(' '.join(("Check requested indexes,",
+                                                   "data may not exist.",
+                                                   err_message)))
             else:
                 try:
                     # integer based indexing
