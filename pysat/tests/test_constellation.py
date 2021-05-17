@@ -5,20 +5,21 @@
 # ----------------------------------------------------------------------------
 
 import datetime as dt
+import pandas as pds
 import pytest
 
 import pysat
 from pysat import constellations
 
 
-class TestConstellation:
+class TestConstellationInit:
     """Test the Constellation class."""
     def setup(self):
         """Create instruments and a constellation for each test
         """
-        self.instruments = constellations.testing.instruments
+        self.instruments = constellations.single_test.instruments
         self.in_kwargs = {"instruments": self.instruments,
-                          "const_module": pysat.constellations.single_test}
+                          "const_module": constellations.single_test}
         self.const = None
 
     def teardown(self):
@@ -27,9 +28,9 @@ class TestConstellation:
         del self.const, self.instruments, self.in_kwargs
 
     @pytest.mark.parametrize("ikey,ival,ilen",
-                             [("const_module", None, 5),
+                             [("const_module", None, 1),
                               ("instruments", None, 1),
-                              (None, None, 6)])
+                              (None, None, 2)])
     def test_construct_constellation(self, ikey, ival, ilen):
         """Construct a Constellation with good input
         """
@@ -94,7 +95,7 @@ class TestConstellation:
         # Define a custom function
         def double_mlt(inst):
             dmlt = 2.0 * inst.data.mlt
-            dmlt.name = 'doubleMLT'
+            dmlt.name = 'double_mlt'
             inst.data[dmlt.name] = dmlt
             return
 
@@ -108,23 +109,112 @@ class TestConstellation:
 
         # Test the added value
         for inst in self.const:
-            assert 'doubleMLT' in inst.data.columns
-            assert (inst['doubleMLT'] == 2.0 * inst['mlt']).all()
+            assert 'double_mlt' in inst.variables
+            assert (inst['double_mlt'] == 2.0 * inst['mlt']).all()
+
+
+class TestConstellationAttrs:
+    """Test the Constellation class attributes."""
+    def setup(self):
+        """Create instruments and a constellation for each test
+        """
+        self.inst = list(constellations.testing.instruments)
+        self.const = pysat.Constellation(instruments=self.inst)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+
+    def teardown(self):
+        """Clean up after each test
+        """
+        del self.inst, self.const, self.ref_time
 
     def test_bounds_passthrough(self):
         """Ensure bounds are applied to each instrument within Constellation"""
 
-        # Create costellation
-        self.const = pysat.Constellation(instruments=self.instruments)
-
         # Set bounds
-        self.start_date = dt.datetime(2009, 1, 1)
-        self.stop_date = dt.datetime(2010, 1, 1)
-        self.const.bounds = (self.start_date, self.stop_date)
+        stop_date = self.ref_time + dt.timedelta(days=365)
+        self.const.bounds = (self.ref_time, stop_date)
 
         # Ensure constellation reports correct dates
-        assert self.const.bounds[0:2] == ([self.start_date], [self.stop_date])
+        assert self.const.bounds[0:2] == ([self.ref_time], [stop_date])
 
         # Test bounds are the same for all instruments
         for instrument in self.const:
             assert instrument.bounds == self.const.bounds
+
+    def test_empty_data_index(self):
+        """ Test the empty index attribute."""
+        # Test the attribute with no loaded data
+        assert isinstance(self.const.index, pds.Index)
+        assert len(self.const.index) == 0
+        return
+
+    def test_empty_data_date(self):
+        """Test the date property when no data is loaded."""
+        assert self.const.date is None
+        return
+
+    def test_empty_variables(self):
+        """Test the variables property when no data is loaded."""
+        assert len(self.const.variables) == 0
+        return
+
+    def test_empty_flag_data_empty(self):
+        """ Test the status of the empty flag for unloaded data."""
+        assert self.const.empty
+        return
+
+    def test_empty_flag_data_empty_partial_load(self):
+        """ Test the status of the empty flag for partially loaded data."""
+        # Load only one instrument and test the status flag
+        self.const.instruments[0].load(date=self.ref_time)
+        assert self.const.empty
+        return
+
+    def test_empty_flag_data_not_empty_partial_load(self):
+        """Test the alt status of the empty flag for partially loaded data."""
+        # Load only one instrument and test the status flag for alternate flag
+        self.const.instruments[0].load(date=self.ref_time)
+        assert not self.const._empty(all_inst=False)
+        return
+
+    def test_empty_flag_data_not_empty(self):
+        """ Test the status of the empty flag for loaded data."""
+        # Load data and test the status flag
+        self.const.load(date=self.ref_time)
+        assert not self.const.empty
+        return
+
+    def test_full_data_index(self):
+        """ Test the empty index attribute."""
+        # Test the attribute with loaded data
+        self.const.load(date=self.ref_time)
+        assert isinstance(self.const.index, pds.Index)
+        assert self.const.index[0] == self.ref_time
+        return
+
+    def test_today_yesterday_and_tomorrow(self):
+        """ Test the correct instantiation of yesterday/today/tomorrow dates
+        """
+        for cinst in self.const.instruments:
+            assert cinst.today() == self.const.today()
+            assert cinst.yesterday() == self.const.yesterday()
+            assert cinst.tomorrow() == self.const.tomorrow()
+        return
+
+    def test_full_data_date(self):
+        """Test the date property when no data is loaded."""
+        # Test the attribute with loaded data
+        self.const.load(date=self.ref_time)
+
+        assert self.const.date == self.ref_time
+        return
+
+    def test_full_variables(self):
+        """Test the variables property when no data is loaded."""
+        # Test the attribute with loaded data
+        self.const.load(date=self.ref_time)
+
+        assert len(self.const.variables) > 0
+        assert 'uts_pysat_testing' in self.const.variables
+        assert 'x' in self.const.variables
+        return
