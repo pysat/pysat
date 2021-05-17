@@ -42,8 +42,8 @@ class TestBasics():
                                          clean_level='clean',
                                          update_files=True,
                                          **testing_kwargs)
-        self.ref_time = dt.datetime(2009, 1, 1)
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
 
     def teardown(self):
@@ -780,10 +780,13 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_empty_flag_data_empty(self):
+        """ Test the status of the empty flag for unloaded data."""
         assert self.testInst.empty
+        return
 
     def test_empty_flag_data_not_empty(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        """ Test the status of the empty flag for loaded data."""
+        self.testInst.load(date=self.ref_time)
         assert not self.testInst.empty
 
     # -------------------------------------------------------------------------
@@ -792,10 +795,12 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_index_attribute(self):
+        """ Test the index attribute before and after loading data."""
         # empty Instrument test
         assert isinstance(self.testInst.index, pds.Index)
+
         # now repeat the same test but with data loaded
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(date=self.ref_time)
         assert isinstance(self.testInst.index, pds.Index)
 
     def test_index_return(self):
