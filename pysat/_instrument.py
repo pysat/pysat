@@ -24,9 +24,6 @@ import pysat
 from pysat import utils
 from pysat import logger
 
-from pysat.utils.time import filter_datetime_input
-
-
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
@@ -618,8 +615,6 @@ class Instrument(object):
         output_str += '\n\nLoaded Data Statistics\n'
         output_str += '----------------------\n'
         if not self.empty:
-            num_vars = len(self.variables)
-
             output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
             output_str += 'DOY: {:03d}\n'.format(self.doy)
             output_str += 'Time range: '
@@ -627,7 +622,8 @@ class Instrument(object):
             output_str += ' --- '
             output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
             output_str += 'Number of Times: {:d}\n'.format(len(self.index))
-            output_str += 'Number of variables: {:d}\n'.format(num_vars)
+            output_str += 'Number of variables: {:d}\n'.format(
+                len(self.variables))
 
             output_str += '\nVariable Names:\n'
             output_str += utils._core.fmt_output_in_cols(self.variables)
@@ -1291,7 +1287,7 @@ class Instrument(object):
             pysat meta data
         """
 
-        date = filter_datetime_input(date)
+        date = utils.time.filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
             # inclusive loading on filenames
@@ -1846,8 +1842,8 @@ class Instrument(object):
                     self._iter_width = dt.timedelta(days=1)
 
                 # Create list-like of dates for iteration
-                starts = filter_datetime_input(starts)
-                stops = filter_datetime_input(stops)
+                starts = utils.time.filter_datetime_input(starts)
+                stops = utils.time.filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
@@ -1880,19 +1876,9 @@ class Instrument(object):
 
     @property
     def empty(self):
-        """Boolean flag reflecting lack of data.
-
-        True if there is no Instrument data."""
-
-        if self.pandas_format:
-            return self.data.empty
-        else:
-            if 'time' in self.data.indexes:
-                return len(self.data.indexes['time']) == 0
-            elif 'Epoch' in self.data.indexes:
-                return len(self.data.indexes['Epoch']) == 0
-            else:
-                return True
+        """Boolean flag reflecting lack of data, True if there is no data.
+        """
+        return self._empty()
 
     @property
     def date(self):
@@ -1902,7 +1888,7 @@ class Instrument(object):
     @date.setter
     def date(self, new_date):
         # Set the date property, see property docstring for details
-        self._date = filter_datetime_input(new_date)
+        self._date = utils.time.filter_datetime_input(new_date)
 
     @property
     def index(self):
@@ -2121,9 +2107,7 @@ class Instrument(object):
             Today's date in UTC
 
         """
-        today_utc = filter_datetime_input(dt.datetime.utcnow())
-
-        return today_utc
+        return utils.time.today()
 
     def tomorrow(self):
         """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -2690,7 +2674,7 @@ class Instrument(object):
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
-            date = filter_datetime_input(date)
+            date = utils.time.filter_datetime_input(date)
 
             # Increment after determining the desired step size
             if end_date is not None:
@@ -3178,8 +3162,8 @@ class Instrument(object):
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
             # whole days
-            start = filter_datetime_input(start)
-            stop = filter_datetime_input(stop)
+            start = utils.time.filter_datetime_input(start)
+            stop = utils.time.filter_datetime_input(stop)
             date_array = utils.time.create_date_range(start, stop, freq=freq)
 
         # Add necessary kwargs to the optional kwargs
