@@ -258,6 +258,7 @@ def filter_datetime_input(date):
 
     return out_date
 
+
 def today():
     """Returns today's date (UTC), with no hour, minute, second, etc.
 
