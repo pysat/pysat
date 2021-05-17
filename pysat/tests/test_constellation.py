@@ -86,7 +86,7 @@ class TestConstellation:
         out_str = self.const.__str__()
 
         assert out_str.find("pysat Constellation ") >= 0
-        assert out_str.find("No loaded Instruments") > 0
+        assert out_str.find("No assigned Instruments") > 0
 
     def test_single_attachment_of_custom_function(self):
         """Test successful attachment of custom function
