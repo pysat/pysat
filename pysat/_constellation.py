@@ -165,13 +165,11 @@ class Constellation(object):
     # -----------------------------------------------------------------------
     # Define all hidden methods
 
-    def _empty(self, data=None, all_inst=True):
+    def _empty(self, all_inst=True):
         """Boolean flag reflecting lack of data
 
         Parameters
         ----------
-        data : NoneType, pds.DataFrame, or xr.Dataset
-            Data object
         all_inst : bool
             Require all instruments to have data for the emtpy flag to be
             False, if True.  If False, the empty flag will be False if any
@@ -186,7 +184,9 @@ class Constellation(object):
         """
         eflags = [inst.empty for inst in self.instruments]
 
-        if all_inst:
+        if len(eflags) == 0:
+            eflag = True
+        elif all_inst:
             eflag = np.any(eflags)
         else:
             eflag = np.all(eflags)
@@ -218,7 +218,7 @@ class Constellation(object):
                     # If desired, determine the resolution
                     if self.index_res is None:
                         if inst.index.freq is None:
-                            out_res = (inst.index[1:]-inst.index[:-1]).mean()
+                            out_res = (inst.index[1:] - inst.index[:-1]).mean()
                         else:
                             out_res = pds.to_datetime(1, units=inst.index.freq)
                 else:
@@ -237,7 +237,7 @@ class Constellation(object):
                     # If desired, determine the resolution
                     if self.index_res is None:
                         if inst.index.freq is None:
-                            new_res = (inst.index[1:]-inst.index[:-1]).mean()
+                            new_res = (inst.index[1:] - inst.index[:-1]).mean()
                         else:
                             new_res = pds.to_datetime(1, units=inst.index.freq)
 
