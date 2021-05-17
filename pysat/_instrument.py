@@ -24,6 +24,7 @@ import pysat
 from pysat import utils
 from pysat import logger
 
+
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
 
