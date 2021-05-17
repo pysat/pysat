@@ -6,6 +6,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - New Features
   - Added a routine for loading CSV files into a pandas DataFrame from a list
     of filenames.
+  - Expanded Constellation utility by:
+    - Adding common properties: `empty`, `index`, `date`, `today`, `yesterday`,
+      `tomorrow`, and `variables`
+    - Improving the printed output to inform user of the Constellation contents
+    - Added methods to download data and create a common time index.
 - Deprecations
 - Documentation
 - Bug Fix
