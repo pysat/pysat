@@ -257,3 +257,16 @@ def filter_datetime_input(date):
             out_date = dt.datetime(date.year, date.month, date.day)
 
     return out_date
+
+def today():
+    """Returns today's date (UTC), with no hour, minute, second, etc.
+
+    Returns
+    -------
+    today_utc: datetime
+        Today's date in UTC
+
+    """
+    today_utc = filter_datetime_input(dt.datetime.utcnow())
+
+    return today_utc
