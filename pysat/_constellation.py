@@ -165,7 +165,7 @@ class Constellation(object):
     # -----------------------------------------------------------------------
     # Define all hidden methods
 
-    def _empty(self, data=None, all_inst=False):
+    def _empty(self, data=None, all_inst=True):
         """Boolean flag reflecting lack of data
 
         Parameters
@@ -174,8 +174,8 @@ class Constellation(object):
             Data object
         all_inst : bool
             Require all instruments to have data for the emtpy flag to be
-            True if True.  If False, the empty flag will be True if any
-            instrument has data. (default=False)
+            False, if True.  If False, the empty flag will be False if any
+            instrument has data. (default=True)
 
         Returns
         -------
@@ -187,9 +187,9 @@ class Constellation(object):
         eflags = [inst.empty for inst in self.instruments]
 
         if all_inst:
-            eflag = np.all(eflags)
-        else:
             eflag = np.any(eflags)
+        else:
+            eflag = np.all(eflags)
 
         return eflag
 
