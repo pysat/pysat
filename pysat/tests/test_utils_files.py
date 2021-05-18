@@ -78,24 +78,23 @@ class TestFileDirectoryTranslations(CICleanSetup):
         self.insts_kwargs = []
 
         # Data by day, ACE SIS data
-        self.insts.append(pysat.Instrument('sw', 'ace', tag='historic',
-                                           inst_id='sis'))
-        test_dates = pysatSpaceWeather.instruments.sw_ace._test_dates
-        self.insts_dates.append([test_dates['sis']['historic']] * 2)
+        self.insts.append(pysat.Instrument('ace', 'sis', tag='historic'))
+        test_dates = pysatSpaceWeather.instruments.ace_sis._test_dates
+        self.insts_dates.append([test_dates['']['historic']] * 2)
         self.insts_kwargs.append({})
 
         # Data with date mangling, regular F10.7 data, stored monthly
-        self.insts.append(pysat.Instrument('sw', 'f107'))
+        self.insts.append(pysat.Instrument('sw', 'f107', tag='historic'))
         test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
         self.insts_dates.append([test_dates[''][''],
                                  test_dates[''][''] + dt.timedelta(weeks=52)])
         self.insts_kwargs.append({'freq': 'MS'})
 
-        # Data with date mangling, 'all' F10.7 data, single file
-        self.insts.append(pysat.Instrument('sw', 'f107', tag='all'))
+        # Data with date mangling, 'historic' F10.7 data, single file
+        self.insts.append(pysat.Instrument('sw', 'f107', tag='historic'))
         test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
-        self.insts_dates.append([test_dates['']['all'],
-                                 test_dates['']['all']])
+        self.insts_dates.append([test_dates['']['historic'],
+                                 test_dates['']['historic']])
         self.insts_kwargs.append({})
 
         # Download data for all instruments
