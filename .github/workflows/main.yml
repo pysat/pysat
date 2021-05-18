@@ -35,9 +35,7 @@ jobs:
         python setup.py install
 
     - name: Install requirements for testing setup
-      run: |
-        pip install -r test_requirements.txt
-        pip install -i https://test.pypi.org/simple/ pysatSpaceWeather==0.0.4
+      run: pip install -r test_requirements.txt
 
     - name: Install NEP29 dependencies
       if: ${{ matrix.numpy_ver != 'latest'}}
