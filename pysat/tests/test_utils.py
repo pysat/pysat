@@ -44,26 +44,15 @@ def remove_files(inst):
                 os.unlink(file_path)
 
 
-class TestBasics():
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
-        self.data_path = pysat.params['data_dirs']
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        pysat.params['data_dirs'] = self.data_path
-
-
 class TestCIonly():
     """Tests where we mess with local settings.
-    These only run in CI environments such as Travis and Appveyor to avoid
-    breaking an end user's setup
+    These only run in CI environments such as Github Actions to avoid breaking
+    an end user's setup
     """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        self.ci_env = (os.environ.get('CI') == 'true')
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
 
@@ -92,6 +81,9 @@ class TestCIonly():
         # Move settings back
         shutil.rmtree(root)
         shutil.move(new_root, root)
+
+        # Make sure pysat reloads settings
+        reload(pysat)
 
 
 class TestScaleUnits():
@@ -625,10 +617,6 @@ class TestFmtCols():
 
 
 class TestAvailableInst(TestWithRegistration):
-
-    # Set setup/teardown to the class defaults
-    setup = TestWithRegistration.setup
-    teardown = TestWithRegistration.teardown
 
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",
