@@ -360,6 +360,9 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         self.kwargs_supported = {}
+        self.kwargs_reserved = ['fnames', 'inst_id', 'tag', 'date_array',
+                                'data_path', 'format_str', 'supported_tags',
+                                'start', 'stop', 'freq']
         saved_keys = []
 
         # Expected function keywords
@@ -373,9 +376,8 @@ class Instrument(object):
             default_kwargs = _get_supported_keywords(func)
 
             # Confirm there are no reserved keywords present
-            reserved_kwargs = _return_reserved_keywords()
             for kwarg in kwargs.keys():
-                if kwarg in reserved_kwargs:
+                if kwarg in self.kwargs_reserved:
                     estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
                                     'allowed at instantiation.'))
                     raise ValueError(estr)
@@ -3791,20 +3793,6 @@ def _kwargs_keys_to_func_name(kwargs_key):
 
     func_name = '_{:s}_rtn'.format(kwargs_key)
     return func_name
-
-
-def _return_reserved_keywords():
-    """Return list of pysat reserved keywords
-
-    Returns
-    -------
-    out_list : list
-       List of strings for reserved keywords
-
-    """
-
-    return ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
-            'format_str', 'supported_tags', 'start', 'stop', 'freq']
 
 
 def _get_supported_keywords(local_func):
