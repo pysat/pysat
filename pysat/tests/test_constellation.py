@@ -220,7 +220,7 @@ class TestConstellationFunc:
                                         {"index_res": 60.0}])
     def test_full_data_index(self, ikwarg):
         """ Test the empty index attribute."""
-        # Test the attribute with loaded data        
+        # Test the attribute with loaded data
         self.const = pysat.Constellation(instruments=self.inst, **ikwarg)
         self.const.load(date=self.ref_time)
         assert isinstance(self.const.index, pds.Index)
