@@ -147,7 +147,7 @@ class Constellation(object):
         output_str += '----------------------\n'
         if not self.empty:
             output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
-            output_str += '{:s}Time range: '.format(
+            output_str += '{:s}time range: '.format(
                 "Common " if self.common_index else "Full ")
             output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
             output_str += ' --- '
