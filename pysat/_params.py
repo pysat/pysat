@@ -144,9 +144,13 @@ class Parameters(object):
         # doesn't exist yet.
         with Lock(self.file_path, 'r', timeout=10) as fout:
             self.data = json.load(fout)
-            # In case of network file system
             fout.flush()
-            os.fsync(fout.fileno())
+            try:
+                # In case of network file system
+                os.fsync(fout.fileno())
+            except OSError:
+                # Not a network file system
+                pass
 
         return
 
@@ -329,6 +333,11 @@ class Parameters(object):
 
             # Ensure write is fully complete even for network file systems
             fout.flush()
-            os.fsync(fout.fileno())
+            try:
+                # In case of network file system
+                os.fsync(fout.fileno())
+            except OSError:
+                # Not a network file system
+                pass
 
         return
