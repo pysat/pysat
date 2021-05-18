@@ -360,9 +360,7 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         self.kwargs_supported = {}
-        self.kwargs_reserved = ['fnames', 'inst_id', 'tag', 'date_array',
-                                'data_path', 'format_str', 'supported_tags',
-                                'start', 'stop', 'freq']
+        self.kwargs_reserved = _reserved_keywords.copy()
         saved_keys = []
 
         # Expected function keywords
@@ -3795,6 +3793,14 @@ def _kwargs_keys_to_func_name(kwargs_key):
     return func_name
 
 
+# Hidden variable to store pysat reserved keywords. Defined here
+# since these values are used by both the Instrument class and
+# a function defined below.
+_reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
+                      'data_path', 'format_str', 'supported_tags',
+                      'start', 'stop', 'freq']
+
+
 def _get_supported_keywords(local_func):
     """Return a dict of supported keywords
 
@@ -3815,8 +3821,10 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
+    global _reserved_keywords
+
     # Account for keywords that are treated by Instrument as args
-    pre_kws = _return_reserved_keywords()
+    pre_kws = _reserved_keywords.copy()
 
     # check if partial function
     if isinstance(local_func, functools.partial):
