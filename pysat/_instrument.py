@@ -563,7 +563,8 @@ class Instrument(object):
 
         # Create string for other parts Instrument instantiation
         out_str = "".join(["pysat.Instrument(platform='", self.platform,
-                           "', name='", self.name, "', inst_id='", self.inst_id,
+                           "', name='", self.name, "', tag='", self.tag,
+                           "', inst_id='", self.inst_id,
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
                            "{:}, ".format(self.orbit_info),
