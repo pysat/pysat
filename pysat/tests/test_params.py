@@ -16,7 +16,7 @@ import tempfile
 
 import pysat  # required for reimporting pysat
 from pysat._params import Parameters  # required for eval statements
-from pysat.tests.travisci_test_class import TravisCICleanSetup
+from pysat.tests.ci_test_class import CICleanSetup
 
 
 class TestBasics():
@@ -173,15 +173,15 @@ class TestBasics():
         assert str(excinfo.value).find("Supplied path does not exist") >= 0
 
 
-class TestCIonly(TravisCICleanSetup):
+class TestCIonly(CICleanSetup):
     """Tests where we mess with local settings.
     These only run in CI environments such as Travis and Appveyor to avoid
     breaking an end user's setup
     """
 
     # Set setup/teardown to the class defaults
-    setup = TravisCICleanSetup.setup
-    teardown = TravisCICleanSetup.teardown
+    setup = CICleanSetup.setup
+    teardown = CICleanSetup.teardown
 
     def test_settings_file_must_be_present(self, capsys):
         """Ensure pysat_settings.json must be present"""

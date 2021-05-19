@@ -2,10 +2,11 @@ import datetime as dt
 from importlib import reload
 import numpy as np
 import os
+import tempfile
 
 import pysat
 from pysat.utils import files as futils
-from pysat.tests.travisci_test_class import TravisCICleanSetup
+from pysat.tests.ci_test_class import CICleanSetup
 
 
 class TestBasics():
@@ -51,7 +52,7 @@ class TestBasics():
         assert (file_dict['cycle'] is None)
 
 
-class TestFileDirectoryTranslations(TravisCICleanSetup):
+class TestFileDirectoryTranslations(CICleanSetup):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -59,14 +60,13 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         # Module is only required for testing installations on TravisCI
         import pysatSpaceWeather
 
-        # Create clean environment on Travis
-        TravisCICleanSetup.setup(self)
+        # Create clean environment on the CI server
+        CICleanSetup.setup(self)
         reload(pysat)
 
-        # Note, if testing locally, after setting self.ci_env = True
-        # in TravisCICleanSetup.setup then a data directory needs to be
-        # set here.
-        # pysat.params['data_dirs'] = '~/DemoData/'
+        # create temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
 
         # Create several pysat.SpaceWeather instruments and download data.
         # We want to start with a setup that covers general cases a user may
@@ -109,10 +109,10 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
 
-        # Clean environment on Travis
-        TravisCICleanSetup.teardown(self)
+        # Clean environment
+        CICleanSetup.teardown(self)
 
-        # TODO: Check on potentially removing all inst directories
+        self.tempdir.cleanup()
 
     def test_updating_directories(self, capsys):
         """Test directory structure update method"""
