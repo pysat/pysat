@@ -231,12 +231,13 @@ class Instrument(object):
                 self.name = name.lower()
 
                 # Look to module for instrument functions and defaults
-                self._assign_attrs(by_name=True)
+                self._assign_attrs(by_name=True, tag=self.tag,
+                                   inst_id=self.inst_id)
             elif (platform is None) and (name is None):
                 # Creating "empty" Instrument object with this path
                 self.name = ''
                 self.platform = ''
-                self._assign_attrs()
+                self._assign_attrs(tag=self.tag, inst_id=self.inst_id)
             else:
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
@@ -1089,7 +1090,8 @@ class Instrument(object):
         """
         pass
 
-    def _assign_attrs(self, by_name=False, inst_module=None):
+    def _assign_attrs(self, by_name=False, inst_module=None, tag=None,
+                      inst_id=None):
         """Assign all external instrument attributes to the Instrument object
 
         Parameters
@@ -1099,6 +1101,10 @@ class Instrument(object):
             if False uses inst_module. (default=False)
         inst_module : module or NoneType
             Instrument module or None, if not specified (default=None)
+        tag : str or NoneType
+            Instrument tag string
+        inst_id : str or NoneType
+            Instrument inst_id string
 
         Raises
         ------
@@ -1192,6 +1198,20 @@ class Instrument(object):
         else:
             # No module or name info, default pass functions assigned
             return
+
+        # Check if tag and inst_id are appropriate for the module
+        if inst_id not in inst.inst_ids.keys():
+            estr = ''.join(('"', inst_id, '" is not one of the supported ',
+                            'inst_ids. Supported inst_ids are: "',
+                            '"'.join((inst.inst_ids.keys())), '".'))
+            raise ValueError(estr)
+
+        if tag not in inst.inst_ids[inst_id]:
+            tag_str = ' '.join([''.join(('"', key, '"'))
+                                for key in inst.inst_ids[inst_id]])
+            estr = ''.join(('"', tag, '" is not one of the supported tags. ',
+                            'Supported tags are: ', tag_str, '.'))
+            raise ValueError(estr)
 
         # Assign the Instrument methods
         missing = list()
