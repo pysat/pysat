@@ -2558,6 +2558,27 @@ class TestBasics():
         estr = 'Inputs platform and name must both'
         assert str(err).find(estr) >= 0
 
+    def test_error_bad_inst_id_instrument_object(self):
+        """Ensure instantiation with invalid inst_id errors"""
+        with pytest.raises(ValueError) as err:
+            # both name and platform should be empty
+            _ = pysat.Instrument(platform=self.testInst.platform,
+                                 name=self.testInst.name,
+                                 inst_id='invalid_inst_id')
+        estr = '"invalid_inst_id" is not one of the supported inst_ids.'
+        assert str(err).find(estr) >= 0
+
+    def test_error_bad_tag_instrument_object(self):
+        """Ensure instantiation with invalid inst_id errors"""
+        with pytest.raises(ValueError) as err:
+            # both name and platform should be empty
+            _ = pysat.Instrument(platform=self.testInst.platform,
+                                 name=self.testInst.name,
+                                 inst_id='',
+                                 tag='bad_tag')
+        estr = '"bad_tag" is not one of the supported tags.'
+        assert str(err).find(estr) >= 0
+
     def test_supplying_instrument_module_requires_name_and_platform(self):
         """Ensure instantiation via inst_module with missing name errors"""
         class Dummy:
