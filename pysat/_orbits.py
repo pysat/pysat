@@ -286,10 +286,47 @@ class Orbits(object):
         while self.inst.empty:
             self.inst.next()
 
+        # Make a copy of the Instrument object
+        local_inst = self.inst.copy()
+
         while True:
             try:
                 self.next()
-                yield self.inst
+
+                # Ensure that garbage collection doesn't delete self.inst
+                # by yielding a copy, without spending time on copying data
+                data = self.inst.data
+                self.inst.data = self.inst._null_data
+                curr_data = self.inst._curr_data
+                self.inst._curr_data = self.inst._null_data
+                prev_data = self.inst._prev_data
+                self.inst._prev_data = self.inst._null_data
+                next_data = self.inst._next_data
+                self.inst._next_data = self.inst._null_data
+
+                # Account for data on orbit object itself
+                full_day_data = self._full_day_data
+                self._full_day_data = self.inst._null_data
+
+                local_inst.date = self.inst.date
+
+                # Restore data
+                self.inst.data = data
+                local_inst.data = data
+                self.inst._curr_data = curr_data
+                local_inst._curr_data = curr_data
+                self.inst._prev_data = prev_data
+                local_inst._prev_data = prev_data
+                self.inst._next_data = next_data
+                local_inst._next_data = next_data
+
+                self._full_day_data = full_day_data
+                local_inst.orbits._full_day_data = full_day_data
+                local_inst.orbits.num = self.num
+                local_inst.orbits._current = self._current
+                local_inst.orbits._orbit_breaks = self._orbit_breaks
+
+                yield local_inst
             except StopIteration:
                 return
 

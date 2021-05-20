@@ -360,6 +360,7 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         self.kwargs_supported = {}
+        self.kwargs_reserved = _reserved_keywords.copy()
         saved_keys = []
 
         # Expected function keywords
@@ -371,6 +372,13 @@ class Instrument(object):
 
             # Get dict of supported keywords and values
             default_kwargs = _get_supported_keywords(func)
+
+            # Confirm there are no reserved keywords present
+            for kwarg in kwargs.keys():
+                if kwarg in self.kwargs_reserved:
+                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                                    'allowed at instantiation.'))
+                    raise ValueError(estr)
 
             # Check if kwargs are in list
             good_kwargs = [ckey for ckey in kwargs.keys()
@@ -681,11 +689,20 @@ class Instrument(object):
                 try:
                     # Pass keys directly through
                     return self.data.loc[key[0], key[1]]
-                except (KeyError, TypeError):
+                except (KeyError, TypeError) as err1:
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
                     # Assume key[0] is integer (including list or slice)
-                    return self.data.loc[self.data.index[key[0]], key[1]]
+                    try:
+                        return self.data.loc[self.data.index[key[0]], key[1]]
+                    except (IndexError) as err2:
+                        print(str(err1))
+                        print(str(err2))
+                        err_message = '\n'.join(("original messages:",
+                                                 str(err1), str(err2)))
+                        raise ValueError(' '.join(("Check requested indexes,",
+                                                   "data may not exist.",
+                                                   err_message)))
             else:
                 try:
                     # integer based indexing
@@ -3779,6 +3796,14 @@ def _kwargs_keys_to_func_name(kwargs_key):
     return func_name
 
 
+# Hidden variable to store pysat reserved keywords. Defined here
+# since these values are used by both the Instrument class and
+# a function defined below.
+_reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
+                      'data_path', 'format_str', 'supported_tags',
+                      'start', 'stop', 'freq']
+
+
 def _get_supported_keywords(local_func):
     """Return a dict of supported keywords
 
@@ -3792,7 +3817,6 @@ def _get_supported_keywords(local_func):
     out_dict : dict
         dict of supported keywords and default values
 
-
     Note
     ----
     If the input is a partial function then the list of keywords returned only
@@ -3800,9 +3824,10 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
-    # account for keywords that are treated by Instrument as args
-    pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
-               'format_str', 'supported_tags', 'start', 'stop', 'freq']
+    global _reserved_keywords
+
+    # Account for keywords that are treated by Instrument as args
+    pre_kws = _reserved_keywords.copy()
 
     # check if partial function
     if isinstance(local_func, functools.partial):

@@ -10,9 +10,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Deprecations
 - Documentation
 - Bug Fix
+  - Changed pysat.Instruments.orbits iteration to return a copy of the Instrument
+    rather than the Instrument itself. Provides robustness against garbage collection.
+  - Improved error messages for cases where slice of data may not exist (#761)
 - Maintenance
-  - Changed pysat.Instrument from treating all support functions as partial functions
-  to retaining the original form provided by developer
+  - Changed pysat.Instrument from treating all support functions as partial
+    functions to retaining the original form provided by developer
+  - Migrates CI testing to Github Actions
+  - Improved maintenance of documentation build
+  - Added a check for use of reserved keywords at instantiation
 
 ## [3.0.0] - 2021-04-01
 - New Features
@@ -60,7 +66,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     exclusive
   - Added support for SLT calculations outside [0, 24)
   - Added support for continuous SLT calculations when loading multiple days
-  - Instrument support functions now respond to local changes in 
+  - Instrument support functions now respond to local changes in
     Instrument.kwargs
   - Added support for pysat.Instrument, Files, and Orbits equality comparisons
   - Added .copy function to Instrument, Files, and Orbits classes
@@ -142,7 +148,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Modified storage of Instrument.kwargs to include all methods so that
     `eval(Instrument.__repr__())` works in more cases
   - Modified storage of Instrument.kwargs to only include user supplied keywords
-  - Improved robustness when working with file dates that aren't centered on 
+  - Improved robustness when working with file dates that aren't centered on
     midnight
   - Added basic valid path check to `pysat.utils.files.check_and_make_path`
 - Maintenance

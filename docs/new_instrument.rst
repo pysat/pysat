@@ -343,7 +343,7 @@ The load module method signature should appear as:
   appropriate datetime index for irregularly sampled data sets with gaps
 - If your data is a CSV formatted file, you can incorporate the
   ``pysat.instruments.methods.general.load_csv_data`` routine (see
-  :ref:`api--methods-general`) into your load method.
+  :ref:`api-methods-general`) into your load method.
 - A pysat meta object may be obtained from ``pysat.Meta()``. The :ref:`api-meta`
   object uses a pandas DataFrame indexed by variable name with columns for
   metadata parameters associated with that variable, including items like
@@ -447,6 +447,7 @@ keyword may be used in more than one function but the same value will be passed
 to each.
 
 An example ``load`` function definition with two custom keyword arguments.
+
 .. code:: python
 
    def load(fnames, tag=None, inst_id=None, custom1=default1, custom2=default2):
@@ -471,8 +472,13 @@ function the next time that function is invoked.
    # Show default value applied for custom2 keyword
    print(inst.kwargs_supported['load']['custom2'])
 
-If a user supplies a keyword that is not supported by pysat or by any
-specific instrument module then an error is raised.
+   # Show keywords reserved for use by pysat
+   print(inst.kwargs_reserved)
+
+If a user supplies a keyword that is reserved or not supported by pysat, or by
+any specific instrument module function, then an error is raised. Reserved
+keywords are 'fnames', 'inst_id', 'tag', 'date_array', 'data_path',
+'format_str', 'supported_tags', 'start', 'stop', and 'freq'.
 
 
 init
