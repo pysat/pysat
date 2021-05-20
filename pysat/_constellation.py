@@ -218,9 +218,9 @@ class Constellation(object):
                     # If desired, determine the resolution
                     if self.index_res is None:
                         if inst.index.freq is None:
-                            out_res = (inst.index[1:] - inst.index[:-1]).mean()
+                            out_res = utils.time.calc_res(inst.index)
                         else:
-                            out_res = pds.to_datetime(1, units=inst.index.freq)
+                            out_res = utils.time.freq_to_res(inst.index.freq)
                 else:
                     # Adjust the start and stop time as appropriate
                     if self.common_index:
@@ -237,9 +237,9 @@ class Constellation(object):
                     # If desired, determine the resolution
                     if self.index_res is None:
                         if inst.index.freq is None:
-                            new_res = (inst.index[1:] - inst.index[:-1]).mean()
+                            new_res = utils.time.calc_res(inst.index)
                         else:
-                            new_res = pds.to_datetime(1, units=inst.index.freq)
+                            new_res = utils.time.freq_to_res(inst.index.freq)
 
                         if new_res < out_res:
                             out_res = new_res
