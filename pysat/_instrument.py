@@ -1202,17 +1202,17 @@ class Instrument(object):
 
         # Check if tag and inst_id are appropriate for the module
         if inst_id not in inst.inst_ids.keys():
-            inst_id_str = ' '.join([''.join(('"', key, '"'))
-                                    for key in inst.inst_ids.keys()])
-            estr = ''.join(('"', inst_id, '" is not one of the supported ',
+            inst_id_str = ', '.join([ikey.__repr__()
+                                    for ikey in inst.inst_ids.keys()])
+            estr = ''.join(("'", inst_id, "' is not one of the supported ",
                             'inst_ids. Supported inst_ids are: ',
                             inst_id_str, '.'))
             raise ValueError(estr)
 
         if tag not in inst.inst_ids[inst_id]:
-            tag_str = ' '.join([''.join(('"', key, '"'))
-                                for key in inst.inst_ids[inst_id]])
-            estr = ''.join(('"', tag, '" is not one of the supported tags. ',
+            tag_str = ', '.join([tkey.__repr__()
+                                for tkey in inst.inst_ids[inst_id]])
+            estr = ''.join(("'", tag, "' is not one of the supported tags. ",
                             'Supported tags are: ', tag_str, '.'))
             raise ValueError(estr)
 
