@@ -780,7 +780,6 @@ class TestInstWithFilesNonStandard():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             inst_id='hello',
                              directory_format=nonstandard_dir,
                              update_files=True, file_format=self.root_fname,
                              temporary_file_list=self.temporary_file_list)
