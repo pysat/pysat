@@ -2564,7 +2564,7 @@ class TestBasics():
             pysat.Instrument(platform=self.testInst.platform,
                              name=self.testInst.name,
                              inst_id='invalid_inst_id')
-        estr = '"invalid_inst_id" is not one of the supported inst_ids.'
+        estr = "'invalid_inst_id' is not one of the supported inst_ids."
         assert str(err).find(estr) >= 0
 
     def test_error_bad_tag_instrument_object(self):
@@ -2574,7 +2574,7 @@ class TestBasics():
                              name=self.testInst.name,
                              inst_id='',
                              tag='bad_tag')
-        estr = '"bad_tag" is not one of the supported tags.'
+        estr = "'bad_tag' is not one of the supported tags."
         assert str(err).find(estr) >= 0
 
     def test_supplying_instrument_module_requires_name_and_platform(self):
