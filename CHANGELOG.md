@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     functions to retaining the original form provided by developer
   - Migrates CI testing to Github Actions
   - Improved maintenance of documentation build
+  - Added a check for use of reserved keywords at instantiation
 
 ## [3.0.0] - 2021-04-01
 - New Features

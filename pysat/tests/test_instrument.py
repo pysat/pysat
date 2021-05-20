@@ -165,6 +165,19 @@ class TestBasics():
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
+    @pytest.mark.parametrize('kwarg', ['supported_tags', 'start', 'stop',
+                                       'freq', 'date_array', 'data_path'])
+    def test_basic_instrument_reserved_keyword(self, kwarg):
+        """Check for error when instantiating with reserved keywords"""
+        with pytest.raises(ValueError) as err:
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name, num_samples=10,
+                             clean_level='clean',
+                             **{kwarg: '1s'})
+        estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                        'allowed at instantiation.'))
+        assert str(err).find(estr) >= 0
+
     def test_basic_instrument_load_yr_no_doy(self):
         """Ensure doy required if yr present"""
         with pytest.raises(TypeError) as err:
