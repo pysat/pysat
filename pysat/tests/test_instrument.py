@@ -2553,29 +2553,27 @@ class TestBasics():
     def test_incorrect_creation_empty_instrument_object(self):
         """Ensure instantiation with missing name errors"""
         with pytest.raises(ValueError) as err:
-            # both name and platform should be empty
-            _ = pysat.Instrument(platform='cnofs')
+            # Both name and platform should be empty
+            pysat.Instrument(platform='cnofs')
         estr = 'Inputs platform and name must both'
         assert str(err).find(estr) >= 0
 
     def test_error_bad_inst_id_instrument_object(self):
         """Ensure instantiation with invalid inst_id errors"""
         with pytest.raises(ValueError) as err:
-            # both name and platform should be empty
-            _ = pysat.Instrument(platform=self.testInst.platform,
-                                 name=self.testInst.name,
-                                 inst_id='invalid_inst_id')
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name,
+                             inst_id='invalid_inst_id')
         estr = '"invalid_inst_id" is not one of the supported inst_ids.'
         assert str(err).find(estr) >= 0
 
     def test_error_bad_tag_instrument_object(self):
         """Ensure instantiation with invalid inst_id errors"""
         with pytest.raises(ValueError) as err:
-            # both name and platform should be empty
-            _ = pysat.Instrument(platform=self.testInst.platform,
-                                 name=self.testInst.name,
-                                 inst_id='',
-                                 tag='bad_tag')
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name,
+                             inst_id='',
+                             tag='bad_tag')
         estr = '"bad_tag" is not one of the supported tags.'
         assert str(err).find(estr) >= 0
 
@@ -2586,7 +2584,7 @@ class TestBasics():
         Dummy.name = 'help'
 
         with pytest.raises(AttributeError) as err:
-            _ = pysat.Instrument(inst_module=Dummy)
+            pysat.Instrument(inst_module=Dummy)
         estr = 'Supplied module '
         assert str(err).find(estr) >= 0
 
