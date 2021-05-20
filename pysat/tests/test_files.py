@@ -771,28 +771,29 @@ class TestInstWithFilesNonStandard():
 
     def test_files_non_standard_pysat_directory(self):
         """Check that files work with a weird directory structure"""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='100min')
 
         nonstandard_dir = 'pysat_testing_{tag}_{inst_id}'
 
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             directory_format=nonstandard_dir,
-                             update_files=True, file_format=self.root_fname,
-                             temporary_file_list=self.temporary_file_list)
-        # add new files
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            directory_format=nonstandard_dir,
+            update_files=True, file_format=self.root_fname,
+            temporary_file_list=self.temporary_file_list)
+
+        # Add new files
         create_dir(self.testInst)
         create_files(self.testInst, self.start, self.stop, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
 
-        # refresh file list
+        # Refresh file list
         self.testInst.files.refresh()
 
-        # get new files
+        # Get new files
         new_files = self.testInst.files.get_new()
         assert np.all(self.testInst.files.files.index == dates)
         assert np.all(new_files.index == dates)
