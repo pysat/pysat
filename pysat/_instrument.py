@@ -254,7 +254,8 @@ class Instrument(object):
 
             # Look to supplied module for instrument functions and non-default
             # attribute values
-            self._assign_attrs(inst_module=self.inst_module)
+            self._assign_attrs(inst_module=self.inst_module,
+                               tag=self.tag, inst_id=self.inst_id)
 
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
