@@ -247,6 +247,8 @@ class Constellation(object):
             # If a resolution in seconds was supplied, calculate the frequency
             if self.index_res is not None:
                 out_res = pds.DateOffset(seconds=self.index_res)
+            else:
+                out_res = pds.DateOffset(seconds=out_res)
 
             # Construct the common index
             cindex = pds.date_range(stime, etime, freq=out_res)
