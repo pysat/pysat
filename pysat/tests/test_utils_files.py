@@ -91,13 +91,6 @@ class TestFileDirectoryTranslations(CICleanSetup):
                                  + dt.timedelta(weeks=52)])
         self.insts_kwargs.append({'freq': 'MS'})
 
-        # Data with date mangling, 'historic' F10.7 data, single file
-        self.insts.append(pysat.Instrument('sw', 'f107', tag='historic'))
-        test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
-        self.insts_dates.append([test_dates['']['historic'],
-                                 test_dates['']['historic']])
-        self.insts_kwargs.append({})
-
         # Download data for all instruments
         for inst, dates, kwargs in zip(self.insts, self.insts_dates,
                                        self.insts_kwargs):
