@@ -86,8 +86,9 @@ class TestFileDirectoryTranslations(CICleanSetup):
         # Data with date mangling, regular F10.7 data, stored monthly
         self.insts.append(pysat.Instrument('sw', 'f107', tag='historic'))
         test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
-        self.insts_dates.append([test_dates[''][''],
-                                 test_dates[''][''] + dt.timedelta(weeks=52)])
+        self.insts_dates.append([test_dates['']['historic'],
+                                 test_dates['']['historic']
+                                 + dt.timedelta(weeks=52)])
         self.insts_kwargs.append({'freq': 'MS'})
 
         # Data with date mangling, 'historic' F10.7 data, single file
