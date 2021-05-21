@@ -108,12 +108,12 @@ def calc_res(index, use_mean=False):
     try:
         # First try as timedelta
         res_sec = del_time.total_seconds()
-    except AttributeError as err:
+    except AttributeError as aerr:
         # Now try as numpy.timedelta64
         if isinstance(del_time, np.timedelta64):
             res_sec = float(del_time) * 1.0e-9
         else:
-            raise AttributeError("Input should be times: {:}".format(err))
+            raise AttributeError("Input should be times: {:}".format(aerr))
 
     return res_sec
 
@@ -241,14 +241,14 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
     """
 
-    # need a timeseries index for storing satellite data in pandas but
-    # creating a datetime object for everything is too slow
-    # so I calculate the number of nanoseconds elapsed since first sample,
-    # and create timeseries index from that.
-    # Factor of 20 improvement compared to previous method,
-    # which itself was an order of magnitude faster than datetime.
+    # We need a timeseries index for storing satellite data in pandas, but
+    # creating a datetime object for everything is too slow.  Instead, we
+    # calculate the number of nanoseconds elapsed since first sample and
+    # create timeseries index from that.  This yields a factor of 20
+    # improvement compared to previous method, which itself was an order of
+    # magnitude faster than datetime.
 
-    # get list of unique year, and month
+    # Get list of unique year, and month
     if not hasattr(year, '__iter__'):
         raise ValueError('Must provide an iterable for all inputs.')
     if len(year) == 0:
@@ -264,25 +264,31 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     if day is None:
         day = np.ones(len(year))
     day = day.astype(int)
-    # track changes in seconds
+
+    # Track changes in seconds
     uts_del = uts.copy().astype(float)
-    # determine where there are changes in year and month that need to be
+
+    # Determine where there are changes in year and month that need to be
     # accounted for
     _, idx = np.unique((year * 100. + month), return_index=True)
-    # create another index array for faster algorithm below
+
+    # Create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
-    # computes UTC seconds offset for each unique set of year and month
+
+    # Computes UTC seconds offset for each unique set of year and month
     for _idx, _idx2 in zip(idx[1:], idx2[2:]):
         temp = (dt.datetime(year[_idx], month[_idx], 1)
                 - dt.datetime(year[0], month[0], 1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
-    # add in UTC seconds for days, ignores existence of leap seconds
+    # Add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (day - 1) * 86400
-    # add in seconds since unix epoch to first day
+
+    # Add in seconds since unix epoch to first day
     uts_del += (dt.datetime(year[0], month[0], 1)
                 - dt.datetime(1970, 1, 1)).total_seconds()
-    # going to use routine that defaults to nanseconds for epoch
+
+    # Going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
 
