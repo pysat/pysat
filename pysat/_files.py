@@ -856,23 +856,11 @@ class Files(object):
 
         """
 
-        starts = np.asarray(start)
-        if starts.shape == ():
-            starts = [starts.tolist()]
-        elif starts.shape[0] > 1:
-            starts = starts.squeeze().tolist()
-        elif starts.shape[0] == 1:
-            starts = starts.tolist()
-
-        stops = np.asarray(stop)
-        if stops.shape == ():
-            stops = [stops.tolist()]
-        elif stops.shape[0] > 1:
-            stops = stops.squeeze().tolist()
-        elif stops.shape[0] == 1:
-            stops = stops.tolist()
-
         # Selection is treated differently if start/stop are iterable or not
+        # so we convert them to a list as needed for consistency.
+        starts = pysat.utils.listify(start)
+        stops = pysat.utils.listify(stop)
+
         files = []
         for (sta, stp) in zip(starts, stops):
             id1 = self.get_index(sta)

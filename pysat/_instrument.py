@@ -358,6 +358,7 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         self.kwargs_supported = {}
+        self.kwargs_reserved = _reserved_keywords.copy()
         saved_keys = []
 
         # Expected function keywords
@@ -369,6 +370,13 @@ class Instrument(object):
 
             # Get dict of supported keywords and values
             default_kwargs = _get_supported_keywords(func)
+
+            # Confirm there are no reserved keywords present
+            for kwarg in kwargs.keys():
+                if kwarg in self.kwargs_reserved:
+                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                                    'allowed at instantiation.'))
+                    raise ValueError(estr)
 
             # Check if kwargs are in list
             good_kwargs = [ckey for ckey in kwargs.keys()
@@ -1748,15 +1756,9 @@ class Instrument(object):
                 # Instrument has no files
                 self._iter_list = []
         else:
-            # User provided some inputs
-            starts = np.asarray([start])
-            stops = np.asarray([stop])
-
-            # Ensure consistency if list-like already
-            if len(starts.shape) > 1:
-                starts = starts[0]
-            if len(stops.shape) > 1:
-                stops = stops[0]
+            # User provided some inputs, ensure always a 1D list
+            starts = pysat.utils.listify(start)
+            stops = pysat.utils.listify(stop)
 
             # check equal number of elements
             if len(starts) != len(stops):
@@ -3780,6 +3782,14 @@ def _kwargs_keys_to_func_name(kwargs_key):
     return func_name
 
 
+# Hidden variable to store pysat reserved keywords. Defined here
+# since these values are used by both the Instrument class and
+# a function defined below.
+_reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
+                      'data_path', 'format_str', 'supported_tags',
+                      'start', 'stop', 'freq']
+
+
 def _get_supported_keywords(local_func):
     """Return a dict of supported keywords
 
@@ -3793,7 +3803,6 @@ def _get_supported_keywords(local_func):
     out_dict : dict
         dict of supported keywords and default values
 
-
     Note
     ----
     If the input is a partial function then the list of keywords returned only
@@ -3801,9 +3810,10 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
-    # account for keywords that are treated by Instrument as args
-    pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
-               'format_str', 'supported_tags', 'start', 'stop', 'freq']
+    global _reserved_keywords
+
+    # Account for keywords that are treated by Instrument as args
+    pre_kws = _reserved_keywords.copy()
 
     # check if partial function
     if isinstance(local_func, functools.partial):

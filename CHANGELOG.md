@@ -11,15 +11,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
       `tomorrow`, and `variables`
     - Improving the printed output to inform user of the Constellation contents
     - Added methods to download data and create a common time index.
+   - Added utils.listify, a function that returns a list of whatever is input.
 - Deprecations
 - Documentation
 - Bug Fix
+  - Changed pysat.Instruments.orbits iteration to return a copy of the Instrument
+    rather than the Instrument itself. Provides robustness against garbage collection.
   - Improved error messages for cases where slice of data may not exist (#761)
 - Maintenance
   - Changed pysat.Instrument from treating all support functions as partial
     functions to retaining the original form provided by developer
   - Migrates CI testing to Github Actions
   - Improved maintenance of documentation build
+  - Added a check for use of reserved keywords at instantiation
 
 ## [3.0.0] - 2021-04-01
 - New Features
