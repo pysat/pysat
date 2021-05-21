@@ -1758,15 +1758,9 @@ class Instrument(object):
                 # Instrument has no files
                 self._iter_list = []
         else:
-            # User provided some inputs
-            starts = np.asarray([start])
-            stops = np.asarray([stop])
-
-            # Ensure consistency if list-like already
-            if len(starts.shape) > 1:
-                starts = starts[0]
-            if len(stops.shape) > 1:
-                stops = stops[0]
+            # User provided some inputs, ensure always a 1D list
+            starts = pysat.utils.listify(start)
+            stops = pysat.utils.listify(stop)
 
             # check equal number of elements
             if len(starts) != len(stops):

@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - New Features
   - Added a routine for loading CSV files into a pandas DataFrame from a list
     of filenames.
+   - Added utils.listify, a function that returns a list of whatever is input.
 - Deprecations
 - Documentation
 - Bug Fix
