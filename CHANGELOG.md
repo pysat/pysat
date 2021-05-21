@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     functions to retaining the original form provided by developer
   - Migrates CI testing to Github Actions
   - Improved maintenance of documentation build
+  - Tests compatible with pysatSpaceWeather 0.0.4
 
 ## [3.0.0] - 2021-04-01
 - New Features
