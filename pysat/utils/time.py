@@ -176,7 +176,7 @@ def freq_to_res(freq):
 
     Reference
     ---------
-    Separating alpha and numberic portions of strings, as described in:
+    Separating alpha and numeric portions of strings, as described in:
     https://stackoverflow.com/a/12409995
 
     """
