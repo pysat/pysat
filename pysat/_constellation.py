@@ -24,7 +24,7 @@ class Constellation(object):
 
     Parameters
     ----------
-    const_module : str or NoneType
+    const_module : module or NoneType
         Name of a pysat constellation module (default=None)
     instruments : list-like or NoneType
         A list of pysat Instruments to include in the Constellation
@@ -58,9 +58,9 @@ class Constellation(object):
 
         Parameters
         ----------
-        const_module : string
+        const_module : module or NoneType
             Name of a pysat constellation module (default=None)
-        instruments : list-like
+        instruments : list-like or NoneType
             A list of pysat Instruments to include in the Constellation
             (default=None)
         index_res : float or NoneType
