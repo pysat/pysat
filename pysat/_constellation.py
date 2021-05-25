@@ -171,7 +171,7 @@ class Constellation(object):
         Parameters
         ----------
         all_inst : bool
-            Require all instruments to have data for the emtpy flag to be
+            Require all instruments to have data for the empty flag to be
             False, if True.  If False, the empty flag will be False if any
             instrument has data. (default=True)
 
