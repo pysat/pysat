@@ -184,6 +184,38 @@ class TestScaleUnits():
         assert str(verr).find('unknown units') > 0
 
 
+class TestListify():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+
+    @pytest.mark.parametrize('iterable', ['test', ['test'], [[['test']]],
+                                          [[[['test']]]],
+                                          [['test', 'test']],
+                                          [['test', 'test'], ['test', 'test']]])
+    def test_listify_list_string_inputs(self, iterable):
+        """ Test listify with various list levels of a string"""
+
+        new_iterable = pysat.utils.listify(iterable)
+        for item in new_iterable:
+            assert item == 'test'
+        return
+
+    @pytest.mark.parametrize('iterable', [np.nan, np.full((1, 1), np.nan),
+                                          np.full((2, 2), np.nan),
+                                          np.full((3, 3, 3), np.nan)])
+    def test_listify_list_number_inputs(self, iterable):
+        """ Test listify with various np.arrays of numbers"""
+
+        new_iterable = pysat.utils.listify(iterable)
+        for item in new_iterable:
+            assert np.isnan(item)
+        assert len(new_iterable) == np.product(np.shape(iterable))
+        return
+
+
 class TestBasicNetCDF4():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
