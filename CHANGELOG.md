@@ -19,6 +19,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Migrates CI testing to Github Actions
   - Improved maintenance of documentation build
   - Added a check for use of reserved keywords at instantiation
+  - Tests compatible with pysatSpaceWeather 0.0.4
 
 ## [3.0.0] - 2021-04-01
 - New Features
