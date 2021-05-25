@@ -7,7 +7,7 @@
 
 Note
 ----
-Created as part of a Spring 2018 UTDesign project.
+Started as part of a Spring 2018 UTDesign project.
 Updated by AGB, May 2021, NRL
 
 """
