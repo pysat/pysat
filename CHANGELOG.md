@@ -8,6 +8,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     of filenames.
   - Added check for supported `tag` and `inst_id` at pysat.Instrument 
     instantiation.
+  - Expanded Constellation utility by:
+    - Adding common properties: `empty`, `index`, `date`, `today`, `yesterday`,
+      `tomorrow`, and `variables`
+    - Improving the printed output to inform user of the Constellation contents
+    - Added methods to download data and create a common time index.
    - Added utils.listify, a function that returns a list of whatever is input.
 - Deprecations
 - Documentation
@@ -21,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Migrates CI testing to Github Actions
   - Improved maintenance of documentation build
   - Added a check for use of reserved keywords at instantiation
+  - Tests compatible with pysatSpaceWeather 0.0.4
 
 ## [3.0.0] - 2021-04-01
 - New Features
