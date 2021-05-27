@@ -164,7 +164,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
 
         # Convert directories back to more complex structure
         # First, define new template
-        templ = '{platform}/{name}/{tag}/{inst_id}'
+        templ = os.path.join('{platform}', '{name}', '{tag}', '{inst_id}')
 
         # Update structure
         futils.update_data_directory_structure(new_template=templ,
