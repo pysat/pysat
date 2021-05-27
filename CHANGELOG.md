@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - New Features
   - Added a routine for loading CSV files into a pandas DataFrame from a list
     of filenames.
+  - Added check for supported `tag` and `inst_id` at pysat.Instrument 
+    instantiation.
   - Expanded Constellation utility by:
     - Adding common properties: `empty`, `index`, `date`, `today`, `yesterday`,
       `tomorrow`, and `variables`
