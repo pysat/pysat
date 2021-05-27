@@ -37,8 +37,8 @@ class TestBasics():
         pysat.params = copy.deepcopy(self.stored_params)
         pysat.params.store()
         reload(pysat)
-        self.tempdir.cleanup()
         os.chdir(self.wd)
+        self.tempdir.cleanup()
 
     @pytest.mark.parametrize("paths, check",
                              [('.', ['.']),
