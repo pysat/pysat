@@ -778,6 +778,11 @@ class NetworkLock(Lock):
         """
 
         self.fh.flush()
-        os.fsync(self.fh.fileno())
+        try:
+            # In case of network file system
+            os.fsync(self.fh.fileno())
+        except OSError:
+            # Not a network file system
+            pass
 
         super(NetworkLock, self).release()

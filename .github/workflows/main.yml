@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: [3.8, 3.9]
         numpy_ver: [latest]
         include:
@@ -45,7 +45,7 @@ jobs:
     - name: Set up pysat
       run: |
         mkdir pysatData
-        python -c "import pysat; pysat.params['data_dirs'] = './pysatData'"
+        python set_ga_dir.py
 
     - name: Test PEP8 compliance
       run: flake8 . --count --select=E,F,W --show-source --statistics
@@ -55,8 +55,3 @@ jobs:
 
     - name: Test with pytest
       run: pytest --cov=pysat/
-
-    - name: Publish results to coveralls
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: coveralls --rcfile=setup.cfg --service=github
