@@ -1276,6 +1276,8 @@ class TestBasics():
         assert 'non_nan_export' not in test_vars
         assert 'extra_check' in test_vars
 
+        return
+
     def test_nan_metadata_filtered_netcdf4_via_method(self):
         """check that metadata set to NaN is excluded from netcdf via nc call"""
         # create an instrument object that has a meta with some
@@ -1297,13 +1299,16 @@ class TestBasics():
         self.testInst.to_netcdf4(outfile, export_nan=export_nan)
 
         # Load file back and test metadata is as expected
-        f = netCDF4.Dataset(outfile)
+        with netCDF4.Dataset(outfile) as open_f:
+            test_vars = open_f['test_nan_variable'].ncattrs()
 
         pysat.tests.test_utils.remove_files(self.testInst)
 
-        assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
-        assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
-        assert 'extra_check' in f['test_nan_variable'].ncattrs()
+        assert 'test_nan_export' in test_vars
+        assert 'non_nan_export' not in test_vars
+        assert 'extra_check' in test_vars
+
+        return
 
 
 class TestBasicsImmutable(TestBasics):
