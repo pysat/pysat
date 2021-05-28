@@ -3425,7 +3425,7 @@ class Instrument(object):
             # attach metadata
             cdfkey.setncatts(new_dict)
 
-            # attach data
+            # Attach Time index data
             cdfkey[:] = (self.index.values.astype(np.int64)
                          * 1.E-6).astype(np.int64)
 

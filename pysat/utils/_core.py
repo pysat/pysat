@@ -382,7 +382,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
                 loaded_vars[epoch_name] = pds.to_datetime(
-                    (1.E6 * time_var).astype(int))
+                    (1.E6 * time_var).astype(np.int64))
                 running_store.append(loaded_vars)
                 running_idx += len(loaded_vars[epoch_name])
 
