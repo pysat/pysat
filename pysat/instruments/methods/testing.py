@@ -299,7 +299,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     if cyclic:
         uts_root = np.mod(t0, period)
         data = (np.mod(uts_root + num_array, period)
-                * (np.diff(data_range)[0] / float(period))) + data_range[0]
+                * (np.diff(data_range)[0] / np.float(period))) + data_range[0]
     else:
         data = ((t0 + num_array) / period).astype(int)
 
@@ -342,9 +342,9 @@ def generate_times(fnames, num, freq='1S'):
     for loop, fname in enumerate(fnames):
         # Grab date from filename
         parts = os.path.split(fname)[-1].split('-')
-        yr = int(parts[0])
-        month = int(parts[1])
-        day = int(parts[2][0:2])
+        yr = np.int(parts[0])
+        month = np.int(parts[1])
+        day = np.int(parts[2][0:2])
         date = dt.datetime(yr, month, day)
         dates.append(date)
 
