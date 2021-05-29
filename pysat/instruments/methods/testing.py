@@ -301,7 +301,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
         data = (np.mod(uts_root + num_array, period)
                 * (np.diff(data_range)[0] / np.float(period))) + data_range[0]
     else:
-        data = ((t0 + num_array) / period).astype(int)
+        data = ((t0 + num_array) / period).astype(np.int)
 
     return data
 
