@@ -145,7 +145,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
     # Calculate solar local time
     if inst[lon_name].shape == ut_hr.shape or inst[lon_name].shape == ():
         if inst[lon_name].shape == ():
-            lon = np.float(inst[lon_name])
+            lon = np.float64(inst[lon_name])
         else:
             lon = inst[lon_name]
 
