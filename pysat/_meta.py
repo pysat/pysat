@@ -1481,7 +1481,7 @@ class MetaLabels(object):
         elif val_type is int or (val_type is np.int64):
             default_val = -1
         else:
-            mstr = ''.join(('No type match found for ', val_type))
+            mstr = ''.join(('No type match found for ', str(val_type)))
             pysat.logger.info(mstr)
             default_val = None
 
