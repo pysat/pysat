@@ -3126,7 +3126,7 @@ class Instrument(object):
         logger.info(' '.join(('Found {} files that'.format(len(new_dates)),
                               'are new or updated.')))
 
-        # download date for dates in new_dates (also includes new names)
+        # Download date for dates in new_dates (also includes new names)
         self.download(date_array=new_dates, **kwargs)
 
     def download(self, start=None, stop=None, freq='D', date_array=None,
@@ -3163,8 +3163,8 @@ class Instrument(object):
             os.makedirs(self.files.data_path)
         except OSError as err:
             if err.errno != errno.EEXIST:
-                # ok if directories already exist.
-                # Include message from original error.
+                # Ok if directories already exist, otherwise exit with an
+                # error that includes the message from original error.
                 msg = ''.join(('There was a problem creating the path: ',
                                self.files.data_path,
                                ', to store downloaded data for ', self.platform,
@@ -3201,48 +3201,53 @@ class Instrument(object):
             if kwarg not in kwargs:
                 kwargs[kwarg] = self.kwargs['download'][kwarg]
 
-        # Download the data
-        self._download_rtn(date_array, **kwargs)
+        # Download the data, if enough data is requested
+        if len(date_array) > 0:
+            self._download_rtn(date_array, **kwargs)
 
-        # get current file date range
-        first_date = self.files.start_date
-        last_date = self.files.stop_date
+            # Get the current file date range
+            first_date = self.files.start_date
+            last_date = self.files.stop_date
 
-        logger.info('Updating pysat file list')
-        self.files.refresh()
+            logger.info('Updating pysat file list')
+            self.files.refresh()
 
-        # if instrument object has default bounds, update them
-        if len(self.bounds[0]) == 1:
-            # get current bounds
-            curr_bound = self.bounds
-            if self._iter_type == 'date':
-                if (curr_bound[0][0] == first_date
-                        and curr_bound[1][0] == last_date):
-                    logger.info('Updating instrument object bounds by date.')
-                    self.bounds = (self.files.start_date, self.files.stop_date,
-                                   curr_bound[2], curr_bound[3])
-            if self._iter_type == 'file':
-                # Account for the fact the file datetimes may not land
-                # exactly at start or end of a day.
-                dsel1 = slice(first_date, first_date + dt.timedelta(hours=23,
-                                                                    minutes=59,
-                                                                    seconds=59))
-                dsel2 = slice(last_date, last_date + dt.timedelta(hours=23,
-                                                                  minutes=59,
-                                                                  seconds=59))
-                if (curr_bound[0][0] == self.files[dsel1][0]
-                        and curr_bound[1][0] == self.files[dsel2][-1]):
-                    logger.info('Updating instrument object bounds by file.')
-                    dsel1 = slice(self.files.start_date,
-                                  self.files.start_date
+            # If instrument object has default bounds, update them
+            if len(self.bounds[0]) == 1:
+                # Get current bounds
+                curr_bound = self.bounds
+                if self._iter_type == 'date':
+                    if(curr_bound[0][0] == first_date
+                       and curr_bound[1][0] == last_date):
+                        logger.info('Updating instrument object bounds by date')
+                        self.bounds = (self.files.start_date,
+                                       self.files.stop_date, curr_bound[2],
+                                       curr_bound[3])
+                if self._iter_type == 'file':
+                    # Account for the fact the file datetimes may not land
+                    # exactly at start or end of a day.
+                    dsel1 = slice(first_date, first_date
                                   + dt.timedelta(hours=23, minutes=59,
                                                  seconds=59))
-                    dsel2 = slice(self.files.stop_date, self.files.stop_date
+                    dsel2 = slice(last_date, last_date
                                   + dt.timedelta(hours=23, minutes=59,
                                                  seconds=59))
-                    self.bounds = (self.files[dsel1][0],
-                                   self.files[dsel2][-1],
-                                   curr_bound[2], curr_bound[3])
+                    if(curr_bound[0][0] == self.files[dsel1][0]
+                       and curr_bound[1][0] == self.files[dsel2][-1]):
+                        logger.info('Updating instrument object bounds by file')
+                        dsel1 = slice(self.files.start_date,
+                                      self.files.start_date
+                                      + dt.timedelta(hours=23, minutes=59,
+                                                     seconds=59))
+                        dsel2 = slice(self.files.stop_date, self.files.stop_date
+                                      + dt.timedelta(hours=23, minutes=59,
+                                                     seconds=59))
+                        self.bounds = (self.files[dsel1][0],
+                                       self.files[dsel2][-1],
+                                       curr_bound[2], curr_bound[3])
+        else:
+            logger.warning(''.join(['Requested download over an empty date ',
+                                    'range: {:} to {:}'.format(start, stop)]))
 
         return
 
