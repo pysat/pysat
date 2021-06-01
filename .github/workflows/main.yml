@@ -42,10 +42,17 @@ jobs:
       run: |
         pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
 
-    - name: Set up pysat
+    - name: Set up pysat on unix / mac
+      if: ${{ matrix.os != 'windows-latest'}}
       run: |
         mkdir pysatData
-        python set_ga_dir.py
+        python -c "import pysat; pysat.params['data_dirs'] = './pysatData'"
+
+    - name: Set up pysat on windows
+      if: ${{ matrix.os == 'windows-latest'}}
+      run: |
+        mkdir pysatData
+        python -c "import pysat; pysat.params['data_dirs'] = '.\pysatData'"
 
     - name: Test PEP8 compliance
       run: flake8 . --count --select=E,F,W --show-source --statistics
