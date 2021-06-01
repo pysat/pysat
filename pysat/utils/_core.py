@@ -192,8 +192,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if isinstance(fnames, str):
-        fnames = [fnames]
+    fnames = listify(fnames)
 
     if file_format is None:
         file_format = 'NETCDF4'
