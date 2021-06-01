@@ -1845,7 +1845,7 @@ class Instrument(object):
                     # don't let loaded data go past stop bound
                     if iter_idx + self._iter_width - 1 > stop_idx:
                         i = np.ceil((self._iter_width - 1) / self._iter_step)
-                        i = -int(i)
+                        i = -np.int64(i)
                         self._iter_list.extend(itemp[:i])
                     else:
                         self._iter_list.extend(itemp)
