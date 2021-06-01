@@ -174,8 +174,8 @@ def parse_fixed_width_filenames(files, format_str):
             end_key.append(idx)
     max_len = idx
     # setting up negative indexing to pick out filenames
-    key_str_idx = [np.array(begin_key, dtype=int) - max_len,
-                   np.array(end_key, dtype=int) - max_len]
+    key_str_idx = [np.array(begin_key, dtype=np.int64) - max_len,
+                   np.array(end_key, dtype=np.int64) - max_len]
     # need to parse out dates for datetime index
     for i, temp in enumerate(files):
         for j, key in enumerate(keys):
@@ -183,7 +183,7 @@ def parse_fixed_width_filenames(files, format_str):
             stored[key].append(val)
     # convert to numpy arrays
     for key in stored.keys():
-        stored[key] = np.array(stored[key]).astype(int)
+        stored[key] = np.array(stored[key]).astype(np.int64)
         if len(stored[key]) == 0:
             stored[key] = None
     # include files in output
@@ -268,7 +268,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     for key in stored.keys():
         try:
             # Assume key value is numeric integer
-            stored[key] = np.array(stored[key]).astype(int)
+            stored[key] = np.array(stored[key]).astype(np.int64)
         except ValueError:
             # Store key value as string
             stored[key] = np.array(stored[key])
@@ -350,9 +350,9 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                     # Make sure there is truly something there
                     if i != 0:
                         # Store length and add to the search string
-                        out_dict['lengths'].append(int(i))
+                        out_dict['lengths'].append(np.int64(i))
                         if not wildcard:
-                            out_dict['search_string'] += '?' * int(i)
+                            out_dict['search_string'] += '?' * np.int64(i)
                         else:
                             out_dict['search_string'] += '*'
                         break
