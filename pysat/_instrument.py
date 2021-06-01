@@ -215,7 +215,8 @@ class Instrument(object):
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'min_val': ('value_min', np.float64),
                          'max_val': ('value_max', np.float64),
-                         'fill_val': ('fill', np.float64)}, custom=None, **kwargs):
+                         'fill_val': ('fill', np.float64)},
+                 custom=None, **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
