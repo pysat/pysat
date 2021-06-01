@@ -146,9 +146,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'plot': ('plot_label', str), 'axis': ('axis', str),
                          'scale': ('scale', str),
-                         'min_val': ('value_min', float),
-                         'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}):
+                         'min_val': ('value_min', np.float64),
+                         'max_val': ('value_max', np.float64),
+                         'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -173,8 +173,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
         'plot': ('plot_label', str), 'axis': ('axis', str),
-        'scale': ('scale', str), 'min_val': ('value_min', float),
-        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'scale': ('scale', str), 'min_val': ('value_min', np.float64),
+        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
 
     Returns
     --------
@@ -456,7 +456,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
     out_len = len(out_strs)
     middle = -1
     if out_len > max_num:
-        nhalf = int(max_num / 2)
+        nhalf = np.int64(max_num / 2)
         middle = nhalf // ncols
         if middle == 0:
             middle = 1
