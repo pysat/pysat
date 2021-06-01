@@ -339,7 +339,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     else:
                         # Using integer indexing
                         new_index = np.arange((loop_lim * step),
-                                              dtype=int) % step
+                                              dtype=np.int64) % step
                         new_index_name = 'index'
 
                     # Load all data into frame
@@ -350,7 +350,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             del loop_frame[obj_key]
 
                         # Break massive frame into bunch of smaller frames
-                        for i in np.arange(loop_lim, dtype=int):
+                        for i in np.arange(loop_lim, dtype=np.int64):
                             loop_list.append(loop_frame.iloc[(step * i):
                                                              (step * (i + 1)),
                                                              :])
@@ -362,7 +362,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                                                 name=obj_var_keys[0])
 
                         # Break massive series into bunch of smaller series
-                        for i in np.arange(loop_lim, dtype=int):
+                        for i in np.arange(loop_lim, dtype=np.int64):
                             loop_list.append(loop_frame.iloc[(step * i):
                                                              (step * (i + 1))])
                             loop_list[-1].index = new_index[(step * i):
