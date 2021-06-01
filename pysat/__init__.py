@@ -88,11 +88,6 @@ if not os.path.isdir(pysat_dir) or \
     if not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json')):
         params = _params.Parameters(path=pysat_dir, create_new=True)
 
-    # Set initial data directory if we are on Travis
-    if (os.environ.get('TRAVIS') == 'true'):
-        data_dir = '/home/travis/build/pysatData'
-        params['data_dirs'] = [data_dir]
-
     print(''.join(("\nHi there!  pysat will nominally store data in a ",
                    "'pysatData' directory which needs to be assigned. ",
                    "Please run `pysat.params['data_dirs'] = path` where path ",
