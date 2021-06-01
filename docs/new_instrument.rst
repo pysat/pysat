@@ -692,11 +692,11 @@ same effect, and Level 2 tests will still be run.
 FTP Access
 ^^^^^^^^^^
 
-Another thing to note about testing is that the Travis CI environment used to
+Another thing to note about testing is that the CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
 HTTPS access is preferred whenever possible.  However, if this is not the case,
 the `_test_download_travis` flag can be used.  This has a similar function,
-except that it skips the download tests if on Travis CI, but will run those
+except that it skips the download tests if on CI, but will run those
 tests if run locally.
 
 .. code:: python

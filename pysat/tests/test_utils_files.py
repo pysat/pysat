@@ -22,7 +22,7 @@ class TestBasics():
     def test_parse_delimited_filename(self):
         """Check ability to parse list of delimited files"""
         # Note: Can be removed if future instrument that uses delimited
-        # filenames is added to routine travis end-to-end testing
+        # filenames is added to routine end-to-end testing
         fname = ''.join(('test_{year:4d}_{month:2d}_{day:2d}_{hour:2d}',
                          '_{minute:2d}_{second:2d}_{version:2s}_r02.cdf'))
         year = np.ones(6) * 2009
@@ -57,7 +57,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
 
-        # Module is only required for testing installations on TravisCI
+        # Module is only required for testing installations on CI servers
         import pysatSpaceWeather
 
         # Create clean environment on the CI server
