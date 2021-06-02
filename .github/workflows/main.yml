@@ -46,7 +46,7 @@ jobs:
       if: ${{ matrix.os != 'windows-latest'}}
       run: |
         mkdir pysatData
-        python -c "import pysat; pysat.params['data_dirs'] = './pysatData'"
+        python -c "import pysat; pysat.params['data_dirs'] = 'pysatData'"
 
     - name: Set up pysat on windows
       if: ${{ matrix.os == 'windows-latest'}}
