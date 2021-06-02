@@ -52,7 +52,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest'}}
       run: |
         mkdir pysatData
-        python -c "import pysat; pysat.params['data_dirs'] = '.\pysatData'"
+        python -c "import pysat; pysat.params['data_dirs'] = 'pysatData'"
 
     - name: Test PEP8 compliance
       run: flake8 . --count --select=E,F,W --show-source --statistics
