@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - New Features
   - Added a routine for loading CSV files into a pandas DataFrame from a list
     of filenames.
-  - Added check for supported `tag` and `inst_id` at pysat.Instrument 
+  - Added check for supported `tag` and `inst_id` at pysat.Instrument
     instantiation.
   - Expanded Constellation utility by:
     - Adding common properties: `empty`, `index`, `date`, `today`, `yesterday`,
@@ -14,11 +14,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     - Improving the printed output to inform user of the Constellation contents
     - Added methods to download data and create a common time index.
    - Added utils.listify, a function that returns a list of whatever is input.
+   - Added a warning for download requests that result in an empty date range.
 - Deprecations
 - Documentation
 - Bug Fix
-  - Changed pysat.Instruments.orbits iteration to return a copy of the Instrument
-    rather than the Instrument itself. Provides robustness against garbage collection.
+  - Changed pysat.Instruments.orbits iteration to return a copy of the
+    Instrument rather than the Instrument itself. Provides robustness against
+    garbage collection.
   - Improved error messages for cases where slice of data may not exist (#761)
 - Maintenance
   - Changed pysat.Instrument from treating all support functions as partial
