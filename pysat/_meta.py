@@ -30,14 +30,14 @@ class Meta(object):
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', np.float64),
-        'max_val': ('value_max', np.float64),
-        'fill_val': ('fill', np.float64)})
+        'min_val': ('value_min', float),
+        'max_val': ('value_max', float),
+        'fill_val': ('fill', float)})
     export_nan : list or NoneType
         List of labels that should be exported even if their value is nan or
         None for an empty list. When used, metadata with a value of nan will
         be excluded from export. Will always allow nan export for labels of
-        the np.float64 type (default=None)
+        the float type (default=None)
 
     Attributes
     ----------
@@ -147,9 +147,9 @@ class Meta(object):
     def __init__(self, metadata=None,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'min_val': ('value_min', np.float64),
-                         'max_val': ('value_max', np.float64),
-                         'fill_val': ('fill', np.float64)}, export_nan=None):
+                         'min_val': ('value_min', float),
+                         'max_val': ('value_max', float),
+                         'fill_val': ('fill', float)}, export_nan=None):
 
         # Set mutability of Meta attributes.  This flag must be set before
         # anything else, or `__setattr__` breaks.
@@ -1272,12 +1272,12 @@ class MetaLabels(object):
         Description label name and value type (default=('desc', str))
     min_val : tuple
         Minimum value label name and value type (default=('value_min',
-        np.float64))
+        float))
     max_val : tuple
         Maximum value label name and value type (default=('value_max',
-        np.float64))
+        float))
     fill_val : tuple
-        Fill value label name and value type (default=('fill', np.float64))
+        Fill value label name and value type (default=('fill', float))
     kwargs : dict
         Dictionary containing optional label attributes, where the keys are the
         attribute names and the values are tuples containing the label name and
@@ -1336,9 +1336,9 @@ class MetaLabels(object):
     def __init__(self, metadata=None, units=('units', str),
                  name=('long_name', str), notes=('notes', str),
                  desc=('desc', str),
-                 min_val=('value_min', np.float64),
-                 max_val=('value_max', np.float64),
-                 fill_val=('fill', np.float64), **kwargs):
+                 min_val=('value_min', float),
+                 max_val=('value_max', float),
+                 fill_val=('fill', float), **kwargs):
         """ Initialize the MetaLabels class
 
         Parameters
@@ -1353,12 +1353,12 @@ class MetaLabels(object):
             Description label name and value type (default=('desc', str))
         min_val : tuple
             Minimum value label name and value type
-            (default=('value_min', np.float64))
+            (default=('value_min', float))
         max_val : tuple
             Maximum value label name and value type
-            (default=('value_max', np.float64))
+            (default=('value_max', float))
         fill_val : tuple
-            Fill value label name and value type (default=('fill', np.float64))
+            Fill value label name and value type (default=('fill', float))
         kwargs : dict
             Dictionary containing optional label attributes, where the keys
             are the attribute names and the values are tuples containing the
@@ -1469,16 +1469,44 @@ class MetaLabels(object):
         default_val : str, float, int, NoneType
             Sets NaN for all float values, -1 for all int values, and '' for
             all str values except for 'scale', which defaults to 'linear', and
-            None for any othere data type
+            None for any other data type
 
         """
 
+        # Perform some pre-checks on type, checks that could error with
+        # unexepected input.
+        try:
+            floating_check = isinstance(val_type(), np.floating)
+        except TypeError as err:
+            if str(err).find('not a callable function') > 0:
+                floating_check = False
+            else:
+                # Unexpected input
+                floating_check = None
+        try:
+            int_check = isinstance(val_type(), np.integer)
+        except TypeError as err:
+            if str(err).find('not a callable function') > 0:
+                int_check = False
+            else:
+                # Unexpected input
+                int_check = None
+
+        try:
+            str_check = issubclass(val_type, str)
+        except TypeError as err:
+            if str(err).find('must be a class') > 0:
+                str_check = False
+            else:
+                # Unexpected input
+                str_check = None
+
         # Assign the default value
-        if issubclass(val_type, str):
+        if str_check:
             default_val = ''
-        elif val_type is float or (val_type is np.float64):
+        elif val_type is float or floating_check:
             default_val = np.nan
-        elif val_type is int or (val_type is np.int64):
+        elif val_type is int or int_check:
             default_val = -1
         else:
             mstr = ''.join(('No type match found for ', str(val_type)))
@@ -1497,8 +1525,8 @@ class MetaLabels(object):
 
         Returns
         -------
-        default_val : str, np.float64, int, NoneType
-            Sets NaN for all np.float64 values, -1 for all int values, and ''
+        default_val : str, float, int, NoneType
+            Sets NaN for all float values, -1 for all int values, and ''
             for all str values except for 'scale', which defaults to 'linear',
             and None for any other data type
 
