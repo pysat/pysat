@@ -86,7 +86,7 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("input",
-                             [float, np.float64, np.float128, np.float32])
+                             [float, np.float64, np.float32])
     def test_default_value_from_type_float_inputs(self, input, caplog):
         """ Test MetaLabels.default_values_from_type with float inputs
         """
