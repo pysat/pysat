@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     - Improving the printed output to inform user of the Constellation contents (#764)
     - Added methods to download data and create a common time index. (#764)
    - Added utils.listify, a function that returns a list of whatever is input. (#766)
+   - Added a warning for download requests that result in an empty date range.
 - Deprecations
 - Documentation
 - Bug Fix

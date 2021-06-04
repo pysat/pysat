@@ -560,12 +560,25 @@ class TestBasics():
     def test_download_recent_data(self, caplog):
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download()
-        # Tells user that recent data will be downloaded
+
+        # Ensure user was told that recent data will be downloaded
         assert "most recent data by default" in caplog.text
-        # download new files
+
+        # Ensure user was notified of new files being download
         assert "Downloading data to" in caplog.text
-        # Update local file list
+
+        # Ensure user was notified of updates to the local file list
         assert "Updating pysat file list" in caplog.text
+
+    def test_download_bad_date_range(self, caplog):
+        """Test download with bad date input."""
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            self.testInst.download(start=self.ref_time,
+                                   stop=self.ref_time - dt.timedelta(days=10))
+
+        # Ensure user is warned about not calling download due to bad time input
+        assert "Requested download over an empty date range" in caplog.text
+        return
 
     # -------------------------------------------------------------------------
     #

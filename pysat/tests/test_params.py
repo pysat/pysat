@@ -175,8 +175,8 @@ class TestBasics():
 
 class TestCIonly(CICleanSetup):
     """Tests where we mess with local settings.
-    These only run in CI environments such as Travis and Appveyor to avoid
-    breaking an end user's setup
+
+    These only run in CI environments to avoid breaking an end user's setup
     """
 
     # Set setup/teardown to the class defaults
