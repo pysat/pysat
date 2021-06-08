@@ -213,9 +213,10 @@ class Instrument(object):
                  strict_time_flag=True, ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'min_val': ('value_min', float),
-                         'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}, custom=None, **kwargs):
+                         'min_val': ('value_min', np.float64),
+                         'max_val': ('value_max', np.float64),
+                         'fill_val': ('fill', np.float64)},
+                 custom=None, **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
@@ -1562,7 +1563,8 @@ class Instrument(object):
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, float):
+                    if not isinstance(data_type, float)\
+                            or (not isinstance(data_type, np.floating)):
                         break
             datetime_flag = False
 
@@ -1845,7 +1847,7 @@ class Instrument(object):
                     # don't let loaded data go past stop bound
                     if iter_idx + self._iter_width - 1 > stop_idx:
                         i = np.ceil((self._iter_width - 1) / self._iter_step)
-                        i = -int(i)
+                        i = -np.int64(i)
                         self._iter_list.extend(itemp[:i])
                     else:
                         self._iter_list.extend(itemp)
@@ -3430,7 +3432,7 @@ class Instrument(object):
             # attach metadata
             cdfkey.setncatts(new_dict)
 
-            # attach data
+            # Attach the time index to the data
             cdfkey[:] = (self.index.values.astype(np.int64)
                          * 1.E-6).astype(np.int64)
 

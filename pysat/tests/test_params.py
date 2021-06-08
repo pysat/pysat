@@ -37,8 +37,8 @@ class TestBasics():
         pysat.params = copy.deepcopy(self.stored_params)
         pysat.params.store()
         reload(pysat)
-        self.tempdir.cleanup()
         os.chdir(self.wd)
+        self.tempdir.cleanup()
 
     @pytest.mark.parametrize("paths, check",
                              [('.', ['.']),
@@ -215,10 +215,10 @@ class TestCIonly(CICleanSetup):
 
         # Move pysat settings file to cwd
         shutil.move(os.path.join(self.root, 'pysat_settings.json'),
-                    os.path.join('./', 'pysat_settings.json'))
+                    os.path.join('.', 'pysat_settings.json'))
 
         # Try loading by supplying a specific path
-        test_params = Parameters(path='./')
+        test_params = Parameters(path='.')
 
         # Supplying no path should yield the same result
         test_params2 = Parameters()
@@ -234,5 +234,7 @@ class TestCIonly(CICleanSetup):
                                                'pysat_settings.json'))
 
         # Move pysat settings file back to original
-        shutil.move(os.path.join('./', 'pysat_settings.json'),
+        shutil.move(os.path.join('.', 'pysat_settings.json'),
                     os.path.join(self.root, 'pysat_settings.json'))
+
+        return

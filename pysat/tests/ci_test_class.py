@@ -33,8 +33,9 @@ class CICleanSetup():
             pytest.skip("Skipping local tests to avoid breaking user setup")
         else:
             # Move settings directory to simulate first load after install
-            self.root = os.path.join(os.getenv('HOME'), '.pysat')
-            self.new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+            self.root = os.path.join(os.path.expanduser("~"), '.pysat')
+            self.new_root = os.path.join(os.path.expanduser("~"),
+                                         '.saved_pysat')
             try:
                 # Ensure new_root is clean
                 shutil.rmtree(self.new_root)

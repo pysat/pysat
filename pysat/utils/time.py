@@ -69,7 +69,7 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
     yr = int(str_yr) + century if len(str_yr) == 2 else int(str_yr)
     out_date = dt.datetime(yr, int(str_mo), int(str_day), int(str_hr),
-                           int(str_min), int(str_sec))
+                           int(str_min), np.int64(str_sec))
 
     return out_date
 
@@ -111,7 +111,7 @@ def calc_res(index, use_mean=False):
     except AttributeError as aerr:
         # Now try as numpy.timedelta64
         if isinstance(del_time, np.timedelta64):
-            res_sec = float(del_time) * 1.0e-9
+            res_sec = np.float64(del_time) * 1.0e-9
         else:
             raise AttributeError("Input should be times: {:}".format(aerr))
 
@@ -167,7 +167,7 @@ def freq_to_res(freq):
 
     Returns
     -------
-    res_sec : float
+    res_sec : np.float64
        Resolution value in seconds
 
     See Also
@@ -180,7 +180,7 @@ def freq_to_res(freq):
     https://stackoverflow.com/a/12409995
 
     """
-    # Separate the alpha and numberic portions of the string
+    # Separate the alpha and numeric portions of the string
     regex = re.compile(r'(\d+|\s+)')
     out_str = [sval for sval in regex.split(freq) if len(sval) > 0]
 
@@ -189,9 +189,9 @@ def freq_to_res(freq):
 
     # Cast the alpha and numeric portions
     freq_str = out_str[-1]
-    freq_num = 1.0 if len(out_str) == 1 else float(out_str[0])
+    freq_num = 1.0 if len(out_str) == 1 else np.float64(out_str[0])
 
-    # Calcuate the resolution in seconds
+    # Calculate the resolution in seconds
     res_sec = pds.Timedelta(freq_num, unit=freq_str).total_seconds()
 
     return res_sec
@@ -229,7 +229,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         month : array_like of ints or None
         day : array_like of ints
             for day (default) or day of year (use month=None)
-        uts : array_like of floats
+        uts : array_like of np.float64s
 
     Returns
     -------
@@ -266,7 +266,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     day = day.astype(int)
 
     # Track changes in seconds
-    uts_del = uts.copy().astype(float)
+    uts_del = uts.copy().astype(np.float64)
 
     # Determine where there are changes in year and month that need to be
     # accounted for
@@ -282,7 +282,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # Add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day - 1) * 86400
+    uts_del += (day - 1) * 86400.
 
     # Add in seconds since unix epoch to first day
     uts_del += (dt.datetime(year[0], month[0], 1)

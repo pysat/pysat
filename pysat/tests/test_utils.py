@@ -64,8 +64,8 @@ class TestCIonly():
         """Ensure initial load routines work"""
 
         # Move settings directory to simulate first load after install
-        root = os.path.join(os.getenv('HOME'), '.pysat')
-        new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+        root = os.path.join(os.path.expanduser("~"), '.pysat')
+        new_root = os.path.join(os.path.expanduser("~"), '.saved_pysat')
         shutil.move(root, new_root)
 
         reload(pysat)

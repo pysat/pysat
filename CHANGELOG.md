@@ -6,29 +6,29 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - New Features
   - Added a routine for loading CSV files into a pandas DataFrame from a list
     of filenames.
-  - Added check for supported `tag` and `inst_id` at pysat.Instrument
-    instantiation.
+  - Added check for supported `tag` and `inst_id` at pysat.Instrument 
+    instantiation. (#784)
   - Expanded Constellation utility by:
     - Adding common properties: `empty`, `index`, `date`, `today`, `yesterday`,
-      `tomorrow`, and `variables`
-    - Improving the printed output to inform user of the Constellation contents
-    - Added methods to download data and create a common time index.
-   - Added utils.listify, a function that returns a list of whatever is input.
+      `tomorrow`, and `variables` (#764)
+    - Improving the printed output to inform user of the Constellation contents (#764)
+    - Added methods to download data and create a common time index. (#764)
+   - Added utils.listify, a function that returns a list of whatever is input. (#766)
    - Added a warning for download requests that result in an empty date range.
 - Deprecations
 - Documentation
 - Bug Fix
-  - Changed pysat.Instruments.orbits iteration to return a copy of the
-    Instrument rather than the Instrument itself. Provides robustness against
-    garbage collection.
+  - Changed pysat.Instruments.orbits iteration to return a copy of the Instrument
+    rather than the Instrument itself. Provides robustness against garbage collection. (#770)
   - Improved error messages for cases where slice of data may not exist (#761)
+  - Improved windows compatibility (#57, #790)
 - Maintenance
   - Changed pysat.Instrument from treating all support functions as partial
     functions to retaining the original form provided by developer
   - Migrates CI testing to Github Actions
   - Improved maintenance of documentation build
   - Added a check for use of reserved keywords at instantiation
-  - Tests compatible with pysatSpaceWeather 0.0.4
+  - Tests compatible with pysatSpaceWeather 0.0.4 (#782)
 
 ## [3.0.0] - 2021-04-01
 - New Features

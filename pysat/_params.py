@@ -144,9 +144,13 @@ class Parameters(object):
         # doesn't exist yet.
         with Lock(self.file_path, 'r', timeout=10) as fout:
             self.data = json.load(fout)
-            # In case of network file system
             fout.flush()
-            os.fsync(fout.fileno())
+            try:
+                # In case of network file system
+                os.fsync(fout.fileno())
+            except OSError:
+                # Not a network file system
+                pass
 
         return
 
@@ -160,7 +164,7 @@ class Parameters(object):
 
         """
         dir_path = os.path.split(self.file_path)[0]
-        out_str = ''.join(('pysat._params.Parameters(path="', dir_path, '")'))
+        out_str = ''.join(('pysat._params.Parameters(path=r"', dir_path, '")'))
         return out_str
 
     def __str__(self, long_str=True):
@@ -329,6 +333,11 @@ class Parameters(object):
 
             # Ensure write is fully complete even for network file systems
             fout.flush()
-            os.fsync(fout.fileno())
+            try:
+                # In case of network file system
+                os.fsync(fout.fileno())
+            except OSError:
+                # Not a network file system
+                pass
 
         return
