@@ -30,8 +30,7 @@ class Meta(object):
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', float),
-        'max_val': ('value_max', float),
+        'min_val': ('value_min', float), 'max_val': ('value_max', float),
         'fill_val': ('fill', float)})
     export_nan : list or NoneType
         List of labels that should be exported even if their value is nan or
@@ -1271,11 +1270,9 @@ class MetaLabels(object):
     desc : tuple
         Description label name and value type (default=('desc', str))
     min_val : tuple
-        Minimum value label name and value type (default=('value_min',
-        float))
+        Minimum value label name and value type (default=('value_min', float))
     max_val : tuple
-        Maximum value label name and value type (default=('value_max',
-        float))
+        Maximum value label name and value type (default=('value_max', float))
     fill_val : tuple
         Fill value label name and value type (default=('fill', float))
     kwargs : dict
@@ -1335,10 +1332,9 @@ class MetaLabels(object):
 
     def __init__(self, metadata=None, units=('units', str),
                  name=('long_name', str), notes=('notes', str),
-                 desc=('desc', str),
-                 min_val=('value_min', float),
-                 max_val=('value_max', float),
-                 fill_val=('fill', float), **kwargs):
+                 desc=('desc', str), min_val=('value_min', float),
+                 max_val=('value_max', float), fill_val=('fill', float),
+                 **kwargs):
         """ Initialize the MetaLabels class
 
         Parameters
@@ -1474,7 +1470,7 @@ class MetaLabels(object):
         """
 
         # Perform some pre-checks on type, checks that could error with
-        # unexepected input.
+        # unexpected input.
         try:
             floating_check = isinstance(val_type(), np.floating)
         except TypeError as err:
