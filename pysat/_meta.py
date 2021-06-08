@@ -745,6 +745,15 @@ class Meta(object):
                         default_val = self.labels.default_values_from_type(
                             default_type)
                         self.data[new_label] = default_val
+                        if default_val is None:
+                            mstr = ' '.join(('A problem may have been',
+                                             'encountered with the user',
+                                             'supplied type for Meta',
+                                             'variable: ', new_label,
+                                             'Please check the settings',
+                                             'provided to `labels` at',
+                                             'Meta instantiation.'))
+                            pysat.logger.info(mstr)
 
             # Check higher order structures and recursively change labels
             for key in self.keys_nD():
@@ -1543,5 +1552,14 @@ class MetaLabels(object):
         else:
             default_val = self.default_values_from_type(
                 self.label_type[attr_name])
+            if default_val is None:
+                mstr = ' '.join(('A problem may have been',
+                                 'encountered with the user',
+                                 'supplied type for Meta',
+                                 'attribute: ', attr_name,
+                                 'Please check the settings',
+                                 'provided to `labels` at',
+                                 'Meta instantiation.'))
+                pysat.logger.info(mstr)
 
         return default_val
