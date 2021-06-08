@@ -70,12 +70,12 @@ class TestBasics():
 
         assert verr.match("unknown label attribute")
 
-    def test_default_value_from_type_unexpected_input(self, caplog):
+    @pytest.mark.parametrize("input", [1., 1, {}, None, []])
+    def test_default_value_from_type_unexpected_input(self, input, caplog):
         """ Test MetaLabels.default_values_from_type with unexpected input
         """
-        unexpected = 1
         with caplog.at_level(logging.INFO, logger='pysat'):
-            self.meta.labels.default_values_from_type(unexpected)
+            self.meta.labels.default_values_from_type(input)
 
             captured = caplog.text
 
@@ -86,7 +86,7 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("input",
-                             [float, np.float64, np.float32])
+                             [float, np.float16, np.float32, np.float64])
     def test_default_value_from_type_float_inputs(self, input, caplog):
         """ Test MetaLabels.default_values_from_type with float inputs
         """
@@ -97,13 +97,31 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("input",
-                             [int, np.int64, np.int32, np.int16, np.int8])
+                             [int, np.int8, np.int16, np.int32, np.int64])
     def test_default_value_from_type_int_inputs(self, input, caplog):
         """ Test MetaLabels.default_values_from_type with int inputs
         """
 
         out = self.meta.labels.default_values_from_type(input)
         assert out == -1
+
+        return
+
+    @pytest.mark.parametrize("input", [1., 1, {}, None, []])
+    def test_info_message_incorrect_input_meta_labels(self, input, caplog):
+        """Test for info message when labels input not correct"""
+        with caplog.at_level(logging.INFO, logger='pysat'):
+
+            meta = pysat.Meta(labels={'min_val': ('min_val', input)})
+
+            # Assign any new meta variable
+            meta['hi'] = {'units': 'goodbye'}
+            captured = caplog.text
+
+            # Test for expected string
+            test_str = ' '.join(('A problem may have been encountered with the',
+                                 'user supplied type for Meta'))
+            assert captured.find(test_str) >= 0
 
         return
 
