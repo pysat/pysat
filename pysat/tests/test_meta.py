@@ -120,7 +120,7 @@ class TestBasics():
 
             # Test for expected string
             test_str = ' '.join(('A problem may have been encountered with the',
-                                 'user supplied type for Meta'))
+                                 'user supplied type for Meta attribute'))
             assert captured.find(test_str) >= 0
 
         return
