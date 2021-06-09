@@ -66,8 +66,9 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
     supported_tags : dict or NoneType
-        keys are inst_id, each containing a dict keyed by tag
-        where the values file format template strings. (default=None)
+        Keys are inst_id, each containing a dict keyed by tag
+        where the values file format template strings. See Files.from_os
+        `format_str` kwarg for more details. (default=None)
     file_cadence : dt.timedelta or pds.DateOffset
         pysat assumes a daily file cadence, but some instrument data file
         contain longer periods of time.  This parameter allows the specification
@@ -86,6 +87,10 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     -------
     out : pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
+
+    See Also
+    --------
+    pysat.Files.from_os
 
     Examples
     --------
