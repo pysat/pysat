@@ -1299,7 +1299,7 @@ class Instrument(object):
                                   ' default  values: {:}'.format(missing)]))
         return
 
-    def _load_data(self, date=None, fid=None, inc=None):
+    def _load_data(self, date=None, fid=None, inc=None, load_kwargs=None):
         """
         Load data for an instrument on given date or fid, depending upon input.
 
@@ -1312,6 +1312,9 @@ class Instrument(object):
         inc : dt.timedelta or int
             Increment of files or dates to load, starting from the
             root date or fid (default=None)
+        load_kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
+            If None, uses `self.kwargs['load']`. (default=None)
 
         Returns
         -------
@@ -1320,6 +1323,9 @@ class Instrument(object):
         meta : pysat.Meta
             pysat meta data
         """
+        # Set default load_kwargs
+        if load_kwargs is None:
+            load_kwargs = self.kwargs['load']
 
         date = utils.time.filter_datetime_input(date)
         if fid is not None:
@@ -1336,7 +1342,7 @@ class Instrument(object):
             try:
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                              inst_id=self.inst_id,
-                                             **self.kwargs['load'])
+                                             **load_kwargs)
 
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
@@ -2570,7 +2576,8 @@ class Instrument(object):
         return export_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
-             end_date=None, fname=None, stop_fname=None, verifyPad=False):
+             end_date=None, fname=None, stop_fname=None, verifyPad=False,
+             **kwargs):
         """Load instrument data into Instrument.data object.
 
         Parameters
@@ -2606,6 +2613,8 @@ class Instrument(object):
         verifyPad : bool
             If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
 
         Raises
         ------
@@ -2663,6 +2672,10 @@ class Instrument(object):
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
+        # Add the load kwargs from initialization those provided on input
+        for lkey in self.kwargs['load'].keys():
+            kwargs[lkey] = self.kwargs['load'][lkey]
+
         # Set options used by loading routine based upon user input
         if (yr is not None) and (doy is not None):
             if doy < 1 or (doy > 366):
@@ -2798,7 +2811,7 @@ class Instrument(object):
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = \
                     self._load_data(date=self.date, fid=self._fid,
-                                    inc=self.load_step)
+                                    inc=self.load_step, load_kwargs=kwargs)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
@@ -2826,7 +2839,7 @@ class Instrument(object):
                     self._prev_data, self._prev_meta = self._load_prev()
                     self._curr_data, self._curr_meta = \
                         self._load_data(date=self.date, fid=self._fid,
-                                        inc=self.load_step)
+                                        inc=self.load_step, load_kwargs=kwargs)
                     self._next_data, self._next_meta = self._load_next()
 
             # Make sure datetime indices for all data is monotonic
@@ -2928,7 +2941,8 @@ class Instrument(object):
         # If self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
-                                              inc=self.load_step)
+                                              inc=self.load_step,
+                                              load_kwargs=kwargs)
             if not self.empty:
                 self.meta = meta
 
