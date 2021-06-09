@@ -171,7 +171,7 @@ class TestBasics():
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy)
 
-        # Test that the first loaded time
+        # Test that the loaded date range is correct
         self.eval_successful_load()
         return
 
@@ -181,7 +181,7 @@ class TestBasics():
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy, num_samples=30)
 
-        # Test that the first loaded time
+        # Test that the loaded date range is correct
         self.eval_successful_load()
         return
 
@@ -194,7 +194,7 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy, end_date.year,
                            end_doy)
 
-        # Test that the first loaded time
+        # Test that the loaded date range is correct
         self.eval_successful_load(end_date=end_date)
         return
 
