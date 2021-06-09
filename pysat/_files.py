@@ -914,6 +914,9 @@ class Files(object):
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
 
+        The 'day' format keyword may be used to specify either day of month
+        (if month is included) or day of year.
+
         """
 
         if data_path is None:
