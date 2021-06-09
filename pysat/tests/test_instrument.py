@@ -52,7 +52,7 @@ class TestBasics():
 
     def support_iter_evaluations(self, values, for_loop=False, reverse=False):
         """Supports testing of .next/.prev via dates/files"""
-        # first, treat with no processing to provide testing as inputs
+        # First, treat with no processing to provide testing as inputs
         # supplied
         if len(values) == 4:
             # testing by date
@@ -135,57 +135,120 @@ class TestBasics():
     # Test basic loads, by date, filename, file id, as well as prev/next
     #
     # -------------------------------------------------------------------------
+    def eval_successful_load(self, end_date=None):
+        """Support routine for evaluating successful loading of self.testInst
+
+        Parameters
+        ----------
+        end_date : dt.datetime or NoneType
+            End date for loadind data.  If None, assumes self.ref_time + 1 day.
+            (default=None)
+
+        """
+        # Test that the first loaded time matches the first requested time
+        assert self.testInst.index[0] == self.ref_time, \
+            "First loaded time is incorrect"
+
+        # Test that the Instrument date is set to the requested start date
+        self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
+                               self.ref_time.day)
+        assert self.testInst.date == self.out, \
+            "Incorrect Instrument date attribute"
+
+        # Test that the end of the loaded data matches the requested end date
+        if end_date is None:
+            end_date = self.ref_time + dt.timedelta(days=1)
+        assert self.testInst.index[-1] > self.ref_time, \
+            "Last loaded time is not greater than the start time"
+        assert self.testInst.index[-1] <= end_date, \
+            "Last loaded time is greater than the requested end date"
+
+        return
+
     def test_basic_instrument_load(self):
-        """Test if the correct day is being loaded (checking object date and
-        data)."""
+        """Test that the correct day is loaded, specifying only start year, doy
+        """
+        # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+
+        # Test that the first loaded time
+        self.eval_successful_load()
+        return
+
+    def test_basic_instrument_load_w_kwargs(self):
+        """Test that the correct day is loaded with optional kwarg
+        """
+        # Load data by year and day of year
+        self.testInst.load(self.ref_time.year, self.ref_doy, num_samples=30)
+
+        # Test that the first loaded time
+        self.eval_successful_load()
+        return
 
     def test_basic_instrument_load_two_days(self):
-        """Test if the correct day is being loaded (checking object date and
-        data)."""
-        self.testInst.load(self.ref_time.year, self.ref_doy,
-                           self.ref_time.year, self.ref_doy + 2)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        self.out = self.testInst.index[-1]
-        assert (self.out >= self.ref_time + dt.timedelta(days=1))
-        assert (self.out <= self.ref_time + dt.timedelta(days=2))
+        """Test that the correct day is loaded (checking object date and data).
+        """
+        # Load the reference date
+        end_date = self.ref_time + dt.timedelta(days=2)
+        end_doy = int(end_date.strftime("%j"))
+        self.testInst.load(self.ref_time.year, self.ref_doy, end_date.year,
+                           end_doy)
 
-    def test_basic_instrument_bad_keyword(self):
-        """Checks for error when instantiating with bad load_rtn keywords"""
-        with pytest.raises(ValueError):
+        # Test that the first loaded time
+        self.eval_successful_load(end_date=end_date)
+        return
+
+    def test_basic_instrument_bad_keyword_init(self):
+        """Checks for error when instantiating with bad load keywords on init.
+        """
+        # Test that the correct error is raised
+        with pytest.raises(ValueError) as verr:
             pysat.Instrument(platform=self.testInst.platform,
                              name=self.testInst.name, num_samples=10,
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
+        # Evaluate error message
+        assert str(verr).find("unknown keyword supplied") > 0
+        return
+
+    def test_basic_instrument_bad_keyword_at_load(self):
+        """Checks for error when calling load with bad keywords.
+        """
+        # Test that the correct error is raised
+        with pytest.raises(TypeError) as terr:
+            self.testInst.load(date=self.ref_time, unsupported_keyword=True)
+
+        # Evaluate error message
+        assert str(terr).find("load() got an unexpected keyword") >= 0
+        return
+
     @pytest.mark.parametrize('kwarg', ['supported_tags', 'start', 'stop',
                                        'freq', 'date_array', 'data_path'])
     def test_basic_instrument_reserved_keyword(self, kwarg):
-        """Check for error when instantiating with reserved keywords"""
+        """Check for error when instantiating with reserved keywords."""
+        # Check that the correct error is raised
         with pytest.raises(ValueError) as err:
             pysat.Instrument(platform=self.testInst.platform,
                              name=self.testInst.name, num_samples=10,
                              clean_level='clean',
                              **{kwarg: '1s'})
+
+        # Check that the error message is correct
         estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
                         'allowed at instantiation.'))
         assert str(err).find(estr) >= 0
+        return
 
     def test_basic_instrument_load_yr_no_doy(self):
-        """Ensure doy required if yr present"""
+        """Ensure doy required if yr present."""
+        # Check that the correct error is raised
         with pytest.raises(TypeError) as err:
             self.testInst.load(self.ref_time.year)
 
+        # Check that the error message is correct
         estr = 'Unknown or incomplete input combination.'
         assert str(err).find(estr) >= 0
-
         return
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
