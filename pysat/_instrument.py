@@ -2674,7 +2674,10 @@ class Instrument(object):
         """
         # Add the load kwargs from initialization those provided on input
         for lkey in self.kwargs['load'].keys():
-            kwargs[lkey] = self.kwargs['load'][lkey]
+            # Only use the initialized kwargs if a request hasn't been
+            # made to alter it in the method call
+            if lkey not in kwargs.keys():
+                kwargs[lkey] = self.kwargs['load'][lkey]
 
         # Set options used by loading routine based upon user input
         if (yr is not None) and (doy is not None):
