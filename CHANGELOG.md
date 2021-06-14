@@ -27,6 +27,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved error messages for cases where slice of data may not exist (#761)
   - Improved windows compatibility (#57, #790)
   - Fixed Instrument.load bug that prevented use of instrument specific kwargs
+  - Added pytest as a package requirements (#819)
 - Maintenance
   - Changed pysat.Instrument from treating all support functions as partial
     functions to retaining the original form provided by developer
