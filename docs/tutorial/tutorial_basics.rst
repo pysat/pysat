@@ -296,7 +296,7 @@ is equivalent to
 
    dmsp.data = vefi[(dmsp['mlat'] < 5) & (dmsp['mlat'] > -5)]
 
-See the :any:`Instrument` section for more information.
+See the :any:`pysat.Instrument` section for more information.
 
 Simple Analysis Example
 ^^^^^^^^^^^^^^^^^^^^^^^
