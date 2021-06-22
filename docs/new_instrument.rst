@@ -330,54 +330,58 @@ The load module method signature should appear as:
    def load(fnames, tag=None, inst_id=None):
        return data, meta
 
-- fnames contains a list of filenames with the complete data path that
-  pysat expects the routine to load data for. With most data sets
+- :py:data:`fnames` contains a list of filenames with the complete data path
+  that pysat expects the routine to load data for. With most data sets
   the method should return the exact data that is within the file.
   However, pysat is also currently optimized for working with
   data by day. This can present some issues for data sets that are stored
-  by month or by year. See ``instruments.methods.nasa_cdaweb.py`` for an example
-  of returning daily data when stored by month.
-- tag and inst_id are always available as inputs, as they commmonnly specify
-  the data set to be loaded
-- The load routine should return a tuple with (data, pysat metadata object).
-- For simple time-series data sets, `data` is a pandas DataFrame, column names
-  are the data labels, rows are indexed by datetime objects.
-- For multi-dimensional data, `data` can be set to an xarray Dataset instead.
-  When returning xarray data, a variable at the top-level of the instrument
-  module must be set:
+  by month or by year. See :ref:`instruments-sw` for examples of data sets
+  stored by month(s).
+- :py:data:`tag` and :py:data:`inst_id` are always available as inputs, as they
+  commmonly specify the data set to be loaded
+- The :py:func:`load` routine should return a tuple with :py:attr:`data` as the
+  first element and a :py:class:`pysat.Meta` object as the second element.
+- For simple time-series data sets, :py:attr:`data` is a
+  :py:class:`pandas.DataFrame`, column names are the data labels, rows are
+  indexed by :py:class:`datetime.datetime` objects.
+- For multi-dimensional data, :py:attr:`data` can be set to an
+  :py:class:`xarray.Dataset` instead. When returning xarray data, a variable
+  at the top-level of the instrument module must be set:
 
 .. code:: python
 
    pandas_format = False
 
-- The pandas DataFrame or xarray Dataset needs to be indexed with datetime
-  objects. This index needs to be named 'Epoch' or 'time'.
-- ``pysat.utils.create_datetime_index`` provides quick generation of an
+- The :py:class:`pandas.DataFrame` or :py:class:`xarray.Dataset` needs to be
+  indexed with :py:class:`datetime.datetime` objects. This index needs to be
+  named either :py:data:`Epoch` or :py:data:`time`.
+- :py:func:`pysat.utils.create_datetime_index` provides quick generation of an
   appropriate datetime index for irregularly sampled data sets with gaps
 - If your data is a CSV formatted file, you can incorporate the
-  ``pysat.instruments.methods.general.load_csv_data`` routine (see
-  :ref:`api-methods-general`) into your load method.
-- A pysat meta object may be obtained from ``pysat.Meta()``. The :ref:`api-meta`
-  object uses a pandas DataFrame indexed by variable name with columns for
-  metadata parameters associated with that variable, including items like
-  'units' and 'long_name'. A variety of parameters are included by default and
-  additional arbitrary columns are allowed. See :ref:`api-meta` for more
-  information on creating the initial metadata. Any values not set in the load
-  routine will be set to the default values for that label type.
-- Note that users may opt for a different
-  naming scheme for metadata parameters thus the most general code for working
-  with metadata uses the attached labels:
+  :py:func:`pysat.instruments.methods.general.load_csv_data` routine (see
+  :ref:`api-methods-general`) into your :py:func:`load` method.
+- The :py:class:`pysat.Meta` class holds metadata.  The :ref:`api-meta` object
+  uses a :py:class:`pandas.DataFrame` indexed by variable name with columns
+  for metadata parameters associated with that variable, including items like
+  :py:data:`units` and :py:data:`long_name`. A variety of parameters are
+  included by default and additional arbitrary columns are allowed. See
+  :ref:`api-meta` for more information on creating the initial metadata. Any
+  values not set in the load routine will be set to the default values for that
+  label type.
+- Note that users may opt for a different naming scheme for metadata parameters
+  thus the most general code for working with metadata uses the attached labels:
 
 .. code:: python
 
    # Update units to meters, 'm' for variable
    inst.meta[variable, inst.units_label] = 'm'
 
-- If metadata is already stored with the file, creating the Meta object is
-  generally trivial. If this isn't the case, it can be tedious to fill out all
-  information if there are many data parameters. In this case it may be easier
-  to fill out a text file. A basic convenience function is provided for this
-  situation. See ``pysat.Meta.from_csv`` for more information.
+- If metadata is already stored with the file, creating the :py:class:`Meta`
+  object is generally trivial. If this isn't the case, it can be tedious to
+  fill out all information if there are many data parameters. In this case it
+  may be easier to fill out a text file. A basic convenience function is
+  provided for this situation. See :py:meth:`pysat.Meta.from_csv` for more
+  information.
 
 download
 ^^^^^^^^
@@ -390,10 +394,10 @@ To fetch data from the internet the download method should have the signature
    def download(date_array, data_path=None, user=None, password=None):
        return
 
-* date_array, a list of dates to download data for
-* data_path, the full path to the directory to store data
-* user, string for username
-* password, string for password
+* :py:data:`date_array`, a list of dates for which data will be downloaded
+* :py:data:`data_path`, the full path to the directory to store data
+* :py:data:`user`, a string for the remote database username
+* :py:data:`password`, a string for the remote database password
 
 The routine should download the data and write it to the disk at the data_path.
 
@@ -411,8 +415,8 @@ directory_format
 
 Allows the specification of a custom directory naming structure, where the files
 for this Instrument will be stored within the pysat data directory. If not set
-or if set to ``None``, it defaults to '{platform}/{name}/{tag}/{inst_id}'. The
-string format understands the keys :py:data:`platform`, :py:data:`name`,
+or if set to ``None``, it defaults to ``'{platform}/{name}/{tag}/{inst_id}'``.
+The string format understands the keys :py:data:`platform`, :py:data:`name`,
 :py:data:`tag`, and :py:data:`inst_id`. This may also be a function that takes
 :py:data:`tag` and :py:data:`inst_id` as input parameters and returns an
 appropriate string.
@@ -425,7 +429,7 @@ to ``None``, the file naming provided by the :py:meth:`list_files` method will
 be used. The filename must have some sort of time dependence in the name, and
 accepts all of the datetime temporal attributes in additon to
 :py:data:`version`, :py:data:`revision`, and :py:data:`cycle`.  Wildcards
-(e.g., '?') may also be included in the filename.
+(e.g., ``'?'``) may also be included in the filename.
 
 multi_file_day
 ^^^^^^^^^^^^^^
@@ -445,8 +449,8 @@ pandas_format
 ^^^^^^^^^^^^^
 
 This defaults to ``True`` and assumes the data are organized as a time series,
-allowing them to be stored as a pandas DataFrame. Setting this attribute to
-``False`` tells pysat that the data will be stored in an
+allowing them to be stored as a :py:class:`pandas.DataFrame`. Setting this
+attribute to ``False`` tells pysat that the data will be stored in an
 :py:class:`xarray.Dataset`.
 
 
