@@ -1,6 +1,6 @@
 <div align="center">
         <img height="0" width="0px">
-        <img width="20%" src="/doc/images/logo.png" alt="pysat" title="pysat"</img>
+        <img width="20%" src="/docs/images/logo.png" alt="pysat" title="pysat"</img>
 </div>
 
 # pysat: Python Satellite Data Analysis Toolkit
