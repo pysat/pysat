@@ -174,8 +174,8 @@ def freq_to_res(freq):
     --------
     pds.offsets.DateOffset
 
-    Reference
-    ---------
+    References
+    ----------
     Separating alpha and numeric portions of strings, as described in:
     https://stackoverflow.com/a/12409995
 
