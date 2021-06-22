@@ -275,7 +275,7 @@ the data at the :py:class:`pysat.Instrument` level that behaves the same whether
 
 .. _DataFrame: https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
-.. _DataSet: http://xarray.pydata.org/en/v0.11.3/generated/xarray.Dataset.html
+.. _DataSet: http://xarray.pydata.org/en/v0.18.2/generated/xarray.Dataset.html
 
 .. code:: python
 
@@ -377,7 +377,7 @@ Metadata is also stored in a :ref:`api-meta` object from the main science data.
 pysat presumes a minimum default set of metadata that may be arbitrarily
 expanded. The default parameters are driven by the attributes required by
 public science data files, like those produced by the Ionospheric Connections
-Explorer `(ICON) <http://icon.ssl.berkeley.edu>`_.
+Explorer `(ICON) <https://icon.ssl.berkeley.edu>`_.
 
 ===============     ===================================
 **Metadata** 	        **Description**

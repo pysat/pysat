@@ -1,7 +1,19 @@
 Change Log
 ==========
 All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](http://semver.org/).
+This project adheres to [Semantic Versioning](https://semver.org/).
+
+[3.1.0] - 2021-XX-XX
+--------------------
+* Documentation
+   * Moved logo to 'docs\images'
+   * Improved consistency of headers throughout documentation
+   * Added more reference labels to documentation
+   * Implemented use of Python formatting in documentation examples
+   * Fixed bad section labels in docstrings
+   * Fixed noindex warning
+   * Fixed redirecting links
+   * Made changelog style and line length consistent
 
 [3.0.1] - 2021-XX-XX
 --------------------
