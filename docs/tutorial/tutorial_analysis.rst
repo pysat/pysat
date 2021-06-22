@@ -13,10 +13,10 @@ results for the same instrument.
 Sample Period Mean Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The code below creates a function called ``periodic_mean`` that takes either
-a pysat Instrument or Orbits object connected to an Instrument and calculates
-the mean every day or every orbit over the period of time supplied by
-`bounds`.
+The code below creates a function called :py:func:`periodic_mean` that takes
+either a :py:class:`pysat.Instrument` or :py:class:`pysat.Orbits` object
+connected to an :py:class:`Instrument` and calculates the mean every day or
+every orbit over the period of time supplied by :py:attr:`Instrument.bounds`.
 
 .. code:: python
 

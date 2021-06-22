@@ -1,12 +1,14 @@
+.. _tutorial_basics:
+
 Basics
 ======
 
-The core functionality of pysat is exposed through the pysat.Instrument object.
-The intent of the Instrument object is to offer a single interface for
-interacting with science data that is independent of measurement platform.
-The layer of abstraction presented by the Instrument object allows for things
-to occur in the background that can make science data analysis simpler and more
-rigorous.
+The core functionality of pysat is exposed through the
+:py:class:`pysat.Instrument` object. The intent of the :py:class:`Instrument`
+object is to offer a single interface for interacting with science data that is
+independent of measurement platform. The layer of abstraction presented by the
+:py:class:`Instrument` object allows for things to occur in the background that
+can make science data analysis simpler and more rigorous.
 
 To begin,
 
@@ -14,8 +16,8 @@ To begin,
 
    import pysat
 
-The data directory paths pysat looks in for data needs to be set
-upon the first import,
+The data directory paths pysat looks in for data needs to be set upon the first
+import,
 
 .. code:: python
 
@@ -26,45 +28,49 @@ upon the first import,
    pysat.params['data_dirs'] = [path_1, path_2, ..., path_n]
 
 More than one directory may be assigned by supplying a list of strings.
-When looking for data for a given pysat.Instrument, pysat will start with the
-first directory and iterate through the list until one is found. Only one
-directory with data is supported per Instrument.
+When looking for data for a given :py:class:`pysat.Instrument`, pysat will
+start with the first directory and iterate through the list until one is found.
+Only one directory with data is supported per :py:class:`Instrument`.
 
 If no data is found in any of the listed directories then pysat will by
 default assign the first path in ``pysat.params['data_dirs']``.
 
-.. note:: A data directory must be set before any pysat.Instruments may be used
-   or an error will be raised.
+.. note:: A data directory must be set before any :py:class:`pysat.Instrument`
+	  may be used or an error will be raised.
+
+
+.. _tutorial_basics-disc:
 
 Instrument Discovery
 --------------------
 
 Support for each instrument in pysat is enabled by a suite of methods that
 interact with the particular files for that dataset and supply the data within
-in a pysat compatible format. A particular data set is identified using
-up to four parameters
+in a pysat compatible format. A particular data set is identified using up to
+four parameters
 
-===============     ===================================
+===============     =================================================
 **Identifier** 	        **Description**
----------------     -----------------------------------
-  platform		Name of the platform supporting the instrument
-  name		        Name of the instrument
-  tag		        Label for an instrument data product
-  inst_id		Label for instrument sub-group
-===============     ===================================
+---------------     -------------------------------------------------
+  platform	      Name of the platform supporting the instrument
+  name		      Name of the instrument
+  tag		      Label for an instrument data product
+  inst_id	      Label for instrument sub-group
+===============     =================================================
 
 
-In pysat v3.x+, Instruments are supported by separate instrument packages.
-Local instruments in pysat.instruments submodule have been developed for testing
-purposes.  The current list and development status of different packages in
-the pysat ecosystem can be found on the
-`wiki <https://github.com/pysat/pysat/wiki/Pysat-Ecosystem-Status-Chart>`_.
+In pysat v3.x+, :py:class:`Instrument` modules are supported by separate
+instrument packages.  Local instruments in :py:mod:`pysat.instruments`
+sub-module have been developed for testing purposes.  The current list and
+development status of different packages in the pysat ecosystem can be found on
+the `wiki <https://github.com/pysat/pysat/wiki/Pysat-Ecosystem-Status-Chart>`_.
 
 You can learn about the different Instruments in an instrument package using
-the utility ``display_available_instruments``.  When providing an Instrument
-submodule as input, this will list the Instrument module name, and all possible
-combinations of tags, inst_ids, and a description of the data (if available).
-This example will use the ``pysatMadrigal`` package.
+the utility :py:func:`pysat.utils.display_available_instruments`.  When
+providing an :py:class:`Instrument` sub-module as input, this will list the
+:py:class:`Instrument` module name, all possible combinations of the
+:py:attr:`tag` and :py:attr:`inst_id` attributes, and a description of the data
+(if available). This example will use the :ref:`instruments-madrigal` package.
 
 .. code:: python
 
@@ -74,53 +80,61 @@ This example will use the ``pysatMadrigal`` package.
 
 
 You can see each listed instrument supports one or more data sets for analysis.
-The submodules are named with the convention platform_name.  When supplying
-an Instrument submodule as input the display utility provides the submodule
-name instead of the platform and name because non-registered Instruments are
-instantiated using the ``inst_module`` keyword instead of the ``platform`` and
-``name`` keywords (jump to the :ref:`instantiation` section below for more
-information).  To use the ``platform`` and ``name`` keywords, the instrument
-must be registered.  To display the registered instruments, no input is needed.
+The sub-modules are named with the convention *platform_name*.  When supplying
+an :py:class:`Instrument` sub-module as input the display utility provides the
+sub-module name instead of the :py:attr:`platform` and :py:attr:`name` because
+non-registered Instruments are instantiated using the :py:data:`inst_module`
+keyword instead of the :py:data:`platform` and :py:data:`name` keywords (jump
+to the :ref:`instantiation` section below for more information).  To use the
+:py:data:`platform` and :py:data:`name` keywords, the instrument must be
+registered.  To display the registered instruments, no input is needed.
 
 .. code:: python
 
     pysat.utils.display_available_instruments()
 
+
+.. _tutorial_basics-standard:
+
 Standard Workflow
 -----------------
 
 The standard pysat workflow takes place by interacting primarily with pysat and
-not the Instrument modules. Exceptions to this rule occur when invoking custom
-Instrument analysis methods (typically found in the
-``inst_package/instrument/methods/`` directory) or when using specific package
-utilites.  The figure below shows a sample workflow, where local routines use
-pysatSpaceWeather through pysat to create an input file with appropriate space
-weather inputs for TIE-GCM.  Then, the utilities in pysatModels are used within
-different local routines to validate the TIE-GCM ionosphere using the C/NOFS IVM
-**E** x **B** drifts. This figure also demonstrates how pysat Instruments can
-be used to retrieve both external and internal data sets.
+not the :py:class:`Instrument` sub-modules. Exceptions to this rule occur when
+invoking custom :py:class:`Instrument` analysis methods (typically found in
+:py:meth:`inst_package.instruments.methods` for an arbitrary pysat ecosystem
+package) or when using specific package utilites.  The figure below shows a
+sample workflow, where local routines use :py:mod:`pysatSpaceWeather` through
+pysat to create an input file with appropriate space weather inputs for TIE-GCM.
+Then, the utilities in :py:mod:`pysatModels` are used within different local
+routines to validate the TIE-GCM ionosphere using the C/NOFS IVM **E** x **B**
+drifts. This figure also demonstrates how pysat :py:class:`Instrument`
+sub-modules can be used to retrieve both external and internal data sets.
 
 .. image:: ../images/pysat_workflow.png
+
+
+.. _tutorial_basics-simple:
 
 Simple Workflow
 ---------------
 
 A simpler example, that presents a pysat workflow involving retrieving and
-loading data from a single Instrument, is presented below.
+loading data from a single :py:class:`Instrument`, is presented below.
 
 .. _instantiation:
 
 Instantiation
 ^^^^^^^^^^^^^
 
-To create a pysat.Instrument object, select a ``platform`` and instrument
-``name`` or an ``inst_module`` along side (potentially) a ``tag`` and
-``inst_id``, consistent with the desired data from a supported instrument.
+To create a :py:class:`pysat.Instrument` object, select a :py:data:`platform`
+and instrument :py:data:`name` or an :py:data:`inst_module` along side
+(potentially) a :py:data:`tag` and :py:data:`inst_id`, consistent with the
+desired data from a supported instrument.
 
-For example, if you wanted to work with plasma data from the
-Ion Velocity Meter (IVM) onboard the Defense Meteorological
-Satellite Program (DMSP) constellation, (specifically, the
-F12 spacecraft), use:
+For example, if you wanted to work with plasma data from the Ion Velocity Meter
+(IVM) onboard the Defense Meteorological Satellite Program (DMSP) constellation,
+(specifically, the F12 spacecraft), use:
 
 .. code:: python
 
@@ -128,11 +142,12 @@ F12 spacecraft), use:
    dmsp = pysat.Instrument(inst_module=pysatMad.instruments.dmsp_ivm,
                            tag='utd', inst_id='f12')
 
-Behind the scenes pysat uses a python module named dmsp_ivm that understands
-how to interact with 'utd' data for 'f12'.
+Behind the scenes pysat uses a python module, :py:mod:`dmsp_ivm`, that
+understands how to interact with ``'utd'`` data for ``'f12'``.
 
-If you have previously registered the instruments in ``pysatMadrigal``, you
-can specify the desired Instrument using the ``platform`` and ``name`` keywords.
+If you have previously registered the instruments in :py:mod:`pysatMadrigal`,
+you can specify the desired :py:class:`Instrument` using the :py:data:`platform`
+and :py:data:`name` keywords.
 
 .. code:: python
 
@@ -140,14 +155,14 @@ can specify the desired Instrument using the ``platform`` and ``name`` keywords.
                            inst_id='f12')
 
 You can also specify the specific keyword arguements needed for the standard
-``pysat`` methods.  DMSP data is hosted by the `Madrigal database
+pysat methods.  DMSP data is hosted by the `Madrigal database
 <http://cedar.openmadrigal.org/openmadrigal/>`_, a community resource for
 geospace data. The proper process for downloading DMSP and other Madrigal data
-is built into the open source
-tool `madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_,
-which is invoked appropriately by ``pysat`` within the
-``pysatMadrigal.instruments.dmsp_ivm`` sub-module. Madrigal requires that users
-provide their name and email address as their username and password.
+is built into the open source tool
+`madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_,
+which is invoked appropriately by pysat within the
+:py:mod:`pysatMadrigal.instruments.dmsp_ivm` sub-module. Madrigal requires that
+users provide their name and email address as their username and password.
 
 .. code:: python
 
@@ -164,9 +179,9 @@ Download
 ^^^^^^^^
 
 Let's download some data. To get DMSP data specifically all we have to do is
-invoke the ``.download()`` method attached to the DMSP object. If the username
-and password have't been provided to the instrument already, be sure to
-include them here.
+invoke the :py:meth:`download` method attached to the DMSP
+:py:class:`Instrument` object. If the username and password have't been provided
+to the :py:class:`Instrument` already, be sure to include them here.
 
 .. code:: python
 
@@ -182,13 +197,13 @@ include them here.
 
 The specific location the data is downloaded to depends upon user settings.
 By default, pysat data directories are organized via
-top_level/platform/name/tag/inst_id, where the top-level is one of the
+``top_level/platform/name/tag/inst_id``, where the top-level is one of the
 directories in ``pysat.params['data_dirs']``. The specific structure for your
 system is stored in ``pysat.params['directory_format']``.
 
 Presuming defaults, this example downloads DMSP data to
-top_level/dmsp/ivm/utd/f12/. If this is the first download, then the first of
-the pysat data directories will be used by default. If there was already DMSP
+``top_level/dmsp/ivm/utd/f12/``. If this is the first download, then the first
+of the pysat data directories will be used by default. If there was already DMSP
 data on your system under one of the ``pysat.params['data_dirs']``, then the
 same top-level directory as existing DMSP data will be used. To pick a
 different directory to download data to, use
@@ -214,13 +229,14 @@ system.  Any files missing or out of date on the local system are downloaded
 from the server. This command downloads, as needed, the entire dataset.
 
 .. note:: Science data servers may not have the same reliability and
-   bandwidth as commercial providers
+	  bandwidth as commercial providers
 
 Load Data
 ^^^^^^^^^
 
-Data is loaded into a pysat.Instrument object, in this case ``dmsp``, using the
-``.load`` method using year, day of year; date; or filename.
+Data is loaded into a :py:class:`pysat.Instrument` object, in this case
+``dmsp``, using the :py:meth:`load` method using year and day of year, date, or
+filename.
 
 .. code:: python
 
@@ -233,7 +249,10 @@ Data is loaded into a pysat.Instrument object, in this case ``dmsp``, using the
    # Load by filename from string
    dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
 
-When the pysat load routine runs it stores the instrument data into::
+When the pysat :py:meth:`Instrument.load` method runs it stores the
+:py:class:`Instrument` data into
+
+.. code:: python
 
    # Instrument data
    dmsp.data
@@ -248,9 +267,11 @@ Data Access
 ^^^^^^^^^^^
 
 After loading data, the next thing you probably want to do is use it!  pysat
-supports standard pandas or xarray access through the pysat.data object, but
-also provides convenient access to the data at the instrument level that behaves
-the same whether the data is pandas or xarray.
+supports standard pandas or xarray access through the
+:py:class:`pysat.Instrument.data` object, but also provides convenient access to
+the data at the :py:class:`pysat.Instrument` level that behaves the same whether
+:py:class:`data` is a :py:class:`pandas.DataFrame` or a
+:py:class:`xarray.Dataset` object.
 
 .. _DataFrame: https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
@@ -280,8 +301,8 @@ the same whether the data is pandas or xarray.
     dmsp[start:stop, 'ti'] = sub_array
 
 
-Note, np.where may be used to select a subset of data using either
-the convenient access or standard pandas or xarray selection methods.
+Note that :py:func:`np.where` may be used to select a subset of data using
+either the convenient access or standard pandas or xarray selection methods.
 
 .. code:: python
 
@@ -296,16 +317,16 @@ is equivalent to
 
    dmsp.data = vefi[(dmsp['mlat'] < 5) & (dmsp['mlat'] > -5)]
 
-See the :any:`Instrument` section for more information.
+See the :ref:`api-instrument` section for more information.
 
 Simple Analysis Example
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Here we present an example, following from the simple workflow above, where
-we plot DMSP ion temperature data over a season. pysat provides a function,
-``pysat.utils.time.create_date_range``, that returns an array of dates
-over a season. This time period does not need to be continuous (e.g.,
-load both the vernal and autumnal equinoxes).
+Here we present an example, following from the simple workflow above, where we
+plot DMSP ion temperature data over a season. pysat provides a function,
+:py:func:`pysat.utils.time.create_date_range`, that returns an array of dates
+over a season. This time period does not need to be continuous (e.g., load both
+the vernal and autumnal equinoxes).
 
 .. code:: python
 
@@ -361,16 +382,16 @@ Explorer `(ICON) <http://icon.ssl.berkeley.edu>`_.
 ===============     ===================================
 **Metadata** 	        **Description**
 ---------------     -----------------------------------
-  axis              Label for plot axes
-  desc              Description of variable
-  fill              Fill value for bad data points
-  label             Label used for plots
-  name              Name of variable, or long_name
-  notes             Notes about variable
-  max               Maximum valid value
-  min               Minimum valid value
-  scale             Axis scale, linear or log
-  units             Variable units
+  axis                Label for plot axes
+  desc                Description of variable
+  fill                Fill value for bad data points
+  label               Label used for plots
+  name                Name of variable, or long_name
+  notes               Notes about variable
+  max                 Maximum valid value
+  min                 Minimum valid value
+  scale               Axis scale, linear or log
+  units               Variable units
 ===============     ===================================
 
 .. code:: python
@@ -397,16 +418,18 @@ Explorer `(ICON) <http://icon.ssl.berkeley.edu>`_.
    dmsp.meta['new'] = {dmsp.meta.labels.units: 'unitless',
                        dmsp.meta.labels.name: 'New display name'}
 
-The string values used within metadata to identify the parameters above
-are all attached to the instrument object through a label assigned by the
-:ref:`api-metalabels` class.  They can be acceess as dmsp.meta.labels.*, or
-``dmsp.units_label``, ``dmsp.min_label``, and ``dmsp.notes_label``, etc.
+The string values used within :py:class:`pysat.Meta` to identify the parameters
+above are all attached to the :py:class:`pysat.Instrument` object through a
+label assigned by the :ref:`api-metalabels` class.  They can be acceess as
+:py:attr:`dmsp.meta.labels.*` (:py:attr:`labels.units`,
+:py:attr:`labels.min_val`, :py:attr:`labels.notes`, etc).
 
-All variables must have the same metadata parameters. If a new parameter
+All variables must have the same metadata parameter labels. If a new parameter
 is added for only one data variable, then the remaining data variables will get
 a null value for that metadata parameter.
 
-Data may be assigned to the instrument, with or without metadata.
+Data valuees may be assigned to the :py:class:`Instrument`, with or without
+:py:class:`Meta` data.
 
 .. code:: python
 
@@ -425,7 +448,10 @@ Data may be assigned to the instrument, with or without metadata.
 
 
 The labels used for identifying metadata may be provided by the user at
-Instrument instantiation and do not need to conform with what is in the file::
+:py:class:`Instrument` instantiation and do not need to conform with what is in
+the file.
+
+.. code:: python
 
    dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
                            inst_id='f12', clean_level='dirty',
@@ -435,17 +461,21 @@ Instrument instantiation and do not need to conform with what is in the file::
    dmsp.meta['ti', dmsp.meta.labels.units]
 
 While this feature doesn't require explicit support on the part of an instrument
-module developer, code that does not use the metadata labels may not always
-work when a user invokes this functionality.
+module developer, code that does not use :py:class:`MetaLabels` through the
+:py:attr:`labels` attribute may not always work when a user invokes this
+functionality.
 
-pysat's metadata object is case insensitive but case preserving. Thus, if
-a particular Instrument uses 'units' for units metadata, but a separate
-package that operates via pysat but uses 'Units' or even 'UNITS', the code
-will still function::
+The :py:class:`pysat.Meta` object is case insensitive but case preserving. Thus,
+if a particular :py:class:`Instrument` uses :py:data:`units` for the
+:py:class:`pysat.MetaLabels.units` name, but if a separate pysat package uses
+:py:data:`Units` or :py:data:`UNITS`, the code will still function as intended.
+
+.. code:: python
 
    # the following are all equivalent
    dmsp.meta['TI', 'Long_Name']
    dmsp.meta['Ti', 'long_Name']
    dmsp.meta['ti', 'Long_NAME']
 
-.. note:: While metadata access is case-insensitive, data access is case-sensitive.
+.. note:: While :py:class:`Meta` access is case-insensitive, :py:attr:`data`
+	  access is case-sensitive.
