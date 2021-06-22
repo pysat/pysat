@@ -11,7 +11,7 @@ Instrument
 
 .. autoclass:: pysat.Instrument
    :members:
-
+   :noindex:
 
 .. _api-constellation:
 
