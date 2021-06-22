@@ -25,6 +25,8 @@ To use Anaconda's tools for creating a suitable virtual environment,
     conda install numpy -c conda
 
 
+.. _inst-standard:
+    
 Standard installation
 ---------------------
 
@@ -44,6 +46,8 @@ needed by the installer
      * toolz
      * xarray
 
+
+.. _inst-dev:
 
 Development Installation
 ------------------------

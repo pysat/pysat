@@ -67,7 +67,6 @@ Parameters
    :members:
 
 
-
 .. _api-instrument-methods:
 
 Instrument Methods
@@ -108,7 +107,7 @@ files, et cetera.
 
 Core Utilities
 ^^^^^^^^^^^^^^
-These utilities are available directly from the ``pysat.utils`` module.
+These utilities are available directly from the :py:mod:`pysat.utils` module.
 
 .. automodule:: pysat.utils._core
    :members:
