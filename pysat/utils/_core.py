@@ -333,7 +333,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         time_var = loop_dict.pop(index_key_name)
                         if time_index_flag:
                             # Create datetime index from data
-                            time_var = pds.to_datetime(1.E6 * time_var)
+                            time_var = pds.to_datetime(1.0E6 * time_var)
                         new_index = time_var
                         new_index_name = index_name
                     else:
@@ -381,7 +381,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
                 loaded_vars[epoch_name] = pds.to_datetime(
-                    (1.E6 * time_var).astype(np.int64))
+                    (1.0E6 * time_var).astype(np.int64))
                 running_store.append(loaded_vars)
                 running_idx += len(loaded_vars[epoch_name])
 

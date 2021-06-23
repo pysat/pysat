@@ -46,7 +46,7 @@ def remove_files(inst):
 
 class TestCIonly():
     """Tests where we mess with local settings.
-    These only run in CI environments such as Github Actions to avoid breaking
+    These only run in CI environments such as GitHub Actions to avoid breaking
     an end user's setup
     """
 
@@ -187,9 +187,11 @@ class TestScaleUnits():
 class TestListify():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        return
 
     @pytest.mark.parametrize('iterable', ['test', ['test'], [[['test']]],
                                           [[[['test']]]],

@@ -67,7 +67,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         formats associated with the supplied tags are used. (default=None)
     supported_tags : dict or NoneType
         Keys are inst_id, each containing a dict keyed by tag
-        where the values file format template strings. See Files.from_os
+        where the values file format template strings. See `Files.from_os`
         `format_str` kwarg for more details. (default=None)
     file_cadence : dt.timedelta or pds.DateOffset
         pysat assumes a daily file cadence, but some instrument data file
