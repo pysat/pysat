@@ -1109,8 +1109,7 @@ class TestBasics():
             assert getattr(self.testInst, kwarg) == val
         else:
             # Confirm value echoed to log for functions that can't assign
-            # attributes.
-            # Get log text
+            # attributes. Get log text.
             captured = caplog.text
 
             # Test for expected string

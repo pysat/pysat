@@ -696,7 +696,7 @@ class Instrument(object):
                     # Assume key[0] is integer (including list or slice)
                     try:
                         return self.data.loc[self.data.index[key[0]], key[1]]
-                    except (IndexError) as err2:
+                    except IndexError as err2:
                         print(str(err1))
                         print(str(err2))
                         err_message = '\n'.join(("original messages:",
@@ -1569,7 +1569,7 @@ class Instrument(object):
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, float)\
+                    if not isinstance(data_type, float) \
                             or (not isinstance(data_type, np.floating)):
                         break
             datetime_flag = False
@@ -3862,7 +3862,7 @@ def _get_supported_keywords(local_func):
     # Account for keywords that are treated by Instrument as args
     pre_kws = _reserved_keywords.copy()
 
-    # check if partial function
+    # Check if this is a partial function
     if isinstance(local_func, functools.partial):
         # get keyword arguments already applied to function
         existing_kws = local_func.keywords
