@@ -697,8 +697,6 @@ class Instrument(object):
                     try:
                         return self.data.loc[self.data.index[key[0]], key[1]]
                     except IndexError as err2:
-                        print(str(err1))
-                        print(str(err2))
                         err_message = '\n'.join(("original messages:",
                                                  str(err1), str(err2)))
                         raise ValueError(' '.join(("Check requested indexes,",
