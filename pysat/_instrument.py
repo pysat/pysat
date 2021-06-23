@@ -2838,9 +2838,9 @@ class Instrument(object):
                     del self._curr_data
                     del self._next_data
                     self._prev_data, self._prev_meta = self._load_prev()
-                    self._curr_data, self._curr_meta = \
-                        self._load_data(date=self.date, fid=self._fid,
-                                        inc=self.load_step, load_kwargs=kwargs)
+                    self._curr_data, self._curr_meta = self._load_data(
+                        date=self.date, fid=self._fid, inc=self.load_step,
+                        load_kwargs=kwargs)
                     self._next_data, self._next_meta = self._load_next()
 
             # Make sure datetime indices for all data is monotonic
