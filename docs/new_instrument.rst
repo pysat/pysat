@@ -374,7 +374,7 @@ The load module method signature should appear as:
 .. code:: python
 
    # Update units to meters, 'm' for variable
-   inst.meta[variable, inst.units_label] = 'm'
+   inst.meta[variable, inst.meta.labels.units] = 'm'
 
 - If metadata is already stored with the file, creating the :py:class:`Meta`
   object is generally trivial. If this isn't the case, it can be tedious to
@@ -415,7 +415,7 @@ directory_format
 
 Allows the specification of a custom directory naming structure, where the files
 for this Instrument will be stored within the pysat data directory. If not set
-or if set to ``None``, it defaults to ``'{platform}/{name}/{tag}/{inst_id}'``.
+or if set to ``None``, it defaults to ``os.path.join('{platform}', '{name}', '{tag}', '{inst_id}')``.
 The string format understands the keys :py:data:`platform`, :py:data:`name`,
 :py:data:`tag`, and :py:data:`inst_id`. This may also be a function that takes
 :py:data:`tag` and :py:data:`inst_id` as input parameters and returns an
@@ -521,10 +521,10 @@ If present, the instrument init method runs once at instrument instantiation.
        self.references = '2001: A Space Oddessy (1968)'
        return
 
-`inst` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should modify
-`inst` in-place as needed; equivalent to a custom routine.  It is expected to
+``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should modify
+``self`` in-place as needed; equivalent to a custom routine.  It is expected to
 attach the :py:attr:`acknowledgements` and :py:attr:`references` attributes
-to `inst`.
+to ``self``.
 
 
 preprocess
@@ -538,8 +538,8 @@ instrument preprocessing.
    def preprocess(self):
        return
 
-`inst` is a  :py:class:`pysat.Instrument` object. :py:func:`preprocess` should
-modify `inst` in-place as needed; equivalent to a custom routine.
+``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`preprocess` should
+modify ``self`` in-place as needed; equivalent to a custom routine.
 
 clean
 ^^^^^
@@ -555,8 +555,8 @@ Cleans instrument for levels supplied in inst.clean_level.
    def clean(self):
        return
 
-`inst` is a :py:class:`pysat.Instrument` object. :py:func:`clean` should modify
-`inst` in-place as needed; equivalent to a custom routine.
+``self`` is a :py:class:`pysat.Instrument` object. :py:func:`clean` should modify
+``self`` in-place as needed; equivalent to a custom routine.
 
 list_remote_files
 ^^^^^^^^^^^^^^^^^
@@ -569,7 +569,7 @@ when possible.
 
 .. code:: python
 
-    def list_remote_files(inst):
+    def list_remote_files(tag=None, inst_id=None, start=None, stop=None, ...):
         return list_like
 
 This method is called by several internal pysat functions, and can be directly
