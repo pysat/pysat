@@ -2810,9 +2810,9 @@ class Instrument(object):
 
                 # Using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
-                self._curr_data, self._curr_meta = \
-                    self._load_data(date=self.date, fid=self._fid,
-                                    inc=self.load_step, load_kwargs=kwargs)
+                self._curr_data, self._curr_meta = self._load_data(
+                    date=self.date, fid=self._fid, inc=self.load_step,
+                    load_kwargs=kwargs)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
