@@ -45,7 +45,7 @@ orbit periods aren't constant, a 100% success rate cannot be guaranteed.
 Loading by Orbit
 ^^^^^^^^^^^^^^^^
 
-Orbit determination acts upon data loaded in the IVM object, so to begin we
+Orbit determination acts upon data loaded in the ``f15`` object, so to begin we
 must load some data (first downloading it if necessary).
 
 .. code:: python

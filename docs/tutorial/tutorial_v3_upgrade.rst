@@ -29,7 +29,7 @@ pysat v3.0 now supports more than one top-level directory to store science
 data as well as updates the default sub-directory structure for storing data.
 pysat v2.x employed an internal directory template of ``platform/name/tag``
 for organizing data while pysat v3.0 begins with a default of
-``platform/name/tag/inst_id``. Thus, by default, a pysat v3.0 install will
+``os.path.join(platform, name, tag, inst_id)``. Thus, by default, a pysat v3.0 install will
 generally not find all existing data files that were managed by pysat v2.x.
 
 Additionally, support for individual instruments has been moved out of pysat and

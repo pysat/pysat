@@ -197,12 +197,12 @@ to the :py:class:`Instrument` already, be sure to include them here.
 
 The specific location the data is downloaded to depends upon user settings.
 By default, pysat data directories are organized via
-``top_level/platform/name/tag/inst_id``, where the top-level is one of the
+``os.path.join(top_level, platform, name, tag, inst_id)``, where the top-level is one of the
 directories in ``pysat.params['data_dirs']``. The specific structure for your
 system is stored in ``pysat.params['directory_format']``.
 
 Presuming defaults, this example downloads DMSP data to
-``top_level/dmsp/ivm/utd/f12/``. If this is the first download, then the first
+``os.path.join(top_level, dmsp, ivm, utd, f12)``. If this is the first download, then the first
 of the pysat data directories will be used by default. If there was already DMSP
 data on your system under one of the ``pysat.params['data_dirs']``, then the
 same top-level directory as existing DMSP data will be used. To pick a
@@ -428,7 +428,7 @@ All variables must have the same metadata parameter labels. If a new parameter
 is added for only one data variable, then the remaining data variables will get
 a null value for that metadata parameter.
 
-Data valuees may be assigned to the :py:class:`Instrument`, with or without
+Data values may be assigned to the :py:class:`Instrument`, with or without
 :py:class:`Meta` data.
 
 .. code:: python
