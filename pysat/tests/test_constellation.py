@@ -193,13 +193,15 @@ class TestConstellationFunc:
     def test_empty_flag_data_empty(self):
         """ Test the status of the empty flag for unloaded data."""
         assert self.const.empty
+        assert self.const.empty_partial
         return
 
     def test_empty_flag_data_empty_partial_load(self):
         """ Test the status of the empty flag for partially loaded data."""
         # Load only one instrument and test the status flag
         self.const.instruments[0].load(date=self.ref_time)
-        assert self.const.empty
+        assert self.const.empty_partial
+        assert not self.const.empty
         return
 
     def test_empty_flag_data_not_empty_partial_load(self):
