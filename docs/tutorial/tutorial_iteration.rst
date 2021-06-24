@@ -44,9 +44,9 @@ By default, pysat will iteratively load data at a daily cadance.
 			      day=vefi.index[0].strftime('%d %b %Y'))
 
 
-Iteration support is built into the Instrument object to support this and
-similar cases. The whole of a data set may be iterated over on a daily basis
-using:
+Iteration support is built into the :py:class:`Instrument` object to support
+this and similar cases. The whole of a data set may be iterated over on a daily
+basis using:
 
 .. code:: python
 
@@ -61,7 +61,7 @@ using:
 			      day=vefi.index[0].strftime('%d %b %Y'))
 
 
-You can also set the bounds to be a range of files:
+You can also set the :py:attr:`bounds` to be a range of files:
 
 .. code:: python
 
@@ -85,7 +85,9 @@ The output in all the above cases is:
    Maximum meridional magnetic perturbation: 29.63 nT on 04 Jan 2010
    Maximum meridional magnetic perturbation: 21.67 nT on 05 Jan 2010
 
-By default, `bounds` is set to the first and last date of the locally available instrument files, all of which are listed in ``vefi.files.files``.
+By default, :py:attr:`bounds` is set to the first and last date of the locally
+available instrument files, all of which are listed (for this example) in
+``vefi.files.files``.
 
 
 Orbit Iteration

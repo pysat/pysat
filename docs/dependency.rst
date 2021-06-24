@@ -8,6 +8,9 @@
 Using pysat as a dependency
 ===========================
 
+
+.. _pysat-dep-instlib:
+
 Instrument Libraries
 --------------------
 Say you are developing an instrument library under the name ``customLibrary``,
@@ -34,7 +37,7 @@ could look something like:
 
 The instruments folder includes a file for each instrument object.  The
 requirements for structuring each of the instruments is discussed in
-:ref:`rst_new_inst`.  The __init__ file in this folder should import the
+:ref:`rst_new_inst`.  The ``__init__.py`` file in this folder should import the
 instruments and construct a list of instruments to aid in the testing.
 
 .. code:: python
@@ -43,10 +46,10 @@ instruments and construct a list of instruments to aid in the testing.
 
     __all__ = ['lib_inst1', 'lib_inst2']
 
-The tests folder contains an empty __init__ file to be compliant with ``pytest``
-and the test_instruments script.  pysat includes a standard suite of instrument
-tests to run on instruments.  These are imported from the
-``instrument_test_class`` in the main pysat test library.  The
+The tests folder contains an empty ``__init__.py`` file to be compliant with
+:py:mod:`pytest` and the test_instruments script.  pysat includes a standard
+suite of instrument tests to run on instruments.  These are imported from the
+:py:mod:`pysat.tests.instrument_test_class` in the main pysat test library.  The
 ``test_instruments.py`` file can be copied directly into the library, updating
 the instrument library name as indicated.
 
@@ -84,10 +87,13 @@ The structure then could look like:
   |-- README.md
   `-- setup.py
 
+
+.. _pysat-dep-testinst:
+
 Using pysat to test your instruments
 ------------------------------------
 
-A generalized instrument test class is provided under ``pysat.tests`` for
+A generalized instrument test class is provided under :py:mod:`pysat.tests` for
 developers.  Continuing the above example, developers may copy over the
 ``test_instruments.py`` file and update it in a few locations.  For example
 
@@ -141,17 +147,17 @@ generally be unchanged.  Instruments are grouped in three lists:
                                              instruments['no_download'])
               getattr(InstTestClass, method).pytestmark.append(mark)
 
-Finally, the ``setup_class`` function under the ``TestInstruments`` class should be
-updated with the location of the instrument subpackage.  Note that the routine uses 
-temporary directories to store downloaded files to avoid breaking user's directory 
-structure.
+Finally, the :py:meth:`TestInstruments.setup_class` method should be updated
+with the location of the instrument subpackage.  Note that the routine uses 
+temporary directories to store downloaded files to avoid breaking user's
+directory structure.
 
 .. code:: Python
 
   class TestInstruments(InstTestClass):
       """Uses class level setup and teardown so that all tests use the same
-      temporary directory. We do not want to geneate a new tempdir for each test,
-      as the load tests need to be the same as the download tests.
+      temporary directory. We do not want to geneate a new tempdir for each
+      test, as the load tests need to be the same as the download tests.
       """
 
     def setup_class(self):
@@ -172,6 +178,8 @@ structure.
         self.tempdir.cleanup()
         del self.inst_loc, self.saved_path, self.tempdir
 
+
+.. _pysat-dep-testcust:
 
 Testing custom analysis routines
 --------------------------------
@@ -242,11 +250,14 @@ values between 0 and 20.
         mean_val = stats.mean(inst['dummy1'])
         assert mean_val == 11.3785
 
-The ``setup`` function is used to define and load a fresh instrument for each
-test.  While data are automatically generated, limits on the usable range have
-been imposed for testing purposes.  The test instruments generate dates between
-1 Jan 2008 and 31 Dec 2010 for use in the pysat ecosystem.  This allows for
-coverage for year changes both with and without leap days.
+The :py:meth:`TestCompare.setup` method is used to define and load a fresh
+instrument for each test.  While data are automatically generated, limits on
+the usable range have been imposed for testing purposes.  The test instruments
+generate dates between 1 Jan 2008 and 31 Dec 2010 for use in the pysat
+ecosystem.  This allows for coverage for year changes both with and without
+leap days.
+
+.. _pysat-dep-tips:
 
 Tips and Tricks
 ---------------

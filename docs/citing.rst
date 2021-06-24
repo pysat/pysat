@@ -55,10 +55,10 @@ Citing the publication:
 
 To aid in scientific reproducibility, please include the version number in
 publications that use this code.  This can be found by invoking
-``pysat.__version__``.
+:py:attr:`pysat.__version__`.
 
 Information for appropriately acknowledging and citing the different instruments
 accessed through pysat is available as Instrument attributes
-``inst.acknowledgements`` and ``inst.references``.
+:py:attr:`inst.acknowledgements` and :py:attr:`inst.references`.
 If this information is missing, please consider improving pysat by either
 submitting an issue or adding the information yourself.

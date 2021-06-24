@@ -1,3 +1,5 @@
+.. _instruments-sw:
+
 pysatSpaceWeather
 -----------------
 
