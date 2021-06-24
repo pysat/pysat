@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.1.0] - 2021-XX-XX
 --------------------
+* New Features
+   * Added the property `empty_partial` to the Constellation class
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
