@@ -40,7 +40,7 @@ class Constellation(object):
     ----------
     instruments : list
         A list of pysat Instruments that make up the Constellation
-    bounds : datetime/filename/None, datetime/filename/None)
+    bounds : tuple
         Tuple of two datetime objects or filenames indicating bounds for loading
         data, a tuple of NoneType objects. Users may provide as a tuple or
         tuple of lists (useful for bounds with gaps). The attribute is always
