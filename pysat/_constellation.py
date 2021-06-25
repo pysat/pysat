@@ -40,10 +40,16 @@ class Constellation(object):
     ----------
     instruments : list
         A list of pysat Instruments that make up the Constellation
-    bounds : (datetime/filename/None, datetime/filename/None)
-        bounds for loading data, supply array_like for a season with gaps.
-        Users may provide as a tuple or tuple of lists, but the attribute is
-        stored as a tuple of lists for consistency
+    bounds : tuple
+        Tuple of two datetime objects or filenames indicating bounds for loading
+        data, or a tuple of NoneType objects. Users may provide as a tuple or
+        tuple of lists (useful for bounds with gaps). The attribute is always
+        stored as a tuple of lists for consistency.
+    empty : bool
+        Flag that indicates all Instruments do not contain data when True.
+    empty_partial : bool
+        Flag that indicates at least one Instrument in the Constellation does
+        not have data when True.
 
     """
 
@@ -152,6 +158,8 @@ class Constellation(object):
             output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
             output_str += ' --- '
             output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
+            output_str += '{:s} Instruments have data\n'.format(
+                'Some' if self.empty_partial else 'All')
             output_str += 'Number of variables: {:d}\n'.format(
                 len(self.variables))
 
@@ -289,6 +297,13 @@ class Constellation(object):
 
     @property
     def empty(self):
+        """Boolean flag reflecting lack of data, True if there is no Instrument
+        data in all Constellation Instrument.
+        """
+        return self._empty(all_inst=False)
+
+    @property
+    def empty_partial(self):
         """Boolean flag reflecting lack of data, True if there is no Instrument
         data in any Constellation Instrument.
         """
