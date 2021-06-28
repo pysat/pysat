@@ -118,9 +118,10 @@ class Constellation(object):
                              if names is None or flg in names]
 
                 for flg in ptf_names:
-                    ptf_inst_ids = [iid for iid in reg_inst[
-                        ptf][flg]['inst_ids_tags'].keys()
-                                    if inst_ids is None or iid in inst_ids]
+                    ptf_inst_ids = [
+                        iid
+                        for iid in reg_inst[ptf][flg]['inst_ids_tags'].keys()
+                        if inst_ids is None or iid in inst_ids]
 
                     for iid in ptf_inst_ids:
                         for tflg in reg_inst[
