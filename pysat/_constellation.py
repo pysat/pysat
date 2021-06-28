@@ -111,7 +111,8 @@ class Constellation(object):
             load_platforms = [flg for flg in reg_inst.keys()
                               if platforms is None or flg in platforms]
 
-            # Cycle through the each of the possible platforms and names
+            # Cycle through the each of the possible platforms, names, inst_ids,
+            # and tags
             for ptf in load_platforms:
                 ptf_names = [flg for flg in reg_inst[ptf].keys()
                              if names is None or flg in names]
