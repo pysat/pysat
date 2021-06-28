@@ -10,6 +10,30 @@ import pytest
 
 import pysat
 from pysat import constellations
+from pysat.tests.registration_test_class import TestWithRegistration
+
+
+class TestConstellationInitReg(TestWithRegistration):
+    """Test the Constellation class initialization with registered Instruments.
+    """
+    @pytest.mark.parametrize("ikeys, ivals, ilen",
+                             [(["platforms", "tags"], [["platname1"], [""]], 2),
+                              (["names", "tags"], [["name2"], [""]], 2),
+                              (["names"], [["name1", "name2"]], 15)])
+    def test_construct_constellation(self, ikeys, ivals, ilen):
+        """Construct a Constellation with good input
+        """
+        # Register fake Instrument modules
+        pysat.utils.registry.register(self.module_names)
+
+        # Initalize the Constellation using the desired keywargs
+        const = pysat.Constellation(
+            **{ikey: ivals[i] for i, ikey in enumerate(ikeys)})
+
+        # Test that the appropriate number of Instruments were loaded. Each
+        # fake Instrument has 5 tags and 1 inst_id.
+        assert len(const.instruments) == ilen
+        return
 
 
 class TestConstellationInit:
