@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
-from pysat import utils
+from pysat import logger, utils
 
 
 class Constellation(object):
@@ -65,7 +65,11 @@ class Constellation(object):
     Raises
     ------
     ValueError
-        When `instruments` is not list-like
+        When `instruments` is not list-like or when all inputs to load through
+        the registered Instrument list are unknown.
+    AttributeError
+        When module provided through `const_module` is missing the required
+        attribute `instruments`.
 
     Note
     ----
@@ -110,6 +114,10 @@ class Constellation(object):
             # use any value that fulfills the other constraints
             load_platforms = [flg for flg in reg_inst.keys()
                               if platforms is None or flg in platforms]
+            added_platforms = list()
+            added_names = list()
+            added_tags = list()
+            added_inst_ids = list()
 
             # Cycle through the each of the possible platforms, names, inst_ids,
             # and tags
@@ -132,6 +140,32 @@ class Constellation(object):
                                 self.instruments.append(pysat.Instrument(
                                     platform=ptf, name=flg, tag=tflg,
                                     inst_id=iid))
+                                added_platforms.append(ptf)
+                                added_names.append(flg)
+                                added_tags.append(tflg)
+                                added_inst_ids.append(iid)
+
+            # Warn user about unloaded, requested Instruments
+            if len(added_platforms) == 0:
+                raise ValueError(''.join(['no registered packages match input',
+                                          ' from platforms, names, tags, and ',
+                                          'inst_ids kwargs']))
+            else:
+                log_msg = []
+                for flg_str, added_flg, in_flg in [
+                        ("platforms", added_platforms, platforms),
+                        ("names", added_names, names),
+                        ("tags", added_tags, tags),
+                        ("inst_ids", added_inst_ids, inst_ids)]:
+                    if in_flg is not None:
+                        missed = [flg for flg in in_flg if flg not in added_flg]
+                        if len(missed) > 0:
+                            log_msg.append(
+                                "unable to load some {:s}: {:}".format(
+                                    flg_str, missed))
+
+                if len(log_msg) > 0:
+                    logger.warning("; ".join(log_msg))
 
         # Set the index attributes
         self.index_res = index_res
