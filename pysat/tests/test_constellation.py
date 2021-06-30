@@ -57,7 +57,7 @@ class TestConstellationInitReg(TestWithRegistration):
         log_capture = StringIO()
         pysat.logger.addHandler(logging.StreamHandler(log_capture))
         pysat.logger.setLevel(logging.WARNING)
-        
+
         # Register fake Instrument modules
         pysat.utils.registry.register(self.module_names)
 
