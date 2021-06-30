@@ -5,6 +5,8 @@
 # ----------------------------------------------------------------------------
 
 import datetime as dt
+from io import StringIO
+import logging
 import pandas as pds
 import pytest
 
@@ -26,13 +28,51 @@ class TestConstellationInitReg(TestWithRegistration):
         # Register fake Instrument modules
         pysat.utils.registry.register(self.module_names)
 
-        # Initalize the Constellation using the desired keywargs
+        # Initalize the Constellation using the desired kwargs
         const = pysat.Constellation(
             **{ikey: ivals[i] for i, ikey in enumerate(ikeys)})
 
         # Test that the appropriate number of Instruments were loaded. Each
         # fake Instrument has 5 tags and 1 inst_id.
         assert len(const.instruments) == ilen
+        return
+
+    def test_all_bad_construct_constellation(self):
+        """Test raises ValueError when all inputs are unregistered
+        """
+        # Register fake Instrument modules
+        pysat.utils.registry.register(self.module_names)
+
+        # Raise ValueError
+        with pytest.raises(ValueError) as verr:
+            pysat.Constellation(platforms=['Executor'])
+
+        assert str(verr).find("no registered packages match input") >= 0
+        return
+
+    def test_some_bad_construct_constellation(self):
+        """Test partial load and log warning when some inputs are unregistered
+        """
+        # Initialize logging
+        log_capture = StringIO()
+        pysat.logger.addHandler(logging.StreamHandler(log_capture))
+        pysat.logger.setLevel(logging.WARNING)
+        
+        # Register fake Instrument modules
+        pysat.utils.registry.register(self.module_names)
+
+        # Load the Constellation and capture log output
+        const = pysat.Constellation(platforms=['Executor', 'platname1'],
+                                    tags=[''])
+        log_out = log_capture.getvalue()
+
+        # Test the partial Constellation initialization
+        assert len(const.instruments) == 2
+
+        # Test the log warning
+        assert log_out.find("unable to load some platforms") >= 0
+
+        del log_capture, log_out, const
         return
 
 
