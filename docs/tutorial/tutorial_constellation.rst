@@ -29,17 +29,17 @@ to create a Constellation of real-time solar wind data.
 
 .. code:: python
 
-	  import pysat
-	  import pysatSpaceWeather
+          import pysat
+          import pysatSpaceWeather
 
-	  # If you haven't registered this module before, do it now
-	  pysat.utils.registry.register_by_module(pysatSpaceWeather.instruments)
+          # If you haven't registered this module before, do it now
+          pysat.utils.registry.register_by_module(pysatSpaceWeather.instruments)
 
-	  # Now initialize the ACE real-time Constellation
-	  ace_rt = pysat.Constellation(platforms=['ace'], tags=['realtime'])
+          # Now initialize the ACE real-time Constellation
+          ace_rt = pysat.Constellation(platforms=['ace'], tags=['realtime'])
 
-	  # Display the results
-	  print(ace_rt)
+          # Display the results
+          print(ace_rt)
 
 This last command will show that four :py:class:`~pysat._instrument.Instrument`
 objects match the desired :py:attr:`platform` and :py:attr:`tag` criteria.
