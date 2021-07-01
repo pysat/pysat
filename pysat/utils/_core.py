@@ -136,6 +136,8 @@ def listify(iterable):
         list_iter = [arr_iter.tolist()]
     elif arr_iter.shape[0] >= 1:
         list_iter = arr_iter.flatten().tolist()
+    elif arr_iter.shape[0] == 0:
+        list_iter = arr_iter.tolist()
 
     return list_iter
 

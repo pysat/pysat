@@ -196,7 +196,8 @@ class TestListify():
     @pytest.mark.parametrize('iterable', ['test', ['test'], [[['test']]],
                                           [[[['test']]]],
                                           [['test', 'test']],
-                                          [['test', 'test'], ['test', 'test']]])
+                                          [['test', 'test'], ['test', 'test']],
+                                          [], [[]]])
     def test_listify_list_string_inputs(self, iterable):
         """ Test listify with various list levels of a string"""
 
