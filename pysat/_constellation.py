@@ -16,7 +16,8 @@ import datetime as dt
 import numpy as np
 import pandas as pds
 
-from pysat import utils
+import pysat
+from pysat import logger, utils
 
 
 class Constellation(object):
@@ -24,6 +25,16 @@ class Constellation(object):
 
     Parameters
     ----------
+    platforms : list or NoneType
+        List of strings indicating the desired Instrument platforms
+        (default=None)
+    names : list or NoneType
+        List of strings indicating the desired Instrument names (default=None)
+    tags : list or NoneType
+        List of strings indicating the desired Instrument tags (default=None)
+    inst_ids : list or NoneType
+        List of strings indicating the desired Instrument inst_ids
+        (default=None)
     const_module : module or NoneType
         Name of a pysat constellation module (default=None)
     instruments : list-like or NoneType
@@ -51,41 +62,28 @@ class Constellation(object):
         Flag that indicates at least one Instrument in the Constellation does
         not have data when True.
 
+    Raises
+    ------
+    ValueError
+        When `instruments` is not list-like or when all inputs to load through
+        the registered Instrument list are unknown.
+    AttributeError
+        When module provided through `const_module` is missing the required
+        attribute `instruments`.
+
+    Note
+    ----
+    Omit `platforms`, `names`, `tags`, `inst_ids`, `instruments`, and
+    `const_module` to create an empty constellation.
+
     """
 
     # -----------------------------------------------------------------------
     # Define the magic methods
 
-    def __init__(self, const_module=None, instruments=None, index_res=None,
+    def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
+                 const_module=None, instruments=None, index_res=None,
                  common_index=True):
-        """
-        Constructs a Constellation given a list of instruments or the name of
-        a file with a pre-defined constellation.
-
-        Parameters
-        ----------
-        const_module : module or NoneType
-            Name of a pysat constellation module (default=None)
-        instruments : list-like or NoneType
-            A list of pysat Instruments to include in the Constellation
-            (default=None)
-        index_res : float or NoneType
-            Output index resolution in seconds or None to determine from
-            Constellation instruments (default=None)
-        common_index : bool
-            True to include times where all instruments have data, False to
-            use the maximum time range from the Constellation (default=True)
-
-        Raises
-        ------
-        ValueError
-            When `instruments` is not list-like
-
-        Note
-        ----
-        Omit `instruments` and `const_module` to create an empty constellation.
-
-        """
 
         # Include Instruments from the constellation module, if it exists
         if const_module is not None:
@@ -103,6 +101,72 @@ class Constellation(object):
 
             self.instruments.extend(list(instruments))
 
+        # Add any registered Instruments that fulfill the provided platforms,
+        # names, tags, and inst_ids
+        load_from_platform = np.any([flg is not None for flg
+                                     in [platforms, names, tags, inst_ids]])
+
+        if load_from_platform:
+            # Get a dictionary of the registered Instruments
+            reg_inst = utils.available_instruments()
+
+            # Determine which platforms and names are desired. If not specified,
+            # use any value that fulfills the other constraints
+            load_platforms = [flg for flg in reg_inst.keys()
+                              if platforms is None or flg in platforms]
+            added_platforms = list()
+            added_names = list()
+            added_tags = list()
+            added_inst_ids = list()
+
+            # Cycle through the each of the possible platforms, names, inst_ids,
+            # and tags
+            for ptf in load_platforms:
+                ptf_names = [flg for flg in reg_inst[ptf].keys()
+                             if names is None or flg in names]
+
+                for flg in ptf_names:
+                    ptf_inst_ids = [
+                        iid
+                        for iid in reg_inst[ptf][flg]['inst_ids_tags'].keys()
+                        if inst_ids is None or iid in inst_ids]
+
+                    for iid in ptf_inst_ids:
+                        for tflg in reg_inst[
+                                ptf][flg]['inst_ids_tags'][iid].keys():
+                            if tags is None or tflg in tags:
+                                # This Instrument has the desired platform,
+                                # name, inst_id, and tag
+                                self.instruments.append(pysat.Instrument(
+                                    platform=ptf, name=flg, tag=tflg,
+                                    inst_id=iid))
+                                added_platforms.append(ptf)
+                                added_names.append(flg)
+                                added_tags.append(tflg)
+                                added_inst_ids.append(iid)
+
+            # Warn user about unloaded, requested Instruments
+            if len(added_platforms) == 0:
+                raise ValueError(''.join(['no registered packages match input',
+                                          ' from platforms, names, tags, and ',
+                                          'inst_ids kwargs']))
+            else:
+                log_msg = []
+                for flg_str, added_flg, in_flg in [
+                        ("platforms", added_platforms, platforms),
+                        ("names", added_names, names),
+                        ("tags", added_tags, tags),
+                        ("inst_ids", added_inst_ids, inst_ids)]:
+                    if in_flg is not None:
+                        missed = [flg for flg in in_flg if flg not in added_flg]
+                        if len(missed) > 0:
+                            log_msg.append(
+                                "unable to load some {:s}: {:}".format(
+                                    flg_str, missed))
+
+                if len(log_msg) > 0:
+                    logger.warning("; ".join(log_msg))
+
         # Set the index attributes
         self.index_res = index_res
         self.common_index = common_index
@@ -110,16 +174,13 @@ class Constellation(object):
         return
 
     def __getitem__(self, *args, **kwargs):
-        """
-        Look up a member Instrument by index.
-
+        """ Look up a member Instrument by index.
         """
 
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __repr__(self):
         """ Print the basic Constellation properties
-
         """
 
         out_str = "".join(["pysat.Constellation(instruments=",

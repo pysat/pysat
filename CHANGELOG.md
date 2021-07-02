@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
+   * Added option to load Constellation for registered Instruments using lists
+     of platforms, names, tags, and/or inst_ids
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
