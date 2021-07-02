@@ -2,7 +2,7 @@ dask
 # Version restriction imposed due to testing failures on Windows. 
 # netCDF 1.5.7 released after RC pull started.
 netCDF4<1.5.7
-numpy>=1.12
+numpy>=1.17.03
 pandas>=0.23
 portalocker
 pytest
