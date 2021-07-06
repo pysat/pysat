@@ -26,23 +26,23 @@ class Constellation(object):
     Parameters
     ----------
     platforms : list or NoneType
-        List of strings indicating the desired Instrument platforms. If None,
-        is specified on initiation a list will be created to hold the platform
+        List of strings indicating the desired Instrument platforms. If None
+        is specified on initiation, a list will be created to hold the platform
         attributes from each pysat.Instrument object in `instruments`.
         (default=None)
     names : list or NoneType
-        List of strings indicating the desired Instrument names. If None,
-        is specified on initiation a list will be created to hold the name
+        List of strings indicating the desired Instrument names. If None
+        is specified on initiation, a list will be created to hold the name
         attributes from each pysat.Instrument object in `instruments`.
         (default=None)
     tags : list or NoneType
-        List of strings indicating the desired Instrument tags. If None,
-        is specified on initiation a list will be created to hold the tag
+        List of strings indicating the desired Instrument tags. If None
+        is specified on initiation, a list will be created to hold the tag
         attributes from each pysat.Instrument object in `instruments`.
         (default=None)
     inst_ids : list or NoneType
-        List of strings indicating the desired Instrument inst_ids. If None,
-        is specified on initiation a list will be created to hold the inst_id
+        List of strings indicating the desired Instrument inst_ids. If None
+        is specified on initiation, a list will be created to hold the inst_id
         attributes from each pysat.Instrument object in `instruments`.
         (default=None)
     const_module : module or NoneType
