@@ -28,7 +28,7 @@ class Constellation(object):
     platforms : list or NoneType
         List of strings indicating the desired Instrument platforms. If None,
         is specified on initiation a list will be created to hold the platform
-        attributes from each pysat.Instrument object in `instruments`. 
+        attributes from each pysat.Instrument object in `instruments`.
         (default=None)
     names : list or NoneType
         List of strings indicating the desired Instrument names. If None,
@@ -183,7 +183,7 @@ class Constellation(object):
             self.names = []
             self.tags = []
             self.inst_ids = []
-            
+
         inst_len = len(self.instruments)
 
         # Include Instruments from the constellation module, if it exists

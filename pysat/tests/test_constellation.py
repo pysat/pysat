@@ -350,7 +350,6 @@ class TestConstellationFunc:
 
     def test_get_unique_attr_vals_bad_attr(self):
         """Test raises AttributeError for bad input value."""
-        
         with pytest.raises(AttributeError) as aerr:
             self.const._get_unique_attr_vals('not_an_attr')
 
@@ -359,7 +358,6 @@ class TestConstellationFunc:
 
     def test_get_unique_attr_vals_bad_type(self):
         """Test raises AttributeError for bad input attribute type."""
-        
         with pytest.raises(TypeError) as terr:
             self.const._get_unique_attr_vals('empty')
 
