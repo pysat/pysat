@@ -44,4 +44,6 @@ to create a Constellation of real-time solar wind data.
 This last command will show that four :py:class:`~pysat._instrument.Instrument`
 objects match the desired :py:attr:`platform` and :py:attr:`tag` criteria.
 The :py:attr:`~pysat._instrument.Instrument.name` values are: :py:data:`epam`,
-:py:data:`mag`, :py:data:`sis`, and :py:data:`swepam`.
+:py:data:`mag`, :py:data:`sis`, and :py:data:`swepam`.  The only
+:py:class:`~pysat._instrument.Instrument` defining attributes that are not
+unique are the :py:attr:`~pysat._instrument.Instrument.name` values.
