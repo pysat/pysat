@@ -216,11 +216,28 @@ class TestConstellationFunc:
         self.inst = list(constellations.testing.instruments)
         self.const = pysat.Constellation(instruments=self.inst)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.attrs = ["platforms", "names", "tags", "inst_ids", "instruments",
+                      "bounds", "empty", "empty_partial", "index_res",
+                      "common_index"]
 
     def teardown(self):
         """Clean up after each test
         """
-        del self.inst, self.const, self.ref_time
+        del self.inst, self.const, self.ref_time, self.attrs
+
+    def test_has_required_attrs(self):
+        """Ensure the instrument has all required attributes present."""
+
+        for req_attr in self.attrs:
+            assert hasattr(self.const, req_attr)
+        return
+
+    @pytest.mark.parametrize("test_ind", [0, 1, 2, 3])
+    def test_equal_length_attrs(self, test_ind):
+        """Ensure each instruments-length attribute is the correct length."""
+        comp_len = len(self.const.instruments)
+        assert len(getattr(self.const, self.attrs[test_ind])) == comp_len
+        return
 
     def test_bounds_passthrough(self):
         """Ensure bounds are applied to each instrument within Constellation"""
@@ -329,4 +346,22 @@ class TestConstellationFunc:
         self.const.download(self.ref_time, self.ref_time)
         for inst in self.const.instruments:
             assert len(inst.files.files) > 0
+        return
+
+    def test_get_unique_attr_vals_bad_attr(self):
+        """Test raises AttributeError for bad input value."""
+        
+        with pytest.raises(AttributeError) as aerr:
+            self.const._get_unique_attr_vals('not_an_attr')
+
+        assert str(aerr).find("does not have attribute") >= 0
+        return
+
+    def test_get_unique_attr_vals_bad_type(self):
+        """Test raises AttributeError for bad input attribute type."""
+        
+        with pytest.raises(TypeError) as terr:
+            self.const._get_unique_attr_vals('empty')
+
+        assert str(terr).find("attribute is not list-like") >= 0
         return
