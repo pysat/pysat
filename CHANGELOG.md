@@ -28,6 +28,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved windows compatibility (#57, #790)
   - Fixed Instrument.load bug that prevented use of instrument specific kwargs
   - Added pytest as a package requirement (#819)
+  - Fixed pysat.utils.listify for empty list inputs (#830)
 - Maintenance
   - Changed pysat.Instrument from treating all support functions as partial
     functions to retaining the original form provided by developer

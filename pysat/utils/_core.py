@@ -134,7 +134,9 @@ def listify(iterable):
     arr_iter = np.asarray(iterable)
     if arr_iter.shape == ():
         list_iter = [arr_iter.tolist()]
-    elif arr_iter.shape[0] >= 1:
+    elif arr_iter.shape[0] == 0:
+        list_iter = arr_iter.tolist()
+    else:
         list_iter = arr_iter.flatten().tolist()
 
     return list_iter
