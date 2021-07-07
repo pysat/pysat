@@ -1316,24 +1316,24 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[changed, 'doubleMLT'] = 0
-        assert np.all(self.testInst[fixed, 'doubleMLT']
-                      == 2. * self.testInst[fixed, 'mlt'])
-        assert np.all(self.testInst[changed, 'doubleMLT'] == 0)
+        assert (self.testInst[fixed, 'doubleMLT']
+                == 2. * self.testInst[fixed, 'mlt']).all
+        assert (self.testInst[changed, 'doubleMLT'] == 0).all
 
     def test_setting_partial_data_by_index_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[self.testInst.index[0:10], 'doubleMLT'] = 0
-        assert np.all(self.testInst[10:, 'doubleMLT']
-                      == 2. * self.testInst[10:, 'mlt'])
-        assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
+        assert (self.testInst[10:, 'doubleMLT']
+                == 2. * self.testInst[10:, 'mlt']).all
+        assert (self.testInst[0:10, 'doubleMLT'] == 0).all
 
     def test_modifying_data_inplace(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
-        assert np.all(self.testInst['doubleMLT']
-                      == 2. * self.testInst['mlt'] + 100)
+        assert (self.testInst['doubleMLT']
+                == 2. * self.testInst['mlt'] + 100).all
 
     def test_getting_all_data_by_index(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
