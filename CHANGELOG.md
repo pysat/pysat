@@ -36,6 +36,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved maintenance of documentation build
   - Added a check for use of reserved keywords at instantiation
   - Tests compatible with pysatSpaceWeather 0.0.4 (#782)
+  - Improved pandas 1.3.0 compliance
 
 ## [3.0.0] - 2021-04-01
 - New Features
