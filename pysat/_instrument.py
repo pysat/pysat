@@ -696,9 +696,7 @@ class Instrument(object):
                     # Assume key[0] is integer (including list or slice)
                     try:
                         return self.data.loc[self.data.index[key[0]], key[1]]
-                    except (IndexError) as err2:
-                        print(str(err1))
-                        print(str(err2))
+                    except IndexError as err2:
                         err_message = '\n'.join(("original messages:",
                                                  str(err1), str(err2)))
                         raise ValueError(' '.join(("Check requested indexes,",
@@ -1569,7 +1567,7 @@ class Instrument(object):
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, float)\
+                    if not isinstance(data_type, float) \
                             or (not isinstance(data_type, np.floating)):
                         break
             datetime_flag = False
@@ -2812,9 +2810,9 @@ class Instrument(object):
 
                 # Using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
-                self._curr_data, self._curr_meta = \
-                    self._load_data(date=self.date, fid=self._fid,
-                                    inc=self.load_step, load_kwargs=kwargs)
+                self._curr_data, self._curr_meta = self._load_data(
+                    date=self.date, fid=self._fid, inc=self.load_step,
+                    load_kwargs=kwargs)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
@@ -2840,9 +2838,9 @@ class Instrument(object):
                     del self._curr_data
                     del self._next_data
                     self._prev_data, self._prev_meta = self._load_prev()
-                    self._curr_data, self._curr_meta = \
-                        self._load_data(date=self.date, fid=self._fid,
-                                        inc=self.load_step, load_kwargs=kwargs)
+                    self._curr_data, self._curr_meta = self._load_data(
+                        date=self.date, fid=self._fid, inc=self.load_step,
+                        load_kwargs=kwargs)
                     self._next_data, self._next_meta = self._load_next()
 
             # Make sure datetime indices for all data is monotonic
@@ -3862,7 +3860,7 @@ def _get_supported_keywords(local_func):
     # Account for keywords that are treated by Instrument as args
     pre_kws = _reserved_keywords.copy()
 
-    # check if partial function
+    # Check if this is a partial function
     if isinstance(local_func, functools.partial):
         # get keyword arguments already applied to function
         existing_kws = local_func.keywords

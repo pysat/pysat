@@ -1530,7 +1530,7 @@ class MetaLabels(object):
 
         Returns
         -------
-        default_val : str, float, int, NoneType
+        default_val : str, float, int, or NoneType
             Sets NaN for all float values, -1 for all int values, and ''
             for all str values except for 'scale', which defaults to 'linear',
             and None for any other data type

@@ -48,6 +48,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Improved windows compatibility (#57, #790)
    * Fixed Instrument.load bug that prevented use of instrument specific kwargs
    * Added pytest as a package requirement (#819)
+   * Fixed pysat.utils.listify for empty list inputs (#830)
 * Maintenance
    * Changed pysat.Instrument from treating all support functions as partial
      functions to retaining the original form provided by developer
@@ -55,6 +56,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Improved maintenance of documentation build
    * Added a check for use of reserved keywords at instantiation
    * Tests compatible with pysatSpaceWeather 0.0.4 (#782)
+   * Improved pandas 1.3.0 compliance
 
 [3.0.0] - 2021-04-01
 --------------------

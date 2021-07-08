@@ -134,7 +134,9 @@ def listify(iterable):
     arr_iter = np.asarray(iterable)
     if arr_iter.shape == ():
         list_iter = [arr_iter.tolist()]
-    elif arr_iter.shape[0] >= 1:
+    elif arr_iter.shape[0] == 0:
+        list_iter = arr_iter.tolist()
+    else:
         list_iter = arr_iter.flatten().tolist()
 
     return list_iter
@@ -333,7 +335,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         time_var = loop_dict.pop(index_key_name)
                         if time_index_flag:
                             # Create datetime index from data
-                            time_var = pds.to_datetime(1.E6 * time_var)
+                            time_var = pds.to_datetime(1.0E6 * time_var)
                         new_index = time_var
                         new_index_name = index_name
                     else:
@@ -381,7 +383,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
                 loaded_vars[epoch_name] = pds.to_datetime(
-                    (1.E6 * time_var).astype(np.int64))
+                    (1.0E6 * time_var).astype(np.int64))
                 running_store.append(loaded_vars)
                 running_idx += len(loaded_vars[epoch_name])
 
@@ -570,7 +572,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                                             tag=tag,
                                             inst_id=inst_id,
                                             temporary_file_list=True)
-                    travis_skip = ((os.environ.get('CI') == 'true')
+                    travis_skip = ((os.environ.get('TRAVIS') == 'true')
                                    and not inst._test_download_travis)
                     if inst._test_download:
                         if not travis_skip:

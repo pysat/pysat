@@ -83,10 +83,10 @@ class TestRemoveLeadText():
         gen.remove_leading_text(self.testInst)
 
         # Check variables unchanged
-        assert (len(self.testInst['ICON_L27_Blurp']) == self.npts)
+        assert len(self.testInst['ICON_L27_Blurp']) == self.npts
 
         # Check other names untouched
-        assert (len(self.testInst['dummy1']) == self.npts)
+        assert len(self.testInst['dummy1']) == self.npts
 
     def test_remove_names_w_target(self):
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
