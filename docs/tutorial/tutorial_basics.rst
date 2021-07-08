@@ -91,6 +91,7 @@ must be registered. To register a group of instruments within a module,
 or to register a more select group of instruments,
 
 .. code:: python
+
     import pysat
     pysat.utils.registry.register(['pysatMadrigal.instruments.dmsp_ivm',
                                    'pysatMadrigal.instruments.jro_isr'])
