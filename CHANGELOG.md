@@ -8,7 +8,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * New Features
    * Added the property `empty_partial` to the Constellation class
    * Added option to load Constellation for registered Instruments using lists
-     of platforms, names, tags, and/or inst_ids
+     of platforms, names, tags, and/or inst_ids, which are new attributes
+   * Added hidden Constellation method to determine unique attribute elements
+   * Extended Constellation unit tests
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -46,6 +48,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Improved windows compatibility (#57, #790)
    * Fixed Instrument.load bug that prevented use of instrument specific kwargs
    * Added pytest as a package requirement (#819)
+   * Fixed pysat.utils.listify for empty list inputs (#830)
 * Maintenance
    * Changed pysat.Instrument from treating all support functions as partial
      functions to retaining the original form provided by developer
@@ -53,6 +56,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Improved maintenance of documentation build
    * Added a check for use of reserved keywords at instantiation
    * Tests compatible with pysatSpaceWeather 0.0.4 (#782)
+   * Improved pandas 1.3.0 compliance
 
 [3.0.0] - 2021-04-01
 --------------------

@@ -26,14 +26,24 @@ class Constellation(object):
     Parameters
     ----------
     platforms : list or NoneType
-        List of strings indicating the desired Instrument platforms
+        List of strings indicating the desired Instrument platforms. If None
+        is specified on initiation, a list will be created to hold the platform
+        attributes from each pysat.Instrument object in `instruments`.
         (default=None)
     names : list or NoneType
-        List of strings indicating the desired Instrument names (default=None)
+        List of strings indicating the desired Instrument names. If None
+        is specified on initiation, a list will be created to hold the name
+        attributes from each pysat.Instrument object in `instruments`.
+        (default=None)
     tags : list or NoneType
-        List of strings indicating the desired Instrument tags (default=None)
+        List of strings indicating the desired Instrument tags. If None
+        is specified on initiation, a list will be created to hold the tag
+        attributes from each pysat.Instrument object in `instruments`.
+        (default=None)
     inst_ids : list or NoneType
-        List of strings indicating the desired Instrument inst_ids
+        List of strings indicating the desired Instrument inst_ids. If None
+        is specified on initiation, a list will be created to hold the inst_id
+        attributes from each pysat.Instrument object in `instruments`.
         (default=None)
     const_module : module or NoneType
         Name of a pysat constellation module (default=None)
@@ -49,8 +59,13 @@ class Constellation(object):
 
     Attributes
     ----------
-    instruments : list
-        A list of pysat Instruments that make up the Constellation
+    platforms
+    names
+    tags
+    inst_ids
+    instruments
+    index_res
+    common_index
     bounds : tuple
         Tuple of two datetime objects or filenames indicating bounds for loading
         data, or a tuple of NoneType objects. Users may provide as a tuple or
@@ -85,21 +100,9 @@ class Constellation(object):
                  const_module=None, instruments=None, index_res=None,
                  common_index=True):
 
-        # Include Instruments from the constellation module, if it exists
-        if const_module is not None:
-            if not hasattr(const_module, 'instruments'):
-                raise AttributeError("missing required attribute 'instruments'")
-            self.instruments = const_module.instruments
-        else:
-            self.instruments = []
-
-        # Add any Instruments provided in the list
-        if instruments is not None:
-            test_instruments = np.asarray(instruments)
-            if test_instruments.shape == ():
-                raise ValueError('instruments argument must be list-like')
-
-            self.instruments.extend(list(instruments))
+        # Initalize the `instruments` attribute to be an empty list before
+        # loading using each of the available input methods
+        self.instruments = []
 
         # Add any registered Instruments that fulfill the provided platforms,
         # names, tags, and inst_ids
@@ -151,6 +154,8 @@ class Constellation(object):
                                           ' from platforms, names, tags, and ',
                                           'inst_ids kwargs']))
             else:
+                # Test to see if any of the requested platform/name/tag/inst_id
+                # options did not occur in the registered Instruments
                 log_msg = []
                 for flg_str, added_flg, in_flg in [
                         ("platforms", added_platforms, platforms),
@@ -166,6 +171,42 @@ class Constellation(object):
 
                 if len(log_msg) > 0:
                     logger.warning("; ".join(log_msg))
+
+                # Set the Constellation attributes
+                self.platforms = added_platforms
+                self.names = added_names
+                self.tags = added_tags
+                self.inst_ids = added_inst_ids
+        else:
+            # Set the Constellation attributes to be empty lists
+            self.platforms = []
+            self.names = []
+            self.tags = []
+            self.inst_ids = []
+
+        inst_len = len(self.instruments)
+
+        # Include Instruments from the constellation module, if it exists
+        if const_module is not None:
+            if not hasattr(const_module, 'instruments'):
+                raise AttributeError("missing required attribute 'instruments'")
+            self.instruments.extend(const_module.instruments)
+
+        # Add any Instruments provided in the list
+        if instruments is not None:
+            test_instruments = np.asarray(instruments)
+            if test_instruments.shape == ():
+                raise ValueError('instruments argument must be list-like')
+
+            self.instruments.extend(list(instruments))
+
+        # For each Instrument added by `const_module` or `instruments`, extend
+        # the platforms/names/tags/inst_ids
+        for inst_ind in np.arange(inst_len, len(self.instruments)):
+            self.platforms.append(self.instruments[inst_ind].platform)
+            self.names.append(self.instruments[inst_ind].name)
+            self.tags.append(self.instruments[inst_ind].tag)
+            self.inst_ids.append(self.instruments[inst_ind].inst_id)
 
         # Set the index attributes
         self.index_res = index_res
@@ -194,11 +235,26 @@ class Constellation(object):
 
         """
 
+        # Define a convenience function for pluralizing words
+        def is_plural(num):
+            return "s" if num > 1 else ""
+
         ninst = len(self.instruments)
+        nplat = len(self._get_unique_attr_vals("platforms"))
+        nname = len(self._get_unique_attr_vals("names"))
+        ntag = len(self._get_unique_attr_vals("tags"))
+        ninst_id = len(self._get_unique_attr_vals("inst_ids"))
 
         output_str = 'pysat Constellation object:\n'
         output_str += '---------------------------\n'
-        output_str += "{:d} Instruments\n".format(ninst)
+        output_str += "{:d} Instrument{:s} with:\n".format(ninst,
+                                                           is_plural(ninst))
+        output_str += "{:d} unique platform{:s}, ".format(nplat,
+                                                          is_plural(nplat))
+        output_str += "{:d} unique name{:s}, ".format(nname, is_plural(nname))
+        output_str += "{:d} unique tag{:s}, and ".format(ntag, is_plural(ntag))
+        output_str += "{:d} unique inst_id{:s}\n".format(ninst_id,
+                                                         is_plural(ninst_id))
 
         if ninst > 0:
             output_str += "\nIndex Platform Name Tag Inst_ID\n"
@@ -323,6 +379,43 @@ class Constellation(object):
             cindex = pds.date_range(stime, etime, freq=out_res)
 
         return cindex
+
+    def _get_unique_attr_vals(self, attr):
+        """ Get the unique elements of a list-like attribute
+
+        Parameters
+        ----------
+        attr : str
+            String denoting a list-like Constellation attribute name
+
+        Returns
+        -------
+        uniq_attrs : list
+            List of unique attribute values for the requested Constellation
+            attribute
+
+        Raises
+        ------
+        AttributeError
+            If the requested attribute is not present
+        TypeError
+            If the requested attribute is not list-like
+
+        """
+
+        # Test to see if attribute is present
+        if not hasattr(self, attr):
+            raise AttributeError('Constellation does not have attribute')
+
+        # Test to see if attribute is list-like
+        attr_array = np.asarray(getattr(self, attr))
+        if attr_array.shape == ():
+            raise TypeError('Constellation attribute is not list-like')
+
+        # Get unique attribute values
+        uniq_attrs = list(np.unique(attr_array))
+
+        return uniq_attrs
 
     # -----------------------------------------------------------------------
     # Define the public methods and properties

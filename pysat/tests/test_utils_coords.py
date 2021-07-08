@@ -101,7 +101,7 @@ class TestLonSLT():
         sin_diff = np.sin(diff_radians)
         cos_diff = np.cos(diff_radians)
         assert np.max(np.abs(sin_diff)) < 1.0e-6
-        assert np.min(np.abs(cos_diff)) > 1. - 1.0e-6
+        assert np.min(np.abs(cos_diff)) > 1.0 - 1.0e-6
 
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
     def test_calc_solar_local_time_inconsistent_keywords(self, name, caplog):
