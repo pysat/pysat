@@ -80,7 +80,22 @@ name instead of the platform and name because non-registered Instruments are
 instantiated using the ``inst_module`` keyword instead of the ``platform`` and
 ``name`` keywords (jump to the :ref:`instantiation` section below for more
 information).  To use the ``platform`` and ``name`` keywords, the instrument
-must be registered.  To display the registered instruments, no input is needed.
+must be registered. To register a group of instruments within a module,
+
+.. code:: python
+
+    import pysat
+    import pysatMadrigal as pysatMad
+    pysat.utils.registry.register_by_module(pysatMad.instruments)
+
+or to register a more select group of instruments,
+
+.. code:: python
+    import pysat
+    pysat.utils.registry.register(['pysatMadrigal.instruments.dmsp_ivm',
+                                   'pysatMadrigal.instruments.jro_isr'])
+
+To display the registered instruments, no input is needed.
 
 .. code:: python
 
