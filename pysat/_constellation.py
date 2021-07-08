@@ -16,7 +16,8 @@ import datetime as dt
 import numpy as np
 import pandas as pds
 
-from pysat import utils
+import pysat
+from pysat import logger, utils
 
 
 class Constellation(object):
@@ -24,6 +25,26 @@ class Constellation(object):
 
     Parameters
     ----------
+    platforms : list or NoneType
+        List of strings indicating the desired Instrument platforms. If None
+        is specified on initiation, a list will be created to hold the platform
+        attributes from each pysat.Instrument object in `instruments`.
+        (default=None)
+    names : list or NoneType
+        List of strings indicating the desired Instrument names. If None
+        is specified on initiation, a list will be created to hold the name
+        attributes from each pysat.Instrument object in `instruments`.
+        (default=None)
+    tags : list or NoneType
+        List of strings indicating the desired Instrument tags. If None
+        is specified on initiation, a list will be created to hold the tag
+        attributes from each pysat.Instrument object in `instruments`.
+        (default=None)
+    inst_ids : list or NoneType
+        List of strings indicating the desired Instrument inst_ids. If None
+        is specified on initiation, a list will be created to hold the inst_id
+        attributes from each pysat.Instrument object in `instruments`.
+        (default=None)
     const_module : module or NoneType
         Name of a pysat constellation module (default=None)
     instruments : list-like or NoneType
@@ -38,56 +59,138 @@ class Constellation(object):
 
     Attributes
     ----------
-    instruments : list
-        A list of pysat Instruments that make up the Constellation
-    bounds : (datetime/filename/None, datetime/filename/None)
-        bounds for loading data, supply array_like for a season with gaps.
-        Users may provide as a tuple or tuple of lists, but the attribute is
-        stored as a tuple of lists for consistency
+    platforms
+    names
+    tags
+    inst_ids
+    instruments
+    index_res
+    common_index
+    bounds : tuple
+        Tuple of two datetime objects or filenames indicating bounds for loading
+        data, or a tuple of NoneType objects. Users may provide as a tuple or
+        tuple of lists (useful for bounds with gaps). The attribute is always
+        stored as a tuple of lists for consistency.
+    empty : bool
+        Flag that indicates all Instruments do not contain data when True.
+    empty_partial : bool
+        Flag that indicates at least one Instrument in the Constellation does
+        not have data when True.
+
+    Raises
+    ------
+    ValueError
+        When `instruments` is not list-like or when all inputs to load through
+        the registered Instrument list are unknown.
+    AttributeError
+        When module provided through `const_module` is missing the required
+        attribute `instruments`.
+
+    Note
+    ----
+    Omit `platforms`, `names`, `tags`, `inst_ids`, `instruments`, and
+    `const_module` to create an empty constellation.
 
     """
 
     # -----------------------------------------------------------------------
     # Define the magic methods
 
-    def __init__(self, const_module=None, instruments=None, index_res=None,
+    def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
+                 const_module=None, instruments=None, index_res=None,
                  common_index=True):
-        """
-        Constructs a Constellation given a list of instruments or the name of
-        a file with a pre-defined constellation.
 
-        Parameters
-        ----------
-        const_module : module or NoneType
-            Name of a pysat constellation module (default=None)
-        instruments : list-like or NoneType
-            A list of pysat Instruments to include in the Constellation
-            (default=None)
-        index_res : float or NoneType
-            Output index resolution in seconds or None to determine from
-            Constellation instruments (default=None)
-        common_index : bool
-            True to include times where all instruments have data, False to
-            use the maximum time range from the Constellation (default=True)
+        # Initalize the `instruments` attribute to be an empty list before
+        # loading using each of the available input methods
+        self.instruments = []
 
-        Raises
-        ------
-        ValueError
-            When `instruments` is not list-like
+        # Add any registered Instruments that fulfill the provided platforms,
+        # names, tags, and inst_ids
+        load_from_platform = np.any([flg is not None for flg
+                                     in [platforms, names, tags, inst_ids]])
 
-        Note
-        ----
-        Omit `instruments` and `const_module` to create an empty constellation.
+        if load_from_platform:
+            # Get a dictionary of the registered Instruments
+            reg_inst = utils.available_instruments()
 
-        """
+            # Determine which platforms and names are desired. If not specified,
+            # use any value that fulfills the other constraints
+            load_platforms = [flg for flg in reg_inst.keys()
+                              if platforms is None or flg in platforms]
+            added_platforms = list()
+            added_names = list()
+            added_tags = list()
+            added_inst_ids = list()
+
+            # Cycle through the each of the possible platforms, names, inst_ids,
+            # and tags
+            for ptf in load_platforms:
+                ptf_names = [flg for flg in reg_inst[ptf].keys()
+                             if names is None or flg in names]
+
+                for flg in ptf_names:
+                    ptf_inst_ids = [
+                        iid
+                        for iid in reg_inst[ptf][flg]['inst_ids_tags'].keys()
+                        if inst_ids is None or iid in inst_ids]
+
+                    for iid in ptf_inst_ids:
+                        for tflg in reg_inst[
+                                ptf][flg]['inst_ids_tags'][iid].keys():
+                            if tags is None or tflg in tags:
+                                # This Instrument has the desired platform,
+                                # name, inst_id, and tag
+                                self.instruments.append(pysat.Instrument(
+                                    platform=ptf, name=flg, tag=tflg,
+                                    inst_id=iid))
+                                added_platforms.append(ptf)
+                                added_names.append(flg)
+                                added_tags.append(tflg)
+                                added_inst_ids.append(iid)
+
+            # Warn user about unloaded, requested Instruments
+            if len(added_platforms) == 0:
+                raise ValueError(''.join(['no registered packages match input',
+                                          ' from platforms, names, tags, and ',
+                                          'inst_ids kwargs']))
+            else:
+                # Test to see if any of the requested platform/name/tag/inst_id
+                # options did not occur in the registered Instruments
+                log_msg = []
+                for flg_str, added_flg, in_flg in [
+                        ("platforms", added_platforms, platforms),
+                        ("names", added_names, names),
+                        ("tags", added_tags, tags),
+                        ("inst_ids", added_inst_ids, inst_ids)]:
+                    if in_flg is not None:
+                        missed = [flg for flg in in_flg if flg not in added_flg]
+                        if len(missed) > 0:
+                            log_msg.append(
+                                "unable to load some {:s}: {:}".format(
+                                    flg_str, missed))
+
+                if len(log_msg) > 0:
+                    logger.warning("; ".join(log_msg))
+
+                # Set the Constellation attributes
+                self.platforms = added_platforms
+                self.names = added_names
+                self.tags = added_tags
+                self.inst_ids = added_inst_ids
+        else:
+            # Set the Constellation attributes to be empty lists
+            self.platforms = []
+            self.names = []
+            self.tags = []
+            self.inst_ids = []
+
+        inst_len = len(self.instruments)
 
         # Include Instruments from the constellation module, if it exists
         if const_module is not None:
             if not hasattr(const_module, 'instruments'):
                 raise AttributeError("missing required attribute 'instruments'")
-            self.instruments = const_module.instruments
-        else:
-            self.instruments = []
+            self.instruments.extend(const_module.instruments)
 
         # Add any Instruments provided in the list
         if instruments is not None:
@@ -97,6 +200,14 @@ class Constellation(object):
 
             self.instruments.extend(list(instruments))
 
+        # For each Instrument added by `const_module` or `instruments`, extend
+        # the platforms/names/tags/inst_ids
+        for inst_ind in np.arange(inst_len, len(self.instruments)):
+            self.platforms.append(self.instruments[inst_ind].platform)
+            self.names.append(self.instruments[inst_ind].name)
+            self.tags.append(self.instruments[inst_ind].tag)
+            self.inst_ids.append(self.instruments[inst_ind].inst_id)
+
         # Set the index attributes
         self.index_res = index_res
         self.common_index = common_index
@@ -104,16 +215,13 @@ class Constellation(object):
         return
 
     def __getitem__(self, *args, **kwargs):
-        """
-        Look up a member Instrument by index.
-
+        """ Look up a member Instrument by index.
         """
 
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __repr__(self):
         """ Print the basic Constellation properties
-
         """
 
         out_str = "".join(["pysat.Constellation(instruments=",
@@ -127,11 +235,26 @@ class Constellation(object):
 
         """
 
+        # Define a convenience function for pluralizing words
+        def is_plural(num):
+            return "s" if num > 1 else ""
+
         ninst = len(self.instruments)
+        nplat = len(self._get_unique_attr_vals("platforms"))
+        nname = len(self._get_unique_attr_vals("names"))
+        ntag = len(self._get_unique_attr_vals("tags"))
+        ninst_id = len(self._get_unique_attr_vals("inst_ids"))
 
         output_str = 'pysat Constellation object:\n'
         output_str += '---------------------------\n'
-        output_str += "{:d} Instruments\n".format(ninst)
+        output_str += "{:d} Instrument{:s} with:\n".format(ninst,
+                                                           is_plural(ninst))
+        output_str += "{:d} unique platform{:s}, ".format(nplat,
+                                                          is_plural(nplat))
+        output_str += "{:d} unique name{:s}, ".format(nname, is_plural(nname))
+        output_str += "{:d} unique tag{:s}, and ".format(ntag, is_plural(ntag))
+        output_str += "{:d} unique inst_id{:s}\n".format(ninst_id,
+                                                         is_plural(ninst_id))
 
         if ninst > 0:
             output_str += "\nIndex Platform Name Tag Inst_ID\n"
@@ -152,6 +275,8 @@ class Constellation(object):
             output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
             output_str += ' --- '
             output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
+            output_str += '{:s} Instruments have data\n'.format(
+                'Some' if self.empty_partial else 'All')
             output_str += 'Number of variables: {:d}\n'.format(
                 len(self.variables))
 
@@ -255,6 +380,43 @@ class Constellation(object):
 
         return cindex
 
+    def _get_unique_attr_vals(self, attr):
+        """ Get the unique elements of a list-like attribute
+
+        Parameters
+        ----------
+        attr : str
+            String denoting a list-like Constellation attribute name
+
+        Returns
+        -------
+        uniq_attrs : list
+            List of unique attribute values for the requested Constellation
+            attribute
+
+        Raises
+        ------
+        AttributeError
+            If the requested attribute is not present
+        TypeError
+            If the requested attribute is not list-like
+
+        """
+
+        # Test to see if attribute is present
+        if not hasattr(self, attr):
+            raise AttributeError('Constellation does not have attribute')
+
+        # Test to see if attribute is list-like
+        attr_array = np.asarray(getattr(self, attr))
+        if attr_array.shape == ():
+            raise TypeError('Constellation attribute is not list-like')
+
+        # Get unique attribute values
+        uniq_attrs = list(np.unique(attr_array))
+
+        return uniq_attrs
+
     # -----------------------------------------------------------------------
     # Define the public methods and properties
 
@@ -289,6 +451,13 @@ class Constellation(object):
 
     @property
     def empty(self):
+        """Boolean flag reflecting lack of data, True if there is no Instrument
+        data in all Constellation Instrument.
+        """
+        return self._empty(all_inst=False)
+
+    @property
+    def empty_partial(self):
         """Boolean flag reflecting lack of data, True if there is no Instrument
         data in any Constellation Instrument.
         """

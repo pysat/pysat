@@ -38,8 +38,8 @@ def scale_units(out_unit, in_unit):
     hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
     Can convert between degrees, radians, and hours or different lengths.
 
-    Example
-    -------
+    Examples
+    --------
     ::
 
         import numpy as np
@@ -748,8 +748,8 @@ class NetworkLock(Lock):
         See portalocker.utils.Lock for more details
         (:class:`portalocker.utils.Lock`)
 
-        Example
-        -------
+        Examples
+        --------
         ::
 
             from pysat.utils import NetworkLock

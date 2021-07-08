@@ -15,3 +15,4 @@ Tutorial
    tutorial/tutorial_orbit.rst
    tutorial/tutorial_custom.rst
    tutorial/tutorial_analysis.rst
+   tutorial/tutorial_constellation.rst
