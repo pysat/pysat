@@ -132,7 +132,7 @@ def register(module_names, overwrite=False):
         from pysat import Instrument
         from pysat.utils import registry
 
-        registry.register('my.package.name.myInstrument')
+        registry.register(['my.package.name.myInstrument'])
 
         testInst = Instrument(platform, name)
 
