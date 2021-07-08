@@ -96,8 +96,8 @@ or to register a more select group of instruments,
     pysat.utils.registry.register(['pysatMadrigal.instruments.dmsp_ivm',
                                    'pysatMadrigal.instruments.jro_isr'])
 
-see :any:`pysat.utils.registry` for more. To display the registered instruments,
-no input is needed.
+see :py:mod:`pysat.utils.registry` for more. To display the registered
+instruments, no input is needed.
 
 .. code:: python
 
