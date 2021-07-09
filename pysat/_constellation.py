@@ -117,7 +117,6 @@ class Constellation(object):
         # Initalize the `instruments` attribute to be an empty list before
         # loading using each of the available input methods
         self.instruments = []
-        self.date = None
         self.yr = None
         self.doy = None
 
@@ -470,7 +469,7 @@ class Constellation(object):
 
         """
 
-        self._set_inst_att('bounds', value)
+        self._set_inst_attr('bounds', value)
         return
 
     @property
