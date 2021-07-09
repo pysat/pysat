@@ -105,7 +105,7 @@ class Instrument(object):
     directory_format
     file_format
     bounds : tuple
-        Tuple of two datetime objects or filenames indicating bounds for loading
+        Tuple of datetime objects or filenames indicating bounds for loading
         data, or a tuple of NoneType objects. Users may provide as a tuple or
         tuple of lists (useful for bounds with gaps). The attribute is always
         stored as a tuple of lists for consistency.
