@@ -9,7 +9,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added the property `empty_partial` to the Constellation class
    * Added option to load Constellation for registered Instruments using lists
      of platforms, names, tags, and/or inst_ids, which are new attributes
-   * Added hidden Constellation method to determine unique attribute elements
+   * Added hidden Constellation methods to determine unique attribute elements
+     and set Instrument attributes across all instruments
    * Extended Constellation unit tests
 * Documentation
    * Moved logo to 'docs\images'
