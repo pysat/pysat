@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Deprecations
 - Documentation
   - Added missing information about date formatting to file listing docstrings.
+  - Added example for registering external instrument support (#837)
 - Bug Fix
   - Changed pysat.Instruments.orbits iteration to return a copy of the
     Instrument rather than the Instrument itself. Provides robustness against
