@@ -71,11 +71,25 @@ class Constellation(object):
         data, or a tuple of NoneType objects. Users may provide as a tuple or
         tuple of lists (useful for bounds with gaps). The attribute is always
         stored as a tuple of lists for consistency.
+    date : dt.datetime or NoneType
+        Date and time for loaded data, None if no data is loaded
+    yr : int or NoneType
+        Year for loaded data, None if no data is loaded
+    doy : int or NoneType
+        Day of year for loaded data, None if no data is loaded
+    yesterday : dt.datetime
+        Date and time for yesterday in UT
+    today : dt.datetime
+        Date and time for the current day in UT
+    tomorrow : dt.datetime
+        Date and time for tomorrow in UT
     empty : bool
         Flag that indicates all Instruments do not contain data when True.
     empty_partial : bool
         Flag that indicates at least one Instrument in the Constellation does
         not have data when True.
+    variables : list
+        List of loaded data variables for all instruments.
 
     Raises
     ------
@@ -103,6 +117,9 @@ class Constellation(object):
         # Initalize the `instruments` attribute to be an empty list before
         # loading using each of the available input methods
         self.instruments = []
+        self.date = None
+        self.yr = None
+        self.doy = None
 
         # Add any registered Instruments that fulfill the provided platforms,
         # names, tags, and inst_ids
@@ -417,6 +434,23 @@ class Constellation(object):
 
         return uniq_attrs
 
+    def _set_inst_attr(self, attr, value):
+        """ Set an attribute across all instruments
+
+        Parameters
+        ----------
+        attr : str
+            Instrument attribute
+        value
+            Appropriate value for the desired attribute
+
+        """
+
+        for instrument in self.instruments:
+            setattr(instrument, attr, value)
+
+        return
+
     # -----------------------------------------------------------------------
     # Define the public methods and properties
 
@@ -436,9 +470,7 @@ class Constellation(object):
 
         """
 
-        for instrument in self.instruments:
-            instrument.bounds = value
-
+        self._set_inst_att('bounds', value)
         return
 
     @property
@@ -555,8 +587,15 @@ class Constellation(object):
 
         """
 
+        # Load the data for each instrument
         for instrument in self.instruments:
             instrument.load(*args, **kwargs)
+
+        # Set the year and doy attributes for the constellation and instruments
+        self.yr, self.doy = utils.time.getyrdoy(self.date)
+
+        self._set_inst_attr('yr', self.yr)
+        self._set_inst_attr('doy', self.doy)
 
         return
 
