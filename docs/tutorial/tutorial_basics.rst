@@ -314,7 +314,7 @@ is equivalent to
 
    dmsp.data = vefi[(dmsp['mlat'] < 5) & (dmsp['mlat'] > -5)]
 
-See the ref:`api-instrument` section for more information.
+See the :ref:`api-instrument` section for more information.
 
 Simple Analysis Example
 ^^^^^^^^^^^^^^^^^^^^^^^
