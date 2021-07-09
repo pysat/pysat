@@ -218,7 +218,8 @@ class TestConstellationFunc:
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.attrs = ["platforms", "names", "tags", "inst_ids", "instruments",
                       "bounds", "empty", "empty_partial", "index_res",
-                      "common_index"]
+                      "common_index", "date", "yr", "doy", "yesterday", "today",
+                      "tomorrow", "variables"]
 
     def teardown(self):
         """Clean up after each test
