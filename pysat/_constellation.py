@@ -593,9 +593,6 @@ class Constellation(object):
         # Set the year and doy attributes for the constellation and instruments
         self.yr, self.doy = utils.time.getyrdoy(self.date)
 
-        self._set_inst_attr('yr', self.yr)
-        self._set_inst_attr('doy', self.doy)
-
         return
 
     def download(self, *args, **kwargs):
