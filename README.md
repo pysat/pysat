@@ -24,7 +24,7 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 
 Come join us on Slack! An invitation to the pysat workspace is available 
 in the 'About' section of the [pysat GitHub Repository.](https://github.com/pysat/pysat)
-Development meetings are generally held biweekly.
+Development meetings are generally held fortnightly.
 
 # Main Features
 * Instrument independent analysis routines.
