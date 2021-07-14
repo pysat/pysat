@@ -22,6 +22,10 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 
 [Citation Info](https://pysat.readthedocs.io/en/latest/citing.html)
 
+Join us on Slack:
+* [pysat Workspace](https://pysat.slack.com)
+* [Self-Invitation](https://join.slack.com/t/pysat/shared_invite/zt-tb9p2fhs-MgFVmA6TwmBhfqpuZeD4rA)
+
 # Main Features
 * Instrument independent analysis routines.
 * Instrument object providing an interface for downloading and analyzing a wide
