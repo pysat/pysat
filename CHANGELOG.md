@@ -21,6 +21,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed noindex warning
    * Fixed redirecting links
    * Made changelog style and line length consistent
+* Bug Fix
+   * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
 
 [3.0.1] - 2021-XX-XX
 --------------------
