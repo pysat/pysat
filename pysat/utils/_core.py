@@ -146,8 +146,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                  epoch_name='Epoch', pandas_format=True,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot_label', str), 'axis': ('axis', str),
-                         'scale': ('scale', str),
                          'min_val': ('value_min', np.float64),
                          'max_val': ('value_max', np.float64),
                          'fill_val': ('fill', np.float64)}):
@@ -155,16 +153,16 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     Parameters
     ----------
-    fnames : string, array_like of strings, or NoneType
+    fnames : str, array_like, or NoneType
         Filename(s) to load, will fail if None (default=None)
-    strict_meta : boolean
+    strict_meta : bool
         Flag that checks if metadata across fnames is the same if True
         (default=False)
-    file_format : string or NoneType
+    file_format : str or NoneType
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         If None, defaults to 'NETCDF4'. (default=None)
-    epoch_name : string
+    epoch_name : str
         Data key for time variable (default='Epoch')
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
@@ -174,21 +172,22 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
-        'plot': ('plot_label', str), 'axis': ('axis', str),
-        'scale': ('scale', str), 'min_val': ('value_min', np.float64),
+        'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
 
     Returns
-    --------
-    out : pandas.DataFrame
-        DataFrame output
+    -------
+    out : pandas.DataFrame or xarray.Dataset
+        Class holding file data
     meta : pysat.Meta
-        Meta data
+        Class holding file meta data
 
     Raises
     ------
     ValueError
         If kwargs that should be args are not set on instantiation.
+    KeyError
+        If epoch/time dimension could not be identified.
 
     """
 
@@ -226,15 +225,15 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # act accordingly, 1D, 2D, 3D
                     if len(data.variables[key].dimensions) == 1:
                         if pandas_format:
-                            # Load 1D data variables, assuming basic
-                            # time dimension
+                            # Load 1D data variables, assuming the dimension
+                            # is time
                             loaded_vars[key] = data.variables[key][:]
 
                         # Load up metadata
                         meta_dict = {}
                         for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = \
-                                data.variables[key].getncattr(nc_key)
+                            meta_dict[nc_key] = data.variables[key].getncattr(
+                                nc_key)
                         meta[key] = meta_dict
 
                     if len(data.variables[key].dimensions) == 2:
@@ -258,8 +257,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     elif dim[1] == epoch_name:
                         obj_key = dim[0]
                     else:
-                        raise KeyError('Epoch not found!')
-                    # collect variable names associated with dimension
+                        raise KeyError('Epoch dimension not found')
+
+                    # Collect variable names associated with dimension
                     idx_bool = [dim == i for i in two_d_dims]
                     idx, = np.where(np.array(idx_bool))
                     obj_var_keys = []
@@ -274,10 +274,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # DataFrame access. If the dimension is stored as its own
                     # variable then use that info for index
                     if obj_key in obj_var_keys:
-                        # string used to indentify dimension also in
-                        # data.variables will be used as an index
+                        # Key string used to indentify dimension is also in
+                        # data.variables and will be used as an index
                         index_key_name = obj_key
-                        # if the object index uses UNIX time, process into
+
+                        # If the object index uses UNIX time, process into
                         # datetime index
                         if data.variables[obj_key].getncattr(
                                 meta.labels.name) == epoch_name:
@@ -300,16 +301,16 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         # store attributes in metadata, exept for dim name
                         meta_dict = {}
                         for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = \
-                                data.variables[key].getncattr(nc_key)
+                            meta_dict[nc_key] = data.variables[key].getncattr(
+                                nc_key)
                         dim_meta_data[clean_key] = meta_dict
 
                     dim_meta_dict = {'meta': dim_meta_data}
                     if index_key_name is not None:
                         # Add top level meta
                         for nc_key in data.variables[obj_key].ncattrs():
-                            dim_meta_dict[nc_key] = \
-                                data.variables[obj_key].getncattr(nc_key)
+                            dim_meta_dict[nc_key] = data.variables[
+                                obj_key].getncattr(nc_key)
                         meta[obj_key] = dim_meta_dict
 
                     # Iterate over all variables with this dimension
@@ -320,8 +321,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     loop_list = []
                     for key, clean_key in zip(obj_var_keys, clean_var_keys):
                         # data
-                        loop_dict[clean_key] = \
-                            data.variables[key][:, :].flatten(order='C')
+                        loop_dict[clean_key] = data.variables[
+                            key][:, :].flatten(order='C')
 
                     # Number of values in time
                     loop_lim = data.variables[obj_var_keys[0]].shape[0]
@@ -410,8 +411,10 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             for nc_key in out.variables[key].attrs.keys():
                 meta_dict[nc_key] = out.variables[key].attrs[nc_key]
             meta[key] = meta_dict
+
             # Remove variable attributes from the data object
             out.variables[key].attrs = {}
+
         # Copy the file attributes from the data object to the metadata
         for out_attr in out.attrs.keys():
             if hasattr(meta, out_attr):
@@ -419,6 +422,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 meta.__setattr__(set_attr, out.attrs[out_attr])
             else:
                 meta.__setattr__(out_attr, out.attrs[out_attr])
+
         # Remove attributes from the data object
         out.attrs = {}
 
@@ -442,7 +446,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
 
     Returns
     -------
-    output : string
+    output : str
         String with desired data formatted in columns
 
     """
