@@ -166,33 +166,24 @@ class Instrument(object):
     ::
 
         # 1-second mag field data
-        vefi = pysat.Instrument(platform='cnofs',
-                                name='vefi',
-                                tag='dc_b',
-                                clean_level='clean')
-        start = dt.datetime(2009,1,1)
-        stop = dt.datetime(2009,1,2)
+        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
+        start = dt.datetime(2009, 1, 1)
+        stop = dt.datetime(2009, 1, 2)
         vefi.download(start, stop)
         vefi.load(date=start)
         print(vefi['dB_mer'])
         print(vefi.meta['db_mer'])
 
         # 1-second thermal plasma parameters
-        ivm = pysat.Instrument(platform='cnofs',
-                               name='ivm',
-                               tag='',
-                               clean_level='clean')
-        ivm.download(start,stop)
-        ivm.load(2009,1)
+        ivm = pysat.Instrument(platform='cnofs', name='ivm')
+        ivm.download(start, stop)
+        ivm.load(2009, 1)
         print(ivm['ionVelmeridional'])
 
         # Ionosphere profiles from GPS occultation. Enable binning profile
         # data using a constant step-size. Feature provided by the underlying
         # COSMIC support code.
-        cosmic = pysat.Instrument('cosmic',
-                                  'gps',
-                                  'ionprf',
-                                  altitude_bin=3)
+        cosmic = pysat.Instrument('cosmic', 'gps', 'ionprf', altitude_bin=3)
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
 
@@ -238,7 +229,7 @@ class Instrument(object):
     # -----------------------------------------------------------------------
     # Define all magic methods
 
-    def __init__(self, platform=None, name=None, tag=None, inst_id=None,
+    def __init__(self, platform=None, name=None, tag='', inst_id='',
                  clean_level=None, update_files=None, pad=None,
                  orbit_info=None, inst_module=None, directory_format=None,
                  file_format=None, temporary_file_list=False,
@@ -250,9 +241,9 @@ class Instrument(object):
                          'fill_val': ('fill', np.float64)},
                  custom=None, **kwargs):
 
-        # Set default tag and inst_id
-        self.tag = tag.lower() if tag is not None else ''
-        self.inst_id = inst_id.lower() if inst_id is not None else ''
+        # Set default tag, inst_id, and Instrument module
+        self.tag = tag.lower()
+        self.inst_id = inst_id.lower()
         self.inst_module = inst_module
 
         if self.inst_module is None:
@@ -262,13 +253,12 @@ class Instrument(object):
                 self.name = name.lower()
 
                 # Look to module for instrument functions and defaults
-                self._assign_attrs(by_name=True, tag=self.tag,
-                                   inst_id=self.inst_id)
+                self._assign_attrs(by_name=True)
             elif (platform is None) and (name is None):
                 # Creating "empty" Instrument object with this path
                 self.name = ''
                 self.platform = ''
-                self._assign_attrs(tag=self.tag, inst_id=self.inst_id)
+                self._assign_attrs()
             else:
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
@@ -285,8 +275,7 @@ class Instrument(object):
 
             # Look to supplied module for instrument functions and non-default
             # attribute values
-            self._assign_attrs(inst_module=self.inst_module,
-                               tag=self.tag, inst_id=self.inst_id)
+            self._assign_attrs()
 
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
@@ -1128,8 +1117,7 @@ class Instrument(object):
         """
         pass
 
-    def _assign_attrs(self, by_name=False, inst_module=None, tag=None,
-                      inst_id=None):
+    def _assign_attrs(self, by_name=False):
         """Assign all external instrument attributes to the Instrument object
 
         Parameters
@@ -1137,12 +1125,6 @@ class Instrument(object):
         by_name : boolean
             If True, uses self.platform and self.name to load the Instrument,
             if False uses inst_module. (default=False)
-        inst_module : module or NoneType
-            Instrument module or None, if not specified (default=None)
-        tag : str or NoneType
-            Instrument tag string
-        inst_id : str or NoneType
-            Instrument inst_id string
 
         Raises
         ------
@@ -1201,7 +1183,7 @@ class Instrument(object):
             # pysat platform is reserved for modules within pysat.instruments
             if self.platform == 'pysat':
                 # Look within pysat
-                inst = importlib.import_module(
+                self.inst_module = importlib.import_module(
                     ''.join(('.', self.platform, '_', self.name)),
                     package='pysat.instruments')
             else:
@@ -1223,47 +1205,45 @@ class Instrument(object):
                 # ensure they may be imported when registered, something may
                 # have changed on the system since it was originally checked.
                 try:
-                    inst = importlib.import_module(mod)
+                    self.inst_module = importlib.import_module(mod)
                 except ImportError as ierr:
                     estr = ' '.join(('unable to locate or import module for',
                                      'platform {:}, name {:}'))
                     estr = estr.format(self.platform, self.name)
                     logger.error(estr)
                     raise ImportError(ierr)
-        elif inst_module is not None:
-            # User supplied an object with relevant instrument routines
-            inst = inst_module
-        else:
+        elif self.inst_module is None:
             # No module or name info, default pass functions assigned
             return
 
         # Check if tag and inst_id are appropriate for the module
-        if inst_id not in inst.inst_ids.keys():
-            inst_id_str = ', '.join([ikey.__repr__()
-                                    for ikey in inst.inst_ids.keys()])
-            estr = ''.join(("'", inst_id, "' is not one of the supported ",
+        if self.inst_id not in self.inst_module.inst_ids.keys():
+            inst_id_str = ', '.join([ikey.__repr__() for ikey
+                                     in self.inst_module.inst_ids.keys()])
+            estr = ''.join(("'", self.inst_id, "' is not one of the supported ",
                             'inst_ids. Supported inst_ids are: ',
                             inst_id_str, '.'))
             raise ValueError(estr)
 
-        if tag not in inst.inst_ids[inst_id]:
-            tag_str = ', '.join([tkey.__repr__()
-                                for tkey in inst.inst_ids[inst_id]])
-            estr = ''.join(("'", tag, "' is not one of the supported tags. ",
-                            'Supported tags are: ', tag_str, '.'))
+        if self.tag not in self.inst_module.inst_ids[self.inst_id]:
+            tag_str = ', '.join([tkey.__repr__() for tkey
+                                 in self.inst_module.inst_ids[self.inst_id]])
+            estr = ''.join(("'", self.tag, "' is not one of the supported ",
+                            'tags. Supported tags are: ', tag_str, '.'))
             raise ValueError(estr)
 
         # Assign the Instrument methods
         missing = list()
         for mstat in inst_methods.keys():
             for mname in inst_methods[mstat]:
-                if hasattr(inst, mname):
+                if hasattr(self.inst_module, mname):
                     local_name = _kwargs_keys_to_func_name(mname)
                     # Remote functions are not attached as methods unless
                     # cast that way, specifically
                     # https://stackoverflow.com/questions/972/
                     #         adding-a-method-to-an-existing-object-instance
-                    local_method = types.MethodType(getattr(inst, mname), self)
+                    local_method = types.MethodType(getattr(self.inst_module,
+                                                            mname), self)
                     setattr(self, local_name, local_method)
                 else:
                     missing.append(mname)
@@ -1279,9 +1259,9 @@ class Instrument(object):
         missing = list()
         for mstat in inst_funcs.keys():
             for mname in inst_funcs[mstat]:
-                if hasattr(inst, mname):
+                if hasattr(self.inst_module, mname):
                     local_name = _kwargs_keys_to_func_name(mname)
-                    setattr(self, local_name, getattr(inst, mname))
+                    setattr(self, local_name, getattr(self.inst_module, mname))
                 else:
                     missing.append(mname)
                     if mstat == "required":
@@ -1295,8 +1275,8 @@ class Instrument(object):
         # Look for instrument default parameters
         missing = list()
         for iattr in inst_attrs.keys():
-            if hasattr(inst, iattr):
-                setattr(self, iattr, getattr(inst, iattr))
+            if hasattr(self.inst_module, iattr):
+                setattr(self, iattr, getattr(self.inst_module, iattr))
             else:
                 missing.append(iattr)
 
@@ -1308,8 +1288,8 @@ class Instrument(object):
         missing = list()
         for iattr in test_attrs.keys():
             # Check and see if this instrument has the desired test flag
-            if hasattr(inst, iattr):
-                local_attr = getattr(inst, iattr)
+            if hasattr(self.inst_module, iattr):
+                local_attr = getattr(self.inst_module, iattr)
 
                 # Test to see that this attribute is set for the desired
                 # inst_id and tag

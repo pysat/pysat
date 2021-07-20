@@ -67,8 +67,8 @@ the `wiki <https://github.com/pysat/pysat/wiki/Pysat-Ecosystem-Status-Chart>`_.
 
 You can learn about the different Instruments in an instrument package using
 the utility :py:func:`pysat.utils.display_available_instruments`.  When
-providing an :py:class:`Instrument` sub-module as input, this will list the
-:py:class:`Instrument` module name, all possible combinations of the
+providing an :py:class:`~pysat.Instrument` sub-module as input, this will list
+the :py:class:`~pysat.Instrument` module name, all possible combinations of the
 :py:attr:`tag` and :py:attr:`inst_id` attributes, and a description of the data
 (if available). This example will use the :ref:`instruments-madrigal` package.
 
@@ -81,17 +81,26 @@ providing an :py:class:`Instrument` sub-module as input, this will list the
 
 You can see each listed instrument supports one or more data sets for analysis.
 The sub-modules are named with the convention *platform_name*.  When supplying
-an :py:class:`Instrument` sub-module as input the display utility provides the
-sub-module name instead of the :py:attr:`platform` and :py:attr:`name` because
-non-registered Instruments are instantiated using the :py:data:`inst_module`
-keyword instead of the :py:data:`platform` and :py:data:`name` keywords (jump
-to the :ref:`instantiation` section below for more information).  To use the
-:py:data:`platform` and :py:data:`name` keywords, the instrument must be
-registered.  To display the registered instruments, no input is needed.
+an :py:class:`~pysat.Instrument` sub-module as input the display utility
+provides the sub-module name instead of the :py:attr:`platform` and
+:py:attr:`name` because non-registered Instruments are instantiated using the
+:py:data:`inst_module` keyword instead of the :py:data:`platform` and
+:py:data:`name` keywords (jump to the :ref:`instantiation` section below for
+more information).  To use the :py:data:`platform` and :py:data:`name` keywords,
+the instrument must be registered.  To display the registered instruments, no
+input is needed.
 
 .. code:: python
 
     pysat.utils.display_available_instruments()
+
+
+Regardless of the :ref:`instantiation` method, the :py:func:`help` function can
+use the :py:attr:`~pysat.Instrument.inst_module` as input to access the built-in
+documentation for the :py:class:`~pysat.Instrument` sub-module in an interactive
+environment. Using :py:func:`help` on the instantiated
+:py:class:`~pysat.Instrument` will return the documentation for the general
+:py:class:`~pysat.Instrument` class.
 
 
 .. _tutorial_basics-standard:
