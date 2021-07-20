@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added hidden Constellation methods to determine unique attribute elements
      and set Instrument attributes across all instruments
    * Extended Constellation unit tests
+   * Standardized Instrument instantiation to always define `inst_module`
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -21,6 +22,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed noindex warning
    * Fixed redirecting links
    * Made changelog style and line length consistent
+   * Added a paragraph describing how to access Instrument sub-module
+     docstrings from an instantiated Instrument in an interactive session
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
 
