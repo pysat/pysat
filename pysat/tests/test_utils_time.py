@@ -62,7 +62,7 @@ class TestParseDate():
         (['10', '12', '15', '3', '1', '55', -30], "year -20 is out of range")])
     def test_parse_date_bad_input(self, in_args, vmsg):
         """Test raises ValueError for unrealistic date input"""
- 
+
         with pytest.raises(ValueError) as verr:
             pytime.parse_date(*in_args)
 
