@@ -26,6 +26,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      docstrings from an instantiated Instrument in an interactive session
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
+* Maintenance
+   * Added missing unit tests for `pysat.utils.time`
 
 [3.0.1] - 2021-XX-XX
 --------------------
