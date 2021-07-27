@@ -75,8 +75,6 @@ class TestParseDelimitedFilenames():
 
         return True
 
-    # Note: Can be removed if future instrument that uses delimited
-    # filenames is added to routine end-to-end testing
     @pytest.mark.parametrize("sep_char,flead,good_kwargs", [
         ("_", "test_", ['year', 'month', 'day', 'hour', 'minute', 'version']),
         ('-', "test", ['year', 'day', 'hour', 'minute', 'second', 'cycle',
