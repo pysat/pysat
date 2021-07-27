@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from pysat.utils import time as pytime
+from pysat.utils import testing
 
 
 class TestGetYearDay():
@@ -158,9 +159,8 @@ class TestCreateDateRange():
         tst_stop = stop[-1] if hasattr(stop, "__iter__") else stop
 
         # Test the seasonal return values
-        assert season[0] == tst_start
-        assert season[-1] == tst_stop
-        assert len(season) == tst_len
+        testing.assert_lists_equal([season[0], season[-1]],
+                                   [tst_start, tst_stop])
         return
 
 
@@ -184,9 +184,9 @@ class TestCreateDatetimeIndex():
         dates = pytime.create_datetime_index(year=self.year, month=self.month,
                                              day=self.day, uts=self.uts)
 
-        assert dates[0] == dt.datetime(2012, 2, 28)
-        assert dates[-1] == dt.datetime(2012, 2, 28, 0, 0, 3)
-        assert len(dates) == len(self.year)
+        testing.assert_lists_equal([dates[0], dates[-1]],
+                                   [dt.datetime(2012, 2, 28),
+                                    dt.datetime(2012, 2, 28, 0, 0, 3)])
         return
 
     def test_create_datetime_index_wo_month_day_uts(self):
@@ -194,9 +194,9 @@ class TestCreateDatetimeIndex():
 
         dates = pytime.create_datetime_index(year=self.year)
 
-        assert dates[0] == dt.datetime(2012, 1, 1)
-        assert dates[-1] == dt.datetime(2012, 1, 1)
-        assert len(dates) == len(self.year)
+        testing.assert_lists_equal([dates[0], dates[-1]],
+                                   [dt.datetime(2012, 1, 1),
+                                    dt.datetime(2012, 1, 1)])
         return
 
     @pytest.mark.parametrize("in_args,err_msg", [
