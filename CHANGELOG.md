@@ -26,8 +26,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      docstrings from an instantiated Instrument in an interactive session
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
+   * Fixed `parse_delimited_filename` output consistency and ability to handle
+     leading and trailing non-parsed text in filenames (e.g., file extensions)
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
+   * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
 
 [3.0.1] - 2021-XX-XX
 --------------------
