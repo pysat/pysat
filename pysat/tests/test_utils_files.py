@@ -90,7 +90,7 @@ class TestParseDelimitedFilenames():
         # Adjust the test input/comparison data for this run
         bad_kwargs = [fkey for fkey in self.fkwargs[0]
                       if fkey not in good_kwargs]
-        
+
         for kwargs in self.fkwargs:
             for fkey in bad_kwargs:
                 del kwargs[fkey]
@@ -105,7 +105,7 @@ class TestParseDelimitedFilenames():
         # Test each of the return values
         assert self.eval_parse_delimited_filename()
         return
-    
+
     def test_parse_delimited_filename_empty(self):
         """Check ability to parse list of delimited files with no files."""
         # Format the test input
