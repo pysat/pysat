@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-tests the pysat utils area
+"""Tests the pysat utils core functions
 """
 
 import contextlib
@@ -19,35 +18,61 @@ import tempfile
 
 import pysat
 from pysat.tests.registration_test_class import TestWithRegistration
+from pysat.utils import testing
 
 
-# ----------------------------------
-# test netCDF export file support
 def prep_dir(inst=None):
+    """Prepare the directory to provide netCDF export file support
 
+    Parameters
+    ----------
+    inst : pysat.Instrument or NoneType
+        Instrument class object or None to use 'pysat_testing.py' (default=None)
+
+    """
     if inst is None:
         inst = pysat.Instrument(platform='pysat', name='testing')
-    # create data directories
+
+    # Create data directories
     try:
         os.makedirs(inst.files.data_path)
     except OSError:
         pass
 
+    return
+
 
 def remove_files(inst):
-    # remove any files
+    """Remove files associated with a pysat Instrument
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        Instrument class object
+
+    """
+    # Determine the directory where files are located
     temp_dir = inst.files.data_path
+
+    # Iteritavely remove files
     for the_file in os.listdir(temp_dir):
-        if (the_file == 'pysat_test_ncdf.nc'):
+        if the_file == 'pysat_test_ncdf.nc':
             file_path = os.path.join(temp_dir, the_file)
+
             if os.path.isfile(file_path):
                 os.unlink(file_path)
+
+    return
 
 
 class TestCIonly():
     """Tests where we mess with local settings.
+
+    Note
+    ----
     These only run in CI environments such as GitHub Actions to avoid breaking
     an end user's setup
+
     """
 
     def setup(self):
@@ -61,7 +86,7 @@ class TestCIonly():
         del self.ci_env
 
     def test_initial_pysat_load(self, capsys):
-        """Ensure initial load routines work"""
+        """Ensure initial load routines works."""
 
         # Move settings directory to simulate first load after install
         root = os.path.join(os.path.expanduser("~"), '.pysat')
@@ -84,9 +109,11 @@ class TestCIonly():
 
         # Make sure pysat reloads settings
         reload(pysat)
+        return
 
 
 class TestScaleUnits():
+    """Unit tests for `scale_units`."""
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
@@ -94,138 +121,156 @@ class TestScaleUnits():
         self.dist_units = ["m", "km", "cm"]
         self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
                           'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
+        self.scale = 0.0
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.deg_units, self.dist_units, self.vel_units
+        del self.deg_units, self.dist_units, self.vel_units, self.scale
+
+    def eval_unit_scale(self, out_unit, scale_type):
+        """Evaluate the unit scaling.
+
+        Parameters
+        ----------
+        out_unit : str
+            Output unit name string
+        scale_type : str
+            String specifying 'angles' or 'distance'
+
+        """
+
+        if scale_type.lower() == 'angles':
+            if out_unit.find("deg") == 0:
+                assert self.scale == 1.0
+            elif out_unit.find("rad") == 0:
+                assert self.scale == np.pi / 180.0
+            else:
+                assert self.scale == 1.0 / 15.0
+        elif scale_type.lower() == 'distance':
+            if out_unit == "m":
+                assert self.scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert self.scale == 0.001
+            else:
+                assert self.scale == 100.0
+        return
 
     def test_scale_units_same(self):
-        """ Test scale_units when both units are the same """
+        """ Test scale_units when both units are the same."""
 
-        scale = pysat.utils.scale_units("happy", "happy")
+        self.scale = pysat.utils.scale_units("happy", "happy")
 
-        assert scale == 1.0
+        assert self.scale == 1.0
+        return
 
     def test_scale_units_angles(self):
-        """Test scale_units for angles """
+        """Test scale_units for angles."""
 
         for out_unit in self.deg_units:
-            scale = pysat.utils.scale_units(out_unit, "deg")
-
-            if out_unit.find("deg") == 0:
-                assert scale == 1.0
-            elif out_unit.find("rad") == 0:
-                assert scale == np.pi / 180.0
-            else:
-                assert scale == 1.0 / 15.0
+            self.scale = pysat.utils.scale_units(out_unit, "deg")
+            self.eval_unit_scale(out_unit, 'angles')
+        return
 
     def test_scale_units_dist(self):
-        """Test scale_units for distances """
+        """Test scale_units for distances."""
 
         for out_unit in self.dist_units:
-            scale = pysat.utils.scale_units(out_unit, "m")
-
-            if out_unit == "m":
-                assert scale == 1.0
-            elif out_unit.find("km") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
+            self.scale = pysat.utils.scale_units(out_unit, "m")
+            self.eval_unit_scale(out_unit, 'distance')
+        return
 
     def test_scale_units_vel(self):
-        """Test scale_units for velocities """
+        """Test scale_units for velocities."""
 
         for out_unit in self.vel_units:
-            scale = pysat.utils.scale_units(out_unit, "m/s")
+            self.scale = pysat.utils.scale_units(out_unit, "m/s")
+            self.eval_unit_scale(out_unit, 'distance')
+        return
 
-            if out_unit.find("m") == 0:
-                assert scale == 1.0
-            elif out_unit.find("km") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
-
-    def test_scale_units_bad_output(self):
-        """Test scale_units for unknown output unit"""
+    @pytest.mark.parametrize("in_args,err_msg", [
+        (['happy', 'm'], 'output unit'), (['m', 'happy'], 'input unit'),
+        (['m', 'm/s'], 'unknown units'), (['happy', 'sad'], 'unknown units')])
+    def test_scale_units_bad_input(self, in_args, err_msg):
+        """Test raises ValueError for bad input combinations."""
 
         with pytest.raises(ValueError) as verr:
-            pysat.utils.scale_units('happy', 'm')
-        assert str(verr).find('output unit') > 0
+            pysat.utils.scale_units(*in_args)
 
-    def test_scale_units_bad_input(self):
-        """Test scale_units for unknown input unit"""
-
-        with pytest.raises(ValueError) as verr:
-            pysat.utils.scale_units('m', 'happy')
-        assert str(verr).find('input unit') > 0
+        assert str(verr).find(err_msg) > 0
+        return
 
     @pytest.mark.parametrize("unit1,unit2", [("m", "m/s"),
                                              ("m", "deg"),
                                              ("h", "km/s")])
     def test_scale_units_bad_match_pairs(self, unit1, unit2):
-        """Test scale_units for mismatched input for all pairings"""
+        """Test raises ValueError for all mismatched input pairings."""
 
         with pytest.raises(ValueError):
             pysat.utils.scale_units(unit1, unit2)
 
-    def test_scale_units_bad_match_message(self):
-        """Test scale_units error message for mismatched input"""
-
-        with pytest.raises(ValueError) as verr:
-            pysat.utils.scale_units('m', 'm/s')
-        assert str(verr).find('Cannot scale') >= 0
-        assert str(verr).find('unknown units') < 0
-
-    def test_scale_units_both_bad(self):
-        """Test scale_units for bad input and output"""
-
-        with pytest.raises(ValueError) as verr:
-            pysat.utils.scale_units('happy', 'sad')
-        assert str(verr).find('unknown units') > 0
+        return
 
 
 class TestListify():
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        return
+    """Unit tests for the `listify` function."""
 
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        return
-
-    @pytest.mark.parametrize('iterable', ['test', ['test'], [[['test']]],
-                                          [[[['test']]]],
-                                          [['test', 'test']],
-                                          [['test', 'test'], ['test', 'test']],
-                                          [], [[]]])
-    def test_listify_list_string_inputs(self, iterable):
-        """ Test listify with various list levels of a string"""
+    @pytest.mark.parametrize('iterable,nitem', [
+        ('test', 1), (['test'], 1), ([[['test']]], 1), ([[[['test']]]], 1),
+        ([['test', 'test']], 2), ([['test', 'test'], ['test', 'test']], 4),
+        ([], 0), ([[]], 0)])
+    def test_listify_list_string_inputs(self, iterable, nitem):
+        """ Test listify with various list levels of a string."""
 
         new_iterable = pysat.utils.listify(iterable)
-        for item in new_iterable:
-            assert item == 'test'
+        tst_iterable = ['test' for i in range(nitem)]
+        testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
     @pytest.mark.parametrize('iterable', [np.nan, np.full((1, 1), np.nan),
                                           np.full((2, 2), np.nan),
                                           np.full((3, 3, 3), np.nan)])
-    def test_listify_list_number_inputs(self, iterable):
-        """ Test listify with various np.arrays of numbers"""
+    def test_listify_nan_arrays(self, iterable):
+        """ Test listify with various np.arrays of NaNs."""
 
         new_iterable = pysat.utils.listify(iterable)
-        for item in new_iterable:
-            assert np.isnan(item)
-        assert len(new_iterable) == np.product(np.shape(iterable))
+        tst_iterable = [np.nan
+                        for i in range(int(np.product(np.shape(iterable))))]
+        testing.assert_lists_equal(new_iterable, tst_iterable)
+        return
+
+    @pytest.mark.parametrize('iterable', [1, np.full((1, 1), 1),
+                                          np.full((2, 2), 1),
+                                          np.full((3, 3, 3), 1)])
+    def test_listify_int_arrays(self, iterable):
+        """ Test listify with various np.arrays of NaNs."""
+
+        new_iterable = pysat.utils.listify(iterable)
+        tst_iterable = [1 for i in range(int(np.product(np.shape(iterable))))]
+        testing.assert_lists_equal(new_iterable, tst_iterable)
+        return
+
+    @pytest.mark.parametrize('iterable', [
+        pysat.Instrument(), np.full((1, 1), pysat.Instrument()),
+        np.full((2, 2), pysat.Instrument()),
+        np.full((3, 3, 3), pysat.Instrument())])
+    def test_listify_class_arrays(self, iterable):
+        """ Test listify with various np.arrays of NaNs."""
+
+        new_iterable = pysat.utils.listify(iterable)
+        tst_iterable = [pysat.Instrument()
+                        for i in range(int(np.product(np.shape(iterable))))]
+        testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
 
 class TestBasicNetCDF4():
+    """Unit tests for `load_netcdf4`."""
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
+        # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
-        # create temporary directory
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
 
@@ -234,51 +279,56 @@ class TestBasicNetCDF4():
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.pandas_format = True
 
-        # create testing directory
+        # Create testing directory
         prep_dir(self.testInst)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.params['data_dirs'] = self.data_path
         self.tempdir.cleanup()
+
         del self.testInst, self.stime
 
     def test_load_netcdf4_empty_filenames(self):
-        with pytest.raises(ValueError):
+        """Test raises ValueError without any filename input."""
+        with pytest.raises(ValueError) as verr:
             pysat.utils.load_netcdf4(fnames=None)
+
+        assert str(verr).find("Must supply a filename/list of filenames") >= 0
+        return
 
     @pytest.mark.parametrize('unlimited', [True, False])
     def test_basic_write_and_read_netcdf4_default_format(self, unlimited):
-        """Test writing and loading netcdf4 file, with/out unlimited time dim
+        """Test writing and loading netcdf4 file, with/out unlimited time dim.
         """
-        # create a bunch of files by year and doy
+        # Create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
         self.testInst.to_netcdf4(outfile, unlimited_time=unlimited)
 
-        loaded_inst, meta = \
-            pysat.utils.load_netcdf4(outfile,
-                                     pandas_format=self.testInst.pandas_format)
-        self.testInst.data = \
-            self.testInst.data.reindex(sorted(self.testInst.data.columns),
-                                       axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
-                                          axis=1)
+        loaded_inst, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format)
+        self.testInst.data = self.testInst.data.reindex(
+            sorted(self.testInst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
 
+        return
+
     def test_basic_write_and_read_netcdf4_mixed_case_format(self):
-        """ Test basic netCDF4 read/write with mixed case data variables
+        """ Test basic netCDF4 read/write with mixed case data variables.
         """
-        # create a bunch of files by year and doy
+        # Create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
-        # modify data names in data
+
+        # Modify data names in data
         original = sorted(self.testInst.data.columns)
         self.testInst.data = self.testInst.data.rename(str.upper,
                                                        axis='columns')
@@ -289,72 +339,62 @@ class TestBasicNetCDF4():
             sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
-        # check that names are lower case when written
+        # Check that names are lower case when written
         assert(np.all(original == loaded_inst.columns))
 
         for key in self.testInst.data.columns:
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
 
-        # modify metadata names in data
+        # Modify metadata names in data
         self.testInst.meta.data = self.testInst.meta.data.rename(str.upper,
                                                                  axis='index')
-        # write file
+        # Write file
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
-        # load file
+
+        # Load file
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
 
-        # check that names are upper case when written
-        assert np.all(sorted(self.testInst.data.columns)
-                      == sorted(loaded_inst.columns))
+        # Check that names are upper case when written
+        testing.assert_lists_equal(sorted(self.testInst.data.columns),
+                                   sorted(loaded_inst.columns))
+        return
 
     def test_write_netcdf4_duplicate_variable_names(self):
-        """ Test netCDF4 writing with duplicate variable names
-        """
-        # create a bunch of files by year and doy
-        prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
-        self.testInst['MLT'] = 1
-        with pytest.raises(ValueError):
-            self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
-
-    def test_write_and_read_netcdf4_default_format_w_compression(self):
-        """Test success of writing and reading a compressed netCDF4 file
-        """
+        """ Test netCDF4 writing with duplicate variable names."""
         # Create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
-        self.testInst.to_netcdf4(outfile, zlib=True)
+        self.testInst['MLT'] = 1
+        with pytest.raises(ValueError) as verr:
+            self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
+        assert str(verr).find("Metadata across filenames is not the same") >= 0
+        return
+
+    @pytest.mark.parametrize("in_kwargs", [{"zlib": True},
+                                           {"epoch_name": "Santa"}])
+    def test_write_and_read_netcdf4_default_format_w_kwargs(self, in_kwargs):
+        """Test success of writing and reading a compressed netCDF4 file."""
+        # Create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime)
+        self.testInst.to_netcdf4(outfile, **in_kwargs)
+
+        # Load the data that was created
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
         self.testInst.data = self.testInst.data.reindex(
             sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
+        # Test that the written and loaded data matches the initial data
         for key in self.testInst.data.columns:
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
-    def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
-        """ Test the netCDF4 write/read abilities with an odd epoch name
-        """
-        # create a bunch of files by year and doy
-        prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
-        self.testInst.to_netcdf4(outfile, epoch_name='Santa')
-
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
-                                                     epoch_name='Santa')
-        self.testInst.data = self.testInst.data.reindex(
-            sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
-
-        for key in self.testInst.data.columns:
-            assert (np.all(self.testInst[key] == loaded_inst[key]))
+        return
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):
         # create a bunch of files by year and doy
