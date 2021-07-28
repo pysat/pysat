@@ -2,6 +2,43 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.1] - 2021-07-28 
+- New Features
+  - Added a routine for loading CSV files into a pandas DataFrame from a list
+    of filenames.
+  - Added check for supported `tag` and `inst_id` at pysat.Instrument
+    instantiation. (#784)
+  - Expanded Constellation utility by:
+    - Adding common properties: `empty`, `index`, `date`, `today`, `yesterday`,
+      `tomorrow`, and `variables` (#764)
+    - Improving the printed output to inform user of the Constellation contents
+      (#764)
+    - Added methods to download data and create a common time index. (#764)
+  - Added utils.listify, a function that returns a list of whatever is input.
+    (#766)
+   - Added a warning for download requests that result in an empty date range.
+- Deprecations
+- Documentation
+  - Added missing information about date formatting to file listing docstrings.
+  - Added example for registering external instrument support (#837)
+- Bug Fix
+  - Changed pysat.Instruments.orbits iteration to return a copy of the
+    Instrument rather than the Instrument itself. Provides robustness against
+    garbage collection. (#770)
+  - Improved error messages for cases where slice of data may not exist (#761)
+  - Improved windows compatibility (#57, #790)
+  - Fixed Instrument.load bug that prevented use of instrument specific kwargs
+  - Added pytest as a package requirement (#819)
+  - Fixed pysat.utils.listify for empty list inputs (#830)
+- Maintenance
+  - Changed pysat.Instrument from treating all support functions as partial
+    functions to retaining the original form provided by developer
+  - Migrates CI testing to Github Actions
+  - Improved maintenance of documentation build
+  - Added a check for use of reserved keywords at instantiation
+  - Tests compatible with pysatSpaceWeather 0.0.4 (#782)
+  - Improved pandas 1.3.0 compliance
+
 ## [3.0.0] - 2021-04-01
 - New Features
   - Added registry module for registering custom external instruments
@@ -48,7 +85,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     exclusive
   - Added support for SLT calculations outside [0, 24)
   - Added support for continuous SLT calculations when loading multiple days
-  - Instrument support functions now respond to local changes in 
+  - Instrument support functions now respond to local changes in
     Instrument.kwargs
   - Added support for pysat.Instrument, Files, and Orbits equality comparisons
   - Added .copy function to Instrument, Files, and Orbits classes
@@ -130,7 +167,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Modified storage of Instrument.kwargs to include all methods so that
     `eval(Instrument.__repr__())` works in more cases
   - Modified storage of Instrument.kwargs to only include user supplied keywords
-  - Improved robustness when working with file dates that aren't centered on 
+  - Improved robustness when working with file dates that aren't centered on
     midnight
   - Added basic valid path check to `pysat.utils.files.check_and_make_path`
 - Maintenance

@@ -10,6 +10,7 @@ pysat date and time utilities
 import datetime as dt
 import numpy as np
 import pandas as pds
+import re
 
 
 def getyrdoy(date):
@@ -68,9 +69,53 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
     yr = int(str_yr) + century if len(str_yr) == 2 else int(str_yr)
     out_date = dt.datetime(yr, int(str_mo), int(str_day), int(str_hr),
-                           int(str_min), int(str_sec))
+                           int(str_min), np.int64(str_sec))
 
     return out_date
+
+
+def calc_res(index, use_mean=False):
+    """ Determine the resolution for a time index
+
+    Parameters
+    ----------
+    index : array-like
+        Datetime list, array, or Index
+    use_mean : bool
+        Use the minimum time difference if False, use the mean time difference
+        if True (default=False)
+
+    Returns
+    -------
+    res_sec : float
+       Resolution value in seconds
+
+    """
+
+    # Test the length of the input
+    if len(index) < 2:
+        raise ValueError("insufficient data to calculate resolution")
+
+    # Calculate the minimum temporal difference
+    del_time = (np.array(index[1:]) - np.array(index[:-1]))
+
+    if use_mean:
+        del_time = del_time.mean()
+    else:
+        del_time = del_time.min()
+
+    # Convert time difference to seconds, based on possible data types
+    try:
+        # First try as timedelta
+        res_sec = del_time.total_seconds()
+    except AttributeError as aerr:
+        # Now try as numpy.timedelta64
+        if isinstance(del_time, np.timedelta64):
+            res_sec = np.float64(del_time) * 1.0e-9
+        else:
+            raise AttributeError("Input should be times: {:}".format(aerr))
+
+    return res_sec
 
 
 def calc_freq(index):
@@ -93,25 +138,13 @@ def calc_freq(index):
     To reduce the amount of calculations done, the returned frequency is
     either in seconds (if no sub-second resolution is found) or nanoseconds.
 
+    See Also
+    --------
+    pds.offsets.DateOffset
+
     """
-
-    # Test the length of the input
-    if len(index) < 2:
-        raise ValueError("insufficient data to calculate frequency")
-
-    # Calculate the minimum temporal difference
-    del_time = (np.array(index[1:]) - np.array(index[:-1])).min()
-
-    # Convert minimum to seconds
-    try:
-        # First try as timedelta
-        freq_sec = del_time.total_seconds()
-    except AttributeError as err:
-        # Now try as numpy.timedelta64
-        if isinstance(del_time, np.timedelta64):
-            freq_sec = float(del_time) * 1.0e-9
-        else:
-            raise AttributeError("Input should be times: {:}".format(err))
+    # Get the frequency of the index in seconds
+    freq_sec = calc_res(index, use_mean=False)
 
     # Format output frequency
     if np.floor(freq_sec) == freq_sec:
@@ -122,6 +155,46 @@ def calc_freq(index):
         freq = "{:.0f}N".format(freq_sec * 1.0e9)
 
     return freq
+
+
+def freq_to_res(freq):
+    """Convert a frequency string to a resolution value in seconds
+
+    Parameters
+    ----------
+    freq : str
+       Frequency string as described in Pandas Offset Aliases
+
+    Returns
+    -------
+    res_sec : np.float64
+       Resolution value in seconds
+
+    See Also
+    --------
+    pds.offsets.DateOffset
+
+    Reference
+    ---------
+    Separating alpha and numeric portions of strings, as described in:
+    https://stackoverflow.com/a/12409995
+
+    """
+    # Separate the alpha and numeric portions of the string
+    regex = re.compile(r'(\d+|\s+)')
+    out_str = [sval for sval in regex.split(freq) if len(sval) > 0]
+
+    if len(out_str) > 2:
+        raise ValueError('unexpected frequency format: {:s}'.format(freq))
+
+    # Cast the alpha and numeric portions
+    freq_str = out_str[-1]
+    freq_num = 1.0 if len(out_str) == 1 else np.float64(out_str[0])
+
+    # Calculate the resolution in seconds
+    res_sec = pds.Timedelta(freq_num, unit=freq_str).total_seconds()
+
+    return res_sec
 
 
 def create_date_range(start, stop, freq='D'):
@@ -152,11 +225,16 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
     Parameters
     ----------
-        year : array_like of ints
-        month : array_like of ints or None
-        day : array_like of ints
-            for day (default) or day of year (use month=None)
-        uts : array_like of floats
+        year : array_like or NoneType
+            Array of year values as np.int (default=None)
+        month : array_like or NoneType
+           Array of month values as np.int. Leave None if using day for
+           day of year. (default=None)
+        day : array_like or NoneType
+            Array of number of days as np.int. If month=None then value
+            interpreted as day of year, otherwise, day of month. (default=None)
+        uts : array-like or NoneType
+            Array of UT seconds of minute as np.float64 values (default=None)
 
     Returns
     -------
@@ -168,14 +246,14 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
     """
 
-    # need a timeseries index for storing satellite data in pandas but
-    # creating a datetime object for everything is too slow
-    # so I calculate the number of nanoseconds elapsed since first sample,
-    # and create timeseries index from that.
-    # Factor of 20 improvement compared to previous method,
-    # which itself was an order of magnitude faster than datetime.
+    # We need a timeseries index for storing satellite data in pandas, but
+    # creating a datetime object for everything is too slow.  Instead, we
+    # calculate the number of nanoseconds elapsed since first sample and
+    # create timeseries index from that.  This yields a factor of 20
+    # improvement compared to previous method, which itself was an order of
+    # magnitude faster than datetime.
 
-    # get list of unique year, and month
+    # Get list of unique year, and month
     if not hasattr(year, '__iter__'):
         raise ValueError('Must provide an iterable for all inputs.')
     if len(year) == 0:
@@ -191,25 +269,31 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     if day is None:
         day = np.ones(len(year))
     day = day.astype(int)
-    # track changes in seconds
-    uts_del = uts.copy().astype(float)
-    # determine where there are changes in year and month that need to be
+
+    # Track changes in seconds
+    uts_del = uts.copy().astype(np.float64)
+
+    # Determine where there are changes in year and month that need to be
     # accounted for
     _, idx = np.unique((year * 100. + month), return_index=True)
-    # create another index array for faster algorithm below
+
+    # Create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
-    # computes UTC seconds offset for each unique set of year and month
+
+    # Computes UTC seconds offset for each unique set of year and month
     for _idx, _idx2 in zip(idx[1:], idx2[2:]):
         temp = (dt.datetime(year[_idx], month[_idx], 1)
                 - dt.datetime(year[0], month[0], 1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
-    # add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day - 1) * 86400
-    # add in seconds since unix epoch to first day
+    # Add in UTC seconds for days, ignores existence of leap seconds
+    uts_del += (day - 1) * 86400.
+
+    # Add in seconds since unix epoch to first day
     uts_del += (dt.datetime(year[0], month[0], 1)
                 - dt.datetime(1970, 1, 1)).total_seconds()
-    # going to use routine that defaults to nanseconds for epoch
+
+    # Going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
 
@@ -257,3 +341,17 @@ def filter_datetime_input(date):
             out_date = dt.datetime(date.year, date.month, date.day)
 
     return out_date
+
+
+def today():
+    """Returns today's date (UTC), with no hour, minute, second, etc.
+
+    Returns
+    -------
+    today_utc: datetime
+        Today's date in UTC
+
+    """
+    today_utc = filter_datetime_input(dt.datetime.utcnow())
+
+    return today_utc

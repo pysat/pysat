@@ -13,18 +13,17 @@ import shutil
 import pysat
 
 
-class TravisCICleanSetup():
+class CICleanSetup():
     """ Tests where local settings are altered.
 
-    These only run in CI environments such as Travis and Appveyor to avoid
-    breaking an end user's setup
+    These only run in CI environments to avoid breaking an end user's setup
 
     """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
 
-        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        self.ci_env = (os.environ.get('CI') == 'true')
 
         reload(pysat)
         # Store directory paths
@@ -34,8 +33,9 @@ class TravisCICleanSetup():
             pytest.skip("Skipping local tests to avoid breaking user setup")
         else:
             # Move settings directory to simulate first load after install
-            self.root = os.path.join(os.getenv('HOME'), '.pysat')
-            self.new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+            self.root = os.path.join(os.path.expanduser("~"), '.pysat')
+            self.new_root = os.path.join(os.path.expanduser("~"),
+                                         '.saved_pysat')
             try:
                 # Ensure new_root is clean
                 shutil.rmtree(self.new_root)

@@ -324,25 +324,26 @@ The load module method signature should appear as:
   data by day. This can present some issues for data sets that are stored
   by month or by year. See ``instruments.methods.nasa_cdaweb.py`` for an example
   of returning daily data when stored by month.
-- tag and inst_id specify the data set to be loaded
+- tag and inst_id are always available as inputs, as they commmonnly specify
+  the data set to be loaded
 - The load routine should return a tuple with (data, pysat metadata object).
-- `data` is a pandas DataFrame, column names are the data labels, rows are
-  indexed by datetime objects.
-- For multi-dimensional data, an xarray can be
-  used instead. When returning xarray data, a variable at the top-level of the
-  instrument module must be set:
+- For simple time-series data sets, `data` is a pandas DataFrame, column names
+  are the data labels, rows are indexed by datetime objects.
+- For multi-dimensional data, `data` can be set to an xarray Dataset instead.
+  When returning xarray data, a variable at the top-level of the instrument
+  module must be set:
 
 .. code:: python
 
    pandas_format = False
 
-- The pandas DataFrame or xarray needs to be indexed with datetime objects. For
-  xarray objects this index needs to be named 'Epoch' or 'time'. In a future
-  version the supported names for the time index may be reduced. 'Epoch'
-  should be used for pandas though wider compatibility is expected.
+- The pandas DataFrame or xarray Dataset needs to be indexed with datetime
+  objects. This index needs to be named 'Epoch' or 'time'.
 - ``pysat.utils.create_datetime_index`` provides quick generation of an
   appropriate datetime index for irregularly sampled data sets with gaps
-
+- If your data is a CSV formatted file, you can incorporate the
+  ``pysat.instruments.methods.general.load_csv_data`` routine (see
+  :ref:`api-methods-general`) into your load method.
 - A pysat meta object may be obtained from ``pysat.Meta()``. The :ref:`api-meta`
   object uses a pandas DataFrame indexed by variable name with columns for
   metadata parameters associated with that variable, including items like
@@ -446,6 +447,7 @@ keyword may be used in more than one function but the same value will be passed
 to each.
 
 An example ``load`` function definition with two custom keyword arguments.
+
 .. code:: python
 
    def load(fnames, tag=None, inst_id=None, custom1=default1, custom2=default2):
@@ -470,8 +472,13 @@ function the next time that function is invoked.
    # Show default value applied for custom2 keyword
    print(inst.kwargs_supported['load']['custom2'])
 
-If a user supplies a keyword that is not supported by pysat or by any
-specific instrument module then an error is raised.
+   # Show keywords reserved for use by pysat
+   print(inst.kwargs_reserved)
+
+If a user supplies a keyword that is reserved or not supported by pysat, or by
+any specific instrument module function, then an error is raised. Reserved
+keywords are 'fnames', 'inst_id', 'tag', 'date_array', 'data_path',
+'format_str', 'supported_tags', 'start', 'stop', and 'freq'.
 
 
 init
@@ -685,11 +692,11 @@ same effect, and Level 2 tests will still be run.
 FTP Access
 ^^^^^^^^^^
 
-Another thing to note about testing is that the Travis CI environment used to
+Another thing to note about testing is that the CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
 HTTPS access is preferred whenever possible.  However, if this is not the case,
 the `_test_download_travis` flag can be used.  This has a similar function,
-except that it skips the download tests if on Travis CI, but will run those
+except that it skips the download tests if on CI, but will run those
 tests if run locally.
 
 .. code:: python

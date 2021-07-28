@@ -24,8 +24,6 @@ import pysat
 from pysat import utils
 from pysat import logger
 
-from pysat.utils.time import filter_datetime_input
-
 
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
@@ -215,9 +213,10 @@ class Instrument(object):
                  strict_time_flag=True, ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'min_val': ('value_min', float),
-                         'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}, custom=None, **kwargs):
+                         'min_val': ('value_min', np.float64),
+                         'max_val': ('value_max', np.float64),
+                         'fill_val': ('fill', np.float64)},
+                 custom=None, **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
@@ -231,12 +230,13 @@ class Instrument(object):
                 self.name = name.lower()
 
                 # Look to module for instrument functions and defaults
-                self._assign_attrs(by_name=True)
+                self._assign_attrs(by_name=True, tag=self.tag,
+                                   inst_id=self.inst_id)
             elif (platform is None) and (name is None):
                 # Creating "empty" Instrument object with this path
                 self.name = ''
                 self.platform = ''
-                self._assign_attrs()
+                self._assign_attrs(tag=self.tag, inst_id=self.inst_id)
             else:
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
@@ -253,7 +253,8 @@ class Instrument(object):
 
             # Look to supplied module for instrument functions and non-default
             # attribute values
-            self._assign_attrs(inst_module=self.inst_module)
+            self._assign_attrs(inst_module=self.inst_module,
+                               tag=self.tag, inst_id=self.inst_id)
 
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
@@ -360,9 +361,9 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         self.kwargs_supported = {}
+        self.kwargs_reserved = _reserved_keywords.copy()
         saved_keys = []
-        partial_func = ['list_files', 'list_remote_files', 'download',
-                        'preprocess', 'clean', 'load', 'init']
+
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
                     'list_remote_files', 'clean', 'init']
@@ -372,6 +373,13 @@ class Instrument(object):
 
             # Get dict of supported keywords and values
             default_kwargs = _get_supported_keywords(func)
+
+            # Confirm there are no reserved keywords present
+            for kwarg in kwargs.keys():
+                if kwarg in self.kwargs_reserved:
+                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                                    'allowed at instantiation.'))
+                    raise ValueError(estr)
 
             # Check if kwargs are in list
             good_kwargs = [ckey for ckey in kwargs.keys()
@@ -383,31 +391,9 @@ class Instrument(object):
             # Store all supported keywords for user edification
             self.kwargs_supported[fkey] = default_kwargs
 
-            # Keep a copy of user provided values
-            user_values = copy.deepcopy(self.kwargs[fkey])
-
-            # Add in defaults if not already present
-            for dkey in default_kwargs.keys():
-                if dkey not in good_kwargs:
-                    self.kwargs[fkey][dkey] = default_kwargs[dkey]
-
-            # Determine the number of kwargs in this function
-            fkwargs = [gkey for gkey in self.kwargs[fkey].keys()]
-
-            # Keep only the user provided kwargs
-            if len(fkwargs) > 0:
-                # Store these keys so they may be used as part of a comparison
-                # test to ensure all user supplied keys are used.
-                saved_keys.extend(fkwargs)
-
-                # Assign user keywords to relevant function
-                if fkey in partial_func:
-                    pfunc = functools.partial(func, **self.kwargs[fkey])
-                    setattr(self, func_name, pfunc)
-                    # Only retain the user provided keywords. These partial
-                    # keywords need to be retained so that __repr__ can
-                    # provide an accurate reconstruction.
-                    self.kwargs[fkey] = user_values
+            # Store keys to support check that all user supplied
+            # keys are used.
+            saved_keys.extend(default_kwargs.keys())
 
         # Test for user supplied keys that are not used
         missing_keys = []
@@ -451,9 +437,9 @@ class Instrument(object):
             self.orbit_info = orbit_info
         self.orbits = pysat.Orbits(self, **self.orbit_info)
 
-        # Create empty placeholder for meta translation table
-        # gives information about how to label metadata for netcdf export
-        # if None, pysat metadata labels will be used
+        # Create empty placeholder for the meta translation table, which
+        # provides information about how to label metadata for netcdf export.
+        # If None, pysat metadata labels will be used instead.
         self._meta_translation_table = None
 
         # Create a placeholder for a post-processing function to be applied
@@ -588,7 +574,8 @@ class Instrument(object):
 
         # Create string for other parts Instrument instantiation
         out_str = "".join(["pysat.Instrument(platform='", self.platform,
-                           "', name='", self.name, "', inst_id='", self.inst_id,
+                           "', name='", self.name, "', tag='", self.tag,
+                           "', inst_id='", self.inst_id,
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
                            "{:}, ".format(self.orbit_info),
@@ -641,8 +628,6 @@ class Instrument(object):
         output_str += '\n\nLoaded Data Statistics\n'
         output_str += '----------------------\n'
         if not self.empty:
-            num_vars = len(self.variables)
-
             output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
             output_str += 'DOY: {:03d}\n'.format(self.doy)
             output_str += 'Time range: '
@@ -650,7 +635,8 @@ class Instrument(object):
             output_str += ' --- '
             output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
             output_str += 'Number of Times: {:d}\n'.format(len(self.index))
-            output_str += 'Number of variables: {:d}\n'.format(num_vars)
+            output_str += 'Number of variables: {:d}\n'.format(
+                len(self.variables))
 
             output_str += '\nVariable Names:\n'
             output_str += utils._core.fmt_output_in_cols(self.variables)
@@ -704,11 +690,18 @@ class Instrument(object):
                 try:
                     # Pass keys directly through
                     return self.data.loc[key[0], key[1]]
-                except (KeyError, TypeError):
+                except (KeyError, TypeError) as err1:
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
                     # Assume key[0] is integer (including list or slice)
-                    return self.data.loc[self.data.index[key[0]], key[1]]
+                    try:
+                        return self.data.loc[self.data.index[key[0]], key[1]]
+                    except IndexError as err2:
+                        err_message = '\n'.join(("original messages:",
+                                                 str(err1), str(err2)))
+                        raise ValueError(' '.join(("Check requested indexes,",
+                                                   "data may not exist.",
+                                                   err_message)))
             else:
                 try:
                     # integer based indexing
@@ -1103,7 +1096,8 @@ class Instrument(object):
         """
         pass
 
-    def _assign_attrs(self, by_name=False, inst_module=None):
+    def _assign_attrs(self, by_name=False, inst_module=None, tag=None,
+                      inst_id=None):
         """Assign all external instrument attributes to the Instrument object
 
         Parameters
@@ -1113,6 +1107,10 @@ class Instrument(object):
             if False uses inst_module. (default=False)
         inst_module : module or NoneType
             Instrument module or None, if not specified (default=None)
+        tag : str or NoneType
+            Instrument tag string
+        inst_id : str or NoneType
+            Instrument inst_id string
 
         Raises
         ------
@@ -1207,6 +1205,22 @@ class Instrument(object):
             # No module or name info, default pass functions assigned
             return
 
+        # Check if tag and inst_id are appropriate for the module
+        if inst_id not in inst.inst_ids.keys():
+            inst_id_str = ', '.join([ikey.__repr__()
+                                    for ikey in inst.inst_ids.keys()])
+            estr = ''.join(("'", inst_id, "' is not one of the supported ",
+                            'inst_ids. Supported inst_ids are: ',
+                            inst_id_str, '.'))
+            raise ValueError(estr)
+
+        if tag not in inst.inst_ids[inst_id]:
+            tag_str = ', '.join([tkey.__repr__()
+                                for tkey in inst.inst_ids[inst_id]])
+            estr = ''.join(("'", tag, "' is not one of the supported tags. ",
+                            'Supported tags are: ', tag_str, '.'))
+            raise ValueError(estr)
+
         # Assign the Instrument methods
         missing = list()
         for mstat in inst_methods.keys():
@@ -1283,7 +1297,7 @@ class Instrument(object):
                                   ' default  values: {:}'.format(missing)]))
         return
 
-    def _load_data(self, date=None, fid=None, inc=None):
+    def _load_data(self, date=None, fid=None, inc=None, load_kwargs=None):
         """
         Load data for an instrument on given date or fid, depending upon input.
 
@@ -1296,6 +1310,9 @@ class Instrument(object):
         inc : dt.timedelta or int
             Increment of files or dates to load, starting from the
             root date or fid (default=None)
+        load_kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
+            If None, uses `self.kwargs['load']`. (default=None)
 
         Returns
         -------
@@ -1304,8 +1321,11 @@ class Instrument(object):
         meta : pysat.Meta
             pysat meta data
         """
+        # Set default load_kwargs
+        if load_kwargs is None:
+            load_kwargs = self.kwargs['load']
 
-        date = filter_datetime_input(date)
+        date = utils.time.filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
             # inclusive loading on filenames
@@ -1320,7 +1340,7 @@ class Instrument(object):
             try:
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                              inst_id=self.inst_id,
-                                             **self.kwargs['load'])
+                                             **load_kwargs)
 
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
@@ -1547,7 +1567,8 @@ class Instrument(object):
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
-                    if not isinstance(data_type, float):
+                    if not isinstance(data_type, float) \
+                            or (not isinstance(data_type, np.floating)):
                         break
             datetime_flag = False
 
@@ -1764,15 +1785,9 @@ class Instrument(object):
                 # Instrument has no files
                 self._iter_list = []
         else:
-            # User provided some inputs
-            starts = np.asarray([start])
-            stops = np.asarray([stop])
-
-            # Ensure consistency if list-like already
-            if len(starts.shape) > 1:
-                starts = starts[0]
-            if len(stops.shape) > 1:
-                stops = stops[0]
+            # User provided some inputs, ensure always a 1D list
+            starts = pysat.utils.listify(start)
+            stops = pysat.utils.listify(stop)
 
             # check equal number of elements
             if len(starts) != len(stops):
@@ -1836,7 +1851,7 @@ class Instrument(object):
                     # don't let loaded data go past stop bound
                     if iter_idx + self._iter_width - 1 > stop_idx:
                         i = np.ceil((self._iter_width - 1) / self._iter_step)
-                        i = -int(i)
+                        i = -np.int64(i)
                         self._iter_list.extend(itemp[:i])
                     else:
                         self._iter_list.extend(itemp)
@@ -1860,8 +1875,8 @@ class Instrument(object):
                     self._iter_width = dt.timedelta(days=1)
 
                 # Create list-like of dates for iteration
-                starts = filter_datetime_input(starts)
-                stops = filter_datetime_input(stops)
+                starts = utils.time.filter_datetime_input(starts)
+                stops = utils.time.filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
@@ -1894,19 +1909,9 @@ class Instrument(object):
 
     @property
     def empty(self):
-        """Boolean flag reflecting lack of data.
-
-        True if there is no Instrument data."""
-
-        if self.pandas_format:
-            return self.data.empty
-        else:
-            if 'time' in self.data.indexes:
-                return len(self.data.indexes['time']) == 0
-            elif 'Epoch' in self.data.indexes:
-                return len(self.data.indexes['Epoch']) == 0
-            else:
-                return True
+        """Boolean flag reflecting lack of data, True if there is no data.
+        """
+        return self._empty()
 
     @property
     def date(self):
@@ -1916,7 +1921,7 @@ class Instrument(object):
     @date.setter
     def date(self, new_date):
         # Set the date property, see property docstring for details
-        self._date = filter_datetime_input(new_date)
+        self._date = utils.time.filter_datetime_input(new_date)
 
     @property
     def index(self):
@@ -2135,9 +2140,7 @@ class Instrument(object):
             Today's date in UTC
 
         """
-        today_utc = filter_datetime_input(dt.datetime.utcnow())
-
-        return today_utc
+        return utils.time.today()
 
     def tomorrow(self):
         """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -2571,7 +2574,8 @@ class Instrument(object):
         return export_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
-             end_date=None, fname=None, stop_fname=None, verifyPad=False):
+             end_date=None, fname=None, stop_fname=None, verifyPad=False,
+             **kwargs):
         """Load instrument data into Instrument.data object.
 
         Parameters
@@ -2607,6 +2611,8 @@ class Instrument(object):
         verifyPad : bool
             If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments.
 
         Raises
         ------
@@ -2664,6 +2670,13 @@ class Instrument(object):
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
+        # Add the load kwargs from initialization those provided on input
+        for lkey in self.kwargs['load'].keys():
+            # Only use the initialized kwargs if a request hasn't been
+            # made to alter it in the method call
+            if lkey not in kwargs.keys():
+                kwargs[lkey] = self.kwargs['load'][lkey]
+
         # Set options used by loading routine based upon user input
         if (yr is not None) and (doy is not None):
             if doy < 1 or (doy > 366):
@@ -2704,7 +2717,7 @@ class Instrument(object):
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
-            date = filter_datetime_input(date)
+            date = utils.time.filter_datetime_input(date)
 
             # Increment after determining the desired step size
             if end_date is not None:
@@ -2797,9 +2810,9 @@ class Instrument(object):
 
                 # Using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
-                self._curr_data, self._curr_meta = \
-                    self._load_data(date=self.date, fid=self._fid,
-                                    inc=self.load_step)
+                self._curr_data, self._curr_meta = self._load_data(
+                    date=self.date, fid=self._fid, inc=self.load_step,
+                    load_kwargs=kwargs)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
@@ -2825,9 +2838,9 @@ class Instrument(object):
                     del self._curr_data
                     del self._next_data
                     self._prev_data, self._prev_meta = self._load_prev()
-                    self._curr_data, self._curr_meta = \
-                        self._load_data(date=self.date, fid=self._fid,
-                                        inc=self.load_step)
+                    self._curr_data, self._curr_meta = self._load_data(
+                        date=self.date, fid=self._fid, inc=self.load_step,
+                        load_kwargs=kwargs)
                     self._next_data, self._next_meta = self._load_next()
 
             # Make sure datetime indices for all data is monotonic
@@ -2929,7 +2942,8 @@ class Instrument(object):
         # If self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
-                                              inc=self.load_step)
+                                              inc=self.load_step,
+                                              load_kwargs=kwargs)
             if not self.empty:
                 self.meta = meta
 
@@ -3129,7 +3143,7 @@ class Instrument(object):
         logger.info(' '.join(('Found {} files that'.format(len(new_dates)),
                               'are new or updated.')))
 
-        # download date for dates in new_dates (also includes new names)
+        # Download date for dates in new_dates (also includes new names)
         self.download(date_array=new_dates, **kwargs)
 
     def download(self, start=None, stop=None, freq='D', date_array=None,
@@ -3166,8 +3180,8 @@ class Instrument(object):
             os.makedirs(self.files.data_path)
         except OSError as err:
             if err.errno != errno.EEXIST:
-                # ok if directories already exist.
-                # Include message from original error.
+                # Ok if directories already exist, otherwise exit with an
+                # error that includes the message from original error.
                 msg = ''.join(('There was a problem creating the path: ',
                                self.files.data_path,
                                ', to store downloaded data for ', self.platform,
@@ -3192,8 +3206,8 @@ class Instrument(object):
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
             # whole days
-            start = filter_datetime_input(start)
-            stop = filter_datetime_input(stop)
+            start = utils.time.filter_datetime_input(start)
+            stop = utils.time.filter_datetime_input(stop)
             date_array = utils.time.create_date_range(start, stop, freq=freq)
 
         # Add necessary kwargs to the optional kwargs
@@ -3204,48 +3218,53 @@ class Instrument(object):
             if kwarg not in kwargs:
                 kwargs[kwarg] = self.kwargs['download'][kwarg]
 
-        # Download the data
-        self._download_rtn(date_array, **kwargs)
+        # Download the data, if enough data is requested
+        if len(date_array) > 0:
+            self._download_rtn(date_array, **kwargs)
 
-        # get current file date range
-        first_date = self.files.start_date
-        last_date = self.files.stop_date
+            # Get the current file date range
+            first_date = self.files.start_date
+            last_date = self.files.stop_date
 
-        logger.info('Updating pysat file list')
-        self.files.refresh()
+            logger.info('Updating pysat file list')
+            self.files.refresh()
 
-        # if instrument object has default bounds, update them
-        if len(self.bounds[0]) == 1:
-            # get current bounds
-            curr_bound = self.bounds
-            if self._iter_type == 'date':
-                if (curr_bound[0][0] == first_date
-                        and curr_bound[1][0] == last_date):
-                    logger.info('Updating instrument object bounds by date.')
-                    self.bounds = (self.files.start_date, self.files.stop_date,
-                                   curr_bound[2], curr_bound[3])
-            if self._iter_type == 'file':
-                # Account for the fact the file datetimes may not land
-                # exactly at start or end of a day.
-                dsel1 = slice(first_date, first_date + dt.timedelta(hours=23,
-                                                                    minutes=59,
-                                                                    seconds=59))
-                dsel2 = slice(last_date, last_date + dt.timedelta(hours=23,
-                                                                  minutes=59,
-                                                                  seconds=59))
-                if (curr_bound[0][0] == self.files[dsel1][0]
-                        and curr_bound[1][0] == self.files[dsel2][-1]):
-                    logger.info('Updating instrument object bounds by file.')
-                    dsel1 = slice(self.files.start_date,
-                                  self.files.start_date
+            # If instrument object has default bounds, update them
+            if len(self.bounds[0]) == 1:
+                # Get current bounds
+                curr_bound = self.bounds
+                if self._iter_type == 'date':
+                    if(curr_bound[0][0] == first_date
+                       and curr_bound[1][0] == last_date):
+                        logger.info('Updating instrument object bounds by date')
+                        self.bounds = (self.files.start_date,
+                                       self.files.stop_date, curr_bound[2],
+                                       curr_bound[3])
+                if self._iter_type == 'file':
+                    # Account for the fact the file datetimes may not land
+                    # exactly at start or end of a day.
+                    dsel1 = slice(first_date, first_date
                                   + dt.timedelta(hours=23, minutes=59,
                                                  seconds=59))
-                    dsel2 = slice(self.files.stop_date, self.files.stop_date
+                    dsel2 = slice(last_date, last_date
                                   + dt.timedelta(hours=23, minutes=59,
                                                  seconds=59))
-                    self.bounds = (self.files[dsel1][0],
-                                   self.files[dsel2][-1],
-                                   curr_bound[2], curr_bound[3])
+                    if(curr_bound[0][0] == self.files[dsel1][0]
+                       and curr_bound[1][0] == self.files[dsel2][-1]):
+                        logger.info('Updating instrument object bounds by file')
+                        dsel1 = slice(self.files.start_date,
+                                      self.files.start_date
+                                      + dt.timedelta(hours=23, minutes=59,
+                                                     seconds=59))
+                        dsel2 = slice(self.files.stop_date, self.files.stop_date
+                                      + dt.timedelta(hours=23, minutes=59,
+                                                     seconds=59))
+                        self.bounds = (self.files[dsel1][0],
+                                       self.files[dsel2][-1],
+                                       curr_bound[2], curr_bound[3])
+        else:
+            logger.warning(''.join(['Requested download over an empty date ',
+                                    'range: {:} to {:}'.format(start, stop)]))
 
         return
 
@@ -3428,7 +3447,7 @@ class Instrument(object):
             # attach metadata
             cdfkey.setncatts(new_dict)
 
-            # attach data
+            # Attach the time index to the data
             cdfkey[:] = (self.index.values.astype(np.int64)
                          * 1.E-6).astype(np.int64)
 
@@ -3808,6 +3827,14 @@ def _kwargs_keys_to_func_name(kwargs_key):
     return func_name
 
 
+# Hidden variable to store pysat reserved keywords. Defined here
+# since these values are used by both the Instrument class and
+# a function defined below.
+_reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
+                      'data_path', 'format_str', 'supported_tags',
+                      'start', 'stop', 'freq']
+
+
 def _get_supported_keywords(local_func):
     """Return a dict of supported keywords
 
@@ -3821,7 +3848,6 @@ def _get_supported_keywords(local_func):
     out_dict : dict
         dict of supported keywords and default values
 
-
     Note
     ----
     If the input is a partial function then the list of keywords returned only
@@ -3829,11 +3855,12 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
-    # account for keywords that are treated by Instrument as args
-    pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
-               'format_str', 'supported_tags', 'start', 'stop', 'freq']
+    global _reserved_keywords
 
-    # check if partial function
+    # Account for keywords that are treated by Instrument as args
+    pre_kws = _reserved_keywords.copy()
+
+    # Check if this is a partial function
     if isinstance(local_func, functools.partial):
         # get keyword arguments already applied to function
         existing_kws = local_func.keywords

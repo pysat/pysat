@@ -144,9 +144,13 @@ class Parameters(object):
         # doesn't exist yet.
         with Lock(self.file_path, 'r', timeout=10) as fout:
             self.data = json.load(fout)
-            # In case of network file system
             fout.flush()
-            os.fsync(fout.fileno())
+            try:
+                # In case of network file system
+                os.fsync(fout.fileno())
+            except OSError:
+                # Not a network file system
+                pass
 
         return
 
@@ -160,7 +164,7 @@ class Parameters(object):
 
         """
         dir_path = os.path.split(self.file_path)[0]
-        out_str = ''.join(('pysat._params.Parameters(path="', dir_path, '")'))
+        out_str = ''.join(('pysat._params.Parameters(path=r"', dir_path, '")'))
         return out_str
 
     def __str__(self, long_str=True):
@@ -259,18 +263,18 @@ class Parameters(object):
             paths = paths.tolist()
 
         # Account for a user prefix in the path, such as ~
-        paths = [os.path.expanduser(path) for path in paths]
+        paths = [os.path.expanduser(pval) for pval in paths]
 
         # Account for the presence of $HOME or similar
-        paths = [os.path.expandvars(path) for path in paths]
+        paths = [os.path.expandvars(pval) for pval in paths]
 
         # Make sure paths don't end with path separator for consistency
-        paths = [path if path[-1] != os.path.sep else path[:-1]
-                 for path in paths]
+        paths = [pval if pval[-1] != os.path.sep else pval[:-1]
+                 for pval in paths]
 
         # Ensure all paths are valid, create if not
-        for path in paths:
-            check_and_make_path(path)
+        for pval in paths:
+            check_and_make_path(pval)
 
         # Assign updated and validated paths
         self.data['data_dirs'] = paths
@@ -329,6 +333,11 @@ class Parameters(object):
 
             # Ensure write is fully complete even for network file systems
             fout.flush()
-            os.fsync(fout.fileno())
+            try:
+                # In case of network file system
+                os.fsync(fout.fileno())
+            except OSError:
+                # Not a network file system
+                pass
 
         return

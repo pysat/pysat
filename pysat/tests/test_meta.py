@@ -6,6 +6,7 @@
 """
 tests the pysat meta object and code
 """
+import logging
 import netCDF4
 import numpy as np
 import os
@@ -17,6 +18,8 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.tests.test_utils
 from pysat.utils import testing
+
+logger = pysat.logger
 
 
 class TestBasics():
@@ -66,6 +69,61 @@ class TestBasics():
             self.meta.labels.default_values_from_attr('not_an_attr')
 
         assert verr.match("unknown label attribute")
+
+    @pytest.mark.parametrize("input", [1., 1, {}, None, []])
+    def test_default_value_from_type_unexpected_input(self, input, caplog):
+        """ Test MetaLabels.default_values_from_type with unexpected input
+        """
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.meta.labels.default_values_from_type(input)
+
+            captured = caplog.text
+
+            # Test for expected string
+            test_str = 'No type match found for '
+            assert captured.find(test_str) >= 0
+
+        return
+
+    @pytest.mark.parametrize("input",
+                             [float, np.float16, np.float32, np.float64])
+    def test_default_value_from_type_float_inputs(self, input, caplog):
+        """ Test MetaLabels.default_values_from_type with float inputs
+        """
+
+        out = self.meta.labels.default_values_from_type(input)
+        assert np.isnan(out)
+
+        return
+
+    @pytest.mark.parametrize("input",
+                             [int, np.int8, np.int16, np.int32, np.int64])
+    def test_default_value_from_type_int_inputs(self, input, caplog):
+        """ Test MetaLabels.default_values_from_type with int inputs
+        """
+
+        out = self.meta.labels.default_values_from_type(input)
+        assert out == -1
+
+        return
+
+    @pytest.mark.parametrize("input", [1., 1, {}, None, []])
+    def test_info_message_incorrect_input_meta_labels(self, input, caplog):
+        """Test for info message when labels input not correct"""
+        with caplog.at_level(logging.INFO, logger='pysat'):
+
+            meta = pysat.Meta(labels={'min_val': ('min_val', input)})
+
+            # Assign any new meta variable
+            meta['hi'] = {'units': 'goodbye'}
+            captured = caplog.text
+
+            # Test for expected string
+            test_str = ' '.join(('A problem may have been encountered with the',
+                                 'user supplied type for Meta attribute'))
+            assert captured.find(test_str) >= 0
+
+        return
 
     def test_meta_repr(self):
         """ Test the Meta repr function
@@ -1267,13 +1325,16 @@ class TestBasics():
         self.testInst.to_netcdf4(outfile)
 
         # Load file back and test metadata is as expected
-        f = netCDF4.Dataset(outfile)
+        with netCDF4.Dataset(outfile) as open_f:
+            test_vars = open_f['test_nan_variable'].ncattrs()
 
         pysat.tests.test_utils.remove_files(self.testInst)
 
-        assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
-        assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
-        assert 'extra_check' in f['test_nan_variable'].ncattrs()
+        assert 'test_nan_export' in test_vars
+        assert 'non_nan_export' not in test_vars
+        assert 'extra_check' in test_vars
+
+        return
 
     def test_nan_metadata_filtered_netcdf4_via_method(self):
         """check that metadata set to NaN is excluded from netcdf via nc call"""
@@ -1296,13 +1357,16 @@ class TestBasics():
         self.testInst.to_netcdf4(outfile, export_nan=export_nan)
 
         # Load file back and test metadata is as expected
-        f = netCDF4.Dataset(outfile)
+        with netCDF4.Dataset(outfile) as open_f:
+            test_vars = open_f['test_nan_variable'].ncattrs()
 
         pysat.tests.test_utils.remove_files(self.testInst)
 
-        assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
-        assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
-        assert 'extra_check' in f['test_nan_variable'].ncattrs()
+        assert 'test_nan_export' in test_vars
+        assert 'non_nan_export' not in test_vars
+        assert 'extra_check' in test_vars
+
+        return
 
 
 class TestBasicsImmutable(TestBasics):

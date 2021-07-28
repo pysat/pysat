@@ -44,26 +44,15 @@ def remove_files(inst):
                 os.unlink(file_path)
 
 
-class TestBasics():
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
-        self.data_path = pysat.params['data_dirs']
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        pysat.params['data_dirs'] = self.data_path
-
-
 class TestCIonly():
     """Tests where we mess with local settings.
-    These only run in CI environments such as Travis and Appveyor to avoid
-    breaking an end user's setup
+    These only run in CI environments such as GitHub Actions to avoid breaking
+    an end user's setup
     """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        self.ci_env = (os.environ.get('CI') == 'true')
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
 
@@ -75,8 +64,8 @@ class TestCIonly():
         """Ensure initial load routines work"""
 
         # Move settings directory to simulate first load after install
-        root = os.path.join(os.getenv('HOME'), '.pysat')
-        new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+        root = os.path.join(os.path.expanduser("~"), '.pysat')
+        new_root = os.path.join(os.path.expanduser("~"), '.saved_pysat')
         shutil.move(root, new_root)
 
         reload(pysat)
@@ -92,6 +81,9 @@ class TestCIonly():
         # Move settings back
         shutil.rmtree(root)
         shutil.move(new_root, root)
+
+        # Make sure pysat reloads settings
+        reload(pysat)
 
 
 class TestScaleUnits():
@@ -190,6 +182,41 @@ class TestScaleUnits():
         with pytest.raises(ValueError) as verr:
             pysat.utils.scale_units('happy', 'sad')
         assert str(verr).find('unknown units') > 0
+
+
+class TestListify():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        return
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        return
+
+    @pytest.mark.parametrize('iterable', ['test', ['test'], [[['test']]],
+                                          [[[['test']]]],
+                                          [['test', 'test']],
+                                          [['test', 'test'], ['test', 'test']],
+                                          [], [[]]])
+    def test_listify_list_string_inputs(self, iterable):
+        """ Test listify with various list levels of a string"""
+
+        new_iterable = pysat.utils.listify(iterable)
+        for item in new_iterable:
+            assert item == 'test'
+        return
+
+    @pytest.mark.parametrize('iterable', [np.nan, np.full((1, 1), np.nan),
+                                          np.full((2, 2), np.nan),
+                                          np.full((3, 3, 3), np.nan)])
+    def test_listify_list_number_inputs(self, iterable):
+        """ Test listify with various np.arrays of numbers"""
+
+        new_iterable = pysat.utils.listify(iterable)
+        for item in new_iterable:
+            assert np.isnan(item)
+        assert len(new_iterable) == np.product(np.shape(iterable))
+        return
 
 
 class TestBasicNetCDF4():
@@ -625,10 +652,6 @@ class TestFmtCols():
 
 
 class TestAvailableInst(TestWithRegistration):
-
-    # Set setup/teardown to the class defaults
-    setup = TestWithRegistration.setup
-    teardown = TestWithRegistration.teardown
 
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",

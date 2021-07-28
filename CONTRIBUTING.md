@@ -5,6 +5,10 @@ Bug reports, feature suggestions, and other contributions are greatly
 appreciated!  pysat is a community-driven project and welcomes both feedback and
 contributions.
 
+Come join us on Slack! An invitation to the pysat workspace is available 
+in the 'About' section of the [pysat GitHub Repository.](https://github.com/pysat/pysat)
+Development meetings are generally held fortnightly.
+
 Short version
 -------------
 
@@ -86,14 +90,14 @@ For merging, you should:
 
 1. Include an example for use
 2. Add a note to ``CHANGELOG.md`` about the changes
-3. Ensure that all checks passed (current checks include Scrutinizer, Travis-CI,
+3. Ensure that all checks passed (current checks include GitHub Actions,
    and Coveralls) [1]_
 
 .. [1] If you don't have all the necessary Python versions available locally or
        have trouble building all the testing environments, you can rely on
-       Travis to run the tests for each change you add in the pull request.
-       Because testing here will delay tests by other developers, please ensure
-       that the code passes all tests on your local system first.
+       GitHub Actions to run the tests for each change you add in the pull
+       request. Because testing here will delay tests by other developers,
+       please ensure that the code passes all tests on your local system first.
 
 Project Style Guidelines
 ------------------------

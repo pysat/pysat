@@ -856,23 +856,11 @@ class Files(object):
 
         """
 
-        starts = np.asarray(start)
-        if starts.shape == ():
-            starts = [starts.tolist()]
-        elif starts.shape[0] > 1:
-            starts = starts.squeeze().tolist()
-        elif starts.shape[0] == 1:
-            starts = starts.tolist()
-
-        stops = np.asarray(stop)
-        if stops.shape == ():
-            stops = [stops.tolist()]
-        elif stops.shape[0] > 1:
-            stops = stops.squeeze().tolist()
-        elif stops.shape[0] == 1:
-            stops = stops.tolist()
-
         # Selection is treated differently if start/stop are iterable or not
+        # so we convert them to a list as needed for consistency.
+        starts = pysat.utils.listify(start)
+        stops = pysat.utils.listify(stop)
+
         files = []
         for (sta, stp) in zip(starts, stops):
             id1 = self.get_index(sta)
@@ -925,6 +913,9 @@ class Files(object):
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
+
+        The 'day' format keyword may be used to specify either day of month
+        (if month is included) or day of year.
 
         """
 

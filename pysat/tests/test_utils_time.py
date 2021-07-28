@@ -59,48 +59,76 @@ class TestParseDate():
             _ = pytime.parse_date('194', '15', '31')
 
 
-class TestCalcFreq():
+class TestCalcFreqRes():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.year = np.ones(4) * 2001
-        self.month = np.ones(4) * 1
+        self.year = np.ones(4, dtype=int) * 2001
+        self.month = np.ones(4, dtype=int) * 1
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.year, self.month
 
-    def test_calc_freq(self):
+    @pytest.mark.parametrize('trange,freq_out',
+                             [(np.arange(0.0, 4.0, 1.0), '1S'),
+                              (np.arange(0.0, 0.04, .01), '10000000N')])
+    def test_calc_freq(self, trange, freq_out):
         """Test index frequency calculation"""
 
         tind = pytime.create_datetime_index(year=self.year,
                                             month=self.month,
-                                            uts=np.arange(0.0, 4.0, 1.0))
+                                            uts=trange)
         freq = pytime.calc_freq(tind)
 
-        assert freq.find("1S") == 0
+        assert freq.find(freq_out) == 0
+        return
 
-    def test_calc_freq_ns(self):
-        """Test index frequency calculation with nanosecond output"""
+    @pytest.mark.parametrize('freq_in,res_out',
+                             [('S', 1.0), ('2D', 172800.0),
+                              ('10000000N', 0.01)])
+    def test_freq_to_res(self, freq_in, res_out):
+        """Test index frequency to resolution calculation"""
+        res = pytime.freq_to_res(freq_in)
 
-        tind = pytime.create_datetime_index(year=self.year,
-                                            month=self.month,
-                                            uts=np.arange(0.0, 0.04, .01))
-        freq = pytime.calc_freq(tind)
+        assert res == res_out
+        return
 
-        assert freq.find("10000000N") == 0
+    @pytest.mark.parametrize('use_mean', [True, False])
+    def test_calc_res_mean_flag(self, use_mean):
+        """Test index frequency calculation"""
+        # Set the input and output comparison
+        tind = [dt.datetime(self.year[0], self.month[0], 1, 0),
+                dt.datetime(self.year[0], self.month[0], 1, 1),
+                dt.datetime(self.year[0], self.month[0], 1, 2),
+                dt.datetime(self.year[0], self.month[0], 1, 4)]
+        out_res = 4800.0 if use_mean else 3600.0
 
-    def test_calc_freq_len_fail(self):
-        """Test index frequency calculation with empty list"""
+        # Get and test the output resolution
+        res = pytime.calc_res(tind, use_mean=use_mean)
+        assert res == out_res
 
-        with pytest.raises(ValueError):
-            pytime.calc_freq(list())
+    @pytest.mark.parametrize('func_name', ['calc_freq', 'calc_res'])
+    def test_calc_input_len_fail(self, func_name):
+        """Test calc freq/res raises ValueError with an empty list."""
+        test_func = getattr(pytime, func_name)
 
-    def test_calc_freq_type_fail(self):
-        """Test index frequency calculation with non-datetime list"""
+        with pytest.raises(ValueError) as verr:
+            test_func(list())
 
-        with pytest.raises(AttributeError):
-            pytime.calc_freq([1, 2, 3, 4])
+        assert str(verr).find("insufficient data to calculate resolution") >= 0
+        return
+
+    @pytest.mark.parametrize('func_name', ['calc_freq', 'calc_res'])
+    def test_calc_input_type_fail(self, func_name):
+        """Test calc freq/res raises ValueError with non-datetime list"""
+        test_func = getattr(pytime, func_name)
+
+        with pytest.raises(AttributeError) as aerr:
+            test_func([1, 2, 3, 4])
+
+        assert str(aerr).find("Input should be times") >= 0
+        return
 
 
 class TestCreateDateRange():

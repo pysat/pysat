@@ -116,15 +116,41 @@ def scale_units(out_unit, in_unit):
     return unit_scale
 
 
+def listify(iterable):
+    """Returns a flattened list of iterable if not already a list
+
+    Parameters
+    ----------
+    iterable : iter-like
+        An iterable object that will be wrapped within a list
+
+    Returns
+    -------
+    list
+        An enclosing 1-D list of iterable if not already a list
+
+    """
+
+    arr_iter = np.asarray(iterable)
+    if arr_iter.shape == ():
+        list_iter = [arr_iter.tolist()]
+    elif arr_iter.shape[0] == 0:
+        list_iter = arr_iter.tolist()
+    else:
+        list_iter = arr_iter.flatten().tolist()
+
+    return list_iter
+
+
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                  epoch_name='Epoch', pandas_format=True,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'plot': ('plot_label', str), 'axis': ('axis', str),
                          'scale': ('scale', str),
-                         'min_val': ('value_min', float),
-                         'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}):
+                         'min_val': ('value_min', np.float64),
+                         'max_val': ('value_max', np.float64),
+                         'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -149,8 +175,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
         'plot': ('plot_label', str), 'axis': ('axis', str),
-        'scale': ('scale', str), 'min_val': ('value_min', float),
-        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'scale': ('scale', str), 'min_val': ('value_min', np.float64),
+        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
 
     Returns
     --------
@@ -168,8 +194,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if isinstance(fnames, str):
-        fnames = [fnames]
+    fnames = listify(fnames)
 
     if file_format is None:
         file_format = 'NETCDF4'
@@ -310,13 +335,13 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         time_var = loop_dict.pop(index_key_name)
                         if time_index_flag:
                             # Create datetime index from data
-                            time_var = pds.to_datetime(1E6 * time_var)
+                            time_var = pds.to_datetime(1.0E6 * time_var)
                         new_index = time_var
                         new_index_name = index_name
                     else:
                         # Using integer indexing
                         new_index = np.arange((loop_lim * step),
-                                              dtype=int) % step
+                                              dtype=np.int64) % step
                         new_index_name = 'index'
 
                     # Load all data into frame
@@ -327,7 +352,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             del loop_frame[obj_key]
 
                         # Break massive frame into bunch of smaller frames
-                        for i in np.arange(loop_lim, dtype=int):
+                        for i in np.arange(loop_lim, dtype=np.int64):
                             loop_list.append(loop_frame.iloc[(step * i):
                                                              (step * (i + 1)),
                                                              :])
@@ -339,7 +364,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                                                 name=obj_var_keys[0])
 
                         # Break massive series into bunch of smaller series
-                        for i in np.arange(loop_lim, dtype=int):
+                        for i in np.arange(loop_lim, dtype=np.int64):
                             loop_list.append(loop_frame.iloc[(step * i):
                                                              (step * (i + 1))])
                             loop_list[-1].index = new_index[(step * i):
@@ -358,7 +383,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
                 loaded_vars[epoch_name] = pds.to_datetime(
-                    (1E6 * time_var).astype(int))
+                    (1.0E6 * time_var).astype(np.int64))
                 running_store.append(loaded_vars)
                 running_idx += len(loaded_vars[epoch_name])
 
@@ -432,7 +457,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
     out_len = len(out_strs)
     middle = -1
     if out_len > max_num:
-        nhalf = int(max_num / 2)
+        nhalf = np.int64(max_num / 2)
         middle = nhalf // ncols
         if middle == 0:
             middle = 1
@@ -754,6 +779,11 @@ class NetworkLock(Lock):
         """
 
         self.fh.flush()
-        os.fsync(self.fh.fileno())
+        try:
+            # In case of network file system
+            os.fsync(self.fh.fileno())
+        except OSError:
+            # Not a network file system
+            pass
 
         super(NetworkLock, self).release()

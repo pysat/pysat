@@ -2,10 +2,11 @@ import datetime as dt
 from importlib import reload
 import numpy as np
 import os
+import tempfile
 
 import pysat
 from pysat.utils import files as futils
-from pysat.tests.travisci_test_class import TravisCICleanSetup
+from pysat.tests.ci_test_class import CICleanSetup
 
 
 class TestBasics():
@@ -21,7 +22,7 @@ class TestBasics():
     def test_parse_delimited_filename(self):
         """Check ability to parse list of delimited files"""
         # Note: Can be removed if future instrument that uses delimited
-        # filenames is added to routine travis end-to-end testing
+        # filenames is added to routine end-to-end testing
         fname = ''.join(('test_{year:4d}_{month:2d}_{day:2d}_{hour:2d}',
                          '_{minute:2d}_{second:2d}_{version:2s}_r02.cdf'))
         year = np.ones(6) * 2009
@@ -51,22 +52,21 @@ class TestBasics():
         assert (file_dict['cycle'] is None)
 
 
-class TestFileDirectoryTranslations(TravisCICleanSetup):
+class TestFileDirectoryTranslations(CICleanSetup):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
 
-        # Module is only required for testing installations on TravisCI
+        # Module is only required for testing installations on CI servers
         import pysatSpaceWeather
 
-        # Create clean environment on Travis
-        TravisCICleanSetup.setup(self)
+        # Create clean environment on the CI server
+        CICleanSetup.setup(self)
         reload(pysat)
 
-        # Note, if testing locally, after setting self.ci_env = True
-        # in TravisCICleanSetup.setup then a data directory needs to be
-        # set here.
-        # pysat.params['data_dirs'] = '~/DemoData/'
+        # create temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
 
         # Create several pysat.SpaceWeather instruments and download data.
         # We want to start with a setup that covers general cases a user may
@@ -78,25 +78,18 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
         self.insts_kwargs = []
 
         # Data by day, ACE SIS data
-        self.insts.append(pysat.Instrument('sw', 'ace', tag='historic',
-                                           inst_id='sis'))
-        test_dates = pysatSpaceWeather.instruments.sw_ace._test_dates
-        self.insts_dates.append([test_dates['sis']['historic']] * 2)
+        self.insts.append(pysat.Instrument('ace', 'sis', tag='historic'))
+        test_dates = pysatSpaceWeather.instruments.ace_sis._test_dates
+        self.insts_dates.append([test_dates['']['historic']] * 2)
         self.insts_kwargs.append({})
 
         # Data with date mangling, regular F10.7 data, stored monthly
-        self.insts.append(pysat.Instrument('sw', 'f107'))
+        self.insts.append(pysat.Instrument('sw', 'f107', tag='historic'))
         test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
-        self.insts_dates.append([test_dates[''][''],
-                                 test_dates[''][''] + dt.timedelta(weeks=52)])
+        self.insts_dates.append([test_dates['']['historic'],
+                                 test_dates['']['historic']
+                                 + dt.timedelta(weeks=52)])
         self.insts_kwargs.append({'freq': 'MS'})
-
-        # Data with date mangling, 'all' F10.7 data, single file
-        self.insts.append(pysat.Instrument('sw', 'f107', tag='all'))
-        test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
-        self.insts_dates.append([test_dates['']['all'],
-                                 test_dates['']['all']])
-        self.insts_kwargs.append({})
 
         # Download data for all instruments
         for inst, dates, kwargs in zip(self.insts, self.insts_dates,
@@ -109,10 +102,10 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
 
-        # Clean environment on Travis
-        TravisCICleanSetup.teardown(self)
+        # Clean environment
+        CICleanSetup.teardown(self)
 
-        # TODO: Check on potentially removing all inst directories
+        self.tempdir.cleanup()
 
     def test_updating_directories(self, capsys):
         """Test directory structure update method"""
@@ -171,7 +164,7 @@ class TestFileDirectoryTranslations(TravisCICleanSetup):
 
         # Convert directories back to more complex structure
         # First, define new template
-        templ = '{platform}/{name}/{tag}/{inst_id}'
+        templ = os.path.join('{platform}', '{name}', '{tag}', '{inst_id}')
 
         # Update structure
         futils.update_data_directory_structure(new_template=templ,
