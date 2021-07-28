@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-Coordinate transformation functions for pysat
+""" Coordinate transformation functions for pysat
 """
 
 import datetime as dt
@@ -20,7 +19,7 @@ def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
     """Adjust cyclic values such as longitude to a different scale
 
     Parameters
-    -----------
+    ----------
     samples : array_like
         Input array
     high: float or int
@@ -32,7 +31,7 @@ def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
         compute the standard deviation of the flattened array
 
     Returns
-    --------
+    -------
     out_samples : float
         Circular standard deviation
 
@@ -51,23 +50,20 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
 
     Parameters
     ----------
-    inst : pysat.Instrument instance
-        instrument object to be updated
-    lon_name : string
-        name of the longtiude data
+    inst : pysat.Instrument
+        Instrument class object to be updated
+    lon_name : str
+        Name of the longtiude data in `inst`
     high : float
         Highest allowed longitude value (default=180.0)
     low : float
         Lowest allowed longitude value (default=-180.0)
 
-    Returns
-    -------
-    updates instrument data in column 'lon_name'
+    Note
+    ----
+    Updates instrument data in column provided by `lon_name`
 
     """
-
-    from pysat.utils.coords import adjust_cyclic_data
-
     if lon_name not in inst.data.keys():
         raise ValueError('unknown longitude variable name')
 
@@ -88,12 +84,12 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
 
     Parameters
     ----------
-    inst : pysat.Instrument instance
-        instrument object to be updated
-    lon_name : string
-        name of the longtiude data key (assumes data are in degrees)
-    slt_name : string
-        name of the output solar local time data key (default='slt')
+    inst : pysat.Instrument
+        Instrument class object to be updated
+    lon_name : str
+        Name of the longtiude data key (assumes data are in degrees)
+    slt_name : str
+        Name of the output solar local time data key (default='slt')
     apply_modulus : bool
         If True, SLT values are confined to [0, 24), if False they may be
         positive or negative based on the value of their universal time
@@ -105,7 +101,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
 
     Note
     ----
-    Updates Instrument data in column specified by slt_name, as well as
+    Updates Instrument data in column specified by `slt_name`, as well as
     Metadata
 
     """
