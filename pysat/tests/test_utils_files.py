@@ -1,58 +1,127 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+"""Tests the `pysat.utils.files` functions.
+"""
+
 import datetime as dt
 from importlib import reload
 import numpy as np
 import os
+import pytest
 import tempfile
 
 import pysat
 from pysat.utils import files as futils
+from pysat.utils import testing
 from pysat.tests.ci_test_class import CICleanSetup
 
 
-class TestBasics():
-
+class TestParseDelimitedFilenames():
+    """Unit tests for the `parse_delimited_filename` function."""
     temporary_file_list = False
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        self.fkwargs = [{"year": 2009, "month": 12, "day": 12 + 3 * i,
+                         "hour": 8 + 2 * i, "minute": 8 + 2 * i,
+                         "second": 1 + 3 * i, "version": 'v{:d}'.format(i),
+                         "revision": i, "cycle": 'c{:d}'.format(i + 2)}
+                        for i in range(6)]
+        self.kw_format = {'year': '{year:04d}', 'month': '{month:02d}',
+                          'day': '{day:02d}', 'hour': '{hour:02d}',
+                          'minute': '{minute:02d}', 'second': '{second:02d}',
+                          'version': '{version:2s}',
+                          'revision': '{revision:02d}', 'cycle': '{cycle:2s}'}
+        self.file_dict = {}
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        del self.fkwargs, self.file_dict, self.kw_format
 
-    def test_parse_delimited_filename(self):
-        """Check ability to parse list of delimited files"""
-        # Note: Can be removed if future instrument that uses delimited
-        # filenames is added to routine end-to-end testing
-        fname = ''.join(('test_{year:4d}_{month:2d}_{day:2d}_{hour:2d}',
-                         '_{minute:2d}_{second:2d}_{version:2s}_r02.cdf'))
-        year = np.ones(6) * 2009
-        month = np.ones(6) * 12
-        day = np.array([12, 15, 17, 19, 22, 24])
-        hour = np.array([8, 10, 6, 18, 3, 23])
-        minute = np.array([8, 10, 6, 18, 3, 59])
-        second = np.array([58, 11, 26, 2, 18, 59])
-        version = np.array(['v1', 'v2', 'r1', 'r3', 'v5', 'a6'])
-        file_list = []
-        for i in range(6):
-            file_list.append(fname.format(year=year[i].astype(int),
-                                          month=month[i].astype(int),
-                                          day=day[i], hour=hour[i],
-                                          minute=minute[i], second=second[i],
-                                          version=version[i]))
+    def eval_parse_delimited_filename(self):
+        """Evaluate the output of a `parse_delimited_filename` unit test.
 
-        file_dict = futils.parse_delimited_filenames(file_list, fname, '_')
-        assert np.all(file_dict['year'] == year)
-        assert np.all(file_dict['month'] == month)
-        assert np.all(file_dict['day'] == day)
-        assert np.all(file_dict['hour'] == hour)
-        assert np.all(file_dict['minute'] == minute)
-        assert np.all(file_dict['day'] == day)
-        assert np.all(file_dict['version'] == version)
-        assert (file_dict['revision'] is None)
-        assert (file_dict['cycle'] is None)
+        Returns
+        -------
+        bool
+            True if there is data to evalute, False if data dict is empty
+
+        """
+        # Evaluate the returned data dict
+        if len(self.file_dict.keys()) < 2:
+            return False
+
+        # Extract the test lists
+        if len(self.fkwargs) > 0:
+            test_kwargs = {fkey: [kwargs[fkey] for kwargs in self.fkwargs]
+                           for fkey in self.fkwargs[0].keys()}
+        else:
+            test_kwargs = {}
+
+        # Test each of the returned data keys
+        for fkey in self.file_dict.keys():
+            if fkey in test_kwargs:
+                testing.assert_lists_equal(test_kwargs[fkey],
+                                           self.file_dict[fkey])
+            elif fkey == 'files':
+                assert len(self.fkwargs) == len(self.file_dict[fkey]), \
+                    "unexpected file list length"
+            elif fkey != "format_str":
+                assert self.file_dict[fkey] is None, \
+                    "unused format key has a value"
+
+        return True
+
+    @pytest.mark.parametrize("sep_char,flead,good_kwargs", [
+        ("_", "test_", ['year', 'month', 'day', 'hour', 'minute', 'version']),
+        ('-', "test", ['year', 'day', 'hour', 'minute', 'second', 'cycle',
+                       'revision']), ('fun', 'test', [])])
+    def test_parse_delimited_filename(self, sep_char, flead, good_kwargs):
+        """Check ability to parse list of delimited files."""
+        # Format the test input
+        fname = '{:s}{:s}.cdf'.format(flead, sep_char.join(
+            [self.kw_format[fkey] for fkey in good_kwargs]))
+
+        # Adjust the test input/comparison data for this run
+        bad_kwargs = [fkey for fkey in self.fkwargs[0]
+                      if fkey not in good_kwargs]
+
+        for kwargs in self.fkwargs:
+            for fkey in bad_kwargs:
+                del kwargs[fkey]
+
+        # Create the input file list
+        file_list = [fname.format(**kwargs) for kwargs in self.fkwargs]
+
+        # Get the test results
+        self.file_dict = futils.parse_delimited_filenames(file_list, fname,
+                                                          sep_char)
+
+        # Test each of the return values
+        assert self.eval_parse_delimited_filename()
+        return
+
+    def test_parse_delimited_filename_empty(self):
+        """Check ability to parse list of delimited files with no files."""
+        # Format the test input
+        sep_char = '_'
+        fname = ''.join(('test', '{year:04d}', '{day:03d}', '{hour:02d}',
+                         '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
+        self.fkwargs = []
+
+        # Get the test results
+        self.file_dict = futils.parse_delimited_filenames([], fname, sep_char)
+
+        # Test each of the return values
+        assert self.eval_parse_delimited_filename()
+        return
 
 
 class TestFileDirectoryTranslations(CICleanSetup):
+    """Unit tests for file directory setup."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""

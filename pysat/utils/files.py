@@ -71,20 +71,21 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
         rec_arr.sort(order=val_keys, axis=0)
 
-        # pull out sorted info
+        # Pull out sorted info
         for key in keys:
             stored[key] = rec_arr[key]
         files = rec_arr['files']
 
-        # add hour and minute information to 'second'
+        # Add hour and minute information to 'second'
         if stored['second'] is None:
             stored['second'] = np.zeros(len(files))
         if stored['hour'] is not None:
             stored['second'] += 3600 * stored['hour']
         if stored['minute'] is not None:
             stored['second'] += 60 * stored['minute']
-        # version shouldn't be set to zero
-        # version is required to remove duplicate datetimes
+
+        # The version shouldn't be set to zero, it is required to remove
+        # duplicate datetimes
         if stored['revision'] is None:
             stored['revision'] = np.zeros(len(files))
         if stored['cycle'] is None:
@@ -95,14 +96,12 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
                                       day=stored['day'],
                                       uts=stored['second'])
 
-        # if version, revision, and cycle are supplied
-        # use these parameters to weed out files that have been replaced
-        # with updated versions
-        # first, check for duplicate index times
+        # If version, revision, and cycle are supplied, use these parameters
+        # to weed out files that have been replaced with updated versions.
+        # First, check for duplicate index times
         dups = index[index.duplicated()].unique()
         if (len(dups) > 0) and (stored['version'] is not None):
-            # we have duplicates
-            # keep the highest version/revision combo
+            # We have duplicates, keep the highest version/revision combo
             version = pds.Series(stored['version'], index=index)
             revision = pds.Series(stored['revision'], index=index)
             cycle = pds.Series(stored['cycle'], index=index)
@@ -144,7 +143,7 @@ def parse_fixed_width_filenames(files, format_str):
 
     """
 
-    # create storage for data to be parsed from filenames
+    # Create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
                     'version', 'revision', 'cycle']
     stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
@@ -155,13 +154,13 @@ def parse_fixed_width_filenames(files, format_str):
         stored['format_str'] = format_str
         return stored
 
-    # parse format string to get information needed to parse filenames
+    # Parse format string to get information needed to parse filenames
     search_dict = construct_searchstring_from_format(format_str)
     snips = search_dict['string_blocks']
     lengths = search_dict['lengths']
     keys = search_dict['keys']
 
-    # determine the locations the date/version information in a filename is
+    # Determine the locations the date/version information in a filename is
     # stored use these indices to slice out date from filenames
     idx = 0
     begin_key = []
@@ -173,22 +172,27 @@ def parse_fixed_width_filenames(files, format_str):
             idx += lengths[i]
             end_key.append(idx)
     max_len = idx
-    # setting up negative indexing to pick out filenames
+
+    # Setting up negative indexing to pick out filenames
     key_str_idx = [np.array(begin_key, dtype=np.int64) - max_len,
                    np.array(end_key, dtype=np.int64) - max_len]
-    # need to parse out dates for datetime index
+
+    # Need to parse out dates for datetime index
     for i, temp in enumerate(files):
         for j, key in enumerate(keys):
             val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
             stored[key].append(val)
-    # convert to numpy arrays
+
+    # Convert to numpy arrays
     for key in stored.keys():
         stored[key] = np.array(stored[key]).astype(np.int64)
         if len(stored[key]) == 0:
             stored[key] = None
-    # include files in output
+
+    # Include files in output
     stored['files'] = files
-    # include format string as convenience for later functions
+
+    # Include format string as convenience for later functions
     stored['format_str'] = format_str
 
     return stored
@@ -220,27 +224,27 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     """
 
-    # create storage for data to be parsed from filenames
+    # Create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
                     'version', 'revision', 'cycle']
-    stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
+    stored = collections.OrderedDict({kk: None for kk in ordered_keys})
 
-    # exit early if there are no files
+    # Exit early if there are no files
     if len(files) == 0:
         stored['files'] = []
-        # include format string as convenience for later functions
+
+        # Include format string as convenience for later functions
         stored['format_str'] = format_str
         return stored
 
-    # parse format string to get information needed to parse filenames
+    # Parse format string to get information needed to parse filenames
     search_dict = construct_searchstring_from_format(format_str, wildcard=True)
     snips = search_dict['string_blocks']
     keys = search_dict['keys']
 
-    # going to parse string on delimiter
-    # it is possible that other regions have the delimiter but aren't
-    # going to be parsed out
-    # so apply delimiter breakdown to the string blocks as a guide
+    # Going to parse the string on the delimiter. It is possible that other
+    # regions have the delimiter but aren't going to be parsed out. To apply
+    # the delimiter, breakdown to the string blocks as a guide.
     pblock = []
     parsed_block = [snip.split(delimiter) for snip in snips]
     for block in parsed_block:
@@ -253,32 +257,43 @@ def parse_delimited_filenames(files, format_str, delimiter):
         pblock.append('')
     parsed_block = pblock[:-1]
 
-    # need to parse out dates for datetime index
+    # Need to parse out dates for datetime index
     for temp in files:
         split_name = temp.split(delimiter)
+
+        # Ensure leading strings are removed
+        if parsed_block[0] != split_name[0] and parsed_block[0] != '':
+            split_name[0] = split_name[0].split(parsed_block[0])[-1]
+
+        # Ensure the extension is removed
+        if len(split_name) < len(parsed_block):
+            split_name[-1] = split_name[-1].split(parsed_block[-1])[0]
+
         idx = 0
-        for sname, bname in zip(split_name, parsed_block):
-            if bname == '':
-                # areas with data to be parsed are indicated with a
-                # '' in parsed_block
-                stored[keys[idx]].append(sname)
+        for isname, sname in enumerate(split_name):
+            if parsed_block[isname] != sname:
+                # Areas with data to be parsed are not equal to their
+                # `parsed_block` value
+                if stored[keys[idx]] is None:
+                    stored[keys[idx]] = [sname]
+                else:
+                    stored[keys[idx]].append(sname)
                 idx += 1
 
-    # convert to numpy arrays
+    # Convert to numpy arrays
     for key in stored.keys():
-        try:
-            # Assume key value is numeric integer
-            stored[key] = np.array(stored[key]).astype(np.int64)
-        except ValueError:
-            # Store key value as string
-            stored[key] = np.array(stored[key])
-        if len(stored[key]) == 0:
-            stored[key] = None
+        if stored[key] is not None:
+            try:
+                # Assume key value is numeric integer
+                stored[key] = np.array(stored[key]).astype(np.int64)
+            except ValueError:
+                # Store key value as string
+                stored[key] = np.array(stored[key])
 
-    # include files in output
+    # Include files in output
     stored['files'] = files
 
-    # include format string as convenience for later functions
+    # Include format string as convenience for later functions
     stored['format_str'] = format_str
 
     return stored
@@ -308,6 +323,11 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         - 'lengths' (string length for data to be parsed)
         - 'string_blocks' (the filenames are broken into fixed width segments).
 
+    Raises
+    ------
+    ValueError
+        If a filename template isn't provided in `format_str`
+
     Note
     ----
     The '?' may be used to indicate a set number of spaces for a variable
@@ -320,10 +340,9 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     """
 
-    out_dict = {'search_string': '',
-                'keys': [],
-                'lengths': [],
+    out_dict = {'search_string': '', 'keys': [], 'lengths': [],
                 'string_blocks': []}
+
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
 
@@ -368,11 +387,11 @@ def search_local_system_formatted_filename(data_path, search_str):
 
     Parameters
     ----------
-    data_path : string
+    data_path : str
         Top level directory to search files for. This directory
         is provided by pysat to the instrument_module.list_files
         functions as data_path.
-    search_str : string
+    search_str : str
         String used to search for local files. For example,
         `cnofs_cindi_ivm_500ms_????????_v??.cdf` or `inst-name-*-v??.cdf`
 
