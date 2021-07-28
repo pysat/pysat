@@ -1057,8 +1057,7 @@ class TestBasics():
         del test.load
 
         with pytest.raises(AttributeError):
-            pysat.Instrument(inst_module=test, tag='',
-                             clean_level='clean')
+            pysat.Instrument(inst_module=test, tag='', clean_level='clean')
 
     # -------------------------------------------------------------------------
     #

@@ -105,7 +105,8 @@ todo_include_todos = False
 # a list of builtin themes.
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = ["_themes", ]
-
+html_logo = os.path.join(os.path.abspath('.'), 'images', 'logo.png')
+html_theme_options = {'logo_only': True}
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '{:s}doc'.format(project)
@@ -129,7 +130,7 @@ latex_elements = {}
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [(master_doc, '{:s}.tex'.format(project), title, author,
-                    'manual'), ]
+                    'manual')]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.

@@ -28,13 +28,19 @@ def getyrdoy(date):
     doy : int
         Integer day of year
 
+    Raises
+    ------
+    AttributeError
+        If input date does not have `toordinal` method
+
     """
 
     try:
         doy = date.toordinal() - dt.datetime(date.year, 1, 1).toordinal() + 1
     except AttributeError:
-        raise AttributeError(' '.join(("Must supply a pandas datetime object",
-                                       "or equivalent")))
+        raise AttributeError(''.join(("Must supply a datetime object or an ",
+                                      "equivalent class object with the ",
+                                      "`toordinal` method")))
     else:
         return date.year, doy
 
@@ -45,17 +51,17 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
     Parameters
     ----------
-    str_yr : string
+    str_yr : str
         String containing the year (2 or 4 digits)
-    str_mo : string
+    str_mo : str
         String containing month digits
-    str_day : string
+    str_day : str
         String containing day of month digits
-    str_hr : string
+    str_hr : str
         String containing the hour of day (default='0')
-    str_min : string
+    str_min : str
         String containing the minutes of hour (default='0')
-    str_sec : string
+    str_sec : str
         String containing the seconds of minute (default='0')
     century : int
         Century, only used if str_yr is a 2-digit year (default=2000)
@@ -64,6 +70,11 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
     -------
     out_date : dt.datetime
         datetime object
+
+    Raises
+    ------
+    ValueError
+        If any input results in an unrealistic datetime object value
 
     """
 
@@ -89,6 +100,11 @@ def calc_res(index, use_mean=False):
     -------
     res_sec : float
        Resolution value in seconds
+
+    Raises
+    ------
+    ValueError
+        If `index` is too short to calculate a time resolution
 
     """
 
@@ -174,8 +190,8 @@ def freq_to_res(freq):
     --------
     pds.offsets.DateOffset
 
-    Reference
-    ---------
+    References
+    ----------
     Separating alpha and numeric portions of strings, as described in:
     https://stackoverflow.com/a/12409995
 
@@ -258,6 +274,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         raise ValueError('Must provide an iterable for all inputs.')
     if len(year) == 0:
         raise ValueError('Length of array must be larger than 0.')
+
     year = year.astype(int)
     if month is None:
         month = np.ones(len(year), dtype=int)
@@ -275,7 +292,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
     # Determine where there are changes in year and month that need to be
     # accounted for
-    _, idx = np.unique((year * 100. + month), return_index=True)
+    _, idx = np.unique((year * 100.0 + month), return_index=True)
 
     # Create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
@@ -287,7 +304,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # Add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day - 1) * 86400.
+    uts_del += (day - 1) * 86400.0
 
     # Add in seconds since unix epoch to first day
     uts_del += (dt.datetime(year[0], month[0], 1)
@@ -299,8 +316,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
 
 def filter_datetime_input(date):
-    """
-    Returns datetime that only includes year, month, and day.
+    """Returns datetime that only includes year, month, and day.
 
     Parameters
     ----------
@@ -309,10 +325,10 @@ def filter_datetime_input(date):
 
     Returns
     -------
-    out_date: NoneType, datetime, or list of datetimes
-        NoneType input yeilds NoneType output, array-like yeilds list,
-        datetime object yeilds like.  All datetime output excludes the
-        sub-daily temporal increments (keeps only date information).
+    out_date: NoneType, datetime, or array-like
+        NoneType input yeilds NoneType output, array-like yeilds list of
+        datetimes, datetime object yeilds like.  All datetime output excludes
+        the sub-daily temporal increments (keeps only date information).
 
     Note
     ----

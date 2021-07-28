@@ -25,6 +25,8 @@ To use Anaconda's tools for creating a suitable virtual environment,
     conda install numpy -c conda
 
 
+.. _inst-standard:
+    
 Standard installation
 ---------------------
 
@@ -33,17 +35,20 @@ pysat itself may be installed from a terminal command line via::
    pip install pysat
 
 There are a few packages that pysat depends on that will be installed as
-needed by the installer
+needed by the installer:
 
-     * dask
-     * netCDF4
-     * numpy
-     * pandas
-     * portalocker
-     * scipy
-     * toolz
-     * xarray
+#. dask
+#. netCDF4
+#. numpy
+#. pandas
+#. portalocker
+#. pytest
+#. scipy
+#. toolz
+#. xarray
 
+
+.. _inst-dev:
 
 Development Installation
 ------------------------

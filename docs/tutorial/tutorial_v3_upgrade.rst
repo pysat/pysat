@@ -1,5 +1,7 @@
+.. _tutorial-transition:
+
 Transition to v3.0
-==================
+------------------
 
 pysat release v3.0 introduces some backwards incompatible changes from
 v2.x to ensure a strong foundation for future development. Many of the changes
@@ -16,7 +18,7 @@ home directory under ``~/.pysat``. To get the most benefit from this internal
 reorganization we recommend that you remove any existing ``.pysat`` directories.
 See :ref:`tutorial-params` for more.
 
-.. note:: Removing the existing .pysat directory will erase all internal
+.. note:: Removing the existing ``.pysat`` directory will erase all internal
    pysat information and requires resetting user parameters such as the
    top-level directory that stores relevant science data. To set this top-level
    directory run ``pysat.params['data_dirs'] = new_path`` where ``new_path``
@@ -27,16 +29,16 @@ pysat v3.0 now supports more than one top-level directory to store science
 data as well as updates the default sub-directory structure for storing data.
 pysat v2.x employed an internal directory template of ``platform/name/tag``
 for organizing data while pysat v3.0 begins with a default of
-``platform/name/tag/inst_id``. Thus, by default, a pysat v3.0 install will
+``os.path.join(platform, name, tag, inst_id)``. Thus, by default, a pysat v3.0 install will
 generally not find all existing data files that were managed by pysat v2.x.
 
-Additionally, support for individual instruments has been moved out of
-pysat and into a penumbra of supporting packages. These supporting
-packages must be installed and registered with pysat before data may
-be loaded. See :ref:`ecosystem` and :ref:`api-pysat-registry` for more.
+Additionally, support for individual instruments has been moved out of pysat and
+into a penumbra of supporting packages. These supporting packages must be
+installed and registered with pysat before data may be loaded. See
+:ref:`ecosystem` and :ref:`api-pysat-registry` for more.
 
 .. note:: pysat will only recognize registered instrument modules
-   when running the ``update_data_directory_structure`` function.
+   when running the :py:func:`update_data_directory_structure` function.
    Files associated with unregistered instruments will not be moved.
 
 There are two main paths forward for restoring access to all data after
@@ -86,4 +88,5 @@ registering the necessary packages:
    # After the files have been moved, update the directory structure setting
    pysat.params['directory_format'] = new_templ_str
 
-.. note:: By default the `update_data_directory_structure` function runs in test mode.
+.. note:: By default the :py:func:`update_data_directory_structure` function
+	  runs in stest mode.

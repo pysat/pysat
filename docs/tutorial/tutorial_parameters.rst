@@ -3,8 +3,8 @@
 Parameters
 ==========
 
-The ``pysat.params`` class provides a central location for storing a variety
-of parameters used by pysat as well as custom user provided settings. An
+The :py:class:`pysat.params` class provides a central location for storing a
+variety of parameters used by pysat as well as custom user provided settings. An
 overview of currently stored parameters may be found using
 
 .. code:: python
@@ -36,8 +36,8 @@ overview of currently stored parameters may be found using
 
    User parameters:
 
-Most parameters may be assigned or updated via standard assignment
-and are stored to disk automatically in a thread-safe manner
+Most parameters may be assigned or updated via standard assignment and are
+stored to disk automatically in a thread-safe manner.
 
 .. code:: python
 
@@ -47,21 +47,21 @@ and are stored to disk automatically in a thread-safe manner
    # Add new user parameter
    pysat.params[user_param_str] = user_param_value
 
-All of the standard parameters above may be restored to defaults using
+All of the standard parameters above may be restored to defaults using:
 
 .. code:: python
 
    pysat.params.restore_defaults()
 
-but this command leaves parameters with no working defaults, like ``data_dirs``
-unchanged. To clear all parameters,
+but this command leaves parameters with no working defaults, like
+:py:data:`data_dirs`, unchanged. To clear all parameters:
 
 .. code:: python
 
    pysat.params.clear_and_restart()
 
 A description of each of the parameters and its use in pysat may be found
-using
+using:
 
 .. code::
 
@@ -90,8 +90,9 @@ using
 
 
 
-The ``data_dirs`` setting is required to
-successfully instantiate a ``pysat.Instrument`` object.
+The :py:data:`data_dirs` setting is required to successfully instantiate a
+:py:class:`pysat.Instrument` object.
 
-The ``user_modules`` parameter is used by the ``pysat.utils.registry`` submodule
-and may not be modified via assignment.
+The :py:data:`user_modules` parameter is used by the
+:py:mod:`pysat.utils.registry` module and may not be modified through direct
+assignment.

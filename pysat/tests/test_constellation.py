@@ -5,11 +5,75 @@
 # ----------------------------------------------------------------------------
 
 import datetime as dt
+from io import StringIO
+import logging
 import pandas as pds
 import pytest
 
 import pysat
 from pysat import constellations
+from pysat.tests.registration_test_class import TestWithRegistration
+
+
+class TestConstellationInitReg(TestWithRegistration):
+    """Test the Constellation class initialization with registered Instruments.
+    """
+    @pytest.mark.parametrize("ikeys, ivals, ilen",
+                             [(["platforms", "tags"], [["platname1"], [""]], 2),
+                              (["names", "tags"], [["name2"], [""]], 2),
+                              (["names"], [["name1", "name2"]], 15)])
+    def test_construct_constellation(self, ikeys, ivals, ilen):
+        """Construct a Constellation with good input
+        """
+        # Register fake Instrument modules
+        pysat.utils.registry.register(self.module_names)
+
+        # Initalize the Constellation using the desired kwargs
+        const = pysat.Constellation(
+            **{ikey: ivals[i] for i, ikey in enumerate(ikeys)})
+
+        # Test that the appropriate number of Instruments were loaded. Each
+        # fake Instrument has 5 tags and 1 inst_id.
+        assert len(const.instruments) == ilen
+        return
+
+    def test_all_bad_construct_constellation(self):
+        """Test raises ValueError when all inputs are unregistered
+        """
+        # Register fake Instrument modules
+        pysat.utils.registry.register(self.module_names)
+
+        # Raise ValueError
+        with pytest.raises(ValueError) as verr:
+            pysat.Constellation(platforms=['Executor'])
+
+        assert str(verr).find("no registered packages match input") >= 0
+        return
+
+    def test_some_bad_construct_constellation(self):
+        """Test partial load and log warning when some inputs are unregistered
+        """
+        # Initialize logging
+        log_capture = StringIO()
+        pysat.logger.addHandler(logging.StreamHandler(log_capture))
+        pysat.logger.setLevel(logging.WARNING)
+
+        # Register fake Instrument modules
+        pysat.utils.registry.register(self.module_names)
+
+        # Load the Constellation and capture log output
+        const = pysat.Constellation(platforms=['Executor', 'platname1'],
+                                    tags=[''])
+        log_out = log_capture.getvalue()
+
+        # Test the partial Constellation initialization
+        assert len(const.instruments) == 2
+
+        # Test the log warning
+        assert log_out.find("unable to load some platforms") >= 0
+
+        del log_capture, log_out, const
+        return
 
 
 class TestConstellationInit:
@@ -152,11 +216,29 @@ class TestConstellationFunc:
         self.inst = list(constellations.testing.instruments)
         self.const = pysat.Constellation(instruments=self.inst)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.attrs = ["platforms", "names", "tags", "inst_ids", "instruments",
+                      "bounds", "empty", "empty_partial", "index_res",
+                      "common_index", "date", "yr", "doy", "yesterday", "today",
+                      "tomorrow", "variables"]
 
     def teardown(self):
         """Clean up after each test
         """
-        del self.inst, self.const, self.ref_time
+        del self.inst, self.const, self.ref_time, self.attrs
+
+    def test_has_required_attrs(self):
+        """Ensure the instrument has all required attributes present."""
+
+        for req_attr in self.attrs:
+            assert hasattr(self.const, req_attr)
+        return
+
+    @pytest.mark.parametrize("test_ind", [0, 1, 2, 3])
+    def test_equal_length_attrs(self, test_ind):
+        """Ensure each instruments-length attribute is the correct length."""
+        comp_len = len(self.const.instruments)
+        assert len(getattr(self.const, self.attrs[test_ind])) == comp_len
+        return
 
     def test_bounds_passthrough(self):
         """Ensure bounds are applied to each instrument within Constellation"""
@@ -193,13 +275,15 @@ class TestConstellationFunc:
     def test_empty_flag_data_empty(self):
         """ Test the status of the empty flag for unloaded data."""
         assert self.const.empty
+        assert self.const.empty_partial
         return
 
     def test_empty_flag_data_empty_partial_load(self):
         """ Test the status of the empty flag for partially loaded data."""
         # Load only one instrument and test the status flag
         self.const.instruments[0].load(date=self.ref_time)
-        assert self.const.empty
+        assert self.const.empty_partial
+        assert not self.const.empty
         return
 
     def test_empty_flag_data_not_empty_partial_load(self):
@@ -263,4 +347,20 @@ class TestConstellationFunc:
         self.const.download(self.ref_time, self.ref_time)
         for inst in self.const.instruments:
             assert len(inst.files.files) > 0
+        return
+
+    def test_get_unique_attr_vals_bad_attr(self):
+        """Test raises AttributeError for bad input value."""
+        with pytest.raises(AttributeError) as aerr:
+            self.const._get_unique_attr_vals('not_an_attr')
+
+        assert str(aerr).find("does not have attribute") >= 0
+        return
+
+    def test_get_unique_attr_vals_bad_type(self):
+        """Test raises AttributeError for bad input attribute type."""
+        with pytest.raises(TypeError) as terr:
+            self.const._get_unique_attr_vals('empty')
+
+        assert str(terr).find("attribute is not list-like") >= 0
         return

@@ -94,6 +94,7 @@ class InstTestClass():
                 assert inst.name == module.name
                 assert inst.inst_id == inst_id
                 assert inst.tag == tag
+                assert inst.inst_module is not None
 
                 # Test the required class attributes
                 for iattr in self.inst_attrs:

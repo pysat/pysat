@@ -1,18 +1,18 @@
 .. _tutorial_custom:
 
 Custom Functions
-================
+----------------
 
 Science analysis is built upon custom data processing. To simplify this task,
 and enable instrument independent analysis, custom functions may be attached to
-the Instrument object. Each function is run automatically when new data is
-loaded before it is made available in ``inst.data``.
+the :py:class:`Instrument` object. Each function is run automatically when new
+data is loaded before it is made available in :py:attr:`Instrument.data`.
 
-This feature enables a user to hand an Instrument object to an independent
-routine and ensure any desired customizations required are performed without
-any additional user intervention. This feature enables for the transparent
-modification of a dataset in between its state at rest on disk and when the data
-becomes available for use in  ``inst.data``.
+This feature enables a user to hand an :py:class:`Instrument` object to an
+independent routine and ensure any desired customizations required are performed
+without any additional user intervention. This feature enables for the
+transparent modification of a data set in between its state at rest on disk and
+when the data becomes available for use in :py:attr:`Instrument.data`.
 
 .. warning:: Custom arguments and keywords are supported for these methods.
    However, these arguments and keywords are only evaluated initially when the
@@ -24,11 +24,11 @@ becomes available for use in  ``inst.data``.
 Example Function
 ^^^^^^^^^^^^^^^^
 
-If a custom function is attached to an Instrument, when asking to load data
-into the Instrument, the Instrument object is passed to function in place. There
-is no Instrument copy made in memory. The method is expected to modify the
-supplied Instrument object directly and the funtions are not allowed to return
-any information.
+If a custom function is attached to an :py:class:`Instrument`, when asking to
+load data into the :py:class:`Instrument`, the :py:class:`Instrument` object is
+passed to function in place. There is no :py:class:`Instrument` copy made in
+memory. The method is expected to modify the supplied :py:class:`Instrument`
+object directly and the funtions are not allowed to return any information.
 
 .. code:: python
 
@@ -59,7 +59,7 @@ any information.
 Attaching Custom Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Custom methods must be attached to an Instrument object for pysat
+Custom methods must be attached to an :py:class:`Instrument` object for pysat
 to automatically apply the method upon every load.
 
 .. code:: python
@@ -103,8 +103,8 @@ to automatically apply the method upon every load.
 
 
 The output of from these and other custom methods will always be available
-from the instrument object, regardless of what level the science analysis
-is performed.
+from the :py:class:`Instrument` object, regardless of what level the science
+analysis is performed.
 
 We can repeat the earlier DMSP example, this time using nano-kernel
 functionality.
@@ -159,16 +159,17 @@ functionality.
     plt.ylabel(dmsp.meta['ti', dmsp.desc_label] + ' (' +
                dmsp.meta['ti', dmsp.units_label] + ')')
 
-Note the same result is obtained. The DMSP instrument object and analysis are
-performed at the same level, so there is no strict gain by using the pysat
-nano-kernel in this simple demonstration. However, we can  use the nano-kernel
-to translate this daily mean into an versatile instrument independent function.
+Note the same result is obtained. The DMSP :py:class:`Instrument` object and
+analysis are performed at the same level, so there is no strict gain by using
+the pysat nano-kernel in this simple demonstration. However, we can use the
+nano-kernel to translate this daily mean into an versatile
+instrument-independent function.
 
 Attaching Custom Function at Instantiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Custom methods may also be attached to an Instrument object directly
-at instantiation via the `custom` keyword.
+Custom methods may also be attached to an :py:class:`Instrument` object directly
+at instantiation via the :py:data:`custom` keyword.
 
 .. code:: python
 
@@ -179,7 +180,7 @@ at instantiation via the `custom` keyword.
                     'kwargs'={'factor': 3.0}}
 
    # Combine all dicts into a list in order of application and execution.
-   # If you specify the 'at_pos' kwarg, however, it will take precedence.
+   # However, if you specify the 'at_pos' kwarg, it will take precedence.
    custom = [custom_func_1, custom_func_2]
 
    # Instantiate pysat.Instrument
