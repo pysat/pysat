@@ -9,7 +9,7 @@
 import numpy as np
 
 
-def assert_list_contains(small_list, big_list, test_nan=False):
+def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
     """ Assert all elements of one list exist within the other list
 
     Parameters
@@ -20,6 +20,8 @@ def assert_list_contains(small_list, big_list, test_nan=False):
         List that must contain all the values in small_list
     test_nan : bool
         Test the lists for the presence of NaN values
+    test_case : bool
+        Requires strings to be the same case when testing
 
     Raises
     ------
@@ -30,14 +32,19 @@ def assert_list_contains(small_list, big_list, test_nan=False):
     if test_nan:
         big_num_nan = np.isnan(big_list).sum()
         small_num_nan = 0
+    elif not test_case:
+        big_lower = [value.lower() for value in big_list]
 
     # Test the presence of non-NaN values from `small_list` in `big_list` and
     # determine the number of NaN values in `small_list`
     for value in small_list:
         if test_nan and np.isnan(value):
             small_num_nan += 1
-        else:
+        elif test_case:
             assert value in big_list, "{:} not in {:}".format(value, big_list)
+        else:
+            assert value.lower() in big_lower, "{:} not in {:}".format(
+                value.lower(), big_lower)
 
     if test_nan:
         # Ensure `small_list` does not have more NaNs than `big_list`
@@ -45,7 +52,7 @@ def assert_list_contains(small_list, big_list, test_nan=False):
     return
 
 
-def assert_lists_equal(list1, list2, test_nan=False):
+def assert_lists_equal(list1, list2, test_nan=False, test_case=True):
     """Assert that the lists contain the same elements
 
     Parameters
@@ -56,6 +63,8 @@ def assert_lists_equal(list1, list2, test_nan=False):
         Input list two
     test_nan : bool
         Test the lists for the presence of NaN values
+    test_case : bool
+        Requires strings to be the same case when testing
 
     Raises
     ------
@@ -70,7 +79,7 @@ def assert_lists_equal(list1, list2, test_nan=False):
     """
 
     assert len(list1) == len(list2)
-    assert_list_contains(list1, list2, test_nan=test_nan)
+    assert_list_contains(list1, list2, test_nan=test_nan, test_case=test_case)
 
     return
 
