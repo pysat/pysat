@@ -3,7 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Tests the pysat utils core functions
+""" Tests the pysat utils core functions
 """
 
 import contextlib
@@ -153,6 +153,11 @@ class TestScaleUnits():
                 assert self.scale == 0.001
             else:
                 assert self.scale == 100.0
+        elif scale_type.lower() == 'velocity':
+            if out_unit.find("m") == 0:
+                assert self.scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert self.scale == 0.001
         return
 
     def test_scale_units_same(self):
@@ -184,12 +189,13 @@ class TestScaleUnits():
 
         for out_unit in self.vel_units:
             self.scale = pysat.utils.scale_units(out_unit, "m/s")
-            self.eval_unit_scale(out_unit, 'distance')
+            self.eval_unit_scale(out_unit, 'velocity')
         return
 
     @pytest.mark.parametrize("in_args,err_msg", [
         (['happy', 'm'], 'output unit'), (['m', 'happy'], 'input unit'),
-        (['m', 'm/s'], 'unknown units'), (['happy', 'sad'], 'unknown units')])
+        (['m', 'm/s'], 'Cannot scale m and m/s'),
+        (['happy', 'sad'], 'unknown units')])
     def test_scale_units_bad_input(self, in_args, err_msg):
         """Test raises ValueError for bad input combinations."""
 
@@ -235,7 +241,7 @@ class TestListify():
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [np.nan
                         for i in range(int(np.product(np.shape(iterable))))]
-        testing.assert_lists_equal(new_iterable, tst_iterable)
+        testing.assert_lists_equal(new_iterable, tst_iterable, test_nan=True)
         return
 
     @pytest.mark.parametrize('iterable', [1, np.full((1, 1), 1),
@@ -263,7 +269,7 @@ class TestListify():
         return
 
 
-class TestBasicNetCDF4():
+class TestLoadNetCDF4():
     """Unit tests for `load_netcdf4`."""
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -277,92 +283,109 @@ class TestBasicNetCDF4():
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=100, update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-        self.testInst.pandas_format = True
 
         # Create testing directory
         prep_dir(self.testInst)
 
+        # Initalize the loaded data
+        self.loaded_inst = None
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
+
+        # Remove the temporary directory
         self.tempdir.cleanup()
 
-        del self.testInst, self.stime
+        # Clear the class attributes
+        del self.data_path, self.tempdir, self.testInst, self.stime
+        del self.loaded_inst
+
+    def eval_loaded_data(self):
+        """Evaluate loaded test data."""
+        # Test that the written and loaded data matches the initial data
+        for dkey in self.testInst.data.columns:
+            lkey = dkey.lower()
+            if lkey in ['profiles', 'alt_profiles', 'series_profiles']:
+                # Test the loaded higher-dimension data
+                for tframe, lframe in zip(self.testInst.data[dkey],
+                                          self.loaded_inst[lkey]):
+                    assert np.all(tframe == lframe), \
+                        "unequal {:s} data for frame index {:d}".format(dkey, i)
+            else:
+                assert np.all(self.testInst[dkey] == self.loaded_inst[lkey])
+        return
 
     def test_load_netcdf4_empty_filenames(self):
         """Test raises ValueError without any filename input."""
         with pytest.raises(ValueError) as verr:
-            pysat.utils.load_netcdf4(fnames=None)
+            pysat.utils.load_netcdf4(fnames=None,
+                                     pandas_format=self.testInst.pandas_format)
 
         assert str(verr).find("Must supply a filename/list of filenames") >= 0
         return
 
-    @pytest.mark.parametrize('unlimited', [True, False])
-    def test_basic_write_and_read_netcdf4_default_format(self, unlimited):
-        """Test writing and loading netcdf4 file, with/out unlimited time dim.
-        """
-        # Create a bunch of files by year and doy
-        prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
-        self.testInst.to_netcdf4(outfile, unlimited_time=unlimited)
-
-        loaded_inst, meta = pysat.utils.load_netcdf4(
-            outfile, pandas_format=self.testInst.pandas_format)
-        self.testInst.data = self.testInst.data.reindex(
-            sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
-
-        for key in self.testInst.data.columns:
-            assert(np.all(self.testInst[key] == loaded_inst[key]))
-
-        return
-
-    def test_basic_write_and_read_netcdf4_mixed_case_format(self):
+    def test_basic_write_and_read_netcdf4_mixed_case_data_format(self):
         """ Test basic netCDF4 read/write with mixed case data variables.
         """
         # Create a bunch of files by year and doy
-        prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
 
         # Modify data names in data
-        original = sorted(self.testInst.data.columns)
         self.testInst.data = self.testInst.data.rename(str.upper,
                                                        axis='columns')
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format)
         self.testInst.data = self.testInst.data.reindex(
             sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+        self.loaded_inst = self.loaded_inst.reindex(
+            sorted(self.loaded_inst.columns), axis=1)
 
         # Check that names are lower case when written
-        assert(np.all(original == loaded_inst.columns))
+        testing.assert_lists_equal(self.loaded_inst.columns,
+                                   self.testInst.data.columns, test_case=False)
 
-        for key in self.testInst.data.columns:
-            assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
+        # Test the loaded data
+        self.eval_loaded_data()
+        return
 
-        # Modify metadata names in data
+
+    def test_basic_write_and_read_netcdf4_mixed_case_meta_format(self):
+        """ Test basic netCDF4 read/write with mixed case metadata variables.
+        """
+        # Create a bunch of files by year and doy
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime)
+
+        # Modify data and metadata names in data
         self.testInst.meta.data = self.testInst.meta.data.rename(str.upper,
                                                                  axis='index')
-        # Write file
+        self.testInst.data = self.testInst.data.rename(str.upper,
+                                                       axis='columns')
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
-        # Load file
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format)
+        self.testInst.data = self.testInst.data.reindex(
+            sorted(self.testInst.data.columns), axis=1)
+        self.loaded_inst = self.loaded_inst.reindex(
+            sorted(self.loaded_inst.columns), axis=1)
 
-        # Check that names are upper case when written
-        testing.assert_lists_equal(sorted(self.testInst.data.columns),
-                                   sorted(loaded_inst.columns))
+        # Check that names are in the expected case
+        testing.assert_lists_equal(self.loaded_inst.columns,
+                                   self.testInst.data.columns)
+
         return
 
     def test_write_netcdf4_duplicate_variable_names(self):
         """ Test netCDF4 writing with duplicate variable names."""
         # Create a bunch of files by year and doy
-        prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
@@ -370,129 +393,51 @@ class TestBasicNetCDF4():
         with pytest.raises(ValueError) as verr:
             self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
-        assert str(verr).find("Metadata across filenames is not the same") >= 0
+        assert str(verr).find("multiple variables") >= 0
         return
 
-    @pytest.mark.parametrize("in_kwargs", [{"zlib": True},
-                                           {"epoch_name": "Santa"}])
-    def test_write_and_read_netcdf4_default_format_w_kwargs(self, in_kwargs):
-        """Test success of writing and reading a compressed netCDF4 file."""
+    @pytest.mark.parametrize("wkwargs, lkwargs", [
+        ({"zlib": True}, {}), ({}, {}), ({"unlimited_time": False}, {}),
+        ({"epoch_name": "Santa"}, {"epoch_name": "Santa"})])
+    def test_write_and_read_netcdf4_w_kwargs(self, wkwargs, lkwargs):
+        """Test success of writing and reading a netCDF4 file."""
         # Create a bunch of files by year and doy
-        prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
-        self.testInst.to_netcdf4(outfile, **in_kwargs)
+        self.testInst.to_netcdf4(outfile, **wkwargs)
 
         # Load the data that was created
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        lkwargs['pandas_format'] = self.testInst.pandas_format
+        self.loaded_inst, meta = pysat.utils.load_netcdf4(outfile, **lkwargs)
         self.testInst.data = self.testInst.data.reindex(
             sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+        self.loaded_inst = self.loaded_inst.reindex(sorted(self.loaded_inst.columns), axis=1)
 
-        # Test that the written and loaded data matches the initial data
-        for key in self.testInst.data.columns:
-            assert (np.all(self.testInst[key] == loaded_inst[key]))
-
+        # Test the loaded data
+        self.eval_loaded_data()
         return
 
-    def test_write_and_read_netcdf4_default_format_higher_order(self):
-        # create a bunch of files by year and doy
-        test_inst = pysat.Instrument('pysat', 'testing2d', update_files=True)
-        prep_dir(test_inst)
-        outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
-        test_inst.load(2009, 1)
-        test_inst.to_netcdf4(outfile)
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        test_inst.data = test_inst.data.reindex(sorted(test_inst.data.columns),
-                                                axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
-        prep_dir(test_inst)
-
-        # test Series of DataFrames
-        test_list = []
-        for frame1, frame2 in zip(test_inst.data['profiles'],
-                                  loaded_inst['profiles']):
-            test_list.append(np.all((frame1 == frame2).all()))
-        loaded_inst.drop('profiles', inplace=True, axis=1)
-        test_inst.data.drop('profiles', inplace=True, axis=1)
-
-        # second series of frames
-        for frame1, frame2 in zip(test_inst.data['alt_profiles'],
-                                  loaded_inst['alt_profiles']):
-            test_list.append(np.all((frame1 == frame2).all()))
-        loaded_inst.drop('alt_profiles', inplace=True, axis=1)
-        test_inst.data.drop('alt_profiles', inplace=True, axis=1)
-
-        # check series of series
-        for frame1, frame2 in zip(test_inst.data['series_profiles'],
-                                  loaded_inst['series_profiles']):
-            test_list.append(np.all((frame1 == frame2).all()))
-
-        loaded_inst.drop('series_profiles', inplace=True, axis=1)
-        test_inst.data.drop('series_profiles', inplace=True, axis=1)
-
-        assert(np.all((test_inst.data == loaded_inst).all()))
-        assert np.all(test_list)
-
-    def test_write_and_read_netcdf4_default_format_higher_order_w_zlib(self):
-        # create a bunch of files by year and doy
-        test_inst = pysat.Instrument('pysat', 'testing2d', update_files=True)
-        prep_dir(test_inst)
-        outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
-        test_inst.load(2009, 1)
-        test_inst.to_netcdf4(outfile, zlib=True)
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        test_inst.data = test_inst.data.reindex(sorted(test_inst.data.columns),
-                                                axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
-        prep_dir(test_inst)
-
-        # test Series of DataFrames
-        test_list = []
-        for frame1, frame2 in zip(test_inst.data['profiles'],
-                                  loaded_inst['profiles']):
-            test_list.append(np.all((frame1 == frame2).all()))
-        loaded_inst.drop('profiles', inplace=True, axis=1)
-        test_inst.data.drop('profiles', inplace=True, axis=1)
-
-        # second series of frames
-        for frame1, frame2 in zip(test_inst.data['alt_profiles'],
-                                  loaded_inst['alt_profiles']):
-            test_list.append(np.all((frame1 == frame2).all()))
-        loaded_inst.drop('alt_profiles', inplace=True, axis=1)
-        test_inst.data.drop('alt_profiles', inplace=True, axis=1)
-
-        # check series of series
-        for frame1, frame2 in zip(test_inst.data['series_profiles'],
-                                  loaded_inst['series_profiles']):
-            test_list.append(np.all((frame1 == frame2).all()))
-        loaded_inst.drop('series_profiles', inplace=True, axis=1)
-        test_inst.data.drop('series_profiles', inplace=True, axis=1)
-
-        assert (np.all((test_inst.data == loaded_inst).all()))
-        assert np.all(test_list)
-
     def test_netcdf_prevent_attribute_override(self):
-        """Test that attributes will not be overridden by default
-        """
+        """Test that attributes will not be overridden by default."""
         self.testInst.load(date=self.stime)
 
-        try:
-            assert self.testInst.bespoke  # should raise
-        except AttributeError:
-            pass
+        # Test that `bespoke` attribute is initially missing
+        assert not hasattr(self.testInst, 'bespoke')
 
-        # instrument meta attributes immutable upon load
+        # Instrument meta attributes immutable upon load
         assert not self.testInst.meta.mutable
         try:
             self.testInst.meta.bespoke = True
         except AttributeError:
             pass
 
+        # Test that `bespoke` attribute is still missing
+        assert not hasattr(self.testInst, 'bespoke')
+        return
+
     def test_netcdf_attribute_override(self):
-        """Test that attributes in netcdf file may be overridden
-        """
+        """Test that attributes in the netCDF file may be overridden."""
         self.testInst.load(date=self.stime)
         self.testInst.meta.mutable = True
         self.testInst.meta.bespoke = True
@@ -506,74 +451,92 @@ class TestBasicNetCDF4():
         outfile = os.path.join(self.testInst.files.data_path, fname)
         self.testInst.to_netcdf4(outfile)
 
-        data, meta = pysat.utils.load_netcdf4(outfile)
+        _, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format)
 
         # Custom attribute correctly read from file
         assert meta.bespoke
+        return
 
 
-class TestBasicNetCDF4xarray():
-    """NOTE: combine with above class as part of #60"""
+class TestLoadNetCDF4XArray(TestLoadNetCDF4):
+    """Unit tests for `load_netcdf4` using xarray data."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
+        # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
-        # create temporary directory
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
-                                         update_files=True,
-                                         num_samples=100)
+                                         update_files=True, num_samples=100)
         self.stime = pysat.instruments.pysat_testing2d_xarray._test_dates[
             '']['']
 
-        # create testing directory
+        # Create testing directory
         prep_dir(self.testInst)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        # remove_files(self.testInst)
+        # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
+
+        # Remove the temporary directory
         self.tempdir.cleanup()
-        del self.testInst, self.stime
 
-    def test_basic_write_and_read_netcdf4_default_format(self):
-        """ Test basic netCDF4 writing and reading
-        """
-        # create a bunch of files by year and doy
-        prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
-        self.testInst.data.attrs['new_attr'] = 1
-        self.testInst.data.to_netcdf(outfile)
-
-        loaded_inst, meta = pysat.utils.load_netcdf4(
-            outfile, pandas_format=self.testInst.pandas_format)
-        keys = self.testInst.data.data_vars.keys()
-
-        for key in keys:
-            assert(np.all(self.testInst[key] == loaded_inst[key]))
-        assert meta.new_attr == 1
+        # Clear the class attributes
+        del self.data_path, self.tempdir, self.testInst, self.stime
 
     def test_load_netcdf4_pandas_3d_error(self):
         """ Test load_netcdf4 error with a pandas 3D file
         """
-        # create a bunch of files by year and doy
-        prep_dir(self.testInst)
+        # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
-        self.testInst.data.attrs['new_attr'] = 1
         self.testInst.data.to_netcdf(outfile)
 
-        with pytest.raises(ValueError):
-            loaded_inst, meta = pysat.utils.load_netcdf4(
-                outfile, epoch_name='time', pandas_format=True)
+        with pytest.raises(ValueError) as verr:
+            pysat.utils.load_netcdf4(outfile, epoch_name='time',
+                                     pandas_format=True)
+
+        assert str(verr).find("only supports 1D and 2D data in pandas") >= 0
+        return
+
+
+class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
+    """Unit tests for `load_netcdf4` using 2d pandas data."""
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # Store current pysat directory
+        self.data_path = pysat.params['data_dirs']
+
+        # Create temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
+
+        self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
+                                         update_files=True, num_samples=100)
+        self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
+
+        # Create testing directory
+        prep_dir(self.testInst)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        # Reset the pysat parameters
+        pysat.params['data_dirs'] = self.data_path
+
+        # Remove the temporary directory
+        self.tempdir.cleanup()
+
+        # Clear the class attributes
+        del self.data_path, self.tempdir, self.testInst, self.stime
 
 
 class TestFmtCols():
