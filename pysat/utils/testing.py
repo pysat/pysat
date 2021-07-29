@@ -9,7 +9,7 @@
 import numpy as np
 
 
-def assert_list_contains(small_list, big_list):
+def assert_list_contains(small_list, big_list, test_nan=False):
     """ Assert all elements of one list exist within the other list
 
     Parameters
@@ -18,6 +18,8 @@ def assert_list_contains(small_list, big_list):
         List whose values must all be present within big_list
     big_list : list
         List that must contain all the values in small_list
+    test_nan : bool
+        Test the lists for the presence of NaN values
 
     Raises
     ------
@@ -25,14 +27,25 @@ def assert_list_contains(small_list, big_list):
         If a small_list value is missing from big_list
 
     """
+    if test_nan:
+        big_num_nan = np.isnan(big_list).sum()
+        small_num_nan = 0
 
+    # Test the presence of non-NaN values from `small_list` in `big_list` and
+    # determine the number of NaN values in `small_list`
     for value in small_list:
-        assert value in big_list, "{:} not in {:}".format(value, big_list)
+        if test_nan and np.isnan(value):
+            small_num_nan += 1
+        else:
+            assert value in big_list, "{:} not in {:}".format(value, big_list)
 
+    if test_nan:
+        # Ensure `small_list` does not have more NaNs than `big_list`
+        assert small_num_nan <= big_num_nan
     return
 
 
-def assert_lists_equal(list1, list2):
+def assert_lists_equal(list1, list2, test_nan=False):
     """Assert that the lists contain the same elements
 
     Parameters
@@ -41,6 +54,8 @@ def assert_lists_equal(list1, list2):
         Input list one
     list2 : list
         Input list two
+    test_nan : bool
+        Test the lists for the presence of NaN values
 
     Raises
     ------
@@ -55,7 +70,7 @@ def assert_lists_equal(list1, list2):
     """
 
     assert len(list1) == len(list2)
-    assert_list_contains(list1, list2)
+    assert_list_contains(list1, list2, test_nan=test_nan)
 
     return
 
