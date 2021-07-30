@@ -311,8 +311,8 @@ class TestLoadNetCDF4():
                 # Test the loaded higher-dimension data
                 for tframe, lframe in zip(self.testInst.data[dkey],
                                           self.loaded_inst[lkey]):
-                    assert np.all(tframe == lframe), \
-                        "unequal {:s} data for frame index {:d}".format(dkey, i)
+                    assert np.all(tframe == lframe), "unequal {:s} data".format(
+                        dkey)
             else:
                 assert np.all(self.testInst[dkey] == self.loaded_inst[lkey])
         return
@@ -342,7 +342,7 @@ class TestLoadNetCDF4():
             self.testInst.data = self.testInst.data.rename(
                 {dkey: dkey.upper()
                  for dkey in self.testInst.data.data_vars.keys()})
-            
+
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
         self.loaded_inst, meta = pysat.utils.load_netcdf4(
@@ -359,7 +359,6 @@ class TestLoadNetCDF4():
         # Test the loaded data
         self.eval_loaded_data()
         return
-
 
     def test_basic_write_and_read_netcdf4_mixed_case_meta_format(self):
         """ Test basic netCDF4 read/write with mixed case metadata variables.
