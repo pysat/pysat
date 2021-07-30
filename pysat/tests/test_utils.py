@@ -335,8 +335,14 @@ class TestLoadNetCDF4():
         self.testInst.load(date=self.stime)
 
         # Modify data names in data
-        self.testInst.data = self.testInst.data.rename(str.upper,
-                                                       axis='columns')
+        if self.testInst.pandas_format:
+            self.testInst.data = self.testInst.data.rename(str.upper,
+                                                           axis='columns')
+        else:
+            self.testInst.data = self.testInst.data.rename(
+                {dkey: dkey.upper()
+                 for dkey in self.testInst.data.data_vars.keys()})
+            
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
         self.loaded_inst, meta = pysat.utils.load_netcdf4(
@@ -366,8 +372,14 @@ class TestLoadNetCDF4():
         # Modify data and metadata names in data
         self.testInst.meta.data = self.testInst.meta.data.rename(str.upper,
                                                                  axis='index')
-        self.testInst.data = self.testInst.data.rename(str.upper,
-                                                       axis='columns')
+        if self.testInst.pandas_format:
+            self.testInst.data = self.testInst.data.rename(str.upper,
+                                                           axis='columns')
+        else:
+            self.testInst.data = self.testInst.data.rename(
+                {dkey: dkey.upper()
+                 for dkey in self.testInst.data.data_vars.keys()})
+
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
         self.loaded_inst, meta = pysat.utils.load_netcdf4(
@@ -412,7 +424,8 @@ class TestLoadNetCDF4():
         self.loaded_inst, meta = pysat.utils.load_netcdf4(outfile, **lkwargs)
         self.testInst.data = self.testInst.data.reindex(
             sorted(self.testInst.data.columns), axis=1)
-        self.loaded_inst = self.loaded_inst.reindex(sorted(self.loaded_inst.columns), axis=1)
+        self.loaded_inst = self.loaded_inst.reindex(
+            sorted(self.loaded_inst.columns), axis=1)
 
         # Test the loaded data
         self.eval_loaded_data()
@@ -459,8 +472,14 @@ class TestLoadNetCDF4():
         return
 
 
-class TestLoadNetCDF4XArray(TestLoadNetCDF4):
-    """Unit tests for `load_netcdf4` using xarray data."""
+class TestLoadNetCDF4XArray():
+    """Unit tests for `load_netcdf4` using xarray data.
+
+    Note
+    ----
+    Make this a TestLoadNetCDF4 class test as a part of fixing #60.
+
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -540,6 +559,8 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
 
 
 class TestFmtCols():
+    """Unit tests for `fmt_output_in_cols`."""
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
@@ -556,11 +577,8 @@ class TestFmtCols():
         del self.in_str, self.in_kwargs, self.out_str, self.filler_row
         del self.ncols, self.nrows, self.lpad
 
-    def test_output(self):
-        """ Test for the expected number of rows, columns, and fillers
-        """
-        if self.out_str is None and self.ncols is None and self.nrows is None:
-            return
+    def eval_output(self):
+        """ Evaluate the expected number of rows, columns, and fillers."""
 
         # Test the number of rows
         out_rows = self.out_str.split('\n')[:-1]
@@ -587,25 +605,26 @@ class TestFmtCols():
         return
 
     def test_neg_ncols(self):
-        """ Test the output if the column number is negative
-        """
+        """ Test the output if the column number is negative."""
         self.in_kwargs['ncols'] = -5
         self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
                                                             **self.in_kwargs)
         assert len(self.out_str) == 0
+        return
 
     @pytest.mark.parametrize("key,val,raise_type",
                              [("ncols", 0, ZeroDivisionError),
                               ("max_num", -10, ValueError)])
     def test_fmt_raises(self, key, val, raise_type):
+        """ Test raises appropriate Errors for bad input values."""
         self.in_kwargs[key] = val
         with pytest.raises(raise_type):
             pysat.utils._core.fmt_output_in_cols(self.in_str, **self.in_kwargs)
+        return
 
     @pytest.mark.parametrize("ncol", [(3), (5), (10)])
     def test_ncols(self, ncol):
-        """ Test the output for different number of columns
-        """
+        """ Test the output for different number of columns."""
         # Set the input
         self.in_kwargs['ncols'] = ncol
 
@@ -616,13 +635,12 @@ class TestFmtCols():
         # Get and test the output
         self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
                                                             **self.in_kwargs)
-        self.test_output()
+        self.eval_output()
 
     @pytest.mark.parametrize("max_num,filler,nrow", [(0, 0, 1), (1, 0, 1),
                                                      (10, 1, 3), (50, -1, 8)])
     def test_max_num(self, max_num, filler, nrow):
-        """ Test the output for the maximum number of values
-        """
+        """ Test the output for the maximum number of values."""
         # Set the input
         self.in_kwargs['max_num'] = max_num
 
@@ -634,12 +652,12 @@ class TestFmtCols():
         # Get and test the output
         self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
                                                             **self.in_kwargs)
-        self.test_output()
+        self.eval_output()
+        return
 
     @pytest.mark.parametrize("in_pad", [5, 30])
     def test_lpad(self, in_pad):
-        """ Test the output for different number of columns
-        """
+        """ Test the output for different number of columns."""
         # Set the input
         self.in_kwargs['lpad'] = in_pad
         self.ncols = self.in_kwargs['ncols']
@@ -651,18 +669,20 @@ class TestFmtCols():
         # Get and test the output
         self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
                                                             **self.in_kwargs)
-        self.test_output()
+        self.eval_output()
+        return
 
 
 class TestAvailableInst(TestWithRegistration):
+    """ Unit tests for `available_instruments`, `display_avialable_instruments`.
+    """
 
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",
                              [(None, None), (False, False), (True, True)])
     def test_display_available_instruments(self, inst_loc, inst_flag,
                                            plat_flag):
-        """Test display_available_instruments options
-        """
+        """Test display_available_instruments options."""
         # If using the pysat registry, make sure there is something registered
         if inst_loc is None:
             pysat.utils.registry.register(self.module_names)
@@ -690,8 +710,7 @@ class TestAvailableInst(TestWithRegistration):
         return
 
     def test_import_error_in_available_instruments(self):
-        """ Test handling of import errors in available_instruments
-        """
+        """ Test handling of import errors in available_instruments."""
 
         idict = pysat.utils.available_instruments(os.path)
 
@@ -704,33 +723,48 @@ class TestAvailableInst(TestWithRegistration):
 
 
 class TestNetworkLock():
+    """Unit tests for NetworkLock class."""
+
     def setup(self):
+        """Set up the unit test environment."""
+        # Create and write a temporary file
         self.fname = 'temp_lock_file.txt'
         with open(self.fname, 'w') as fh:
             fh.write('spam and eggs')
 
     def teardown(self):
+        """Clean up the unit test environment."""
+        # Remove the temporary file
         os.remove(self.fname)
 
+        # Delete the test class attributes
+        del self.fname
+
     def test_with_timeout(self):
-        # Open the file 2 times
+        """Test network locking with a timeout."""
+        # Open the file two times
         with pytest.raises(portalocker.AlreadyLocked):
             with pysat.utils.NetworkLock(self.fname, timeout=0.1):
                 with pysat.utils.NetworkLock(self.fname, mode='wb', timeout=0.1,
                                              fail_when_locked=True):
                     pass
+        return
 
     def test_without_timeout(self):
-        # Open the file 2 times
+        """Test network locking without a timeout."""
+        # Open the file two times
         with pytest.raises(portalocker.LockException):
             with pysat.utils.NetworkLock(self.fname, timeout=None):
                 with pysat.utils.NetworkLock(self.fname, timeout=None,
                                              mode='w'):
                     pass
+        return
 
     def test_without_fail(self):
-        # Open the file 2 times
+        """Test network locking without file conditions set."""
+        # Open the file two times
         with pytest.raises(portalocker.LockException):
             with pysat.utils.NetworkLock(self.fname, timeout=0.1):
                 lock = pysat.utils.NetworkLock(self.fname, timeout=0.1)
                 lock.acquire(check_interval=0.05, fail_when_locked=False)
+        return
