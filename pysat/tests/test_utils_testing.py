@@ -37,19 +37,24 @@ class TestTestingUtils():
         assert str(aerr).find('not in')
         return
 
-    @pytest.mark.parametrize("slist, blist",
-                             [([1, 2.0], [1, 2.0]),
-                              (['one', 'two'], ['two', 'one']),
-                              ([None, True, False], [True, False, None])])
-    def test_assert_list_equal_good(self, slist, blist):
+    @pytest.mark.parametrize("slist, blist, kwargs",
+                             [([1, 2.0], [1, 2.0], {}),
+                              (['one', 'two'], ['two', 'one'], {}),
+                              ([None, True, False], [True, False, None], {}),
+                              (['one', 'two'], ['Two', 'ONE'],
+                               {"test_case": False}),
+                              ([np.nan, 1], [1, np.nan], {"test_nan": True})])
+    def test_assert_list_equal_good(self, slist, blist, kwargs):
         """ Test the evaluation of lists with unordered but identical values.
         """
-        testing.assert_lists_equal(slist, blist)
+        testing.assert_lists_equal(slist, blist, **kwargs)
         return
 
     @pytest.mark.parametrize("slist, blist",
                              [([1, 4.0], [1, 2.0, 3]),
+                              ([1, np.nan], [1, 2.0]),
                               (['one', 'two'], ['three', 'one']),
+                              (['one', 'two'], ['One', 'TWO']),
                               ([None, False], [True, False, "None"])])
     def test_assert_list_equal_bad(self, slist, blist):
         """ Test the evaluation of overlapping list contents."""
