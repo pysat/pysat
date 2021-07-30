@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      and set Instrument attributes across all instruments
    * Extended Constellation unit tests
    * Standardized Instrument instantiation to always define `inst_module`
+   * Extended testing options for `pysat.utils.testing` functions
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
