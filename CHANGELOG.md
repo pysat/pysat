@@ -32,8 +32,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
 
-## [3.0.1] - 2021-07-28 
------------------------
+[3.0.1] - 2021-07-28
+--------------------
 * New Features
    * Added a routine for loading CSV files into a pandas DataFrame from a list
      of filenames.
