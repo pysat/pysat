@@ -16,11 +16,14 @@ def filter_data(inst, times=None):
     """Remove data from instrument, simulating gaps in the dataset"""
 
     if times is None:
-        times = [[dt.datetime(2009, 1, 1, 1), dt.datetime(2009, 1, 1, 2)],
+        times = [[dt.datetime(2009, 1, 1, 1, 37),
+                  dt.datetime(2009, 1, 1, 3, 14)],
                  [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
                  [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
-                 [dt.datetime(2009, 1, 4), dt.datetime(2009, 1, 6)]
-                 ]
+                 [dt.datetime(2009, 1, 13), dt.datetime(2009, 1, 15)],
+                 [dt.datetime(2009, 1, 20, 1), dt.datetime(2009, 1, 25, 23)],
+                 [dt.datetime(2009, 1, 25, 23, 30),
+                  dt.datetime(2009, 1, 26, 3)]]
 
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
@@ -368,19 +371,6 @@ class TestGeneralOrbitsMLT():
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         assert self.testInst.date == self.stime
-
-    def test_less_than_one_orbit_of_data_two_ways(self):
-        """ Can this function be combined with test_less_than_one_orbit_of_data?
-        """
-        def truncate_data(inst):
-            """ Local helper function to reduce available data
-            """
-            inst.data = inst[0:5]
-
-        self.testInst.custom_attach(truncate_data)
-        self.testInst.load(date=self.stime)
-        # starting from no orbit calls next loads first orbit
-        self.testInst.orbits.next()
         # store comparison data
         saved_data = self.testInst.copy()
         self.testInst.load(date=self.stime)
@@ -440,11 +430,16 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
+        n_time = []
+        p_time = []
         for j in range(iterations):
+            n_time.append(self.testInst.index[0])
             self.testInst.orbits.next()
         for j in range(iterations):
             self.testInst.orbits.prev()
+            p_time.append(self.testInst.index[0])
         assert all(control.data == self.testInst.data)
+        assert np.all(p_time == n_time[::-1])
 
     @pytest.mark.parametrize("iterations", [(10), (20)])
     def test_repeated_orbit_calls_alternative(self, iterations):
@@ -650,30 +645,30 @@ class TestOrbitsGappyData():
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime
 
-    def test_repeat_orbit_calls_asym_multi_day_0_UT_really_long_time_gap(self):
-        """Test successful orbit calls over a series of lengthening gaps
-        """
-        self.testInst.load(date=self.stime)
+    def test_repeat_orbit_calls_sym_multi_day_0_UT_really_long_time_gap(self):
+        """Test successful orbit calls over a multi-day gap"""
+        self.testInst.load(date=dt.datetime(2009, 1, 19))
         self.testInst.orbits.next()
         control = self.testInst.copy()
-        for j in range(100):
+        for j in range(45):
             self.testInst.orbits.next()
-        for j in range(100):
+        for j in range(45):
             self.testInst.orbits.prev()
         assert all(control.data == self.testInst.data)
 
-    def test_repeat_orbit_calls_asym_multi_day_0_UT_multiple_time_gaps(self):
+    @pytest.mark.parametrize("day", [1, 25])
+    def test_repeat_orbit_calls_cutoffs_with_gaps(self, day):
         """Test that orbits are selected at same cutoffs backward and forward"""
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=dt.datetime(2009, 1, day))
         self.testInst.orbits.next()
         control = self.testInst.copy()
         n_time = []
         p_time = []
-        for j in range(40):
+        for j in range(20):
             n_time.append(self.testInst.index[0])
             self.testInst.orbits.next()
 
-        for j in range(40):
+        for j in range(20):
             self.testInst.orbits.prev()
             p_time.append(self.testInst.index[0])
 
@@ -699,7 +694,7 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
         del self.testInst, self.stime
 
 
-class TestOrbitsGappyData2(TestOrbitsGappyData):
+class TestOrbitsGappyData2():
     """Run additional gappy orbit tests for orbits defined by MLT -- pandas
     """
 
@@ -727,8 +722,22 @@ class TestOrbitsGappyData2(TestOrbitsGappyData):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime
 
+    def test_repeated_orbit_calls_alternative(self):
+        """ Test repeated orbit calls are reversible when applied alternatively
+        """
+        self.testInst.load(date=self.stime)
+        self.testInst.orbits.next()
+        control = self.testInst.copy()
+        for j in range(20):
+            self.testInst.orbits.next()
+        for j in range(40):
+            self.testInst.orbits.prev()
+        for j in range(20):
+            self.testInst.orbits.next()
+        assert all(control.data == self.testInst.data)
 
-class TestOrbitsGappyData2Xarray(TestOrbitsGappyData):
+
+class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
     """Run additional gappy orbit tests for orbits defined by MLT -- xarray
     """
 
