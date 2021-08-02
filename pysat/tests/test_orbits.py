@@ -13,22 +13,20 @@ import pysat
 
 
 def filter_data(inst, times=None):
-    """Remove data from instrument, simulating gaps in the dataset."""
+    """Remove data from instrument, simulating gaps in the data set.
 
-    if times is None:
-        times = [[dt.datetime(2009, 1, 1, 1, 37),
-                  dt.datetime(2009, 1, 1, 3, 14)],
-                 [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
-                 [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
-                 [dt.datetime(2009, 1, 13), dt.datetime(2009, 1, 15)],
-                 [dt.datetime(2009, 1, 20, 1), dt.datetime(2009, 1, 25, 23)],
-                 [dt.datetime(2009, 1, 25, 23, 30),
-                  dt.datetime(2009, 1, 26, 3)]]
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        The instrument to be filtered
+    times : array of dt.datetimes
+        A 2xN array consisting of the start and stop of each gap in a list of
+        N gaps
+    """
 
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
         inst.data = inst[idx]
-
     return
 
 
@@ -40,7 +38,7 @@ class TestOrbitsUserInterface():
         self.in_args = ['pysat', 'testing']
         self.in_kwargs = {'clean_level': 'clean', 'update_files': True}
         self.testInst = None
-        self.stime = dt.datetime(2009, 1, 1)
+        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
     def teardown(self):
@@ -50,14 +48,16 @@ class TestOrbitsUserInterface():
 
     def test_orbit_w_bad_kind(self):
         """Test orbit failure with bad 'kind' input."""
+
         self.in_kwargs['orbit_info'] = {'index': 'mlt', 'kind': 'cats'}
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
+        errmsg = "Unknown kind of orbit requested"
+        assert str(verr).find(errmsg) >= 0
         return
 
     @pytest.mark.parametrize("info", [({'index': 'magnetic local time',
                                         'kind': 'longitude'}),
-                                      (None),
                                       ({'index': 'magnetic local time',
                                         'kind': 'lt'}),
                                       ({'index': 'magnetic local time',
@@ -66,15 +66,19 @@ class TestOrbitsUserInterface():
                                         'kind': 'orbit'})])
     def test_orbit_w_bad_orbit_info(self, info):
         """Test orbit failure on iteration with orbit initialization."""
+
         self.in_kwargs['orbit_info'] = info
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         self.testInst.load(date=self.stime)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             self.testInst.orbits.next()
+        errmsg = "Provided orbit index does not exist"
+        assert str(verr).find(errmsg) >= 0
         return
 
-    @pytest.mark.parametrize("info", [({'index': 'magnetic local time',
+    @pytest.mark.parametrize("info", [(None),
+                                      ({'index': 'magnetic local time',
                                         'kind': 'polar'}),
                                       ({'index': 'magnetic local time',
                                         'kind': 'orbit'}),
@@ -83,15 +87,18 @@ class TestOrbitsUserInterface():
                                       ({'index': 'magnetic local time',
                                         'kind': 'lt'})])
     def test_orbit_polar_w_missing_orbit_index(self, info):
-        """Test orbit failure oon iteration with missing orbit index."""
+        """Test orbit failure on iteration with missing orbit index."""
+
         self.in_kwargs['orbit_info'] = info
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
 
         # Force index to None beforee loading and iterating
         self.testInst.orbits.orbit_index = None
         self.testInst.load(date=self.stime)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             self.testInst.orbits.next()
+        errmsg = "Orbit properties must be defined"
+        assert str(verr).find(errmsg) >= 0
         return
 
     def test_orbit_repr(self):
@@ -164,7 +171,7 @@ class TestSpecificUTOrbits():
             self.testInst.orbits[orbit_ind]
         return
 
-    def test_oribt_number_via_current_multiple_orbit_calls_in_day(self):
+    def test_orbit_number_via_current_multiple_orbit_calls_in_day(self):
         """Test orbit number with multiple orbits calls in a day."""
         self.testInst.load(date=self.stime)
         self.testInst.bounds = (self.stime, None)
@@ -209,7 +216,7 @@ class TestSpecificUTOrbits():
     def test_orbit_prev_call_no_loaded_data(self):
         """Test orbit previous call without loading data."""
         self.testInst.orbits.prev()
-        # this isn't a full orbit
+        # This isn't a full orbit
         assert (self.testInst.index[-1]
                 == dt.datetime(2010, 12, 31, 23, 59, 59))
         assert (self.testInst.index[0] == dt.datetime(2010, 12, 31, 23, 49))
@@ -335,7 +342,7 @@ class TestGeneralOrbitsMLT():
 
     def test_eval_repr(self):
         """Test eval of repr recreates object."""
-        # eval and repr don't play nice for custom functions
+        # Eval and repr don't play nice for custom functions
         if len(self.testInst.custom_functions) != 0:
             self.testInst.custom_clear()
 
@@ -370,10 +377,10 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
 
-        # a recursion issue has been observed in this area
-        # checking for date to limit reintroduction potential
+        # A recursion issue has been observed in this area
+        # Checking for date to limit reintroduction potential
         assert self.testInst.date == self.stime
-        # store comparison data
+        # Store comparison data
         saved_data = self.testInst.copy()
         self.testInst.load(date=self.stime)
         self.testInst.orbits[0]
@@ -384,7 +391,7 @@ class TestGeneralOrbitsMLT():
 
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         """Test successful loading of different partial orbits."""
-        # create situation where the < 1 orbit split across two days
+        # Create situation where the < 1 orbit split across two days
         def manual_orbits(inst):
             """Local function for breaking up orbits."""
             if inst.date == dt.datetime(2009, 1, 5):
@@ -397,16 +404,16 @@ class TestGeneralOrbitsMLT():
         self.stime += dt.timedelta(days=3)
         self.testInst.load(date=self.stime)
 
-        # starting from no orbit calls next loads first orbit
+        # Starting from no orbit calls next loads first orbit
         self.testInst.orbits.next()
 
-        # store comparison data
+        # Store comparison data
         saved_data = self.testInst.copy()
         self.testInst.load(date=self.stime + dt.timedelta(days=1))
         self.testInst.orbits[0]
         if self.testInst.orbits.num == 1:
-            # equivalence only when only one orbit
-            # some test settings can violate this assumption
+            # Equivalence only when only one orbit
+            # Some test settings can violate this assumption
             assert all(self.testInst.data == saved_data.data)
 
         self.testInst.load(date=self.stime)
@@ -418,8 +425,8 @@ class TestGeneralOrbitsMLT():
         if self.testInst.orbits.num == 1:
             assert all(self.testInst.data == saved_data.data)
 
-        # a recursion issue has been observed in this area
-        # checking for date to limit reintroduction potential
+        # A recursion issue has been observed in this area
+        # Checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
         assert d1check
         return
@@ -650,24 +657,39 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 class TestOrbitsGappyData():
     """Run the gappy orbit tests for orbits defined by MLT -- pandas."""
 
+    # Delta time needs to be defined outside setup for inheritance to work
+    deltime = np.array([[dt.timedelta(hours=1, minutes=37),
+                         dt.timedelta(hours=3, minutes=14)],
+                        [dt.timedelta(hours=10),
+                         dt.timedelta(hours=12)],
+                        [dt.timedelta(hours=22),
+                         dt.timedelta(days=1, hours=2)],
+                        [dt.timedelta(days=12),
+                         dt.timedelta(days=14)],
+                        [dt.timedelta(days=19, hours=1),
+                         dt.timedelta(days=24, hours=23)],
+                        [dt.timedelta(days=24, hours=23, minutes=30),
+                         dt.timedelta(days=25, hours=3)]])
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return
 
     def test_repeat_orbit_calls_sym_multi_day_0_UT_really_long_time_gap(self):
         """Test successful orbit calls over a multi-day gap."""
-        self.testInst.load(date=dt.datetime(2009, 1, 19))
+        self.testInst.load(date=(self.stime + dt.timedelta(days=18)))
         self.testInst.orbits.next()
         control = self.testInst.copy()
         for j in range(45):
@@ -680,7 +702,7 @@ class TestOrbitsGappyData():
     @pytest.mark.parametrize("day", [1, 25])
     def test_repeat_orbit_calls_cutoffs_with_gaps(self, day):
         """Test that orbits are selected at same cutoffs when reversed."""
-        self.testInst.load(date=dt.datetime(2009, 1, day))
+        self.testInst.load(date=(self.stime + dt.timedelta(days=(day - 1))))
         self.testInst.orbits.next()
         control = self.testInst.copy()
         n_time = []
@@ -693,8 +715,8 @@ class TestOrbitsGappyData():
             self.testInst.orbits.prev()
             p_time.append(self.testInst.index[0])
 
-        check = np.all(p_time == n_time[::-1])
-        assert all(control.data == self.testInst.data) & check
+        assert np.all(p_time == n_time[::-1])
+        assert all(control.data == self.testInst.data)
         return
 
 
@@ -707,13 +729,14 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return
 
 
@@ -792,7 +815,7 @@ class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
 
 
 class TestOrbitsGappyLongData(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Longitude -- pandas"""
+    """Run the gappy orbit tests for orbits defined by Longitude for pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -801,18 +824,19 @@ class TestOrbitsGappyLongData(TestOrbitsGappyData):
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'})
 
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return
 
 
 class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Longitude -- xarray"""
+    """Run the gappy orbit tests for orbits defined by Longitude for xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -820,18 +844,19 @@ class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
                                          clean_level='clean',
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'})
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return
 
 
 class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Orbit Number -- pandas"""
+    """Run the gappy orbit tests by Orbit Number for pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -839,18 +864,19 @@ class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'})
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return
 
 
 class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Orbit Number -- xarray"""
+    """Run the gappy orbit tests by Orbit Number for xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -858,18 +884,19 @@ class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'})
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return
 
 
 class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Latitude -- pandas"""
+    """Run the gappy orbit tests by Latitude for pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -878,18 +905,19 @@ class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'})
 
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return
 
 
 class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Latitude -- xarray"""
+    """Run the gappy orbit tests by Latitude for xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -898,11 +926,12 @@ class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'})
 
-        self.testInst.custom_attach(filter_data)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.gaps = self.stime + self.deltime
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.stime
+        del self.testInst, self.stime, self.gaps
         return

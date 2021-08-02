@@ -576,7 +576,7 @@ class Orbits(object):
             except KeyError as err:
                 raise ValueError(''.join((str(err), '\n',
                                           'Provided orbit index does not ',
-                                          'appear to exist in loaded data')))
+                                          'exist in loaded data')))
 
         # Determine where orbit index goes from positive to negative
         pos = (self.inst[self.orbit_index] >= 0)
@@ -628,7 +628,7 @@ class Orbits(object):
             except KeyError as err:
                 raise ValueError(''.join((str(err), '\n',
                                           'Provided orbit index does not ',
-                                          'appear to exist in loaded data')))
+                                          'exist in loaded data')))
 
         # Determine where the orbit index changes from one value to the next
         uniq_vals = np.unique(self.inst[self.orbit_index].values)
