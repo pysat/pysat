@@ -500,6 +500,9 @@ class TestLoadNetCDF4XArray():
         # Create testing directory
         prep_dir(self.testInst)
 
+        # Initalize the loaded data
+        self.loaded_inst = None
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         # Reset the pysat parameters
@@ -510,6 +513,7 @@ class TestLoadNetCDF4XArray():
 
         # Clear the class attributes
         del self.data_path, self.tempdir, self.testInst, self.stime
+        del self.loaded_inst
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         """ Test basic netCDF4 writing and reading."""
