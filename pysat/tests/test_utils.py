@@ -20,25 +20,26 @@ import pysat
 from pysat.tests.registration_test_class import TestWithRegistration
 
 
-def prep_dir(inst=None):
+def prep_dir(inst):
     """Prepare the directory to provide netCDF export file support
 
     Parameters
     ----------
-    inst : pysat.Instrument or NoneType
-        Instrument class object or None to use 'pysat_testing.py' (default=None)
+    inst : pysat.Instrument
+        Instrument class object
+
+    Returns
+    -------
+    bool
+        True if directories create, False if not
 
     """
-    if inst is None:
-        inst = pysat.Instrument(platform='pysat', name='testing')
-
     # Create data directories
     try:
         os.makedirs(inst.files.data_path)
+        return True
     except OSError:
-        pass
-
-    return
+        return False
 
 
 def remove_files(inst):
