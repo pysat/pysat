@@ -1,3 +1,5 @@
+"""Test the pysat routines for the orbits class."""
+
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 import numpy as np
