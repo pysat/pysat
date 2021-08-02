@@ -165,7 +165,7 @@ class TestCalcSLT():
         return
 
     def test_bad_lon_name_calc_solar_local_time(self):
-        """Test raises ValueERror with a bad longitude name."""
+        """Test raises ValueError with a bad longitude name."""
 
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name="testing")
