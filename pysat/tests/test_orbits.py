@@ -370,7 +370,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
 
-        # a recusion issue has been observed in this area
+        # a recursion issue has been observed in this area
         # checking for date to limit reintroduction potential
         assert self.testInst.date == self.stime
         # store comparison data
@@ -378,8 +378,6 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(date=self.stime)
         self.testInst.orbits[0]
         assert all(self.testInst.data == saved_data.data)
-        # a recusion issue has been observed in this area
-        # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
         assert d1check
         return
@@ -420,7 +418,7 @@ class TestGeneralOrbitsMLT():
         if self.testInst.orbits.num == 1:
             assert all(self.testInst.data == saved_data.data)
 
-        # a recusion issue has been observed in this area
+        # a recursion issue has been observed in this area
         # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
         assert d1check
