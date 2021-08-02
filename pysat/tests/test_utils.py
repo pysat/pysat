@@ -18,7 +18,6 @@ import tempfile
 
 import pysat
 from pysat.tests.registration_test_class import TestWithRegistration
-from pysat.utils import testing
 
 
 def prep_dir(inst=None):
@@ -229,7 +228,7 @@ class TestListify():
 
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = ['test' for i in range(nitem)]
-        testing.assert_lists_equal(new_iterable, tst_iterable)
+        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
     @pytest.mark.parametrize('iterable', [np.nan, np.full((1, 1), np.nan),
@@ -241,7 +240,8 @@ class TestListify():
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [np.nan
                         for i in range(int(np.product(np.shape(iterable))))]
-        testing.assert_lists_equal(new_iterable, tst_iterable, test_nan=True)
+        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable,
+                                               test_nan=True)
         return
 
     @pytest.mark.parametrize('iterable', [1, np.full((1, 1), 1),
@@ -252,20 +252,20 @@ class TestListify():
 
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [1 for i in range(int(np.product(np.shape(iterable))))]
-        testing.assert_lists_equal(new_iterable, tst_iterable)
+        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
     @pytest.mark.parametrize('iterable', [
-        pysat.Instrument(), np.full((1, 1), pysat.Instrument()),
-        np.full((2, 2), pysat.Instrument()),
-        np.full((3, 3, 3), pysat.Instrument())])
+        np.timedelta64(1), np.full((1, 1), np.timedelta64(1)),
+        np.full((2, 2), np.timedelta64(1)),
+        np.full((3, 3, 3), np.timedelta64(1))])
     def test_listify_class_arrays(self, iterable):
         """ Test listify with various np.arrays of classes."""
 
         new_iterable = pysat.utils.listify(iterable)
-        tst_iterable = [pysat.Instrument()
+        tst_iterable = [np.timedelta64(1)
                         for i in range(int(np.product(np.shape(iterable))))]
-        testing.assert_lists_equal(new_iterable, tst_iterable)
+        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
 
@@ -353,8 +353,9 @@ class TestLoadNetCDF4():
             sorted(self.loaded_inst.columns), axis=1)
 
         # Check that names are lower case when written
-        testing.assert_lists_equal(self.loaded_inst.columns,
-                                   self.testInst.data.columns, test_case=False)
+        pysat.utils.testing.assert_lists_equal(self.loaded_inst.columns,
+                                               self.testInst.data.columns,
+                                               test_case=False)
 
         # Test the loaded data
         self.eval_loaded_data()
@@ -389,8 +390,8 @@ class TestLoadNetCDF4():
             sorted(self.loaded_inst.columns), axis=1)
 
         # Check that names are in the expected case
-        testing.assert_lists_equal(self.loaded_inst.columns,
-                                   self.testInst.data.columns)
+        pysat.utils.testing.assert_lists_equal(self.loaded_inst.columns,
+                                               self.testInst.data.columns)
 
         return
 
