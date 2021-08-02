@@ -248,7 +248,7 @@ class TestListify():
                                           np.full((2, 2), 1),
                                           np.full((3, 3, 3), 1)])
     def test_listify_int_arrays(self, iterable):
-        """ Test listify with various np.arrays of NaNs."""
+        """ Test listify with various np.arrays of integers."""
 
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [1 for i in range(int(np.product(np.shape(iterable))))]
@@ -260,7 +260,7 @@ class TestListify():
         np.full((2, 2), pysat.Instrument()),
         np.full((3, 3, 3), pysat.Instrument())])
     def test_listify_class_arrays(self, iterable):
-        """ Test listify with various np.arrays of NaNs."""
+        """ Test listify with various np.arrays of classes."""
 
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [pysat.Instrument()

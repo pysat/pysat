@@ -41,7 +41,7 @@ def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
         if test_nan and np.isnan(value):
             small_num_nan += 1
         elif test_case:
-            assert value in big_list, "{:} not in {:}".format(value, big_list)
+            assert value in big_list, "{:} not in {:}".format(value.__repr__(), big_list)
         else:
             assert value.lower() in big_lower, "{:} not in {:}".format(
                 value.lower(), big_lower)
