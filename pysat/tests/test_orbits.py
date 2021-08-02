@@ -13,7 +13,7 @@ import pysat
 
 
 def filter_data(inst, times=None):
-    """Remove data from instrument, simulating gaps in the dataset"""
+    """Remove data from instrument, simulating gaps in the dataset."""
 
     if times is None:
         times = [[dt.datetime(2009, 1, 1, 1, 37),
@@ -31,25 +31,21 @@ def filter_data(inst, times=None):
 
 
 class TestOrbitsUserInterface():
-    """Tests the user interface for orbits, including error handling
-    """
+    """Tests the user interface for orbits, including error handling."""
 
     def setup(self):
-        """ Set up User Interface unit tests
-        """
+        """Set up User Interface unit tests."""
         self.in_args = ['pysat', 'testing']
         self.in_kwargs = {'clean_level': 'clean', 'update_files': True}
         self.testInst = None
         self.stime = dt.datetime(2009, 1, 1)
 
     def teardown(self):
-        """ Tear down user interface tests
-        """
+        """Tear down User Interface tests."""
         del self.in_args, self.in_kwargs, self.testInst, self.stime
 
     def test_orbit_w_bad_kind(self):
-        """ Test orbit failure with bad 'kind' input
-        """
+        """Test orbit failure with bad 'kind' input."""
         self.in_kwargs['orbit_info'] = {'index': 'mlt', 'kind': 'cats'}
         with pytest.raises(ValueError):
             self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
@@ -64,8 +60,7 @@ class TestOrbitsUserInterface():
                                       ({'index': 'magnetic local time',
                                         'kind': 'orbit'})])
     def test_orbit_w_bad_orbit_info(self, info):
-        """ Test orbit failure on iteration with orbit initialization
-        """
+        """Test orbit failure on iteration with orbit initialization."""
         self.in_kwargs['orbit_info'] = info
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         self.testInst.load(date=self.stime)
@@ -82,8 +77,7 @@ class TestOrbitsUserInterface():
                                       ({'index': 'magnetic local time',
                                         'kind': 'lt'})])
     def test_orbit_polar_w_missing_orbit_index(self, info):
-        """ Test orbit failure oon iteration with missing orbit index
-        """
+        """Test orbit failure oon iteration with missing orbit index."""
         self.in_kwargs['orbit_info'] = info
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
 
@@ -94,8 +88,7 @@ class TestOrbitsUserInterface():
             self.testInst.orbits.next()
 
     def test_orbit_repr(self):
-        """ Test the Orbit representation
-        """
+        """Test the Orbit representation."""
         self.in_kwargs['orbit_info'] = {'index': 'mlt'}
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         out_str = self.testInst.orbits.__repr__()
@@ -103,8 +96,7 @@ class TestOrbitsUserInterface():
         assert out_str.find("Orbits(") >= 0
 
     def test_orbit_str(self):
-        """ Test the Orbit string representation with data
-        """
+        """Test the Orbit string representation with data."""
         self.in_kwargs['orbit_info'] = {'index': 'mlt'}
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         self.testInst.load(date=self.stime)
@@ -115,12 +107,10 @@ class TestOrbitsUserInterface():
 
 
 class TestSpecificUTOrbits():
-    """Run the tests for specific behaviour in the MLT orbits
-    """
+    """Run the tests for specific behaviour in the MLT orbits."""
 
     def setup(self):
-        """Runs before every method to create a clean testing setup
-        """
+        """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
@@ -130,14 +120,12 @@ class TestSpecificUTOrbits():
         self.etime = None
 
     def teardown(self):
-        """Runs after every method to clean up previous testing
-        """
+        """Runs after every method to clean up previous testing."""
         del self.testInst, self.stime, self.inc_min, self.etime
 
     @pytest.mark.parametrize('orbit_inc', [(0), (1), (-1), (-2), (14)])
     def test_single_orbit_call_by_index(self, orbit_inc):
-        """Test successful orbit call by index
-        """
+        """Test successful orbit call by index."""
         # Load the data
         self.testInst.load(date=self.stime)
         self.testInst.orbits[orbit_inc]
@@ -158,15 +146,13 @@ class TestSpecificUTOrbits():
     @pytest.mark.parametrize("orbit_ind,raise_err", [(17, Exception),
                                                      (None, TypeError)])
     def test_single_orbit_call_bad_index(self, orbit_ind, raise_err):
-        """ Test orbit failure with bad index
-        """
+        """Test orbit failure with bad index."""
         self.testInst.load(date=self.stime)
         with pytest.raises(raise_err):
             self.testInst.orbits[orbit_ind]
 
     def test_oribt_number_via_current_multiple_orbit_calls_in_day(self):
-        """ Test orbit number with mulitple orbits calls in a day
-        """
+        """Test orbit number with multiple orbits calls in a day."""
         self.testInst.load(date=self.stime)
         self.testInst.bounds = (self.stime, None)
         true_vals = np.arange(15)
@@ -181,8 +167,7 @@ class TestSpecificUTOrbits():
         assert np.all(test_vals == true_vals)
 
     def test_all_single_orbit_calls_in_day(self):
-        """ Test all single orbit calls in a day
-        """
+        """Test all single orbit calls in a day."""
         self.testInst.load(date=self.stime)
         self.testInst.bounds = (self.stime, None)
         for i, inst in enumerate(self.testInst.orbits):
@@ -200,15 +185,13 @@ class TestSpecificUTOrbits():
             assert self.testInst.index[-1] == self.etime
 
     def test_orbit_next_call_no_loaded_data(self):
-        """ Test orbit next call without loading data
-        """
+        """Test orbit next call without loading data."""
         self.testInst.orbits.next()
         assert (self.testInst.index[0] == dt.datetime(2008, 1, 1))
         assert (self.testInst.index[-1] == dt.datetime(2008, 1, 1, 0, 38, 59))
 
     def test_orbit_prev_call_no_loaded_data(self):
-        """ Test orbit previous call without loading data
-        """
+        """Test orbit previous call without loading data."""
         self.testInst.orbits.prev()
         # this isn't a full orbit
         assert (self.testInst.index[-1]
@@ -216,8 +199,7 @@ class TestSpecificUTOrbits():
         assert (self.testInst.index[0] == dt.datetime(2010, 12, 31, 23, 49))
 
     def test_single_orbit_call_orbit_starts_0_UT_using_next(self):
-        """ Test orbit next call with data
-        """
+        """Test orbit next call with data."""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         self.etime = self.stime + dt.timedelta(seconds=(self.inc_min * 60 - 1))
@@ -225,8 +207,7 @@ class TestSpecificUTOrbits():
         assert (self.testInst.index[-1] == self.etime)
 
     def test_single_orbit_call_orbit_starts_0_UT_using_prev(self):
-        """ Test orbit prev call with data
-        """
+        """Test orbit prev call with data."""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.prev()
         self.stime += 14 * relativedelta(minutes=self.inc_min)
@@ -236,8 +217,7 @@ class TestSpecificUTOrbits():
         assert self.testInst.index[-1] == self.etime
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_next(self):
-        """ Test orbit next call with data for previous day
-        """
+        """Test orbit next call with data for previous day."""
         self.stime -= dt.timedelta(days=1)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
@@ -247,6 +227,7 @@ class TestSpecificUTOrbits():
                     + relativedelta(seconds=(self.inc_min * 60 - 1))))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_prev(self):
+        """Test orbit previous call with data for previous day."""
         self.stime -= dt.timedelta(days=1)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.prev()
@@ -258,8 +239,7 @@ class TestSpecificUTOrbits():
 
 
 class TestGeneralOrbitsMLT():
-    """Run the general orbit tests for orbits defined by MLT -- pandas
-    """
+    """Run the general orbit tests by MLT for pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -276,13 +256,13 @@ class TestGeneralOrbitsMLT():
         return
 
     def test_equality_with_copy(self):
-        """Test that copy is the same as original"""
+        """Test that copy is the same as original."""
         self.out = self.testInst.orbits.copy()
         assert self.out == self.testInst.orbits
         return
 
     def test_equality_with_data_with_copy(self):
-        """Test that copy is the same as original if data is loaded"""
+        """Test that copy is the same as original if data is loaded."""
         # Load data
         self.testInst.load(date=self.stime)
 
@@ -294,7 +274,7 @@ class TestGeneralOrbitsMLT():
         return
 
     def test_inequality_different_data(self):
-        """Test that equality is false if different data"""
+        """Test that equality is false if different data."""
         # Load data
         self.testInst.load(date=self.stime)
 
@@ -311,7 +291,7 @@ class TestGeneralOrbitsMLT():
         return
 
     def test_inequality_modified_object(self):
-        """Test that equality is false if other missing attributes"""
+        """Test that equality is false if other missing attributes."""
         self.out = self.testInst.orbits.copy()
 
         # Remove attribute
@@ -321,19 +301,19 @@ class TestGeneralOrbitsMLT():
         return
 
     def test_inequality_reduced_object(self):
-        """Test that equality is false if self missing attributes"""
+        """Test that equality is false if self missing attributes."""
         self.out = self.testInst.orbits.copy()
         self.out.hi_there = 'hi'
         assert self.testInst.orbits != self.out
         return
 
     def test_inequality_different_type(self):
-        """Test that equality is false if different type"""
+        """Test that equality is false if different type."""
         assert self.testInst.orbits != self.testInst
         return
 
     def test_eval_repr(self):
-        """Test eval of repr recreates object"""
+        """Test eval of repr recreates object."""
         # eval and repr don't play nice for custom functions
         if len(self.testInst.custom_functions) != 0:
             self.testInst.custom_clear()
@@ -343,7 +323,7 @@ class TestGeneralOrbitsMLT():
         return
 
     def test_repr_and_copy(self):
-        """Test repr consistent with object copy"""
+        """Test repr consistent with object copy."""
         # Not tested with eval due to issues with datetime
         self.out = self.testInst.orbits.__repr__()
         second_out = self.testInst.orbits.copy().__repr__()
@@ -351,8 +331,7 @@ class TestGeneralOrbitsMLT():
         return
 
     def test_load_orbits_w_empty_data(self):
-        """ Test orbit loading outside of the instrument data range
-        """
+        """Test orbit loading outside of the instrument data range."""
         self.stime -= dt.timedelta(days=365 * 100)
         self.testInst.load(date=self.stime)
         self.testInst.orbits[0]
@@ -360,11 +339,9 @@ class TestGeneralOrbitsMLT():
             self.testInst.orbits.next()
 
     def test_less_than_one_orbit_of_data(self):
-        """Test successful load with less than one orbit of data
-        """
+        """Test successful load with less than one orbit of data."""
         def truncate_data(inst):
-            """ Local helper function to reduce available data
-            """
+            """Local helper function to reduce available data."""
             inst.data = inst[0:20]
 
         self.testInst.custom_attach(truncate_data)
@@ -385,12 +362,10 @@ class TestGeneralOrbitsMLT():
         assert d1check
 
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
-        """ Test successful loading of different partial orbits
-        """
+        """Test successful loading of different partial orbits."""
         # create situation where the < 1 orbit split across two days
         def manual_orbits(inst):
-            """Local function for breaking up orbits
-            """
+            """Local function for breaking up orbits."""
             if inst.date == dt.datetime(2009, 1, 5):
                 inst.data = inst[0:20]
             elif inst.date == dt.datetime(2009, 1, 4):
@@ -429,7 +404,7 @@ class TestGeneralOrbitsMLT():
 
     @pytest.mark.parametrize("iterations", [(10), (20)])
     def test_repeated_orbit_calls(self, iterations):
-        """Test that repeated orbit calls are reversible"""
+        """Test that repeated orbit calls are reversible."""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -446,8 +421,7 @@ class TestGeneralOrbitsMLT():
 
     @pytest.mark.parametrize("iterations", [(10), (20)])
     def test_repeated_orbit_calls_alternative(self, iterations):
-        """ Test repeated orbit calls are reversible when applied alternatively
-        """
+        """Test repeated orbit calls are reversible using alternate pattern."""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -461,8 +435,7 @@ class TestGeneralOrbitsMLT():
 
 
 class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by MLT -- xarray
-    """
+    """Run the general orbit tests by MLT for xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -478,8 +451,15 @@ class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsNonStandardIteration():
-    """Create an iteration window that is larger than step size.
-    Ensure the overlapping data doesn't end up in the orbit iteration."""
+    """ Tests for non standard data setups
+
+    Note
+    ----
+    Create an iteration window that is larger than step size.
+    Ensure the overlapping data doesn't end up in the orbit iteration.
+
+    """
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -504,7 +484,7 @@ class TestGeneralOrbitsNonStandardIteration():
 
     @pytest.mark.parametrize("bounds_type", ['by_date', 'by_file'])
     def test_no_orbit_overlap_with_nonoverlapping_iteration(self, bounds_type):
-        """Test no orbit data overlap when overlap in iteration data"""
+        """Ensure orbit data does not overlap when overlap in iteration data."""
 
         if bounds_type == 'by_date':
             bounds = (self.testInst.files.files.index[0],
@@ -526,7 +506,7 @@ class TestGeneralOrbitsNonStandardIteration():
 
 
 class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Longitude -- pandas"""
+    """Run the general orbit tests by Longitude for pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -543,7 +523,7 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsLongXarray(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Longitude -- xarray"""
+    """Run the general orbit tests by Longitude for xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -560,8 +540,7 @@ class TestGeneralOrbitsLongXarray(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Orbit Number -- pandas
-    """
+    """Run the general orbit tests by Orbit Number for pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -578,8 +557,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Orbit Number -- xarray
-    """
+    """Run the general orbit tests by Orbit Number for xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -596,8 +574,7 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Latitude -- pandas
-    """
+    """Run the general orbit tests for orbits defined by Latitude -- pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -614,8 +591,7 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Latitude -- xarray
-    """
+    """Run the general orbit tests for orbits defined by Latitude -- xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -632,8 +608,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 
 
 class TestOrbitsGappyData():
-    """Run the gappy orbit tests for orbits defined by MLT -- pandas
-    """
+    """Run the gappy orbit tests for orbits defined by MLT -- pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -649,7 +624,7 @@ class TestOrbitsGappyData():
         del self.testInst, self.stime
 
     def test_repeat_orbit_calls_sym_multi_day_0_UT_really_long_time_gap(self):
-        """Test successful orbit calls over a multi-day gap"""
+        """Test successful orbit calls over a multi-day gap."""
         self.testInst.load(date=dt.datetime(2009, 1, 19))
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -661,7 +636,7 @@ class TestOrbitsGappyData():
 
     @pytest.mark.parametrize("day", [1, 25])
     def test_repeat_orbit_calls_cutoffs_with_gaps(self, day):
-        """Test that orbits are selected at same cutoffs backward and forward"""
+        """Test that orbits are selected at same cutoffs when reversed."""
         self.testInst.load(date=dt.datetime(2009, 1, day))
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -680,8 +655,7 @@ class TestOrbitsGappyData():
 
 
 class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by MLT -- xarray
-    """
+    """Run the gappy orbit tests for orbits defined by MLT -- xarray."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -698,8 +672,7 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyData2():
-    """Run additional gappy orbit tests for orbits defined by MLT -- pandas
-    """
+    """Run additional gappy orbit tests for orbits defined by MLT -- pandas."""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -726,8 +699,7 @@ class TestOrbitsGappyData2():
         del self.testInst, self.stime
 
     def test_repeated_orbit_calls_alternative(self):
-        """ Test repeated orbit calls are reversible when applied alternatively
-        """
+        """Test repeated orbit calls are reversible"""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -741,8 +713,7 @@ class TestOrbitsGappyData2():
 
 
 class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
-    """Run additional gappy orbit tests for orbits defined by MLT -- xarray
-    """
+    """Run additional gappy orbit tests for orbits defined by MLT -- xarray"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -770,8 +741,7 @@ class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
 
 
 class TestOrbitsGappyLongData(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Longitude -- pandas
-    """
+    """Run the gappy orbit tests for orbits defined by Longitude -- pandas"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -789,8 +759,7 @@ class TestOrbitsGappyLongData(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Longitude -- xarray
-    """
+    """Run the gappy orbit tests for orbits defined by Longitude -- xarray"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -807,8 +776,7 @@ class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Orbit Number -- pandas
-    """
+    """Run the gappy orbit tests for orbits defined by Orbit Number -- pandas"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -825,8 +793,7 @@ class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Orbit Number -- xarray
-    """
+    """Run the gappy orbit tests for orbits defined by Orbit Number -- xarray"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -843,8 +810,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Latitude -- pandas
-    """
+    """Run the gappy orbit tests for orbits defined by Latitude -- pandas"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -862,8 +828,7 @@ class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by Latitude -- xarray
-    """
+    """Run the gappy orbit tests for orbits defined by Latitude -- xarray"""
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
