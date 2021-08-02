@@ -509,6 +509,24 @@ class TestLoadNetCDF4XArray():
         # Clear the class attributes
         del self.data_path, self.tempdir, self.testInst, self.stime
 
+    def test_basic_write_and_read_netcdf4_default_format(self):
+        """ Test basic netCDF4 writing and reading."""
+        # Write the output test data
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime)
+        self.testInst.data.to_netcdf(outfile)
+
+        # Load the written data
+        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format)
+
+        # Compare the initial and loaded data
+        for key in self.testInst.data.data_vars.keys():
+            assert(np.all(self.testInst[key] == self.loaded_inst[key]))
+
+        return
+
     def test_load_netcdf4_pandas_3d_error(self):
         """ Test load_netcdf4 error with a pandas 3D file
         """
