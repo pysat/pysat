@@ -771,29 +771,29 @@ class TestInstWithFilesNonStandard():
 
     def test_files_non_standard_pysat_directory(self):
         """Check that files work with a weird directory structure"""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='100min')
 
         nonstandard_dir = 'pysat_testing_{tag}_{inst_id}'
 
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             inst_id='hello',
-                             directory_format=nonstandard_dir,
-                             update_files=True, file_format=self.root_fname,
-                             temporary_file_list=self.temporary_file_list)
-        # add new files
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            directory_format=nonstandard_dir,
+            update_files=True, file_format=self.root_fname,
+            temporary_file_list=self.temporary_file_list)
+
+        # Add new files
         create_dir(self.testInst)
         create_files(self.testInst, self.start, self.stop, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
 
-        # refresh file list
+        # Refresh file list
         self.testInst.files.refresh()
 
-        # get new files
+        # Get new files
         new_files = self.testInst.files.get_new()
         assert np.all(self.testInst.files.files.index == dates)
         assert np.all(new_files.index == dates)
@@ -1014,8 +1014,8 @@ class TestFilesRaceCondition():
 
 class TestCIonly():
     """Tests where we mess with local settings.
-    These only run in CI environments such as Travis and Appveyor to avoid
-    breaking an end user's setup
+
+    These only run in CI environments to avoid breaking an end user's setup
     """
 
     # Set setup/teardown to the class defaults
@@ -1031,8 +1031,7 @@ class TestCIonly():
         assert captured.out.find("Hi there!") >= 0
 
         # Ensure the pysat 'data_dirs' param is empty list on both
-        # local systems and TravisCI. A directory is automatically set
-        # in __init__ for TravisCI.
+        # local systems and CI.
         pysat.params.data['data_dirs'] = []
 
         # Try to instantiate Instrument

@@ -38,8 +38,8 @@ def scale_units(out_unit, in_unit):
     hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
     Can convert between degrees, radians, and hours or different lengths.
 
-    Example
-    -------
+    Examples
+    --------
     ::
 
         import numpy as np
@@ -116,29 +116,53 @@ def scale_units(out_unit, in_unit):
     return unit_scale
 
 
+def listify(iterable):
+    """Returns a flattened list of iterable if not already a list
+
+    Parameters
+    ----------
+    iterable : iter-like
+        An iterable object that will be wrapped within a list
+
+    Returns
+    -------
+    list
+        An enclosing 1-D list of iterable if not already a list
+
+    """
+
+    arr_iter = np.asarray(iterable)
+    if arr_iter.shape == ():
+        list_iter = [arr_iter.tolist()]
+    elif arr_iter.shape[0] == 0:
+        list_iter = arr_iter.tolist()
+    else:
+        list_iter = arr_iter.flatten().tolist()
+
+    return list_iter
+
+
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                  epoch_name='Epoch', pandas_format=True,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot_label', str), 'axis': ('axis', str),
-                         'scale': ('scale', str),
-                         'min_val': ('value_min', float),
-                         'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}):
+                         'min_val': ('value_min', np.float64),
+                         'max_val': ('value_max', np.float64),
+                         'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
     ----------
-    fnames : string, array_like of strings, or NoneType
+    fnames : str, array_like, or NoneType
         Filename(s) to load, will fail if None (default=None)
-    strict_meta : boolean
+    strict_meta : bool
         Flag that checks if metadata across fnames is the same if True
         (default=False)
-    file_format : string or NoneType
+    file_format : str or NoneType
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         If None, defaults to 'NETCDF4'. (default=None)
-    epoch_name : string
+    epoch_name : str
         Data key for time variable (default='Epoch')
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
@@ -148,28 +172,28 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
-        'plot': ('plot_label', str), 'axis': ('axis', str),
-        'scale': ('scale', str), 'min_val': ('value_min', float),
-        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'min_val': ('value_min', np.float64),
+        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
 
     Returns
-    --------
-    out : pandas.DataFrame
-        DataFrame output
+    -------
+    out : pandas.DataFrame or xarray.Dataset
+        Class holding file data
     meta : pysat.Meta
-        Meta data
+        Class holding file meta data
 
     Raises
     ------
     ValueError
         If kwargs that should be args are not set on instantiation.
+    KeyError
+        If epoch/time dimension could not be identified.
 
     """
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if isinstance(fnames, str):
-        fnames = [fnames]
+    fnames = listify(fnames)
 
     if file_format is None:
         file_format = 'NETCDF4'
@@ -201,15 +225,15 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # act accordingly, 1D, 2D, 3D
                     if len(data.variables[key].dimensions) == 1:
                         if pandas_format:
-                            # Load 1D data variables, assuming basic
-                            # time dimension
+                            # Load 1D data variables, assuming the dimension
+                            # is time
                             loaded_vars[key] = data.variables[key][:]
 
                         # Load up metadata
                         meta_dict = {}
                         for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = \
-                                data.variables[key].getncattr(nc_key)
+                            meta_dict[nc_key] = data.variables[key].getncattr(
+                                nc_key)
                         meta[key] = meta_dict
 
                     if len(data.variables[key].dimensions) == 2:
@@ -233,8 +257,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     elif dim[1] == epoch_name:
                         obj_key = dim[0]
                     else:
-                        raise KeyError('Epoch not found!')
-                    # collect variable names associated with dimension
+                        raise KeyError('Epoch dimension not found')
+
+                    # Collect variable names associated with dimension
                     idx_bool = [dim == i for i in two_d_dims]
                     idx, = np.where(np.array(idx_bool))
                     obj_var_keys = []
@@ -249,10 +274,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # DataFrame access. If the dimension is stored as its own
                     # variable then use that info for index
                     if obj_key in obj_var_keys:
-                        # string used to indentify dimension also in
-                        # data.variables will be used as an index
+                        # Key string used to indentify dimension is also in
+                        # data.variables and will be used as an index
                         index_key_name = obj_key
-                        # if the object index uses UNIX time, process into
+
+                        # If the object index uses UNIX time, process into
                         # datetime index
                         if data.variables[obj_key].getncattr(
                                 meta.labels.name) == epoch_name:
@@ -275,16 +301,16 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         # store attributes in metadata, exept for dim name
                         meta_dict = {}
                         for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = \
-                                data.variables[key].getncattr(nc_key)
+                            meta_dict[nc_key] = data.variables[key].getncattr(
+                                nc_key)
                         dim_meta_data[clean_key] = meta_dict
 
                     dim_meta_dict = {'meta': dim_meta_data}
                     if index_key_name is not None:
                         # Add top level meta
                         for nc_key in data.variables[obj_key].ncattrs():
-                            dim_meta_dict[nc_key] = \
-                                data.variables[obj_key].getncattr(nc_key)
+                            dim_meta_dict[nc_key] = data.variables[
+                                obj_key].getncattr(nc_key)
                         meta[obj_key] = dim_meta_dict
 
                     # Iterate over all variables with this dimension
@@ -295,8 +321,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     loop_list = []
                     for key, clean_key in zip(obj_var_keys, clean_var_keys):
                         # data
-                        loop_dict[clean_key] = \
-                            data.variables[key][:, :].flatten(order='C')
+                        loop_dict[clean_key] = data.variables[
+                            key][:, :].flatten(order='C')
 
                     # Number of values in time
                     loop_lim = data.variables[obj_var_keys[0]].shape[0]
@@ -310,13 +336,13 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         time_var = loop_dict.pop(index_key_name)
                         if time_index_flag:
                             # Create datetime index from data
-                            time_var = pds.to_datetime(1E6 * time_var)
+                            time_var = pds.to_datetime(1.0E6 * time_var)
                         new_index = time_var
                         new_index_name = index_name
                     else:
                         # Using integer indexing
                         new_index = np.arange((loop_lim * step),
-                                              dtype=int) % step
+                                              dtype=np.int64) % step
                         new_index_name = 'index'
 
                     # Load all data into frame
@@ -327,7 +353,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             del loop_frame[obj_key]
 
                         # Break massive frame into bunch of smaller frames
-                        for i in np.arange(loop_lim, dtype=int):
+                        for i in np.arange(loop_lim, dtype=np.int64):
                             loop_list.append(loop_frame.iloc[(step * i):
                                                              (step * (i + 1)),
                                                              :])
@@ -339,7 +365,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                                                 name=obj_var_keys[0])
 
                         # Break massive series into bunch of smaller series
-                        for i in np.arange(loop_lim, dtype=int):
+                        for i in np.arange(loop_lim, dtype=np.int64):
                             loop_list.append(loop_frame.iloc[(step * i):
                                                              (step * (i + 1))])
                             loop_list[-1].index = new_index[(step * i):
@@ -358,7 +384,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
                 loaded_vars[epoch_name] = pds.to_datetime(
-                    (1E6 * time_var).astype(int))
+                    (1.0E6 * time_var).astype(np.int64))
                 running_store.append(loaded_vars)
                 running_idx += len(loaded_vars[epoch_name])
 
@@ -385,8 +411,10 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             for nc_key in out.variables[key].attrs.keys():
                 meta_dict[nc_key] = out.variables[key].attrs[nc_key]
             meta[key] = meta_dict
+
             # Remove variable attributes from the data object
             out.variables[key].attrs = {}
+
         # Copy the file attributes from the data object to the metadata
         for out_attr in out.attrs.keys():
             if hasattr(meta, out_attr):
@@ -394,6 +422,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 meta.__setattr__(set_attr, out.attrs[out_attr])
             else:
                 meta.__setattr__(out_attr, out.attrs[out_attr])
+
         # Remove attributes from the data object
         out.attrs = {}
 
@@ -417,7 +446,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
 
     Returns
     -------
-    output : string
+    output : str
         String with desired data formatted in columns
 
     """
@@ -432,7 +461,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
     out_len = len(out_strs)
     middle = -1
     if out_len > max_num:
-        nhalf = int(max_num / 2)
+        nhalf = np.int64(max_num / 2)
         middle = nhalf // ncols
         if middle == 0:
             middle = 1
@@ -547,7 +576,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                                             tag=tag,
                                             inst_id=inst_id,
                                             temporary_file_list=True)
-                    travis_skip = ((os.environ.get('CI') == 'true')
+                    travis_skip = ((os.environ.get('TRAVIS') == 'true')
                                    and not inst._test_download_travis)
                     if inst._test_download:
                         if not travis_skip:
@@ -723,8 +752,8 @@ class NetworkLock(Lock):
         See portalocker.utils.Lock for more details
         (:class:`portalocker.utils.Lock`)
 
-        Example
-        -------
+        Examples
+        --------
         ::
 
             from pysat.utils import NetworkLock
@@ -754,6 +783,11 @@ class NetworkLock(Lock):
         """
 
         self.fh.flush()
-        os.fsync(self.fh.fileno())
+        try:
+            # In case of network file system
+            os.fsync(self.fh.fileno())
+        except OSError:
+            # Not a network file system
+            pass
 
         super(NetworkLock, self).release()

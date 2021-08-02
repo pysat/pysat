@@ -46,7 +46,7 @@ def remove_files(inst):
 
 class TestCIonly():
     """Tests where we mess with local settings.
-    These only run in CI environments such as Github Actions to avoid breaking
+    These only run in CI environments such as GitHub Actions to avoid breaking
     an end user's setup
     """
 
@@ -64,8 +64,8 @@ class TestCIonly():
         """Ensure initial load routines work"""
 
         # Move settings directory to simulate first load after install
-        root = os.path.join(os.getenv('HOME'), '.pysat')
-        new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+        root = os.path.join(os.path.expanduser("~"), '.pysat')
+        new_root = os.path.join(os.path.expanduser("~"), '.saved_pysat')
         shutil.move(root, new_root)
 
         reload(pysat)
@@ -182,6 +182,41 @@ class TestScaleUnits():
         with pytest.raises(ValueError) as verr:
             pysat.utils.scale_units('happy', 'sad')
         assert str(verr).find('unknown units') > 0
+
+
+class TestListify():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        return
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        return
+
+    @pytest.mark.parametrize('iterable', ['test', ['test'], [[['test']]],
+                                          [[[['test']]]],
+                                          [['test', 'test']],
+                                          [['test', 'test'], ['test', 'test']],
+                                          [], [[]]])
+    def test_listify_list_string_inputs(self, iterable):
+        """ Test listify with various list levels of a string"""
+
+        new_iterable = pysat.utils.listify(iterable)
+        for item in new_iterable:
+            assert item == 'test'
+        return
+
+    @pytest.mark.parametrize('iterable', [np.nan, np.full((1, 1), np.nan),
+                                          np.full((2, 2), np.nan),
+                                          np.full((3, 3, 3), np.nan)])
+    def test_listify_list_number_inputs(self, iterable):
+        """ Test listify with various np.arrays of numbers"""
+
+        new_iterable = pysat.utils.listify(iterable)
+        for item in new_iterable:
+            assert np.isnan(item)
+        assert len(new_iterable) == np.product(np.shape(iterable))
+        return
 
 
 class TestBasicNetCDF4():

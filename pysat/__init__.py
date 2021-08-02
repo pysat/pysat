@@ -88,11 +88,6 @@ if not os.path.isdir(pysat_dir) or \
     if not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json')):
         params = _params.Parameters(path=pysat_dir, create_new=True)
 
-    # Set initial data directory if we are on Travis
-    if (os.environ.get('TRAVIS') == 'true'):
-        data_dir = '/home/travis/build/pysatData'
-        params['data_dirs'] = [data_dir]
-
     print(''.join(("\nHi there!  pysat will nominally store data in a ",
                    "'pysatData' directory which needs to be assigned. ",
                    "Please run `pysat.params['data_dirs'] = path` where path ",
@@ -108,11 +103,11 @@ with Lock(version_filename, 'r', params['file_timeout']) as version_file:
     __version__ = version_file.read().strip()
 
 from pysat import utils
-from pysat._constellation import Constellation
 from pysat._instrument import Instrument
 from pysat._meta import Meta, MetaLabels
 from pysat._files import Files
 from pysat._orbits import Orbits
+from pysat._constellation import Constellation
 from pysat import instruments
 
 __all__ = ['instruments', 'utils']

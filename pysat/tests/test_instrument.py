@@ -42,8 +42,8 @@ class TestBasics():
                                          clean_level='clean',
                                          update_files=True,
                                          **testing_kwargs)
-        self.ref_time = dt.datetime(2009, 1, 1)
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
 
     def teardown(self):
@@ -52,7 +52,7 @@ class TestBasics():
 
     def support_iter_evaluations(self, values, for_loop=False, reverse=False):
         """Supports testing of .next/.prev via dates/files"""
-        # first, treat with no processing to provide testing as inputs
+        # First, treat with no processing to provide testing as inputs
         # supplied
         if len(values) == 4:
             # testing by date
@@ -135,44 +135,120 @@ class TestBasics():
     # Test basic loads, by date, filename, file id, as well as prev/next
     #
     # -------------------------------------------------------------------------
+    def eval_successful_load(self, end_date=None):
+        """Support routine for evaluating successful loading of self.testInst
+
+        Parameters
+        ----------
+        end_date : dt.datetime or NoneType
+            End date for loadind data.  If None, assumes self.ref_time + 1 day.
+            (default=None)
+
+        """
+        # Test that the first loaded time matches the first requested time
+        assert self.testInst.index[0] == self.ref_time, \
+            "First loaded time is incorrect"
+
+        # Test that the Instrument date is set to the requested start date
+        self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
+                               self.ref_time.day)
+        assert self.testInst.date == self.out, \
+            "Incorrect Instrument date attribute"
+
+        # Test that the end of the loaded data matches the requested end date
+        if end_date is None:
+            end_date = self.ref_time + dt.timedelta(days=1)
+        assert self.testInst.index[-1] > self.ref_time, \
+            "Last loaded time is not greater than the start time"
+        assert self.testInst.index[-1] <= end_date, \
+            "Last loaded time is greater than the requested end date"
+
+        return
+
     def test_basic_instrument_load(self):
-        """Test if the correct day is being loaded (checking object date and
-        data)."""
+        """Test that the correct day is loaded, specifying only start year, doy
+        """
+        # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+
+        # Test that the loaded date range is correct
+        self.eval_successful_load()
+        return
+
+    def test_basic_instrument_load_w_kwargs(self):
+        """Test that the correct day is loaded with optional kwarg
+        """
+        # Load data by year and day of year
+        self.testInst.load(self.ref_time.year, self.ref_doy, num_samples=30)
+
+        # Test that the loaded date range is correct
+        self.eval_successful_load()
+        return
 
     def test_basic_instrument_load_two_days(self):
-        """Test if the correct day is being loaded (checking object date and
-        data)."""
-        self.testInst.load(self.ref_time.year, self.ref_doy,
-                           self.ref_time.year, self.ref_doy + 2)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        self.out = self.testInst.index[-1]
-        assert (self.out >= self.ref_time + dt.timedelta(days=1))
-        assert (self.out <= self.ref_time + dt.timedelta(days=2))
+        """Test that the correct day is loaded (checking object date and data).
+        """
+        # Load the reference date
+        end_date = self.ref_time + dt.timedelta(days=2)
+        end_doy = int(end_date.strftime("%j"))
+        self.testInst.load(self.ref_time.year, self.ref_doy, end_date.year,
+                           end_doy)
 
-    def test_basic_instrument_bad_keyword(self):
-        """Checks for error when instantiating with bad load_rtn keywords"""
-        with pytest.raises(ValueError):
+        # Test that the loaded date range is correct
+        self.eval_successful_load(end_date=end_date)
+        return
+
+    def test_basic_instrument_bad_keyword_init(self):
+        """Checks for error when instantiating with bad load keywords on init.
+        """
+        # Test that the correct error is raised
+        with pytest.raises(ValueError) as verr:
             pysat.Instrument(platform=self.testInst.platform,
                              name=self.testInst.name, num_samples=10,
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
+        # Evaluate error message
+        assert str(verr).find("unknown keyword supplied") > 0
+        return
+
+    def test_basic_instrument_bad_keyword_at_load(self):
+        """Checks for error when calling load with bad keywords.
+        """
+        # Test that the correct error is raised
+        with pytest.raises(TypeError) as terr:
+            self.testInst.load(date=self.ref_time, unsupported_keyword=True)
+
+        # Evaluate error message
+        assert str(terr).find("load() got an unexpected keyword") >= 0
+        return
+
+    @pytest.mark.parametrize('kwarg', ['supported_tags', 'start', 'stop',
+                                       'freq', 'date_array', 'data_path'])
+    def test_basic_instrument_reserved_keyword(self, kwarg):
+        """Check for error when instantiating with reserved keywords."""
+        # Check that the correct error is raised
+        with pytest.raises(ValueError) as err:
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name, num_samples=10,
+                             clean_level='clean',
+                             **{kwarg: '1s'})
+
+        # Check that the error message is correct
+        estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                        'allowed at instantiation.'))
+        assert str(err).find(estr) >= 0
+        return
+
     def test_basic_instrument_load_yr_no_doy(self):
-        """Ensure doy required if yr present"""
+        """Ensure doy required if yr present."""
+        # Check that the correct error is raised
         with pytest.raises(TypeError) as err:
             self.testInst.load(self.ref_time.year)
 
+        # Check that the error message is correct
         estr = 'Unknown or incomplete input combination.'
         assert str(err).find(estr) >= 0
-
         return
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
@@ -547,12 +623,25 @@ class TestBasics():
     def test_download_recent_data(self, caplog):
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download()
-        # Tells user that recent data will be downloaded
+
+        # Ensure user was told that recent data will be downloaded
         assert "most recent data by default" in caplog.text
-        # download new files
+
+        # Ensure user was notified of new files being download
         assert "Downloading data to" in caplog.text
-        # Update local file list
+
+        # Ensure user was notified of updates to the local file list
         assert "Updating pysat file list" in caplog.text
+
+    def test_download_bad_date_range(self, caplog):
+        """Test download with bad date input."""
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            self.testInst.download(start=self.ref_time,
+                                   stop=self.ref_time - dt.timedelta(days=10))
+
+        # Ensure user is warned about not calling download due to bad time input
+        assert "Requested download over an empty date range" in caplog.text
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -780,10 +869,13 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_empty_flag_data_empty(self):
+        """ Test the status of the empty flag for unloaded data."""
         assert self.testInst.empty
+        return
 
     def test_empty_flag_data_not_empty(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        """ Test the status of the empty flag for loaded data."""
+        self.testInst.load(date=self.ref_time)
         assert not self.testInst.empty
 
     # -------------------------------------------------------------------------
@@ -792,10 +884,12 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_index_attribute(self):
+        """ Test the index attribute before and after loading data."""
         # empty Instrument test
         assert isinstance(self.testInst.index, pds.Index)
+
         # now repeat the same test but with data loaded
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(date=self.ref_time)
         assert isinstance(self.testInst.index, pds.Index)
 
     def test_index_return(self):
@@ -963,8 +1057,7 @@ class TestBasics():
         del test.load
 
         with pytest.raises(AttributeError):
-            pysat.Instrument(inst_module=test, tag='',
-                             clean_level='clean')
+            pysat.Instrument(inst_module=test, tag='', clean_level='clean')
 
     # -------------------------------------------------------------------------
     #
@@ -1015,8 +1108,7 @@ class TestBasics():
             assert getattr(self.testInst, kwarg) == val
         else:
             # Confirm value echoed to log for functions that can't assign
-            # attributes.
-            # Get log text
+            # attributes. Get log text.
             captured = caplog.text
 
             # Test for expected string
@@ -1223,24 +1315,24 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[changed, 'doubleMLT'] = 0
-        assert np.all(self.testInst[fixed, 'doubleMLT']
-                      == 2. * self.testInst[fixed, 'mlt'])
-        assert np.all(self.testInst[changed, 'doubleMLT'] == 0)
+        assert (self.testInst[fixed, 'doubleMLT']
+                == 2. * self.testInst[fixed, 'mlt']).all
+        assert (self.testInst[changed, 'doubleMLT'] == 0).all
 
     def test_setting_partial_data_by_index_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[self.testInst.index[0:10], 'doubleMLT'] = 0
-        assert np.all(self.testInst[10:, 'doubleMLT']
-                      == 2. * self.testInst[10:, 'mlt'])
-        assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
+        assert (self.testInst[10:, 'doubleMLT']
+                == 2. * self.testInst[10:, 'mlt']).all
+        assert (self.testInst[0:10, 'doubleMLT'] == 0).all
 
     def test_modifying_data_inplace(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
-        assert np.all(self.testInst['doubleMLT']
-                      == 2. * self.testInst['mlt'] + 100)
+        assert (self.testInst['doubleMLT']
+                == 2. * self.testInst['mlt'] + 100).all
 
     def test_getting_all_data_by_index(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -2553,9 +2645,28 @@ class TestBasics():
     def test_incorrect_creation_empty_instrument_object(self):
         """Ensure instantiation with missing name errors"""
         with pytest.raises(ValueError) as err:
-            # both name and platform should be empty
-            _ = pysat.Instrument(platform='cnofs')
+            # Both name and platform should be empty
+            pysat.Instrument(platform='cnofs')
         estr = 'Inputs platform and name must both'
+        assert str(err).find(estr) >= 0
+
+    def test_error_bad_inst_id_instrument_object(self):
+        """Ensure instantiation with invalid inst_id errors"""
+        with pytest.raises(ValueError) as err:
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name,
+                             inst_id='invalid_inst_id')
+        estr = "'invalid_inst_id' is not one of the supported inst_ids."
+        assert str(err).find(estr) >= 0
+
+    def test_error_bad_tag_instrument_object(self):
+        """Ensure instantiation with invalid inst_id errors"""
+        with pytest.raises(ValueError) as err:
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name,
+                             inst_id='',
+                             tag='bad_tag')
+        estr = "'bad_tag' is not one of the supported tags."
         assert str(err).find(estr) >= 0
 
     def test_supplying_instrument_module_requires_name_and_platform(self):
@@ -2565,7 +2676,7 @@ class TestBasics():
         Dummy.name = 'help'
 
         with pytest.raises(AttributeError) as err:
-            _ = pysat.Instrument(inst_module=Dummy)
+            pysat.Instrument(inst_module=Dummy)
         estr = 'Supplied module '
         assert str(err).find(estr) >= 0
 

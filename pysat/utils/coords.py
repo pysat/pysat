@@ -127,7 +127,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
     ut_hr = list()
-    for nptime in inst.index.values.astype(int):
+    for nptime in inst.index.values.astype(np.int64):
         # Numpy times come out in nanoseconds and timestamp converts
         # from seconds
         dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
@@ -145,7 +145,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
     # Calculate solar local time
     if inst[lon_name].shape == ut_hr.shape or inst[lon_name].shape == ():
         if inst[lon_name].shape == ():
-            lon = float(inst[lon_name])
+            lon = np.float64(inst[lon_name])
         else:
             lon = inst[lon_name]
 

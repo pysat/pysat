@@ -745,6 +745,15 @@ class Meta(object):
                         default_val = self.labels.default_values_from_type(
                             default_type)
                         self.data[new_label] = default_val
+                        if default_val is None:
+                            mstr = ' '.join(('A problem may have been',
+                                             'encountered with the user',
+                                             'supplied type for Meta',
+                                             'variable: ', new_label,
+                                             'Please check the settings',
+                                             'provided to `labels` at',
+                                             'Meta instantiation.'))
+                            pysat.logger.info(mstr)
 
             # Check higher order structures and recursively change labels
             for key in self.keys_nD():
@@ -1332,9 +1341,9 @@ class MetaLabels(object):
 
     def __init__(self, metadata=None, units=('units', str),
                  name=('long_name', str), notes=('notes', str),
-                 desc=('desc', str),
-                 min_val=('value_min', float), max_val=('value_max', float),
-                 fill_val=('fill', float), **kwargs):
+                 desc=('desc', str), min_val=('value_min', float),
+                 max_val=('value_max', float), fill_val=('fill', float),
+                 **kwargs):
         """ Initialize the MetaLabels class
 
         Parameters
@@ -1465,18 +1474,48 @@ class MetaLabels(object):
         default_val : str, float, int, NoneType
             Sets NaN for all float values, -1 for all int values, and '' for
             all str values except for 'scale', which defaults to 'linear', and
-            None for any othere data type
+            None for any other data type
 
         """
 
+        # Perform some pre-checks on type, checks that could error with
+        # unexpected input.
+        try:
+            floating_check = isinstance(val_type(), np.floating)
+        except TypeError as err:
+            if str(err).find('not a callable function') > 0:
+                floating_check = False
+            else:
+                # Unexpected input
+                floating_check = None
+        try:
+            int_check = isinstance(val_type(), np.integer)
+        except TypeError as err:
+            if str(err).find('not a callable function') > 0:
+                int_check = False
+            else:
+                # Unexpected input
+                int_check = None
+
+        try:
+            str_check = issubclass(val_type, str)
+        except TypeError as err:
+            if str(err).find('must be a class') > 0:
+                str_check = False
+            else:
+                # Unexpected input
+                str_check = None
+
         # Assign the default value
-        if issubclass(val_type, str):
+        if str_check:
             default_val = ''
-        elif val_type is float:
+        elif val_type is float or floating_check:
             default_val = np.nan
-        elif val_type is int:
+        elif val_type is int or int_check:
             default_val = -1
         else:
+            mstr = ''.join(('No type match found for ', str(val_type)))
+            pysat.logger.info(mstr)
             default_val = None
 
         return default_val
@@ -1491,10 +1530,10 @@ class MetaLabels(object):
 
         Returns
         -------
-        default_val : str, float, int, NoneType
-            Sets NaN for all float values, -1 for all int values, and '' for
-            all str values except for 'scale', which defaults to 'linear', and
-            None for any othere data type
+        default_val : str, float, int, or NoneType
+            Sets NaN for all float values, -1 for all int values, and ''
+            for all str values except for 'scale', which defaults to 'linear',
+            and None for any other data type
 
         Raises
         ------
@@ -1513,5 +1552,14 @@ class MetaLabels(object):
         else:
             default_val = self.default_values_from_type(
                 self.label_type[attr_name])
+            if default_val is None:
+                mstr = ' '.join(('A problem may have been',
+                                 'encountered with the user',
+                                 'supplied type for Meta',
+                                 'attribute: ', attr_name,
+                                 'Please check the settings',
+                                 'provided to `labels` at',
+                                 'Meta instantiation.'))
+                pysat.logger.info(mstr)
 
         return default_val
