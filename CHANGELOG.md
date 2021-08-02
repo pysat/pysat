@@ -24,6 +24,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Made changelog style and line length consistent
    * Added a paragraph describing how to access Instrument sub-module
      docstrings from an instantiated Instrument in an interactive session
+  * Updated examples in docstrings
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
