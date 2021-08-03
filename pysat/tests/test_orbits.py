@@ -29,10 +29,59 @@ def filter_data(inst, times):
     times : array of dt.datetimes
         A 2xN array consisting of the start and stop of each gap in a list of
         N gaps
+
     """
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
         inst.data = inst[idx]
+    return
+
+
+def assert_reversible_orbit(inst, iterations):
+    """Check that an orbit breaks at the same points in both directions.
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        The instrument to be checked
+    iterations : int
+        The number of orbits to check in each direction
+
+    """
+    n_time = []
+    p_time = []
+    control = inst.copy()
+    for j in range(iterations):
+        n_time.append(inst.index[0])
+        inst.orbits.next()
+    for j in range(iterations):
+        inst.orbits.prev()
+        p_time.append(inst.index[0])
+
+    assert all(control.data == inst.data)
+    assert np.all(p_time == n_time[::-1])
+    return
+
+
+def assert_reversible_orbit_symmetric(inst, iterations):
+    """Check that an orbit breaks at the same points around a day cutoff.
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        The instrument to be checked
+    iterations : int
+        The number of orbits to check in each direction
+
+    """
+    control = inst.copy()
+    for j in range(iterations):
+        inst.orbits.next()
+    for j in range(2 * iterations):
+        inst.orbits.prev()
+    for j in range(iterations):
+        inst.orbits.next()
+    assert all(control.data == inst.data)
     return
 
 
@@ -381,7 +430,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.orbits.next()
 
         # A recursion issue has been observed in this area.
-        # Checking for date to limit reintroduction potential
+        # Checking for date to limit reintroduction potential.
         assert self.testInst.date == self.stime
         # Store comparison data
         saved_data = self.testInst.copy()
@@ -429,7 +478,7 @@ class TestGeneralOrbitsMLT():
             assert all(self.testInst.data == saved_data.data)
 
         # A recursion issue has been observed in this area.
-        # Checking for date to limit reintroduction potential
+        # Checking for date to limit reintroduction potential.
         d1check = self.testInst.date == saved_data.date
         assert d1check
         return
@@ -439,17 +488,7 @@ class TestGeneralOrbitsMLT():
         """Test that repeated orbit calls are reversible."""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
-        control = self.testInst.copy()
-        n_time = []
-        p_time = []
-        for j in range(iterations):
-            n_time.append(self.testInst.index[0])
-            self.testInst.orbits.next()
-        for j in range(iterations):
-            self.testInst.orbits.prev()
-            p_time.append(self.testInst.index[0])
-        assert all(control.data == self.testInst.data)
-        assert np.all(p_time == n_time[::-1])
+        assert_reversible_orbit(self.testInst, iterations)
         return
 
     @pytest.mark.parametrize("iterations", [(10), (20)])
@@ -457,14 +496,7 @@ class TestGeneralOrbitsMLT():
         """Test repeated orbit calls are reversible using alternate pattern."""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(iterations):
-            self.testInst.orbits.next()
-        for j in range(2 * iterations):
-            self.testInst.orbits.prev()
-        for j in range(iterations):
-            self.testInst.orbits.next()
-        assert all(control.data == self.testInst.data)
+        assert_reversible_orbit_symmetric(self.testInst, iterations)
         return
 
 
@@ -689,36 +721,13 @@ class TestOrbitsGappyData():
         del self.testInst, self.stime, self.gaps
         return
 
-    def test_repeat_orbit_calls_sym_multi_day_0_UT_really_long_time_gap(self):
-        """Test successful orbit calls over a multi-day gap."""
-        self.testInst.load(date=(self.stime + dt.timedelta(days=18)))
-        self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(45):
-            self.testInst.orbits.next()
-        for j in range(45):
-            self.testInst.orbits.prev()
-        assert all(control.data == self.testInst.data)
-        return
-
-    @pytest.mark.parametrize("day", [1, 25])
-    def test_repeat_orbit_calls_cutoffs_with_gaps(self, day):
+    @pytest.mark.parametrize("day,iterations", [(1, 20), (19, 45), (25, 20)])
+    def test_repeat_orbit_calls_cutoffs_with_gaps(self, day, iterations):
         """Test that orbits are selected at same cutoffs when reversed."""
+        # Start date offsets alligned to times defined in TestOrbitsGappyData
         self.testInst.load(date=(self.stime + dt.timedelta(days=(day - 1))))
         self.testInst.orbits.next()
-        control = self.testInst.copy()
-        n_time = []
-        p_time = []
-        for j in range(20):
-            n_time.append(self.testInst.index[0])
-            self.testInst.orbits.next()
-
-        for j in range(20):
-            self.testInst.orbits.prev()
-            p_time.append(self.testInst.index[0])
-
-        assert np.all(p_time == n_time[::-1])
-        assert all(control.data == self.testInst.data)
+        assert_reversible_orbit(self.testInst, iterations)
         return
 
 
@@ -775,14 +784,7 @@ class TestOrbitsGappyData2():
         """Test repeated orbit calls are reversible."""
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
-        control = self.testInst.copy()
-        for j in range(20):
-            self.testInst.orbits.next()
-        for j in range(40):
-            self.testInst.orbits.prev()
-        for j in range(20):
-            self.testInst.orbits.next()
-        assert all(control.data == self.testInst.data)
+        assert_reversible_orbit_symmetric(self.testInst, 20)
         return
 
 
