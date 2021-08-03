@@ -295,7 +295,7 @@ class TestLoadNetCDF4():
         """Runs after every method to clean up previous testing."""
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
-        
+
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
@@ -509,7 +509,7 @@ class TestLoadNetCDF4XArray():
         """Runs after every method to clean up previous testing."""
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
-        
+
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
@@ -580,7 +580,7 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
         """Runs after every method to clean up previous testing."""
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
-        
+
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
