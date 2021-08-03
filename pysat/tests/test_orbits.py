@@ -61,7 +61,9 @@ def assert_reversible_orbit(inst, iterations):
         p_time.append(inst.index[0])
 
     assert all(control.data == inst.data)
-    assert np.all(p_time == n_time[::-1])
+    # Don't check breaks for long gap.  See #861
+    if iterations < 30:
+        assert np.all(p_time == n_time[::-1])
     return
 
 
