@@ -501,8 +501,8 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(date=self.stime + dt.timedelta(days=1))
         self.testInst.orbits[0]
         if self.testInst.orbits.num == 1:
-            # Equivalence only when only one orbit
-            # Some test settings can violate this assumption
+            # Equivalence occurs only when there is one orbit,
+            # some test settings can violate this assumption.
             assert all(self.testInst.data == saved_data.data)
 
         self.testInst.load(date=self.stime)
