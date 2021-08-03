@@ -75,14 +75,18 @@ class TestCIonly():
     """
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Run to set up the test environment."""
+
         self.ci_env = (os.environ.get('CI') == 'true')
         if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
 
+        return
+
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the test environment."""
         del self.ci_env
+        return
 
     def test_initial_pysat_load(self, capsys):
         """Ensure initial load routines works."""
@@ -115,17 +119,21 @@ class TestScaleUnits():
     """Unit tests for `scale_units`."""
 
     def setup(self):
-        """Run before every method to create a clean testing setup."""
+        """Run to set up the test environment."""
+
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
         self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
                           'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
         self.scale = 0.0
+        return
 
     def teardown(self):
-        """Run after every method to clean up previous testing."""
+        """Clean up the test environment."""
+
         del self.deg_units, self.dist_units, self.vel_units, self.scale
+        return
 
     def eval_unit_scale(self, out_unit, scale_type):
         """Evaluate the unit scaling.
@@ -162,6 +170,7 @@ class TestScaleUnits():
 
     def test_scale_units_same(self):
         """Test scale_units when both units are the same."""
+
         self.scale = pysat.utils.scale_units("happy", "happy")
 
         assert self.scale == 1.0
@@ -224,6 +233,7 @@ class TestListify():
         ([], 0), ([[]], 0)])
     def test_listify_list_string_inputs(self, iterable, nitem):
         """Test listify with various list levels of a string."""
+
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = ['test' for i in range(nitem)]
         pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
@@ -233,7 +243,7 @@ class TestListify():
                                           np.full((2, 2), np.nan),
                                           np.full((3, 3, 3), np.nan)])
     def test_listify_nan_arrays(self, iterable):
-        """ Test listify with various np.arrays of NaNs."""
+        """Test listify with various np.arrays of NaNs."""
 
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [np.nan
@@ -247,6 +257,7 @@ class TestListify():
                                           np.full((3, 3, 3), 1)])
     def test_listify_int_arrays(self, iterable):
         """Test listify with various np.arrays of integers."""
+
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [1 for i in range(int(np.product(np.shape(iterable))))]
         pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
@@ -257,7 +268,7 @@ class TestListify():
         np.full((2, 2), np.timedelta64(1)),
         np.full((3, 3, 3), np.timedelta64(1))])
     def test_listify_class_arrays(self, iterable):
-        """ Test listify with various np.arrays of classes."""
+        """Test listify with various np.arrays of classes."""
 
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [np.timedelta64(1)
@@ -270,7 +281,8 @@ class TestLoadNetCDF4():
     """Unit tests for `load_netcdf4`."""
 
     def setup(self):
-        """Run before every method to create a clean testing setup."""
+        """Run to set up the test environment."""
+
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
@@ -287,9 +299,11 @@ class TestLoadNetCDF4():
 
         # Initalize the loaded data
         self.loaded_inst = None
+        return
 
     def teardown(self):
-        """Run after every method to clean up previous testing."""
+        """Clean up the test environment."""
+
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
 
@@ -301,6 +315,7 @@ class TestLoadNetCDF4():
 
         # Clear the directory attributes
         del self.data_path, self.tempdir
+        return
 
     def eval_loaded_data(self):
         """Evaluate loaded test data."""
@@ -327,8 +342,7 @@ class TestLoadNetCDF4():
         return
 
     def test_basic_write_and_read_netcdf4_mixed_case_data_format(self):
-        """ Test basic netCDF4 read/write with mixed case data variables.
-        """
+        """Test basic netCDF4 read/write with mixed case data variables."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
@@ -362,8 +376,7 @@ class TestLoadNetCDF4():
         return
 
     def test_basic_write_and_read_netcdf4_mixed_case_meta_format(self):
-        """ Test basic netCDF4 read/write with mixed case metadata variables.
-        """
+        """Test basic netCDF4 read/write with mixed case metadata variables."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
@@ -482,7 +495,8 @@ class TestLoadNetCDF4XArray():
     """
 
     def setup(self):
-        """Run before every method to create a clean testing setup."""
+        """Run to set up the test environment."""
+
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
@@ -501,9 +515,11 @@ class TestLoadNetCDF4XArray():
 
         # Initalize the loaded data
         self.loaded_inst = None
+        return
 
     def teardown(self):
-        """Run after every method to clean up previous testing."""
+        """Clean up the test environment."""
+
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
 
@@ -515,9 +531,10 @@ class TestLoadNetCDF4XArray():
 
         # Clear the directory attributes
         del self.data_path, self.tempdir
+        return
 
     def test_basic_write_and_read_netcdf4_default_format(self):
-        """ Test basic netCDF4 writing and reading."""
+        """Test basic netCDF4 writing and reading."""
         # Write the output test data
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
@@ -554,7 +571,8 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
     """Unit tests for `load_netcdf4` using 2d pandas data."""
 
     def setup(self):
-        """Run before every method to create a clean testing setup."""
+        """Run to set up the test environment."""
+
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
@@ -571,9 +589,11 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
 
         # Initialize the loaded data object
         self.loaded_inst = None
+        return
 
     def teardown(self):
-        """Run after every method to clean up previous testing."""
+        """Clean up the test environment."""
+
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
 
@@ -585,14 +605,15 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
 
         # Clear the directory attributes
         del self.data_path, self.tempdir
+        return
 
 
 class TestFmtCols():
     """Unit tests for `fmt_output_in_cols`."""
 
     def setup(self):
-        """Run before every method to create a clean testing setup."""
-        # store current pysat directory
+        """Run to set up the test environment."""
+
         self.in_str = np.arange(0, 40, 1).astype(str)
         self.in_kwargs = {"ncols": 5, "max_num": 40, "lpad": None}
         self.out_str = None
@@ -601,13 +622,18 @@ class TestFmtCols():
         self.nrows = None
         self.lpad = len(self.in_str[-1]) + 1
 
+        return
+
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the test environment."""
+
         del self.in_str, self.in_kwargs, self.out_str, self.filler_row
         del self.ncols, self.nrows, self.lpad
+        return
 
     def eval_output(self):
         """Evaluate the expected number of rows, columns, and fillers."""
+
         # Test the number of rows
         out_rows = self.out_str.split('\n')[:-1]
         assert len(out_rows) == self.nrows
@@ -664,6 +690,7 @@ class TestFmtCols():
         self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
                                                             **self.in_kwargs)
         self.eval_output()
+        return
 
     @pytest.mark.parametrize("max_num,filler,nrow", [(0, 0, 1), (1, 0, 1),
                                                      (10, 1, 3), (50, -1, 8)])
@@ -702,7 +729,7 @@ class TestFmtCols():
 
 
 class TestAvailableInst(TestWithRegistration):
-    """Tests for `available_instruments`, `display_available_instruments`."""
+    """Tests for `available_instruments`, `display_avialable_instruments`."""
 
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",
@@ -738,6 +765,7 @@ class TestAvailableInst(TestWithRegistration):
 
     def test_import_error_in_available_instruments(self):
         """Test handling of import errors in available_instruments."""
+
         idict = pysat.utils.available_instruments(os.path)
 
         for platform in idict.keys():
@@ -757,6 +785,7 @@ class TestNetworkLock():
         self.fname = 'temp_lock_file.txt'
         with open(self.fname, 'w') as fh:
             fh.write('spam and eggs')
+        return
 
     def teardown(self):
         """Clean up the unit test environment."""
@@ -765,6 +794,7 @@ class TestNetworkLock():
 
         # Delete the test class attributes
         del self.fname
+        return
 
     def test_with_timeout(self):
         """Test network locking with a timeout."""

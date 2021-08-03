@@ -4,10 +4,10 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 """Tests the `pysat.utils.coords` functions."""
+
 import datetime as dt
 import logging
 import numpy as np
-
 import pytest
 
 import pysat
@@ -18,15 +18,17 @@ class TestCyclicData():
     """Unit tests for the `adjust_cyclic_data` function."""
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Run to set up a clean test environment."""
         self.ref_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Run after every method to clean up previous testing."""
         del self.ref_angles
+        return
 
     def test_adjust_cyclic_data_default(self):
-        """ Test adjust_cyclic_data with default range."""
+        """Test adjust_cyclic_data with default range."""
 
         ref_rad = np.radians(self.ref_angles) - np.pi
         ref_angles = coords.adjust_cyclic_data(ref_rad)
@@ -37,6 +39,7 @@ class TestCyclicData():
 
     def test_adjust_cyclic_data_custom(self):
         """Test adjust_cyclic_data with a custom range."""
+
         ref_angles = coords.adjust_cyclic_data(self.ref_angles,
                                                high=180.0, low=-180.0)
 
@@ -52,14 +55,16 @@ class TestUpdateLon():
         """Set up the unit test environment."""
         self.py_inst = None
         self.inst_time = pysat.instruments.pysat_testing._test_dates['']['']
+        return
 
     def teardown(self):
         """Clean up the unit test environment."""
         del self.py_inst, self.inst_time
+        return
 
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
     def test_update_longitude(self, name):
-        """Test update_longitude """
+        """Test update_longitude successful run."""
 
         self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time)
@@ -77,6 +82,7 @@ class TestUpdateLon():
 
     def test_bad_lon_name_update_longitude(self):
         """Test update_longitude with a bad longitude name."""
+
         self.py_inst = pysat.Instrument(platform='pysat', name="testing")
         self.py_inst.load(date=self.inst_time)
 
@@ -90,7 +96,9 @@ class TestUpdateLon():
 class TestCalcSLT():
     """Unit tests for `calc_solar_local_time` and integration tests for
     `update_longitude`.
+
     """
+
     def setup(self):
         """Runs after every method to clean up previous testing."""
         self.py_inst = None
@@ -99,11 +107,11 @@ class TestCalcSLT():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.py_inst, self.inst_time
+        return
 
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
     def test_calc_solar_local_time(self, name):
-        """Test calc_solar_local_time with longitudes from 0-360 deg for 0 UTH.
-        """
+        """Test SLT calculation with longitudes from 0-360 deg for 0 UTH."""
 
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
@@ -123,6 +131,7 @@ class TestCalcSLT():
         cos_diff = np.cos(diff_radians)
         assert np.max(np.abs(sin_diff)) < 1.0e-6
         assert np.min(np.abs(cos_diff)) > 1.0 - 1.0e-6
+        return
 
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
     def test_calc_solar_local_time_inconsistent_keywords(self, name, caplog):
@@ -271,3 +280,4 @@ class TestCalcSLT():
         assert self.py_inst['slt'].max() < 24.0
         assert self.py_inst['slt'].min() >= 0.0
         assert self.py_inst['slt'].shape == self.py_inst.index.shape
+        return
