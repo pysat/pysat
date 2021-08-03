@@ -216,6 +216,8 @@ class TestBasics():
         self.check_meta_settings()
 
     def test_inst_data_assign_meta_empty_list(self):
+        """Test meta assignment from empty list.
+        """
         self.testInst.load(2009, 1)
         self.testInst['help'] = {'data': self.testInst['mlt'],
                                  'units': [],
@@ -239,6 +241,8 @@ class TestBasics():
         self.check_meta_settings()
 
     def test_inst_ho_data_assign_no_meta_default(self):
+        """Test the assignment of the higher order metadata without defaults.
+        """
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
@@ -531,6 +535,8 @@ class TestBasics():
         assert np.all(m1.index == m2.index)
 
     def test_basic_pops_w_bad_key(self):
+        """Test that a bad key will raise a KeyError for `meta.pop`.
+        """
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew',
                              'value_min': 0, 'value_max': 1}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -540,14 +546,20 @@ class TestBasics():
             _ = self.meta.pop('new4')
 
     def test_basic_getitem_w_bad_key_string(self):
+        """Test that a bad key will raise a KeyError in meta access.
+        """
         with pytest.raises(KeyError):
             self.meta['new4']
 
     def test_basic_getitem_w_integer(self):
+        """Test that an iteger will raise NotImplementedError in meta access.
+        """
         with pytest.raises(NotImplementedError):
             self.meta[1]
 
     def test_basic_equality(self):
+        """Test that meta remains the same when copied."""
+
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo', 'fill': np.NaN}
@@ -566,6 +578,8 @@ class TestBasics():
         assert not (meta2 == self.meta)
 
     def test_basic_concat(self):
+        """Test that `meta.concat` adds new meta objects appropriately."""
+
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo'}
@@ -576,6 +590,8 @@ class TestBasics():
         assert (self.meta['new3'].units == 'hey3')
 
     def test_concat_w_name_collision_strict(self):
+        """Test for a RuntimeError when new meta names overlap."""
+
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo'}
@@ -586,6 +602,8 @@ class TestBasics():
             self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho(self):
+        """Test `meta.concat` with higher order metadata."""
+
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo'}
@@ -601,6 +619,8 @@ class TestBasics():
         assert (self.meta['new4'].children['new41'].units == 'hey4')
 
     def test_basic_concat_w_ho_collision_strict(self):
+        """Test for an error under strict concat with HO metadata."""
+
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo'}
@@ -615,6 +635,8 @@ class TestBasics():
             self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho_collision_not_strict(self):
+        """Test under non-strict concat with HO metadata with overlap."""
+
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo'}
@@ -631,6 +653,8 @@ class TestBasics():
         assert self.meta['new2'].units == 'hey'
 
     def test_basic_concat_w_ho_collisions_not_strict(self):
+        """Test under non-strict concat with HO metadata with multiple overlaps.
+        """
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo'}
@@ -648,6 +672,8 @@ class TestBasics():
         assert self.meta['new2'].units == 'hey'
 
     def test_basic_meta_assignment(self):
+        """Test basic assignment of metadata."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         assert (self.meta['new'].units == 'hey')
         assert (self.meta['new'].long_name == 'boo')
@@ -1034,6 +1060,8 @@ class TestBasics():
         assert (self.meta['new2'].children['new21'].Long_Name == 'boo2')
 
     def test_change_Units_and_Name_case_w_ho_wrong_case(self):
+        """Test that `units` and `long_name` will error if label case is wrong.
+        """
         self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
         self.meta = pysat.Meta(labels=self.meta_labels)
         meta2 = pysat.Meta(labels=self.meta_labels)
@@ -1052,12 +1080,16 @@ class TestBasics():
             self.meta['new2'].children['new21'].long_name
 
     def test_contains_case_insensitive(self):
+        """Test that labels are case insensitive for keys in meta."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         assert ('new2' in self.meta)
         assert ('NEW2' in self.meta)
 
     def test_contains_case_insensitive_w_ho(self):
+        """Test that labels are case insensitive for keys in ho meta."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
@@ -1238,6 +1270,8 @@ class TestBasics():
         assert self.testInst.jojo_beans == 'yep!'
 
     def test_merge_meta(self):
+        """Test `meta.merge`."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1251,6 +1285,8 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_drop_meta(self):
+        """Test `meta.drop`."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
                               'YoYoYO': 'yolo'}
@@ -1262,6 +1298,8 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_keep_meta(self):
+        """Test `meta.keep`."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
                               'YoYoYO': 'yolo'}
@@ -1273,6 +1311,7 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_meta_immutable(self):
+        """Test setting of `meta.mutable`."""
 
         self.meta.mutable = True
         greeting = '...listen!'
