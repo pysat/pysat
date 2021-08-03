@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Tests the `pysat.utils.coords` functions
-"""
+"""Tests the `pysat.utils.coords` functions."""
 import datetime as dt
 import logging
 import numpy as np
@@ -17,6 +16,7 @@ from pysat.utils import coords
 
 class TestCyclicData():
     """Unit tests for the `adjust_cyclic_data` function."""
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.ref_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
@@ -36,8 +36,7 @@ class TestCyclicData():
         return
 
     def test_adjust_cyclic_data_custom(self):
-        """ Test adjust_cyclic_data with a custom range."""
-
+        """Test adjust_cyclic_data with a custom range."""
         ref_angles = coords.adjust_cyclic_data(self.ref_angles,
                                                high=180.0, low=-180.0)
 
@@ -48,13 +47,14 @@ class TestCyclicData():
 
 class TestUpdateLon():
     """Unit tests for the `update_longitude` function."""
+
     def setup(self):
-        """Runs after every method to clean up previous testing."""
+        """Set up the unit test environment."""
         self.py_inst = None
         self.inst_time = pysat.instruments.pysat_testing._test_dates['']['']
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment."""
         del self.py_inst, self.inst_time
 
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
@@ -76,8 +76,7 @@ class TestUpdateLon():
         return
 
     def test_bad_lon_name_update_longitude(self):
-        """Test update_longitude with a bad longitude name"""
-
+        """Test update_longitude with a bad longitude name."""
         self.py_inst = pysat.Instrument(platform='pysat', name="testing")
         self.py_inst.load(date=self.inst_time)
 

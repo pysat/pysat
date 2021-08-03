@@ -45,8 +45,7 @@ class TestTestingUtils():
                                {"test_case": False}),
                               ([np.nan, 1], [1, np.nan], {"test_nan": True})])
     def test_assert_list_equal_good(self, slist, blist, kwargs):
-        """ Test the evaluation of lists with unordered but identical values.
-        """
+        """Test the evaluation of lists with unordered but identical values."""
         testing.assert_lists_equal(slist, blist, **kwargs)
         return
 

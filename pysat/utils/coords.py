@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-""" Coordinate transformation functions for pysat
-"""
+"""Coordinate transformation functions for pysat."""
 
 import datetime as dt
 import numpy as np

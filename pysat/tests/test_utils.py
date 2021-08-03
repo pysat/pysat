@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-""" Tests the pysat utils core functions
-"""
+"""Tests the pysat utils core functions."""
 
 import contextlib
 from io import StringIO
@@ -21,7 +20,7 @@ from pysat.tests.registration_test_class import TestWithRegistration
 
 
 def prep_dir(inst):
-    """Prepare the directory to provide netCDF export file support
+    """Prepare the directory to provide netCDF export file support.
 
     Parameters
     ----------
@@ -43,7 +42,7 @@ def prep_dir(inst):
 
 
 def remove_files(inst):
-    """Remove files associated with a pysat Instrument
+    """Remove files associated with a pysat Instrument.
 
     Parameters
     ----------
@@ -114,8 +113,9 @@ class TestCIonly():
 
 class TestScaleUnits():
     """Unit tests for `scale_units`."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Run before every method to create a clean testing setup."""
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
@@ -124,7 +124,7 @@ class TestScaleUnits():
         self.scale = 0.0
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Run after every method to clean up previous testing."""
         del self.deg_units, self.dist_units, self.vel_units, self.scale
 
     def eval_unit_scale(self, out_unit, scale_type):
@@ -161,8 +161,7 @@ class TestScaleUnits():
         return
 
     def test_scale_units_same(self):
-        """ Test scale_units when both units are the same."""
-
+        """Test scale_units when both units are the same."""
         self.scale = pysat.utils.scale_units("happy", "happy")
 
         assert self.scale == 1.0
@@ -170,7 +169,6 @@ class TestScaleUnits():
 
     def test_scale_units_angles(self):
         """Test scale_units for angles."""
-
         for out_unit in self.deg_units:
             self.scale = pysat.utils.scale_units(out_unit, "deg")
             self.eval_unit_scale(out_unit, 'angles')
@@ -225,8 +223,7 @@ class TestListify():
         ([['test', 'test']], 2), ([['test', 'test'], ['test', 'test']], 4),
         ([], 0), ([[]], 0)])
     def test_listify_list_string_inputs(self, iterable, nitem):
-        """ Test listify with various list levels of a string."""
-
+        """Test listify with various list levels of a string."""
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = ['test' for i in range(nitem)]
         pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
@@ -249,8 +246,7 @@ class TestListify():
                                           np.full((2, 2), 1),
                                           np.full((3, 3, 3), 1)])
     def test_listify_int_arrays(self, iterable):
-        """ Test listify with various np.arrays of integers."""
-
+        """Test listify with various np.arrays of integers."""
         new_iterable = pysat.utils.listify(iterable)
         tst_iterable = [1 for i in range(int(np.product(np.shape(iterable))))]
         pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
@@ -272,8 +268,9 @@ class TestListify():
 
 class TestLoadNetCDF4():
     """Unit tests for `load_netcdf4`."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Run before every method to create a clean testing setup."""
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
@@ -292,7 +289,7 @@ class TestLoadNetCDF4():
         self.loaded_inst = None
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Run after every method to clean up previous testing."""
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
 
@@ -399,7 +396,7 @@ class TestLoadNetCDF4():
         return
 
     def test_write_netcdf4_duplicate_variable_names(self):
-        """ Test netCDF4 writing with duplicate variable names."""
+        """Test netCDF4 writing with duplicate variable names."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
@@ -485,7 +482,7 @@ class TestLoadNetCDF4XArray():
     """
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Run before every method to create a clean testing setup."""
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
@@ -506,7 +503,7 @@ class TestLoadNetCDF4XArray():
         self.loaded_inst = None
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Run after every method to clean up previous testing."""
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
 
@@ -538,8 +535,7 @@ class TestLoadNetCDF4XArray():
         return
 
     def test_load_netcdf4_pandas_3d_error(self):
-        """ Test load_netcdf4 error with a pandas 3D file
-        """
+        """Test load_netcdf4 error with a pandas 3D file."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
@@ -558,7 +554,7 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
     """Unit tests for `load_netcdf4` using 2d pandas data."""
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Run before every method to create a clean testing setup."""
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
 
@@ -577,7 +573,7 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
         self.loaded_inst = None
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Run after every method to clean up previous testing."""
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime
 
@@ -595,7 +591,7 @@ class TestFmtCols():
     """Unit tests for `fmt_output_in_cols`."""
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Run before every method to create a clean testing setup."""
         # store current pysat directory
         self.in_str = np.arange(0, 40, 1).astype(str)
         self.in_kwargs = {"ncols": 5, "max_num": 40, "lpad": None}
@@ -611,8 +607,7 @@ class TestFmtCols():
         del self.ncols, self.nrows, self.lpad
 
     def eval_output(self):
-        """ Evaluate the expected number of rows, columns, and fillers."""
-
+        """Evaluate the expected number of rows, columns, and fillers."""
         # Test the number of rows
         out_rows = self.out_str.split('\n')[:-1]
         assert len(out_rows) == self.nrows
@@ -638,7 +633,7 @@ class TestFmtCols():
         return
 
     def test_neg_ncols(self):
-        """ Test the output if the column number is negative."""
+        """Test the output if the column number is negative."""
         self.in_kwargs['ncols'] = -5
         self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
                                                             **self.in_kwargs)
@@ -649,7 +644,7 @@ class TestFmtCols():
                              [("ncols", 0, ZeroDivisionError),
                               ("max_num", -10, ValueError)])
     def test_fmt_raises(self, key, val, raise_type):
-        """ Test raises appropriate Errors for bad input values."""
+        """Test raises appropriate Errors for bad input values."""
         self.in_kwargs[key] = val
         with pytest.raises(raise_type):
             pysat.utils._core.fmt_output_in_cols(self.in_str, **self.in_kwargs)
@@ -657,7 +652,7 @@ class TestFmtCols():
 
     @pytest.mark.parametrize("ncol", [(3), (5), (10)])
     def test_ncols(self, ncol):
-        """ Test the output for different number of columns."""
+        """Test the output for different number of columns."""
         # Set the input
         self.in_kwargs['ncols'] = ncol
 
@@ -690,7 +685,7 @@ class TestFmtCols():
 
     @pytest.mark.parametrize("in_pad", [5, 30])
     def test_lpad(self, in_pad):
-        """ Test the output for different number of columns."""
+        """Test the output for different number of columns."""
         # Set the input
         self.in_kwargs['lpad'] = in_pad
         self.ncols = self.in_kwargs['ncols']
@@ -707,8 +702,7 @@ class TestFmtCols():
 
 
 class TestAvailableInst(TestWithRegistration):
-    """ Unit tests for `available_instruments`, `display_avialable_instruments`.
-    """
+    """Tests for `available_instruments`, `display_available_instruments`."""
 
     @pytest.mark.parametrize("inst_loc", [None, pysat.instruments])
     @pytest.mark.parametrize("inst_flag, plat_flag",
@@ -743,8 +737,7 @@ class TestAvailableInst(TestWithRegistration):
         return
 
     def test_import_error_in_available_instruments(self):
-        """ Test handling of import errors in available_instruments."""
-
+        """Test handling of import errors in available_instruments."""
         idict = pysat.utils.available_instruments(os.path)
 
         for platform in idict.keys():
