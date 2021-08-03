@@ -668,7 +668,7 @@ class TestFmtCols():
     @pytest.mark.parametrize("max_num,filler,nrow", [(0, 0, 1), (1, 0, 1),
                                                      (10, 1, 3), (50, -1, 8)])
     def test_max_num(self, max_num, filler, nrow):
-        """ Test the output for the maximum number of values."""
+        """Test the output for the maximum number of values."""
         # Set the input
         self.in_kwargs['max_num'] = max_num
 
