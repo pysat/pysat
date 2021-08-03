@@ -614,7 +614,7 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Latitude -- pandas."""
+    """Run the general orbit tests for orbits defined by Latitude for pandas."""
 
     def setup(self):
         """Run before every method to create a clean testing setup."""
@@ -633,7 +633,7 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
 
 
 class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
-    """Run the general orbit tests for orbits defined by Latitude -- xarray."""
+    """Run the general orbit tests for orbits defined by Latitude for xarray."""
 
     def setup(self):
         """Run before every method to create a clean testing setup."""
@@ -652,7 +652,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 
 
 class TestOrbitsGappyData():
-    """Run the gappy orbit tests for orbits defined by MLT -- pandas."""
+    """Run the gappy orbit tests for orbits defined by MLT for pandas."""
 
     # Delta time needs to be defined outside setup for inheritance to work
     deltime = np.array([[dt.timedelta(hours=1, minutes=37),
@@ -718,7 +718,7 @@ class TestOrbitsGappyData():
 
 
 class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
-    """Run the gappy orbit tests for orbits defined by MLT -- xarray."""
+    """Run the gappy orbit tests for orbits defined by MLT for xarray."""
 
     def setup(self):
         """Run before every method to create a clean testing setup."""
@@ -738,7 +738,7 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyData2():
-    """Run additional gappy orbit tests for orbits defined by MLT -- pandas."""
+    """Run additional gappy orbit tests for orbits defined by MLT for pandas."""
 
     def setup(self):
         """Run before every method to create a clean testing setup."""
