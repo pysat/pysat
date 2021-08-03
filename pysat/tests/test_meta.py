@@ -4,7 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 """
-tests the pysat meta object and code
+Tests the pysat meta object and code.
 """
 import logging
 import netCDF4
@@ -23,8 +23,10 @@ logger = pysat.logger
 
 
 class TestBasics():
+    """Basic unit tests for metadata operations."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup
+        """Set up the unit test environment for each method.
         """
         self.testInst = pysat.Instrument('pysat', 'testing')
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
@@ -40,14 +42,14 @@ class TestBasics():
         self.frame_list = ['dummy_frame1', 'dummy_frame2']
 
     def teardown(self):
-        """Runs after every method to clean up previous testing
+        """Clean up the unit test environment after each method.
         """
         del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
         del self.frame_list
 
     def check_meta_settings(self):
-        """ Test the Meta settings for a specified value
+        """Test the Meta settings for a specified value.
         """
         # Test the Meta data for the data value, self.dval
         for lkey in self.default_name:
@@ -63,7 +65,7 @@ class TestBasics():
         assert self.dval not in self.meta.keys_nD()
 
     def test_default_label_value_raises_error(self):
-        """ Test MetaLabels.default_values_from_attr ValueError with bad attr
+        """Test `MetaLabels.default_values_from_attr` ValueError with bad attr.
         """
         with pytest.raises(ValueError) as verr:
             self.meta.labels.default_values_from_attr('not_an_attr')
@@ -72,7 +74,7 @@ class TestBasics():
 
     @pytest.mark.parametrize("input", [1., 1, {}, None, []])
     def test_default_value_from_type_unexpected_input(self, input, caplog):
-        """ Test MetaLabels.default_values_from_type with unexpected input
+        """Test `MetaLabels.default_values_from_type` with unexpected input.
         """
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.meta.labels.default_values_from_type(input)
@@ -88,9 +90,8 @@ class TestBasics():
     @pytest.mark.parametrize("input",
                              [float, np.float16, np.float32, np.float64])
     def test_default_value_from_type_float_inputs(self, input, caplog):
-        """ Test MetaLabels.default_values_from_type with float inputs
+        """Test `MetaLabels.default_values_from_type` with float inputs.
         """
-
         out = self.meta.labels.default_values_from_type(input)
         assert np.isnan(out)
 
@@ -99,9 +100,8 @@ class TestBasics():
     @pytest.mark.parametrize("input",
                              [int, np.int8, np.int16, np.int32, np.int64])
     def test_default_value_from_type_int_inputs(self, input, caplog):
-        """ Test MetaLabels.default_values_from_type with int inputs
+        """Test `MetaLabels.default_values_from_type` with int inputs.
         """
-
         out = self.meta.labels.default_values_from_type(input)
         assert out == -1
 
@@ -109,7 +109,8 @@ class TestBasics():
 
     @pytest.mark.parametrize("input", [1., 1, {}, None, []])
     def test_info_message_incorrect_input_meta_labels(self, input, caplog):
-        """Test for info message when labels input not correct"""
+        """Test for info message when labels input not correct.
+        """
         with caplog.at_level(logging.INFO, logger='pysat'):
 
             meta = pysat.Meta(labels={'min_val': ('min_val', input)})
@@ -126,14 +127,14 @@ class TestBasics():
         return
 
     def test_meta_repr(self):
-        """ Test the Meta repr function
+        """Test the `Meta.__repr__` function.
         """
         self.out = self.meta.__repr__()
         assert isinstance(self.out, str)
         assert self.out.find('Meta(') >= 0
 
     def test_setting_nonpandas_metadata(self):
-        """ Test meta initialization with bad metadata
+        """Test meta initialization with bad metadata.
         """
         with pytest.raises(ValueError):
             self.meta = pysat.Meta(metadata='Not a Panda')
@@ -143,7 +144,7 @@ class TestBasics():
                               (['units', 'long_name'], ['V', 'Longgggg']),
                               (['fill'], [-999])])
     def test_inst_data_assign_meta(self, labels, vals):
-        """ Test Meta initialization with data
+        """Test Meta initialization with data.
         """
         # Initialize the instrument
         self.testInst.load(date=self.stime)
@@ -169,7 +170,7 @@ class TestBasics():
     @pytest.mark.parametrize("mlabel,slist", [("units", []),
                                               ("notes", ['A', 'B'])])
     def test_inst_data_assign_meta_string_list(self, mlabel, slist):
-        """ Test string assignment to meta with a list of strings
+        """Test string assignment to meta with a list of strings.
         """
         # Initialize the Meta Data
         self.testInst.load(date=self.stime)
@@ -185,7 +186,7 @@ class TestBasics():
         self.check_meta_settings()
 
     def test_init_labels_w_int_default(self):
-        """ Test MetaLabels initiation with an integer label type
+        """Test MetaLabels initiation with an integer label type.
         """
         # Reinitialize the Meta and test for warning
         self.meta_labels['fill_val'] = ("fill", int)
@@ -222,7 +223,7 @@ class TestBasics():
         assert self.testInst.meta['help', 'units'] == ''
 
     def test_inst_data_assign_meta_then_data(self):
-        """ Test meta assignment when data updated after metadata
+        """Test meta assignment when data updated after metadata.
         """
         # Initialize the Meta data
         self.dval = 'test_inst_data_assign_meta_then_data'
@@ -252,7 +253,7 @@ class TestBasics():
                 label)
 
     def test_inst_ho_data_assign_meta_default(self):
-        """ Test the assignment of the default higher order metadata
+        """Test the assignment of the default higher order metadata.
         """
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
@@ -270,7 +271,7 @@ class TestBasics():
                 label)
 
     def test_inst_ho_data_assign_meta(self):
-        """ Test the assignemnt of custom higher order metadata
+        """Test the assignment of custom higher order metadata.
         """
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
@@ -300,7 +301,7 @@ class TestBasics():
                                                       'desc'] == 'nothing'
 
     def test_inst_ho_data_assign_meta_then_data(self):
-        """ Test assignment of higher order metadata before assigning data
+        """Test assignment of higher order metadata before assigning data.
         """
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
@@ -332,7 +333,7 @@ class TestBasics():
                                                       'desc'] == 'nothing'
 
     def test_inst_ho_data_assign_meta_different_labels(self):
-        """ Test the higher order assignment of custom metadata labels
+        """Test the higher order assignment of custom metadata labels.
         """
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
@@ -370,7 +371,7 @@ class TestBasics():
                                                       'desc'] == 'are fun'
 
     def test_inst_assign_from_meta(self):
-        """Test Meta assignment form another meta object
+        """Test Meta assignment form another meta object.
         """
         # Assign new meta data
         self.dval = "test_inst_assing_from_meta"
@@ -389,7 +390,7 @@ class TestBasics():
         self.check_meta_settings()
 
     def test_inst_assign_from_meta_w_ho(self):
-        """ Test assignment to Instrument from Meta with higher order data
+        """Test assignment to Instrument from Meta with higher order data.
         """
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
@@ -421,7 +422,7 @@ class TestBasics():
         assert 'children' not in self.testInst.meta.data.columns
 
     def test_inst_assign_from_meta_w_ho_then_update(self):
-        """ Test assignment of Instrument.meta from separate Meta with HO data
+        """Test assignment of `Instrument.meta` from separate Meta with HO data.
         """
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
@@ -463,7 +464,7 @@ class TestBasics():
         assert 'children' not in self.testInst.meta.data.columns
 
     def test_str_call_runs_long_standard(self):
-        """ Test long string output with custom meta data
+        """Test long string output with custom meta data.
         """
         self.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
         output = self.meta.__str__()
@@ -473,7 +474,7 @@ class TestBasics():
         assert output.find('ND Metadata variables') < 0
 
     def test_str_call_runs_short(self):
-        """ Test short string output with custom meta data
+        """Test short string output with custom meta data.
         """
         self.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
         output = self.testInst.meta.__str__(long_str=False)
@@ -482,7 +483,7 @@ class TestBasics():
         assert output.find('Metadata variables') < 0
 
     def test_str_call_runs_with_higher_order_data(self):
-        """ Test string output with higher order data
+        """Test string output with higher order data.
         """
         ho_meta = pysat.Meta()
         ho_meta['param1'] = {'units': 'blank', 'long_name': 'parameter1',
@@ -498,7 +499,7 @@ class TestBasics():
         assert output.find('Standard Metadata variables') < 0
 
     def test_basic_pops(self):
-        """ Test meta attributes are retained when extracted using pop
+        """Test meta attributes are retained when extracted using pop.
         """
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew',
                              'value_min': 0, 'value_max': 1}
@@ -750,12 +751,12 @@ class TestBasics():
         assert self.meta['new'].description == 'boohoo'
 
     def test_meta_equality(self):
-        """ Test basic equality case
+        """Test basic equality case.
         """
         assert self.testInst.meta == self.testInst.meta
 
     def test_false_meta_equality(self):
-        """ Test inequality with different types
+        """Test inequality with different types.
         """
         assert not (self.testInst.meta == self.testInst)
 
@@ -936,7 +937,7 @@ class TestBasics():
 
     # test behaviors related to case changes
     def test_assign_capitalized_labels(self):
-        """ Test assignment of capitalized label names
+        """Test assignment of capitalized label names.
         """
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
@@ -994,7 +995,7 @@ class TestBasics():
         assert self.meta['new_5'].Long_Name == 'boo9'
 
     def test_change_case_of_meta_labels(self):
-        """ Test changing case of meta labels after initialization
+        """Test changing case of meta labels after initialization.
         """
         self.meta_labels = {'units': ('units', str), 'name': ('long_name', str)}
         self.meta = pysat.Meta(labels=self.meta_labels)
@@ -1008,7 +1009,7 @@ class TestBasics():
         assert (self.meta['new2'].Long_Name == 'boo2')
 
     def test_case_change_of_meta_labels_w_ho(self):
-        """ Test changing case of meta labels after initialization with HO data
+        """Test changing case of meta labels after initialization with HO data.
         """
         # Set the initial labels
         self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
@@ -1169,7 +1170,7 @@ class TestBasics():
         assert (self.meta['new2'].long_name == 'boo2')
 
     def test_transfer_attributes_to_instrument(self):
-        """Test transfer of custom meta attributes"""
+        """Test transfer of custom meta attributes."""
         self.meta.mutable = True
 
         # Set non-conflicting attribute
@@ -1184,7 +1185,7 @@ class TestBasics():
             self.meta.new_attribute
 
     def test_transfer_attributes_to_instrument_leading_(self):
-        """Ensure private custom meta attributes not transferred"""
+        """Ensure private custom meta attributes not transferred."""
         self.meta.mutable = True
 
         # Set private attributes
@@ -1207,7 +1208,7 @@ class TestBasics():
         assert self.meta.__yo_yo == 'yo yo'
 
     def test_transfer_attributes_to_instrument_strict_names(self):
-        """Test attr transfer with strict_names set to True/False"""
+        """Test attr transfer with strict_names set to True/False."""
         self.meta.mutable = True
 
         self.meta.new_attribute = 'hello'
@@ -1222,7 +1223,7 @@ class TestBasics():
                                                         strict_names=True)
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
-        """Test attr transfer with strict_names set to True"""
+        """Test attr transfer with strict_names set to True."""
         self.meta.mutable = True
 
         self.meta.new_attribute = 'hello'
@@ -1283,7 +1284,7 @@ class TestBasics():
             self.meta.hey = greeting
 
     def test_meta_immutable_at_instrument_instantiation(self):
-        """Test meta immutable at instrument Instantiation"""
+        """Test that meta is immutable at instrument Instantiation."""
 
         assert self.testInst.meta.mutable is False
 
@@ -1292,7 +1293,8 @@ class TestBasics():
             self.meta.hey = greeting
 
     def test_meta_mutable_properties(self):
-        """check that @properties are always mutable"""
+        """Test that @properties are always mutable."""
+
         self.meta = pysat.Meta()
         self.meta.mutable = False
         self.meta.data = pds.DataFrame()
@@ -1301,7 +1303,8 @@ class TestBasics():
         self.meta.labels.name = 'my name'
 
     def test_nan_metadata_filtered_netcdf4_via_meta_attribute(self):
-        """check that metadata set to NaN is excluded from netcdf"""
+        """Test that metadata set to NaN is excluded from netcdf."""
+
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst.load(2009, 1)
@@ -1337,7 +1340,8 @@ class TestBasics():
         return
 
     def test_nan_metadata_filtered_netcdf4_via_method(self):
-        """check that metadata set to NaN is excluded from netcdf via nc call"""
+        """Test that metadata set to NaN is excluded from netcdf via nc call."""
+
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst.load(2009, 1)
@@ -1370,10 +1374,11 @@ class TestBasics():
 
 
 class TestBasicsImmutable(TestBasics):
-    def setup(self):
-        """Runs before every method to create a clean testing setup
-        """
+    """Unit tests for immutable metadata."""
 
+    def setup(self):
+        """Set up the unit test environment for each method.
+        """
         # Instrument object and disable mutability
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
@@ -1392,7 +1397,7 @@ class TestBasicsImmutable(TestBasics):
         self.frame_list = ['dummy_frame1', 'dummy_frame2']
 
     def teardown(self):
-        """Runs after every method to clean up previous testing
+        """Clean up the unit test environment after each method.
         """
         del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
