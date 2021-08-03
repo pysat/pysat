@@ -23,7 +23,8 @@ logger = pysat.logger
 
 
 class TestBasics():
-    """Basic unit tests for metadata operations."""
+    """Basic unit tests for metadata operations.
+    """
 
     def setup(self):
         """Set up the unit test environment for each method.
@@ -558,7 +559,8 @@ class TestBasics():
             self.meta[1]
 
     def test_basic_equality(self):
-        """Test that meta remains the same when copied."""
+        """Test that meta remains the same when copied.
+        """
 
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -578,7 +580,8 @@ class TestBasics():
         assert not (meta2 == self.meta)
 
     def test_basic_concat(self):
-        """Test that `meta.concat` adds new meta objects appropriately."""
+        """Test that `meta.concat` adds new meta objects appropriately.
+        """
 
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -590,7 +593,8 @@ class TestBasics():
         assert (self.meta['new3'].units == 'hey3')
 
     def test_concat_w_name_collision_strict(self):
-        """Test for a RuntimeError when new meta names overlap."""
+        """Test for a RuntimeError when new meta names overlap.
+        """
 
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -602,7 +606,8 @@ class TestBasics():
             self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho(self):
-        """Test `meta.concat` with higher order metadata."""
+        """Test `meta.concat` with higher order metadata.
+        """
 
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -619,7 +624,8 @@ class TestBasics():
         assert (self.meta['new4'].children['new41'].units == 'hey4')
 
     def test_basic_concat_w_ho_collision_strict(self):
-        """Test for an error under strict concat with HO metadata."""
+        """Test for an error under strict concat with HO metadata.
+        """
 
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -635,7 +641,8 @@ class TestBasics():
             self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho_collision_not_strict(self):
-        """Test under non-strict concat with HO metadata with overlap."""
+        """Test under non-strict concat with HO metadata with overlap.
+        """
 
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -672,18 +679,25 @@ class TestBasics():
         assert self.meta['new2'].units == 'hey'
 
     def test_basic_meta_assignment(self):
-        """Test basic assignment of metadata."""
+        """Test basic assignment of metadata.
+        """
 
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         assert (self.meta['new'].units == 'hey')
         assert (self.meta['new'].long_name == 'boo')
 
     def test_basic_meta_assignment_w_Series(self):
+        """Test basic assignment of metadata with a pandas Series.
+        """
+
         self.meta['new'] = pds.Series({'units': 'hey', 'long_name': 'boo'})
         assert (self.meta['new'].units == 'hey')
         assert (self.meta['new'].long_name == 'boo')
 
     def test_multiple_meta_assignment(self):
+        """Test assignment of multiple metadata.
+        """
+
         self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
                                       'long_name': ['boo', 'boo2']}
         assert self.meta['new'].units == 'hey'
@@ -692,6 +706,9 @@ class TestBasics():
         assert self.meta['new2'].long_name == 'boo2'
 
     def test_multiple_meta_retrieval(self):
+        """Test retrieval of multiple metadata.
+        """
+
         self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
                                       'long_name': ['boo', 'boo2']}
         self.meta[['new', 'new2']]
@@ -700,6 +717,9 @@ class TestBasics():
         self.meta['new', ('units', 'long_name')]
 
     def test_multiple_meta_ho_data_retrieval(self):
+        """Test retrieval of multiple higher order metadata.
+        """
+
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
@@ -711,23 +731,35 @@ class TestBasics():
         assert self.meta['higher'].children == meta
 
     def test_multiple_meta_assignment_error(self):
+        """Test that assignment of multiple metadata raises a ValueError.
+        """
+
         with pytest.raises(ValueError):
             self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
                                           'long_name': ['boo']}
 
     def test_replace_meta_units(self):
+        """Test replacement of metadata units.
+        """
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new'] = {'units': 'yep'}
         assert (self.meta['new'].units == 'yep')
         assert (self.meta['new'].long_name == 'boo')
 
     def test_replace_meta_long_name(self):
+        """Test replacement of metadata long_name.
+        """
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new'] = {'long_name': 'yep'}
         assert (self.meta['new'].units == 'hey')
         assert (self.meta['new'].long_name == 'yep')
 
-    def test_add_additional_metadata_types(self):
+    def test_add_new_metadata_types(self):
+        """Test addition of new metadata types.
+        """
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo',
                             'description': 'boohoo'}
 
@@ -735,16 +767,22 @@ class TestBasics():
         assert (self.meta['new'].long_name == 'boo')
         assert (self.meta['new'].description == 'boohoo')
 
-    def test_add_meta_then_add_additional_metadata_types(self):
-        self.meta['new'] = {'units': 'hey', 'long_name': 'crew'}
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo',
-                            'description': 'boohoo'}
+    def test_add_meta_then_add_new_metadata_types(self):
+        """Test addition of new metadata followed by new metadata types.
+        """
+        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
+        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
+                             'description': 'boohoo'}
+        assert self.meta['new2'].units == 'hey'
+        assert self.meta['new2'].long_name == 'boo'
+        assert self.meta['new2'].description == 'boohoo'
+        assert self.meta['new1'].units == 'hey1'
+        assert self.meta['new1'].long_name == 'crew'
+        assert np.isnan(self.meta['new1'].description)
 
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new'].description == 'boohoo'
-
-    def test_add_meta_with_custom_then_add_additional_metadata_types(self):
+    def test_add_meta_with_custom_then_add_new_metadata_types(self):
+        """Test addition of new metadata types followed by new metadata.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'crew',
                             'description': 'boohoo'}
         self.meta['new'] = {'units': 'hey2', 'long_name': 'boo'}
@@ -756,19 +794,11 @@ class TestBasics():
         assert self.meta['new'].description == 'boohoo'
         assert self.meta['new3'].description == 'boohoo3'
         assert self.meta['new2'].long_name == 'hoo'
+        assert np.isnan(self.meta['new2'].description)
 
-    def test_add_meta_then_add_different_additional_metadata_types(self):
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
-        assert self.meta['new2'].units == 'hey'
-        assert self.meta['new2'].long_name == 'boo'
-        assert self.meta['new2'].description == 'boohoo'
-        assert self.meta['new1'].units == 'hey1'
-        assert self.meta['new1'].long_name == 'crew'
-        assert np.isnan(self.meta['new1'].description)
-
-    def test_add_meta_then_partially_add_additional_metadata_types(self):
+    def test_add_meta_then_partially_add_new_metadata_types(self):
+        """Test partial reset of metadata while adding new metadata types.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'crew'}
         self.meta['new'] = {'long_name': 'boo', 'description': 'boohoo'}
 
@@ -787,6 +817,8 @@ class TestBasics():
         assert not (self.testInst.meta == self.testInst)
 
     def test_equality_with_higher_order_meta(self):
+        """Test equality with higher order metadata.
+        """
         self.meta = pysat.Meta()
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
@@ -801,6 +833,8 @@ class TestBasics():
         assert self.meta == meta3
 
     def test_inequality_with_higher_order_meta(self):
+        """Test inequality with higher order metadata.
+        """
         self.meta = pysat.Meta()
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo', 'radn': 'raiden'}
@@ -815,6 +849,8 @@ class TestBasics():
         assert not (self.meta == meta3)
 
     def test_inequality_with_higher_order_meta2(self):
+        """Test inequality with higher order metadata.
+        """
         self.meta = pysat.Meta()
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey2', 'long_name': 'boo'}
@@ -830,6 +866,8 @@ class TestBasics():
         assert not (self.meta == meta3)
 
     def test_inequality_with_higher_order_meta3(self):
+        """Test inequality with higher order metadata.
+        """
         self.meta = pysat.Meta()
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
@@ -846,18 +884,16 @@ class TestBasics():
         assert not (self.meta == meta3)
 
     def test_assign_higher_order_meta(self):
+        """Test assign higher order metadata.
+        """
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
         self.meta['higher'] = meta
 
     def test_assign_higher_order_meta_from_dict(self):
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta['higher'] = {'meta': meta}
-
-    def test_assign_higher_order_meta_from_dict_correct(self):
+        """Test assign higher order metadata from dict.
+        """
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
@@ -865,6 +901,8 @@ class TestBasics():
         assert self.meta['higher'].children == meta
 
     def test_assign_higher_order_meta_from_dict_w_multiple(self):
+        """Test assign higher order metadata from dict with multiple types.
+        """
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
@@ -876,6 +914,8 @@ class TestBasics():
         assert self.meta['higher'].children == meta
 
     def test_assign_higher_order_meta_from_dict_w_multiple_2(self):
+        """Test assign higher order metadata from dict with multiple types.
+        """
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
@@ -888,6 +928,8 @@ class TestBasics():
         assert self.meta['higher'].children == meta
 
     def test_create_new_metadata_from_old(self):
+        """Test create new metadata from old metadata.
+        """
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
@@ -912,6 +954,8 @@ class TestBasics():
         # assert np.all(meta2['lower'] == self.meta['lower'])
 
     def test_replace_meta_units_list(self):
+        """Test replace metadata units as a list.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta[['new2', 'new']] = {'units': ['yeppers', 'yep']}
@@ -921,6 +965,8 @@ class TestBasics():
         assert self.meta['new2'].long_name == 'boo2'
 
     def test_meta_csv_load(self):
+        """Test load metadata from a csv file.
+        """
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
         mdata = pysat.Meta.from_csv(filename=name, na_values=[],
                                     keep_default_na=False,
@@ -939,6 +985,8 @@ class TestBasics():
                               ("filename", 'fake_inst',
                                "keyword name must be related")])
     def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
+        """Test error handling when loading metadata from a csv file.
+        """
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
         kwargs = {'filename': name, 'na_values': [],
                   'keep_default_na': False, 'col_names': None}
@@ -949,11 +997,15 @@ class TestBasics():
 
     # assign multiple values to default
     def test_multiple_input_names_null_value(self):
+        """Test setting multiple input names to null.
+        """
         self.meta[['test1', 'test2']] = {}
         assert self.meta['test1', 'units'] == ''
         assert self.meta['test2', 'long_name'] == 'test2'
 
     def test_multiple_input_names_null_value_preexisting_values(self):
+        """Test setting multiple input names to null with pre-existing values.
+        """
         self.meta[['test1', 'test2']] = {'units': ['degrees', 'hams'],
                                          'long_name': ['testing', 'further']}
         self.meta[['test1', 'test2']] = {}
@@ -975,12 +1027,16 @@ class TestBasics():
         assert (self.meta['new2'].Long_Name == 'boo2')
 
     def test_assign_Units_no_units(self):
+        """Test AttributeError if Units is lowercase.
+        """
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         with pytest.raises(AttributeError):
             self.meta['new'].units
 
     def test_get_Units_wrong_case(self):
+        """Test that getting Units works if the case is wrong.
+        """
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
@@ -991,6 +1047,8 @@ class TestBasics():
         assert (self.meta['new2', 'long_name'] == 'boo2')
 
     def test_set_Units_wrong_case(self):
+        """Test that setting Units works if the case is wrong.
+        """
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
@@ -1001,6 +1059,8 @@ class TestBasics():
         assert self.meta['new2'].Long_Name == 'boo2'
 
     def test_repeated_set_Units_wrong_case(self):
+        """Test that setting Units repeatedly works if the case is wrong.
+        """
         self.meta = pysat.Meta(labels=self.meta_labels)
         for i in np.arange(10):
             self.meta['new'] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
@@ -1080,7 +1140,8 @@ class TestBasics():
             self.meta['new2'].children['new21'].long_name
 
     def test_contains_case_insensitive(self):
-        """Test that labels are case insensitive for keys in meta."""
+        """Test that labels are case insensitive for keys in meta.
+        """
 
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
@@ -1088,7 +1149,8 @@ class TestBasics():
         assert ('NEW2' in self.meta)
 
     def test_contains_case_insensitive_w_ho(self):
-        """Test that labels are case insensitive for keys in ho meta."""
+        """Test that labels are case insensitive for keys in ho meta.
+        """
 
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
@@ -1100,6 +1162,8 @@ class TestBasics():
         assert ('NEW21' not in self.meta)
 
     def test_get_variable_name_case_preservation(self):
+        """Test `meta.var_case_name` preserves the case (is case independent?).
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2'}
 
@@ -1109,6 +1173,8 @@ class TestBasics():
         assert ('NEW2' == self.meta.var_case_name('NEW2'))
 
     def test_get_attribute_name_case_preservation(self):
+        """Test that getting attribute names preserves the case.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2',
                              'YoYoYO': 'yolo'}
@@ -1120,6 +1186,8 @@ class TestBasics():
         assert (self.meta['new2', 'YoYoYO'] == 'yolo')
 
     def test_get_attribute_name_case_preservation_w_higher_order(self):
+        """Test that getting attribute names preserves the case with ho metadata.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1136,6 +1204,8 @@ class TestBasics():
                 == 'YoYoYO')
 
     def test_get_attribute_name_case_preservation_w_higher_order_2(self):
+        """Test that getting attribute names preserves the case with ho metadata.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1152,6 +1222,8 @@ class TestBasics():
                 == 'YoYoYO')
 
     def test_get_attribute_name_case_preservation_w_ho_reverse_order(self):
+        """Test that getting attribute names preserves the case when reversed.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1168,6 +1240,8 @@ class TestBasics():
                 == 'yoyoyo')
 
     def test_has_attr_name_case_preservation_w_ho_reverse_order(self):
+        """Test that has_attr_name preserves the case with ho in reverse.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1180,6 +1254,8 @@ class TestBasics():
         assert not (self.meta.hasattr_case_neutral('YoYoYyo'))
 
     def test_has_attr_name_case_preservation_w_higher_order(self):
+        """Test that has_attr_name preserves the case with higher order.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1192,6 +1268,8 @@ class TestBasics():
 
     # check support on case preservation, but case insensitive
     def test_replace_meta_units_list_weird_case(self):
+        """Test that replacing meta units is case independence.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta[['NEW2', 'new']] = {'units': ['yeppers', 'yep']}
@@ -1202,7 +1280,8 @@ class TestBasics():
         assert (self.meta['new2'].long_name == 'boo2')
 
     def test_transfer_attributes_to_instrument(self):
-        """Test transfer of custom meta attributes."""
+        """Test transfer of custom meta attributes.
+        """
         self.meta.mutable = True
 
         # Set non-conflicting attribute
@@ -1217,7 +1296,8 @@ class TestBasics():
             self.meta.new_attribute
 
     def test_transfer_attributes_to_instrument_leading_(self):
-        """Ensure private custom meta attributes not transferred."""
+        """Ensure private custom meta attributes not transferred.
+        """
         self.meta.mutable = True
 
         # Set private attributes
@@ -1240,7 +1320,8 @@ class TestBasics():
         assert self.meta.__yo_yo == 'yo yo'
 
     def test_transfer_attributes_to_instrument_strict_names(self):
-        """Test attr transfer with strict_names set to True/False."""
+        """Test attr transfer with strict_names set to True/False.
+        """
         self.meta.mutable = True
 
         self.meta.new_attribute = 'hello'
@@ -1255,7 +1336,8 @@ class TestBasics():
                                                         strict_names=True)
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
-        """Test attr transfer with strict_names set to True."""
+        """Test attr transfer with strict_names set to True.
+        """
         self.meta.mutable = True
 
         self.meta.new_attribute = 'hello'
@@ -1270,7 +1352,8 @@ class TestBasics():
         assert self.testInst.jojo_beans == 'yep!'
 
     def test_merge_meta(self):
-        """Test `meta.merge`."""
+        """Test `meta.merge`.
+        """
 
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
@@ -1285,7 +1368,8 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_drop_meta(self):
-        """Test `meta.drop`."""
+        """Test `meta.drop`.
+        """
 
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1298,8 +1382,8 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_keep_meta(self):
-        """Test `meta.keep`."""
-
+        """Test `meta.keep`.
+        """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
                               'YoYoYO': 'yolo'}
@@ -1311,8 +1395,8 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_meta_immutable(self):
-        """Test setting of `meta.mutable`."""
-
+        """Test setting of `meta.mutable`.
+        """
         self.meta.mutable = True
         greeting = '...listen!'
         self.meta.hey = greeting
@@ -1323,8 +1407,8 @@ class TestBasics():
             self.meta.hey = greeting
 
     def test_meta_immutable_at_instrument_instantiation(self):
-        """Test that meta is immutable at instrument Instantiation."""
-
+        """Test that meta is immutable at instrument Instantiation.
+        """
         assert self.testInst.meta.mutable is False
 
         greeting = '...listen!'
@@ -1332,8 +1416,8 @@ class TestBasics():
             self.meta.hey = greeting
 
     def test_meta_mutable_properties(self):
-        """Test that @properties are always mutable."""
-
+        """Test that @properties are always mutable.
+        """
         self.meta = pysat.Meta()
         self.meta.mutable = False
         self.meta.data = pds.DataFrame()
@@ -1342,8 +1426,8 @@ class TestBasics():
         self.meta.labels.name = 'my name'
 
     def test_nan_metadata_filtered_netcdf4_via_meta_attribute(self):
-        """Test that metadata set to NaN is excluded from netcdf."""
-
+        """Test that metadata set to NaN is excluded from netcdf.
+        """
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst.load(2009, 1)
@@ -1379,8 +1463,8 @@ class TestBasics():
         return
 
     def test_nan_metadata_filtered_netcdf4_via_method(self):
-        """Test that metadata set to NaN is excluded from netcdf via nc call."""
-
+        """Test that metadata set to NaN is excluded from netcdf via nc call.
+        """
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst.load(2009, 1)
@@ -1413,7 +1497,8 @@ class TestBasics():
 
 
 class TestBasicsImmutable(TestBasics):
-    """Unit tests for immutable metadata."""
+    """Unit tests for immutable metadata.
+    """
 
     def setup(self):
         """Set up the unit test environment for each method.
