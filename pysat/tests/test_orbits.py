@@ -744,21 +744,28 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 
 
 class TestOrbitsGappyData():
-    """Run the gappy orbit tests for orbits defined by MLT for pandas."""
+    """Gappy orbit tests defined  for orbits defined by MLT for pandas."""
 
-    # Delta time needs to be defined outside setup for inheritance to work
-    deltime = np.array([[dt.timedelta(hours=1, minutes=37),
-                         dt.timedelta(hours=3, minutes=14)],
-                        [dt.timedelta(hours=10),
-                         dt.timedelta(hours=12)],
-                        [dt.timedelta(hours=22),
-                         dt.timedelta(days=1, hours=2)],
-                        [dt.timedelta(days=12),
-                         dt.timedelta(days=14)],
-                        [dt.timedelta(days=19, hours=1),
-                         dt.timedelta(days=24, hours=23)],
-                        [dt.timedelta(days=24, hours=23, minutes=30),
-                         dt.timedelta(days=25, hours=3)]])
+    def setup_class(self):
+        """Set up variables inherited by all classes."""
+
+        self.deltime = np.array([[dt.timedelta(hours=1, minutes=37),
+                                  dt.timedelta(hours=3, minutes=14)],
+                                 [dt.timedelta(hours=10),
+                                  dt.timedelta(hours=12)],
+                                 [dt.timedelta(hours=22),
+                                  dt.timedelta(days=1, hours=2)],
+                                 [dt.timedelta(days=12),
+                                  dt.timedelta(days=14)],
+                                 [dt.timedelta(days=19, hours=1),
+                                  dt.timedelta(days=24, hours=23)],
+                                 [dt.timedelta(days=24, hours=23, minutes=30),
+                                  dt.timedelta(days=25, hours=3)]])
+
+    def teardown_class(self):
+        """Clean up variables inherited by all classes."""
+
+        del self.deltime
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -812,7 +819,27 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
 
 
 class TestOrbitsGappyData2():
-    """Run additional gappy orbit tests for orbits defined by MLT for pandas."""
+    """Additional gappy orbit tests for orbits defined by MLT for pandas."""
+
+    def setup_class(self):
+        """Set up variables inherited by all classes."""
+
+        self.times = [[dt.datetime(2008, 12, 31, 4),
+                       dt.datetime(2008, 12, 31, 5, 37)],
+                      [dt.datetime(2009, 1, 1),
+                       dt.datetime(2009, 1, 1, 1, 37)]]
+        for seconds in np.arange(38):
+            day = (dt.datetime(2009, 1, 2)
+                   + dt.timedelta(days=int(seconds)))
+            self.times.append([day, day
+                               + dt.timedelta(hours=1, minutes=37,
+                                              seconds=int(seconds))
+                               - dt.timedelta(seconds=20)])
+
+    def teardown_class(self):
+        """Clean up variables inherited by all classes."""
+
+        del self.times
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -821,19 +848,7 @@ class TestOrbitsGappyData2():
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'})
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-        times = [[dt.datetime(2008, 12, 31, 4),
-                  dt.datetime(2008, 12, 31, 5, 37)],
-                 [dt.datetime(2009, 1, 1),
-                  dt.datetime(2009, 1, 1, 1, 37)]]
-        for seconds in np.arange(38):
-            day = (dt.datetime(2009, 1, 2)
-                   + dt.timedelta(days=int(seconds)))
-            times.append([day, day
-                          + dt.timedelta(hours=1, minutes=37,
-                                         seconds=int(seconds))
-                          - dt.timedelta(seconds=20)])
-
-        self.testInst.custom_attach(filter_data, kwargs={'times': times})
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.times})
         return
 
     def teardown(self):
@@ -861,19 +876,7 @@ class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'})
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-        times = [[dt.datetime(2008, 12, 31, 4),
-                  dt.datetime(2008, 12, 31, 5, 37)],
-                 [dt.datetime(2009, 1, 1),
-                  dt.datetime(2009, 1, 1, 1, 37)]]
-        for seconds in np.arange(38):
-            day = (dt.datetime(2009, 1, 2)
-                   + dt.timedelta(days=int(seconds)))
-            times.append([day, day
-                          + dt.timedelta(hours=1, minutes=37,
-                                         seconds=int(seconds))
-                          - dt.timedelta(seconds=20)])
-
-        self.testInst.custom_attach(filter_data, kwargs={'times': times})
+        self.testInst.custom_attach(filter_data, kwargs={'times': self.times})
         return
 
     def teardown(self):
