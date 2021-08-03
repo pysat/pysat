@@ -293,15 +293,17 @@ class TestLoadNetCDF4():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        # Clear the attributes with data in them
+        del self.loaded_inst, self.testInst, self.stime
+        
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
         # Remove the temporary directory
         self.tempdir.cleanup()
 
-        # Clear the class attributes
-        del self.data_path, self.tempdir, self.testInst, self.stime
-        del self.loaded_inst
+        # Clear the directory attributes
+        del self.data_path, self.tempdir
 
     def eval_loaded_data(self):
         """Evaluate loaded test data."""
@@ -505,15 +507,17 @@ class TestLoadNetCDF4XArray():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        # Clear the attributes with data in them
+        del self.loaded_inst, self.testInst, self.stime
+        
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
         # Remove the temporary directory
         self.tempdir.cleanup()
 
-        # Clear the class attributes
-        del self.data_path, self.tempdir, self.testInst, self.stime
-        del self.loaded_inst
+        # Clear the directory attributes
+        del self.data_path, self.tempdir
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         """ Test basic netCDF4 writing and reading."""
@@ -569,16 +573,22 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
         # Create testing directory
         prep_dir(self.testInst)
 
+        # Initialize the loaded data object
+        self.loaded_inst = None
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        # Clear the attributes with data in them
+        del self.loaded_inst, self.testInst, self.stime
+        
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
         # Remove the temporary directory
         self.tempdir.cleanup()
 
-        # Clear the class attributes
-        del self.data_path, self.tempdir, self.testInst, self.stime
+        # Clear the directory attributes
+        del self.data_path, self.tempdir
 
 
 class TestFmtCols():
