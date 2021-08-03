@@ -14,7 +14,7 @@ import pytest
 import pysat
 
 
-def filter_data(inst, times=None):
+def filter_data(inst, times):
     """Remove data from instrument, simulating gaps in the data set.
 
     Parameters
@@ -375,7 +375,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
 
-        # A recursion issue has been observed in this area
+        # A recursion issue has been observed in this area.
         # Checking for date to limit reintroduction potential
         assert self.testInst.date == self.stime
         # Store comparison data
@@ -423,7 +423,7 @@ class TestGeneralOrbitsMLT():
         if self.testInst.orbits.num == 1:
             assert all(self.testInst.data == saved_data.data)
 
-        # A recursion issue has been observed in this area
+        # A recursion issue has been observed in this area.
         # Checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
         assert d1check
