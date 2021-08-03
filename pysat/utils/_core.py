@@ -582,9 +582,9 @@ def generate_instrument_list(inst_loc, user_info=None):
                         if not travis_skip:
                             instrument_download.append(inst_dict)
                     elif not inst._password_req:
-                        # we don't want to test download for this combo
-                        # But we do want to test the download warnings
-                        # for instruments without a password requirement
+                        # We don't want to test download for this combo, but
+                        # we do want to test the download warnings for
+                        # instruments without a password requirement
                         instrument_no_download.append(inst_dict)
 
     output = {'names': instrument_names,
