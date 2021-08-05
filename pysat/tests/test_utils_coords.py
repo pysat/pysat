@@ -98,7 +98,7 @@ class TestCalcSLT():
 
     Note
     ----
-    Includes integration tests for `update_longitude`.
+    Includes integration tests with `update_longitude`.
 
     """
 
