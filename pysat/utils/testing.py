@@ -3,14 +3,14 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-""" Utilities to perform common evaluations
+"""Utilities to perform common evaluations.
 """
 
 import numpy as np
 
 
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
-    """ Assert all elements of one list exist within the other list
+    """Assert all elements of one list exist within the other list.
 
     Parameters
     ----------
@@ -54,7 +54,7 @@ def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
 
 
 def assert_lists_equal(list1, list2, test_nan=False, test_case=True):
-    """Assert that the lists contain the same elements
+    """Assert that the lists contain the same elements.
 
     Parameters
     ----------
@@ -86,7 +86,7 @@ def assert_lists_equal(list1, list2, test_nan=False, test_case=True):
 
 
 def nan_equal(value1, value2):
-    """ Determine if values are equal or are both NaN
+    """Determine if values are equal or are both NaN.
 
     Parameters
     ----------

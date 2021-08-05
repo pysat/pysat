@@ -17,7 +17,7 @@ import pysat
 
 
 def scale_units(out_unit, in_unit):
-    """ Determine the scaling factor between two units
+    """Determine the scaling factor between two units.
 
     Parameters
     ----------
@@ -117,7 +117,7 @@ def scale_units(out_unit, in_unit):
 
 
 def listify(iterable):
-    """Returns a flattened list of iterable if not already a list
+    """Return a flattened list of iterable if not already a list.
 
     Parameters
     ----------
@@ -430,7 +430,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
 
 def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
-    """ Format a string with desired output values in columns
+    """Format a string with desired output values in columns.
 
     Parameters
     ----------
@@ -505,7 +505,6 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
 
 def generate_instrument_list(inst_loc, user_info=None):
     """Iterate through and classify instruments in a given subpackage.
-
 
     Parameters
     ----------
@@ -737,8 +736,10 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
 
 
 class NetworkLock(Lock):
+    """Unit tests for NetworkLock manager."""
+
     def __init__(self, *args, **kwargs):
-        """Lock manager compatible with networked file systems.
+        """Initizlize lock manager compatible with networked file systems.
 
         Parameters
         ----------
@@ -773,7 +774,7 @@ class NetworkLock(Lock):
                                           *args, **kwargs)
 
     def release(self):
-        """Releases the Lock so the file system
+        """Release the Lock from the file system.
 
         From portalocker docs:
           On some networked filesystems it might be needed to force

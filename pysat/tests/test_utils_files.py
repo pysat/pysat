@@ -21,10 +21,11 @@ from pysat.tests.ci_test_class import CICleanSetup
 
 class TestParseDelimitedFilenames():
     """Unit tests for the `parse_delimited_filename` function."""
-    temporary_file_list = False
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment for each method."""
+
+        self.temporary_file_list = False
         self.fkwargs = [{"year": 2009, "month": 12, "day": 12 + 3 * i,
                          "hour": 8 + 2 * i, "minute": 8 + 2 * i,
                          "second": 1 + 3 * i, "version": 'v{:d}'.format(i),
@@ -38,8 +39,10 @@ class TestParseDelimitedFilenames():
         self.file_dict = {}
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
+
         del self.fkwargs, self.file_dict, self.kw_format
+        del self.temporary_file_list
 
     def eval_parse_delimited_filename(self):
         """Evaluate the output of a `parse_delimited_filename` unit test.
@@ -124,7 +127,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
     """Unit tests for file directory setup."""
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment for each method."""
 
         # Module is only required for testing installations on CI servers
         import pysatSpaceWeather
@@ -169,7 +172,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
             inst.download(start=dates[0], stop=dates[1], **kwargs)
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
 
         # Clean environment
         CICleanSetup.teardown(self)
@@ -177,7 +180,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
         self.tempdir.cleanup()
 
     def test_updating_directories(self, capsys):
-        """Test directory structure update method"""
+        """Test directory structure update method."""
 
         # A variety of options are performed within a single test
         # so that only one round of downloads is performed.

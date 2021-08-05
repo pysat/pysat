@@ -4,7 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 """
-pysat date and time utilities
+pysat date and time utilities.
 """
 
 import datetime as dt
@@ -47,7 +47,7 @@ def getyrdoy(date):
 
 def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
                century=2000):
-    """ Basic date parser for file reading
+    """Convert string dates to dt.datetime.
 
     Parameters
     ----------
@@ -86,7 +86,7 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
 
 def calc_res(index, use_mean=False):
-    """ Determine the resolution for a time index
+    """Determine the resolution for a time index.
 
     Parameters
     ----------
@@ -135,7 +135,7 @@ def calc_res(index, use_mean=False):
 
 
 def calc_freq(index):
-    """ Determine the frequency for a time index
+    """Determine the frequency for a time index.
 
     Parameters
     ----------
@@ -174,7 +174,7 @@ def calc_freq(index):
 
 
 def freq_to_res(freq):
-    """Convert a frequency string to a resolution value in seconds
+    """Convert a frequency string to a resolution value in seconds.
 
     Parameters
     ----------
@@ -215,13 +215,24 @@ def freq_to_res(freq):
 
 def create_date_range(start, stop, freq='D'):
     """
-    Return array of datetime objects using input frequency from start to stop
+    Create array of datetime objects using input frequency from start to stop.
 
-    Supports single datetime object or list, tuple, ndarray of start and
-    stop dates.
+    Parameters
+    ----------
+    start : dt.datetime or list-like of dt.datetime
+        The beginning of the date range.  Supports list, tuple, or ndarray of
+        start dates.
+    stop : dt.datetime or list-like of dt.datetime
+        The end of the date range.  Supports list, tuple, or ndarray of
+        stop dates.
+    freq : str
+        The frequency of the desired output.  Codes correspond to pandas
+        date_range codes: D daily, M monthly, S secondly
 
-    freq codes correspond to pandas date_range codes, D daily, M monthly,
-    S secondly
+    Returns
+    -------
+    season : pds.date_range
+        Range of dates over desired time with desired frequency.
 
     """
 
@@ -236,8 +247,7 @@ def create_date_range(start, stop, freq='D'):
 
 
 def create_datetime_index(year=None, month=None, day=None, uts=None):
-    """Create a timeseries index using supplied year, month, day, and ut in
-    seconds.
+    """Create a timeseries index using supplied date and time.
 
     Parameters
     ----------
@@ -316,7 +326,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
 
 def filter_datetime_input(date):
-    """Returns datetime that only includes year, month, and day.
+    """Return datetime that only includes year, month, and day.
 
     Parameters
     ----------
@@ -360,7 +370,7 @@ def filter_datetime_input(date):
 
 
 def today():
-    """Returns today's date (UTC), with no hour, minute, second, etc.
+    """Return today's date (UTC), with no hour, minute, second, etc.
 
     Returns
     -------

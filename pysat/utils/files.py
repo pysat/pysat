@@ -3,6 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
+"""Utilities for file management and parsing file names."""
 
 import collections
 import glob
@@ -19,7 +20,7 @@ from pysat.utils._core import available_instruments
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
-    """Create a Files pandas Series of filenames from a formatted dict
+    """Create a Files pandas Series of filenames from a formatted dict.
 
     Parameters
     ----------
@@ -120,7 +121,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
 
 def parse_fixed_width_filenames(files, format_str):
-    """Parses list of files, extracting data identified by format_str
+    """Parse list of files, extracting data identified by format_str.
 
     Parameters
     ----------
@@ -199,7 +200,7 @@ def parse_fixed_width_filenames(files, format_str):
 
 
 def parse_delimited_filenames(files, format_str, delimiter):
-    """Parses list of files, extracting data identified by format_str
+    """Parse list of files, extracting data identified by format_str.
 
     Parameters
     ----------
@@ -300,7 +301,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
 
 def construct_searchstring_from_format(format_str, wildcard=False):
-    """Parses format file string and returns string formatted for searching.
+    """Parse format file string and returns string formatted for searching.
 
     Parameters
     ----------
@@ -383,7 +384,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
 def search_local_system_formatted_filename(data_path, search_str):
     """
-    Parses format file string and returns string formatted for searching.
+    Parse format file string and returns string formatted for searching.
 
     Parameters
     ----------
@@ -421,7 +422,7 @@ def search_local_system_formatted_filename(data_path, search_str):
 def update_data_directory_structure(new_template, test_run=True,
                                     full_breakdown=False,
                                     remove_empty_dirs=False):
-    """Update pysat data directory structure to match supplied template
+    """Update pysat data directory structure to match supplied template.
 
     Translates all of pysat's managed science files to a new
     directory structure. By default, pysat uses the template string stored in
@@ -657,7 +658,7 @@ def update_data_directory_structure(new_template, test_run=True,
 
 
 def check_and_make_path(path):
-    """Checks if path exists, creates it if it doesn't.
+    """Check if path exists and create it if needed.
 
     Parameters
     ----------
