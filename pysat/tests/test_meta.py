@@ -376,7 +376,7 @@ class TestBasics():
                                                       'desc'] == 'are fun'
 
     def test_inst_assign_from_meta(self):
-        """Test Meta assignment form another meta object.
+        """Test Meta assignment from another meta object.
         """
         # Assign new meta data
         self.dval = "test_inst_assing_from_meta"
@@ -1268,7 +1268,7 @@ class TestBasics():
 
     # check support on case preservation, but case insensitive
     def test_replace_meta_units_list_weird_case(self):
-        """Test that replacing meta units is case independence.
+        """Test that replacing meta units has case independence.
         """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
@@ -1320,7 +1320,7 @@ class TestBasics():
         assert self.meta.__yo_yo == 'yo yo'
 
     def test_transfer_attributes_to_instrument_strict_names(self):
-        """Test attr transfer with strict_names set to True/False.
+        """Test attr transfer with strict_names set to True.
         """
         self.meta.mutable = True
 
@@ -1336,7 +1336,7 @@ class TestBasics():
                                                         strict_names=True)
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
-        """Test attr transfer with strict_names set to True.
+        """Test attr transfer with strict_names set to False.
         """
         self.meta.mutable = True
 
