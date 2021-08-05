@@ -8,6 +8,7 @@
 import contextlib
 from io import StringIO
 from importlib import reload
+import inspect
 import numpy as np
 import os
 import portalocker
@@ -17,6 +18,7 @@ import tempfile
 
 import pysat
 from pysat.tests.registration_test_class import TestWithRegistration
+from pysat.utils import generate_instrument_list
 
 
 def prep_dir(inst):
@@ -824,3 +826,60 @@ class TestNetworkLock():
                 lock = pysat.utils.NetworkLock(self.fname, timeout=0.1)
                 lock.acquire(check_interval=0.05, fail_when_locked=False)
         return
+
+
+class TestGenerateInstList():
+    """Unit tests for `utils.generate_instrument_list`."""
+
+    def setup(self):
+        """Set up the unit test environment before each method."""
+
+        self.user_info = {'pysat_testmodel': {'user': 'GideonNav',
+                                              'password': 'sw0rds!'}}
+        self.inst_list = generate_instrument_list(inst_loc=pysat.instruments,
+                                                  user_info=self.user_info)
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.inst_list, self.user_info
+        return
+
+    def test_generate_module_names(self):
+        """Test generation of module names."""
+
+        pysat.utils.testing.assert_lists_equal(self.inst_list['names'],
+                                               pysat.instruments.__all__)
+
+    @pytest.mark.parametrize("list_name", [('download'), ('no_download')])
+    def test_generate_module_list_attributes(self, list_name):
+        """Test that each instrument dict has sufficient information."""
+        for inst_dict in self.inst_list[list_name]:
+            for item in ['inst_module', 'tag', 'inst_id']:
+                assert item in inst_dict.keys()
+            assert inspect.ismodule(inst_dict['inst_module'])
+            assert isinstance(inst_dict['tag'], str)
+            assert isinstance(inst_dict['inst_id'], str)
+
+    @pytest.mark.parametrize("list_name,output", [('download', False),
+                                                  ('no_download', True)])
+    def test_proper_sorting_of_no_download(self, list_name, output):
+        """Test that instruments without downloads are sorted properly."""
+
+        tags = [inst['tag'] for inst in self.inst_list[list_name]]
+        assert ('no_download' in tags) == output
+
+    def test_user_info_pass_through(self):
+        """Test that user info passes through to correct instruments."""
+
+        for inst in self.inst_list['download']:
+            # user_info should only be in pysat_testmodel
+            assert (('user_info' in inst.keys())
+                    == ('pysat_testmodel' in str(inst['inst_module'])))
+            if 'user_info' in inst.keys():
+                # User info should be correct
+                assert inst['user_info'] == self.user_info['pysat_testmodel']
+        for inst in self.inst_list['no_download']:
+            # user_info should not be in any of these
+            assert ('user_info' not in inst.keys())
