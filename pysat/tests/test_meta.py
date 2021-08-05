@@ -1162,7 +1162,7 @@ class TestBasics():
         assert ('NEW21' not in self.meta)
 
     def test_get_variable_name_case_preservation(self):
-        """Test `meta.var_case_name` preserves the case (is case independent?).
+        """Test `meta.var_case_name` preserves the required output case.
         """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2'}
@@ -1173,13 +1173,14 @@ class TestBasics():
         assert ('NEW2' == self.meta.var_case_name('NEW2'))
 
     def test_get_attribute_name_case_preservation(self):
-        """Test that getting attribute names preserves the case.
+        """Test that meta labels and values preserve the input case.
         """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2',
                              'YoYoYO': 'yolo'}
         self.meta['new'] = {'yoyoyo': 'YOLO'}
 
+        assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
         assert (self.meta['new', 'yoyoyo'] == 'YOLO')
         assert (self.meta['new', 'YoYoYO'] == 'YOLO')
         assert (self.meta['new2', 'yoyoyo'] == 'yolo')
@@ -1268,7 +1269,7 @@ class TestBasics():
 
     # check support on case preservation, but case insensitive
     def test_replace_meta_units_list_weird_case(self):
-        """Test that replacing meta units has case independence.
+        """Test that replacing meta units is case independent.
         """
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
