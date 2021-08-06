@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Produces fake instrument data for testing.
-"""
+"""Produces fake instrument data for testing."""
 
 import datetime as dt
 import functools
@@ -36,7 +34,7 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag=None, inst_id=None, num_samples=None,
          test_load_kwarg=None):
-    """ Loads the test files
+    """Load the test files.
 
     Parameters
     ----------

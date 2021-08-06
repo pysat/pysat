@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-This is a template for a pysat.Instrument support file.
+"""Template for a pysat.Instrument support file.
+
 Modify this file as needed when adding a new Instrument to pysat.
 
 This is a good area to introduce the instrument, provide background
@@ -123,7 +123,7 @@ _password_req = {'': {'': True, 'tag_string': False}}
 
 # Required method
 def init(self):
-    """Initializes the Instrument object with instrument specific values.
+    """Initialize the Instrument object with instrument specific values.
 
     Runs once upon instantiation. Object modified in place.  Use this to set
     the acknowledgements and references.
@@ -143,7 +143,7 @@ def init(self):
 
 # Required method
 def clean(self):
-    """Method to return PLATFORM/NAME data cleaned to the specified level
+    """Return PLATFORM/NAME data cleaned to the specified level.
 
     Cleaning level is specified in inst.clean_level and pysat
     will accept user input for several strings. The clean_level is
@@ -165,7 +165,7 @@ def clean(self):
 
 # Optional method
 def preprocess(self):
-    """Customization method that performs standard preprocessing.
+    """Perform standard preprocessing.
 
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue). Object
@@ -243,7 +243,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
 # Required function
 def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
              **kwargs):
-    """Placeholder for PLATFORM/NAME downloads.
+    """Download PLATFORM/NAME data (placeholder).
 
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.
@@ -279,7 +279,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
 
 # Required function
 def load(fnames, tag=None, inst_id=None, custom_keyword=None):
-    """Loads PLATFORM data into (PANDAS/XARRAY).
+    """Load PLATFORM data into (PANDAS/XARRAY).
 
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.

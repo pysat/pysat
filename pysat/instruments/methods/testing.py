@@ -1,3 +1,5 @@
+"""Standard functions for the test instruments."""
+
 import datetime as dt
 import numpy as np
 import os
@@ -18,7 +20,7 @@ with pysat.utils.NetworkLock(os.path.join(pysat.here, 'citation.txt'), 'r') as \
 
 
 def init(self, test_init_kwarg=None):
-    """Initializes the Instrument object with instrument specific values.
+    """Initialize the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
 
@@ -49,7 +51,7 @@ def init(self, test_init_kwarg=None):
 
 
 def clean(self, test_clean_kwarg=None):
-    """Cleaning function
+    """Pass through when asked to clean a test instrument.
 
     Parameters
     ----------
@@ -67,7 +69,7 @@ def clean(self, test_clean_kwarg=None):
 
 # Optional method
 def preprocess(self, test_preprocess_kwarg=None):
-    """Customization method that performs standard preprocessing.
+    """Perform standard preprocessing.
 
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue). Object
@@ -88,7 +90,7 @@ def preprocess(self, test_preprocess_kwarg=None):
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                file_date_range=None, test_dates=None, mangle_file_dates=False,
                test_list_files_kwarg=None):
-    """Produce a fake list of files spanning three years
+    """Produce a fake list of files spanning three years.
 
     Parameters
     ----------
@@ -150,8 +152,11 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
                       start=None, stop=None, test_dates=None, user=None,
                       password=None, mangle_file_dates=False,
                       test_list_remote_kwarg=None):
-    """Produce a fake list of files spanning three years and one month to
-    simulate new data files on a remote server
+    """Produce a fake list of files to simulate new files on a remote server.
+
+    Note
+    ----
+    List spans three years and one month.
 
     Parameters
     ----------
@@ -213,8 +218,10 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
 def download(date_array, tag, inst_id, data_path=None, user=None,
              password=None, test_download_kwarg=None):
-    """Simple pass function for pysat compatibility for test instruments.
+    """Pass through when asked to download for a test instrument.
 
+    Note
+    ----
     This routine is invoked by pysat and is not intended for direct use by the
     end user.
 
@@ -269,7 +276,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
 
 def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
                        cyclic=True):
-    """Generates fake data over a given range
+    """Generate fake data over a given range.
 
     Parameters
     ----------
@@ -307,7 +314,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
 
 
 def generate_times(fnames, num, freq='1S'):
-    """Construct list of times for simulated instruments
+    """Construct list of times for simulated instruments.
 
     Parameters
     ----------
@@ -366,7 +373,7 @@ def generate_times(fnames, num, freq='1S'):
 
 
 def define_period():
-    """Define the default periods for the fake data functions
+    """Define the default periods for the fake data functions.
 
     Returns
     -------
@@ -387,7 +394,7 @@ def define_period():
 
 
 def define_range():
-    """Define the default ranges for the fake data functions
+    """Define the default ranges for the fake data functions.
 
     Returns
     -------
@@ -404,7 +411,7 @@ def define_range():
 
 
 def eval_dep_warnings(warns, check_msgs):
-    """Evaluate deprecation warnings by category and message
+    """Evaluate deprecation warnings by category and message.
 
     Parameters
     ----------
