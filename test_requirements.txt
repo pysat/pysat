@@ -1,10 +1,10 @@
 coveralls
 flake8
+ipython
+m2r2
+numpydoc
+pysatSpaceWeather
 pytest-cov
 pytest-ordering
 sphinx
 sphinx_rtd_theme
-numpydoc
-ipython
-m2r2
-pysatSpaceWeather

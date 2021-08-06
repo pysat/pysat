@@ -87,7 +87,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # create an artificial satellite data set
+    # Create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
@@ -106,45 +106,45 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     else:
         root_date = root_date or _test_dates['']['']
 
-    # store UTS, mod 86400
+    # Store UTS, mod 86400
     data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
-    # need to create simple orbits here. Have start of first orbit default
+    # Need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
     time_delta = dates[0] - root_date
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(),
                                              uts, period=iperiod['lt'],
                                              data_range=drange['lt'])
 
-    # do slt, 20 second offset from mlt
+    # Do slt, 20 second offset from mlt
     data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds() + 20,
                                              uts, period=iperiod['lt'],
                                              data_range=drange['lt'])
 
-    # create a fake longitude, resets every 6240 seconds
-    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
-    # to go around full longitude
+    # Create a fake longitude, resets every 6240 seconds.
+    # Sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
+    # to go around full longitude.
     data['longitude'] = mm_test.generate_fake_data(time_delta.total_seconds(),
                                                    uts, period=iperiod['lon'],
                                                    data_range=drange['lon'])
 
-    # create latitude area for testing polar orbits
+    # Create latitude area for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(),
                                        uts, period=iperiod['angle'],
                                        data_range=drange['angle'])
     data['latitude'] = 90.0 * np.cos(angle)
 
-    # create constant altitude at 400 km
+    # Create constant altitude at 400 km
     alt0 = 400.0
     data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
-    # fake orbit number
+    # Fake orbit number
     fake_delta = dates[0] - (_test_dates[''][''] - pds.DateOffset(years=1))
     data['orbit_num'] = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                                    uts, period=iperiod['lt'],
                                                    cyclic=False)
 
-    # create some fake data to support testing of averaging routines
+    # Create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.0).astype(int)
     data['dummy1'] = mlt_int
