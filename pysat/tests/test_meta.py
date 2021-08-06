@@ -27,8 +27,7 @@ class TestBasics():
     """
 
     def setup(self):
-        """Set up the unit test environment for each method.
-        """
+        """Set up the unit test environment for each method."""
         self.testInst = pysat.Instrument('pysat', 'testing')
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.meta = self.testInst.meta
@@ -43,15 +42,13 @@ class TestBasics():
         self.frame_list = ['dummy_frame1', 'dummy_frame2']
 
     def teardown(self):
-        """Clean up the unit test environment after each method.
-        """
+        """Clean up the unit test environment after each method."""
         del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
         del self.frame_list
 
     def check_meta_settings(self):
-        """Test the Meta settings for a specified value.
-        """
+        """Test the Meta settings for a specified value."""
         # Test the Meta data for the data value, self.dval
         for lkey in self.default_name:
             assert self.meta[self.dval, lkey] == self.dval
@@ -110,8 +107,7 @@ class TestBasics():
 
     @pytest.mark.parametrize("input", [1., 1, {}, None, []])
     def test_info_message_incorrect_input_meta_labels(self, input, caplog):
-        """Test for info message when labels input not correct.
-        """
+        """Test for info message when labels input not correct."""
         with caplog.at_level(logging.INFO, logger='pysat'):
 
             meta = pysat.Meta(labels={'min_val': ('min_val', input)})
@@ -128,15 +124,13 @@ class TestBasics():
         return
 
     def test_meta_repr(self):
-        """Test the `Meta.__repr__` function.
-        """
+        """Test the `Meta.__repr__` function."""
         self.out = self.meta.__repr__()
         assert isinstance(self.out, str)
         assert self.out.find('Meta(') >= 0
 
     def test_setting_nonpandas_metadata(self):
-        """Test meta initialization with bad metadata.
-        """
+        """Test meta initialization with bad metadata."""
         with pytest.raises(ValueError):
             self.meta = pysat.Meta(metadata='Not a Panda')
 
@@ -145,8 +139,7 @@ class TestBasics():
                               (['units', 'long_name'], ['V', 'Longgggg']),
                               (['fill'], [-999])])
     def test_inst_data_assign_meta(self, labels, vals):
-        """Test Meta initialization with data.
-        """
+        """Test Meta initialization with data."""
         # Initialize the instrument
         self.testInst.load(date=self.stime)
         self.dval = 'test_inst_data_assign_meta'
@@ -171,8 +164,7 @@ class TestBasics():
     @pytest.mark.parametrize("mlabel,slist", [("units", []),
                                               ("notes", ['A', 'B'])])
     def test_inst_data_assign_meta_string_list(self, mlabel, slist):
-        """Test string assignment to meta with a list of strings.
-        """
+        """Test string assignment to meta with a list of strings."""
         # Initialize the Meta Data
         self.testInst.load(date=self.stime)
         self.dval = 'test_inst_data_assign_meta_string_list'
@@ -187,8 +179,7 @@ class TestBasics():
         self.check_meta_settings()
 
     def test_init_labels_w_int_default(self):
-        """Test MetaLabels initiation with an integer label type.
-        """
+        """Test MetaLabels initiation with an integer label type."""
         # Reinitialize the Meta and test for warning
         self.meta_labels['fill_val'] = ("fill", int)
 
@@ -217,8 +208,7 @@ class TestBasics():
         self.check_meta_settings()
 
     def test_inst_data_assign_meta_empty_list(self):
-        """Test meta assignment from empty list.
-        """
+        """Test meta assignment from empty list."""
         self.testInst.load(2009, 1)
         self.testInst['help'] = {'data': self.testInst['mlt'],
                                  'units': [],
@@ -226,8 +216,7 @@ class TestBasics():
         assert self.testInst.meta['help', 'units'] == ''
 
     def test_inst_data_assign_meta_then_data(self):
-        """Test meta assignment when data updated after metadata.
-        """
+        """Test meta assignment when data updated after metadata."""
         # Initialize the Meta data
         self.dval = 'test_inst_data_assign_meta_then_data'
         self.testInst.load(date=self.stime)
@@ -276,8 +265,7 @@ class TestBasics():
                 label)
 
     def test_inst_ho_data_assign_meta(self):
-        """Test the assignment of custom higher order metadata.
-        """
+        """Test the assignment of custom higher order metadata."""
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
@@ -376,8 +364,7 @@ class TestBasics():
                                                       'desc'] == 'are fun'
 
     def test_inst_assign_from_meta(self):
-        """Test Meta assignment from another meta object.
-        """
+        """Test Meta assignment from another meta object."""
         # Assign new meta data
         self.dval = "test_inst_assing_from_meta"
         self.testInst.load(date=self.stime)
@@ -469,8 +456,7 @@ class TestBasics():
         assert 'children' not in self.testInst.meta.data.columns
 
     def test_str_call_runs_long_standard(self):
-        """Test long string output with custom meta data.
-        """
+        """Test long string output with custom meta data."""
         self.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
         output = self.meta.__str__()
         assert output.find('pysat Meta object') >= 0
