@@ -1,5 +1,4 @@
-"""
-Standardized class and functions to test instruments for pysat libraries.
+"""Standardized class and functions to test instruments for pysat libraries.
 
 Note
 ----
@@ -61,23 +60,25 @@ class InstTestClass():
                   'acknowledgements': str, 'references': str}
 
     def assert_hasattr(self, obj, attr_name):
-        """Provide useful info if object is missing a required attribute.
-        """
+        """Provide useful info if object is missing a required attribute."""
+
         estr = "Object {:} missing attribute {:}".format(obj.__repr__(),
                                                          attr_name)
         assert hasattr(obj, attr_name), estr
+        return
 
     def assert_isinstance(self, obj, obj_type):
-        """Provide useful info if object is the wrong type.
-        """
+        """Provide useful info if object is the wrong type."""
+
         estr = "Object {:} is type {:}, but should be type {:}".format(
             obj.__repr__(), type(obj), obj_type)
         assert isinstance(obj, obj_type), estr
+        return
 
     @pytest.mark.all_inst
     def test_modules_standard(self, inst_name):
-        """Test that modules are importable and have standard properties.
-        """
+        """Test that modules are importable and have standard properties."""
+
         # ensure that each module is at minimum importable
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
@@ -108,6 +109,7 @@ class InstTestClass():
                     if iattr in self.attr_types:
                         self.assert_isinstance(getattr(inst, iattr),
                                                self.attr_types[iattr])
+        return
 
     @pytest.mark.all_inst
     def test_standard_function_presence(self, inst_name):
@@ -124,16 +126,19 @@ class InstTestClass():
             else:
                 # If absent, must not be a required function
                 assert mcall not in self.module_attrs
+        return
 
     @pytest.mark.all_inst
     def test_instrument_test_dates(self, inst_name):
         """Test that module has structured test dates correctly."""
+
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
         info = module._test_dates
         for inst_id in info.keys():
             for tag in info[inst_id].keys():
                 self.assert_isinstance(info[inst_id][tag], dt.datetime)
+        return
 
     @pytest.mark.first
     @pytest.mark.download
@@ -147,6 +152,7 @@ class InstTestClass():
             inst_dict.keys() else {}
         test_inst.download(date, date, **dl_dict)
         assert len(test_inst.files.files) > 0
+        return
 
     @pytest.mark.second
     @pytest.mark.download
@@ -184,10 +190,12 @@ class InstTestClass():
         else:
             pytest.skip("Download data not available")
 
+        return
+
     @pytest.mark.download
     def test_remote_file_list(self, inst_dict):
-        """Test if optional list_remote_files routine exists and is callable.
-        """
+        """Test if optional list_remote_files routine exists and is callable."""
+
         test_inst, date = initialize_test_inst_and_date(inst_dict)
         name = '_'.join((test_inst.platform, test_inst.name))
 
@@ -202,9 +210,12 @@ class InstTestClass():
         else:
             pytest.skip("remote_file_list not available")
 
+        return
+
     @pytest.mark.no_download
     def test_download_warning(self, inst_dict):
         """Test that instruments without download support have a warning."""
+
         test_inst, date = initialize_test_inst_and_date(inst_dict)
 
         with warnings.catch_warnings(record=True) as war:
@@ -213,3 +224,4 @@ class InstTestClass():
         assert len(war) >= 1
         categories = [war[j].category for j in range(0, len(war))]
         assert UserWarning in categories
+        return

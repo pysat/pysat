@@ -107,6 +107,7 @@ class TestCalcSLT():
 
         self.py_inst = None
         self.inst_time = pysat.instruments.pysat_testing._test_dates['']['']
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""

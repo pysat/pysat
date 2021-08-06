@@ -3,8 +3,8 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Tests for the pysat.utils.time functions
-"""
+"""Tests for the pysat.utils.time functions."""
+
 import datetime as dt
 import numpy as np
 
@@ -62,7 +62,7 @@ class TestParseDate():
         (['10', '12', '15', '3', '1', '68'], "second must be in 0..59"),
         (['10', '12', '15', '3', '1', '55', -30], "year -20 is out of range")])
     def test_parse_date_bad_input(self, in_args, vmsg):
-        """Test raises ValueError for unrealistic date input"""
+        """Test raises ValueError for unrealistic date input."""
 
         with pytest.raises(ValueError) as verr:
             pytime.parse_date(*in_args)
@@ -75,19 +75,21 @@ class TestCalcFreqRes():
     """Unit tests for `calc_res`, `freq_to_res`, and `calc_freq`."""
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment before each method."""
         self.year = np.full(shape=4, dtype=int, fill_value=2001)
         self.month = np.ones(shape=4, dtype=int)
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         del self.year, self.month
+        return
 
     @pytest.mark.parametrize('trange,freq_out',
                              [(np.arange(0.0, 4.0, 1.0), '1S'),
                               (np.arange(0.0, 0.04, .01), '10000000N')])
     def test_calc_freq(self, trange, freq_out):
-        """Test index frequency calculation"""
+        """Test index frequency calculation."""
 
         tind = pytime.create_datetime_index(year=self.year, month=self.month,
                                             uts=trange)
@@ -100,7 +102,7 @@ class TestCalcFreqRes():
                              [('S', 1.0), ('2D', 172800.0),
                               ('10000000N', 0.01)])
     def test_freq_to_res(self, freq_in, res_out):
-        """Test index frequency to resolution calculation"""
+        """Test index frequency to resolution calculation."""
         res = pytime.freq_to_res(freq_in)
 
         assert res == res_out
@@ -118,6 +120,7 @@ class TestCalcFreqRes():
         # Get and test the output resolution
         res = pytime.calc_res(tind, use_mean=use_mean)
         assert res == out_res
+        return
 
     @pytest.mark.parametrize('func_name', ['calc_freq', 'calc_res'])
     def test_calc_input_len_fail(self, func_name):
@@ -132,7 +135,7 @@ class TestCalcFreqRes():
 
     @pytest.mark.parametrize('func_name', ['calc_freq', 'calc_res'])
     def test_calc_input_type_fail(self, func_name):
-        """Test calc freq/res raises ValueError with non-datetime list"""
+        """Test calc freq/res raises ValueError with non-datetime list."""
         test_func = getattr(pytime, func_name)
 
         with pytest.raises(AttributeError) as aerr:
@@ -150,7 +153,7 @@ class TestCreateDateRange():
         ([dt.datetime(2012, 2, 28), dt.datetime(2013, 2, 28)],
          [dt.datetime(2012, 3, 1), dt.datetime(2013, 3, 1)], 5)])
     def test_create_date_range(self, start, stop, tst_len):
-        """Test ability to generate season list"""
+        """Test ability to generate season list."""
         # Get the seasonal output
         season = pytime.create_date_range(start, stop, freq='D')
 
@@ -166,20 +169,23 @@ class TestCreateDateRange():
 
 class TestCreateDatetimeIndex():
     """Unit test `create_datetime_index`."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment before each method."""
         self.year = 2012 * np.ones(4)
         self.month = 2 * np.ones(4)
         self.day = 28 * np.ones(4)
         self.uts = np.arange(0, 4)
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         del self.year, self.month, self.day, self.uts
+        return
 
     def test_create_datetime_index(self):
-        """Tests ability to create an array of datetime objects from distinct
-        arrays of input parameters"""
+        """Test creation of an array of datetime objects from arrays of inputs.
+        """
 
         dates = pytime.create_datetime_index(year=self.year, month=self.month,
                                              day=self.day, uts=self.uts)
@@ -190,7 +196,7 @@ class TestCreateDatetimeIndex():
         return
 
     def test_create_datetime_index_wo_month_day_uts(self):
-        """Tests ability to generate missing parameters"""
+        """Test ability to generate missing parameters."""
 
         dates = pytime.create_datetime_index(year=self.year)
 

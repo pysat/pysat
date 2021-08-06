@@ -739,7 +739,7 @@ class NetworkLock(Lock):
     """Unit tests for NetworkLock manager."""
 
     def __init__(self, *args, **kwargs):
-        """Initizlize lock manager compatible with networked file systems.
+        """Initialize lock manager compatible with networked file systems.
 
         Parameters
         ----------

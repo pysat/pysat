@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-pysat user module registry utilities.
+"""pysat user module registry utilities.
 
 This module allows pysat to provide direct access to external or custom
 instrument modules by maintaining information about these instrument modules.

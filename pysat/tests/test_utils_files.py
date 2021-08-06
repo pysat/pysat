@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Tests the `pysat.utils.files` functions.
-"""
+"""Tests the `pysat.utils.files` functions."""
 
 import datetime as dt
 from importlib import reload

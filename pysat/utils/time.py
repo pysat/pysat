@@ -214,8 +214,7 @@ def freq_to_res(freq):
 
 
 def create_date_range(start, stop, freq='D'):
-    """
-    Create array of datetime objects using input frequency from start to stop.
+    """Create array of datetime objects using input frequency from start to stop.
 
     Parameters
     ----------

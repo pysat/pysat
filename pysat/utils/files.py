@@ -383,8 +383,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
 
 def search_local_system_formatted_filename(data_path, search_str):
-    """
-    Parse format file string and returns string formatted for searching.
+    """Parse format file string and returns string formatted for searching.
 
     Parameters
     ----------
