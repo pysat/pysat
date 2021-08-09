@@ -835,7 +835,7 @@ class TestGenerateInstList():
         """Set up the unit test environment before each method."""
 
         self.user_info = {'pysat_testmodel': {'user': 'GideonNav',
-                                              'password': 'sw0rds!'}}
+                                              'password': 'pasSWORD!'}}
         self.inst_list = generate_instrument_list(inst_loc=pysat.instruments,
                                                   user_info=self.user_info)
         return
