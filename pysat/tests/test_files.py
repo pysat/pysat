@@ -165,8 +165,9 @@ class TestNoDataDir():
 
     def test_no_data_dir(self):
         """Test that error is raised if no data directory is specified."""
-        with pytest.raises(NameError):
+        with pytest.raises(NameError) as nerr:
             pysat.Instrument()
+        assert str(nerr).find("Please set a top-level directory path") >= 0
         return
 
 
@@ -309,9 +310,9 @@ class TestBasics():
 
     def test_from_os_requires_data_path(self):
         """Check that path required for from_os."""
-        with pytest.raises(ValueError) as war:
+        with pytest.raises(ValueError) as verr:
             self.testInst.files.from_os()
-        assert str(war).find('Must supply instrument') > 0
+        assert str(verr).find('Must supply instrument') > 0
         return
 
     def test_year_doy_files_directly_call_from_os(self):
@@ -532,9 +533,9 @@ class TestBasics():
         in_idxs = [0, 10, 100]
         for in_idx in in_idxs:
             test_str = ''.join(('_', self.testInst.files[in_idx]))
-            with pytest.raises(ValueError) as war:
+            with pytest.raises(ValueError) as verr:
                 self.testInst.files.get_index(test_str)
-            assert str(war).find('in available file list') > 0
+            assert str(verr).find('in available file list') > 0
         return
 
     def test_default_directory_format(self):
@@ -904,7 +905,7 @@ class TestInstWithFilesNonStandard():
     def test_files_non_standard_file_format_template_no_variables(self):
         """Test instrument raises error if format template has no variables."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             self.testInst = pysat.Instrument(
                 inst_module=pysat.instruments.pysat_testing,
                 clean_level='clean',
@@ -912,18 +913,20 @@ class TestInstWithFilesNonStandard():
                                      'pysat_testing_file')),
                 update_files=True,
                 temporary_file_list=self.temporary_file_list)
+        assert str(verr).find('file format set to default') > 0
         return
 
     def test_files_non_standard_file_format_template_wrong_type(self):
         """Test instrument raises error if format template is not a string."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             self.testInst = pysat.Instrument(
                 inst_module=pysat.instruments.pysat_testing,
                 clean_level='clean',
                 file_format=15,
                 update_files=True,
                 temporary_file_list=self.temporary_file_list)
+        assert str(verr).find('file format set to default') >= 0
         return
 
 
@@ -1163,9 +1166,9 @@ class TestCIonly(CICleanSetup):
         pysat.params.data['data_dirs'] = []
 
         # Try to instantiate Instrument
-        with pytest.raises(NameError) as err:
+        with pytest.raises(NameError) as nerr:
             pysat.Instrument('pysat', 'testing')
 
         # Confirm we have the correct error
-        assert str(err).find("pysat's `data_dirs` hasn't been set.") >= 0
+        assert str(nerr).find("pysat's `data_dirs` hasn't been set.") >= 0
         return
