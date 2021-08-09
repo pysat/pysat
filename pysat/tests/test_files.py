@@ -149,7 +149,8 @@ class TestNoDataDir():
     def setup(self):
         """Set up the unit test environment for each method."""
         self.temporary_file_list = False
-        # store current pysat directory
+
+        # Store the current pysat directory
         self.saved_data_path = pysat.params['data_dirs']
 
         pysat.params.data['data_dirs'] = []
@@ -214,7 +215,7 @@ class TestBasics():
         return
 
     def test_basic_repr(self):
-        """Test that the repr output will match the str output."""
+        """Test the standard `__repr__` output."""
         self.out = self.testInst.files.__repr__()
         assert isinstance(self.out, str)
         assert self.out.find("pysat.Files(") >= 0
@@ -493,6 +494,7 @@ class TestBasics():
         # Ensure we have the right number files
         assert len(files) == len(self.testInst.files.files)
         assert len(files) > 0
+
         # Ensure it stores strings
         assert isinstance(files[0], str)
         return
@@ -977,6 +979,7 @@ class TestInstWithVersionedFilesNonStandard(TestInstWithFilesNonStandard):
     Note
     ----
     Includes additional tests for versioned strings.
+
     """
 
     def setup_class(self):
@@ -992,7 +995,7 @@ class TestInstWithVersionedFilesNonStandard(TestInstWithFilesNonStandard):
 
     def test_files_when_duplicates_forced(self):
         """Test that new files are captured when duplicated are forced."""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='1D')
 
@@ -1031,6 +1034,7 @@ def create_instrument(j):
     This function must be in the top level to be picklable.
 
     update_files should update the file list in .pysat
+
     """
     root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
                           '_{day:03d}{hour:02d}{minute:02d}',
@@ -1074,9 +1078,10 @@ class TestFilesRaceCondition():
 
     def setup(self):
         """Set up the unit test environment for each method."""
-        # store current pysat directory
+        # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
-        # create temporary directory
+
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
         # create testing directory
@@ -1145,6 +1150,7 @@ class TestCIonly(CICleanSetup):
     Note
     ----
     These only run in CI environments to avoid breaking an end user's setup
+
     """
 
     def test_initial_pysat_load(self, capsys):

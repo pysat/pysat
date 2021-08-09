@@ -8,6 +8,7 @@
 Note
 ----
 package metadata stored in setup.cfg
+
 """
 
 from setuptools import setup
