@@ -1,3 +1,11 @@
+"""Unit and Integration Tests for each instrument module.
+
+Note
+----
+Imports test methods from pysat.tests.instrument_test_class
+
+"""
+
 import tempfile
 
 import pytest
@@ -53,13 +61,17 @@ for method in method_list:
 
 
 class TestInstruments(InstTestClass):
-    """Uses class level setup and teardown so that all tests use the same
+    """Main class for instrument tests.
+
+    Note
+    ----
+    Uses class level setup and teardown so that all tests use the same
     temporary directory. We do not want to geneate a new tempdir for each test,
     as the load tests need to be the same as the download tests.
     """
 
     def setup_class(self):
-        """Runs once before the tests to initialize the testing setup."""
+        """Initialize the testing setup once before all tests are run."""
         # Make sure to use a temporary directory so that the user's setup is not
         # altered
         self.tempdir = tempfile.TemporaryDirectory()
@@ -69,9 +81,13 @@ class TestInstruments(InstTestClass):
         # to point to their own subpackage location, e.g.,
         # self.inst_loc = mypackage.instruments
         self.inst_loc = pysat.instruments
+        return
 
     def teardown_class(self):
-        """Runs once to clean up testing from this class."""
+        """Clean up downloaded files and parameters from tests."""
         pysat.params['data_dirs'] = self.saved_path
         self.tempdir.cleanup()
         del self.inst_loc, self.saved_path, self.tempdir
+        return
+
+    # Custom package unit tests can be added here
