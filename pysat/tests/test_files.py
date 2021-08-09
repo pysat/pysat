@@ -576,9 +576,10 @@ class TestInstWithFiles():
 
     def setup(self):
         """Set up the unit test environment for each method."""
-        # store current pysat directory
+        # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
-        # create temporary directory
+
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
         # create testing directory
