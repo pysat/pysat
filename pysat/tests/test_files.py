@@ -1,4 +1,4 @@
-"""Tests the pysat Files object and code."""
+"""Test pysat Files object and code."""
 
 import datetime as dt
 import functools
@@ -996,7 +996,7 @@ class TestInstWithVersionedFilesNonStandard(TestInstWithFilesNonStandard):
         return
 
     def test_files_when_duplicates_forced(self):
-        """Test that new files are captured when duplicated are forced."""
+        """Test that new files are captured when duplicates are forced."""
         # Create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='1D')

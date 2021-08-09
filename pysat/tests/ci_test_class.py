@@ -15,7 +15,7 @@ import pysat
 
 
 class CICleanSetup():
-    """Tests where local settings are altered.
+    """Test where local settings are altered.
 
     Note
     ----
