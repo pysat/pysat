@@ -94,18 +94,24 @@ class TestUpdateLon():
 
 
 class TestCalcSLT():
-    """Unit tests for `calc_solar_local_time` and integration tests for
-    `update_longitude`.
+    """Unit tests for `calc_solar_local_time`.
+
+    Note
+    ----
+    Includes integration tests with `update_longitude`.
 
     """
 
     def setup(self):
-        """Runs after every method to clean up previous testing."""
+        """Set up the unit test environment for each method."""
+
         self.py_inst = None
         self.inst_time = pysat.instruments.pysat_testing._test_dates['']['']
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
+
         del self.py_inst, self.inst_time
         return
 

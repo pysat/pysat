@@ -15,7 +15,7 @@ logger = pysat.logger
 
 
 def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
-    """Adjust cyclic values such as longitude to a different scale
+    """Adjust cyclic values such as longitude to a different scale.
 
     Parameters
     ----------
@@ -45,7 +45,7 @@ def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
 
 
 def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
-    """ Update longitude to the desired range
+    """Update longitude to the desired range.
 
     Parameters
     ----------
@@ -79,7 +79,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
 
 def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
                           apply_modulus=True, ref_date=None):
-    """ Append solar local time to an instrument object
+    """Append solar local time to an instrument object.
 
     Parameters
     ----------
