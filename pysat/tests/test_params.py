@@ -189,10 +189,6 @@ class TestCIonly(CICleanSetup):
     These only run in CI environments to avoid breaking an end user's setup
     """
 
-    # Set setup/teardown to the class defaults
-    setup = CICleanSetup.setup
-    teardown = CICleanSetup.teardown
-
     def test_settings_file_must_be_present(self, capsys):
         """Ensure pysat_settings.json is present."""
 
