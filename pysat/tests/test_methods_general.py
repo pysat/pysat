@@ -19,11 +19,13 @@ class TestListFiles():
         self.kwargs = {'tag': '', 'inst_id': '', 'data_path': '/fake/path/',
                        'format_str': None,
                        'supported_tags': {'': {'': fname}}}
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
         del self.kwargs
+        return
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
                              [("data_path", None,
@@ -37,6 +39,7 @@ class TestListFiles():
         with pytest.raises(ValueError) as excinfo:
             gen.list_files(**self.kwargs)
         assert str(excinfo.value).find(err_msg) >= 0
+        return
 
 
 class TestFileCadence():
@@ -54,6 +57,7 @@ class TestFileCadence():
         check_daily = gen.is_daily_file_cadence(in_time)
 
         assert check_daily == is_daily
+        return
 
     @pytest.mark.parametrize("time_kwarg, time_val, is_daily",
                              [("microseconds", 1, True), ("seconds", 1, True),
@@ -67,6 +71,7 @@ class TestFileCadence():
         check_daily = gen.is_daily_file_cadence(in_time)
 
         assert check_daily == is_daily
+        return
 
 
 class TestRemoveLeadText():
@@ -80,11 +85,13 @@ class TestRemoveLeadText():
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.npts
+        return
 
     def test_remove_prefix_w_bad_target(self):
         """Test that a bad target in `remove_leading_text` will raise an error.
@@ -104,6 +111,7 @@ class TestRemoveLeadText():
 
         # Check other names untouched
         assert len(self.testInst['dummy1']) == self.npts
+        return
 
     def test_remove_names_w_target(self):
         """Test that only names with the target prefix are changed."""
@@ -119,6 +127,7 @@ class TestRemoveLeadText():
 
         # Check prepended text removed from metadata
         assert '_Blurp' in self.testInst.meta.keys()
+        return
 
     def test_remove_names_w_target_list(self):
         """Test that multiple targets can be removed via a list."""
@@ -138,6 +147,7 @@ class TestRemoveLeadText():
         # Check prepended text removed from metadata
         assert '_Blurp' in self.testInst.meta.keys()
         assert 'loop' in self.testInst.meta.keys()
+        return
 
 
 class TestRemoveLeadTextXarray(TestRemoveLeadText):
@@ -157,11 +167,13 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.npts
+        return
 
     def test_remove_2D_names_w_target(self):
         """Test that 2D variables are changed appropriately."""
@@ -174,6 +186,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
 
         # Check prepended text removed from metadata
         assert '_profiles' in self.testInst.meta.keys()
+        return
 
     def test_remove_2D_names_w_target_list(self):
         """Test that 2D variables can be modified with a target list."""
@@ -189,6 +202,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         # Check prepended text removed from metadata
         assert '_profiles' in self.testInst.meta.keys()
         assert 'ages' in self.testInst.meta.keys()
+        return
 
 
 class TestLoadCSVData():
@@ -203,11 +217,13 @@ class TestLoadCSVData():
                                   'kp_recent_2019-03-18.txt')
         self.data_cols = ['mid_lat_Kp', 'high_lat_Kp', 'Kp']
         self.data = None
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
         del self.csv_file, self.data, self.data_cols
+        return
 
     def eval_data_cols(self):
         """Evaluate the data columns in the output."""
