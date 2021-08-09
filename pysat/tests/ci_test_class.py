@@ -43,6 +43,7 @@ class CICleanSetup():
             except FileNotFoundError:
                 pass
             shutil.move(self.root, self.new_root)
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
@@ -57,3 +58,4 @@ class CICleanSetup():
             pysat.params['data_dirs'] = self.saved_path
 
         del self.ci_env, self.saved_path
+        return
