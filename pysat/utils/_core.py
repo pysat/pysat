@@ -117,7 +117,7 @@ def scale_units(out_unit, in_unit):
 
 
 def listify(iterable):
-    """Return a flattened list of iterable if not already a list.
+    """Produce a flattened list of items from input that may not be iterable.
 
     Parameters
     ----------

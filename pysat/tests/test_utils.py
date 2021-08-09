@@ -877,13 +877,13 @@ class TestGenerateInstList():
         """Test that user info passes through to correct instruments."""
 
         for inst in self.inst_list['download']:
-            # user_info should only be in pysat_testmodel
+            # `user_info` should only be in `pysat_testmodel`
             assert (('user_info' in inst.keys())
                     == ('pysat_testmodel' in str(inst['inst_module'])))
             if 'user_info' in inst.keys():
                 # User info should be correct
                 assert inst['user_info'] == self.user_info['pysat_testmodel']
         for inst in self.inst_list['no_download']:
-            # user_info should not be in any of these
+            # `user_info` should not be in any of these
             assert ('user_info' not in inst.keys())
         return

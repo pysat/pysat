@@ -3,7 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""pysat date and time utilities."""
+"""Date and time handling utilities."""
 
 import datetime as dt
 import numpy as np
@@ -323,7 +323,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
 
 def filter_datetime_input(date):
-    """Return datetime that only includes year, month, and day.
+    """Create a datetime object that only includes year, month, and day.
 
     Parameters
     ----------
@@ -367,7 +367,7 @@ def filter_datetime_input(date):
 
 
 def today():
-    """Return today's date (UTC), with no hour, minute, second, etc.
+    """Obtain today's date (UTC), with no hour, minute, second, etc.
 
     Returns
     -------
