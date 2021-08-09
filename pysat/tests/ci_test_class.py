@@ -3,6 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
+"""Class setup and teardown for unit tests that are only run in the CI env."""
 
 import copy
 from importlib import reload
@@ -14,14 +15,14 @@ import pysat
 
 
 class CICleanSetup():
-    """ Tests where local settings are altered.
+    """Tests where local settings are altered.
 
     These only run in CI environments to avoid breaking an end user's setup
 
     """
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment for each method."""
 
         self.ci_env = (os.environ.get('CI') == 'true')
 
@@ -44,7 +45,7 @@ class CICleanSetup():
             shutil.move(self.root, self.new_root)
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         if self.ci_env:
             # Move settings back
             shutil.rmtree(self.root)
