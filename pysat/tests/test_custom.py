@@ -1,3 +1,5 @@
+"""Unit Tests for the `custom_attach` methods."""
+
 import copy
 from io import StringIO
 import logging
@@ -7,7 +9,7 @@ import pysat
 
 
 def mult_data(inst, mult, dkey="mlt"):
-    """Function to add a multiplied data value to an Instrument
+    """Add a multiplied data value to an Instrument.
 
     Parameters
     ----------
@@ -34,9 +36,11 @@ def mult_data(inst, mult, dkey="mlt"):
 
 
 class TestLogging():
+    """Unit Tests for logging interface with custom functions."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup.
-        """
+        """Set up the unit test environment for each method."""
+
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean',
                                          update_files=False)
@@ -46,13 +50,12 @@ class TestLogging():
         pysat.logger.setLevel(logging.WARNING)
 
     def teardown(self):
-        """Runs after every method to clean up previous testing.
-        """
+        """Clean up the unit test environment after each method."""
+
         del self.testInst, self.out, self.log_capture
 
     def test_custom_pos_warning(self):
-        """Test for logging warning if inappropriate position specified
-        """
+        """Test for logging warning if inappropriate position specified."""
 
         self.testInst.custom_attach(lambda inst: inst.data['mlt'] * 2.0,
                                     at_pos=3)
@@ -63,9 +66,11 @@ class TestLogging():
 
 
 class TestBasics():
+    """Unit tests for `pysat.instrument.custom_attach` with a pandas inst."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup.
-        """
+        """Set up the unit test environment for each method."""
+
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
@@ -75,12 +80,13 @@ class TestBasics():
         self.out = None
 
     def teardown(self):
-        """Runs after every method to clean up previous testing.
-        """
+        """Clean up the unit test environment after each method."""
+
         del self.testInst, self.out, self.custom_args
 
     def test_basic_str(self):
-        """Check for lines from each decision point in str"""
+        """Check for lines from each decision point in str."""
+
         self.out = self.testInst.__str__()
         assert isinstance(self.out, str)
 
@@ -88,7 +94,7 @@ class TestBasics():
         assert self.out.find('0 applied') > 0
 
     def test_basic_repr(self):
-        """Test __repr__ with a custom method"""
+        """Test `__repr__` with a custom method."""
 
         self.testInst.custom_attach(mult_data, args=self.custom_args)
         self.testInst.custom_attach(mult_data, args=self.custom_args)
@@ -97,7 +103,7 @@ class TestBasics():
         assert self.out.find("'function'") >= 0
 
     def test_basic_str_w_function(self):
-        """Check for lines from each decision point in str"""
+        """Check for lines from each decision point in str."""
 
         self.testInst.custom_attach(mult_data, args=self.custom_args,
                                     kwargs={'dkey': 'mlt'})
@@ -116,7 +122,7 @@ class TestBasics():
         assert self.out.find('Kwargs') > 0
 
     def test_single_modifying_custom_function_error(self):
-        """Test for error when custom function loaded as modify returns a value
+        """Test for error when custom function loaded as modify returns a value.
         """
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
@@ -130,8 +136,7 @@ class TestBasics():
         assert str(verr).find(estr) >= 0
 
     def test_custom_keyword_instantiation(self):
-        """Test adding custom methods at Instrument instantiation
-        """
+        """Test adding custom methods at Instrument instantiation."""
 
         self.testInst.custom_attach(mult_data, args=self.custom_args,
                                     kwargs={'dkey': 'mlt'})
@@ -150,8 +155,7 @@ class TestBasics():
         assert self.testInst.custom_kwargs == testInst2.custom_kwargs
 
     def test_custom_positioning(self):
-        """Test custom method ordering specification
-        """
+        """Test custom method ordering specification."""
 
         self.testInst.custom_attach(mult_data, args=[3],
                                     kwargs={'dkey': '2xmlt'})
@@ -175,8 +179,8 @@ class TestBasics():
         assert self.testInst.custom_args[1] == [3]
 
     def test_custom_keyword_instantiation_poor_format(self):
-        """Test for error when custom missing keywords at instantiation
-        """
+        """Test for error when custom missing keywords at instantiation."""
+
         req_words = ['function']
         real_custom = [{'function': 1, 'args': [0, 1],
                         'kwargs': {'kwarg1': True, 'kwarg2': False}}]
@@ -195,8 +199,8 @@ class TestBasics():
         return
 
     def test_clear_functions(self):
-        """Test successful clearance of custom functions
-        """
+        """Test successful clearance of custom functions."""
+
         self.testInst.custom_attach(lambda inst, imult, out_units='h':
                                     {'data': (inst.data.mlt * imult).values,
                                      'long_name': 'doubleMLTlong',
@@ -215,11 +219,12 @@ class TestBasics():
         assert self.testInst.custom_kwargs == []
 
 
-# Repeat the above tests with xarray
 class TestBasicsXarray(TestBasics):
+    """Unit tests for `pysat.instrument.custom_attach` with an xarray inst."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup.
-        """
+        """Set up the unit test environment for each method."""
+
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=10, clean_level='clean')
         self.load_date = pysat.instruments.pysat_testing_xarray._test_dates
@@ -228,15 +233,17 @@ class TestBasicsXarray(TestBasics):
         self.custom_args = [2]
 
     def teardown(self):
-        """Runs after every method to clean up previous testing.
-        """
+        """Clean up the unit test environment after each method."""
+
         del self.testInst, self.load_date, self.custom_args
 
 
 class TestConstellationBasics():
+    """Unit tests for `pysat.instrument.custom_attach` with a constellation."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup
-        """
+        """Set up the unit test environment for each method."""
+
         self.testConst = pysat.Constellation(instruments=[
             pysat.Instrument('pysat', 'testing', num_samples=10,
                              clean_level='clean',
@@ -247,12 +254,12 @@ class TestConstellationBasics():
         self.custom_args = [2]
 
     def teardown(self):
-        """ Runs after every method to clean up previous testing
-        """
+        """Clean up the unit test environment after each method."""
+
         del self.testConst, self.load_date, self.custom_args
 
     def test_basic_repr(self):
-        """Test __repr__ with a custom method"""
+        """Test __repr__ with a custom method."""
 
         self.testConst.custom_attach(mult_data, args=self.custom_args)
         self.out = self.testConst.__repr__()
@@ -260,7 +267,7 @@ class TestConstellationBasics():
         assert self.out.find("'function'") >= 0
 
     def test_single_modifying_custom_function_error(self):
-        """Test for error when custom function loaded as modify returns a value
+        """Test for error when custom function loaded as modify returns a value.
         """
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
@@ -274,8 +281,7 @@ class TestConstellationBasics():
         assert str(verr).find(estr) >= 0
 
     def test_custom_keyword_instantiation(self):
-        """Test adding custom methods at Instrument instantiation
-        """
+        """Test adding custom methods at Instrument instantiation."""
 
         self.testConst.custom_attach(mult_data, args=self.custom_args,
                                      kwargs={'dkey': 'mlt'})
@@ -300,8 +306,8 @@ class TestConstellationBasics():
             assert inst.custom_kwargs == inst2.custom_kwargs
 
     def test_clear_functions(self):
-        """Test successful clearance of custom functions
-        """
+        """Test successful clearance of custom functions."""
+
         self.testConst.custom_attach(lambda inst, imult, out_units='h':
                                      {'data': (inst.data.mlt * imult).values,
                                       'long_name': 'doubleMLTlong',
