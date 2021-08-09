@@ -172,8 +172,16 @@ class TestNoDataDir():
 class TestBasics():
     """Unit tests for `pysat._files`."""
 
-    temporary_file_list = False
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -537,14 +545,31 @@ class TestBasics():
 class TestBasicsNoFileListStorage(TestBasics):
     """Repeat basic tests with temporary file list."""
 
-    temporary_file_list = True
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = True
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithFiles():
     """Test basic file operations within an instrument."""
 
-    temporary_file_list = False
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -763,8 +788,16 @@ class TestInstWithFiles():
 class TestInstWithFilesNonStandard():
     """Specialized tests for instruments with non-standard setups."""
 
-    temporary_file_list = False
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -890,27 +923,52 @@ class TestInstWithFilesNonStandard():
                                  file_format=15,
                                  update_files=True,
                                  temporary_file_list=self.temporary_file_list)
+        return
 
 
 class TestInstWithFilesNoFileListStorage(TestInstWithFiles):
     """Repeat all file tests with a temporary file list."""
 
-    temporary_file_list = True
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = True
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithFilesNoFileListStorageNonStd(TestInstWithFilesNonStandard):
     """Repeat all file tests with a temporary file list."""
 
-    temporary_file_list = True
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = True
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithVersionedFiles(TestInstWithFiles):
     """Repeat all file tests with versioned files."""
 
-    temporary_file_list = False
-    version = True
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = True
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithVersionedFilesNonStandard(TestInstWithFilesNonStandard):
@@ -921,7 +979,19 @@ class TestInstWithVersionedFilesNonStandard(TestInstWithFilesNonStandard):
     Includes additional tests for versioned strings.
     """
 
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = True
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
+
     def test_files_when_duplicates_forced(self):
+        """Test that new files are captured when duplicated are forced."""
         # create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='1D')
@@ -992,7 +1062,15 @@ def create_instrument(j):
 class TestFilesRaceCondition():
     """Tests for multiple instances of pysat running simultaneously."""
 
-    temporary_file_list = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list
+        return
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -1061,17 +1139,13 @@ class TestFilesRaceCondition():
         return
 
 
-class TestCIonly():
+class TestCIonly(CICleanSetup):
     """Tests where we mess with local settings.
 
     Note
     ----
     These only run in CI environments to avoid breaking an end user's setup
     """
-
-    # Set setup/teardown to the class defaults
-    setup = CICleanSetup.setup
-    teardown = CICleanSetup.teardown
 
     def test_initial_pysat_load(self, capsys):
         """Ensure data_dirs check in Files works."""
