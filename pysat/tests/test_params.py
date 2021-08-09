@@ -63,6 +63,7 @@ class TestBasics():
         # Check if next load of pysat remembers the change
         reload(pysat)
         assert pysat.params['data_dirs'] == check
+        return
 
     @pytest.mark.parametrize("path",
                              ['no_path',
@@ -78,6 +79,7 @@ class TestBasics():
         """Test __repr__ method."""
         out = pysat.params.__repr__()
         assert out.find('Parameters(path=') >= 0
+        return
 
     def test_str(self):
         """Ensure str method works."""
@@ -98,6 +100,7 @@ class TestBasics():
 
         assert out.find('user values') > 0
         assert out.find('User parameters:') > 0
+        return
 
     def test_restore_defaults(self):
         """Test restore_defaults works as intended."""
@@ -116,6 +119,7 @@ class TestBasics():
 
         # Make sure that non-default values left as is
         assert pysat.params['data_dirs'] != []
+        return
 
     def test_update_standard_value(self):
         """Test that update of a pre-existing standard value is stored."""
@@ -133,6 +137,7 @@ class TestBasics():
         # Using eval to ensure all settings with current pysat.params retained.
         new_params = eval(pysat.params.__repr__())
         assert new_params['update_files'] == pysat.params['update_files']
+        return
 
     def test_no_update_user_modules(self):
         """Ensure user_modules not modifiable via params."""
@@ -141,6 +146,7 @@ class TestBasics():
         with pytest.raises(ValueError) as err:
             pysat.params['user_modules'] = {}
         assert str(err).find('The pysat.utils.registry ') >= 0
+        return
 
     def test_add_user_parameter(self):
         """Add custom parameter and ensure present."""
@@ -152,6 +158,7 @@ class TestBasics():
         # Using eval to ensure all settings with current pysat.params retained.
         new_params = eval(pysat.params.__repr__())
         assert new_params['hi_there'] == pysat.params['hi_there']
+        return
 
     def test_clear_and_restart(self):
         """Verify clear_and_restart method impacts all values."""
@@ -171,6 +178,7 @@ class TestBasics():
         with pytest.raises(OSError) as excinfo:
             Parameters(path='./made_up_name')
         assert str(excinfo.value).find("Supplied path does not exist") >= 0
+        return
 
 
 class TestCIonly(CICleanSetup):
@@ -205,6 +213,7 @@ class TestCIonly(CICleanSetup):
 
         shutil.move(os.path.join(self.root, 'pysat_settings_moved.json'),
                     os.path.join(self.root, 'pysat_settings.json'))
+        return
 
     def test_settings_file_cwd(self, capsys):
         """Test Parameters works when settings file in current working dir."""
