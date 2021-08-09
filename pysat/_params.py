@@ -81,6 +81,8 @@ class Parameters(object):
     """
 
     def __init__(self, path=None, create_new=False):
+        """Initialize Parameters object."""
+
         sfname = 'pysat_settings.json'
         self.data = {}
         self.file_path = None
@@ -155,7 +157,7 @@ class Parameters(object):
         return
 
     def __repr__(self):
-        """String describing Parameters instantiation parameters
+        """Describe Parameters instantiation parameters.
 
         Returns
         -------
@@ -168,7 +170,7 @@ class Parameters(object):
         return out_str
 
     def __str__(self, long_str=True):
-        """String describing Parameters instance, variables, and attributes
+        """Describe Parameters instance, variables, and attributes.
 
         Parameters
         ----------
@@ -219,10 +221,12 @@ class Parameters(object):
         return out_str
 
     def __getitem__(self, item):
+        """Get item from Parameters."""
         return self.data[item]
 
     def __setitem__(self, key, value):
-        # Update current settings
+        """Update current settings in Parameters."""
+
         # Some parameters require processing before storage.
         if key == 'data_dirs':
             self._set_data_dirs(value)
@@ -286,9 +290,11 @@ class Parameters(object):
         return
 
     def clear_and_restart(self):
-        """Clears all stored settings and sets pysat defaults
+        """Clear all stored settings and sets pysat defaults.
 
-        pysat parameters without a default value are set to []
+        Note
+        ----
+        pysat parameters without a default value are set to [].
         """
 
         # Clear current data and assign a copy of default values
@@ -304,8 +310,10 @@ class Parameters(object):
         return
 
     def restore_defaults(self):
-        """Restore default pysat parameters
+        """Restore default pysat parameters.
 
+        Note
+        ----
         Does not modify any stored custom user keys or pysat parameters
         without a default value.
 
