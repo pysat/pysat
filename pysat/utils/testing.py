@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Utilities to perform common evaluations.
-"""
+"""Utilities to perform common evaluations."""
 
 import numpy as np
 

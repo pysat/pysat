@@ -3,9 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-pysat date and time utilities.
-"""
+"""pysat date and time utilities."""
 
 import datetime as dt
 import numpy as np
