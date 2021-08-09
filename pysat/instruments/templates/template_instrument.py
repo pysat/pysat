@@ -143,7 +143,7 @@ def init(self):
 
 # Required method
 def clean(self):
-    """Return PLATFORM/NAME data cleaned to the specified level.
+    """Return `platform_name` data cleaned to the specified level.
 
     Cleaning level is specified in inst.clean_level and pysat
     will accept user input for several strings. The clean_level is
@@ -243,7 +243,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
 # Required function
 def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
              **kwargs):
-    """Download PLATFORM/NAME data (placeholder).
+    """Download `platform_name` data from the remote repository.
 
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.
@@ -279,7 +279,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
 
 # Required function
 def load(fnames, tag=None, inst_id=None, custom_keyword=None):
-    """Load PLATFORM data into (PANDAS/XARRAY).
+    """Load `platform_name` data and meta data.
 
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.
