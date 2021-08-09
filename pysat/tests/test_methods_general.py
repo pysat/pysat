@@ -97,8 +97,10 @@ class TestRemoveLeadText():
         """Test that a bad target in `remove_leading_text` will raise an error.
         """
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             gen.remove_leading_text(self.testInst, target=17.5)
+        assert str(verr).find('target must be a string or list of strings') >= 0
+        return
 
     def test_remove_names_wo_target(self):
         """Test that an unspecified target leaves variable names unchanged."""
