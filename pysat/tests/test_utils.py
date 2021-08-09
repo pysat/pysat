@@ -855,12 +855,14 @@ class TestGenerateInstList():
     @pytest.mark.parametrize("list_name", [('download'), ('no_download')])
     def test_generate_module_list_attributes(self, list_name):
         """Test that each instrument dict has sufficient information."""
+
         for inst_dict in self.inst_list[list_name]:
             for item in ['inst_module', 'tag', 'inst_id']:
                 assert item in inst_dict.keys()
             assert inspect.ismodule(inst_dict['inst_module'])
             assert isinstance(inst_dict['tag'], str)
             assert isinstance(inst_dict['inst_id'], str)
+        return
 
     @pytest.mark.parametrize("list_name,output", [('download', False),
                                                   ('no_download', True)])
@@ -869,6 +871,7 @@ class TestGenerateInstList():
 
         tags = [inst['tag'] for inst in self.inst_list[list_name]]
         assert ('no_download' in tags) == output
+        return
 
     def test_user_info_pass_through(self):
         """Test that user info passes through to correct instruments."""
@@ -883,3 +886,4 @@ class TestGenerateInstList():
         for inst in self.inst_list['no_download']:
             # user_info should not be in any of these
             assert ('user_info' not in inst.keys())
+        return
