@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-pysat user module registry utilities
+"""pysat user module registry utilities.
 
 This module allows pysat to provide direct access to external or custom
 instrument modules by maintaining information about these instrument modules.
@@ -58,7 +57,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_saved_modules():
-    """Load registered pysat.Instrument modules
+    """Load registered pysat.Instrument modules.
 
     Returns
     -------
@@ -72,7 +71,7 @@ def load_saved_modules():
 
 
 def store():
-    """Store current registry onto disk"""
+    """Store current registry onto disk."""
 
     pysat.params.store()
 
@@ -80,7 +79,7 @@ def store():
 
 
 def register(module_names, overwrite=False):
-    """Registers a user pysat.Instrument module by name
+    """Register a user pysat.Instrument module by name.
 
     Enables instantiation of a third-party Instrument
     module using
@@ -211,7 +210,7 @@ def register(module_names, overwrite=False):
 
 
 def register_by_module(module):
-    """Register all sub-modules attached to input module
+    """Register all sub-modules attached to input module.
 
     Enables instantiation of a third-party Instrument module using
     ::
@@ -257,7 +256,7 @@ def register_by_module(module):
 
 
 def remove(platforms, names):
-    """Removes module from registered user modules
+    """Remove module from registered user modules.
 
     Parameters
     ----------

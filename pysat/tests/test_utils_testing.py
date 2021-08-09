@@ -3,8 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Tests the pysat utility testing routines
-"""
+"""Tests the pysat utility testing routines."""
 
 import numpy as np
 import pytest
@@ -20,7 +19,7 @@ class TestTestingUtils():
                               (['one', 'two'], ['three', 'two', 'one']),
                               ([None, False], [True, False, None])])
     def test_assert_list_contains_good(self, slist, blist):
-        """ Test the successful evaluation of overlapping list contents."""
+        """Test the successful evaluation of overlapping list contents."""
         testing.assert_list_contains(slist, blist)
         return
 
@@ -29,7 +28,7 @@ class TestTestingUtils():
                               (['one', 'two'], ['three', 'one']),
                               ([None, False], [True, False, "None"])])
     def test_assert_list_contains_bad(self, slist, blist):
-        """ Test raises AssertionError for lists with elements that are unique.
+        """Test raises AssertionError for lists with elements that are unique.
         """
         with pytest.raises(AssertionError) as aerr:
             testing.assert_list_contains(slist, blist)
@@ -56,7 +55,7 @@ class TestTestingUtils():
                               (['one', 'two'], ['One', 'TWO']),
                               ([None, False], [True, False, "None"])])
     def test_assert_list_equal_bad(self, slist, blist):
-        """ Test the evaluation of overlapping list contents."""
+        """Test the evaluation of overlapping list contents."""
         with pytest.raises(AssertionError):
             testing.assert_lists_equal(slist, blist)
         return

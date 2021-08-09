@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-pysat.utils - utilities for running pysat
-=========================================
+"""Utilities supporting pysat classes, packages, and the testing environment.
 
 pysat.utils contains a number of functions used
 throughout the pysat package.  This includes conversion
