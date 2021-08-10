@@ -113,8 +113,7 @@ class InstTestClass():
 
     @pytest.mark.all_inst
     def test_standard_function_presence(self, inst_name):
-        """Test that each function is callable and all required functions exist.
-        """
+        """Test that each function is callable, all required functions exist."""
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
 

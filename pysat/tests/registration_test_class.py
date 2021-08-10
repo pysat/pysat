@@ -18,7 +18,7 @@ import sys
 import pysat
 
 
-class TestWithRegistration():
+class TestWithRegistration(object):
     """Test class for unit/integration tests with registered Instruments."""
 
     def setup(self):

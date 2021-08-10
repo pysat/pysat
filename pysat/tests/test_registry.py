@@ -11,8 +11,8 @@ import pytest
 import sys
 
 import pysat
-from pysat.utils import registry
 from pysat.tests.registration_test_class import TestWithRegistration
+from pysat.utils import registry
 
 
 def ensure_updated_stored_modules(modules):
@@ -285,7 +285,7 @@ class TestRegistration(TestWithRegistration):
         return
 
 
-class TestModuleRegistration():
+class TestModuleRegistration(object):
     """Unit Tests for module registration."""
 
     def setup(self):
