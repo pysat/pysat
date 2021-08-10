@@ -231,8 +231,7 @@ class TestCalcSLT(object):
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
                                       "testing2d_xarray"])
     def test_lon_broadcasting_calc_solar_local_time_no_mod_ref_date(self, name):
-        """Test non modulated SLT output for a 2 day range with a ref date.
-        """
+        """Test non modulated SLT output for a 2 day range with a ref date."""
 
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name)

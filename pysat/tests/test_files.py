@@ -334,8 +334,8 @@ class TestBasics(object):
         return
 
     def test_year_doy_files_no_gap_in_name_directly_call_from_os(self):
-        """Test that `Files.from_os` generates file list for date w/o delimiter.
-        """
+        """Test that `Files.from_os` makes file list for date w/o delimiter."""
+
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}{day:03d}_stuff.',
                               'pysat_testing_file'))

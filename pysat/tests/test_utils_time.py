@@ -184,8 +184,7 @@ class TestCreateDatetimeIndex(object):
         return
 
     def test_create_datetime_index(self):
-        """Test creation of an array of datetime objects from arrays of inputs.
-        """
+        """Test create an array of datetime objects from arrays of inputs."""
 
         dates = pytime.create_datetime_index(year=self.year, month=self.month,
                                              day=self.day, uts=self.uts)
