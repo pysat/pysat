@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# Test some of the basic _core functions
+"""Tests the pysat Instrument object and methods."""
+
 import datetime as dt
 from importlib import reload
 import logging
@@ -33,10 +34,13 @@ testing_kwargs = {'test_init_kwarg': True, 'test_clean_kwarg': False,
 #
 # -----------------------------------------------------------------------------
 class TestBasics():
+    """Unit Tests for pysat.Instrument object."""
+
     def setup(self):
+        """Set up the unit test environment for each method."""
+
         global testing_kwargs
         reload(pysat.instruments.pysat_testing)
-        """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=10,
                                          clean_level='clean',
@@ -45,13 +49,16 @@ class TestBasics():
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
+
         del self.testInst, self.out, self.ref_time, self.ref_doy
+        return
 
     def support_iter_evaluations(self, values, for_loop=False, reverse=False):
-        """Supports testing of .next/.prev via dates/files"""
+        """Support testing of .next/.prev via dates/files."""
         # First, treat with no processing to provide testing as inputs
         # supplied
         if len(values) == 4:
@@ -136,7 +143,7 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def eval_successful_load(self, end_date=None):
-        """Support routine for evaluating successful loading of self.testInst
+        """Evaluate successful loading of `self.testInst`.
 
         Parameters
         ----------
@@ -166,7 +173,7 @@ class TestBasics():
         return
 
     def test_basic_instrument_load(self):
-        """Test that the correct day is loaded, specifying only start year, doy
+        """Test that the correct day is loaded, specifying only start year, doy.
         """
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -176,8 +183,8 @@ class TestBasics():
         return
 
     def test_basic_instrument_load_w_kwargs(self):
-        """Test that the correct day is loaded with optional kwarg
-        """
+        """Test that the correct day is loaded with optional kwarg."""
+
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy, num_samples=30)
 
@@ -199,7 +206,7 @@ class TestBasics():
         return
 
     def test_basic_instrument_bad_keyword_init(self):
-        """Checks for error when instantiating with bad load keywords on init.
+        """Check for error when instantiating with bad load keywords on init.
         """
         # Test that the correct error is raised
         with pytest.raises(ValueError) as verr:
@@ -213,8 +220,8 @@ class TestBasics():
         return
 
     def test_basic_instrument_bad_keyword_at_load(self):
-        """Checks for error when calling load with bad keywords.
-        """
+        """Check for error when calling load with bad keywords."""
+
         # Test that the correct error is raised
         with pytest.raises(TypeError) as terr:
             self.testInst.load(date=self.ref_time, unsupported_keyword=True)
@@ -242,6 +249,7 @@ class TestBasics():
 
     def test_basic_instrument_load_yr_no_doy(self):
         """Ensure doy required if yr present."""
+
         # Check that the correct error is raised
         with pytest.raises(TypeError) as err:
             self.testInst.load(self.ref_time.year)
@@ -253,7 +261,8 @@ class TestBasics():
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_doy(self, doy):
-        """Ensure doy load keyword in valid range"""
+        """Ensure doy load keyword in valid range."""
+
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, doy)
         estr = 'Day of year (doy) is only valid between and '
@@ -263,7 +272,8 @@ class TestBasics():
 
     @pytest.mark.parametrize('end_doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_end_doy(self, end_doy):
-        """Ensure end_doy keyword in valid range"""
+        """Ensure end_doy keyword in valid range."""
+
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, 1, end_yr=self.ref_time.year,
                                end_doy=end_doy)
@@ -273,7 +283,8 @@ class TestBasics():
         return
 
     def test_basic_instrument_load_yr_no_end_doy(self):
-        """Ensure end_doy required if end_yr present"""
+        """Ensure end_doy required if end_yr present."""
+
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, self.ref_doy,
                                self.ref_time.year)
@@ -298,7 +309,8 @@ class TestBasics():
                                         'fname': 'dummy_str.nofile',
                                         'end_yr': 2009, 'end_doy': 1}])
     def test_basic_instrument_load_mixed_inputs(self, input):
-        """Ensure mixed load inputs raise ValueError"""
+        """Ensure mixed load inputs raise ValueError."""
+
         with pytest.raises(ValueError) as err:
             self.testInst.load(**input)
         estr = 'An inconsistent set of inputs have been'
@@ -306,7 +318,8 @@ class TestBasics():
         return
 
     def test_basic_instrument_load_no_input(self):
-        """Test .load() loads all data"""
+        """Test `.load()` loads all data."""
+
         self.testInst.load()
         assert (self.testInst.index[0] == self.testInst.files.start_date)
         assert (self.testInst.index[-1] >= self.testInst.files.stop_date)
@@ -318,7 +331,7 @@ class TestBasics():
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_basic_instrument_load_by_file_and_multifile(self, load_in, verr):
-        """Ensure some load calls raises ValueError with multi_file_day as True
+        """Ensure some load calls raises ValueError with multi_file_day as True.
         """
         self.testInst.multi_file_day = True
 
@@ -335,15 +348,18 @@ class TestBasics():
         return
 
     def test_basic_instrument_load_by_date(self):
-        """Test loading by date"""
+        """Test loading by date."""
+
         self.testInst.load(date=self.ref_time)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_basic_instrument_load_by_dates(self):
-        """Test date range loading, date and end_date"""
+        """Test date range loading, date and end_date."""
+
         end_date = self.ref_time + dt.timedelta(days=2)
         self.testInst.load(date=self.ref_time, end_date=end_date)
         self.out = self.testInst.index[0]
@@ -353,24 +369,29 @@ class TestBasics():
         self.out = self.testInst.index[-1]
         assert (self.out >= self.ref_time + dt.timedelta(days=1))
         assert (self.out <= self.ref_time + dt.timedelta(days=2))
+        return
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
-        """Ensure .load(date=date) only uses year, month, day portion of date"""
+        """Ensure `.load(date=date)` only uses year, month, day portion of date.
+        """
         # put in a date that has more than year, month, day
         self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_basic_instrument_load_data(self):
-        """Test if the correct day is being loaded (checking down to the sec).
-        """
+        """Test that correct day loads (checking down to the sec)."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert (self.testInst.index[0] == self.ref_time)
+        return
 
     def test_basic_instrument_load_leap_year(self):
         """Test if the correct day is being loaded (Leap-Year)."""
+
         self.ref_time = dt.datetime(2008, 12, 31)
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -378,30 +399,33 @@ class TestBasics():
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_next_load_default(self):
-        """Test if first day is loaded by default when first invoking .next.
-        """
+        """Test if first day loads by default when first invoking `.next`."""
+
         self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.next()
         self.out = self.testInst.index[0]
         assert self.out == self.ref_time
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_prev_load_default(self):
-        """Test if last day is loaded by default when first invoking .prev.
-        """
+        """Test if last day loads by default when first invoking `.prev`."""
+
         self.ref_time = dt.datetime(2010, 12, 31)
         self.testInst.prev()
         self.out = self.testInst.index[0]
         assert self.out == self.ref_time
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_next_load_bad_start_file(self):
-        """Test Error if trying to iterate when on a file not in iteration list
-        """
+        """Test Error for `.next` when on a file not in iteration list."""
+
         self.testInst.load(fname=self.testInst.files[1])
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[0], self.testInst.files[20],
@@ -414,8 +438,8 @@ class TestBasics():
         return
 
     def test_prev_load_bad_start_file(self):
-        """Test Error if trying to iterate when on a file not in iteration list
-        """
+        """Test Error for `.prev` when on a file not in iteration list."""
+
         self.testInst.load(fname=self.testInst.files[12])
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
@@ -428,8 +452,8 @@ class TestBasics():
         return
 
     def test_next_load_bad_start_date(self):
-        """Test Error if trying to iterate when on a date not in iteration list
-        """
+        """Test Error for `.next` when on bad start date."""
+
         self.testInst.load(date=self.ref_time)
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
@@ -444,8 +468,8 @@ class TestBasics():
         return
 
     def test_prev_load_bad_start_date(self):
-        """Test Error if trying to iterate when on a date not in iteration list
-        """
+        """Test Error for `.prev` when on bad start date."""
+
         self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(date=self.ref_time)
         # set new bounds that doesn't include this date
@@ -460,7 +484,8 @@ class TestBasics():
         return
 
     def test_next_load_empty_iteration(self):
-        """Ensure empty iteration list handled ok via .next"""
+        """Ensure empty iteration list is fine via `.next`."""
+
         self.testInst.bounds = (None, None, '10000D',
                                 dt.timedelta(days=10000))
         with pytest.raises(StopIteration) as err:
@@ -471,7 +496,8 @@ class TestBasics():
         return
 
     def test_prev_load_empty_iteration(self):
-        """Ensure empty iteration list handled ok via .prev"""
+        """Ensure empty iteration list is fine via `.prev`."""
+
         self.testInst.bounds = (None, None, '10000D',
                                 dt.timedelta(days=10000))
         with pytest.raises(StopIteration) as err:
@@ -483,6 +509,7 @@ class TestBasics():
 
     def test_next_fname_load_default(self):
         """Test next day is being loaded (checking object date)."""
+
         self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(fname=self.testInst.files[0])
         self.testInst.next()
@@ -490,9 +517,11 @@ class TestBasics():
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_prev_fname_load_default(self):
-        """Test prev day is loaded when invoking .prev."""
+        """Test prev day is loaded when invoking `.prev`."""
+
         self.ref_time = dt.datetime(2008, 1, 3)
         self.testInst.load(fname=self.testInst.files[3])
         self.testInst.prev()
@@ -500,16 +529,17 @@ class TestBasics():
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_basic_fname_instrument_load(self):
-        """Test loading by filename from attached .files.
-        """
+        """Test loading by filename from attached `.files`."""
         self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.load(fname=self.testInst.files[0])
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_filename_load(self):
         """Test if file is loadable by filename, relative to
