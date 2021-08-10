@@ -1,8 +1,6 @@
-"""
-pysat.constellations is a pysat module that provides
-the interface for pysat to manage and analyze data
-from multiple pysat instrument.  Each instrument
-is contained within a subpackage of the pysat.instruments
+"""Interface for pysat to manage and analyze multiple pysat instruments.
+
+Each instrument is contained within a subpackage of the pysat.instruments
 package.
 """
 

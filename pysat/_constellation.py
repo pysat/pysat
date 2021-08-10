@@ -3,7 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-""" Class for Instrument constellations
+"""Class for Instrument constellations.
 
 Note
 ----
@@ -113,6 +113,7 @@ class Constellation(object):
     def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
                  const_module=None, instruments=None, index_res=None,
                  common_index=True):
+        """Initialize the Constellation object."""
 
         # Initalize the `instruments` attribute to be an empty list before
         # loading using each of the available input methods
@@ -231,14 +232,12 @@ class Constellation(object):
         return
 
     def __getitem__(self, *args, **kwargs):
-        """ Look up a member Instrument by index.
-        """
+        """Look up a member Instrument by index."""
 
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __repr__(self):
-        """ Print the basic Constellation properties
-        """
+        """Print the basic Constellation properties."""
 
         out_str = "".join(["pysat.Constellation(instruments=",
                            "{:}, index_res=".format(self.instruments),
@@ -247,9 +246,7 @@ class Constellation(object):
         return out_str
 
     def __str__(self):
-        """ Print names of instruments within constellation
-
-        """
+        """Print names of instruments within constellation."""
 
         # Define a convenience function for pluralizing words
         def is_plural(num):
@@ -307,7 +304,7 @@ class Constellation(object):
     # Define all hidden methods
 
     def _empty(self, all_inst=True):
-        """Boolean flag reflecting lack of data
+        """Boolean flag reflecting lack of data.
 
         Parameters
         ----------
@@ -335,7 +332,7 @@ class Constellation(object):
         return eflag
 
     def _index(self):
-        """Returns a common time index for the loaded data
+        """Return a common time index for the loaded data.
 
         Returns
         -------
@@ -397,7 +394,7 @@ class Constellation(object):
         return cindex
 
     def _get_unique_attr_vals(self, attr):
-        """ Get the unique elements of a list-like attribute
+        """Get the unique elements of a list-like attribute.
 
         Parameters
         ----------
@@ -434,7 +431,7 @@ class Constellation(object):
         return uniq_attrs
 
     def _set_inst_attr(self, attr, value):
-        """ Set an attribute across all instruments
+        """Set an attribute across all instruments.
 
         Parameters
         ----------
@@ -455,20 +452,21 @@ class Constellation(object):
 
     @property
     def bounds(self):
-        return self.instruments[0].bounds
+        """Obtain boundaries for Instruments in Constellation.
 
-    @bounds.setter
-    def bounds(self, value=None):
-        """ Sets boundaries for all Instruments in Constellation
+        When setting, sets for all instruments in Constellation.
 
         Parameters
         ----------
         value : tuple or NoneType
             Tuple containing starting time and ending time for Instrument
             bounds attribute or None (default=None)
-
         """
+        return self.instruments[0].bounds
 
+    @bounds.setter
+    def bounds(self, value=None):
+        # Set the bounds property.  See property docstring for details
         self._set_inst_attr('bounds', value)
         return
 
@@ -482,38 +480,44 @@ class Constellation(object):
 
     @property
     def empty(self):
-        """Boolean flag reflecting lack of data, True if there is no Instrument
-        data in all Constellation Instrument.
+        """Boolean flag reflecting lack of data.
+
+        Note
+        -----
+        True if there is no Instrument data in all Constellation Instrument.
         """
         return self._empty(all_inst=False)
 
     @property
     def empty_partial(self):
-        """Boolean flag reflecting lack of data, True if there is no Instrument
-        data in any Constellation Instrument.
+        """Boolean flag reflecting lack of data.
+
+        Note
+        ----
+        True if there is no Instrument data in any Constellation Instrument.
         """
         return self._empty(all_inst=True)
 
     @property
     def index(self):
-        """Returns time index of loaded data."""
+        """Obtain time index of loaded data."""
         return self._index()
 
     def today(self):
-        """Returns UTC date for today, see pysat.Instrument for details."""
+        """Obtain UTC date for today, see pysat.Instrument for details."""
         return utils.time.today()
 
     def tomorrow(self):
-        """Returns UTC date for tomorrow, see pysat.Instrument for details."""
+        """Obtain UTC date for tomorrow, see pysat.Instrument for details."""
         return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
-        """Returns UTC date for yesterday, see pysat.Instrument for details."""
+        """Obtain UTC date for yesterday, see pysat.Instrument for details."""
         return self.today() - dt.timedelta(days=1)
 
     @property
     def variables(self):
-        """Returns a list of uniquely named variables from all the loaded data.
+        """Return a list of uniquely named variables from all the loaded data.
         """
         # Determine which instrument variables share the same name
         data_vars = dict()
@@ -557,7 +561,7 @@ class Constellation(object):
         return
 
     def custom_clear(self):
-        """Clear the custom function list
+        """Clear the custom function list.
 
         See Also
         ---------
@@ -571,7 +575,7 @@ class Constellation(object):
         return
 
     def load(self, *args, **kwargs):
-        """ Load instrument data into Instrument object.data
+        """Load instrument data into Instrument `object.data`.
 
         Parameters
         ----------
@@ -596,7 +600,7 @@ class Constellation(object):
         return
 
     def download(self, *args, **kwargs):
-        """ Download instrument data into Instrument object.data
+        """Download instrument data into Instrument `object.data`.
 
         Parameters
         ----------
