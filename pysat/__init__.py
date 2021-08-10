@@ -1,6 +1,4 @@
-"""
-pysat - Python Satellite Data Analysis Toolkit
-==============================================
+"""pysat - Python Satellite Data Analysis Toolkit.
 
 pysat is a package providing a simple and flexible interface for
 downloading, loading, cleaning, managing, processing, and analyzing

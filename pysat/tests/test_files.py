@@ -1,6 +1,5 @@
-"""
-Tests the pysat Files object and code
-"""
+"""Test pysat Files object and code."""
+
 import datetime as dt
 import functools
 from importlib import reload
@@ -20,7 +19,7 @@ from pysat.tests.ci_test_class import CICleanSetup
 
 
 def create_dir(inst=None, temporary_file_list=False):
-    """Create a temporary datset directory for a test instrument"""
+    """Create a temporary datset directory for a test instrument."""
     if inst is None:
         # create instrument
         inst = pysat.Instrument(platform='pysat', name='testing',
@@ -38,7 +37,7 @@ def create_dir(inst=None, temporary_file_list=False):
 
 def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                  version=False, content=None, timeout=None):
-    """Create a file set using the year and day of year
+    """Create a file set using the year and day of year.
 
     Parameters
     ----------
@@ -114,11 +113,12 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                             fout.write(content)
                         if timeout is not None:
                             time.sleep(timeout)
+    return
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                version=False):
-    """Return a Pandas Series of every file for chosen instrument data"""
+    """Return a Pandas Series of every file for chosen instrument data."""
 
     if format_str is None:
         if version:
@@ -140,37 +140,53 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
             raise ValueError('Unrecognized tag name')
     else:
         raise ValueError('A tag name must be passed ')
+    return
 
 
 class TestNoDataDir():
+    """Test cases where data directory is not specified."""
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment for each method."""
         self.temporary_file_list = False
-        # store current pysat directory
+
+        # Store the current pysat directory
         self.saved_data_path = pysat.params['data_dirs']
 
         pysat.params.data['data_dirs'] = []
         reload(pysat._files)
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         pysat.params.data['data_dirs'] = self.saved_data_path
         reload(pysat._files)
+        return
 
     def test_no_data_dir(self):
-        """Instrument should error if no data directory is specified."""
-        with pytest.raises(NameError):
+        """Test that error is raised if no data directory is specified."""
+        with pytest.raises(NameError) as nerr:
             pysat.Instrument()
+        assert str(nerr).find("Please set a top-level directory path") >= 0
+        return
 
 
 class TestBasics():
+    """Unit tests for `pysat._files`."""
 
-    temporary_file_list = False
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment for each method."""
         self.out = ''
 
         # Use a two-year as default.  Some tests will use custom ranges.
@@ -190,22 +206,24 @@ class TestBasics():
 
         # Create instrument directories in tempdir
         create_dir(self.testInst)
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         pysat.params['data_dirs'] = self.data_paths
         self.tempdir.cleanup()
         del self.testInst, self.out, self.tempdir, self.start, self.stop
+        return
 
     def test_basic_repr(self):
-        """The repr output will match the str output"""
+        """Test the standard `__repr__` output."""
         self.out = self.testInst.files.__repr__()
         assert isinstance(self.out, str)
         assert self.out.find("pysat.Files(") >= 0
         return
 
     def test_eval_repr(self):
-        """Test eval of repr recreates object"""
+        """Test that eval of repr recreates object."""
         # Evaluate __repr__ string
         self.out = eval(self.testInst.files.__repr__())
 
@@ -214,7 +232,7 @@ class TestBasics():
         return
 
     def test_eval_repr_and_copy(self):
-        """Test eval of repr consistent with object copy"""
+        """Test that eval of repr consistent with object copy."""
         # Evaluate __repr__ string
         self.out = eval(self.testInst.files.__repr__())
 
@@ -227,7 +245,7 @@ class TestBasics():
         return
 
     def test_basic_str(self):
-        """Check for lines from each decision point in str"""
+        """Check for lines from each decision point in str."""
         self.out = self.testInst.files.__str__()
         assert isinstance(self.out, str)
 
@@ -239,7 +257,7 @@ class TestBasics():
         return
 
     def test_equality_with_copy(self):
-        """Test that copy is the same as original"""
+        """Test that copy is the same as original."""
         # Create copy
         self.out = self.testInst.files.copy()
 
@@ -248,7 +266,7 @@ class TestBasics():
         return
 
     def test_equality_with_copy_with_data(self):
-        """Test that copy is the same as original, loaded inst.data"""
+        """Test that copy is the same as original, loaded `inst.data`."""
         # Load data
         self.testInst.load(date=self.start)
 
@@ -260,7 +278,7 @@ class TestBasics():
         return
 
     def test_inequality_modified_object(self):
-        """Test that equality is false if other missing attributes"""
+        """Test that equality is false if other missing attributes."""
         # Copy files class
         self.out = self.testInst.files.copy()
 
@@ -272,33 +290,33 @@ class TestBasics():
         return
 
     def test_inequality_reduced_object(self):
-        """Test that equality is false if self missing attributes"""
+        """Test that equality is false if self missing attributes."""
         self.out = self.testInst.files.copy()
         self.out.hi_there = 'hi'
         assert self.testInst.files != self.out
         return
 
     def test_inequality_different_data(self):
-        """Test that equality is false if different data"""
+        """Test that equality is false if different data."""
         self.out = self.testInst.files.copy()
         self.out.files = pds.Series()
         assert self.out != self.testInst.files
         return
 
     def test_inequality_different_type(self):
-        """Test that equality is false if different type"""
+        """Test that equality is false if different type."""
         assert self.testInst.files != self.testInst
         return
 
     def test_from_os_requires_data_path(self):
-        """Check that path required for from_os"""
-        with pytest.raises(ValueError) as war:
+        """Check that path required for from_os."""
+        with pytest.raises(ValueError) as verr:
             self.testInst.files.from_os()
-        assert str(war).find('Must supply instrument') > 0
+        assert str(verr).find('Must supply instrument') > 0
         return
 
     def test_year_doy_files_directly_call_from_os(self):
-        """Check that Files.from_os generates file list"""
+        """Check that Files.from_os generates file list."""
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
                               '{day:03d}_stuff.pysat_testing_file'))
@@ -313,9 +331,11 @@ class TestBasics():
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        return
 
     def test_year_doy_files_no_gap_in_name_directly_call_from_os(self):
-        """Files.from_os generates file list for date w/o delimiter"""
+        """Test that `Files.from_os` generates file list for date w/o delimiter.
+        """
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}{day:03d}_stuff.',
                               'pysat_testing_file'))
@@ -330,9 +350,10 @@ class TestBasics():
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        return
 
     def test_year_month_day_files_directly_call_from_os(self):
-        """Files.from_os generates file list for date w/ month"""
+        """Test that `Files.from_os` generates file list for date w/ month."""
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}',
                               '_stuff_{month:02d}.pysat_testing_file'))
@@ -347,9 +368,10 @@ class TestBasics():
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        return
 
     def test_year_month_day_hour_files_directly_call_from_os(self):
-        """Files.from_os generates file list for date w hours"""
+        """Test that `Files.from_os` generates file list for date w hours."""
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}',
                               '_stuff_{month:02d}_{hour:02d}.pysat_testing',
@@ -365,9 +387,10 @@ class TestBasics():
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[1460]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        return
 
     def test_year_month_day_hour_minute_files_directly_call_from_os(self):
-        """Files.from_os generates file list for date w/ hours and minutes"""
+        """Test `Files.from_os` generates file list w/ hours and minutes."""
         root_fname = ''.join(('pysat_testing_fromos_{year:04d}_gold_{day:03d}_',
                               'stuff_{month:02d}_{hour:02d}{minute:02d}.',
                               'pysat_testing_file'))
@@ -386,9 +409,10 @@ class TestBasics():
         assert pds.to_datetime(files.index[1]) == dt.datetime(2008, 1, 1, 0, 30)
         assert pds.to_datetime(files.index[10]) == dt.datetime(2008, 1, 1, 5, 0)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 4)
+        return
 
     def test_year_month_day_hms_files_directly_call_from_os(self):
-        """Files.from_os generates file list for date w/ hour/min/sec"""
+        """Test `Files.from_os` generates file list for date w/ hour/min/sec."""
         root_fname = ''.join(('pysat_testing_hms_{year:04d}_gold_{day:03d}_',
                               'stuff_{month:02d}_{hour:02d}_{minute:02d}_',
                               '{second:02d}.pysat_testing_file'))
@@ -407,9 +431,10 @@ class TestBasics():
         assert (pds.to_datetime(files.index[1])
                 == dt.datetime(2008, 1, 1, 0, 0, 30))
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 3)
+        return
 
     def test_year_month_files_direct_call_to_from_os(self):
-        """Files.from_os generates file list for monthly files"""
+        """Test that `Files.from_os` generates file list for monthly files."""
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_stuff',
                               '_{month:02d}.pysat_testing_file'))
@@ -424,19 +449,21 @@ class TestBasics():
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[11]) == dt.datetime(2008, 12, 1)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 1)
+        return
 
     def test_instrument_has_no_files(self):
-        """Instrument generates empty file list if no files"""
+        """Test that instrument generates empty file list if no files."""
 
-        pysat.instruments.pysat_testing.list_files = \
-            functools.partial(list_files, version=self.version)
+        pysat.instruments.pysat_testing.list_files = functools.partial(
+            list_files, version=self.version)
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
         reload(pysat.instruments.pysat_testing)
         assert(inst.files.files.empty)
+        return
 
     def test_instrument_has_files(self):
-        """Instrument generates file list if there are files"""
+        """Test that instrument generates file list if there are files."""
         import pysat.instruments.pysat_testing
 
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_'
@@ -450,16 +477,17 @@ class TestBasics():
         # create the same range of dates
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
 
-        pysat.instruments.pysat_testing.list_files = \
-            functools.partial(list_files, version=self.version)
+        pysat.instruments.pysat_testing.list_files = functools.partial(
+            list_files, version=self.version)
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
         reload(pysat.instruments.pysat_testing)
 
         assert (np.all(inst.files.files.index == dates))
+        return
 
     def test_get_file_array_single(self):
-        """Test get_file_array basic access"""
+        """Test `get_file_array` basic access."""
 
         files = self.testInst.files.get_file_array(self.testInst.files[0],
                                                    self.testInst.files[-1])
@@ -467,11 +495,13 @@ class TestBasics():
         # Ensure we have the right number files
         assert len(files) == len(self.testInst.files.files)
         assert len(files) > 0
+
         # Ensure it stores strings
         assert isinstance(files[0], str)
+        return
 
     def test_get_file_array_multiple(self):
-        """Test get_file_array basic access with a list of strings"""
+        """Test `get_file_array` basic access with a list of strings."""
 
         start1 = self.testInst.files[0]
         stop1 = self.testInst.files[10]
@@ -488,46 +518,68 @@ class TestBasics():
 
         # Ensure we have the right files
         assert np.all(files == files2)
+        return
 
     def test_get_index(self):
-        """Ensure test_index working as expected"""
+        """Ensure `test_index` working as expected."""
         in_idxs = [0, 10, 100]
         for in_idx in in_idxs:
             idx = self.testInst.files.get_index(self.testInst.files[in_idx])
             assert idx == in_idx
+        return
 
     def test_get_index_nonexistent_file(self):
-        """Ensure test_index working as expected file not found"""
+        """Ensure test_index working as expected file not found."""
         in_idxs = [0, 10, 100]
         for in_idx in in_idxs:
             test_str = ''.join(('_', self.testInst.files[in_idx]))
-            with pytest.raises(ValueError) as war:
+            with pytest.raises(ValueError) as verr:
                 self.testInst.files.get_index(test_str)
-            assert str(war).find('in available file list') > 0
+            assert str(verr).find('in available file list') > 0
+        return
 
     def test_default_directory_format(self):
-        """Ensure default directory format from params is used"""
+        """Ensure default directory format from params is used."""
         files = pysat.Files(self.testInst)
         assert files.directory_format == pysat.params['directory_format']
+        return
 
 
 class TestBasicsNoFileListStorage(TestBasics):
-    """Repeat basic tests with temporary file list"""
+    """Repeat basic tests with temporary file list."""
 
-    temporary_file_list = True
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = True
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithFiles():
-    """Test basic file operations within an instrument"""
+    """Test basic file operations within an instrument."""
 
-    temporary_file_list = False
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
+        """Set up the unit test environment for each method."""
+        # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
-        # create temporary directory
+
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
         # create testing directory
@@ -536,14 +588,14 @@ class TestInstWithFiles():
         # create a test instrument, make sure it is getting files from
         # filesystem
         reload(pysat.instruments.pysat_testing)
-        pysat.instruments.pysat_testing.list_files = \
-            functools.partial(list_files, version=self.version)
+        pysat.instruments.pysat_testing.list_files = functools.partial(
+            list_files, version=self.version)
         # create a bunch of files by year and doy
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             temporary_file_list=self.temporary_file_list,
-                             update_files=True)
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            temporary_file_list=self.temporary_file_list,
+            update_files=True)
 
         self.root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
                                    '{day:03d}_stuff_{month:02d}_{hour:02d}_',
@@ -559,15 +611,16 @@ class TestInstWithFiles():
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
 
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             update_files=True,
-                             file_format=self.root_fname,
-                             temporary_file_list=self.temporary_file_list)
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            update_files=True,
+            file_format=self.root_fname,
+            temporary_file_list=self.temporary_file_list)
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         del self.testInst
         reload(pysat.instruments.pysat_testing)
         reload(pysat.instruments)
@@ -580,9 +633,10 @@ class TestInstWithFiles():
         pysat.params['data_dirs'] = self.data_paths
         self.tempdir.cleanup()
         del self.tempdir, self.start, self.stop, self.start2, self.stop2
+        return
 
     def test_refresh(self):
-        """Check that refresh updates the files"""
+        """Check that refresh updates the files."""
         # create new files and make sure that new files are captured
         start = dt.datetime(2008, 1, 10)
         stop = dt.datetime(2008, 1, 12)
@@ -594,13 +648,15 @@ class TestInstWithFiles():
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
+        return
 
     def test_refresh_on_ignore_empty_files(self):
-        """Check that refresh can ignore empty files"""
+        """Check that refresh can ignore empty files."""
         # setup created empty files - make sure such files can be ignored
         self.testInst.files.ignore_empty_files = True
         self.testInst.files.refresh()
         assert len(self.testInst.files.files) == 0
+        return
 
         # create new files with content and make sure they are captured
         create_files(self.testInst, self.start, self.stop, freq='100min',
@@ -611,23 +667,25 @@ class TestInstWithFiles():
                                                    freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
+        return
 
     def test_refresh_on_unchanged_files(self):
-        """Make sure new refresh does not duplicate files"""
+        """Make sure new refresh does not duplicate files."""
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='100min')
         assert (np.all(self.testInst.files.files.index == dates))
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
+        return
 
     def test_instrument_with_ignore_empty_files(self):
-        """Make sure new instruments can ignore empty files"""
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean', update_files=True,
-                             temporary_file_list=self.temporary_file_list,
-                             file_format=self.root_fname,
-                             ignore_empty_files=True)
+        """Make sure new instruments can ignore empty files."""
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean', update_files=True,
+            temporary_file_list=self.temporary_file_list,
+            file_format=self.root_fname,
+            ignore_empty_files=True)
 
         assert len(self.testInst.files.files) == 0
 
@@ -639,9 +697,10 @@ class TestInstWithFiles():
                                                    freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
+        return
 
     def test_get_new_files_after_adding_files(self):
-        """Check that get_new locates new files"""
+        """Check that get_new locates new files."""
         # create new files and make sure that new files are captured
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
@@ -650,9 +709,10 @@ class TestInstWithFiles():
                                                    freq='100min')
         new_files = self.testInst.files.get_new()
         assert (np.all(new_files.index == dates))
+        return
 
     def test_get_new_files_after_refresh(self):
-        """Check that get_new locates new files after refresh"""
+        """Check that get_new locates new files after refresh."""
         # create new files and make sure that new files are captured
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
@@ -663,9 +723,10 @@ class TestInstWithFiles():
         new_files = self.testInst.files.get_new()
 
         assert (np.all(new_files.index == dates))
+        return
 
     def test_get_new_files_after_multiple_refreshes(self):
-        """Check that get_new locates new files after multiple refreshes"""
+        """Check that get_new locates new files after multiple refreshes."""
         # create new files and make sure that new files are captured
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
@@ -677,9 +738,10 @@ class TestInstWithFiles():
         self.testInst.files.refresh()
         new_files = self.testInst.files.get_new()
         assert (np.all(new_files.index == dates))
+        return
 
     def test_get_new_files_after_adding_files_and_adding_file(self):
-        """Check that get_new works after multiple rounds of added files"""
+        """Check that get_new works after multiple rounds of added files."""
         # create new files and make sure that new files are captured
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False,
@@ -698,9 +760,10 @@ class TestInstWithFiles():
         new_files2 = self.testInst.files.get_new()
         assert np.all(new_files.index == dates)
         assert np.all(new_files2.index == dates2)
+        return
 
     def test_get_new_files_after_deleting_files_and_adding_files(self):
-        """Check that get_new works after deleting and adding files"""
+        """Check that get_new works after deleting and adding files."""
         # create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start2, self.stop2,
                                                    freq='100min')
@@ -723,16 +786,25 @@ class TestInstWithFiles():
         new_files = self.testInst.files.get_new()
 
         assert (np.all(new_files.index == dates))
+        return
 
 
 class TestInstWithFilesNonStandard():
-    """Specialized tests for instruments with non-standard setups"""
+    """Specialized tests for instruments with non-standard setups."""
 
-    temporary_file_list = False
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment for each method."""
         # store current pysat directory
         self.data_paths = pysat.params['data_dirs']
         # create temporary directory
@@ -748,11 +820,12 @@ class TestInstWithFilesNonStandard():
         reload(pysat.instruments.pysat_testing)
 
         # Use custom list_files routine
-        pysat.instruments.pysat_testing.list_files = \
-            functools.partial(list_files, version=self.version)
+        pysat.instruments.pysat_testing.list_files = functools.partial(
+            list_files, version=self.version)
+        return
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         self.tempdir.cleanup()
         del self.tempdir
         if hasattr(self, 'testInst'):
@@ -768,9 +841,10 @@ class TestInstWithFilesNonStandard():
                          update_files=True,
                          temporary_file_list=self.temporary_file_list)
         del self.start, self.stop
+        return
 
     def test_files_non_standard_pysat_directory(self):
-        """Check that files work with a weird directory structure"""
+        """Check that files work with a weird directory structure."""
         # Create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='100min')
@@ -797,9 +871,10 @@ class TestInstWithFilesNonStandard():
         new_files = self.testInst.files.get_new()
         assert np.all(self.testInst.files.files.index == dates)
         assert np.all(new_files.index == dates)
+        return
 
     def test_files_non_standard_file_format_template(self):
-        """Check that files work if format has a weird heirarchy"""
+        """Check that files work if format has a weird heirarchy."""
         # create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='1D')
@@ -811,12 +886,12 @@ class TestInstWithFilesNonStandard():
             root_fname = ''.join(('pysat_testing_unique_junk_{year:04d}_gold',
                                   '_{day:03d}_stuff.pysat_testing_file'))
 
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             file_format=root_fname,
-                             update_files=True,
-                             temporary_file_list=self.temporary_file_list)
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            file_format=root_fname,
+            update_files=True,
+            temporary_file_list=self.temporary_file_list)
 
         # add new files
         create_dir(self.testInst)
@@ -826,74 +901,116 @@ class TestInstWithFilesNonStandard():
         self.testInst.files.refresh()
 
         assert (np.all(self.testInst.files.files.index == dates))
+        return
 
     def test_files_non_standard_file_format_template_no_variables(self):
-        """Instrument should error if format template has no variables"""
+        """Test instrument raises error if format template has no variables."""
 
-        with pytest.raises(ValueError):
-            self.testInst = \
-                pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                                 clean_level='clean',
-                                 file_format=''.join(('pysat_testing_unique_',
-                                                      'junk_stuff.',
-                                                      'pysat_testing_file')),
-                                 update_files=True,
-                                 temporary_file_list=self.temporary_file_list)
+        with pytest.raises(ValueError) as verr:
+            self.testInst = pysat.Instrument(
+                inst_module=pysat.instruments.pysat_testing,
+                clean_level='clean',
+                file_format=''.join(('pysat_testing_unique_junk_stuff.',
+                                     'pysat_testing_file')),
+                update_files=True,
+                temporary_file_list=self.temporary_file_list)
+        assert str(verr).find('file format set to default') > 0
+        return
 
     def test_files_non_standard_file_format_template_wrong_type(self):
-        """Instrument should error if format template is not a string"""
+        """Test instrument raises error if format template is not a string."""
 
-        with pytest.raises(ValueError):
-            self.testInst = \
-                pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                                 clean_level='clean',
-                                 file_format=15,
-                                 update_files=True,
-                                 temporary_file_list=self.temporary_file_list)
+        with pytest.raises(ValueError) as verr:
+            self.testInst = pysat.Instrument(
+                inst_module=pysat.instruments.pysat_testing,
+                clean_level='clean',
+                file_format=15,
+                update_files=True,
+                temporary_file_list=self.temporary_file_list)
+        assert str(verr).find('file format set to default') >= 0
+        return
 
 
 class TestInstWithFilesNoFileListStorage(TestInstWithFiles):
-    """Repeat all file tests with a temporary file list"""
+    """Repeat all file tests with a temporary file list."""
 
-    temporary_file_list = True
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = True
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithFilesNoFileListStorageNonStd(TestInstWithFilesNonStandard):
-    """Repeat all file tests with a temporary file list"""
+    """Repeat all file tests with a temporary file list."""
 
-    temporary_file_list = True
-    version = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = True
+        self.version = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithVersionedFiles(TestInstWithFiles):
-    """Repeat all file tests with versioned files"""
+    """Repeat all file tests with versioned files."""
 
-    temporary_file_list = False
-    version = True
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = True
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
 
 class TestInstWithVersionedFilesNonStandard(TestInstWithFilesNonStandard):
     """Repeat all non-standard file tests with versioned files.
-    Includes additional tests for versioned strings"""
 
-    temporary_file_list = False
-    version = True
+    Note
+    ----
+    Includes additional tests for versioned strings.
+
+    """
+
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        self.version = True
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list, self.version
+        return
 
     def test_files_when_duplicates_forced(self):
-        # create new files and make sure that new files are captured
+        """Test that new files are captured when duplicates are forced."""
+        # Create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start, self.stop,
                                                    freq='1D')
 
         file_format = ''.join(('pysat_testing_unique_{version:02d}_',
                                '{revision:03d}_{cycle:02d}_{year:04d}',
                                '_g_{day:03d}_st.pysat_testing_file'))
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             file_format=file_format,
-                             update_files=True,
-                             temporary_file_list=self.temporary_file_list)
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            file_format=file_format,
+            update_files=True,
+            temporary_file_list=self.temporary_file_list)
 
         # add new files
         create_dir(self.testInst)
@@ -901,42 +1018,46 @@ class TestInstWithVersionedFilesNonStandard(TestInstWithFilesNonStandard):
                      use_doy=False, root_fname=file_format,
                      version=self.version)
 
-        pysat.instruments.pysat_testing.list_files = \
-            functools.partial(list_files, version=self.version)
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean', file_format=file_format,
-                             update_files=True,
-                             temporary_file_list=self.temporary_file_list)
+        pysat.instruments.pysat_testing.list_files = functools.partial(
+            list_files, version=self.version)
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean', file_format=file_format,
+            update_files=True,
+            temporary_file_list=self.temporary_file_list)
         assert (np.all(self.testInst.files.files.index == dates))
+        return
 
 
 def create_instrument(j):
-    """This function must be in the top level to be picklable
+    """Create new instrument with files for unit tests.
+
+    Note
+    ----
+    This function must be in the top level to be picklable.
 
     update_files should update the file list in .pysat
+
     """
     root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
                           '_{day:03d}{hour:02d}{minute:02d}',
                           '{second:02d}_stuff_{version:02d}_',
                           '{revision:03d}_{cycle:02d}.pysat_testing_file'))
 
-    testInst = \
-        pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                         clean_level='clean',
-                         update_files=True,
-                         temporary_file_list=False)
+    testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                                clean_level='clean',
+                                update_files=True,
+                                temporary_file_list=False)
 
     start = dt.datetime(2007, 12, 30)
     stop = dt.datetime(2007, 12, 31)
     create_files(testInst, start, stop, freq='1D', use_doy=False,
                  root_fname=root_fname, timeout=0.5, version=True)
 
-    testInst = \
-        pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                         clean_level='clean',
-                         update_files=True,
-                         temporary_file_list=False)
+    testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                                clean_level='clean',
+                                update_files=True,
+                                temporary_file_list=False)
 
     print('initial files created in {}:'.format(testInst.files.data_path))
 
@@ -944,14 +1065,24 @@ def create_instrument(j):
 
 
 class TestFilesRaceCondition():
+    """Tests for multiple instances of pysat running simultaneously."""
 
-    temporary_file_list = False
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+        self.temporary_file_list = False
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables after all tests are run."""
+        del self.temporary_file_list
+        return
 
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        # store current pysat directory
+        """Set up the unit test environment for each method."""
+        # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
-        # create temporary directory
+
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
         # create testing directory
@@ -960,14 +1091,14 @@ class TestFilesRaceCondition():
         # create a test instrument, make sure it is getting files from
         # filesystem
         reload(pysat.instruments.pysat_testing)
-        pysat.instruments.pysat_testing.list_files = \
-            functools.partial(list_files, version=True)
+        pysat.instruments.pysat_testing.list_files = functools.partial(
+            list_files, version=True)
         # create a bunch of files by year and doy
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             temporary_file_list=self.temporary_file_list,
-                             update_files=True)
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            temporary_file_list=self.temporary_file_list,
+            update_files=True)
 
         self.root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
                                    '_{day:03d}{hour:02d}{minute:02d}',
@@ -979,17 +1110,17 @@ class TestFilesRaceCondition():
         create_files(self.testInst, start, stop, freq='1D',
                      use_doy=False, root_fname=self.root_fname, version=True)
 
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             update_files=True,
-                             temporary_file_list=self.temporary_file_list)
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing,
+            clean_level='clean',
+            update_files=True,
+            temporary_file_list=self.temporary_file_list)
 
         print(' '.join(('initial files created in ',
                         self.testInst.files.data_path)))
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         self.tempdir.cleanup()
         del self.testInst, self.tempdir
         reload(pysat.instruments.pysat_testing)
@@ -1005,25 +1136,26 @@ class TestFilesRaceCondition():
 # TODO: This needs to be replaced or expanded based on the tests that
 # portalocker uses
     def test_race_condition(self):
+        """Test that multiple instances of pysat instrument creation run."""
         processes = 5
         proc_pool = Pool(processes)
         pysat.file_timeout = 1
 
         proc_pool.map(create_instrument, range(processes))
+        return
 
 
-class TestCIonly():
+class TestCIonly(CICleanSetup):
     """Tests where we mess with local settings.
 
+    Note
+    ----
     These only run in CI environments to avoid breaking an end user's setup
+
     """
 
-    # Set setup/teardown to the class defaults
-    setup = CICleanSetup.setup
-    teardown = CICleanSetup.teardown
-
     def test_initial_pysat_load(self, capsys):
-        """Ensure data_dirs check in Files works"""
+        """Ensure data_dirs check in Files works."""
 
         # Ensure pysat is running in 'first-time' mode
         reload(pysat)
@@ -1035,8 +1167,9 @@ class TestCIonly():
         pysat.params.data['data_dirs'] = []
 
         # Try to instantiate Instrument
-        with pytest.raises(NameError) as err:
+        with pytest.raises(NameError) as nerr:
             pysat.Instrument('pysat', 'testing')
 
         # Confirm we have the correct error
-        assert str(err).find("pysat's `data_dirs` hasn't been set.") >= 0
+        assert str(nerr).find("pysat's `data_dirs` hasn't been set.") >= 0
+        return
