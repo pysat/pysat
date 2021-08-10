@@ -93,8 +93,8 @@ class TestRemoveLeadText(object):
         return
 
     def test_remove_prefix_w_bad_target(self):
-        """Test that a bad target in `remove_leading_text` will raise an error.
-        """
+        """Test that a bad target in `remove_leading_text` raises an error."""
+
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
         with pytest.raises(ValueError) as verr:
             gen.remove_leading_text(self.testInst, target=17.5)
