@@ -245,8 +245,7 @@ class Parameters(object):
         self.store()
 
     def _set_data_dirs(self, path=None, store=True):
-        """
-        Set the top level directories pysat uses to store and load data.
+        """Set the top level directories pysat uses to store and load data.
 
         Parameters
         ----------
@@ -333,8 +332,7 @@ class Parameters(object):
         return
 
     def store(self):
-        """Store parameters using the filename specified in self.file_path.
-        """
+        """Store parameters using the filename specified in self.file_path."""
 
         # Store settings in file
         with Lock(self.file_path, 'w', self['file_timeout']) as fout:
