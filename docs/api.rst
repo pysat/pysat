@@ -20,6 +20,7 @@ Constellation
 
 .. autoclass:: pysat.Constellation
    :members:
+   :noindex:
 
 
 .. _api-files:
