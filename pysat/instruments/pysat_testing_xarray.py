@@ -40,7 +40,7 @@ preprocess = mm_test.preprocess
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
          num_samples=None, test_load_kwarg=None):
-    """Load. the test files.
+    """Load the test files.
 
     Parameters
     ----------
