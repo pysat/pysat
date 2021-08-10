@@ -14,8 +14,8 @@ import pytest
 
 import pysat
 import pysat.instruments.pysat_testing
-from pysat.utils import NetworkLock
 from pysat.tests.ci_test_class import CICleanSetup
+from pysat.utils import NetworkLock
 
 
 def create_dir(inst=None, temporary_file_list=False):

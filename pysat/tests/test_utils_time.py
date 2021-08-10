@@ -10,8 +10,8 @@ import numpy as np
 
 import pytest
 
-from pysat.utils import time as pytime
 from pysat.utils import testing
+from pysat.utils import time as pytime
 
 
 class TestGetYearDay():

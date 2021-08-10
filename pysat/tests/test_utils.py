@@ -6,9 +6,9 @@
 """Tests the pysat utils core functions."""
 
 import contextlib
-from io import StringIO
 from importlib import reload
 import inspect
+from io import StringIO
 import numpy as np
 import os
 import portalocker
