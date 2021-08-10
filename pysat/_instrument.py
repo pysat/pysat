@@ -240,6 +240,7 @@ class Instrument(object):
                          'max_val': ('value_max', np.float64),
                          'fill_val': ('fill', np.float64)},
                  custom=None, **kwargs):
+        """Initialize `pysat.Instrument` object."""
 
         # Set default tag, inst_id, and Instrument module
         self.tag = tag.lower()
@@ -479,7 +480,7 @@ class Instrument(object):
         self._base_attr = dir(self)
 
     def __eq__(self, other):
-        """Perform equality check
+        """Perform equality check.
 
         Parameters
         ----------
@@ -567,7 +568,7 @@ class Instrument(object):
         return test_data
 
     def __repr__(self):
-        """ Print the basic Instrument properties"""
+        """Print the basic Instrument properties."""
 
         # Create string for custom attached methods
         cstr = '['
@@ -606,7 +607,7 @@ class Instrument(object):
         return out_str
 
     def __str__(self):
-        """ Descriptively print the basic Instrument properties"""
+        """Print the basic Instrument properties with more info."""
 
         # Get the basic Instrument properties
         output_str = 'pysat Instrument object\n'
@@ -670,8 +671,7 @@ class Instrument(object):
         return output_str
 
     def __getitem__(self, key):
-        """
-        Convenience notation for accessing data; inst['name'] is inst.data.name
+        """Access data in `pysat.Instrument` object.
 
         Parameters
         ----------
@@ -681,6 +681,8 @@ class Instrument(object):
 
         Note
         ----
+        `inst['name']` is equivalent to `inst.data.name`
+
         See pandas or xarray .loc and .iloc documentation for more details
 
         Examples
@@ -735,8 +737,7 @@ class Instrument(object):
             return self.__getitem_xarray__(key)
 
     def __getitem_xarray__(self, key):
-        """
-        Convenience notation for accessing data; inst['name'] is inst.data.name
+        """Access data in `pysat.Instrument` object with `xarray.Dataset`.
 
         Parameters
         ----------
@@ -837,7 +838,7 @@ class Instrument(object):
                     return self.data.sel(indexers={epoch_name: key})
 
     def __setitem__(self, key, new):
-        """Convenience method for adding data to instrument.
+        """Set data in `pysat.Instrument` object.
 
         Parameters
         ----------
@@ -994,7 +995,7 @@ class Instrument(object):
         return
 
     def __iter__(self):
-        """Iterates instrument object by loading subsequent days or files.
+        """Iterate instrument object by loading subsequent days or files.
 
         Note
         ----
@@ -1059,7 +1060,7 @@ class Instrument(object):
     # Define all hidden methods
 
     def _empty(self, data=None):
-        """Boolean flag reflecting lack of data
+        """Boolean flag reflecting lack of data.
 
         Parameters
         ----------
@@ -1086,7 +1087,7 @@ class Instrument(object):
                 return True
 
     def _index(self, data=None):
-        """Returns time index of loaded data
+        """Time index of loaded data.
 
         Parameters
         ----------
@@ -1113,12 +1114,12 @@ class Instrument(object):
                 return pds.Index([])
 
     def _pass_method(*args, **kwargs):
-        """ Default method for updatable Instrument methods
-        """
+        """Pass through for updatable Instrument methods (default method)."""
+
         pass
 
     def _assign_attrs(self, by_name=False):
-        """Assign all external instrument attributes to the Instrument object
+        """Assign all external instrument attributes to the Instrument object.
 
         Parameters
         ----------
@@ -1422,7 +1423,7 @@ class Instrument(object):
         return data, mdata
 
     def _load_next(self):
-        """Load the next days data (or file) without incrementing the date
+        """Load the next days data (or file) without incrementing the date.
 
         Returns
         -------
@@ -1448,7 +1449,7 @@ class Instrument(object):
             return self._load_data(fid=next_id, inc=self.load_step)
 
     def _load_prev(self):
-        """Load the previous days data (or file) without decrementing the date
+        """Load the previous days data (or file) without decrementing the date.
 
         Returns
         -------
@@ -1475,7 +1476,7 @@ class Instrument(object):
             return self._load_data(fid=prev_id, inc=self.load_step)
 
     def _set_load_parameters(self, date=None, fid=None):
-        """ Set the necesssary load attributes
+        """Set the necesssary load attributes.
 
         Parameters
         ----------
@@ -1502,7 +1503,7 @@ class Instrument(object):
             self._load_by_date = False
 
     def _get_var_type_code(self, coltype):
-        """Determines the two-character type code for a given variable type
+        """Determine the two-character type code for a given variable type.
 
         Parameters
         ----------
@@ -1542,7 +1543,7 @@ class Instrument(object):
                 raise TypeError('Unknown Variable Type' + str(coltype))
 
     def _get_data_info(self, data):
-        """Support file writing by determining data type and other options
+        """Determine data type and other options.
 
         Parameters
         ----------
@@ -1937,12 +1938,12 @@ class Instrument(object):
 
     @property
     def index(self):
-        """Returns time index of loaded data."""
+        """Return time index of loaded data."""
         return self._index()
 
     @property
     def variables(self):
-        """Returns list of variables within loaded data."""
+        """Return list of variables within loaded data."""
 
         if self.pandas_format:
             return self.data.columns
@@ -1998,7 +1999,7 @@ class Instrument(object):
         return inst_copy
 
     def concat_data(self, new_data, prepend=False, **kwargs):
-        """Concats new_data to self.data for xarray or pandas as needed
+        """Concat new_data to self.data for xarray or pandas as needed.
 
         Parameters
         ----------
@@ -2107,7 +2108,7 @@ class Instrument(object):
         return
 
     def custom_apply_all(self):
-        """ Apply all of the custom functions to the satellite data object.
+        """Apply all of the custom functions to the satellite data object.
 
         Raises
         ------
@@ -2148,7 +2149,7 @@ class Instrument(object):
         return
 
     def today(self):
-        """Returns today's date (UTC), with no hour, minute, second, etc.
+        """Retrieve today's date (UTC), with no hour, minute, second, etc.
 
         Returns
         -------
@@ -2159,7 +2160,7 @@ class Instrument(object):
         return utils.time.today()
 
     def tomorrow(self):
-        """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
+        """Retrieve tomorrow's date (UTC), with no hour, minute, second, etc.
 
         Returns
         -------
@@ -2171,7 +2172,7 @@ class Instrument(object):
         return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
-        """Returns yesterday's date (UTC), with no hour, minute, second, etc.
+        """Retrieve yesterday's date (UTC), with no hour, minute, second, etc.
 
         Returns
         -------
@@ -2353,7 +2354,7 @@ class Instrument(object):
         return
 
     def rename(self, var_names, lowercase_data_labels=False):
-        """Renames variable within both data and metadata.
+        """Rename variable within both data and metadata.
 
         Parameters
         ----------
@@ -2524,7 +2525,7 @@ class Instrument(object):
         return
 
     def generic_meta_translator(self, input_meta):
-        """Translates the metadata contained in an object into a dictionary
+        """Translate the metadata contained in an object into a dictionary.
 
         Parameters
         ----------
@@ -3031,7 +3032,7 @@ class Instrument(object):
         return
 
     def remote_file_list(self, start=None, stop=None, **kwargs):
-        """List remote files for chosen instrument
+        """List remote files for chosen instrument.
 
         Parameters
         ----------
@@ -3075,7 +3076,7 @@ class Instrument(object):
         return self._list_remote_files_rtn(self.tag, self.inst_id, **kwargs)
 
     def remote_date_range(self, start=None, stop=None, **kwargs):
-        """Returns fist and last date for remote data
+        """Retrieve first and last date for remote data.
 
         Parameters
         ----------
@@ -3107,8 +3108,7 @@ class Instrument(object):
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, **kwargs):
-        """Grabs a list of remote files, compares to local, then downloads new
-        files.
+        """Download updated files by comparing remote list with local list.
 
         Parameters
         ----------
@@ -3287,7 +3287,7 @@ class Instrument(object):
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
                    unlimited_time=True):
-        """Stores loaded data into a netCDF4 file.
+        """Store loaded data into a netCDF4 file.
 
         Parameters
         ----------
@@ -3823,7 +3823,7 @@ _reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
 
 
 def _kwargs_keys_to_func_name(kwargs_key):
-    """ Convert from self.kwargs key name to the function/method name
+    """Convert from self.kwargs key name to the function/method name.
 
     Parameters
     ----------
@@ -3842,7 +3842,7 @@ def _kwargs_keys_to_func_name(kwargs_key):
 
 
 def _get_supported_keywords(local_func):
-    """Return a dict of supported keywords
+    """Retrieve a dict of supported keywords.
 
     Parameters
     ----------
@@ -3914,8 +3914,8 @@ def _get_supported_keywords(local_func):
 
 
 def _pass_func(*args, **kwargs):
-    """ Default function for updateable Instrument methods
-    """
+    """Pass through for updatable Instrument methods (default function)."""
+
     pass
 
 

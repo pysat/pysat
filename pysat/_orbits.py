@@ -105,6 +105,7 @@ class Orbits(object):
     # Define the magic methods
 
     def __init__(self, inst, index=None, kind='local time', period=None):
+        """Initialize `pysat.Instrument.orbits` object."""
 
         # Set the class attributes
         self.inst = weakref.proxy(inst)
@@ -137,7 +138,8 @@ class Orbits(object):
         self.orbit_index = index
 
     def __repr__(self):
-        """ Print the basic Orbits properties"""
+        """Print the basic Orbits properties."""
+
         out_str = "".join(["pysat.Orbits(inst=", self.inst.__repr__(),
                            ", index=", self.orbit_index.__repr__(),
                            ", kind=", self.kind.__repr__(), ", period=",
@@ -145,7 +147,8 @@ class Orbits(object):
         return out_str
 
     def __str__(self):
-        """ Descriptively print the basic Obits properties"""
+        """Descriptively print the basic Obits properties."""
+
         output_str = 'Orbit Settings\n'
         output_str += '--------------\n'
         output_str += 'Orbit Kind: {:s}\n'.format(self.kind.__repr__())
@@ -159,7 +162,7 @@ class Orbits(object):
         return output_str
 
     def __eq__(self, other):
-        """Perform equality check
+        """Perform equality check.
 
         Parameters
         ----------
@@ -334,22 +337,22 @@ class Orbits(object):
     # Define the hidden methods
 
     def _report_current_orbit(self):
-        """ Report the current orbit to log at the info level
-        """
+        """Report the current orbit to log at the info level."""
 
         # Index appears as zero-indexed, though it is one-indexed
         logger.info('Loaded Orbit: {:d}'.format(self._current - 1))
         return
 
     def _reset(self):
-        """Create null arrays for storing orbit info
-        """
+        """Create null arrays for storing orbit info."""
+
         self._orbit_breaks = []
         self.num = 0
         self._current = 0
+        return
 
     def _calc_orbits(self):
-        """Prepares data structure for breaking data into orbits
+        """Prepare data structure for breaking data into orbits.
 
         Raises
         ------
@@ -707,7 +710,7 @@ class Orbits(object):
     # Define the public methods and properties
 
     def copy(self):
-        """Provide a deep copy of object
+        """Provide a deep copy of object.
 
         Returns
         -------
@@ -731,7 +734,7 @@ class Orbits(object):
 
     @property
     def current(self):
-        """Current orbit number.
+        """Retrieve current orbit number.
 
         Returns
         -------
@@ -878,7 +881,7 @@ class Orbits(object):
                                   'determine orbits.')))
 
     def next(self):
-        """Load the next orbit into associated Instrument.data object
+        """Load the next orbit into associated `Instrument.data` object.
 
         Note
         ----
@@ -1027,7 +1030,7 @@ class Orbits(object):
         return
 
     def prev(self):
-        """Load the previous orbit into associated Instrument.data object
+        """Load the previous orbit into associated `Instrument.data` object.
 
         Note
         ----
