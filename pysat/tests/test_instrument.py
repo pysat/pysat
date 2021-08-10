@@ -208,6 +208,7 @@ class TestBasics():
     def test_basic_instrument_bad_keyword_init(self):
         """Check for error when instantiating with bad load keywords on init.
         """
+
         # Test that the correct error is raised
         with pytest.raises(ValueError) as verr:
             pysat.Instrument(platform=self.testInst.platform,
@@ -234,6 +235,7 @@ class TestBasics():
                                        'freq', 'date_array', 'data_path'])
     def test_basic_instrument_reserved_keyword(self, kwarg):
         """Check for error when instantiating with reserved keywords."""
+
         # Check that the correct error is raised
         with pytest.raises(ValueError) as err:
             pysat.Instrument(platform=self.testInst.platform,
@@ -533,6 +535,7 @@ class TestBasics():
 
     def test_basic_fname_instrument_load(self):
         """Test loading by filename from attached `.files`."""
+
         self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.load(fname=self.testInst.files[0])
         self.out = self.testInst.index[0]
@@ -542,14 +545,15 @@ class TestBasics():
         return
 
     def test_filename_load(self):
-        """Test if file is loadable by filename, relative to
-        top_data_dir/platform/name/tag"""
+        """Test if file is loadable by filename."""
+
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         assert self.testInst.index[0] == self.ref_time
+        return
 
     def test_filenames_load(self):
-        """Test if files are loadable by filenames, relative to
-        top_data_dir/platform/name/tag"""
+        """Test if files are loadable by filename list."""
+
         stop_fname = self.ref_time + dt.timedelta(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
@@ -557,9 +561,11 @@ class TestBasics():
         assert self.testInst.index[0] == self.ref_time
         assert self.testInst.index[-1] >= self.ref_time + dt.timedelta(days=1)
         assert self.testInst.index[-1] <= self.ref_time + dt.timedelta(days=2)
+        return
 
     def test_filenames_load_out_of_order(self):
-        """Test error raised if fnames out of temporal order"""
+        """Test error raised if fnames out of temporal order."""
+
         stop_fname = self.ref_time + dt.timedelta(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         with pytest.raises(ValueError) as err:
@@ -568,51 +574,64 @@ class TestBasics():
                                stop_fname=check_fname)
         estr = '`stop_fname` must occur at a later date '
         assert str(err).find(estr) >= 0
+        return
 
     def test_next_filename_load_default(self):
-        """Test next day is being loaded (checking object date)."""
+        """Test next day is loaded when invoking `.next`."""
+
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.next()
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time + dt.timedelta(days=1))
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_prev_filename_load_default(self):
-        """Test prev day is loaded when invoking .prev."""
+        """Test prev day is loaded when invoking `.prev`."""
+
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.prev()
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time - dt.timedelta(days=1))
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+        return
 
     def test_list_files(self):
+        """Test that `inst.files.files` returns a pandas series."""
+
         files = self.testInst.files.files
         assert isinstance(files, pds.Series)
+        return
 
     def test_remote_file_list(self):
-        """Test remote_file_list for valid list of files"""
+        """Test remote_file_list for valid list of files."""
+
         stop = self.ref_time + dt.timedelta(days=30)
         self.out = self.testInst.remote_file_list(start=self.ref_time,
                                                   stop=stop)
         assert filter_datetime_input(self.out.index[0]) == self.ref_time
         assert filter_datetime_input(self.out.index[-1]) == stop
+        return
 
     def test_remote_date_range(self):
-        """Test remote_date_range for valid pair of dates"""
+        """Test remote_date_range for valid pair of dates."""
+
         stop = self.ref_time + dt.timedelta(days=30)
         self.out = self.testInst.remote_date_range(start=self.ref_time,
                                                    stop=stop)
         assert len(self.out) == 2
         assert filter_datetime_input(self.out[0]) == self.ref_time
         assert filter_datetime_input(self.out[-1]) == stop
+        return
 
     @pytest.mark.parametrize("file_bounds, non_default",
                              [(False, False), (True, False), (False, True),
                               (True, True)])
     def test_download_updated_files(self, caplog, file_bounds, non_default):
-        """Test download_updated_files and default bounds are updated"""
+        """Test download_updated_files and default bounds are updated."""
+
         if file_bounds:
             if non_default:
                 # set bounds to second and second to last file
@@ -649,8 +668,11 @@ class TestBasics():
                 assert "Updating instrument object bounds by file" in text
             else:
                 assert "Updating instrument object bounds by date" in text
+        return
 
     def test_download_recent_data(self, caplog):
+        """Test download of recent data."""
+
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download()
 
@@ -663,8 +685,11 @@ class TestBasics():
         # Ensure user was notified of updates to the local file list
         assert "Updating pysat file list" in caplog.text
 
+        return
+
     def test_download_bad_date_range(self, caplog):
         """Test download with bad date input."""
+
         with caplog.at_level(logging.WARNING, logger='pysat'):
             self.testInst.download(start=self.ref_time,
                                    stop=self.ref_time - dt.timedelta(days=10))
@@ -679,14 +704,15 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_today_yesterday_and_tomorrow(self):
-        """ Test the correct instantiation of yesterday/today/tomorrow dates
-        """
+        """Test the correct instantiation of yesterday/today/tomorrow dates."""
+
         self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         assert self.out == self.testInst.today()
         assert self.out - dt.timedelta(days=1) == self.testInst.yesterday()
         assert self.out + dt.timedelta(days=1) == self.testInst.tomorrow()
+        return
 
     @pytest.mark.parametrize("in_time, islist",
                              [(dt.datetime.utcnow(), False),
@@ -697,7 +723,7 @@ class TestBasics():
                                                 dt.timedelta(seconds=14400)))
                                 for i in range(3)], True)])
     def test_filter_datetime(self, in_time, islist):
-        """ Test the range of allowed inputs for the Instrument datetime filter
+        """Test the range of allowed inputs for the Instrument datetime filter.
         """
         # Because the input datetime is the middle of the day and the offset
         # is four hours, the reference date and input date are the same
@@ -714,15 +740,17 @@ class TestBasics():
         for i, tt in enumerate(self.out):
             assert self.out[i] == self.ref_time[i]
             assert self.out[i].tzinfo is None or self.out[i].utcoffset() is None
+        return
 
     def test_filtered_date_attribute(self):
-        """ Test use of filter during date assignment
-        """
+        """Test use of filter during date assignment."""
+
         self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         self.testInst.date = self.ref_time
         assert self.out == self.testInst.date
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -731,20 +759,23 @@ class TestBasics():
     # -------------------------------------------------------------------------
 
     def test_eq_no_data(self):
-        """Test equality when the same object"""
+        """Test equality when the same object."""
+
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
         return
 
     def test_eq_both_with_data(self):
-        """Test equality when the same object with loaded data"""
+        """Test equality when the same object with loaded data."""
+
         self.testInst.load(date=self.ref_time)
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
         return
 
     def test_eq_one_with_data(self):
-        """Test equality when the same objects but only one with loaded data"""
+        """Test equality when the same objects but only one with loaded data."""
+
         self.testInst.load(date=self.ref_time)
         inst_copy = self.testInst.copy()
         inst_copy.data = self.testInst._null_data
@@ -752,7 +783,8 @@ class TestBasics():
         return
 
     def test_eq_different_data_type(self):
-        """Test equality different data type"""
+        """Test equality different data type."""
+
         self.testInst.load(date=self.ref_time)
         inst_copy = self.testInst.copy()
         if self.testInst.pandas_format:
@@ -765,7 +797,8 @@ class TestBasics():
         return
 
     def test_eq_different_object(self):
-        """Test equality using different pysat.Instrument objects"""
+        """Test equality using different pysat.Instrument objects."""
+
         reload(pysat.instruments.pysat_testing)
         obj1 = pysat.Instrument(platform='pysat', name='testing',
                                 num_samples=10, clean_level='clean',
@@ -779,12 +812,14 @@ class TestBasics():
         return
 
     def test_eq_different_type(self):
-        """Test equality False when non-Instrument object"""
+        """Test equality False when non-Instrument object."""
+
         assert self.testInst != np.array([])
         return
 
     def test_inequality_modified_object(self):
-        """Test that equality is false if other missing attributes"""
+        """Test that equality is false if other missing attributes."""
+
         self.out = self.testInst.copy()
 
         # Remove attribute
@@ -794,7 +829,8 @@ class TestBasics():
         return
 
     def test_inequality_reduced_object(self):
-        """Test that equality is false if self missing attributes"""
+        """Test that equality is false if self missing attributes."""
+
         self.out = self.testInst.copy()
         self.out.hi_there = 'hi'
         assert self.testInst != self.out
@@ -807,13 +843,15 @@ class TestBasics():
     # -------------------------------------------------------------------------
 
     def test_copy(self):
-        """Test .copy()"""
+        """Test `.copy()`."""
+
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
         return
 
     def test_copy_from_reference(self):
-        """Test .copy() if a user invokes from a weakref.proxy of Instrument"""
+        """Test `.copy()` if invoked from a `weakref.proxy` of Instrument."""
+
         inst_copy = self.testInst.orbits.inst.copy()
         inst_copy2 = self.testInst.files.inst_info['inst'].copy()
         assert inst_copy == self.testInst
@@ -822,7 +860,8 @@ class TestBasics():
         return
 
     def test_copy_w_inst_module(self):
-        """Test .copy() with inst_module != None"""
+        """Test `.copy()` with inst_module != None."""
+
         # Assign module to inst_module
         self.testInst.inst_module = pysat.instruments.pysat_testing
 
@@ -844,8 +883,8 @@ class TestBasics():
     @pytest.mark.parametrize("prepend, sort_dim_toggle",
                              [(True, True), (True, False), (False, False)])
     def test_concat_data(self, prepend, sort_dim_toggle):
-        """ Test Instrument data concatonation
-        """
+        """Test Instrument data concatonation."""
+
         # Load a data set to concatonate
         self.testInst.load(self.ref_time.year, self.ref_doy + 1)
         data2 = self.testInst.data
@@ -892,6 +931,7 @@ class TestBasics():
                               == np.sort(data2.columns))
             else:
                 assert np.all(self.testInst.data.columns == data2.columns)
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -899,14 +939,17 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_empty_flag_data_empty(self):
-        """ Test the status of the empty flag for unloaded data."""
+        """Test the status of the empty flag for unloaded data."""
+
         assert self.testInst.empty
         return
 
     def test_empty_flag_data_not_empty(self):
-        """ Test the status of the empty flag for loaded data."""
+        """Test the status of the empty flag for loaded data."""
+
         self.testInst.load(date=self.ref_time)
         assert not self.testInst.empty
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -914,15 +957,19 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_index_attribute(self):
-        """ Test the index attribute before and after loading data."""
+        """Test the index attribute before and after loading data."""
+
         # empty Instrument test
         assert isinstance(self.testInst.index, pds.Index)
 
         # now repeat the same test but with data loaded
         self.testInst.load(date=self.ref_time)
         assert isinstance(self.testInst.index, pds.Index)
+        return
 
     def test_index_return(self):
+        """Test that the index is returned in the proper format."""
+
         # load data
         self.testInst.load(self.ref_time.year, self.ref_doy)
         # ensure we get the index back
@@ -931,6 +978,7 @@ class TestBasics():
         else:
             assert np.all(self.testInst.index
                           == self.testInst.data.indexes[xarray_epoch_name])
+        return
 
     # #------------------------------------------------------------------------
     # #
@@ -939,20 +987,28 @@ class TestBasics():
     # #------------------------------------------------------------------------
 
     def test_retrieve_bad_attribute(self):
-        with pytest.raises(AttributeError):
+        """Test that AttributeError is raised if bad attribute is retrieved."""
+
+        with pytest.raises(AttributeError) as aerr:
             self.testInst.bad_attr
+        assert str(aerr).find("object has no attribute") >= 0
+        return
 
     def test_base_attr(self):
+        """Test retrieval of base attribute."""
+
         self.testInst._base_attr
         assert '_base_attr' in dir(self.testInst)
+        return
 
-    def test_inst_attributes_not_overridden(self):
-        """Test that custom Instrument attributes are not overwritten upon load
-        """
+    def test_inst_attributes_not_overwritten(self):
+        """Test that custom Instrument attributes are preserved on load."""
+
         greeting = '... listen!'
         self.testInst.hei = greeting
         self.testInst.load(date=self.ref_time)
         assert self.testInst.hei == greeting
+        return
 
     # -------------------------------------------------------------------------
     #
