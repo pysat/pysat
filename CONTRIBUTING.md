@@ -5,6 +5,10 @@ Bug reports, feature suggestions, and other contributions are greatly
 appreciated!  pysat is a community-driven project and welcomes both feedback and
 contributions.
 
+Come join us on Slack! An invitation to the pysat workspace is available 
+in the 'About' section of the [pysat GitHub Repository.](https://github.com/pysat/pysat)
+Development meetings are generally held fortnightly.
+
 Short version
 -------------
 

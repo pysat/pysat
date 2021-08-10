@@ -22,6 +22,10 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 
 [Citation Info](https://pysat.readthedocs.io/en/latest/citing.html)
 
+Come join us on Slack! An invitation to the pysat workspace is available 
+in the 'About' section of the [pysat GitHub Repository.](https://github.com/pysat/pysat)
+Development meetings are generally held fortnightly.
+
 # Main Features
 * Instrument independent analysis routines.
 * Instrument object providing an interface for downloading and analyzing a wide

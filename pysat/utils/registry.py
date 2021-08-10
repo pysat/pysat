@@ -17,7 +17,7 @@ there is an implementation for `myInstrument` in the module
 'myname'. Such an instrument may be registered with
 ::
 
-    registry.register('my.package.myInstrument')
+    registry.register(['my.package.myInstrument'])
 
 The full module name "my.package.myInstrument" will be registered in
 pysat.params['user_modules'] and stored as a dict of dicts keyed by platform
@@ -131,7 +131,7 @@ def register(module_names, overwrite=False):
         from pysat import Instrument
         from pysat.utils import registry
 
-        registry.register('my.package.name.myInstrument')
+        registry.register(['my.package.name.myInstrument'])
 
         testInst = Instrument(platform, name)
 
