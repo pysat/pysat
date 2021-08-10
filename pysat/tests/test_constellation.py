@@ -88,11 +88,13 @@ class TestConstellationInit():
                           "const_module": constellations.single_test}
         self.const = None
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
         del self.const, self.instruments, self.in_kwargs, self.ref_time
+        return
 
     @pytest.mark.parametrize("ikey,ival,ilen",
                              [("const_module", None, 1),
@@ -224,11 +226,13 @@ class TestConstellationFunc:
                       "bounds", "empty", "empty_partial", "index_res",
                       "common_index", "date", "yr", "doy", "yesterday", "today",
                       "tomorrow", "variables"]
+        return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
         del self.inst, self.const, self.ref_time, self.attrs
+        return
 
     def test_has_required_attrs(self):
         """Ensure the instrument has all required attributes present."""
