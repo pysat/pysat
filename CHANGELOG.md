@@ -36,7 +36,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
    * Streamlined unit tests for `test_orbits`
 
-[3.0.1] - 2021-XX-XX
+[3.0.1] - 2021-07-28
 --------------------
 * New Features
    * Added a routine for loading CSV files into a pandas DataFrame from a list
@@ -55,6 +55,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Deprecations
 * Documentation
    * Added missing information about date formatting to file listing docstrings.
+   * Added example for registering external instrument support. (#837)
 * Bug Fix
    * Changed pysat.Instruments.orbits iteration to return a copy of the
      Instrument rather than the Instrument itself. Provides robustness against
