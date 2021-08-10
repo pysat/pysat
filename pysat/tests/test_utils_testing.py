@@ -11,7 +11,7 @@ import pytest
 from pysat.utils import testing
 
 
-class TestTestingUtils():
+class TestTestingUtils(object):
     """Unit tests for `pysat.utils.testing` functions."""
 
     @pytest.mark.parametrize("slist, blist",

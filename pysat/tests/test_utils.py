@@ -66,7 +66,7 @@ def remove_files(inst):
     return
 
 
-class TestCIonly():
+class TestCIonly(object):
     """Tests where we mess with local settings.
 
     Note
@@ -117,7 +117,7 @@ class TestCIonly():
         return
 
 
-class TestScaleUnits():
+class TestScaleUnits(object):
     """Unit tests for `scale_units`."""
 
     def setup(self):
@@ -226,7 +226,7 @@ class TestScaleUnits():
         return
 
 
-class TestListify():
+class TestListify(object):
     """Unit tests for the `listify` function."""
 
     @pytest.mark.parametrize('iterable,nitem', [
@@ -279,7 +279,7 @@ class TestListify():
         return
 
 
-class TestLoadNetCDF4():
+class TestLoadNetCDF4(object):
     """Unit tests for `load_netcdf4`."""
 
     def setup(self):
@@ -487,7 +487,7 @@ class TestLoadNetCDF4():
         return
 
 
-class TestLoadNetCDF4XArray():
+class TestLoadNetCDF4XArray(object):
     """Unit tests for `load_netcdf4` using xarray data.
 
     Note
@@ -610,7 +610,7 @@ class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
         return
 
 
-class TestFmtCols():
+class TestFmtCols(object):
     """Unit tests for `fmt_output_in_cols`."""
 
     def setup(self):
@@ -778,7 +778,7 @@ class TestAvailableInst(TestWithRegistration):
         return
 
 
-class TestNetworkLock():
+class TestNetworkLock(object):
     """Unit tests for NetworkLock class."""
 
     def setup(self):
@@ -828,7 +828,7 @@ class TestNetworkLock():
         return
 
 
-class TestGenerateInstList():
+class TestGenerateInstList(object):
     """Unit tests for `utils.generate_instrument_list`."""
 
     def setup(self):

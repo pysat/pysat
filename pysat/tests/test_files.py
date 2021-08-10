@@ -143,7 +143,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     return
 
 
-class TestNoDataDir():
+class TestNoDataDir(object):
     """Test cases where data directory is not specified."""
 
     def setup(self):
@@ -171,7 +171,7 @@ class TestNoDataDir():
         return
 
 
-class TestBasics():
+class TestBasics(object):
     """Unit tests for `pysat._files`."""
 
     def setup_class(self):
@@ -560,7 +560,7 @@ class TestBasicsNoFileListStorage(TestBasics):
         return
 
 
-class TestInstWithFiles():
+class TestInstWithFiles(object):
     """Test basic file operations within an instrument."""
 
     def setup_class(self):
@@ -789,7 +789,7 @@ class TestInstWithFiles():
         return
 
 
-class TestInstWithFilesNonStandard():
+class TestInstWithFilesNonStandard(object):
     """Specialized tests for instruments with non-standard setups."""
 
     def setup_class(self):
@@ -1064,7 +1064,7 @@ def create_instrument(j):
     return 'instrument {}'.format(j)
 
 
-class TestFilesRaceCondition():
+class TestFilesRaceCondition(object):
     """Tests for multiple instances of pysat running simultaneously."""
 
     def setup_class(self):

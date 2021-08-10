@@ -21,9 +21,8 @@ from pysat.utils import testing
 logger = pysat.logger
 
 
-class TestBasics():
-    """Basic unit tests for metadata operations.
-    """
+class TestBasics(object):
+    """Basic unit tests for metadata operations."""
 
     def setup(self):
         """Set up the unit test environment for each method."""

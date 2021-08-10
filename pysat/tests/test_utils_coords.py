@@ -14,7 +14,7 @@ import pysat
 from pysat.utils import coords
 
 
-class TestCyclicData():
+class TestCyclicData(object):
     """Unit tests for the `adjust_cyclic_data` function."""
 
     def setup(self):
@@ -48,7 +48,7 @@ class TestCyclicData():
         return
 
 
-class TestUpdateLon():
+class TestUpdateLon(object):
     """Unit tests for the `update_longitude` function."""
 
     def setup(self):
@@ -93,7 +93,7 @@ class TestUpdateLon():
         return
 
 
-class TestCalcSLT():
+class TestCalcSLT(object):
     """Unit tests for `calc_solar_local_time`.
 
     Note
