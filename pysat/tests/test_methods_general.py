@@ -9,7 +9,7 @@ import pysat
 from pysat.instruments.methods import general as gen
 
 
-class TestListFiles():
+class TestListFiles(object):
     """Unit Tests for `pysat.instrument.methods.general.list_files`."""
 
     def setup(self):
@@ -42,9 +42,8 @@ class TestListFiles():
         return
 
 
-class TestFileCadence():
-    """Unit Tests for `pysat.instrument.methods.general.is_daily_file_cadence`.
-    """
+class TestFileCadence(object):
+    """Unit Tests for `instruments.methods.general.is_daily_file_cadence`."""
 
     @pytest.mark.parametrize("time_kwarg, time_val, is_daily",
                              [("microseconds", 1, True), ("seconds", 1, True),
@@ -74,7 +73,7 @@ class TestFileCadence():
         return
 
 
-class TestRemoveLeadText():
+class TestRemoveLeadText(object):
     """Unit Tests for `pysat.instrument.methods.general.remove_leading_text`."""
 
     def setup(self):
@@ -207,7 +206,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         return
 
 
-class TestLoadCSVData():
+class TestLoadCSVData(object):
     """Unit Tests for `pysat.instrument.methods.general.load_csv_data`."""
 
     def setup(self):
