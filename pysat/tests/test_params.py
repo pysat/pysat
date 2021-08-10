@@ -187,6 +187,7 @@ class TestCIonly(CICleanSetup):
     Note
     ----
     These only run in CI environments to avoid breaking an end user's setup
+
     """
 
     def test_settings_file_must_be_present(self, capsys):

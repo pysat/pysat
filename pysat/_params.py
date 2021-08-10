@@ -295,6 +295,7 @@ class Parameters(object):
         Note
         ----
         pysat parameters without a default value are set to [].
+
         """
 
         # Clear current data and assign a copy of default values

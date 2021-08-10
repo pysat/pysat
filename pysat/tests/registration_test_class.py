@@ -8,6 +8,7 @@
 Note
 ----
 Not directly called by pytest, but imported as part of test_registry.py.
+
 """
 
 import importlib
