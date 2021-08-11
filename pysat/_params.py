@@ -157,7 +157,7 @@ class Parameters(object):
         return
 
     def __repr__(self):
-        """Describe Parameters instantiation parameters.
+        """Describe the `Parameters` instantiation parameters.
 
         Returns
         -------
@@ -170,7 +170,7 @@ class Parameters(object):
         return out_str
 
     def __str__(self, long_str=True):
-        """Describe Parameters instance, variables, and attributes.
+        """Describe the `Parameters` instance, variables, and attributes.
 
         Parameters
         ----------
