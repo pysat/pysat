@@ -167,47 +167,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     data.index = index
     data.index.name = 'Epoch'
 
-    # Set the meta data
-    meta = pysat.Meta()
-    meta['uts'] = {'units': 's', 'long_name': 'Universal Time', 'custom': False}
-    meta['Epoch'] = {'units': 'Milliseconds since 1970-1-1',
-                     'Bin_Location': 0.5,
-                     'notes': 'UTC time at middle of geophysical measurement.',
-                     'desc': 'UTC seconds'}
-    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
-                   'desc': 'Magnetic Local Time',
-                   'value_min': 0.0, 'value_max': 24.0,
-                   'notes': ''.join(['Magnetic Local Time is the solar local ',
-                                     'time of thefield line at the location ',
-                                     'where the field crosses the magnetic ',
-                                     'equator. In this case we just simulate ',
-                                     '0-24 with a consistent orbital period ',
-                                     'and an offset with SLT.']),
-                   'scale': 'linear'}
-    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'desc': 'Solar Local Time', 'value_min': 0.0,
-                   'value_max': 24.0,
-                   'notes': ''.join(['Solar Local Time is the local time ',
-                                     '(zenith angle of sun) of the given ',
-                                     'location. Overhead noon, +/- 90 is 6, ',
-                                     '18 SLT .'])}
-    meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
-                         'desc': 'Orbit Number', 'value_min': 0.0,
-                         'value_max': 25000.0,
-                         'notes': ''.join(['Number of orbits since the start ',
-                                           'of the mission. For this ',
-                                           'simulation we use the number of ',
-                                           '5820 second periods since the ',
-                                           'start, 2008-01-01.'])}
-    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    if tag != 'default_meta':
-        for var in data.keys():
-            if var.find('dummy') >= 0:
-                meta[var] = {'units': 'none',
-                             'notes': 'Dummy variable for testing'}
-
+    # Set the meta data.
+    meta = mm_test.initialize_test_meta('Epoch', data.keys())
     return data, meta
 
 

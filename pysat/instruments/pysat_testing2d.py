@@ -156,28 +156,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data['alt_profiles'] = pds.Series(alt_profiles, index=data.index)
     data['series_profiles'] = pds.Series(series_profiles, index=data.index)
 
-    # create very limited metadata
-    meta = pysat.Meta()
-    meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    series_profile_meta = pysat.Meta()
-    series_profile_meta['series_profiles'] = {'long_name': 'series'}
-    meta['series_profiles'] = {'meta': series_profile_meta,
-                               'long_name': 'series'}
-    profile_meta = pysat.Meta()
-    profile_meta['density'] = {'long_name': 'profiles'}
-    profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
-    alt_profile_meta = pysat.Meta()
-    alt_profile_meta['density'] = {'long_name': 'profiles'}
-    alt_profile_meta['fraction'] = {'long_name': 'profiles'}
-    meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
-
+    # Set the meta data.
+    meta = mm_test.initialize_test_meta('epoch', data.keys())
     return data, meta
 
 

@@ -77,6 +77,8 @@ def preprocess(self, test_preprocess_kwarg=None):
 
     Parameters
     ----------
+    self : pysat.Instrument
+        This object
     test_preprocess_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -85,6 +87,102 @@ def preprocess(self, test_preprocess_kwarg=None):
     self.test_preprocess_kwarg = test_preprocess_kwarg
 
     return
+
+
+def initialize_test_meta(epoch_name, data_keys):
+    """Initialize meta data for test instruments.
+
+    This routine should be applied to test instruments at the end of the load
+    routine.
+
+    Parameters
+    ----------
+    epoch_name : str
+        The variable name of the instrument epoch.
+    data : pds.DataFrame or xr.Dataset
+        The dataset keys from the instrument.
+
+    """
+    # create standard metadata for all parameters
+    meta = pysat.Meta()
+    meta[epoch_name] = {'long_name': 'Datetime Index'}
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
+                   'desc': 'Number of seconds since mindight UT',
+                   'value_min': 0.0, 'value_max': 86400.0}
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
+                   'value_min': 0.0, 'value_max': 24.0}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+                   'value_min': 0.0, 'value_max': 24.0}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude',
+                         'value_min': 0.0, 'value_max': 360.0}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude',
+                        'value_min': -90.0, 'value_max': 90.0}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
+                         'desc': 'Orbit Number', 'value_min': 0.0,
+                         'value_max': 25000.0,
+                         'notes': ''.join(['Number of orbits since the start ',
+                                           'of the mission. For this ',
+                                           'simulation we use the number of ',
+                                           '5820 second periods since the ',
+                                           'start, 2008-01-01.'])}
+
+    # Set profile metadata
+    profile_meta = pysat.Meta()
+    profile_meta['density'] = {'long_name': 'profiles'}
+    profile_meta['dummy_str'] = {'long_name': 'profiles'}
+    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
+    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+
+    # Set variable profile metadata
+    variable_profile_meta = pysat.Meta()
+    variable_profile_meta['variable_profiles'] = {'long_name': 'series'}
+    meta['variable_profiles'] = {'meta': variable_profile_meta,
+                                 'long_name': 'series'}
+
+    # Set series profile metadata
+    series_profile_meta = pysat.Meta()
+    series_profile_meta['series_profiles'] = {'long_name': 'series'}
+    meta['series_profiles'] = {'meta': series_profile_meta,
+                               'long_name': 'series'}
+    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+
+    # Set altitude profile metadata
+    alt_profile_meta = pysat.Meta()
+    alt_profile_meta['density'] = {'long_name': 'profiles'}
+    alt_profile_meta['fraction'] = {'long_name': 'profiles'}
+    meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
+
+    # Set image metadata
+    image_meta = pysat.Meta()
+    image_meta['density'] = {'long_name': 'profiles'}
+    image_meta['fraction'] = {'long_name': 'profiles'}
+    meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
+    meta['x'] = {'long_name': 'x-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['y'] = {'long_name': 'y-value of image pixel',
+                 'notes': 'Dummy Variable'}
+    meta['z'] = {'long_name': 'z-value of profile height',
+                 'notes': 'Dummy Variable'}
+    meta['image_lat'] = {'long_name': 'Latitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['image_lon'] = {'long_name': 'Longitude of image pixel',
+                         'notes': 'Dummy Variable'}
+    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
+
+    # Set any dummy variable metadata present in instrument keys
+    for var in data_keys:
+        if var.find('dummy') >= 0:
+            meta[var] = {'units': 'none', 'long_name': var,
+                         'notes': 'Dummy variable'}
+
+    # Drop unused meta data for desired instrument.
+    for var in meta.keys():
+        if var not in data_keys:
+            meta.drop(var)
+
+    return meta
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,

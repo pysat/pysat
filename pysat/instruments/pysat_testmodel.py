@@ -94,29 +94,8 @@ def load(fnames, tag=None, inst_id=None, num_samples=None,
     data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'),
                       dummy2.data)
 
-    # Set the metadata
-    meta = pysat.Meta()
-    meta['time'] = {'long_name': 'Datetime Index'}
-    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
-                   'custom': False}
-    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'desc': 'Solar Local Time', 'value_min': 0.0,
-                   'value_max': 24.0,
-                   'notes': ''.join(['Solar Local Time is the local time ',
-                                     '(zenith angle of sun) of the given ',
-                                     'locaiton. Overhead noon, +/- 90 is 6, ',
-                                     '18 SLT .'])}
-    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
-                   'desc': 'Magentic Local Time', 'value_min': 0.0,
-                   'value_max': 24.0}
-    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    for var in data.keys():
-        if var.find('dummy') >= 0:
-            meta[var] = {'units': 'none', 'long_name': var,
-                         'notes': 'Dummy variable'}
-
+    # Set the meta data.
+    meta = mm_test.initialize_test_meta('time', data.keys())
     return data, meta
 
 
