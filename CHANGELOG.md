@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Extended Constellation unit tests
    * Standardized Instrument instantiation to always define `inst_module`
    * Extended testing options for `pysat.utils.testing` functions
+   * Added `start_time` keyword for test instruments
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
