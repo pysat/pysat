@@ -6,6 +6,7 @@ Imports test methods from pysat.tests.instrument_test_class
 
 """
 
+import datetime as dt
 import tempfile
 
 import pytest
@@ -17,6 +18,8 @@ import pysat
 
 # Import the test classes from pysat
 from pysat.tests.instrument_test_class import InstTestClass
+# Need initialize_test_inst_and_date if custom tests are being added.
+from pysat.tests.instrument_test_class import initialize_test_inst_and_date
 from pysat.utils import generate_instrument_list
 
 
@@ -91,3 +94,38 @@ class TestInstruments(InstTestClass):
         return
 
     # Custom package unit tests can be added here
+
+    # Custom Integration Tests added to all instruments.
+    @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
+    @pytest.mark.parametrize("kwarg,output", [(None, 0.0),
+                                              (dt.timedelta(hours=1), 3600.0)])
+    def test_inst_start_time(self, inst_dict, kwarg, output):
+        """Test operation of start_time keyword, including default behavior."""
+
+        _, date = initialize_test_inst_and_date(inst_dict)
+        if kwarg:
+            self.test_inst = pysat.Instrument(
+                inst_module=inst_dict['inst_module'], start_time=kwarg)
+        else:
+            self.test_inst = pysat.Instrument(
+                inst_module=inst_dict['inst_module'])
+
+        self.test_inst.load(date=date)
+
+        assert self.test_inst['uts'][0] == output
+        return
+
+    @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
+    def test_inst_num_samples(self, inst_dict):
+        """Test operation of num_samples keyword."""
+
+        # Number of samples needs to be <96 because freq is not settable.
+        # Different test instruments have different default number of points.
+        num = 10
+        _, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
+                                          num_samples=num)
+        self.test_inst.load(date=date)
+
+        assert len(self.test_inst['uts']) == num
+        return
