@@ -39,7 +39,7 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=None, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -58,8 +58,13 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         root_date (default=False)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day.
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -82,8 +87,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     if num_samples is None:
         # Default to 1 day at a frequency of 1S
         num_samples = 86400
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='1S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='1S',
+                                               start_time=start_time)
 
     if sim_multi_file_right:
         root_date = dt.datetime(2009, 1, 1, 12)
@@ -101,7 +106,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
-    data = xr.Dataset({'uts': ((epoch_name), index)},
+    data = xr.Dataset({'uts': ((epoch_name), uts)},
                       coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day

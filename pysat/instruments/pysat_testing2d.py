@@ -32,7 +32,7 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=None, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -46,8 +46,13 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
         (default=False)
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day.
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -71,8 +76,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         num_samples = 864
 
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='100S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
+                                               start_time=start_time)
     # seed DataFrame with UT array
     data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 

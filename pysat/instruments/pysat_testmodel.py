@@ -32,7 +32,7 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag=None, inst_id=None, num_samples=None,
+def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=None,
          test_load_kwarg=None):
     """Load the test files.
 
@@ -44,8 +44,13 @@ def load(fnames, tag=None, inst_id=None, num_samples=None,
         Instrument tag (accepts '')
     inst_id : str or NoneType
         Instrument satellite ID (accepts '')
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day.
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -65,8 +70,8 @@ def load(fnames, tag=None, inst_id=None, num_samples=None,
         # Default to 1 day at a frequency of 900S
         num_samples = 96
     # create an artifical satellite data set
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='900S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='900S',
+                                               start_time=start_time)
 
     # Define range of simulated 3D model
     latitude = np.linspace(-50, 50, 21)

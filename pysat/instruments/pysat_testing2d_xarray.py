@@ -38,7 +38,7 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=None, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -51,8 +51,13 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         Instrument satellite ID (accepts '')
     malformed_index : bool False
         If True, the time index will be non-unique and non-monotonic.
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day.
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -76,8 +81,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         # Default to 1 day at a frequency of 100S
         num_samples = 864
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='100S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
+                                               start_time=start_time)
 
     if malformed_index:
         index = index.tolist()
@@ -85,7 +90,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]] * 3
-    data = xr.Dataset({'uts': ((epoch_name), index)},
+    data = xr.Dataset({'uts': ((epoch_name), uts)},
                       coords={epoch_name: index})
 
     # need to create simple orbits here. Have start of first orbit

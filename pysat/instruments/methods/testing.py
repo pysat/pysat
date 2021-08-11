@@ -411,7 +411,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, num, freq='1S'):
+def generate_times(fnames, num, freq='1S', start_time=None):
     """Construct list of times for simulated instruments.
 
     Parameters
@@ -419,10 +419,15 @@ def generate_times(fnames, num, freq='1S'):
     fnames : list
         List of filenames.
     num : int
-        Number of times to generate
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day.
     freq : string
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
+    start_time : dt.timedelta or NoneType
+        Offset time of start time in fractional hours since midnight UT.
+        If None, set to 0.
+        (default=None)
 
     Returns
     -------
@@ -441,6 +446,9 @@ def generate_times(fnames, num, freq='1S'):
                         'switch to using integers.'))
         warnings.warn(estr, DeprecationWarning)
 
+    if start_time is not None and not isinstance(start_time, dt.timedelta):
+        raise ValueError('start_time must be a dt.timedelta object')
+
     uts = []
     indices = []
     dates = []
@@ -455,7 +463,11 @@ def generate_times(fnames, num, freq='1S'):
 
         # Create one day of data at desired frequency
         end_date = date + dt.timedelta(seconds=86399)
-        index = pds.date_range(start=date, end=end_date, freq=freq)
+        if start_time is not None:
+            start_date = date + start_time
+        else:
+            start_date = date
+        index = pds.date_range(start=start_date, end=end_date, freq=freq)
         index = index[0:num]
         indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second

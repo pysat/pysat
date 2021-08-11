@@ -45,7 +45,7 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, malformed_index=False,
-         num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=None, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -68,8 +68,13 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         (default=None)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic (default=False)
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples per day
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day.
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -92,8 +97,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     if num_samples is None:
         # Default to 1 day at a frequency of 1S
         num_samples = 86400
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='1S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='1S',
+                                               start_time=start_time)
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = dt.timedelta(hours=12)
