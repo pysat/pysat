@@ -181,6 +181,8 @@ def initialize_test_meta(epoch_name, data_keys):
     for var in meta.keys():
         if var not in data_keys:
             meta.drop(var)
+            if var in meta.keys_nD():
+                meta.ho_data.pop(var)
 
     return meta
 
