@@ -3201,7 +3201,7 @@ class Instrument(object):
             del kwargs['freq']
         else:
             freq = 'D'
-        
+
         # Make sure directories are there, otherwise create them
         try:
             os.makedirs(self.files.data_path)
