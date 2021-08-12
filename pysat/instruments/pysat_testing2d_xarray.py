@@ -38,7 +38,7 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=864, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -51,8 +51,13 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         Instrument satellite ID (accepts '')
     malformed_index : bool False
         If True, the time index will be non-unique and non-monotonic.
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day. (default=864)
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -72,12 +77,9 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    if num_samples is None:
-        # Default to 1 day at a frequency of 100S
-        num_samples = 864
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='100S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
+                                               start_time=start_time)
 
     if malformed_index:
         index = index.tolist()
@@ -85,7 +87,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]] * 3
-    data = xr.Dataset({'uts': ((epoch_name), index)},
+    data = xr.Dataset({'uts': ((epoch_name), uts)},
                       coords={epoch_name: index})
 
     # need to create simple orbits here. Have start of first orbit
@@ -169,45 +171,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
                                 np.arange(17)[np.newaxis, np.newaxis,
                                               :] * np.ones((num, 17, 17)))
 
-    # create very limited metadata
-    meta = pysat.Meta()
-    meta[epoch_name] = {'long_name': 'Datetime Index'}
-    meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    variable_profile_meta = pysat.Meta()
-    variable_profile_meta['variable_profiles'] = {'long_name': 'series'}
-    meta['variable_profiles'] = {'meta': variable_profile_meta,
-                                 'long_name': 'series'}
-    profile_meta = pysat.Meta()
-    profile_meta['density'] = {'long_name': 'profiles'}
-    profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
-    image_meta = pysat.Meta()
-    image_meta['density'] = {'long_name': 'profiles'}
-    image_meta['fraction'] = {'long_name': 'profiles'}
-    meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
-    for var in data.keys():
-        if var.find('dummy') >= 0:
-            meta[var] = {'units': 'none', 'long_name': var,
-                         'notes': 'Dummy variable'}
-    meta['x'] = {'long_name': 'x-value of image pixel',
-                 'notes': 'Dummy Variable'}
-    meta['y'] = {'long_name': 'y-value of image pixel',
-                 'notes': 'Dummy Variable'}
-    meta['z'] = {'long_name': 'z-value of profile height',
-                 'notes': 'Dummy Variable'}
-    meta['image_lat'] = {'long_name': 'Latitude of image pixel',
-                         'notes': 'Dummy Variable'}
-    meta['image_lon'] = {'long_name': 'Longitude of image pixel',
-                         'notes': 'Dummy Variable'}
-    meta['profile_height'] = {'long_name': 'profile height'}
-    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
-
+    meta = mm_test.initialize_test_meta(epoch_name, data.keys())
     return data, meta
 
 
