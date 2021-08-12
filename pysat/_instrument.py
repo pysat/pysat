@@ -670,7 +670,7 @@ class Instrument(object):
         return output_str
 
     def __getitem__(self, key):
-        """Convenience notation for accessing data.
+        """Access data in `pysat.Instrument` object.
 
         Parameters
         ----------
@@ -736,7 +736,7 @@ class Instrument(object):
             return self.__getitem_xarray__(key)
 
     def __getitem_xarray__(self, key):
-        """Convenience notation for accessing data.
+        """Access data in `pysat.Instrument` object with `xarray.Dataset`.
 
         Parameters
         ----------
