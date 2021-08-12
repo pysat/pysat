@@ -14,6 +14,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Extended Constellation unit tests
    * Standardized Instrument instantiation to always define `inst_module`
    * Extended testing options for `pysat.utils.testing` functions
+* Deprecations
+   * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
