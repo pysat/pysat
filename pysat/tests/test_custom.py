@@ -129,8 +129,8 @@ class TestBasics(object):
         assert self.out.find('Kwargs') > 0
         return
 
-    def test_single_modifying_custom_function_error(self):
-        """Test for error if 'modify' custom function returns a value."""
+    def test_single_custom_function_error(self):
+        """Test for error if custom function returns a value."""
 
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
@@ -283,8 +283,8 @@ class TestConstellationBasics(object):
         assert self.out.find("'function'") >= 0
         return
 
-    def test_single_modifying_custom_function_error(self):
-        """Test for error when 'modify' custom function returns a value."""
+    def test_single_custom_function_error(self):
+        """Test for error when custom function returns a value."""
 
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
