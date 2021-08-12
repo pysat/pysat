@@ -37,6 +37,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
    * Streamlined unit tests for `test_orbits`
    * Moved metadata generation for test instruments to `methods.testing`
+   * Updated class declaration to be consistent with python 3 standards
 
 [3.0.1] - 2021-07-28
 --------------------
