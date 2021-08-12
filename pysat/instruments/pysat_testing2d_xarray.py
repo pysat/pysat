@@ -38,7 +38,7 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         start_time=None, num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=864, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -57,7 +57,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         (default=None)
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
-        current day.
+        current day. (default=864)
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 

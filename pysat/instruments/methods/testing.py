@@ -103,7 +103,7 @@ def initialize_test_meta(epoch_name, data_keys):
         The dataset keys from the instrument.
 
     """
-    # create standard metadata for all parameters
+    # Create standard metadata for all parameters
     meta = pysat.Meta()
     meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',

@@ -39,7 +39,7 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         start_time=None, num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=86400, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -64,7 +64,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         (default=None)
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
-        current day.
+        current day. (default=86400)
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -84,9 +84,6 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    if num_samples is None:
-        # Default to 1 day at a frequency of 1S
-        num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='1S',
                                                start_time=start_time)
 
