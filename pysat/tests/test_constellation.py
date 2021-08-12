@@ -52,8 +52,8 @@ class TestConstellationInitReg(TestWithRegistration):
         return
 
     def test_some_bad_construct_constellation(self):
-        """Test partial load and log warning when some inputs are unregistered.
-        """
+        """Test partial load and log warning if some inputs are unregistered."""
+
         # Initialize logging
         log_capture = StringIO()
         pysat.logger.addHandler(logging.StreamHandler(log_capture))
@@ -110,8 +110,8 @@ class TestConstellationInit():
         return
 
     def test_init_constellation_bad_inst_module(self):
-        """Test Constellation raises AttributeError with bad inst_module input.
-        """
+        """Test Constellation raises AttributeError with bad inst_module."""
+
         with pytest.raises(AttributeError) as aerr:
             pysat.Constellation(const_module=self.instruments)
 

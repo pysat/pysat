@@ -485,7 +485,9 @@ class Constellation(object):
         Note
         -----
         True if there is no Instrument data in all Constellation Instrument.
+
         """
+
         return self._empty(all_inst=False)
 
     @property
@@ -495,12 +497,15 @@ class Constellation(object):
         Note
         ----
         True if there is no Instrument data in any Constellation Instrument.
+
         """
+
         return self._empty(all_inst=True)
 
     @property
     def index(self):
         """Obtain time index of loaded data."""
+
         return self._index()
 
     def today(self):
@@ -509,16 +514,18 @@ class Constellation(object):
 
     def tomorrow(self):
         """Obtain UTC date for tomorrow, see pysat.Instrument for details."""
+
         return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
         """Obtain UTC date for yesterday, see pysat.Instrument for details."""
+
         return self.today() - dt.timedelta(days=1)
 
     @property
     def variables(self):
-        """Return a list of uniquely named variables from all the loaded data.
-        """
+        """Retrieve list of uniquely named variables from all loaded data."""
+
         # Determine which instrument variables share the same name
         data_vars = dict()
         for inst in self.instruments:
