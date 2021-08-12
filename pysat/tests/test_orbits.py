@@ -90,7 +90,7 @@ def assert_reversible_orbit_symmetric(inst, iterations):
     return
 
 
-class TestOrbitsUserInterface():
+class TestOrbitsUserInterface(object):
     """Tests the user interface for orbits, including error handling."""
 
     def setup(self):
@@ -186,7 +186,7 @@ class TestOrbitsUserInterface():
         return
 
 
-class TestSpecificUTOrbits():
+class TestSpecificUTOrbits(object):
     """Run the tests for specific behaviour in the MLT orbits."""
 
     def setup(self):
@@ -342,7 +342,7 @@ class TestSpecificUTOrbits():
         return
 
 
-class TestGeneralOrbitsMLT():
+class TestGeneralOrbitsMLT(object):
     """Run the general orbit tests by MLT for pandas."""
 
     def setup(self):
@@ -559,7 +559,7 @@ class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
         return
 
 
-class TestGeneralOrbitsNonStandardIteration():
+class TestGeneralOrbitsNonStandardIteration(object):
     """Test for non standard data setups.
 
     Note
@@ -745,7 +745,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
         return
 
 
-class TestOrbitsGappyData():
+class TestOrbitsGappyData(object):
     """Gappy orbit tests defined  for orbits defined by MLT for pandas."""
 
     def setup_class(self):
@@ -820,7 +820,7 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
         return
 
 
-class TestOrbitsGappyData2():
+class TestOrbitsGappyData2(object):
     """Additional gappy orbit tests for orbits defined by MLT for pandas."""
 
     def setup_class(self):

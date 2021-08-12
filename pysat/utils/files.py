@@ -15,8 +15,8 @@ import string
 
 import pandas as pds
 
-from pysat.utils.time import create_datetime_index
 from pysat.utils._core import available_instruments
+from pysat.utils.time import create_datetime_index
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
