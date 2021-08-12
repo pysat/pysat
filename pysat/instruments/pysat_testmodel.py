@@ -66,7 +66,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # create an artifical model data set
+    # Create an artificial model data set
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='900S',
                                                start_time=start_time)
 
