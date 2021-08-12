@@ -174,7 +174,11 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     # Set the meta data.
     meta = mm_test.initialize_test_meta('Epoch', data.keys())
-    return data, meta
+
+    if tag == 'default_meta':
+        return data, pysat.Meta()
+    else:
+        return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
