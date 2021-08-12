@@ -77,7 +77,7 @@ class TestConstellationInitReg(TestWithRegistration):
         return
 
 
-class TestConstellationInit():
+class TestConstellationInit(object):
     """Test the Constellation class."""
 
     def setup(self):
@@ -213,7 +213,7 @@ class TestConstellationInit():
         return
 
 
-class TestConstellationFunc:
+class TestConstellationFunc(object):
     """Test the Constellation class attributes and methods."""
 
     def setup(self):
