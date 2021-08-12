@@ -16,10 +16,10 @@ import pysat
 # e.g.,
 # import mypackage
 
-# Import the test classes from pysat
-from pysat.tests.instrument_test_class import InstTestClass
 # Need initialize_test_inst_and_date if custom tests are being added.
 from pysat.tests.instrument_test_class import initialize_test_inst_and_date
+# Import the test classes from pysat
+from pysat.tests.instrument_test_class import InstTestClass
 from pysat.utils import generate_instrument_list
 
 
@@ -71,6 +71,7 @@ class TestInstruments(InstTestClass):
     Uses class level setup and teardown so that all tests use the same
     temporary directory. We do not want to geneate a new tempdir for each test,
     as the load tests need to be the same as the download tests.
+
     """
 
     def setup_class(self):

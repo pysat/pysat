@@ -77,9 +77,6 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    if num_samples is None:
-        # Default to 1 day at a frequency of 100S
-        num_samples = 864
     # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
                                                start_time=start_time)

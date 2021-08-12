@@ -66,10 +66,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    if num_samples is None:
-        # Default to 1 day at a frequency of 900S
-        num_samples = 96
-    # create an artifical satellite data set
+    # create an artifical model data set
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='900S',
                                                start_time=start_time)
 
