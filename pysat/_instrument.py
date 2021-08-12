@@ -3169,13 +3169,14 @@ class Instrument(object):
         stop : pandas.datetime or NoneType
             Stop date (inclusive) to download data, or tomorrow if None is
             provided (default=None)
-        date_array : list-like
+        date_array : list-like or NoneType
             Sequence of dates to download date for. Takes precedence over
-            start and stop inputs
+            start and stop inputs (default=None)
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments.
             The keyword arguments 'user' and 'password' are expected for remote
-            databases requiring sign in or registration.
+            databases requiring sign in or registration. 'freq' temporarily
+            ingested through this input option.
 
         Note
         ----
@@ -3196,6 +3197,10 @@ class Instrument(object):
                                    "in pysat 3.2.0+. Use `date_array` for ",
                                    "non-daily frequencies instead."]),
                           DeprecationWarning, stacklevel=2)
+            freq = kwargs['freq']
+            del kwargs['freq']
+        else:
+            freq = 'D'
         
         # Make sure directories are there, otherwise create them
         try:
@@ -3228,7 +3233,6 @@ class Instrument(object):
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
             # whole days
-            freq = kwargs['freq'] if 'freq' in kwargs.keys() else 'D'
             start = utils.time.filter_datetime_input(start)
             stop = utils.time.filter_datetime_input(stop)
             date_array = utils.time.create_date_range(start, stop, freq=freq)
