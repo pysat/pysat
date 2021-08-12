@@ -16,8 +16,8 @@ import pysat
 # import mypackage
 
 # Import the test classes from pysat
-from pysat.utils import generate_instrument_list
 from pysat.tests.instrument_test_class import InstTestClass
+from pysat.utils import generate_instrument_list
 
 
 # Optional code to pass through user and password info to test instruments

@@ -10,11 +10,11 @@ import numpy as np
 
 import pytest
 
-from pysat.utils import time as pytime
 from pysat.utils import testing
+from pysat.utils import time as pytime
 
 
-class TestGetYearDay():
+class TestGetYearDay(object):
     """Unit tests for `getyrdoy`."""
 
     @pytest.mark.parametrize("date,tst_yr,tst_doy",
@@ -38,7 +38,7 @@ class TestGetYearDay():
         return
 
 
-class TestParseDate():
+class TestParseDate(object):
     """Unit tests for parse_date."""
 
     @pytest.mark.parametrize("in_args,in_kwargs,tst_date", [
@@ -71,7 +71,7 @@ class TestParseDate():
         return
 
 
-class TestCalcFreqRes():
+class TestCalcFreqRes(object):
     """Unit tests for `calc_res`, `freq_to_res`, and `calc_freq`."""
 
     def setup(self):
@@ -145,7 +145,7 @@ class TestCalcFreqRes():
         return
 
 
-class TestCreateDateRange():
+class TestCreateDateRange(object):
     """Unit tests for `create_date_range`."""
 
     @pytest.mark.parametrize("start,stop,tst_len", [
@@ -167,7 +167,7 @@ class TestCreateDateRange():
         return
 
 
-class TestCreateDatetimeIndex():
+class TestCreateDatetimeIndex(object):
     """Unit test `create_datetime_index`."""
 
     def setup(self):
@@ -184,8 +184,7 @@ class TestCreateDatetimeIndex():
         return
 
     def test_create_datetime_index(self):
-        """Test creation of an array of datetime objects from arrays of inputs.
-        """
+        """Test create an array of datetime objects from arrays of inputs."""
 
         dates = pytime.create_datetime_index(year=self.year, month=self.month,
                                              day=self.day, uts=self.uts)
@@ -218,7 +217,7 @@ class TestCreateDatetimeIndex():
         return
 
 
-class TestFilterDatetimeInput():
+class TestFilterDatetimeInput(object):
     """Unit tests for `filter_datetime_input`."""
 
     def test_filter_datetime_input_none(self):
