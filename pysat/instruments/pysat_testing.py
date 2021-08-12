@@ -22,7 +22,7 @@ tags = {'': 'Regular testing data set',
         'no_download': 'simulate an instrument without download support',
         'non_strict': 'simulate an instrument without strict_time_flag',
         'user_password': 'simulates an instrument that requires a password',
-        'default_meta': 'simulates an instrument using the defualt meta'}
+        'default_meta': 'simulates an instrument using the default meta'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
