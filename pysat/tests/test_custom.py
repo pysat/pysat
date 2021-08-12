@@ -1,4 +1,4 @@
-"""Unit Tests for the `custom_attach` methods."""
+"""Unit tests for the `custom_attach` methods."""
 
 import copy
 from io import StringIO
@@ -36,7 +36,7 @@ def mult_data(inst, mult, dkey="mlt"):
 
 
 class TestLogging(object):
-    """Unit Tests for logging interface with custom functions."""
+    """Unit tests for logging interface with custom functions."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -69,7 +69,7 @@ class TestLogging(object):
 
 
 class TestBasics(object):
-    """Unit tests for `pysat.instrument.custom_attach` with a pandas inst."""
+    """Unit tests for `pysat.instrument.custom_attach` with pandas data."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
