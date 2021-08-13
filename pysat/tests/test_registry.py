@@ -286,7 +286,7 @@ class TestRegistration(TestWithRegistration):
 
 
 class TestModuleRegistration(object):
-    """Unit Tests for module registration."""
+    """Unit tests for module registration."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
