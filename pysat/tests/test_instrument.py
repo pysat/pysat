@@ -263,7 +263,7 @@ class TestBasics(object):
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_doy(self, doy):
-        """Ensure doy load keyword in valid range."""
+        """Ensure doy load argument in valid range."""
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, doy)
@@ -332,7 +332,7 @@ class TestBasics(object):
     @pytest.mark.parametrize('load_in,verr',
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
-    def test_basic_instrument_load_by_file_and_multifile(self, load_in, verr):
+    def test_instrument_load_errors_with_multifile(self, load_in, verr):
         """Ensure load calls raises ValueError with multi_file_day as True."""
 
         self.testInst.multi_file_day = True
@@ -510,7 +510,7 @@ class TestBasics(object):
         return
 
     def test_next_fname_load_default(self):
-        """Test next day loads (checking object date)."""
+        """Test next day loads starting with first filename."""
 
         self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(fname=self.testInst.files[0])
@@ -545,14 +545,14 @@ class TestBasics(object):
         return
 
     def test_filename_load(self):
-        """Test if file is loadable by filename."""
+        """Test if file is loadable by filename with no path."""
 
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         assert self.testInst.index[0] == self.ref_time
         return
 
     def test_filenames_load(self):
-        """Test if files are loadable by filename list."""
+        """Test if files are loadable by filename range."""
 
         stop_fname = self.ref_time + dt.timedelta(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
