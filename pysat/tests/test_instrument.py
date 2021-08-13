@@ -2924,7 +2924,7 @@ class TestBasics(object):
     def test_supplying_instrument_module_requires_name_and_platform(self):
         """Ensure instantiation via inst_module with missing name errors."""
 
-        class Dummy:
+        class Dummy(object):
             pass
         Dummy.name = 'help'
 
@@ -3148,7 +3148,7 @@ class TestBasicsShiftedFileDates(TestBasics):
         return
 
 
-class TestMalformedIndex():
+class TestMalformedIndex(object):
     """Unit tests for pandas `pysat.Instrument` with malformed index."""
 
     def setup(self):
@@ -3211,7 +3211,7 @@ class TestMalformedIndexXarray(TestMalformedIndex):
         return
 
 
-class TestDataPaddingbyFile():
+class TestDataPaddingbyFile(object):
     """Unit tests for pandas `pysat.Instrument` with data padding by file."""
 
     def setup(self):
@@ -3447,7 +3447,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
         return
 
 
-class TestDataPadding():
+class TestDataPadding(object):
     """Unit tests for pandas `pysat.Instrument` with data padding."""
 
     def setup(self):
@@ -3792,7 +3792,7 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
         return
 
 
-class TestInstListGeneration():
+class TestInstListGeneration(object):
     """Tests to ensure the instrument test class is working as expected."""
 
     def setup(self):
