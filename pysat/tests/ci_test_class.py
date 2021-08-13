@@ -14,7 +14,7 @@ import shutil
 import pysat
 
 
-class CICleanSetup():
+class CICleanSetup(object):
     """Test where local settings are altered.
 
     Note

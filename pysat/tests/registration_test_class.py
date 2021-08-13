@@ -8,6 +8,7 @@
 Note
 ----
 Not directly called by pytest, but imported as part of test_registry.py.
+
 """
 
 import importlib
@@ -17,9 +18,8 @@ import sys
 import pysat
 
 
-class TestWithRegistration():
-    """Test class for unit/integration tests that need registered Instruments.
-    """
+class TestWithRegistration(object):
+    """Test class for unit/integration tests with registered Instruments."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -103,8 +103,7 @@ class TestWithRegistration():
         return
 
     def create_fake_module(self):
-        """Create fake module and package from pysat_testing test Instrument.
-        """
+        """Create fake module and package from pysat_testing test Instrument."""
 
         # Use pysat_testing as base instrument
         file_path = pysat.instruments.pysat_testing.__file__

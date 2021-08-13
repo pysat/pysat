@@ -32,7 +32,7 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag=None, inst_id=None, num_samples=None,
+def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
          test_load_kwarg=None):
     """Load the test files.
 
@@ -44,8 +44,13 @@ def load(fnames, tag=None, inst_id=None, num_samples=None,
         Instrument tag (accepts '')
     inst_id : str or NoneType
         Instrument satellite ID (accepts '')
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day. (default=96)
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -61,12 +66,9 @@ def load(fnames, tag=None, inst_id=None, num_samples=None,
     # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    if num_samples is None:
-        # Default to 1 day at a frequency of 900S
-        num_samples = 96
-    # create an artifical satellite data set
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='900S')
+    # Create an artificial model data set
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='900S',
+                                               start_time=start_time)
 
     # Define range of simulated 3D model
     latitude = np.linspace(-50, 50, 21)
@@ -94,29 +96,8 @@ def load(fnames, tag=None, inst_id=None, num_samples=None,
     data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'),
                       dummy2.data)
 
-    # Set the metadata
-    meta = pysat.Meta()
-    meta['time'] = {'long_name': 'Datetime Index'}
-    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
-                   'custom': False}
-    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'desc': 'Solar Local Time', 'value_min': 0.0,
-                   'value_max': 24.0,
-                   'notes': ''.join(['Solar Local Time is the local time ',
-                                     '(zenith angle of sun) of the given ',
-                                     'locaiton. Overhead noon, +/- 90 is 6, ',
-                                     '18 SLT .'])}
-    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
-                   'desc': 'Magentic Local Time', 'value_min': 0.0,
-                   'value_max': 24.0}
-    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    for var in data.keys():
-        if var.find('dummy') >= 0:
-            meta[var] = {'units': 'none', 'long_name': var,
-                         'notes': 'Dummy variable'}
-
+    # Set the meta data.
+    meta = mm_test.initialize_test_meta('time', data.keys())
     return data, meta
 
 

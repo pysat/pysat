@@ -5,6 +5,7 @@ import datetime as dt
 from importlib import reload
 import logging
 import numpy as np
+import warnings
 
 import pandas as pds
 import pytest
@@ -3526,3 +3527,44 @@ class TestInstListGeneration():
         assert not hasattr(self.test_library.pysat_testing, '_test_dates')
         inst_list = generate_instrument_list(self.test_library)
         assert 'pysat_testing' in inst_list['names']
+
+
+class TestDeprecation():
+    """Unit test for deprecation warnings."""
+
+    def setup(self):
+        """Run before every method to create a clean testing setup."""
+
+        warnings.simplefilter("always", DeprecationWarning)
+        self.in_kwargs = {"platform": 'pysat', "name": 'testing',
+                          "clean_level": 'clean'}
+        self.warn_msgs = ["".join(["`pysat.Instrument.download` kwarg `freq` ",
+                                   "has been deprecated and will be removed ",
+                                   "in pysat 3.2.0+"])]
+        self.warn_msgs = np.array(self.warn_msgs)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_kwargs, self.warn_msgs, self.ref_time
+
+    def test_download_freq_kwarg(self):
+        """Test deprecation of download kwarg `freq`."""
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            tinst = pysat.Instrument(**self.in_kwargs)
+            tinst.download(start=self.ref_time, freq='D')
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
+
+        return

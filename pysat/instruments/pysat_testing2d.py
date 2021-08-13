@@ -32,7 +32,7 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag=None, inst_id=None, malformed_index=False,
-         num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=864, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -46,8 +46,13 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
         (default=False)
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day. (default=864)
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -66,14 +71,11 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    if num_samples is None:
-        # Default to 1 day at a frequency of 100S
-        num_samples = 864
 
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='100S')
-    # seed DataFrame with UT array
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
+                                               start_time=start_time)
+    # Seed the DataFrame with a UT array
     data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit
@@ -156,28 +158,8 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data['alt_profiles'] = pds.Series(alt_profiles, index=data.index)
     data['series_profiles'] = pds.Series(series_profiles, index=data.index)
 
-    # create very limited metadata
-    meta = pysat.Meta()
-    meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    series_profile_meta = pysat.Meta()
-    series_profile_meta['series_profiles'] = {'long_name': 'series'}
-    meta['series_profiles'] = {'meta': series_profile_meta,
-                               'long_name': 'series'}
-    profile_meta = pysat.Meta()
-    profile_meta['density'] = {'long_name': 'profiles'}
-    profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
-    alt_profile_meta = pysat.Meta()
-    alt_profile_meta['density'] = {'long_name': 'profiles'}
-    alt_profile_meta['fraction'] = {'long_name': 'profiles'}
-    meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
-
+    # Set the meta data.
+    meta = mm_test.initialize_test_meta('epoch', data.keys())
     return data, meta
 
 
