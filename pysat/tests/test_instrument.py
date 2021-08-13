@@ -3078,8 +3078,8 @@ class TestBasics2DXarray(TestBasics):
         return
 
     def test_data_access_bad_dimension_tuple(self):
-        """Test raises ValueError for mismatched tuple index and data dimensions.
-        """
+        """Test raises ValueError for mismatched tuple index and data dims."""
+
         self.testInst.load(date=self.ref_time)
         index = ([0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3])
 
@@ -3361,8 +3361,7 @@ class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
 
 
 class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
-    """Unit tests for pandas `pysat.Instrument` with right offset data padding.
-    """
+    """Unit tests for pandas `pysat.Instrument` with right offset data pad."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -3391,8 +3390,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
 
 
 class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
-    """Unit tests for xarray `pysat.Instrument` with right offset data padding.
-    """
+    """Unit tests for xarray `pysat.Instrument` with right offset data pad."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -3422,8 +3420,7 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
 
 
 class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
-    """Unit tests for pandas `pysat.Instrument` with left offset data padding.
-    """
+    """Unit tests for pandas `pysat.Instrument` with left offset data pad."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -3697,8 +3694,7 @@ class TestDataPaddingXarray(TestDataPadding):
 
 
 class TestMultiFileRightDataPaddingBasics(TestDataPadding):
-    """Unit tests for pandas `pysat.Instrument` with right offset data padding.
-    """
+    """Unit tests for pandas `pysat.Instrument` with right offset data pad."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -3722,8 +3718,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
 
 
 class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
-    """Unit tests for xarray `pysat.Instrument` with right offset data padding.
-    """
+    """Unit tests for xarray `pysat.Instrument` with right offset data pad."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -3748,8 +3743,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
 
 
 class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
-    """Unit tests for pandas `pysat.Instrument` with left offset data padding.
-    """
+    """Unit tests for pandas `pysat.Instrument` with left offset data pad."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -3774,8 +3768,7 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
 
 
 class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
-    """Unit tests for xarray `pysat.Instrument` with left offset data padding.
-    """
+    """Unit tests for xarray `pysat.Instrument` with left offset data pad."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -3831,8 +3824,8 @@ class TestInstListGeneration():
         return
 
     def test_for_missing_test_date(self):
-        """Test that instruments without _test_dates are still added to the list.
-        """
+        """Test that instruments without _test_dates are added to the list."""
+
         del self.test_library.pysat_testing._test_dates
         # If an instrument does not have the _test_dates attribute, it should
         # still be added to the list for other checks to be run
