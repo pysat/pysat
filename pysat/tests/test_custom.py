@@ -275,7 +275,7 @@ class TestConstellationBasics(object):
         return
 
     def test_basic_repr(self):
-        """Test __repr__ with a custom method."""
+        """Test `__repr__` with a custom method."""
 
         self.testConst.custom_attach(mult_data, args=self.custom_args)
         self.out = self.testConst.__repr__()

@@ -43,7 +43,7 @@ class TestListFiles(object):
 
 
 class TestFileCadence(object):
-    """Unit Tests for `instruments.methods.general.is_daily_file_cadence`."""
+    """Unit tests for `instruments.methods.general.is_daily_file_cadence`."""
 
     @pytest.mark.parametrize("time_kwarg, time_val, is_daily",
                              [("microseconds", 1, True), ("seconds", 1, True),
