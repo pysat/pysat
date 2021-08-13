@@ -35,7 +35,7 @@ testing_kwargs = {'test_init_kwarg': True, 'test_clean_kwarg': False,
 #
 # -----------------------------------------------------------------------------
 class TestBasics(object):
-    """Unit Tests for pysat.Instrument object."""
+    """Unit tests for pysat.Instrument object."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
