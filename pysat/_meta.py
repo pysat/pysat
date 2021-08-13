@@ -1249,18 +1249,6 @@ class Meta(object):
             raise ValueError(''.join(['Unable to retrieve information from ',
                                       filename]))
 
-    # TODO
-    # @classmethod
-    # def from_nc():
-    #     """not implemented yet, load metadata from netCDF"""
-    #     pass
-    #
-    # @classmethod
-    # def from_dict():
-    #     """not implemented yet, load metadata from dict of items/list types
-    #     """
-    #     pass
-
 
 class MetaLabels(object):
     """Stores metadata labels for Instrument instance.
