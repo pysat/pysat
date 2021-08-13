@@ -174,8 +174,8 @@ class TestBasics(object):
         return
 
     def test_basic_instrument_load(self):
-        """Test that the correct day is loaded, specifying only start year, doy.
-        """
+        """Test that the correct day loads with input year and doy."""
+
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy)
 
@@ -194,8 +194,8 @@ class TestBasics(object):
         return
 
     def test_basic_instrument_load_two_days(self):
-        """Test that the correct day is loaded (checking object date and data).
-        """
+        """Test that the correct day loads (checking object date and data)."""
+
         # Load the reference date
         end_date = self.ref_time + dt.timedelta(days=2)
         end_doy = int(end_date.strftime("%j"))
@@ -207,8 +207,7 @@ class TestBasics(object):
         return
 
     def test_basic_instrument_bad_keyword_init(self):
-        """Check for error when instantiating with bad load keywords on init.
-        """
+        """Check for error when instantiating with bad load keywords on init."""
 
         # Test that the correct error is raised
         with pytest.raises(ValueError) as verr:
@@ -334,8 +333,8 @@ class TestBasics(object):
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_basic_instrument_load_by_file_and_multifile(self, load_in, verr):
-        """Ensure some load calls raises ValueError with multi_file_day as True.
-        """
+        """Ensure load calls raises ValueError with multi_file_day as True."""
+
         self.testInst.multi_file_day = True
 
         if load_in == 'fname':
@@ -375,8 +374,8 @@ class TestBasics(object):
         return
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
-        """Ensure `.load(date=date)` only uses year, month, day portion of date.
-        """
+        """Ensure `.load(date=date)` only uses date portion of datetime."""
+
         # put in a date that has more than year, month, day
         self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
         self.out = self.testInst.index[0]
@@ -724,8 +723,8 @@ class TestBasics(object):
                                                 dt.timedelta(seconds=14400)))
                                 for i in range(3)], True)])
     def test_filter_datetime(self, in_time, islist):
-        """Test the range of allowed inputs for the Instrument datetime filter.
-        """
+        """Test range of allowed inputs for the Instrument datetime filter."""
+
         # Because the input datetime is the middle of the day and the offset
         # is four hours, the reference date and input date are the same
         if islist:
