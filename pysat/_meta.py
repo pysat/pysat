@@ -5,10 +5,10 @@
 # ----------------------------------------------------------------------------
 
 from copy import deepcopy
-import os
-import warnings
 import numpy as np
+import os
 import pandas as pds
+import warnings
 
 import pysat
 import pysat.utils._core as core_utils

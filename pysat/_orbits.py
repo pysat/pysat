@@ -9,8 +9,8 @@ import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
-import xarray as xr
 import weakref
+import xarray as xr
 
 from pysat import logger
 

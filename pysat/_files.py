@@ -14,9 +14,9 @@ import weakref
 import pandas as pds
 
 import pysat  # Needed to access pysat.params across reimports
+from pysat.instruments.methods import general
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
-from pysat.instruments.methods import general
 
 logger = pysat.logger
 
