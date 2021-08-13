@@ -184,7 +184,7 @@ class TestBasics(object):
         return
 
     def test_basic_instrument_load_w_kwargs(self):
-        """Test that the correct day is loaded with optional kwarg."""
+        """Test that the correct day loads with optional kwarg."""
 
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy, num_samples=30)
@@ -320,7 +320,7 @@ class TestBasics(object):
         return
 
     def test_basic_instrument_load_no_input(self):
-        """Test `.load()` loads all data."""
+        """Test that `.load()` loads all data."""
 
         self.testInst.load()
         assert (self.testInst.index[0] == self.testInst.files.start_date)
@@ -426,7 +426,7 @@ class TestBasics(object):
         return
 
     def test_next_load_bad_start_file(self):
-        """Test Error for `.next` when on a file not in iteration list."""
+        """Test Error for `.next()` when on a file not in iteration list."""
 
         self.testInst.load(fname=self.testInst.files[1])
         # set new bounds that doesn't include this date
@@ -440,7 +440,7 @@ class TestBasics(object):
         return
 
     def test_prev_load_bad_start_file(self):
-        """Test Error for `.prev` when on a file not in iteration list."""
+        """Test Error for `.prev()` when on a file not in iteration list."""
 
         self.testInst.load(fname=self.testInst.files[12])
         # set new bounds that doesn't include this date
@@ -454,7 +454,7 @@ class TestBasics(object):
         return
 
     def test_next_load_bad_start_date(self):
-        """Test Error for `.next` when on bad start date."""
+        """Test that `.next()` raises Error on bad start date."""
 
         self.testInst.load(date=self.ref_time)
         # set new bounds that doesn't include this date
@@ -470,7 +470,7 @@ class TestBasics(object):
         return
 
     def test_prev_load_bad_start_date(self):
-        """Test Error for `.prev` when on bad start date."""
+        """Test that `.prev()` raises Error on bad start date."""
 
         self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(date=self.ref_time)
@@ -486,7 +486,7 @@ class TestBasics(object):
         return
 
     def test_next_load_empty_iteration(self):
-        """Ensure empty iteration list is fine via `.next`."""
+        """Ensure empty iteration list is fine via `.next()`."""
 
         self.testInst.bounds = (None, None, '10000D',
                                 dt.timedelta(days=10000))
@@ -498,7 +498,7 @@ class TestBasics(object):
         return
 
     def test_prev_load_empty_iteration(self):
-        """Ensure empty iteration list is fine via `.prev`."""
+        """Ensure empty iteration list is fine via `.prev()`."""
 
         self.testInst.bounds = (None, None, '10000D',
                                 dt.timedelta(days=10000))
@@ -510,7 +510,7 @@ class TestBasics(object):
         return
 
     def test_next_fname_load_default(self):
-        """Test next day is being loaded (checking object date)."""
+        """Test next day loads (checking object date)."""
 
         self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(fname=self.testInst.files[0])
@@ -522,7 +522,7 @@ class TestBasics(object):
         return
 
     def test_prev_fname_load_default(self):
-        """Test prev day is loaded when invoking `.prev`."""
+        """Test prev day loads when invoking `.prev()`."""
 
         self.ref_time = dt.datetime(2008, 1, 3)
         self.testInst.load(fname=self.testInst.files[3])
@@ -577,7 +577,7 @@ class TestBasics(object):
         return
 
     def test_next_filename_load_default(self):
-        """Test next day is loaded when invoking `.next`."""
+        """Test next day loads when invoking `.next()`."""
 
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.next()
@@ -588,7 +588,7 @@ class TestBasics(object):
         return
 
     def test_prev_filename_load_default(self):
-        """Test prev day is loaded when invoking `.prev`."""
+        """Test prev day loads when invoking `.prev()`."""
 
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.prev()
