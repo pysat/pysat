@@ -163,7 +163,7 @@ class Meta(object):
         # Set the labels
         self.labels = MetaLabels(metadata=self, **labels)
 
-        # init higher order (nD) data structure container, a dict
+        # Initialize higher order (nD) data structure container, a dict
         self._ho_data = {}
 
         # Use any user provided data to instantiate object with data
@@ -1191,6 +1191,34 @@ class Meta(object):
                                         'Instrument object.'))
                         raise RuntimeError(rerr)
         return
+
+    def add_epoch_metadata(self, epoch_name):
+        """Add epoch or time-index metadata if it is missing.
+
+        Parameters
+        ----------
+        epoch_name : str
+            Data key for time-index or epoch data
+
+        """
+        # Get existing meta data
+        if epoch_name in self:
+            new_dict = self[self.var_case_name(epoch_name)]
+        else:
+            new_dict = {}
+
+        # Update basic labels, if they are missing
+        epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
+        basic_labels = [self.labels.units, self.labels.name, self.labels.desc,
+                        self.labels.notes]
+        for label in basic_labels:
+            if label not in new_dict or len(new_dict[label]) == 0:
+                new_dict[label] = epoch_label
+
+        # Update the meta data
+        self[self.var_case_name(epoch_name)] = new_dict
+
+        return  
 
     @classmethod
     def from_csv(cls, filename=None, col_names=None, sep=None, **kwargs):
