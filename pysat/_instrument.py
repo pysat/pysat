@@ -21,8 +21,8 @@ import pandas as pds
 import xarray as xr
 
 import pysat
-from pysat import utils
 from pysat import logger
+from pysat import utils
 
 
 class Instrument(object):
