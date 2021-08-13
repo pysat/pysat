@@ -1,4 +1,4 @@
-"""Unit Tests for the general instrument methods."""
+"""Unit tests for the general instrument methods."""
 
 import datetime as dt
 from os import path
@@ -10,7 +10,7 @@ from pysat.instruments.methods import general as gen
 
 
 class TestListFiles(object):
-    """Unit Tests for `pysat.instrument.methods.general.list_files`."""
+    """Unit tests for `pysat.instrument.methods.general.list_files`."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -43,7 +43,7 @@ class TestListFiles(object):
 
 
 class TestFileCadence(object):
-    """Unit Tests for `instruments.methods.general.is_daily_file_cadence`."""
+    """Unit tests for `instruments.methods.general.is_daily_file_cadence`."""
 
     @pytest.mark.parametrize("time_kwarg, time_val, is_daily",
                              [("microseconds", 1, True), ("seconds", 1, True),
@@ -74,7 +74,7 @@ class TestFileCadence(object):
 
 
 class TestRemoveLeadText(object):
-    """Unit Tests for `pysat.instrument.methods.general.remove_leading_text`."""
+    """Unit tests for `pysat.instrument.methods.general.remove_leading_text`."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -152,7 +152,7 @@ class TestRemoveLeadText(object):
 
 
 class TestRemoveLeadTextXarray(TestRemoveLeadText):
-    """Unit Tests for `pysat.instrument.methods.general.remove_leading_text`.
+    """Unit tests for `pysat.instrument.methods.general.remove_leading_text`.
 
     Note
     ----
@@ -207,7 +207,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
 
 
 class TestLoadCSVData(object):
-    """Unit Tests for `pysat.instrument.methods.general.load_csv_data`."""
+    """Unit tests for `pysat.instrument.methods.general.load_csv_data`."""
 
     def setup(self):
         """Set up the unit test environment for each method."""

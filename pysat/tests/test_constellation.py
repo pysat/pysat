@@ -3,7 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Unit Tests for the `constellation` class and methods."""
+"""Unit tests for the `constellation` class and methods."""
 
 import datetime as dt
 from io import StringIO
@@ -17,7 +17,7 @@ from pysat.tests.registration_test_class import TestWithRegistration
 
 
 class TestConstellationInitReg(TestWithRegistration):
-    """Unit Tests for the Constellation class with registered Instruments."""
+    """Unit tests for the Constellation class with registered Instruments."""
 
     @pytest.mark.parametrize("ikeys, ivals, ilen",
                              [(["platforms", "tags"], [["platname1"], [""]], 2),
