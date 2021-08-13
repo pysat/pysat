@@ -35,7 +35,7 @@ def mult_data(inst, mult, dkey="mlt"):
     return
 
 
-class TestLogging():
+class TestLogging(object):
     """Unit Tests for logging interface with custom functions."""
 
     def setup(self):
@@ -68,7 +68,7 @@ class TestLogging():
         return
 
 
-class TestBasics():
+class TestBasics(object):
     """Unit tests for `pysat.instrument.custom_attach` with a pandas inst."""
 
     def setup(self):
@@ -130,8 +130,8 @@ class TestBasics():
         return
 
     def test_single_modifying_custom_function_error(self):
-        """Test for error when custom function loaded as modify returns a value.
-        """
+        """Test for error if 'modify' custom function returns a value."""
+
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
             return 5.0 * inst.data['mlt']
@@ -252,7 +252,7 @@ class TestBasicsXarray(TestBasics):
         return
 
 
-class TestConstellationBasics():
+class TestConstellationBasics(object):
     """Unit tests for `pysat.instrument.custom_attach` with a constellation."""
 
     def setup(self):
@@ -284,8 +284,8 @@ class TestConstellationBasics():
         return
 
     def test_single_modifying_custom_function_error(self):
-        """Test for error when custom function loaded as modify returns a value.
-        """
+        """Test for error when 'modify' custom function returns a value."""
+
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
             return 5.0 * inst.data['mlt']

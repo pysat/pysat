@@ -21,9 +21,8 @@ from pysat.utils import testing
 logger = pysat.logger
 
 
-class TestBasics():
-    """Basic unit tests for metadata operations.
-    """
+class TestBasics(object):
+    """Basic unit tests for metadata operations."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -66,8 +65,8 @@ class TestBasics():
         return
 
     def test_default_label_value_raises_error(self):
-        """Test `MetaLabels.default_values_from_attr` ValueError with bad attr.
-        """
+        """Test `MetaLabels.default_values_from_attr` errors with bad attr."""
+
         with pytest.raises(ValueError) as verr:
             self.meta.labels.default_values_from_attr('not_an_attr')
 
@@ -436,8 +435,7 @@ class TestBasics():
         return
 
     def test_inst_assign_from_meta_w_ho_then_update(self):
-        """Test assignment of `Instrument.meta` from separate Meta with HO data.
-        """
+        """Test assign `Instrument.meta` from separate Meta with HO data."""
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
@@ -677,8 +675,8 @@ class TestBasics():
         return
 
     def test_basic_concat_w_ho_collisions_not_strict(self):
-        """Test under non-strict concat with HO metadata with multiple overlaps.
-        """
+        """Test non-strict concat with HO metadata with multiple overlaps."""
+
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo'}
@@ -1038,8 +1036,8 @@ class TestBasics():
         return
 
     def test_multiple_input_names_null_value_preexisting_values(self):
-        """Test setting multiple input names to null with pre-existing values.
-        """
+        """Test setting multiple input names to null w/ pre-existing values."""
+
         self.meta[['test1', 'test2']] = {'units': ['degrees', 'hams'],
                                          'long_name': ['testing', 'further']}
         self.meta[['test1', 'test2']] = {}
@@ -1120,8 +1118,8 @@ class TestBasics():
         return
 
     def test_change_case_of_meta_labels(self):
-        """Test changing case of meta labels after initialization.
-        """
+        """Test changing case of meta labels after initialization."""
+
         self.meta_labels = {'units': ('units', str), 'name': ('long_name', str)}
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -1135,8 +1133,8 @@ class TestBasics():
         return
 
     def test_case_change_of_meta_labels_w_ho(self):
-        """Test changing case of meta labels after initialization with HO data.
-        """
+        """Test change case of meta labels after initialization with HO data."""
+
         # Set the initial labels
         self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
         self.meta = pysat.Meta(labels=self.meta_labels)
@@ -1161,8 +1159,8 @@ class TestBasics():
         return
 
     def test_change_Units_and_Name_case_w_ho_wrong_case(self):
-        """Test that `units` and `long_name` will error if label case is wrong.
-        """
+        """Test that `units` and `long_name` error if label case is wrong."""
+
         self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
         self.meta = pysat.Meta(labels=self.meta_labels)
         meta2 = pysat.Meta(labels=self.meta_labels)
@@ -1231,8 +1229,8 @@ class TestBasics():
         return
 
     def test_get_attribute_name_case_preservation_w_higher_order(self):
-        """Test that getting attribute names preserves the case with ho metadata.
-        """
+        """Test that get attribute names preserves the case with ho metadata."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1250,8 +1248,8 @@ class TestBasics():
         return
 
     def test_get_attribute_name_case_preservation_w_higher_order_2(self):
-        """Test that getting attribute names preserves the case with ho metadata.
-        """
+        """Test that get attribute names preserves the case with ho metadata."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -1269,8 +1267,8 @@ class TestBasics():
         return
 
     def test_get_attribute_name_case_preservation_w_ho_reverse_order(self):
-        """Test that getting attribute names preserves the case when reversed.
-        """
+        """Test that getting attribute names preserves the case in reverse."""
+
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',

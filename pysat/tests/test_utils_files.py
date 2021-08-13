@@ -13,12 +13,12 @@ import pytest
 import tempfile
 
 import pysat
+from pysat.tests.ci_test_class import CICleanSetup
 from pysat.utils import files as futils
 from pysat.utils import testing
-from pysat.tests.ci_test_class import CICleanSetup
 
 
-class TestParseDelimitedFilenames():
+class TestParseDelimitedFilenames(object):
     """Unit tests for the `parse_delimited_filename` function."""
 
     def setup(self):

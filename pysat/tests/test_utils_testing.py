@@ -11,7 +11,7 @@ import pytest
 from pysat.utils import testing
 
 
-class TestTestingUtils():
+class TestTestingUtils(object):
     """Unit tests for `pysat.utils.testing` functions."""
 
     @pytest.mark.parametrize("slist, blist",
@@ -20,6 +20,7 @@ class TestTestingUtils():
                               ([None, False], [True, False, None])])
     def test_assert_list_contains_good(self, slist, blist):
         """Test the successful evaluation of overlapping list contents."""
+
         testing.assert_list_contains(slist, blist)
         return
 
@@ -28,8 +29,8 @@ class TestTestingUtils():
                               (['one', 'two'], ['three', 'one']),
                               ([None, False], [True, False, "None"])])
     def test_assert_list_contains_bad(self, slist, blist):
-        """Test raises AssertionError for lists with elements that are unique.
-        """
+        """Test raises AssertionError for lists where elements are unique."""
+
         with pytest.raises(AssertionError) as aerr:
             testing.assert_list_contains(slist, blist)
 
@@ -45,6 +46,7 @@ class TestTestingUtils():
                               ([np.nan, 1], [1, np.nan], {"test_nan": True})])
     def test_assert_list_equal_good(self, slist, blist, kwargs):
         """Test the evaluation of lists with unordered but identical values."""
+
         testing.assert_lists_equal(slist, blist, **kwargs)
         return
 
@@ -56,6 +58,7 @@ class TestTestingUtils():
                               ([None, False], [True, False, "None"])])
     def test_assert_list_equal_bad(self, slist, blist):
         """Test the evaluation of overlapping list contents."""
+
         with pytest.raises(AssertionError):
             testing.assert_lists_equal(slist, blist)
         return
@@ -66,6 +69,7 @@ class TestTestingUtils():
                                             (np.inf, np.inf), (10, 10)])
     def test_nan_equal_good(self, val1, val2):
         """Test successful evaluation of equivalent values."""
+
         assert testing.nan_equal(val1, val2)
         return
 
@@ -75,5 +79,6 @@ class TestTestingUtils():
                                             (np.inf, -np.inf), (1, 11)])
     def test_nan_equal_bad(self, val1, val2):
         """Test successful evaluation of un-equivalent values."""
+
         assert not testing.nan_equal(val1, val2)
         return
