@@ -157,7 +157,7 @@ class Parameters(object):
         return
 
     def __repr__(self):
-        """Describe Parameters instantiation parameters.
+        """Describe the `Parameters` instantiation parameters.
 
         Returns
         -------
@@ -170,7 +170,7 @@ class Parameters(object):
         return out_str
 
     def __str__(self, long_str=True):
-        """Describe Parameters instance, variables, and attributes.
+        """Describe the `Parameters` instance, variables, and attributes.
 
         Parameters
         ----------
@@ -245,8 +245,7 @@ class Parameters(object):
         self.store()
 
     def _set_data_dirs(self, path=None, store=True):
-        """
-        Set the top level directories pysat uses to store and load data.
+        """Set the top level directories pysat uses to store and load data.
 
         Parameters
         ----------
@@ -295,6 +294,7 @@ class Parameters(object):
         Note
         ----
         pysat parameters without a default value are set to [].
+
         """
 
         # Clear current data and assign a copy of default values
@@ -332,8 +332,7 @@ class Parameters(object):
         return
 
     def store(self):
-        """Store parameters using the filename specified in self.file_path.
-        """
+        """Store parameters using the filename specified in self.file_path."""
 
         # Store settings in file
         with Lock(self.file_path, 'w', self['file_timeout']) as fout:
