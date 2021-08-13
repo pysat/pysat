@@ -1590,12 +1590,16 @@ class Instrument(object):
                                  export_nan=None):
         """Filter metadata properties to be consistent with netCDF4.
 
+        .. deprecated:: 3.2.0
+            Moved to `pysat.utils.io.filter_netcdf4_metadata. This wrapper
+            will be removed in 3.2.0+.
+
         Parameters
         ----------
         mdata_dict : dict
             Dictionary equivalent to Meta object info
         coltype : type
-            Type provided by _get_data_info
+            Data type provided by pysat.Instrument._get_data_info
         remove : bool
             Removes FillValue and associated parameters disallowed for strings
             (default=False)
@@ -1607,74 +1611,31 @@ class Instrument(object):
         dict
             Modified as needed for netCDf4
 
+        Warnings
+        --------
+        UserWarning
+            When data removed due to conflict between value and type
+
         Note
         ----
         Remove forced to True if coltype consistent with a string type
 
-        Metadata values that are NaN and not listed in export_nan are
-        filtered out.
+        Metadata values that are NaN and not listed in export_nan are removed.
+
+        See Also
+        --------
+        pysat.utils.io.filter_netcdf4_metadata
 
         """
+        warnings.warn("".join(["`pysat.Instrument._filter_netcdf4_metadata` ",
+                               "has been deprecated and will be removed ",
+                               "in pysat 3.2.0+. Use `pysat.utils.io.",
+                               "filter_netcdf4_metadata` instead."]),
+                      DeprecationWarning, stacklevel=2)
 
-        # Remove any metadata with a value of NaN not present in export_nan
-        filtered_dict = mdata_dict.copy()
-        for key, value in mdata_dict.items():
-            try:
-                if np.isnan(value):
-                    if key not in export_nan:
-                        filtered_dict.pop(key)
-            except TypeError:
-                # If a TypeError thrown, it's not NaN
-                pass
-        mdata_dict = filtered_dict
-
-        # Coerce boolean types to integers
-        for key in mdata_dict:
-            if type(mdata_dict[key]) == bool:
-                mdata_dict[key] = int(mdata_dict[key])
-        if coltype == str:
-            remove = True
-            warnings.warn('FillValue is not an acceptable '
-                          'parameter for strings - it will be removed')
-
-        # Make sure _FillValue is the same type as the data
-        if '_FillValue' in mdata_dict.keys():
-            if remove:
-                mdata_dict.pop('_FillValue')
-            else:
-                if not np.can_cast(mdata_dict['_FillValue'], coltype):
-                    if 'FieldNam' in mdata_dict:
-                        estr = ' '.join(('FillValue for {a:s} ({b:s}) cannot',
-                                         'be safely casted to {c:s} Casting',
-                                         'anyways. This may result in',
-                                         'unexpected behavior'))
-                        estr.format(a=mdata_dict['FieldNam'],
-                                    b=str(mdata_dict['_FillValue']),
-                                    c=coltype)
-                        warnings.warn(estr)
-                    else:
-                        estr = ' '.join(('FillValue {a:s} cannot be safely',
-                                         'casted to {b:s}. Casting anyways.',
-                                         'This may result in unexpected',
-                                         'behavior'))
-                        estr.format(a=str(mdata_dict['_FillValue']),
-                                    b=coltype)
-
-        # check if load routine actually returns meta
-        if self.meta.data.empty:
-            self.meta[self.variables] = {self.meta.labels.name: self.variables,
-                                         self.meta.labels.units:
-                                         [''] * len(self.variables)}
-
-        # Make sure FillValue is the same type as the data
-        if 'FillVal' in mdata_dict.keys():
-            if remove:
-                mdata_dict.pop('FillVal')
-            else:
-                mdata_dict['FillVal'] = np.array(
-                    mdata_dict['FillVal']).astype(coltype)
-
-        return mdata_dict
+        return utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
+                                                remove=remove,
+                                                export_nan=export_nan)
 
     # -----------------------------------------------------------------------
     # Define all accessible methods
@@ -2543,8 +2504,8 @@ class Instrument(object):
             # names of the attributes that hold the various meta labels
             translation_table = {}
             for key in self._meta_translation_table:
-                translation_table[getattr(self, key)] = \
-                    self._meta_translation_table[key]
+                translation_table[
+                    getattr(self, key)] = self._meta_translation_table[key]
         else:
             translation_table = None
 
@@ -2559,8 +2520,8 @@ class Instrument(object):
                 for orig_key in meta_dict:
                     if orig_key in translation_table:
                         for translated_key in translation_table[orig_key]:
-                            export_dict[key][translated_key] = \
-                                meta_dict[orig_key]
+                            export_dict[
+                                key][translated_key] = meta_dict[orig_key]
                     else:
                         export_dict[key][orig_key] = meta_dict[orig_key]
 
@@ -2581,11 +2542,10 @@ class Instrument(object):
                     for orig_key in meta_dict:
                         if orig_key in translation_table:
                             for translated_key in translation_table[orig_key]:
-                                export_dict[new_key][translated_key] = \
-                                    meta_dict[orig_key]
+                                export_dict[new_key][
+                                    translated_key] = meta_dict[orig_key]
                         else:
-                            export_dict[new_key][orig_key] = \
-                                meta_dict[orig_key]
+                            export_dict[new_key][orig_key] = meta_dict[orig_key]
         return export_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
@@ -2692,7 +2652,7 @@ class Instrument(object):
 
         # Set options used by loading routine based upon user input
         if (yr is not None) and (doy is not None):
-            if doy < 1 or (doy > 366):
+            if (doy < 1) or (doy > 366):
                 estr = ''.join(('Day of year (doy) is only valid between and ',
                                 'including 1-366.'))
                 raise ValueError(estr)
@@ -3301,13 +3261,18 @@ class Instrument(object):
                    unlimited_time=True):
         """Store loaded data into a netCDF4 file.
 
+        .. deprecated:: 3.2.0
+            Changed `fname` from a kwarg to an arg of type str in the 3.2.0+
+            release. Removed `base_instrument` as a kwarg.
+
         Parameters
         ----------
-        fname : str
-            Full path to save instrument object to
-        base_instrument : pysat.Instrument
+        fname : str or NoneType
+            Full path to save instrument object to (default=None)
+        base_instrument : pysat.Instrument or NoneType
             Class used as a comparison, only attributes that are present with
-            self and not on base_instrument are written to netCDF
+            self and not on base_instrument are written to netCDF. Using None
+            assigns an unmodified pysat.Instrument object. (default=None)
         epoch_name : str
             Label in file for datetime index of Instrument object
         zlib : bool
@@ -3337,491 +3302,26 @@ class Instrument(object):
              Flag specifying whether or not the epoch/time dimension should be
              unlimited; it is when the flag is True. (default=True)
 
-        Note
-        ----
-        Stores 1-D data along dimension 'epoch' - the date time index.
+        Raises
+        ------
+        ValueError
+            If required kwargs are not given values
 
-        Stores higher order data (e.g. dataframes within series) separately
-
-         - The name of the main variable column is used to prepend subvariable
-           names within netCDF, var_subvar_sub
-         - A netCDF4 dimension is created for each main variable column
-           with higher order data; first dimension Epoch
-         - The index organizing the data stored as a dimension variable
-         - from_netcdf4 uses the variable dimensions to reconstruct data
-           structure
-
-        All attributes attached to instrument meta are written to netCDF attrs
-        with the exception of 'Date_End', 'Date_Start', 'File', 'File_Date',
-        'Generation_Date', and 'Logical_File_ID'. These are defined within
-        to_netCDF at the time the file is written, as per the adopted standard,
-        SPDF ISTP/IACG Modified for NetCDF. Atrributes 'Conventions' and
-        'Text_Supplement' are given default values if not present.
+        See Also
+        --------
+        pysat.utils.io.to_netcdf
 
         """
-
-        # Check export nans first
-        if export_nan is None:
-            export_nan = self.meta._export_nan
-
-        # Base_instrument used to define the standard attributes attached
-        # to the instrument object. Any additional attributes added
-        # to the main input Instrument will be written to the netCDF4
-        base_instrument = Instrument() if base_instrument is None \
-            else base_instrument
-
-        # Begin processing metadata for writing to the file. Look to see if
-        # user supplied a list of export keys corresponding to internally
-        # tracked metadata within pysat
-        export_meta = self.generic_meta_translator(self.meta)
-        if self._meta_translation_table is None:
-            # Didn't find a translation table, using the strings
-            # attached to the supplied pysat.Instrument object
-            export_name_labels = [self.meta.labels.name]
-            export_units_labels = [self.meta.labels.units]
-            export_desc_labels = [self.meta.labels.desc]
-            export_notes_labels = [self.meta.labels.notes]
-        else:
-            # User supplied labels in translation table
-            export_name_labels = self._meta_translation_table['name']
-            export_units_labels = self._meta_translation_table['units']
-            export_desc_labels = self._meta_translation_table['desc']
-            export_notes_labels = self._meta_translation_table['notes']
-            logger.info(' '.join(('Using Metadata Translation Table:',
-                                  str(self._meta_translation_table))))
-
-        # Apply instrument specific post-processing to the export_meta
-        if hasattr(self._export_meta_post_processing, '__call__'):
-            export_meta = self._export_meta_post_processing(export_meta)
-
-        # Check if there are multiple variables with same characters
-        # but with different case
-        lower_variables = [var.lower() for var in self.variables]
-        unique_lower_variables = np.unique(lower_variables)
-        if len(unique_lower_variables) != len(lower_variables):
-            raise ValueError(' '.join(('There are multiple variables with the',
-                                       'same name but different case which',
-                                       'results in a loss of metadata. Please',
-                                       'make the names unique.')))
-
-        # General process for writing data:
-        # 1) take care of the EPOCH information,
-        # 2) iterate over the variable colums in Instrument.data and check
-        #    the type of data,
-        #    - if 1D column:
-        #      A) do simple write (type is not an object)
-        #      B) if it is an object, then check if writing strings
-        #      C) if not strings, write object
-        #    - if column is a Series of Frames, write as 2D variables
-        # 3) metadata must be filtered before writing to netCDF4, since
-        #    string variables can't have a fill value
-        with netCDF4.Dataset(fname, mode='w', format='NETCDF4') as out_data:
-            # Specify the number of items, to reduce function calls
-            num = len(self.index)
-
-            # write out the datetime index
-            if unlimited_time:
-                out_data.createDimension(epoch_name, None)
-            else:
-                out_data.createDimension(epoch_name, num)
-            cdfkey = out_data.createVariable(epoch_name, 'i8',
-                                             dimensions=(epoch_name),
-                                             zlib=zlib,
-                                             complevel=complevel,
-                                             shuffle=shuffle)
-
-            # grab existing metadata for Epoch or create suitable info
-            if epoch_name in self.meta:
-                new_dict = export_meta[self.meta.var_case_name(epoch_name)]
-            else:
-                # create empty shell
-                new_dict = {}
-
-            # update required and basic information if not present
-            for export_name_label in export_name_labels:
-                if export_name_label not in new_dict:
-                    new_dict[export_name_label] = epoch_name
-
-            for export_units_label in export_units_labels:
-                if export_units_label not in new_dict:
-                    new_dict[export_units_label] = \
-                        'Milliseconds since 1970-1-1 00:00:00'
-
-            for export_desc_label in export_desc_labels:
-                if export_desc_label not in new_dict:
-                    new_dict[export_desc_label] = \
-                        'Milliseconds since 1970-1-1 00:00:00'
-
-            for export_notes_label in export_notes_labels:
-                if export_notes_label not in new_dict:
-                    new_dict[export_notes_label] = ''
-
-            new_dict['calendar'] = 'standard'
-            new_dict['Format'] = 'i8'
-            new_dict['Var_Type'] = 'data'
-            if self.index.is_monotonic_increasing:
-                new_dict['MonoTon'] = 'increase'
-            elif self.index.is_monotonic_decreasing:
-                new_dict['MonoTon'] = 'decrease'
-            new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
-            new_dict['Time_Scale'] = 'UTC'
-            new_dict = self._filter_netcdf4_metadata(new_dict, np.int64,
-                                                     export_nan=export_nan)
-            # attach metadata
-            cdfkey.setncatts(new_dict)
-
-            # Attach the time index to the data
-            cdfkey[:] = (self.index.values.astype(np.int64)
-                         * 1.E-6).astype(np.int64)
-
-            # iterate over all of the columns in the Instrument dataframe
-            # check what kind of data we are dealing with, then store
-            for key in self.variables:
-                # get information on type data we are dealing with
-                # data is data in proer type( multiformat support)
-                # coltype is the direct type, np.int64
-                # and datetime_flag lets you know if the data is full of time
-                # information
-                if preserve_meta_case:
-                    # use the variable case stored in the MetaData object
-                    case_key = self.meta.var_case_name(key)
-                else:
-                    # use variable names used by user when working with data
-                    case_key = key
-
-                data, coltype, datetime_flag = self._get_data_info(self[key])
-
-                # operate on data based upon type
-                if self[key].dtype != np.dtype('O'):
-                    # not an object, normal basic 1D data
-                    cdfkey = out_data.createVariable(case_key,
-                                                     coltype,
-                                                     dimensions=(epoch_name),
-                                                     zlib=zlib,
-                                                     complevel=complevel,
-                                                     shuffle=shuffle)
-
-                    # attach any meta data, after filtering for standards
-                    try:
-                        # attach dimension metadata
-                        new_dict = export_meta[case_key]
-                        new_dict['Depend_0'] = epoch_name
-                        new_dict['Display_Type'] = 'Time Series'
-                        new_dict['Format'] = self._get_var_type_code(coltype)
-                        new_dict['Var_Type'] = 'data'
-                        new_dict = self._filter_netcdf4_metadata(
-                            new_dict, coltype, export_nan=export_nan)
-                        cdfkey.setncatts(new_dict)
-                    except KeyError as err:
-                        logger.info(' '.join((str(err), '\n',
-                                              ' '.join(('Unable to find'
-                                                        'MetaData for',
-                                                        key)))))
-                    # assign data
-                    if datetime_flag:
-                        # datetime is in nanoseconds, storing milliseconds
-                        cdfkey[:] = (data.values.astype(coltype)
-                                     * 1.0E-6).astype(coltype)
-                    else:
-                        # not datetime data, just store as is
-                        cdfkey[:] = data.values.astype(coltype)
-
-                # back to main check on type of data to write
-                else:
-                    # It is a Series of objects.  First, figure out what the
-                    # individual object typess are.  Then, act as needed.
-
-                    # Use info in coltype to get real datatype of object
-                    if (coltype == str):
-                        cdfkey = out_data.createVariable(case_key,
-                                                         coltype,
-                                                         dimensions=epoch_name,
-                                                         zlib=zlib,
-                                                         complevel=complevel,
-                                                         shuffle=shuffle)
-                        # Attach any meta data
-                        try:
-                            # Attach dimension metadata
-                            new_dict = export_meta[case_key]
-                            new_dict['Depend_0'] = epoch_name
-                            new_dict['Display_Type'] = 'Time Series'
-                            new_dict['Format'] = self._get_var_type_code(
-                                coltype)
-                            new_dict['Var_Type'] = 'data'
-
-                            # No FillValue or FillVal allowed for strings
-                            new_dict = self._filter_netcdf4_metadata(
-                                new_dict, coltype, remove=True,
-                                export_nan=export_nan)
-
-                            # Really attach metadata now
-                            cdfkey.setncatts(new_dict)
-                        except KeyError:
-                            logger.info(' '.join(('Unable to find MetaData for',
-                                                  key)))
-
-                        # Time to actually write the data now
-                        cdfkey[:] = data.values
-
-                    # Still dealing with an object, not just a Series of
-                    # strings.  Maps to `if` check on coltypes, being
-                    # string-based.
-                    else:
-                        # Presuming a series with a dataframe or series in each
-                        # location start by collecting some basic info on
-                        # dimensions sizes, names, then create corresponding
-                        # netCDF4 dimensions total dimensions stored for object
-                        # are epoch plus ones created below
-                        dims = np.shape(self[key].iloc[0])
-                        obj_dim_names = []
-                        if len(dims) == 1:
-                            # generally working with higher dimensional data
-                            # pad dimensions so that the rest of the code works
-                            # for either a Series or a Frame
-                            dims = (dims[0], 0)
-                        for i, dim in enumerate(dims[:-1]):
-                            # don't need to go over last dimension value,
-                            # it covers number of columns (if a frame)
-                            obj_dim_names.append(case_key)
-                            out_data.createDimension(obj_dim_names[-1], dim)
-
-                        # create simple tuple with information needed to create
-                        # the right dimensions for variables that will
-                        # be written to file
-                        var_dim = tuple([epoch_name] + obj_dim_names)
-
-                        # We need to do different things if a series or
-                        # dataframe stored
-                        try:
-                            # start by assuming it is a dataframe
-                            # get list of subvariables
-                            iterable = self[key].iloc[0].columns
-
-                            # store our newfound knowledge, we are dealing with
-                            # a series of DataFrames
-                            is_frame = True
-                        except AttributeError:
-                            # turns out data is Series of Series
-                            # which doesn't have columns
-                            iterable = [self[key].iloc[0].name]
-                            is_frame = False
-
-                        # find location within main variable that actually
-                        # has subvariable data (not just empty frame/series)
-                        # so we can determine what the real underlying data
-                        # types are
-                        good_data_loc = 0
-                        for jjj in np.arange(len(self.data)):
-                            if len(self.data[key].iloc[0]) > 0:
-                                data_loc = jjj
-                                break
-
-                        # found a place with data, if there is one
-                        # now iterate over the subvariables, get data info
-                        # create netCDF4 variables and store the data
-                        # stored name is variable_subvariable
-                        for col in iterable:
-                            if is_frame:
-                                # we are working with a dataframe so
-                                # multiple subvariables stored under a single
-                                # main variable heading
-                                idx = self[key].iloc[good_data_loc][col]
-                                data, coltype, _ = self._get_data_info(idx)
-                                cdfkey = out_data.createVariable(
-                                    '_'.join((case_key, col)), coltype,
-                                    dimensions=var_dim, zlib=zlib,
-                                    complevel=complevel, shuffle=shuffle)
-
-                                # attach any meta data
-                                try:
-                                    new_dict = export_meta['_'.join((case_key,
-                                                                     col))]
-                                    new_dict['Depend_0'] = epoch_name
-                                    new_dict['Depend_1'] = obj_dim_names[-1]
-                                    new_dict['Display_Type'] = 'Spectrogram'
-                                    new_dict['Format'] = \
-                                        self._get_var_type_code(coltype)
-                                    new_dict['Var_Type'] = 'data'
-                                    new_dict = self._filter_netcdf4_metadata(
-                                        new_dict, coltype,
-                                        export_nan=export_nan)
-                                    cdfkey.setncatts(new_dict)
-                                except KeyError as err:
-                                    logger.info(' '.join((str(err), '\n',
-                                                          'Unable to find',
-                                                          'MetaData for',
-                                                          ', '.join((key,
-                                                                     col)))))
-
-                                # Attach data.  It may be slow to repeatedly
-                                # call the store method as well astype method
-                                # below collect data into a numpy array, then
-                                # write the full array in one go
-                                temp_cdf_data = np.zeros(
-                                    (num, dims[0])).astype(coltype)
-                                for i in range(num):
-                                    temp_cdf_data[i, :] = \
-                                        self[key].iloc[i][col].values
-
-                                # Write data
-                                cdfkey[:, :] = temp_cdf_data.astype(coltype)
-
-                            else:
-                                # We are dealing with a Series.  Get
-                                # information from within the series
-                                idx = self[key].iloc[good_data_loc]
-                                data, coltype, _ = self._get_data_info(idx)
-                                cdfkey = out_data.createVariable(
-                                    case_key + '_data', coltype,
-                                    dimensions=var_dim, zlib=zlib,
-                                    complevel=complevel, shuffle=shuffle)
-
-                                # Attach any meta data
-                                try:
-                                    new_dict = export_meta[case_key]
-                                    new_dict['Depend_0'] = epoch_name
-                                    new_dict['Depend_1'] = obj_dim_names[-1]
-                                    new_dict['Display_Type'] = 'Spectrogram'
-                                    new_dict['Format'] = \
-                                        self._get_var_type_code(coltype)
-                                    new_dict['Var_Type'] = 'data'
-                                    new_dict = self._filter_netcdf4_metadata(
-                                        new_dict, coltype,
-                                        export_nan=export_nan)
-
-                                    # Really attach metadata now
-                                    cdfkey.setncatts(new_dict)
-                                except KeyError as err:
-                                    logger.info(' '.join((str(err), '\n',
-                                                          'Unable to find ',
-                                                          'MetaData for,',
-                                                          key)))
-                                # attach data
-                                temp_cdf_data = np.zeros(
-                                    (num, dims[0])).astype(coltype)
-                                for i in range(num):
-                                    temp_cdf_data[i, :] = self[i, key].values
-                                # write data
-                                cdfkey[:, :] = temp_cdf_data.astype(coltype)
-
-                        # We are done storing the actual data for the given
-                        # higher order variable. Now we need to store the index
-                        # for all of that fancy data.
-
-                        # Get index information
-                        idx = good_data_loc
-                        data, coltype, datetime_flag = self._get_data_info(
-                            self[key].iloc[idx].index)
-
-                        # Create dimension variable for to store index in
-                        # netCDF4
-                        cdfkey = out_data.createVariable(case_key, coltype,
-                                                         dimensions=var_dim,
-                                                         zlib=zlib,
-                                                         complevel=complevel,
-                                                         shuffle=shuffle)
-
-                        # Work with metadata
-                        new_dict = export_meta[case_key]
-                        new_dict['Depend_0'] = epoch_name
-                        new_dict['Depend_1'] = obj_dim_names[-1]
-                        new_dict['Display_Type'] = 'Time Series'
-                        new_dict['Format'] = self._get_var_type_code(coltype)
-                        new_dict['Var_Type'] = 'data'
-
-                        if datetime_flag:
-                            for export_name_label in export_name_labels:
-                                new_dict[export_name_label] = epoch_name
-                            for export_units_label in export_units_labels:
-                                new_dict[export_units_label] = \
-                                    'Milliseconds since 1970-1-1 00:00:00'
-                            new_dict = self._filter_netcdf4_metadata(
-                                new_dict, coltype, export_nan=export_nan)
-
-                            # Set metadata dict
-                            cdfkey.setncatts(new_dict)
-
-                            # Set data
-                            temp_cdf_data = np.zeros((num,
-                                                      dims[0])).astype(coltype)
-                            for i in range(num):
-                                temp_cdf_data[i, :] = self[i, key].index.values
-                            cdfkey[:, :] = (temp_cdf_data.astype(coltype)
-                                            * 1.E-6).astype(coltype)
-
-                        else:
-                            if self[key].iloc[data_loc].index.name is not None:
-                                for export_name_label in export_name_labels:
-                                    new_dict[export_name_label] = \
-                                        self[key].iloc[data_loc].index.name
-                            else:
-                                for export_name_label in export_name_labels:
-                                    new_dict[export_name_label] = key
-                            new_dict = self._filter_netcdf4_metadata(
-                                new_dict, coltype, export_nan=export_nan)
-
-                            # Assign metadata dict
-                            cdfkey.setncatts(new_dict)
-
-                            # Set data
-                            temp_cdf_data = np.zeros(
-                                (num, dims[0])).astype(coltype)
-                            for i in range(num):
-                                temp_cdf_data[i, :] = \
-                                    self[key].iloc[i].index.astype(str)
-                            cdfkey[:, :] = temp_cdf_data.astype(coltype)
-
-            # Store any non standard attributes. Compare this Instrument's
-            # attributes to base object
-            base_attrb = dir(base_instrument)
-            this_attrb = dir(self)
-
-            # Filter out any 'private' attributes (those that start with a '_')
-            adict = {}
-            for key in this_attrb:
-                if key not in base_attrb:
-                    if key[0] != '_':
-                        adict[key] = self.__getattribute__(key)
-
-            # Add additional metadata to conform to standards
-            adict['pysat_version'] = pysat.__version__
-            if 'Conventions' not in adict:
-                adict['Conventions'] = 'SPDF ISTP/IACG Modified for NetCDF'
-            if 'Text_Supplement' not in adict:
-                adict['Text_Supplement'] = ''
-
-            # Remove any attributes with the names below.
-            # pysat is responible for including them in the file.
-            items = ['Date_End', 'Date_Start', 'File', 'File_Date',
-                     'Generation_Date', 'Logical_File_ID']
-            for item in items:
-                if item in adict:
-                    _ = adict.pop(item)
-
-            adict['Date_End'] = dt.datetime.strftime(
-                self.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
-            adict['Date_End'] = adict['Date_End'][:-3] + ' UTC'
-
-            adict['Date_Start'] = dt.datetime.strftime(
-                self.index[0], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
-            adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
-            adict['File'] = os.path.split(fname)
-            adict['File_Date'] = self.index[-1].strftime(
-                '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
-            adict['File_Date'] = adict['File_Date'][:-3] + ' UTC'
-            adict['Generation_Date'] = dt.datetime.utcnow().strftime('%Y%m%d')
-            adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
-
-            # check for binary types, convert when found
-            for key in adict.keys():
-                if adict[key] is None:
-                    adict[key] = ''
-                elif isinstance(adict[key], bool):
-                    adict[key] = int(adict[key])
-
-            # attach attributes
-            out_data.setncatts(adict)
-        return
+        if fname is None:
+            warnings.warn("".join(["`fname` as a kwarg has been deprecated, ",
+                                   "must supply a filename 3.2.0+"]),
+                          DeprecationWarning, stacklevel=2)
+            raise ValueError("Must supply an output filename")
+        
+        utils.io.inst_to_netcdf(self, fname=fname, base_instrument=base_instrument, epoch_name=epoch_name,
+                    zlib=zlib, complevel=complevel, shuffle=shuffle,
+                    preserve_meta_case=preserve_meta_case, export_nan=export_nan,
+                    unlimited_time=unlimited_time)
 
 
 # ----------------------------------------------------------------------------
