@@ -18,7 +18,7 @@ from pysat.tests.ci_test_class import CICleanSetup
 
 
 class TestBasics(object):
-    """Unit Tests for accessing and changing `pysat._params`."""
+    """Unit tests for accessing and changing `pysat._params`."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
