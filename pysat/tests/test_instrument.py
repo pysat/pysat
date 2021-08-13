@@ -34,7 +34,7 @@ testing_kwargs = {'test_init_kwarg': True, 'test_clean_kwarg': False,
 # Test Instrument object basics
 #
 # -----------------------------------------------------------------------------
-class TestBasics():
+class TestBasics(object):
     """Unit Tests for pysat.Instrument object."""
 
     def setup(self):
