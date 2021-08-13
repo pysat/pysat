@@ -17,7 +17,7 @@ from pysat._params import Parameters  # required for eval statements
 from pysat.tests.ci_test_class import CICleanSetup
 
 
-class TestBasics():
+class TestBasics(object):
     """Unit Tests for accessing and changing `pysat._params`."""
 
     def setup(self):
@@ -187,6 +187,7 @@ class TestCIonly(CICleanSetup):
     Note
     ----
     These only run in CI environments to avoid breaking an end user's setup
+
     """
 
     def test_settings_file_must_be_present(self, capsys):

@@ -5,6 +5,7 @@ import datetime as dt
 from importlib import reload
 import logging
 import numpy as np
+import warnings
 
 import pandas as pds
 import pytest
@@ -12,9 +13,9 @@ import xarray as xr
 
 import pysat
 import pysat.instruments.pysat_testing
-import pysat.instruments.pysat_testing_xarray
 import pysat.instruments.pysat_testing2d
 import pysat.instruments.pysat_testing2d_xarray
+import pysat.instruments.pysat_testing_xarray
 from pysat.utils import generate_instrument_list
 from pysat.utils.time import filter_datetime_input
 
@@ -33,8 +34,8 @@ testing_kwargs = {'test_init_kwarg': True, 'test_clean_kwarg': False,
 # Test Instrument object basics
 #
 # -----------------------------------------------------------------------------
-class TestBasics():
-    """Basic tests for pandas `pysat.Instrument`."""
+class TestBasics(object):
+    """Unit Tests for pysat.Instrument object."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -173,8 +174,8 @@ class TestBasics():
         return
 
     def test_basic_instrument_load(self):
-        """Test that the correct day is loaded, specifying only start year, doy.
-        """
+        """Test that the correct day loads with input year and doy."""
+
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy)
 
@@ -193,8 +194,8 @@ class TestBasics():
         return
 
     def test_basic_instrument_load_two_days(self):
-        """Test that the correct day is loaded (checking object date and data).
-        """
+        """Test that the correct day loads (checking object date and data)."""
+
         # Load the reference date
         end_date = self.ref_time + dt.timedelta(days=2)
         end_doy = int(end_date.strftime("%j"))
@@ -206,8 +207,7 @@ class TestBasics():
         return
 
     def test_basic_instrument_bad_keyword_init(self):
-        """Check for error when instantiating with bad load keywords on init.
-        """
+        """Check for error when instantiating with bad load keywords on init."""
 
         # Test that the correct error is raised
         with pytest.raises(ValueError) as verr:
@@ -333,8 +333,8 @@ class TestBasics():
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_basic_instrument_load_by_file_and_multifile(self, load_in, verr):
-        """Ensure some load calls raises ValueError with multi_file_day as True.
-        """
+        """Ensure load calls raises ValueError with multi_file_day as True."""
+
         self.testInst.multi_file_day = True
 
         if load_in == 'fname':
@@ -374,8 +374,8 @@ class TestBasics():
         return
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
-        """Ensure `.load(date=date)` only uses year, month, day portion of date.
-        """
+        """Ensure `.load(date=date)` only uses date portion of datetime."""
+
         # put in a date that has more than year, month, day
         self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
         self.out = self.testInst.index[0]
@@ -723,8 +723,8 @@ class TestBasics():
                                                 dt.timedelta(seconds=14400)))
                                 for i in range(3)], True)])
     def test_filter_datetime(self, in_time, islist):
-        """Test the range of allowed inputs for the Instrument datetime filter.
-        """
+        """Test range of allowed inputs for the Instrument datetime filter."""
+
         # Because the input datetime is the middle of the day and the offset
         # is four hours, the reference date and input date are the same
         if islist:
@@ -3840,4 +3840,48 @@ class TestInstListGeneration():
         assert not hasattr(self.test_library.pysat_testing, '_test_dates')
         inst_list = generate_instrument_list(self.test_library)
         assert 'pysat_testing' in inst_list['names']
+        return
+
+
+class TestDeprecation(object):
+    """Unit test for deprecation warnings."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        warnings.simplefilter("always", DeprecationWarning)
+        self.in_kwargs = {"platform": 'pysat', "name": 'testing',
+                          "clean_level": 'clean'}
+        self.warn_msgs = ["".join(["`pysat.Instrument.download` kwarg `freq` ",
+                                   "has been deprecated and will be removed ",
+                                   "in pysat 3.2.0+"])]
+        self.warn_msgs = np.array(self.warn_msgs)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.in_kwargs, self.warn_msgs, self.ref_time
+        return
+
+    def test_download_freq_kwarg(self):
+        """Test deprecation of download kwarg `freq`."""
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            tinst = pysat.Instrument(**self.in_kwargs)
+            tinst.download(start=self.ref_time, freq='D')
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
+
         return
