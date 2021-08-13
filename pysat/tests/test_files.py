@@ -14,8 +14,8 @@ import pytest
 
 import pysat
 import pysat.instruments.pysat_testing
-from pysat.utils import NetworkLock
 from pysat.tests.ci_test_class import CICleanSetup
+from pysat.utils import NetworkLock
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -143,7 +143,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     return
 
 
-class TestNoDataDir():
+class TestNoDataDir(object):
     """Test cases where data directory is not specified."""
 
     def setup(self):
@@ -171,7 +171,7 @@ class TestNoDataDir():
         return
 
 
-class TestBasics():
+class TestBasics(object):
     """Unit tests for `pysat._files`."""
 
     def setup_class(self):
@@ -334,8 +334,8 @@ class TestBasics():
         return
 
     def test_year_doy_files_no_gap_in_name_directly_call_from_os(self):
-        """Test that `Files.from_os` generates file list for date w/o delimiter.
-        """
+        """Test that `Files.from_os` makes file list for date w/o delimiter."""
+
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}{day:03d}_stuff.',
                               'pysat_testing_file'))
@@ -560,7 +560,7 @@ class TestBasicsNoFileListStorage(TestBasics):
         return
 
 
-class TestInstWithFiles():
+class TestInstWithFiles(object):
     """Test basic file operations within an instrument."""
 
     def setup_class(self):
@@ -789,7 +789,7 @@ class TestInstWithFiles():
         return
 
 
-class TestInstWithFilesNonStandard():
+class TestInstWithFilesNonStandard(object):
     """Specialized tests for instruments with non-standard setups."""
 
     def setup_class(self):
@@ -1064,7 +1064,7 @@ def create_instrument(j):
     return 'instrument {}'.format(j)
 
 
-class TestFilesRaceCondition():
+class TestFilesRaceCondition(object):
     """Tests for multiple instances of pysat running simultaneously."""
 
     def setup_class(self):
@@ -1133,7 +1133,7 @@ class TestFilesRaceCondition():
                          temporary_file_list=self.temporary_file_list)
         pysat.params['data_dirs'] = self.data_paths
 
-# TODO: This needs to be replaced or expanded based on the tests that
+# TODO(#871): This needs to be replaced or expanded based on the tests that
 # portalocker uses
     def test_race_condition(self):
         """Test that multiple instances of pysat instrument creation run."""

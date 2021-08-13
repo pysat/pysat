@@ -39,7 +39,7 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         num_samples=None, test_load_kwarg=None):
+         start_time=None, num_samples=86400, test_load_kwarg=None):
     """Load the test files.
 
     Parameters
@@ -58,8 +58,13 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         root_date (default=False)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
+    start_time : dt.timedelta or NoneType
+        Offset time of start time since midnight UT. If None, instrument data
+        will begin at midnight.
+        (default=None)
     num_samples : int
-        Number of samples
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day. (default=86400)
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -79,11 +84,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    if num_samples is None:
-        # Default to 1 day at a frequency of 1S
-        num_samples = 86400
-    uts, index, dates = mm_test.generate_times(fnames, num_samples,
-                                               freq='1S')
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='1S',
+                                               start_time=start_time)
 
     if sim_multi_file_right:
         root_date = dt.datetime(2009, 1, 1, 12)
@@ -101,7 +103,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
-    data = xr.Dataset({'uts': ((epoch_name), index)},
+    data = xr.Dataset({'uts': ((epoch_name), uts)},
                       coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
@@ -169,47 +171,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                            np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int64))
 
-    meta = pysat.Meta()
-    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
-                   'custom': False}
-    meta[epoch_name] = {'units': 'Milliseconds since 1970-1-1',
-                        'Bin_Location': 0.5,
-                        'notes':
-                        'UTC time at middle of geophysical measurement.',
-                        'desc': 'UTC seconds', }
-    meta['mlt'] = {'units': 'hours',
-                   'long_name': 'Magnetic Local Time',
-                   'desc': 'Magnetic Local Time',
-                   'value_min': 0.,
-                   'value_max': 24.,
-                   'notes': ''.join(['Magnetic Local Time is the solar local ',
-                                     'time of the field line at the location ',
-                                     'where the field crosses the magnetic ',
-                                     'equator. In this case we just simulate ',
-                                     '0-24 with a consistent orbital period ',
-                                     'and an offset with SLT.'])}
-    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'desc': 'Solar Local Time', 'value_min': 0.,
-                   'value_max': 24.,
-                   'notes': ''.join(['Solar Local Time is the local time ',
-                                     '(zenith angle of thee sun) of the given',
-                                     ' locaiton. Overhead noon, +/- 90 is 6,',
-                                     ' 18 SLT .'])}
-    meta['orbit_num'] = {'long_name': 'Orbit Number', 'desc': 'Orbit Number',
-                         'value_min': 0., 'value_max': 25000.,
-                         'notes': ''.join(['Number of orbits since the start ',
-                                           'of the mission. For this ',
-                                           'simulation we use the ',
-                                           'number of 5820 second periods ',
-                                           'since the start, 2008-01-01.'])}
-
-    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    for var in data.keys():
-        if var.find('dummy') >= 0:
-            meta[var] = {'units': 'none', 'notes': 'Dummy variable'}
-
+    # Set the meta data.
+    meta = mm_test.initialize_test_meta(epoch_name, data.keys())
     return data, meta
 
 
