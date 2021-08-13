@@ -1922,8 +1922,7 @@ class Instrument(object):
 
     @property
     def empty(self):
-        """Boolean flag reflecting lack of data, True if there is no data.
-        """
+        """Boolean flag reflecting lack of data, True if there is no data."""
         return self._empty()
 
     @property
