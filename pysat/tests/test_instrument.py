@@ -510,7 +510,7 @@ class TestBasics(object):
         return
 
     def test_next_fname_load_default(self):
-        """Test next day loads starting with first filename."""
+        """Test next day loads when invoking `.next()`."""
 
         self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(fname=self.testInst.files[0])
@@ -577,7 +577,7 @@ class TestBasics(object):
         return
 
     def test_next_filename_load_default(self):
-        """Test next day loads when invoking `.next()`."""
+        """Test next day loads when invoking `.next()` starting w/ filename."""
 
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.next()
@@ -588,7 +588,7 @@ class TestBasics(object):
         return
 
     def test_prev_filename_load_default(self):
-        """Test prev day loads when invoking `.prev()`."""
+        """Test prev day loads when invoking `.prev()` starting w/ filename."""
 
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.prev()
