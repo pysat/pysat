@@ -1514,7 +1514,7 @@ class TestBasics(object):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         with pytest.raises(ValueError) as verr:
             self.testInst.rename(values)
-        assert str(verr).find("is not a known variable") >= 0
+        assert str(verr).find("cannot rename") >= 0
         return
 
     @pytest.mark.parametrize("values", [{'uts': 'UTS1'},
@@ -2062,7 +2062,8 @@ class TestBasics(object):
         start = dt.datetime(2009, 1, 1)
         with pytest.raises(ValueError) as verr:
             self.testInst.bounds = [start]
-        assert str(verr).find("This is fine") >= 0
+        errmsg = "Must supply both a start and stop date/file"
+        assert str(verr).find(errmsg) >= 0
         return
 
     @pytest.mark.parametrize("start,stop,errmsg",
