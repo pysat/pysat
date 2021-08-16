@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """Utilities supporting pysat classes, packages, and the testing environment.
 
-pysat.utils contains a number of functions used
-throughout the pysat package.  This includes conversion
-of formats, loading of files, and user-supplied info
+pysat.utils contains a number of functions used throughout the pysat package.
+This includes conversion of formats, loading of files, and user-supplied info
 for the pysat data directory structure.
 """
 
@@ -16,6 +15,7 @@ from pysat.utils._core import NetworkLock
 from pysat.utils._core import scale_units
 from pysat.utils import coords
 from pysat.utils import files
+from pysat.utils import io
 from pysat.utils import registry
 from pysat.utils import testing
 from pysat.utils import time
