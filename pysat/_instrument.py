@@ -2461,9 +2461,10 @@ class Instrument(object):
                         hdict[label] = nname[label]
                         # ensure variable is there
                         if label not in self.meta[oname]['children']:
-                            estr = ''.join((label, ' is not a known ',
-                                            'higher-order variable under ',
-                                            oname, '.'))
+                            estr = ' '.join(('cannot rename', label, 'because,'
+                                             'it is not a known',
+                                             'higher-order variable under',
+                                             oname, '.'))
                             raise ValueError(estr)
                         # Check for lowercase flag
                         if lowercase_data_labels:
