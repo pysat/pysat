@@ -1589,7 +1589,7 @@ class TestBasics(object):
                 # check for error for unknown column or HO variable name
                 with pytest.raises(ValueError) as verr:
                     self.testInst.rename(values)
-                assert str(verr).find("is not a known") >= 0
+                assert str(verr).find("cannot rename") >= 0
             else:
                 pytest.skip("Not implemented for this instrument")
         return
