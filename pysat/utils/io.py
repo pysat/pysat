@@ -11,6 +11,7 @@ import netCDF4
 import numpy as np
 import os
 import pandas as pds
+import warnings
 import xarray as xr
 
 import pysat
@@ -128,10 +129,10 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
                 warnings.warn(wstr)
 
     # Check if load routine actually returns meta
-    if self.meta.data.empty:
-        self.meta[self.variables] = {self.meta.labels.name: self.variables,
-                                     self.meta.labels.units:
-                                     [''] * len(self.variables)}
+    if inst.meta.data.empty:
+        inst.meta[inst.variables] = {inst.meta.labels.name: inst.variables,
+                                     inst.meta.labels.units:
+                                     [''] * len(inst.variables)}
 
     # Make sure FillValue is the same type as the data
     if 'FillVal' in mdata_dict.keys():
@@ -144,7 +145,7 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     return mdata_dict
 
 
-def update_meta_to_netcdf4_standards(inst, epoch_name):
+def update_meta_to_netcdf4_standards(inst, epoch_name, export_nan):
     """Update metadata to meet SPDF ISTP/IACG NetCDF standards.
 
     Parameters
@@ -153,6 +154,14 @@ def update_meta_to_netcdf4_standards(inst, epoch_name):
         Object containing data and meta data
     epoch_name : str
         Name for epoch or time-index variable
+    export_nan : list or NoneType
+        By default, the metadata variables where a value of NaN is allowed
+        and written to the netCDF4 file is maintained by the Meta object
+        attached to the pysat.Instrument object. A list supplied here
+        will override the settings provided by Meta, and all parameters
+        included will be written to the file. If not listed
+        and a value is NaN then that attribute simply won't be included in
+        the netCDF4 file. (default=None)
 
     """
     filter_kwargs = {'export_nan': export_nan, 'remove': False}
@@ -215,15 +224,6 @@ def update_meta_to_netcdf4_standards(inst, epoch_name):
                     subvars = [inst[var].iloc[0].name]
                     is_frame = False
 
-                # Find location within main variable that actually has
-                # sub-variable data (not just an empty DataFrame/Series)
-                # to determine what the real underlying data types are
-                good_data_loc = 0
-                for jjj in np.arange(len(inst.data)):
-                    if len(inst.data[var].iloc[0]) > 0:
-                        data_loc = jjj
-                        break
-
                 # Get the dimensions and their names
                 dims = np.shape(inst[var].iloc[0])
                 obj_dim_names = []
@@ -244,13 +244,13 @@ def update_meta_to_netcdf4_standards(inst, epoch_name):
                 # Cycle through each of the sub-variable, updating metadata
                 for svar in subvars:
                     smeta_dict = inst.meta[svar].to_dict()
-                    
+
                     # Get the correct location of the sub-variable based on
                     # the object type
                     if is_frame:
-                        idx = inst[var].iloc[good_data_loc][svar]
+                        idx = inst[var].iloc[0][svar]
                     else:
-                        idx = inst[var].iloc[good_data_loc]
+                        idx = inst[var].iloc[0]
 
                     # Attach the metadata
                     _, scoltype, _ = inst._get_data_info(idx)
@@ -265,14 +265,14 @@ def update_meta_to_netcdf4_standards(inst, epoch_name):
 
                     inst.meta[svar] = smeta_dict
 
-            # Filter the meta dictionary  
+            # Filter the meta dictionary
             meta_dict = inst._filter_netcdf4_metadata(meta_dict, coltype,
                                                       **filter_kwargs)
 
             # Update the meta data
             inst.meta[var] = meta_dict
         else:
-            logger.info(''.join(('Unable to find MetaData for ', var)))
+            pysat.logger.info(''.join(('Unable to find MetaData for ', var)))
 
     return
 
@@ -326,7 +326,7 @@ def load_netcdf4(fnames, strict_meta=False, file_format=None,
 
     """
     # Process the input values
-    fnames = listify(fnames)
+    fnames = pysat.utils.listify(fnames)
 
     if file_format is None:
         file_format = 'NETCDF4'
@@ -443,7 +443,7 @@ def load_netcdf4(fnames, strict_meta=False, file_format=None,
                         dim_meta_data[clean_key] = meta_dict
 
                     dim_meta_dict = {'meta': dim_meta_data}
-                    
+
                     # Add top level meta
                     if index_key_name is not None:
                         for nc_key in data.variables[obj_key].ncattrs():
@@ -582,10 +582,10 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
         Output filename with full path
     base_instrument : pysat.Instrument or NoneType
         Class used as a comparison, only attributes that are present with
-        self and not on base_instrument are written to netCDF. Using None
+        `inst` and not on `base_instrument` are written to netCDF. Using None
         assigns an unmodified pysat.Instrument object. (default=None)
     epoch_name : str
-        Label in file for datetime index of Instrument object
+        Label in file for datetime index of `inst`
     mode : str
         Write (‘w’) or append (‘a’) mode. If mode=’w’, any existing file at
         this location will be overwritten. If mode=’a’, existing variables will
@@ -640,8 +640,6 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
     'Text_Supplement' are given default values if not present.
 
     """
-    epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
-
     # Check export NaNs first
     if export_nan is None:
         export_nan = inst.meta._export_nan
@@ -668,7 +666,7 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
     for ikey in inst_attrb:
         if ikey not in base_attrb:
             if ikey.find('_') != 0:
-                attrb_dict[key] = getattr(inst, ikey)
+                attrb_dict[ikey] = getattr(inst, ikey)
 
     # Add additional metadata to conform to standards
     attrb_dict['pysat_version'] = pysat.__version__
@@ -724,8 +722,8 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
             # User supplied labels in translation table
             meta_trans = {mkey: inst._meta_translation_table[mkey]
                           for mkey in ['name', 'units', 'desc', 'notes']}
-            logger.info(' '.join(('Using Metadata Translation Table:',
-                                  str(inst._meta_translation_table))))
+            pysat.logger.info(' '.join(('Using Metadata Translation Table:',
+                                        str(inst._meta_translation_table))))
 
         # Apply instrument specific post-processing to the export_meta
         if hasattr(inst._export_meta_post_processing, '__call__'):
@@ -798,7 +796,11 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
                                                      zlib=zlib,
                                                      complevel=complevel,
                                                      shuffle=shuffle)
-                    cdfkey.setncatts(export_meta[case_key])
+                    if case_key in export_meta.keys():
+                        cdfkey.setncatts(export_meta[case_key])
+                    else:
+                        pysat.logger.info(
+                            ''.join(('Unable to find MetaData for ', key)))
 
                     # Assign data
                     if datetime_flag:
@@ -821,7 +823,12 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
-                        cdfkey.setncatts(export_meta[case_key])
+                        if case_key in export_meta.keys():
+                            cdfkey.setncatts(export_meta[case_key])
+                        else:
+                            pysat.logger.info(
+                                ''.join(('Unable to find MetaData for ',
+                                         case_key)))
 
                         # Time to actually write the data now
                         cdfkey[:] = data.values
@@ -887,8 +894,14 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
                                     '_'.join((case_key, col)), coltype,
                                     dimensions=var_dim, zlib=zlib,
                                     complevel=complevel, shuffle=shuffle)
-                                cdfkey.setncatts(
-                                    export_meta['_'.join((case_key, col))])
+
+                                lkey = '_'.join((case_key, col))
+                                if lkey in export_meta.keys():
+                                    cdfkey.setncatts(export_meta[lkey])
+                                else:
+                                    pysat.logger.info(
+                                        ''.join(('Unable to find MetaData for ',
+                                                 lkey)))
 
                                 # Attach data.  It may be slow to repeatedly
                                 # call the store method as well astype method
@@ -912,7 +925,13 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
                                     case_key + '_data', coltype,
                                     dimensions=var_dim, zlib=zlib,
                                     complevel=complevel, shuffle=shuffle)
-                                cdfkey.setncatts(export_meta[case_key])
+
+                                if case_key in export_meta.keys():
+                                    cdfkey.setncatts(export_meta[case_key])
+                                else:
+                                    pysat.logger.info(
+                                        ''.join(('Unable to find MetaData for ',
+                                                 case_key)))
 
                                 # Attach data
                                 temp_cdf_data = np.zeros(
@@ -939,7 +958,13 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
-                        new_dict = export_meta[case_key]
+                        if case_key in export_meta.keys():
+                            new_dict = export_meta[case_key]
+                        else:
+                            pysat.logger.info(
+                                ''.join(('Unable to find MetaData for ',
+                                         case_key)))
+                            new_dict = {}
 
                         # Treat time and non-time data differently
                         if datetime_flag:
@@ -978,8 +1003,8 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
             out_data.setncatts(attrb_dict)
     else:
         # Attach the metadata to the xarray.Dataset
-        xr_data = pysat.data
-        pysat_meta_to_xarray_attr(xr_data, pysat.meta)
+        xr_data = inst.data
+        pysat_meta_to_xarray_attr(xr_data, inst.meta)
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
@@ -1002,9 +1027,10 @@ def inst_to_netcdf4(inst, fname, base_instrument=None, epoch_name='Epoch',
         if unlimited_time:
             xr_data.encoding['unlimited_dims'] = {epoch_name: True}
 
+        # Add general attributes
+        xr_data.attrs = attrb_dict
+
+        # Write the netCDF4 file
         xr_data.to_netcdf(mode=mode, format='NETCDF4', encoding=encoding)
-        
 
-        
     return
-
