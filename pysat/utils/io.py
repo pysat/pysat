@@ -196,8 +196,7 @@ def update_meta_to_netcdf4_standards(inst, epoch_name):
 
             # Update the standard metadata values
             meta_dict = {'Depend_0': epoch_name, 'Display_Type': 'Time Series',
-                         'Var_Type': 'data',
-                         'Format': inst._get_var_type_code(coltype)}
+                         'Var_Type': 'data'}
 
             # Update metadata based on data type
             if datetime_flag:
@@ -250,6 +249,8 @@ def update_meta_to_netcdf4_standards(inst, epoch_name):
                                   'Format': inst._get_var_type_code(scoltype),
                                   'Var_Type': 'data'}
                     inst.meta[svar] = smeta_dict
+            else:
+                meta_dict['Format'] = inst._get_var_type_code(coltype)
 
             # Update the meta data
             inst.meta[var] = meta_dict
@@ -886,7 +887,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                 lkey = '_'.join((case_key, col))
                                 if lkey in export_meta.keys():
                                     cdfkey.setncatts(filter_netcdf4_metadata(
-                                        inst, export_meta[lkey], scoltype,
+                                        inst, export_meta[lkey], coltype,
                                         export_nan=export_nan))
                                 else:
                                     pysat.logger.info(
