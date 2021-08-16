@@ -2450,8 +2450,8 @@ class Instrument(object):
                         fdict[oname] = nname
                     else:
                         # not in standard or higher order variable name keys
-                        estr = ' '.join((oname, ' is not',
-                                         'a known variable.'))
+                        estr = ' '.join(('cannot rename', oname, 'because it',
+                                         'is not a variable in this dataset.'))
                         raise ValueError(estr)
                 else:
                     # Variable name is in higher order list
