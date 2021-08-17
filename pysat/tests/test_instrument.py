@@ -149,7 +149,7 @@ class TestBasics(object):
         Parameters
         ----------
         end_date : dt.datetime or NoneType
-            End date for loadind data.  If None, assumes self.ref_time + 1 day.
+            End date for loading data.  If None, assumes self.ref_time + 1 day.
             (default=None)
 
         """
@@ -1032,7 +1032,7 @@ class TestBasics(object):
         # No custom functions
         assert self.out.find('Custom Functions: 0') > 0
         # No orbital info
-        assert self.out.find('Orbit Settins') < 0
+        assert self.out.find('Orbit Settings') < 0
         # Files exist for test inst
         assert self.out.find('Date Range:') > 0
         # No loaded data
