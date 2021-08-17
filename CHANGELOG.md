@@ -41,6 +41,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Moved metadata generation for test instruments to `methods.testing`
    * Added integration tests for test instrument kwargs
    * Updated class declaration to be consistent with python 3 standards
+   * Update usage of caplog and capsys in unit tests
 
 [3.0.1] - 2021-07-28
 --------------------

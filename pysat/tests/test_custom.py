@@ -1,7 +1,6 @@
 """Unit tests for the `custom_attach` methods."""
 
 import copy
-from io import StringIO
 import logging
 import pytest
 
@@ -45,23 +44,21 @@ class TestLogging(object):
                                          clean_level='clean',
                                          update_files=False)
         self.out = ''
-        self.log_capture = StringIO()
-        pysat.logger.addHandler(logging.StreamHandler(self.log_capture))
-        pysat.logger.setLevel(logging.WARNING)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.out, self.log_capture
+        del self.testInst, self.out
         return
 
-    def test_custom_pos_warning(self):
+    def test_custom_pos_warning(self, caplog):
         """Test for logging warning if inappropriate position specified."""
 
-        self.testInst.custom_attach(lambda inst: inst.data['mlt'] * 2.0,
-                                    at_pos=3)
-        self.out = self.log_capture.getvalue()
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            self.testInst.custom_attach(lambda inst: inst.data['mlt'] * 2.0,
+                                        at_pos=3)
+        self.out = caplog.text
 
         assert self.out.find(
             "unknown position specified, including function at end") >= 0
