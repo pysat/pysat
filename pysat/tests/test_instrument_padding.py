@@ -41,6 +41,21 @@ class TestDataPaddingbyFile(object):
 
         del self.testInst, self.rawInst, self.delta
         return
+    def eval_index_start_end(self):
+        """Evaluate the start and end of the test `index` attributes."""
+        
+        assert self.testInst.index[0] == (self.rawInst.index[0] - self.delta), \
+            "failed to pad the start of the `testInst` object"
+        assert self.testInst.index[-1] == (self.rawInst.index[-1] + self.delta), \
+            "failed to pad the end of the `testInst` object"
+            
+        if self.delta > 0.0:
+            assert len(self.testInst.index) > len(self.rawInst.index), \
+                "padded instrument does not have enough data"
+        else:
+            assert len(self.testInst.index) == len(self.rawInst.index), \
+                "unpadded instrument has extra or is missing data"
+        return
 
     def test_fname_data_padding(self):
         """Test data padding load by filename."""
@@ -48,8 +63,7 @@ class TestDataPaddingbyFile(object):
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[1])
         self.delta = dt.timedelta(minutes=5)
-        assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
-        assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
+        self.eval_index_start_end()
         return
 
     def test_fname_data_padding_next(self):
