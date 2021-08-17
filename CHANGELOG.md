@@ -43,6 +43,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Updated class declaration to be consistent with python 3 standards
    * Update usage of caplog and capsys in unit tests
    * Reorganized tests for the `pysat.Instrument` class into multiple files
+   * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
 
 [3.0.1] - 2021-07-28
 --------------------
