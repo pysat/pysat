@@ -1016,13 +1016,16 @@ class TestBasics(object):
     #
     # -------------------------------------------------------------------------
     def test_basic_repr(self):
-        """The repr output will match the beginning of the str output"""
+        """The repr output will match the beginning of the str output."""
+
         self.out = self.testInst.__repr__()
         assert isinstance(self.out, str)
         assert self.out.find("pysat.Instrument(") == 0
+        return
 
     def test_basic_str(self):
-        """Check for lines from each decision point in repr"""
+        """Check for lines from each decision point in repr."""
+
         self.out = self.testInst.__str__()
         assert isinstance(self.out, str)
         assert self.out.find('pysat Instrument object') == 0
@@ -1036,9 +1039,11 @@ class TestBasics(object):
         assert self.out.find('No loaded data') > 0
         assert self.out.find('Number of variables') < 0
         assert self.out.find('uts') < 0
+        return
 
     def test_str_w_orbit(self):
-        """Test string output with Orbit data """
+        """Test string output with Orbit data."""
+
         reload(pysat.instruments.pysat_testing)
         orbit_info = {'index': 'mlt',
                       'kind': 'local time',
@@ -1061,30 +1066,38 @@ class TestBasics(object):
         testInst.orbits.next()
         self.out = testInst.__str__()
         assert self.out.find('Loaded Orbit Number: 1') > 0
+        return
 
     def test_str_w_padding(self):
-        """Test string output with data padding """
+        """Test string output with data padding."""
+
         self.testInst.pad = dt.timedelta(minutes=5)
         self.out = self.testInst.__str__()
         assert self.out.find('Data Padding: 0:05:00') > 0
+        return
 
     def test_str_w_custom_func(self):
-        """Test string output with custom function """
-        def testfunc(self):
+        """Test string output with custom function."""
+
+        def passfunc(self):
             pass
-        self.testInst.custom_attach(testfunc)
+        self.testInst.custom_attach(passfunc)
         self.out = self.testInst.__str__()
-        assert self.out.find('testfunc') > 0
+        assert self.out.find('passfunc') > 0
+        return
 
     def test_str_w_load_lots_data(self):
-        """Test string output with loaded data """
+        """Test string output with loaded data."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.__str__()
         assert self.out.find('Number of variables:') > 0
         assert self.out.find('...') > 0
+        return
 
     def test_str_w_load_less_data(self):
-        """Test string output with loaded data """
+        """Test string output with loaded data."""
+
         # Load the test data
         self.testInst.load(self.ref_time.year, self.ref_doy)
 
@@ -1099,6 +1112,7 @@ class TestBasics(object):
         assert self.out.find('Variable Names') > 0
         for n in range(nvar):
             assert self.out.find(self.testInst.variables[n]) > 0
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -1106,14 +1120,14 @@ class TestBasics(object):
     #
     # -------------------------------------------------------------------------
     def test_instrument_init(self):
-        """Test if init function supplied by instrument can modify object"""
+        """Test if init function supplied by instrument can modify object."""
+
         assert self.testInst.new_thing
+        return
 
     def test_custom_instrument_load(self):
-        """
-        Test if the correct day is being loaded (End-to-End),
-        with no instrument file but routines are passed.
-        """
+        """Test if the correct day is being loaded with routines."""
+
         import pysat.instruments.pysat_testing as test
         self.out = pysat.Instrument(inst_module=test, tag='',
                                     clean_level='clean')
@@ -1121,29 +1135,21 @@ class TestBasics(object):
         self.ref_doy = 32
         self.out.load(self.ref_time.year, self.ref_doy)
         assert self.out.date == self.ref_time
+        return
 
-    def test_custom_instrument_load_2(self):
-        """
-        Test if an exception is thrown correctly if there is no
-        instrument file and supplied routines are incomplete.
-        """
+    @pytest.mark.parametrize('del_routine', ['list_files', 'load'])
+    def test_custom_instrument_load_incomplete(self, del_routine):
+        """Test if exception is thrown if supplied routines are incomplete."""
+
         import pysat.instruments.pysat_testing as test
-        del test.list_files
+        delattr(test, del_routine)
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(AttributeError) as aerr:
             pysat.Instrument(inst_module=test, tag='',
                              clean_level='clean')
-
-    def test_custom_instrument_load_3(self):
-        """
-        Test if an exception is thrown correctly if there is no
-        instrument file and supplied routines are incomplete.
-        """
-        import pysat.instruments.pysat_testing as test
-        del test.load
-
-        with pytest.raises(AttributeError):
-            pysat.Instrument(inst_module=test, tag='', clean_level='clean')
+        estr = 'A `{:}` function is required'.format(del_routine)
+        assert str(aerr).find(estr) >= 0
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -1170,7 +1176,7 @@ class TestBasics(object):
                                                    'exit_night')
                                                   ])
     def test_instrument_function_keywords(self, func, kwarg, val, caplog):
-        """Test if Instrument function keywords are registered by pysat"""
+        """Test if Instrument function keywords are registered by pysat."""
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             # Trigger load functions
@@ -1218,7 +1224,7 @@ class TestBasics(object):
                                               'test_download_kwarg')
                                              ])
     def test_instrument_function_keyword_liveness(self, func, kwarg, caplog):
-        """Test if changed keywords are propagated by pysat to functions"""
+        """Test if changed keywords are propagated by pysat to functions."""
 
         # Assign a new value to a keyword argument
         val = 'live_value'
@@ -1253,7 +1259,7 @@ class TestBasics(object):
         return
 
     def test_error_undefined_input_keywords(self):
-        """Test for error if undefined keywords provided at instantiation"""
+        """Test for error if undefined keywords provided at instantiation."""
 
         # Add a new keyword
         self.testInst.kwargs['load']['undefined_keyword1'] = True
@@ -1266,9 +1272,10 @@ class TestBasics(object):
         estr = "".join(("unknown keywords supplied: ['undefined_keyword1',",
                         " 'undefined_keyword2']"))
         assert str(err).find(estr) >= 0
+        return
 
     def test_supported_input_keywords(self):
-        """Test that supported keywords exist"""
+        """Test that supported keywords exist."""
 
         funcs = ['load', 'init', 'list_remote_files', 'list_files', 'download',
                  'preprocess', 'clean']
@@ -1295,38 +1302,47 @@ class TestBasics(object):
                                         (['mlt', 'longitude']),
                                         (['longitude', 'mlt'])])
     def test_basic_data_access_by_name(self, labels):
-        """Check that data can be accessed at the instrument level"""
+        """Check that data can be accessed at the instrument level."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all((self.testInst[labels]
                        == self.testInst.data[labels]).values)
+        return
 
     @pytest.mark.parametrize("index", [(0),
                                        ([0, 1, 2, 3]),
                                        (slice(0, 10)),
                                        (np.arange(0, 10))])
     def test_data_access_by_indices_and_name(self, index):
-        """Check that variables and be accessed by each supported index type"""
+        """Check that variables and be accessed by each supported index type."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all(self.testInst[index, 'mlt']
                       == self.testInst.data['mlt'][index])
+        return
 
     def test_data_access_by_row_slicing_and_name_slicing(self):
-        """Check that each variable is downsampled """
+        """Check that each variable is downsampled."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         result = self.testInst[0:10, :]
         for variable, array in result.items():
             assert len(array) == len(self.testInst.data[variable].values[0:10])
             assert np.all(array == self.testInst.data[variable].values[0:10])
+        return
 
     def test_data_access_by_datetime_and_name(self):
-        """Check that datetime can be used to access data"""
+        """Check that datetime can be used to access data."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = dt.datetime(2009, 1, 1, 0, 0, 0)
         assert np.all(self.testInst[self.out, 'uts']
                       == self.testInst.data['uts'].values[0])
+        return
 
     def test_data_access_by_datetime_slicing_and_name(self):
-        """Check that a slice of datetimes can be used to access data"""
+        """Check that a slice of datetimes can be used to access data."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         time_step = (self.testInst.index[1]
                      - self.testInst.index[0]).value / 1.E9
@@ -1335,13 +1351,19 @@ class TestBasics(object):
         stop = start + offset
         assert np.all(self.testInst[start:stop, 'uts']
                       == self.testInst.data['uts'].values[0:11])
+        return
 
     def test_setting_data_by_name(self):
+        """Test setting data by name."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
+        return
 
     def test_setting_series_data_by_name(self):
+        """Test setting series data by name."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = \
             2. * pds.Series(self.testInst['mlt'].values,
@@ -1350,8 +1372,11 @@ class TestBasics(object):
 
         self.testInst['blankMLT'] = pds.Series(None, dtype='float64')
         assert np.all(np.isnan(self.testInst['blankMLT']))
+        return
 
     def test_setting_pandas_dataframe_by_names(self):
+        """Test setting pandas dataframe by name."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst[['doubleMLT', 'tripleMLT']] = \
             pds.DataFrame({'doubleMLT': 2. * self.testInst['mlt'].values,
@@ -1359,16 +1384,22 @@ class TestBasics(object):
                           index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         assert np.all(self.testInst['tripleMLT'] == 3. * self.testInst['mlt'])
+        return
 
     def test_setting_data_by_name_single_element(self):
+        """Test setting data by name for a single element."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2.
         assert np.all(self.testInst['doubleMLT'] == 2.)
 
         self.testInst['nanMLT'] = np.nan
         assert np.all(np.isnan(self.testInst['nanMLT']))
+        return
 
     def test_setting_data_by_name_with_meta(self):
+        """Test setting data by name with meta."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = {'data': 2. * self.testInst['mlt'],
                                       'units': 'hours',
@@ -1376,16 +1407,22 @@ class TestBasics(object):
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         assert self.testInst.meta['doubleMLT'].units == 'hours'
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
+        return
 
     def test_setting_partial_data(self):
+        """Test setting partial data by index."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst
         if self.testInst.pandas_format:
             self.testInst[0:3] = 0
-            assert np.all(self.testInst[3:] == self.out[3:])
+            # First three values should be changed.
             assert np.all(self.testInst[0:3] == 0)
+            # Other data should be unchanged.
+            assert np.all(self.testInst[3:] == self.out[3:])
         else:
             pytest.skip("This notation does not make sense for xarray")
+        return
 
     @pytest.mark.parametrize("changed,fixed",
                              [(0, slice(1, None)),
@@ -1397,44 +1434,49 @@ class TestBasics(object):
                                      dt.datetime(2009, 1, 1, 0, 1)),
                                slice(dt.datetime(2009, 1, 1, 0, 1), None))])
     def test_setting_partial_data_by_inputs(self, changed, fixed):
-        """Check that data can be set using each supported input type"""
+        """Check that data can be set using each supported input type."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[changed, 'doubleMLT'] = 0
         assert (self.testInst[fixed, 'doubleMLT']
                 == 2. * self.testInst[fixed, 'mlt']).all
         assert (self.testInst[changed, 'doubleMLT'] == 0).all
+        return
 
     def test_setting_partial_data_by_index_and_name(self):
+        """Test setting partial data by index and name."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[self.testInst.index[0:10], 'doubleMLT'] = 0
         assert (self.testInst[10:, 'doubleMLT']
                 == 2. * self.testInst[10:, 'mlt']).all
         assert (self.testInst[0:10, 'doubleMLT'] == 0).all
+        return
 
     def test_modifying_data_inplace(self):
+        """Test modification of data inplace."""
+
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
         assert (self.testInst['doubleMLT']
                 == 2. * self.testInst['mlt'] + 100).all
+        return
 
-    def test_getting_all_data_by_index(self):
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        a = self.testInst[[0, 1, 2, 3, 4]]
-        if self.testInst.pandas_format:
-            assert len(a) == 5
-        else:
-            assert a.sizes[xarray_epoch_name] == 5
+    @pytest.mark.parametrize("index", [([0, 1, 2, 3, 4]),
+                                       (np.array([0, 1, 2, 3, 4]))])
+    def test_getting_all_data_by_index(self, index):
+        """Test getting all data by index."""
 
-    def test_getting_all_data_by_numpy_array_of_int(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        a = self.testInst[np.array([0, 1, 2, 3, 4])]
+        a = self.testInst[index]
         if self.testInst.pandas_format:
-            assert len(a) == 5
+            assert len(a) == len(index)
         else:
-            assert a.sizes[xarray_epoch_name] == 5
+            assert a.sizes[xarray_epoch_name] == len(index)
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -1447,6 +1489,8 @@ class TestBasics(object):
                                          'mlt': 'mlt2'},
                                         {'uts': 'long change with spaces'}])
     def test_basic_variable_renaming(self, values):
+        """Test basic variable renaming."""
+
         # test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.rename(values)
@@ -1457,22 +1501,29 @@ class TestBasics(object):
             # ensure old name not present
             assert key not in self.testInst.data
             assert key not in self.testInst.meta
+        return
 
     @pytest.mark.parametrize("values", [{'help': 'I need somebody'},
                                         {'UTS': 'litte_uts'},
                                         {'utS': 'uts1'},
                                         {'utS': 'uts'}])
     def test_unknown_variable_error_renaming(self, values):
+        """Test that unknown variable renaming raises an error."""
+
         # check for error for unknown variable name
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             self.testInst.rename(values)
+        assert str(verr).find("cannot rename") >= 0
+        return
 
     @pytest.mark.parametrize("values", [{'uts': 'UTS1'},
                                         {'uts': 'UTs2',
                                          'mlt': 'Mlt2'},
                                         {'uts': 'Long Change with spaces'}])
     def test_basic_variable_renaming_lowercase(self, values):
+        """Test new variable names are converted to lowercase."""
+
         # test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.rename(values, lowercase_data_labels=True)
@@ -1485,12 +1536,15 @@ class TestBasics(object):
             # ensure old name not present
             assert key not in self.testInst.data
             assert key not in self.testInst.meta
+        return
 
     @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
                                         {'profiles': {'density': 'mass'},
                                          'alt_profiles':
                                              {'density': 'volume'}}])
     def test_ho_pandas_variable_renaming(self, values):
+        """Test rename of higher order pandas variable."""
+
         # check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
@@ -1509,6 +1563,7 @@ class TestBasics(object):
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var
+        return
 
     @pytest.mark.parametrize("values", [{'profiles':
                                         {'help': 'I need somebody'}},
@@ -1525,19 +1580,27 @@ class TestBasics(object):
                                         {'Nope_profiles':
                                         {'density': 'valid_HO_change'}}])
     def test_ho_pandas_unknown_variable_error_renaming(self, values):
+        """Test higher order pandas variable rename raises error if unknown."""
+
         # check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
                 # check for error for unknown column or HO variable name
-                with pytest.raises(ValueError):
+                with pytest.raises(ValueError) as verr:
                     self.testInst.rename(values)
+                assert str(verr).find("cannot rename") >= 0
+            else:
+                pytest.skip("Not implemented for this instrument")
+        return
 
     @pytest.mark.parametrize("values", [{'profiles': {'density': 'Ionization'}},
                                         {'profiles': {'density': 'MASa'},
                                          'alt_profiles':
                                              {'density': 'VoLuMe'}}])
     def test_ho_pandas_variable_renaming_lowercase(self, values):
+        """Test rename higher order pandas variable uses lowercase."""
+
         # check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
@@ -1561,6 +1624,7 @@ class TestBasics(object):
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var
+        return
 
     # -------------------------------------------------------------------------
     #
@@ -1568,8 +1632,8 @@ class TestBasics(object):
     #
     # -------------------------------------------------------------------------
     def test_list_comprehension(self):
-        """Test list comprehensions for length, uniqueness, post iteration data
-        """
+        """Test list comprehensions for length, uniqueness, iteration."""
+
         self.testInst.bounds = (self.testInst.files.files.index[0],
                                 self.testInst.files.files.index[9])
         # ensure no data to begin
@@ -1592,30 +1656,39 @@ class TestBasics(object):
 
     def test_left_bounds_with_prev(self):
         """Test if passing bounds raises StopIteration."""
+
         # load first data
         self.testInst.next()
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             # go back to no data
             self.testInst.prev()
+        assert str(err).find("Outside the set date boundaries") >= 0
+        return
 
     def test_right_bounds_with_next(self):
         """Test if passing bounds raises StopIteration."""
+
         # load last data
         self.testInst.prev()
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             # move on to future data that doesn't exist
             self.testInst.next()
+        assert str(err).find("Outside the set date boundaries") >= 0
+        return
 
     def test_set_bounds_with_frequency(self):
-        """Test setting bounds with non-default step"""
+        """Test setting bounds with non-default step."""
+
         start = self.ref_time
         stop = self.ref_time + dt.timedelta(days=14)
         self.testInst.bounds = (start, stop, 'M')
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='M').tolist())
+        return
 
     def test_iterate_bounds_with_frequency(self):
-        """Test iterating bounds with non-default step"""
+        """Test iterating bounds with non-default step."""
+
         start = self.ref_time
         stop = self.ref_time + dt.timedelta(days=15)
         self.testInst.bounds = (start, stop, '2D')
@@ -1624,18 +1697,22 @@ class TestBasics(object):
             dates.append(inst.date)
         out = pds.date_range(start, stop, freq='2D').tolist()
         assert np.all(dates == out)
+        return
 
     def test_set_bounds_with_frequency_and_width(self):
-        """Set date bounds with step/width>1"""
+        """Set date bounds with step/width > 1."""
+
         start = self.ref_time
         stop = self.ref_time + pds.DateOffset(months=11, days=25)
         stop = stop.to_pydatetime()
         self.testInst.bounds = (start, stop, '10D', dt.timedelta(days=10))
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='10D').tolist())
+        return
 
     def verify_inclusive_iteration(self, out, forward=True):
-        """Verify loaded dates for inclusive iteration, forward or backward"""
+        """Verify loaded dates for inclusive iteration, forward or backward."""
+
         if forward:
             # verify range of loaded data when iterating forward
             for i, trange in enumerate(out['observed_times']):
@@ -1682,7 +1759,8 @@ class TestBasics(object):
         return
 
     def verify_exclusive_iteration(self, out, forward=True):
-        """Verify loaded dates for exclusive iteration, forward or backward"""
+        """Verify loaded dates for exclusive iteration, forward or backward."""
+
         # verify range of loaded data
         if forward:
             for i, trange in enumerate(out['observed_times']):
@@ -1740,7 +1818,8 @@ class TestBasics(object):
                                          dt.timedelta(days=1))
                                         ])
     def test_iterate_bounds_with_frequency_and_width(self, values):
-        """Iterate via date with mixed step/width, excludes stop date"""
+        """Test iterate via date with mixed step/width, excludes stop date."""
+
         out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=True)
@@ -1766,7 +1845,8 @@ class TestBasics(object):
                                          dt.datetime(2009, 1, 5), '3D',
                                          dt.timedelta(days=2))])
     def test_iterate_bounds_with_frequency_and_width_incl(self, values):
-        """Iterate via date with mixed step/width, includes stop date"""
+        """Test iterate via date with mixed step/width, includes stop date."""
+
         out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=True)
@@ -1787,7 +1867,8 @@ class TestBasics(object):
                                          dt.timedelta(days=11)),
                                         ])
     def test_next_date_with_frequency_and_width_incl(self, values):
-        """Test .next() via date step/width>1, includes stop date"""
+        """Test `.next()` via date step/width >1, includes stop date."""
+
         out = self.support_iter_evaluations(values)
         # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=True)
@@ -1810,7 +1891,8 @@ class TestBasics(object):
                                          dt.datetime(2009, 1, 12), '2D',
                                          dt.timedelta(days=1))])
     def test_next_date_with_frequency_and_width(self, values):
-        """Test .next() via date step/width>1, excludes stop date"""
+        """Test `.next()` via date step/width > 1, exclude stop date."""
+
         out = self.support_iter_evaluations(values)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=True)
@@ -1837,7 +1919,7 @@ class TestBasics(object):
                                          dt.timedelta(days=4))
                                         ])
     def test_next_date_season_frequency_and_width_incl(self, values):
-        """Test .next() via date season step/width>1, includes stop date"""
+        """Test `.next()` via date season step/width > 1, include stop date."""
         out = self.support_iter_evaluations(values)
         # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=True)
@@ -1864,7 +1946,8 @@ class TestBasics(object):
                                          dt.timedelta(days=4))
                                         ])
     def test_next_date_season_frequency_and_width(self, values):
-        """Test .next() via date season step/width>1, excludes stop date"""
+        """Test `.next()` via date season step/width>1, exclude stop date."""
+
         out = self.support_iter_evaluations(values)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=True)
@@ -1885,7 +1968,8 @@ class TestBasics(object):
                                          dt.timedelta(days=11)),
                                         ])
     def test_prev_date_with_frequency_and_width_incl(self, values):
-        """Test .prev() via date step/width>1, includes stop date"""
+        """Test `.prev()` via date step/width > 1, include stop date."""
+
         out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=False)
@@ -1908,7 +1992,8 @@ class TestBasics(object):
                                          dt.datetime(2009, 1, 12), '2D',
                                          dt.timedelta(days=1))])
     def test_prev_date_with_frequency_and_width(self, values):
-        """Test .prev() via date step/width>1, excludes stop date"""
+        """Test `.prev()` via date step/width > 1, exclude stop date."""
+
         out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=False)
@@ -1935,7 +2020,8 @@ class TestBasics(object):
                                          dt.timedelta(days=4))
                                         ])
     def test_prev_date_season_frequency_and_width_incl(self, values):
-        """Test .prev() via date season step/width>1, includes stop date"""
+        """Test `.prev()` via date season step/width > 1, include stop date."""
+
         out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=False)
@@ -1962,7 +2048,8 @@ class TestBasics(object):
                                          dt.timedelta(days=4))
                                         ])
     def test_prev_date_season_frequency_and_width(self, values):
-        """Test .prev() via date season step/width>1, excludes stop date"""
+        """Test `.prev()` via date season step/width > 1, exclude stop date."""
+
         out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=False)
@@ -1970,42 +2057,51 @@ class TestBasics(object):
         return
 
     def test_set_bounds_too_few(self):
+        """Test Exception when setting bounds without a pair of dates."""
+
         start = dt.datetime(2009, 1, 1)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             self.testInst.bounds = [start]
+        errmsg = "Must supply both a start and stop date/file"
+        assert str(verr).find(errmsg) >= 0
+        return
 
-    def test_set_bounds_mixed(self):
-        start = dt.datetime(2009, 1, 1)
-        with pytest.raises(ValueError):
-            self.testInst.bounds = [start, '2009-01-01.nofile']
+    @pytest.mark.parametrize("start,stop,errmsg",
+                             [(dt.datetime(2009, 1, 1), '2009-01-01.nofile',
+                               "must all be of the same type"),
+                              (dt.datetime(2009, 1, 1), 1,
+                               "must all be of the same type"),
+                              ([dt.datetime(2009, 1, 1)] * 2,
+                               '2009-01-01.nofile',
+                               "must have the same number of elements"),
+                              ([dt.datetime(2009, 1, 1)] * 2,
+                               [dt.datetime(2009, 1, 1), '2009-01-01.nofile'],
+                               "must all be of the same type")])
+    def test_set_bounds_error_message(self, start, stop, errmsg):
+        """Test Exception when setting bounds with mixed iterables."""
 
-    def test_set_bounds_wrong_type(self):
-        """Test Exception when setting bounds with inconsistent types"""
-        start = dt.datetime(2009, 1, 1)
-        with pytest.raises(ValueError):
-            self.testInst.bounds = [start, 1]
-
-    def test_set_bounds_mixed_iterable(self):
-        start = [dt.datetime(2009, 1, 1)] * 2
-        with pytest.raises(ValueError):
-            self.testInst.bounds = [start, '2009-01-01.nofile']
-
-    def test_set_bounds_mixed_iterabless(self):
-        start = [dt.datetime(2009, 1, 1)] * 2
-        with pytest.raises(ValueError):
-            self.testInst.bounds = [start, [dt.datetime(2009, 1, 1),
-                                            '2009-01-01.nofile']]
+        with pytest.raises(ValueError) as verr:
+            self.testInst.bounds = [start, stop]
+        assert str(verr).find(errmsg) >= 0
+        return
 
     def test_set_bounds_string_default_start(self):
+        """Test set bounds with default start."""
+
         self.testInst.bounds = [None, '2009-01-01.nofile']
         assert self.testInst.bounds[0][0] == self.testInst.files[0]
+        return
 
-    def test_set_bounds_string_default_end(self):
+    def test_set_bounds_string_default_stop(self):
+        """Test set bounds with default stop."""
+
         self.testInst.bounds = ['2009-01-01.nofile', None]
         assert self.testInst.bounds[1][0] == self.testInst.files[-1]
+        return
 
     def test_set_bounds_too_many(self):
-        """Ensure error if too many inputs to inst.bounds"""
+        """Ensure error if too many inputs to `inst.bounds`."""
+
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 1)
         width = dt.timedelta(days=1)
@@ -2013,26 +2109,32 @@ class TestBasics(object):
             self.testInst.bounds = [start, stop, '1D', width, False]
         estr = 'Too many input arguments.'
         assert str(err).find(estr) >= 0
+        return
 
     def test_set_bounds_by_date(self):
-        """Test setting bounds with datetimes over simple range"""
+        """Test setting bounds with datetimes over simple range."""
+
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
+        return
 
     def test_set_bounds_by_date_wrong_order(self):
-        """Test error if bounds assignment has stop date before start"""
+        """Test error if bounds assignment has stop date before start."""
+
         start = dt.datetime(2009, 1, 15)
         stop = dt.datetime(2009, 1, 1)
         with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
         estr = 'Bounds must be set in increasing'
         assert str(err).find(estr) >= 0
+        return
 
     def test_set_bounds_by_default_dates(self):
-        """Verify bounds behavior with default date related inputs"""
+        """Verify bounds behavior with default date related inputs."""
+
         start = self.testInst.files.start_date
         stop = self.testInst.files.stop_date
         full_list = pds.date_range(start, stop).tolist()
@@ -2044,8 +2146,11 @@ class TestBasics(object):
         assert np.all(self.testInst._iter_list == full_list)
         self.testInst.bounds = (None, stop)
         assert np.all(self.testInst._iter_list == full_list)
+        return
 
     def test_set_bounds_by_date_extra_time(self):
+        """Test set bounds by date with extra time."""
+
         start = dt.datetime(2009, 1, 1, 1, 10)
         stop = dt.datetime(2009, 1, 15, 1, 10)
         self.testInst.bounds = (start, stop)
@@ -2053,6 +2158,7 @@ class TestBasics(object):
         stop = filter_datetime_input(stop)
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
+        return
 
     @pytest.mark.parametrize("start,stop", [(dt.datetime(2010, 12, 1),
                                              dt.datetime(2010, 12, 31)),
@@ -2060,16 +2166,19 @@ class TestBasics(object):
                                              dt.datetime(2009, 1, 15))
                                             ])
     def test_iterate_over_bounds_set_by_date(self, start, stop):
-        """Test iterating over bounds via single date range"""
+        """Test iterate over bounds via single date range."""
+
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
             dates.append(inst.date)
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
+        return
 
     def test_iterate_over_default_bounds(self):
-        """Test iterating over default bounds"""
+        """Test iterate over default bounds."""
+
         date_range = pds.date_range(self.ref_time,
                                     self.ref_time + dt.timedelta(days=10))
         self.testInst.kwargs['list_files']['file_date_range'] = date_range
@@ -2080,6 +2189,7 @@ class TestBasics(object):
             dates.append(inst.date)
         out = date_range.tolist()
         assert np.all(dates == out)
+        return
 
     def test_set_bounds_by_date_season(self):
         start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
