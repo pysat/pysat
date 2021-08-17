@@ -797,8 +797,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                     else:
                         # Not datetime data, just store as is
                         cdfkey[:] = data.values.astype(coltype)
-
-                # Back to main check on type of data to write
                 else:
                     # It is a Series of objects.  First, figure out what the
                     # individual object types are.  Then, act as needed.
@@ -849,6 +847,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                         # be written to file
                         var_dim = tuple([epoch_name] + obj_dim_names)
 
+                        raise RuntimeError(key, dims, obj_dim_names, var_dim)
+
                         # Determine whether data is in a DataFrame or Series
                         try:
                             # Start by assuming it is a DataFrame
@@ -863,9 +863,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                         # checking that this is not an empty DataFrame or
                         # Series. Determine the underlying data types
                         good_data_loc = 0
-                        for jjj in np.arange(len(inst.data)):
+                        for idat in np.arange(len(inst.data)):
                             if len(inst.data[key].iloc[0]) > 0:
-                                data_loc = jjj
+                                data_loc = idat
                                 break
 
                         # Found a place with data, if there is one
@@ -899,7 +899,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                 # below collect data into a numpy array, then
                                 # write the full array in one go
                                 temp_cdf_data = np.zeros(
-                                    (num, dims[0])).astype(coltype)
+                                    (num, dims[0]), dtype=coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = inst[
                                         key].iloc[i][col].values
@@ -928,7 +928,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
 
                                 # Attach data
                                 temp_cdf_data = np.zeros(
-                                    (num, dims[0])).astype(coltype)
+                                    (num, dims[0]), dtype=coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = inst[i, key].values
 
@@ -963,12 +963,17 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
 
                         # Treat time and non-time data differently
                         if datetime_flag:
+                            # Further update metadata
+                            new_dict[meta_trans['name']] = epoch_name
+                            new_dict[meta_trans['units']] = inst.meta[
+                                epoch_name, inst.meta.labels.units]
+
                             # Set metadata dict
                             cdfkey.setncatts(new_dict)
 
                             # Set data
-                            temp_cdf_data = np.zeros((num,
-                                                      dims[0])).astype(coltype)
+                            temp_cdf_data = np.zeros((num, dims[0]),
+                                                     dtype=coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = inst[i, key].index.values
                             cdfkey[:, :] = (temp_cdf_data.astype(coltype)
@@ -985,8 +990,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                             cdfkey.setncatts(new_dict)
 
                             # Set data
-                            temp_cdf_data = np.zeros(
-                                (num, dims[0])).astype(coltype)
+                            temp_cdf_data = np.zeros((num, dims[0]),
+                                                     dtype=coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = inst[
                                     key].iloc[i].index.astype(str)
