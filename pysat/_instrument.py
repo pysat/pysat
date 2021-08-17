@@ -2450,8 +2450,8 @@ class Instrument(object):
                         fdict[oname] = nname
                     else:
                         # not in standard or higher order variable name keys
-                        estr = ' '.join((oname, ' is not',
-                                         'a known variable.'))
+                        estr = ' '.join(('cannot rename', oname, 'because it',
+                                         'is not a variable in this dataset.'))
                         raise ValueError(estr)
                 else:
                     # Variable name is in higher order list
@@ -2461,9 +2461,10 @@ class Instrument(object):
                         hdict[label] = nname[label]
                         # ensure variable is there
                         if label not in self.meta[oname]['children']:
-                            estr = ''.join((label, ' is not a known ',
-                                            'higher-order variable under ',
-                                            oname, '.'))
+                            estr = ' '.join(('cannot rename', label, 'because,'
+                                             'it is not a known',
+                                             'higher-order variable under',
+                                             oname, '.'))
                             raise ValueError(estr)
                         # Check for lowercase flag
                         if lowercase_data_labels:

@@ -8,7 +8,6 @@
 import contextlib
 from importlib import reload
 import inspect
-from io import StringIO
 import numpy as np
 import os
 import portalocker
@@ -737,31 +736,27 @@ class TestAvailableInst(TestWithRegistration):
     @pytest.mark.parametrize("inst_flag, plat_flag",
                              [(None, None), (False, False), (True, True)])
     def test_display_available_instruments(self, inst_loc, inst_flag,
-                                           plat_flag):
+                                           plat_flag, capsys):
         """Test display_available_instruments options."""
         # If using the pysat registry, make sure there is something registered
         if inst_loc is None:
             pysat.utils.registry.register(self.module_names)
 
-        # Initialize the STDOUT stream
-        new_stdout = StringIO()
+        pysat.utils.display_available_instruments(
+            inst_loc, show_inst_mod=inst_flag, show_platform_name=plat_flag)
 
-        with contextlib.redirect_stdout(new_stdout):
-            pysat.utils.display_available_instruments(
-                inst_loc, show_inst_mod=inst_flag, show_platform_name=plat_flag)
-
-        out = new_stdout.getvalue()
-        assert out.find("Description") > 0
+        captured = capsys.readouterr()
+        assert captured.out.find("Description") > 0
 
         if (inst_loc is None and plat_flag is None) or plat_flag:
-            assert out.find("Platform") == 0
-            assert out.find("Name") > 0
+            assert captured.out.find("Platform") == 0
+            assert captured.out.find("Name") > 0
 
         if (inst_loc is not None and inst_flag is None) or inst_flag:
-            assert out.find("Instrument_Module") >= 0
+            assert captured.out.find("Instrument_Module") >= 0
 
         if inst_loc is not None and inst_flag in [None, True]:
-            assert out.find(inst_loc.__name__) > 0
+            assert captured.out.find(inst_loc.__name__) > 0
 
         return
 

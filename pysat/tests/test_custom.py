@@ -1,7 +1,6 @@
-"""Unit Tests for the `custom_attach` methods."""
+"""Unit tests for the `custom_attach` methods."""
 
 import copy
-from io import StringIO
 import logging
 import pytest
 
@@ -36,7 +35,7 @@ def mult_data(inst, mult, dkey="mlt"):
 
 
 class TestLogging(object):
-    """Unit Tests for logging interface with custom functions."""
+    """Unit tests for logging interface with custom functions."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -45,23 +44,21 @@ class TestLogging(object):
                                          clean_level='clean',
                                          update_files=False)
         self.out = ''
-        self.log_capture = StringIO()
-        pysat.logger.addHandler(logging.StreamHandler(self.log_capture))
-        pysat.logger.setLevel(logging.WARNING)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.out, self.log_capture
+        del self.testInst, self.out
         return
 
-    def test_custom_pos_warning(self):
+    def test_custom_pos_warning(self, caplog):
         """Test for logging warning if inappropriate position specified."""
 
-        self.testInst.custom_attach(lambda inst: inst.data['mlt'] * 2.0,
-                                    at_pos=3)
-        self.out = self.log_capture.getvalue()
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            self.testInst.custom_attach(lambda inst: inst.data['mlt'] * 2.0,
+                                        at_pos=3)
+        self.out = caplog.text
 
         assert self.out.find(
             "unknown position specified, including function at end") >= 0
@@ -69,7 +66,7 @@ class TestLogging(object):
 
 
 class TestBasics(object):
-    """Unit tests for `pysat.instrument.custom_attach` with a pandas inst."""
+    """Unit tests for `pysat.instrument.custom_attach` with pandas data."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -129,8 +126,8 @@ class TestBasics(object):
         assert self.out.find('Kwargs') > 0
         return
 
-    def test_single_modifying_custom_function_error(self):
-        """Test for error if 'modify' custom function returns a value."""
+    def test_single_custom_function_error(self):
+        """Test for error if custom function returns a value."""
 
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
@@ -275,7 +272,7 @@ class TestConstellationBasics(object):
         return
 
     def test_basic_repr(self):
-        """Test __repr__ with a custom method."""
+        """Test `__repr__` with a custom method."""
 
         self.testConst.custom_attach(mult_data, args=self.custom_args)
         self.out = self.testConst.__repr__()
@@ -283,8 +280,8 @@ class TestConstellationBasics(object):
         assert self.out.find("'function'") >= 0
         return
 
-    def test_single_modifying_custom_function_error(self):
-        """Test for error when 'modify' custom function returns a value."""
+    def test_single_custom_function_error(self):
+        """Test for error when custom function returns a value."""
 
         def custom_with_return_data(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
