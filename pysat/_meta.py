@@ -69,7 +69,7 @@ class Meta(object):
     updated to use the same values of units, etc. as found in the
     pysat.Instrument object.
 
-    Meta objects are similar to CF-1.6 netCDFdata standard.
+    Meta objects have a structure similar to the CF-1.6 netCDF data standard.
 
     Examples
     --------
@@ -496,7 +496,7 @@ class Meta(object):
         """
         # Define a local convenience function
         def match_name(func, var_name, index_or_column):
-            """Apply func on input variables(s) depending on variable type."""
+            """Alter variables using input function."""
             if isinstance(var_name, str):
                 # If variable is a string, use it as input
                 return func(var_name)
@@ -558,7 +558,7 @@ class Meta(object):
                                                "expected tuple, list, or str"]))
 
     def __contains__(self, data_var):
-        """Case insensitive check for variable name.
+        """Check variable name, not distinguishing by case.
 
         Parameters
         ----------
@@ -787,6 +787,7 @@ class Meta(object):
 
         May be set using `ho_data.setter(new_dict)`, where `new_dict` is a
         dict containing the higher order metadata.
+
         """
         return self._ho_data
 

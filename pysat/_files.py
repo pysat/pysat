@@ -269,7 +269,7 @@ class Files(object):
         return output_str
 
     def __eq__(self, other):
-        """Perform equality check.
+        """Perform an equality check.
 
         Parameters
         ----------
