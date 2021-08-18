@@ -50,6 +50,7 @@ class TestDataPaddingbyFile(object):
         assert (self.testInst.index[-1]
                 == (self.rawInst.index[-1] + self.delta)), \
             "failed to pad the end of the `testInst` object"
+        assert self.testInst.index.is_unique, "padded index has duplicate times"
 
         if self.delta > dt.timedelta(seconds=0):
             assert len(self.testInst.index) > len(self.rawInst.index), \
@@ -59,54 +60,31 @@ class TestDataPaddingbyFile(object):
                 "unpadded instrument has extra or is missing data"
         return
 
-    def test_fname_data_padding(self):
+    @pytest.mark.parametrize("dmin,tind,ncycle", [
+        (5, 1, 0), (5, 1, 1), (5, 1, 2), (5, 2, -1), (5, 10, -2)])
+    def test_fname_data_padding(self, dmin, tind, ncycle):
         """Test data padding load by filename."""
 
-        self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
-        self.rawInst.load(fname=self.testInst.files[1])
-        self.delta = dt.timedelta(minutes=5)
-        self.eval_index_start_end()
-        return
+        # Load the test data with padding
+        self.testInst.load(fname=self.testInst.files[tind], verifyPad=True)
 
-    def test_fname_data_padding_next(self):
-        """Test data padding load by filename using `.next()`."""
+        rind = tind + ncycle
+        if ncycle > 0:
+            while ncycle > 1:
+                self.testInst.next()
+                ncycle -= 1
+            self.testInst.next(verifyPad=True)
+        elif ncycle < 0:
+            while ncycle < 1:
+                self.testInst.prev()
+                ncycle += 1
+            self.testInst.prev(verifyPad=True)
 
-        self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
-        self.testInst.next(verifyPad=True)
-        self.rawInst.load(fname=self.testInst.files[2])
-        self.delta = dt.timedelta(minutes=5)
-        self.eval_index_start_end()
-        return
+        # Load the comparison file without padding and set the padding time
+        self.rawInst.load(fname=self.testInst.files[rind])
+        self.delta = dt.timedelta(minutes=dmin)
 
-    def test_fname_data_padding_multi_next(self):
-        """Test data padding load by filename using `.next()` multiple times."""
-
-        self.testInst.load(fname=self.testInst.files[1])
-        self.testInst.next()
-        self.testInst.next(verifyPad=True)
-        self.rawInst.load(fname=self.testInst.files[3])
-        self.delta = dt.timedelta(minutes=5)
-        self.eval_index_start_end()
-        return
-
-    def test_fname_data_padding_prev(self):
-        """Test data padding load by filename using `.prev()`."""
-
-        self.testInst.load(fname=self.testInst.files[2], verifyPad=True)
-        self.testInst.prev(verifyPad=True)
-        self.rawInst.load(fname=self.testInst.files[1])
-        self.delta = dt.timedelta(minutes=5)
-        self.eval_index_start_end()
-        return
-
-    def test_fname_data_padding_multi_prev(self):
-        """Test data padding load by filename using `.prev()` multiple times."""
-
-        self.testInst.load(fname=self.testInst.files[10])
-        self.testInst.prev()
-        self.testInst.prev(verifyPad=True)
-        self.rawInst.load(fname=self.testInst.files[8])
-        self.delta = dt.timedelta(minutes=5)
+        # Evaluate the test results
         self.eval_index_start_end()
         return
 
@@ -124,7 +102,7 @@ class TestDataPaddingbyFile(object):
         """Ensure uniqueness data padding when loading by file."""
 
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
-        assert (self.testInst.index.is_unique)
+        assert self.testInst.index.is_unique
         return
 
     def test_fname_data_padding_all_samples_present(self):
@@ -133,7 +111,7 @@ class TestDataPaddingbyFile(object):
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.delta = pds.date_range(self.testInst.index[0],
                                     self.testInst.index[-1], freq='S')
-        assert (np.all(self.testInst.index == self.delta))
+        assert np.all(self.testInst.index == self.delta)
         return
 
     def test_fname_data_padding_removal(self):
@@ -468,7 +446,7 @@ class TestDataPadding(object):
         return
 
 
-class TestDataPaddingXarray(TestDataPadding):
+class TestDataPaddingXArray(TestDataPadding):
     """Unit tests for xarray `pysat.Instrument` with data padding."""
 
     def setup(self):
