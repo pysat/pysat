@@ -3255,7 +3255,7 @@ class Instrument(object):
 
         return
 
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name=None,
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
                    unlimited_time=True):
@@ -3273,8 +3273,9 @@ class Instrument(object):
             Class used as a comparison, only attributes that are present with
             self and not on base_instrument are written to netCDF. Using None
             assigns an unmodified pysat.Instrument object. (default=None)
-        epoch_name : str
-            Label in file for datetime index of Instrument object
+        epoch_name : str or NoneType
+            Label in file for datetime index of Instrument object, use standard
+            for pandas vs xarray if None (default=None)
         zlib : bool
             Flag for engaging zlib compression (True - compression on)
         complevel : int
@@ -3317,11 +3318,17 @@ class Instrument(object):
                                    "must supply a filename 3.2.0+"]),
                           DeprecationWarning, stacklevel=2)
             raise ValueError("Must supply an output filename")
-        
-        utils.io.inst_to_netcdf(self, fname=fname, base_instrument=base_instrument, epoch_name=epoch_name,
-                    zlib=zlib, complevel=complevel, shuffle=shuffle,
-                    preserve_meta_case=preserve_meta_case, export_nan=export_nan,
-                    unlimited_time=unlimited_time)
+
+        if epoch_name is None:
+            epoch_name = "Epoch" if self.pandas_format else 'time'
+
+        utils.io.inst_to_netcdf(self, fname=fname,
+                                base_instrument=base_instrument,
+                                epoch_name=epoch_name, zlib=zlib,
+                                complevel=complevel, shuffle=shuffle,
+                                preserve_meta_case=preserve_meta_case,
+                                export_nan=export_nan,
+                                unlimited_time=unlimited_time)
 
 
 # ----------------------------------------------------------------------------

@@ -847,8 +847,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                         # be written to file
                         var_dim = tuple([epoch_name] + obj_dim_names)
 
-                        raise RuntimeError(key, dims, obj_dim_names, var_dim)
-
                         # Determine whether data is in a DataFrame or Series
                         try:
                             # Start by assuming it is a DataFrame
@@ -1029,6 +1027,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         xr_data.attrs = attrb_dict
 
         # Write the netCDF4 file
-        xr_data.to_netcdf(mode=mode, format='NETCDF4', encoding=encoding)
+        xr_data.to_netcdf(mode=mode, encoding=encoding)
 
     return

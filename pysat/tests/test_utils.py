@@ -487,7 +487,7 @@ class TestLoadNetCDF4(object):
         return
 
 
-class TestLoadNetCDF4XArray(object):
+class TestLoadNetCDF4XArray(TestLoadNetCDF4):
     """Unit tests for `load_netcdf4` using xarray data.
 
     Note
