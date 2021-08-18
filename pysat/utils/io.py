@@ -626,7 +626,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         export_nan = inst.meta._export_nan
 
     # Ensure the metadata is set and updated to netCDF4 standards
-    update_meta_to_netcdf4_standards(inst, epoch_name)
+    add_netcdf4_standards_to_meta(inst, epoch_name)
 
     # Base_instrument used to define the standard attributes attached
     # to the instrument object. Any additional attributes added
