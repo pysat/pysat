@@ -372,10 +372,7 @@ class TestBasics(object):
         """Test loading by date."""
 
         self.testInst.load(date=self.ref_time)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.eval_successful_load()
         return
 
     def test_basic_instrument_load_by_dates(self):
@@ -383,24 +380,15 @@ class TestBasics(object):
 
         end_date = self.ref_time + dt.timedelta(days=2)
         self.testInst.load(date=self.ref_time, end_date=end_date)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        self.out = self.testInst.index[-1]
-        assert (self.out >= self.ref_time + dt.timedelta(days=1))
-        assert (self.out <= self.ref_time + dt.timedelta(days=2))
+        self.eval_successful_load(end_date=end_date)
         return
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
         """Ensure `.load(date=date)` only uses date portion of datetime."""
 
         # put in a date that has more than year, month, day
-        self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.testInst.load(date=(self.ref_time + dt.timedelta(minutes=71)))
+        self.eval_successful_load()
         return
 
     def test_basic_instrument_load_data(self):
@@ -416,10 +404,7 @@ class TestBasics(object):
         self.ref_time = dt.datetime(2008, 12, 31)
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.eval_successful_load()
         return
 
     @pytest.mark.parametrize("operator,ref_time",
@@ -429,10 +414,9 @@ class TestBasics(object):
         """Test if correct day loads by default when first invoking `.next`."""
 
         getattr(self.testInst, operator)()
-        self.out = self.testInst.index[0]
-        assert self.out == ref_time
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        # Modify ref time since iterator changes load date.
+        self.ref_time = ref_time
+        self.eval_successful_load()
         return
 
     @pytest.mark.parametrize("operator", [('next'), ('prev')])
@@ -440,7 +424,7 @@ class TestBasics(object):
         """Test Error for in new day when on a file not in iteration list."""
 
         self.testInst.load(fname=self.testInst.files[12])
-        # set new bounds that doesn't include this date
+        # Set new bounds that doesn't include this date.
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
                                 2, 1)
         with pytest.raises(StopIteration) as err:
@@ -455,7 +439,7 @@ class TestBasics(object):
         """Test that day iterators raise Error on bad start date."""
 
         self.testInst.load(date=self.ref_time)
-        # set new bounds that doesn't include this date
+        # Set new bounds that doesn't include this date.
         self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
                                 self.ref_time + dt.timedelta(days=10),
                                 '2D', dt.timedelta(days=1))
@@ -487,10 +471,7 @@ class TestBasics(object):
         # Find the closest point.
         ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
         self.testInst.load(fname=self.testInst.files[ind])
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.eval_successful_load()
         return
 
     @pytest.mark.parametrize("operator,direction",
@@ -504,17 +485,17 @@ class TestBasics(object):
         ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
         self.testInst.load(fname=self.testInst.files[ind])
         getattr(self.testInst, operator)()
-        self.out = self.testInst.index[0]
-        assert (self.out == (self.ref_time + direction * dt.timedelta(days=1)))
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+
+        # Modify ref time since iterator changes load date.
+        self.ref_time = self.ref_time + direction * dt.timedelta(days=1)
+        self.eval_successful_load()
         return
 
     def test_filename_load(self):
         """Test if file is loadable by filename with no path."""
 
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
-        assert self.testInst.index[0] == self.ref_time
+        self.eval_successful_load()
         return
 
     def test_filenames_load(self):
@@ -549,23 +530,19 @@ class TestBasics(object):
         assert isinstance(files, pds.Series)
         return
 
-    def test_remote_file_list(self):
-        """Test remote_file_list for valid list of files."""
+    @pytest.mark.parametrize("remote_func,num", [('remote_file_list', 31),
+                                                 ('remote_date_range', 2)])
+    def test_remote_functions(self, remote_func, num):
+        """Test simulated remote functions for valid list of files."""
 
         stop = self.ref_time + dt.timedelta(days=30)
-        self.out = self.testInst.remote_file_list(start=self.ref_time,
-                                                  stop=stop)
-        assert filter_datetime_input(self.out.index[0]) == self.ref_time
-        assert filter_datetime_input(self.out.index[-1]) == stop
-        return
+        self.out = getattr(self.testInst, remote_func)(start=self.ref_time,
+                                                       stop=stop)
+        assert len(self.out) == num
 
-    def test_remote_date_range(self):
-        """Test remote_date_range for valid pair of dates."""
-
-        stop = self.ref_time + dt.timedelta(days=30)
-        self.out = self.testInst.remote_date_range(start=self.ref_time,
-                                                   stop=stop)
-        assert len(self.out) == 2
+        # Get index if a pds.Series is returned.
+        if isinstance(self.out, pds.Series):
+            self.out = self.out.index
         assert filter_datetime_input(self.out[0]) == self.ref_time
         assert filter_datetime_input(self.out[-1]) == stop
         return
