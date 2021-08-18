@@ -41,7 +41,7 @@ class TestMalformedIndex(object):
         return
 
 
-class TestMalformedIndexXarray(TestMalformedIndex):
+class TestMalformedIndexXArray(TestMalformedIndex):
     """Basic tests for xarray `pysat.Instrument` with shifted file dates."""
 
     def setup(self):

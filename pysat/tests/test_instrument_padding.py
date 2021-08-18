@@ -585,7 +585,7 @@ class TestInstListGeneration(object):
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        # reset pysat instrument library
+        # Reset the pysat instrument library
         reload(pysat.instruments)
         reload(pysat.instruments.pysat_testing)
         del self.test_library
@@ -595,6 +595,7 @@ class TestInstListGeneration(object):
         """Test that instrument list works if a broken instrument is found."""
 
         self.test_library.__all__.append('broken_inst')
+
         # This instrument does not exist.  The routine should run without error
         inst_list = generate_instrument_list(self.test_library)
         assert 'broken_inst' in inst_list['names']
