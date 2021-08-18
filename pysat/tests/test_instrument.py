@@ -658,34 +658,6 @@ class TestBasics(object):
         assert self.out + dt.timedelta(days=1) == self.testInst.tomorrow()
         return
 
-    @pytest.mark.parametrize("in_time, islist",
-                             [(dt.datetime.utcnow(), False),
-                              (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
-                                  dt.timedelta(seconds=14400))), False),
-                              ([dt.datetime(2010, 1, 1, 12, i,
-                                            tzinfo=dt.timezone(
-                                                dt.timedelta(seconds=14400)))
-                                for i in range(3)], True)])
-    def test_filter_datetime(self, in_time, islist):
-        """Test range of allowed inputs for the Instrument datetime filter."""
-
-        # Because the input datetime is the middle of the day and the offset
-        # is four hours, the reference date and input date are the same
-        if islist:
-            self.ref_time = [dt.datetime(tt.year, tt.month, tt.day)
-                             for tt in in_time]
-            self.out = filter_datetime_input(in_time)
-        else:
-            self.ref_time = [dt.datetime(in_time.year, in_time.month,
-                                         in_time.day)]
-            self.out = [filter_datetime_input(in_time)]
-
-        # Test for the date values and timezone awareness status
-        for i, tt in enumerate(self.out):
-            assert self.out[i] == self.ref_time[i]
-            assert self.out[i].tzinfo is None or self.out[i].utcoffset() is None
-        return
-
     def test_filtered_date_attribute(self):
         """Test use of filter during date assignment."""
 
