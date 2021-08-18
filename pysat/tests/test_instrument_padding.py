@@ -280,7 +280,7 @@ class TestDataPadding(object):
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
         return
 
     def eval_index_start_end(self):
@@ -482,12 +482,13 @@ class TestDataPaddingXarray(TestDataPadding):
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
         return
 
 
@@ -506,12 +507,13 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
         return
 
 
@@ -531,12 +533,13 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
         return
 
 
@@ -556,12 +559,13 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
         return
 
 
@@ -581,12 +585,13 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
         return
 
 
