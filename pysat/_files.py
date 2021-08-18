@@ -14,9 +14,9 @@ import weakref
 import pandas as pds
 
 import pysat  # Needed to access pysat.params across reimports
+from pysat.instruments.methods import general
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
-from pysat.instruments.methods import general
 
 logger = pysat.logger
 
@@ -138,6 +138,7 @@ class Files(object):
     def __init__(self, inst, directory_format=None, update_files=False,
                  file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
+        """Initialize `pysat.Files` object."""
 
         # Set the hidden variables
         self.update_files = update_files
@@ -236,8 +237,8 @@ class Files(object):
         return
 
     def __repr__(self):
-        """ Representation of the class and its current state
-        """
+        """Print representation of the class and its current state."""
+
         inst_repr = self.inst_info['inst'].__repr__()
 
         out_str = "".join(["pysat.Files(", inst_repr, ", directory_format=",
@@ -252,8 +253,7 @@ class Files(object):
         return out_str
 
     def __str__(self):
-        """ Description of the class and its contents
-        """
+        """Print the basic Files properties with detailed info."""
 
         num_files = len(self.files)
         output_str = 'Local File Statistics\n'
@@ -269,7 +269,7 @@ class Files(object):
         return output_str
 
     def __eq__(self, other):
-        """Perform equality check
+        """Perform an equality check.
 
         Parameters
         ----------
@@ -348,7 +348,7 @@ class Files(object):
         return test_data
 
     def __getitem__(self, key):
-        """ Retrieve items from the files attribute
+        """Retrieve items from the files attribute.
 
         Parameters
         ----------
@@ -410,7 +410,7 @@ class Files(object):
     # Define the hidden methods
 
     def _filter_empty_files(self, path):
-        """Update the file list (self.files) with empty files removed
+        """Update the file list (`self.files`) with empty files removed.
 
         Parameters
         ----------
@@ -441,7 +441,7 @@ class Files(object):
         return
 
     def _attach_files(self, files_info):
-        """Attaches stored file lists to self.files
+        """Attach stored file lists to `self.files`.
 
         Parameters
         ---------
@@ -486,7 +486,7 @@ class Files(object):
         return
 
     def _ensure_unique_file_datetimes(self):
-        """Update the file list (self.files) to ensure uniqueness"""
+        """Update the file list (`self.files`) to ensure uniqueness."""
 
         # Check if files are unique.
         unique_files = len(self.files.index.unique()) == len(self.files)
@@ -509,8 +509,7 @@ class Files(object):
         return
 
     def _store(self):
-        """Store currently loaded filelist for instrument onto filesystem
-        """
+        """Store currently loaded filelist for instrument onto filesystem."""
 
         stored_name = self.stored_file_name
 
@@ -549,7 +548,7 @@ class Files(object):
         return
 
     def _load(self, prev_version=False, update_path=True):
-        """Load stored filelist
+        """Load stored filelist.
 
         Parameters
         ----------
@@ -599,7 +598,7 @@ class Files(object):
             return pds.Series([], dtype='a')
 
     def _remove_data_dir_path(self, file_series=None):
-        """Remove the data directory path from filenames
+        """Remove the data directory path from filenames.
 
         Parameters
         ----------
@@ -628,7 +627,7 @@ class Files(object):
     # Define the public methods and properties
 
     def copy(self):
-        """Provide a deep copy of object
+        """Provide a deep copy of object.
 
         Returns
         -------
@@ -744,7 +743,7 @@ class Files(object):
         return
 
     def set_top_level_directory(self, path):
-        """Sets top-level data directory.
+        """Set top-level data directory.
 
         Sets a valid self.data_path using provided top-level directory
         path and the associated pysat subdirectories derived from the
@@ -872,8 +871,7 @@ class Files(object):
     @classmethod
     def from_os(cls, data_path=None, format_str=None,
                 two_digit_year_break=None, delimiter=None):
-        """
-        Produces a list of files and and formats it for Files class.
+        """Produce a list of files and and formats it for Files class.
 
         Parameters
         ----------
