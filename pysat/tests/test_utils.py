@@ -552,27 +552,33 @@ class TestLoadNetCDF4XArray(object):
 
         return
 
-    def test_read_netcdf4_with_time_meta_labels(self):
-        """Test that read_netcdf does not decode time labels in meta."""
+    @pytest.mark.parametrize("kwargs,target", [({}, False),
+                                               ({'decode_timedelta': False},
+                                                False),
+                                               ({'decode_timedelta': True},
+                                                True)])
+    def test_read_netcdf4_with_time_meta_labels(self, kwargs, target):
+        """Test that read_netcdf correctly interprets time labels in meta."""
         # Write the output test data
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
         # Modify the variable attributes directly before writing to file.
         self.testInst.data['uts'].attrs = {'units': 'seconds'}
-        self.testInst.data['mlt'].attrs = {'units': 'hours'}
-        self.testInst.data['slt'].attrs = {'units': 'hr'}
+        self.testInst.data['mlt'].attrs = {'units': 'minutes'}
+        self.testInst.data['slt'].attrs = {'units': 'hours'}
         self.testInst.data.to_netcdf(outfile)
 
         # Load the written data
         self.loaded_inst, meta = pysat.utils.load_netcdf4(
-            outfile, pandas_format=self.testInst.pandas_format)
+            outfile, pandas_format=self.testInst.pandas_format, **kwargs)
 
         # Check that labels pass through as correct type.
         vars = ['uts', 'mlt', 'slt']
         for var in vars:
-            assert isinstance(self.loaded_inst[var].values[0], np.float64), \
-                "Variable not loaded as a float"
+            val = self.loaded_inst[var].values[0]
+            assert isinstance(val, np.timedelta64) == target, \
+                "Variable {:} not loaded correctly".format(var)
         return
 
     def test_load_netcdf4_pandas_3d_error(self):
