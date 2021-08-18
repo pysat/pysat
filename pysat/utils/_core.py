@@ -402,9 +402,10 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         out = pds.concat(out, axis=0)
     else:
         if len(fnames) == 1:
-            out = xr.open_dataset(fnames[0])
+            out = xr.open_dataset(fnames[0], decode_timedelta=False)
         else:
-            out = xr.open_mfdataset(fnames, combine='by_coords')
+            out = xr.open_mfdataset(fnames, combine='by_coords',
+                                    decode_timedelta=False)
         for key in out.variables.keys():
             # Copy the variable attributes from the data object to the metadata
             meta_dict = {}
