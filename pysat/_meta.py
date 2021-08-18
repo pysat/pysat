@@ -1023,12 +1023,15 @@ class Meta(object):
         variable name.
 
         """
+        # Get a case-insensitive version of the name
         lower_name = name.lower()
+
+        # Determine if the input name is one of the top-level attributes
         for out_name in self.attrs():
             if lower_name == out_name.lower():
                 return out_name
 
-        # Verify that the attribute is present in higher order structures
+        # Determine if the attribute is present in higher order structures
         for key in self.keys_nD():
             for out_name in self[key].children.attrs():
                 if lower_name == out_name.lower():
@@ -1037,6 +1040,51 @@ class Meta(object):
         # Nothing was found if still here. Pass `name` back without alteration,
         # it is free to be whatever it is.
         return name
+
+    def rename(self, mapper):
+        """Returns preserved case name for case insensitive value of name.
+
+        Parameters
+        ----------
+        mapper : dict or func
+            Dictionary with old names as keys and new names as variables or
+            a function to apply to all names
+
+        Note
+        ----
+        Checks first within standard attributes. If not found there, checks
+        attributes for higher order data structures. If not found, returns
+        supplied name as it is available for use. Intended to be used to help
+        ensure that the same case is applied to all repetitions of a given
+        variable name.
+
+        """
+        # Cycle through the top-level variables
+        for var in self.attrs():
+            if isinstance(mapper, dict):
+                map_var = mapper[var]
+            else:
+                map_var = mapper(var)
+
+            # Update the attribute name
+            hold_meta = self[var].copy()
+            self.drop(var)
+            self[mapper[var]] = hold_meta
+
+        # Determine if the attribute is present in higher order structures
+        for ndkey in self.keys_nD():
+            for var in self[ndkey].children.attrs():
+                if isinstance(mapper, dict):
+                    map_var = mapper[var]
+                else:
+                    map_var = mapper(var)
+
+                # Update the attribute name
+                hold_meta = self[ndkey].children[var].copy()
+                self[ndkey].children.drop(var)  # THIS DOESN'T WORK HERE
+                self[ndkey].children[mapper[var]] = hold_meta
+
+        return
 
     def concat(self, other_meta, strict=False):
         """Concats two metadata objects together.
