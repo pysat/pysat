@@ -1,4 +1,4 @@
-"""Unit tests with malformed indexes for `pysat.Instrument`."""
+"""Unit tests for the `pysat.Instrument.index` attribute."""
 
 import datetime as dt
 from importlib import reload
@@ -31,11 +31,6 @@ class TestMalformedIndex(object):
         del self.testInst, self.ref_time, self.ref_doy
         return
 
-    # -------------------------------------------------------------------------
-    #
-    # Test checks on time uniqueness and monotonicity
-    #
-    # -------------------------------------------------------------------------
     def test_ensure_unique_index(self):
         """Ensure that if Instrument index not-unique error is raised."""
 
@@ -46,7 +41,7 @@ class TestMalformedIndex(object):
         return
 
 
-class TestMalformedIndexXarray(TestMalformedIndex):
+class TestMalformedIndexXArray(TestMalformedIndex):
     """Basic tests for xarray `pysat.Instrument` with shifted file dates."""
 
     def setup(self):
