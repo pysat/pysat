@@ -1028,14 +1028,14 @@ class Meta(object):
             if lower_name == out_name.lower():
                 return out_name
 
-        # check if attribute present in higher order structures
+        # Verify that the attribute is present in higher order structures
         for key in self.keys_nD():
             for out_name in self[key].children.attrs():
                 if lower_name == out_name.lower():
                     return out_name
 
-        # nothing was found if still here
-        # pass name back, free to be whatever
+        # Nothing was found if still here. Pass `name` back without alteration,
+        # it is free to be whatever it is.
         return name
 
     def concat(self, other_meta, strict=False):

@@ -153,8 +153,8 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     return mdata_dict
 
 
-def update_meta_to_netcdf4_standards(inst, epoch_name):
-    """Update metadata to meet SPDF ISTP/IACG NetCDF standards.
+def add_netcdf4_standards_to_meta(inst, epoch_name):
+    """Add metadata variables needed to meet SPDF ISTP/IACG NetCDF standards.
 
     Parameters
     ----------
@@ -165,11 +165,9 @@ def update_meta_to_netcdf4_standards(inst, epoch_name):
 
     Note
     ----
-    Does not perform filtering
-
-    See Also
-    --------
-    pysat.utils.io.filter_netcdf4_metadata
+    Does not perform filtering to remove variables not supported by the
+    SPDF ISTP/IACG NetCDF standards.  For this, see
+    pysat.utils.io.filter_netcdf4_metadata.
 
     """
     epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
