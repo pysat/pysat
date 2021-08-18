@@ -33,7 +33,7 @@ class TestDataPaddingbyFile(object):
                                         clean_level='clean',
                                         update_files=True)
         self.rawInst.bounds = self.testInst.bounds
-        self.delta = 0
+        self.delta = dt.timedelta(seconds=0)
         return
 
     def teardown(self):
@@ -41,15 +41,17 @@ class TestDataPaddingbyFile(object):
 
         del self.testInst, self.rawInst, self.delta
         return
+
     def eval_index_start_end(self):
         """Evaluate the start and end of the test `index` attributes."""
-        
+
         assert self.testInst.index[0] == (self.rawInst.index[0] - self.delta), \
             "failed to pad the start of the `testInst` object"
-        assert self.testInst.index[-1] == (self.rawInst.index[-1] + self.delta), \
+        assert (self.testInst.index[-1]
+                == (self.rawInst.index[-1] + self.delta)), \
             "failed to pad the end of the `testInst` object"
-            
-        if self.delta > 0.0:
+
+        if self.delta > dt.timedelta(seconds=0):
             assert len(self.testInst.index) > len(self.rawInst.index), \
                 "padded instrument does not have enough data"
         else:
@@ -73,8 +75,7 @@ class TestDataPaddingbyFile(object):
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[2])
         self.delta = dt.timedelta(minutes=5)
-        assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
-        assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
+        self.eval_index_start_end()
         return
 
     def test_fname_data_padding_multi_next(self):
@@ -85,8 +86,7 @@ class TestDataPaddingbyFile(object):
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[3])
         self.delta = dt.timedelta(minutes=5)
-        assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
-        assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
+        self.eval_index_start_end()
         return
 
     def test_fname_data_padding_prev(self):
@@ -96,8 +96,7 @@ class TestDataPaddingbyFile(object):
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[1])
         self.delta = dt.timedelta(minutes=5)
-        assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
-        assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
+        self.eval_index_start_end()
         return
 
     def test_fname_data_padding_multi_prev(self):
@@ -108,8 +107,7 @@ class TestDataPaddingbyFile(object):
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[8])
         self.delta = dt.timedelta(minutes=5)
-        assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
-        assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
+        self.eval_index_start_end()
         return
 
     def test_fname_data_padding_jump(self):
@@ -119,8 +117,7 @@ class TestDataPaddingbyFile(object):
         self.testInst.load(fname=self.testInst.files[10], verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[10])
         self.delta = dt.timedelta(minutes=5)
-        assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
-        assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
+        self.eval_index_start_end()
         return
 
     def test_fname_data_padding_uniqueness(self):
@@ -144,9 +141,7 @@ class TestDataPaddingbyFile(object):
 
         self.testInst.load(fname=self.testInst.files[1])
         self.rawInst.load(fname=self.testInst.files[1])
-        assert self.testInst.index[0] == self.rawInst.index[0]
-        assert self.testInst.index[-1] == self.rawInst.index[-1]
-        assert len(self.rawInst.data) == len(self.testInst.data)
+        self.eval_index_start_end()
         return
 
 
@@ -169,7 +164,7 @@ class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
                                         clean_level='clean',
                                         update_files=True)
         self.rawInst.bounds = self.testInst.bounds
-        self.delta = 0
+        self.delta = dt.timedelta(seconds=0)
         return
 
     def teardown(self):
@@ -198,7 +193,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
                                         sim_multi_file_right=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
-        self.delta = 0
+        self.delta = dt.timedelta(seconds=0)
         return
 
     def teardown(self):
@@ -228,7 +223,7 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
                                         sim_multi_file_right=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
-        self.delta = 0
+        self.delta = dt.timedelta(seconds=0)
         return
 
     def teardown(self):
@@ -256,7 +251,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
                                         sim_multi_file_left=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
-        self.delta = 0
+        self.delta = dt.timedelta(seconds=0)
         return
 
     def teardown(self):
@@ -279,6 +274,7 @@ class TestDataPadding(object):
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
         return
 
     def teardown(self):
@@ -287,15 +283,23 @@ class TestDataPadding(object):
         del self.testInst, self.ref_time, self.ref_doy
         return
 
+    def eval_index_start_end(self):
+        """Evaluate the start and end of the test `index` attributes."""
+
+        assert (self.testInst.index[0]
+                == self.testInst.date - self.delta), \
+            "failed to pad the start of the `testInst` object"
+        assert (self.testInst.index[-1] == self.testInst.date
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + self.delta), \
+            "failed to pad the end of the `testInst` object"
+        return
+
     def test_data_padding(self):
         """Ensure that pad works at the instrument level."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
-        assert (self.testInst.index[0]
-                == self.testInst.date - dt.timedelta(minutes=5))
-        assert (self.testInst.index[-1] == self.testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59)
-                + dt.timedelta(minutes=5))
+        self.eval_index_start_end()
         return
 
     @pytest.mark.parametrize('pad', [dt.timedelta(minutes=5),
@@ -304,15 +308,12 @@ class TestDataPadding(object):
     def test_data_padding_offset_instantiation(self, pad):
         """Ensure pad can be used as datetime, pandas, or dict."""
 
-        testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    clean_level='clean',
-                                    pad=pad,
-                                    update_files=True)
-        testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
-        assert (testInst.index[0] == testInst.date - dt.timedelta(minutes=5))
-        assert (testInst.index[-1] == testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59)
-                + dt.timedelta(minutes=5))
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         clean_level='clean',
+                                         pad=pad,
+                                         update_files=True)
+        self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
+        self.eval_index_start_end()
         return
 
     def test_data_padding_bad_instantiation(self):
@@ -401,11 +402,7 @@ class TestDataPadding(object):
 
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.testInst.next(verifyPad=True)
-        assert (self.testInst.index[0] == self.testInst.date
-                - dt.timedelta(minutes=5))
-        assert (self.testInst.index[-1] == self.testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59)
-                + dt.timedelta(minutes=5))
+        self.eval_index_start_end()
         return
 
     def test_data_padding_multi_next(self):
@@ -414,11 +411,7 @@ class TestDataPadding(object):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.next()
         self.testInst.next(verifyPad=True)
-        assert (self.testInst.index[0] == self.testInst.date
-                - dt.timedelta(minutes=5))
-        assert (self.testInst.index[-1] == self.testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59)
-                + dt.timedelta(minutes=5))
+        self.eval_index_start_end()
         return
 
     def test_data_padding_prev(self):
@@ -426,11 +419,7 @@ class TestDataPadding(object):
 
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.testInst.prev(verifyPad=True)
-        assert (self.testInst.index[0] == self.testInst.date
-                - dt.timedelta(minutes=5))
-        assert (self.testInst.index[-1] == self.testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59)
-                + dt.timedelta(minutes=5))
+        self.eval_index_start_end()
         return
 
     def test_data_padding_multi_prev(self):
@@ -440,11 +429,7 @@ class TestDataPadding(object):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
-        assert (self.testInst.index[0] == self.testInst.date
-                - dt.timedelta(minutes=5))
-        assert (self.testInst.index[-1] == self.testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59)
-                + dt.timedelta(minutes=5))
+        self.eval_index_start_end()
         return
 
     def test_data_padding_jump(self):
@@ -452,12 +437,7 @@ class TestDataPadding(object):
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.testInst.load(self.ref_time.year, self.ref_doy + 10,
                            verifyPad=True)
-        assert (self.testInst.index[0]
-                == self.testInst.date - dt.timedelta(minutes=5))
-        assert (self.testInst.index[-1]
-                == self.testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59)
-                + dt.timedelta(minutes=5))
+        self.eval_index_start_end()
         return
 
     def test_data_padding_uniqueness(self):
@@ -483,9 +463,8 @@ class TestDataPadding(object):
 
         self.ref_doy = 1
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert (self.testInst.index[0] == self.testInst.date)
-        assert (self.testInst.index[-1] == self.testInst.date
-                + dt.timedelta(hours=23, minutes=59, seconds=59))
+        self.delta = dt.timedelta(seconds=0)
+        self.eval_index_start_end()
         return
 
 
