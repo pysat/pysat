@@ -552,6 +552,29 @@ class TestLoadNetCDF4XArray(object):
 
         return
 
+    def test_read_netcdf4_with_time_meta_labels(self):
+        """Test that read_netcdf does not decode time labels in meta."""
+        # Write the output test data
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime)
+        # Modify the variable attributes directly before writing to file.
+        self.testInst.data['uts'].attrs = {'units': 'seconds'}
+        self.testInst.data['mlt'].attrs = {'units': 'hours'}
+        self.testInst.data['slt'].attrs = {'units': 'hr'}
+        self.testInst.data.to_netcdf(outfile)
+
+        # Load the written data
+        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format)
+
+        # Check that labels pass through as correct type.
+        vars = ['uts', 'mlt', 'slt']
+        for var in vars:
+            assert isinstance(self.loaded_inst[var].values[0], np.float64), \
+                "Variable not loaded as a float"
+        return
+
     def test_load_netcdf4_pandas_3d_error(self):
         """Test load_netcdf4 error with a pandas 3D file."""
         # Create a bunch of files by year and doy
