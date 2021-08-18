@@ -74,7 +74,7 @@ class TestDataPaddingbyFile(object):
                 ncycle -= 1
             self.testInst.next(verifyPad=True)
         elif ncycle < 0:
-            while ncycle < 1:
+            while ncycle < -1:
                 self.testInst.prev()
                 ncycle += 1
             self.testInst.prev(verifyPad=True)
