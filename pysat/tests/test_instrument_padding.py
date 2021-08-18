@@ -410,7 +410,7 @@ class TestDataPadding(object):
         return
 
     def test_data_padding_jump(self):
-        """Test data padding -- do not understand."""
+        """Test data padding if load is outside the cache window."""
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.testInst.load(self.ref_time.year, self.ref_doy + 10,
                            verifyPad=True)
