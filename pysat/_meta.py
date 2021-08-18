@@ -704,7 +704,7 @@ class Meta(object):
 
     def _label_setter(self, new_label, current_label, default_type,
                       use_names_default=False):
-        """Set default meta attributes.
+        """Set default meta attributes for variable.
 
         Parameters
         ----------
