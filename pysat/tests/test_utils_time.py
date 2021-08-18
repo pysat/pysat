@@ -228,32 +228,6 @@ class TestFilterDatetimeInput(object):
         assert out_date is None
         return
 
-    def test_filter_datetime_input_datetime(self):
-        """Test a successful `filter_datetime_input` with datetime input."""
-
-        in_date = dt.datetime(2009, 1, 1, 1, 1)
-        out_date = pytime.filter_datetime_input(in_date)
-        assert out_date == dt.datetime(2009, 1, 1)
-        return
-
-    def test_filter_datetime_input_list(self):
-        """Test a successful `filter_datetime_input` with list input."""
-
-        in_date = [dt.datetime(2009, 1, 1, 1, 1)]
-        out_date = pytime.filter_datetime_input(in_date)
-        assert len(out_date) == len(in_date)
-        assert out_date[0] == dt.datetime(2009, 1, 1)
-        return
-
-    def test_filter_datetime_input_array(self):
-        """Test a successful `filter_datetime_input` with array input."""
-
-        in_date = np.array([dt.datetime(2009, 1, 1, 1, 1)])
-        out_date = pytime.filter_datetime_input(in_date)
-        assert len(out_date) == len(in_date)
-        assert out_date[0] == dt.datetime(2009, 1, 1)
-        return
-
     @pytest.mark.parametrize("in_time, islist",
                              [(dt.datetime.utcnow(), False),
                               (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
