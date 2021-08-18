@@ -170,7 +170,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     decode_timedelta : bool
         Used for xarray datasets.  If True, variables with unit attributes that
         are 'timelike' ('hours', 'minutes', etc) are converted to
-        `dt.timedelta`. (default=False)
+        `np.timedelta64`. (default=False)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.

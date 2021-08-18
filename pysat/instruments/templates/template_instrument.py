@@ -315,7 +315,7 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
       instantiation are passed along to this routine.
     - When using `pysat.utils.load_netcdf4` for xarray data, pysat will
       use `decode_timedelta=False` to prevent automated conversion of data
-      to `dt.timedelta` objects if the units attribute is time-like ('hours',
+      to `np.timedelta64` objects if the units attribute is time-like ('hours',
       'minutes', etc).  This can be added as a custom keyword if timedelta
       conversion is desired.
 
