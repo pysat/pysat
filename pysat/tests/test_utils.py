@@ -385,8 +385,7 @@ class TestLoadNetCDF4(object):
         self.testInst.load(date=self.stime)
 
         # Modify data and metadata names in data
-        self.testInst.meta.data = self.testInst.meta.data.rename(str.upper,
-                                                                 axis='index')
+        self.testInst.meta.rename(str.upper)
         if self.testInst.pandas_format:
             self.testInst.data = self.testInst.data.rename(str.upper,
                                                            axis='columns')
