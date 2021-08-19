@@ -1,4 +1,4 @@
-"""Unit tests for the padding methods in `pysat.Instrument`."""
+"""Unit tests for the list generation methods in `pysat.Instrument`."""
 
 from importlib import reload
 
