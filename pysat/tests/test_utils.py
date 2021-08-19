@@ -559,7 +559,7 @@ class TestLoadNetCDF4XArray(object):
                                                 True)])
     def test_read_netcdf4_with_time_meta_labels(self, kwargs, target):
         """Test that read_netcdf correctly interprets time labels in meta."""
-        # Write the output test data
+        # Prepare output test data
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
@@ -567,6 +567,7 @@ class TestLoadNetCDF4XArray(object):
         self.testInst.data['uts'].attrs = {'units': 'seconds'}
         self.testInst.data['mlt'].attrs = {'units': 'minutes'}
         self.testInst.data['slt'].attrs = {'units': 'hours'}
+        # Write output test data.
         self.testInst.data.to_netcdf(outfile)
 
         # Load the written data

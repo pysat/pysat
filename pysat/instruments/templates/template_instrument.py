@@ -312,7 +312,7 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
     Note
     ----
     - Any additional keyword arguments passed to `pysat.Instrument` upon
-      instantiation are passed along to this routine.
+      instantiation or via `load` that are defined above will be passed along to this routine.
     - When using `pysat.utils.load_netcdf4` for xarray data, pysat will
       use `decode_timedelta=False` to prevent automated conversion of data
       to `np.timedelta64` objects if the units attribute is time-like ('hours',
