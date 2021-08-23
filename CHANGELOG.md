@@ -35,6 +35,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
      leading and trailing non-parsed text in filenames (e.g., file extensions)
+   * Added `decode_timedelta=False` as default for loading xarray from netcdf4
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
