@@ -559,7 +559,7 @@ class TestLoadNetCDF4XArray(object):
                                                 True)])
     def test_read_netcdf4_with_time_meta_labels(self, kwargs, target):
         """Test that read_netcdf correctly interprets time labels in meta."""
-        # Prepare output test data
+        # Prepare output test data.
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
