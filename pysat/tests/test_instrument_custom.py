@@ -1,4 +1,4 @@
-"""Unit tests for the `custom_attach` methods."""
+"""Unit tests for the `custom_attach` methods for `pysat.Instrument`."""
 
 import copy
 import logging
