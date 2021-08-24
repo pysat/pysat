@@ -410,8 +410,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         else:
             out = xr.open_mfdataset(fnames, combine='by_coords',
                                     decode_timedelta=decode_timedelta)
-        # Close any open links to file through xarray.
-        out.close()
         for key in out.variables.keys():
             # Copy the variable attributes from the data object to the metadata
             meta_dict = {}
@@ -432,6 +430,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
         # Remove attributes from the data object
         out.attrs = {}
+
+        # Close any open links to file through xarray.
+        out.close()
 
     return out, meta
 
