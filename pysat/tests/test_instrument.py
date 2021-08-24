@@ -40,6 +40,7 @@ class TestBasics(object):
                                'test_list_files_kwarg': 'sleep_tight',
                                'test_list_remote_kwarg': 'one_eye_open',
                                'test_download_kwarg': 'exit_night'}
+        return
 
     def teardown_class(self):
         """Clean up class-level variables once after all methods."""
