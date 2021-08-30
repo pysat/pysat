@@ -1959,7 +1959,7 @@ class TestBasics(object):
                                 dt.timedelta(days=1), False],
                                'Too many input arguments.')])
     def test_set_bounds_error_message(self, new_bounds, errmsg):
-        """Test ValueError when setting bounds with mixed iterables."""
+        """Test ValueError when setting bounds with wrong inputs."""
 
         with pytest.raises(ValueError) as verr:
             self.testInst.bounds = new_bounds
