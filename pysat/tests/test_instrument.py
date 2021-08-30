@@ -184,7 +184,7 @@ class TestBasics(object):
         return
 
     def eval_iter_list(self, start, stop):
-        """Evaluate successful generation of iter_lsit for `self.testInst`.
+        """Evaluate successful generation of iter_list for `self.testInst`.
 
         Parameters
         ----------
@@ -415,6 +415,7 @@ class TestBasics(object):
         """Test if correct day loads by default when first invoking `.next`."""
 
         getattr(self.testInst, operator)()
+
         # Modify ref time since iterator changes load date.
         self.ref_time = ref_time
         self.eval_successful_load()
@@ -425,7 +426,8 @@ class TestBasics(object):
         """Test Error for in new day when on a file not in iteration list."""
 
         self.testInst.load(fname=self.testInst.files[12])
-        # Set new bounds that doesn't include this date.
+
+        # Set new bounds that do not include this date.
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
                                 2, 1)
         with pytest.raises(StopIteration) as err:
@@ -440,7 +442,8 @@ class TestBasics(object):
         """Test that day iterators raise Error on bad start date."""
 
         self.testInst.load(date=self.ref_time)
-        # Set new bounds that doesn't include this date.
+
+        # Set new bounds that do not include this date.
         self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
                                 self.ref_time + dt.timedelta(days=10),
                                 '2D', dt.timedelta(days=1))
@@ -1556,7 +1559,7 @@ class TestBasics(object):
         # load first data
         getattr(self.testInst, first)()
         with pytest.raises(StopIteration) as err:
-            # go back to no data
+            # Iterate to a day outside the bounds.
             getattr(self.testInst, second)()
         assert str(err).find("Outside the set date boundaries") >= 0
         return
