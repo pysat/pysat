@@ -201,6 +201,7 @@ class TestBasics(object):
             out = pds.date_range(start[0], stop[0]).tolist()
             out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(self.testInst._iter_list == out)
+        return
 
     @pytest.mark.parametrize("kwargs", [{}, {'num_samples': 30}])
     def test_basic_instrument_load(self, kwargs):

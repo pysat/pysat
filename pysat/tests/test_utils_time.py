@@ -252,8 +252,8 @@ class TestFilterDatetimeInput(object):
 
         # Test for the date values and timezone awareness status
         for i, tt in enumerate(self.out):
-            assert self.out[i] == self.ref_time[i], \
+            assert tt == self.ref_time[i], \
                 "Filtered time has changed dates."
-            assert None in [self.out[i].tzinfo, self.out[i].utcoffset()], \
-                "Filtered timezone was not removed."
+            assert None in [tt.tzinfo, self.out[i].utcoffset()], \
+                "Filtered timezone was not removed at value {:d}.".format(i)
         return
