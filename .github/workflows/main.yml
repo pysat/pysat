@@ -11,11 +11,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.8, 3.9]
-        numpy_ver: [latest]
+        python-version: ["3.8", "3.9"]
+        numpy_ver: ["latest"]
         include:
-          - python-version: 3.7
-            numpy_ver: 1.17.3
+          - python-version: "3.7"
+            numpy_ver: "1.18"
             os: ubuntu-latest
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
@@ -47,7 +47,7 @@ jobs:
         python -c "import pysat; pysat.params['data_dirs'] = 'pysatData'"
 
     - name: Test PEP8 compliance
-      run: flake8 . --count --select=E,F,W --show-source --statistics
+      run: flake8 . --count --select=D,E,F,H,W --show-source --statistics
 
     - name: Evaluate complexity
       run: flake8 . --count --exit-zero --max-complexity=10 --statistics

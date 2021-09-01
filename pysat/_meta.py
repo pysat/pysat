@@ -5,10 +5,10 @@
 # ----------------------------------------------------------------------------
 
 from copy import deepcopy
-import os
-import warnings
 import numpy as np
+import os
 import pandas as pds
+import warnings
 
 import pysat
 import pysat.utils._core as core_utils
@@ -16,8 +16,7 @@ from pysat.utils import testing
 
 
 class Meta(object):
-    """ Stores metadata for Instrument instance, similar to CF-1.6 netCDFdata
-    standard.
+    """Stores metadata for Instrument instance.
 
     Parameters
     ----------
@@ -69,6 +68,8 @@ class Meta(object):
     Meta objects returned as part of pysat loading routines are automatically
     updated to use the same values of units, etc. as found in the
     pysat.Instrument object.
+
+    Meta objects have a structure similar to the CF-1.6 netCDF data standard.
 
     Examples
     --------
@@ -149,6 +150,7 @@ class Meta(object):
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
                          'fill_val': ('fill', float)}, export_nan=None):
+        """Initialize `pysat.Meta` object."""
 
         # Set mutability of Meta attributes.  This flag must be set before
         # anything else, or `__setattr__` breaks.
@@ -188,7 +190,7 @@ class Meta(object):
         self._base_attr = dir(self)
 
     def __repr__(self):
-        """String describing MetaData instantiation parameters
+        """Print MetaData instantiation parameters.
 
         Returns
         -------
@@ -204,7 +206,7 @@ class Meta(object):
         return out_str
 
     def __str__(self, long_str=True):
-        """String describing Meta instance, variables, and attributes
+        """Print Meta instance, variables, and attributes.
 
         Parameters
         ----------
@@ -258,7 +260,7 @@ class Meta(object):
         return out_str
 
     def __setattr__(self, name, value):
-        """Conditionally sets attributes based on self.mutable flag
+        """Conditionally set attributes based on `self.mutable` flag.
 
         Parameters
         ----------
@@ -312,7 +314,7 @@ class Meta(object):
             super(Meta, self).__setattr__(name, value)
 
     def __setitem__(self, data_vars, input_data):
-        """Convenience method for adding metadata.
+        """Add metadata.
 
         Parameters
         ----------
@@ -462,7 +464,7 @@ class Meta(object):
         return
 
     def __getitem__(self, key):
-        """Convenience method for obtaining metadata.
+        """Obtain metadata.
 
         Maps to pandas DataFrame.loc method.
 
@@ -494,8 +496,7 @@ class Meta(object):
         """
         # Define a local convenience function
         def match_name(func, var_name, index_or_column):
-            """Applies func on input variables(s) depending on variable type
-            """
+            """Alter variables using input function."""
             if isinstance(var_name, str):
                 # If variable is a string, use it as input
                 return func(var_name)
@@ -557,7 +558,7 @@ class Meta(object):
                                                "expected tuple, list, or str"]))
 
     def __contains__(self, data_var):
-        """case insensitive check for variable name
+        """Check variable name, not distinguishing by case.
 
         Parameters
         ----------
@@ -583,7 +584,7 @@ class Meta(object):
         return does_contain
 
     def __eq__(self, other_meta):
-        """ Check equality between Meta instances
+        """Check equality between Meta instances.
 
         Parameters
         ----------
@@ -670,7 +671,7 @@ class Meta(object):
     # Define the hidden methods
 
     def _insert_default_values(self, data_var):
-        """Set the default label values for a data variable
+        """Set the default label values for a data variable.
 
         Parameters
         ----------
@@ -703,7 +704,7 @@ class Meta(object):
 
     def _label_setter(self, new_label, current_label, default_type,
                       use_names_default=False):
-        """Generalized setter of default meta attributes
+        """Set default meta attributes for variable.
 
         Parameters
         ----------
@@ -768,39 +769,36 @@ class Meta(object):
 
     @property
     def data(self):
+        """Retrieve data.
+
+        May be set using `data.setter(new_frame)`, where `new_frame` is a
+        pandas Dataframe containing the metadata with label names as columns.
+        """
         return self._data
 
     @data.setter
     def data(self, new_frame):
-        """ Set the data property
-
-        Paramters
-        ---------
-        new_frame : pds.DataFrame
-            Data frame containing the metadata, with label names as columns
-
-        """
+        # Set the data property.  See docstring for property above.
         self._data = new_frame
 
     @property
     def ho_data(self):
+        """Retrieve higher order data.
+
+        May be set using `ho_data.setter(new_dict)`, where `new_dict` is a
+        dict containing the higher order metadata.
+
+        """
         return self._ho_data
 
     @ho_data.setter
     def ho_data(self, new_dict):
-        """ Set the higher order data property
-
-        Paramters
-        ---------
-        new_dict : dict
-            Dict containing the higher order data
-
-        """
+        # Set the ho_data property.  See docstring for property above.
         self._ho_data = new_dict
 
     @property
     def empty(self):
-        """Return boolean True if there is no metadata
+        """Return boolean True if there is no metadata.
 
         Returns
         -------
@@ -817,7 +815,7 @@ class Meta(object):
             return False
 
     def merge(self, other):
-        """Adds metadata variables to self that are in other but not in self.
+        """Add metadata variables to self that are in other but not in self.
 
         Parameters
         ----------
@@ -832,7 +830,7 @@ class Meta(object):
         return
 
     def drop(self, names):
-        """Drops variables (names) from metadata.
+        """Drop variables (names) from metadata.
 
         Parameters
         ----------
@@ -851,7 +849,7 @@ class Meta(object):
         return
 
     def keep(self, keep_names):
-        """Keeps variables (keep_names) while dropping other parameters
+        """Keep variables (keep_names) while dropping other parameters.
 
         Parameters
         ----------
@@ -873,7 +871,7 @@ class Meta(object):
         return
 
     def apply_meta_labels(self, other_meta):
-        """Applies the existing meta labels from self onto different MetaData
+        """Apply the existing meta labels from self onto different MetaData.
 
         Parameters
         ----------
@@ -896,7 +894,7 @@ class Meta(object):
         return other_updated
 
     def accept_default_labels(self, other_meta):
-        """Applies labels for default meta labels from other onto self.
+        """Apply labels for default meta labels from other onto self.
 
         Parameters
         ----------
@@ -919,7 +917,7 @@ class Meta(object):
         return
 
     def var_case_name(self, name):
-        """Provides stored name (case preserved) for case insensitive input
+        """Provide stored name (case preserved) for case insensitive input.
 
         Parameters
         ----------
@@ -959,25 +957,25 @@ class Meta(object):
         return out_name
 
     def keys(self):
-        """Yields variable names stored for 1D variables"""
+        """Yield variable names stored for 1D variables."""
 
         for ikey in self.data.index:
             yield ikey
 
     def keys_nD(self):
-        """Yields keys for higher order metadata"""
+        """Yield keys for higher order metadata."""
 
         for ndkey in self.ho_data:
             yield ndkey
 
     def attrs(self):
-        """Yields metadata products stored for each variable name"""
+        """Yield metadata products stored for each variable name."""
 
         for dcol in self.data.columns:
             yield dcol
 
     def hasattr_case_neutral(self, attr_name):
-        """Case-insensitive check for attribute names in this class
+        """Case-insensitive check for attribute names in this class.
 
         Parameters
         ----------
@@ -1002,7 +1000,7 @@ class Meta(object):
         return has_name
 
     def attr_case_name(self, name):
-        """Returns preserved case name for case insensitive value of name.
+        """Retrieve preserved case name for case insensitive value of name.
 
         Parameters
         ----------
@@ -1094,7 +1092,7 @@ class Meta(object):
         return deepcopy(self)
 
     def pop(self, label_name):
-        """Remove and return metadata about variable
+        """Remove and return metadata about variable.
 
         Parameters
         ----------
@@ -1252,21 +1250,9 @@ class Meta(object):
             raise ValueError(''.join(['Unable to retrieve information from ',
                                       filename]))
 
-    # TODO
-    # @classmethod
-    # def from_nc():
-    #     """not implemented yet, load metadata from netCDF"""
-    #     pass
-    #
-    # @classmethod
-    # def from_dict():
-    #     """not implemented yet, load metadata from dict of items/list types
-    #     """
-    #     pass
-
 
 class MetaLabels(object):
-    """ Stores metadata labels for Instrument instance
+    """Stores metadata labels for Instrument instance.
 
     Parameters
     ----------
@@ -1344,7 +1330,7 @@ class MetaLabels(object):
                  desc=('desc', str), min_val=('value_min', float),
                  max_val=('value_max', float), fill_val=('fill', float),
                  **kwargs):
-        """ Initialize the MetaLabels class
+        """Initialize the MetaLabels class.
 
         Parameters
         ----------
@@ -1397,7 +1383,7 @@ class MetaLabels(object):
         return
 
     def __setattr__(self, name, value):
-        """Conditionally sets attributes based on their type
+        """Conditionally set attributes based on their type.
 
         Parameters
         ----------
@@ -1424,7 +1410,7 @@ class MetaLabels(object):
                                         use_names_default=True)
 
     def __repr__(self):
-        """String describing MetaData instantiation parameters
+        """Print MetaData instantiation parameters.
 
         Returns
         -------
@@ -1439,7 +1425,7 @@ class MetaLabels(object):
         return out_str
 
     def __str__(self):
-        """String describing Meta instance, variables, and attributes
+        """Print Meta instance, variables, and attributes.
 
         Returns
         -------
@@ -1462,7 +1448,7 @@ class MetaLabels(object):
         return out_str
 
     def default_values_from_type(self, val_type):
-        """ Return the default values for each label based on their type
+        """Retrieve the default values for each label based on their type.
 
         Parameters
         ----------
@@ -1521,7 +1507,7 @@ class MetaLabels(object):
         return default_val
 
     def default_values_from_attr(self, attr_name):
-        """ Return the default values for each label based on their type
+        """Retrieve the default values for each label based on their type.
 
         Parameters
         ----------

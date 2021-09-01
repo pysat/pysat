@@ -30,10 +30,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      docstrings from an instantiated Instrument in an interactive session
   * Updated examples in docstrings
   * Improved docstring style and consistency
+  * Added docstring linting via flake-docstrings and hacking to CI tests
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
      leading and trailing non-parsed text in filenames (e.g., file extensions)
+   * Added `decode_timedelta=False` for loading xarray from netcdf4 (#823)
+   * Closed links to open files when loading data through xarray (#887)
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
@@ -44,6 +47,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Update usage of caplog and capsys in unit tests
    * Reorganized tests for the `pysat.Instrument` class into multiple files
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
+   * Update minimum numpy in CI tests to 1.18 following NEP29
 
 [3.0.1] - 2021-07-28
 --------------------

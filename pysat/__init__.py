@@ -100,14 +100,16 @@ else:
 with Lock(version_filename, 'r', params['file_timeout']) as version_file:
     __version__ = version_file.read().strip()
 
-from pysat import utils
-from pysat._instrument import Instrument
-from pysat._meta import Meta, MetaLabels
 from pysat._files import Files
+from pysat._instrument import Instrument
+from pysat._meta import Meta
+from pysat._meta import MetaLabels
 from pysat._orbits import Orbits
-from pysat._constellation import Constellation
 from pysat import instruments
+from pysat import utils
 
+# Import constellation separately
+from pysat._constellation import Constellation
 __all__ = ['instruments', 'utils']
 
 # Cleanup

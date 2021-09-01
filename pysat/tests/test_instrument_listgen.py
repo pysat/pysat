@@ -1,4 +1,4 @@
-"""Unit tests for the padding methods in `pysat.Instrument`."""
+"""Unit tests for the list generation methods in `pysat.Instrument`."""
 
 from importlib import reload
 
@@ -18,7 +18,7 @@ class TestInstListGeneration(object):
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        # Reset the pysat instrument library
+        # Reset the pysat instrument library.
         reload(pysat.instruments)
         reload(pysat.instruments.pysat_testing)
         del self.test_library
@@ -29,7 +29,7 @@ class TestInstListGeneration(object):
 
         self.test_library.__all__.append('broken_inst')
 
-        # This instrument does not exist.  The routine should run without error
+        # This instrument does not exist.  The routine should run without error.
         inst_list = generate_instrument_list(self.test_library)
         assert 'broken_inst' in inst_list['names']
         for dict in inst_list['download']:
@@ -43,8 +43,8 @@ class TestInstListGeneration(object):
 
         del self.test_library.pysat_testing._test_dates
         # If an instrument does not have the _test_dates attribute, it should
-        # still be added to the list for other checks to be run
-        # This will be caught later by InstTestClass.test_instrument_test_dates
+        # still be added to the list for other checks to be run.
+        # This will be caught later by InstTestClass.test_instrument_test_dates.
         assert not hasattr(self.test_library.pysat_testing, '_test_dates')
         inst_list = generate_instrument_list(self.test_library)
         assert 'pysat_testing' in inst_list['names']
