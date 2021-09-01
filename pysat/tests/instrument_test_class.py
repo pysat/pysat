@@ -77,18 +77,18 @@ class InstTestClass(object):
             if hasattr(getattr(self, method), 'pytestmark'):
                 # Get list of names of pytestmarks
                 n_args = len(getattr(self, method).pytestmark)
-                names = [getattr(self, method).pytestmark[j].name
-                         for j in range(0, n_args)]
+                mark_names = [getattr(self, method).pytestmark[j].name
+                              for j in range(0, n_args)]
                 # Add instruments from your library
-                if 'all_inst' in names:
+                if 'all_inst' in mark_names:
                     mark = pytest.mark.parametrize("inst_name",
                                                    instruments['names'])
                     getattr(self, method).pytestmark.append(mark)
-                elif 'download' in names:
+                elif 'download' in mark_names:
                     mark = pytest.mark.parametrize("inst_dict",
                                                    instruments['download'])
                     getattr(self, method).pytestmark.append(mark)
-                elif 'no_download' in names:
+                elif 'no_download' in mark_names:
                     mark = pytest.mark.parametrize("inst_dict",
                                                    instruments['no_download'])
                     getattr(self, method).pytestmark.append(mark)
