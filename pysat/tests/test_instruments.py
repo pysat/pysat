@@ -8,7 +8,6 @@ Imports test methods from pysat.tests.instrument_test_class
 
 import datetime as dt
 import pandas as pds
-import tempfile
 
 import pytest
 
@@ -34,13 +33,17 @@ user_info = {'pysat_testing': {'user': 'pysat_testing',
 # Developers for instrument libraries should update the following line to
 # point to their own subpackage location
 # e.g.,
-# instruments = generate_instrument_list(inst_loc=mypackage.inst)
+# InstTestClass.apply_marks_to_tests(InstTestClass, inst_loc=mypackage.inst)
 # If user and password info supplied, use the following instead
-# instruments = generate_instrument_list(inst_loc=mypackage.inst,
-#                                        user_info=user_info)
+# InstTestClass.apply_marks_to_tests(InstTestClass, inst_loc=mypackage.inst,
+#                                    user_info=user_info)
+InstTestClass.apply_marks_to_tests(InstTestClass, inst_loc=pysat.instruments,
+                                   user_info=user_info)
+
+# Developers adding custom tests may need to create a list of instruments for
+# use with pytest.mark.parametrize.  See Integration Tests below for examples.
 instruments = generate_instrument_list(inst_loc=pysat.instruments,
                                        user_info=user_info)
-InstTestClass.apply_marks_to_tests(InstTestClass, instruments=instruments)
 
 
 class TestInstruments(InstTestClass):
@@ -48,31 +51,10 @@ class TestInstruments(InstTestClass):
 
     Note
     ----
-    Uses class level setup and teardown so that all tests use the same
-    temporary directory. We do not want to geneate a new tempdir for each test,
-    as the load tests need to be the same as the download tests.
+    All standard tests, setup, and teardown inherited from the core pysat
+    instrument test class.
 
     """
-
-    def setup_class(self):
-        """Initialize the testing setup once before all tests are run."""
-        # Make sure to use a temporary directory so that the user's setup is not
-        # altered
-        self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
-        pysat.params['data_dirs'] = self.tempdir.name
-        # Developers for instrument libraries should update the following line
-        # to point to their own subpackage location, e.g.,
-        # self.inst_loc = mypackage.instruments
-        self.inst_loc = pysat.instruments
-        return
-
-    def teardown_class(self):
-        """Clean up downloaded files and parameters from tests."""
-        pysat.params['data_dirs'] = self.saved_path
-        self.tempdir.cleanup()
-        del self.inst_loc, self.saved_path, self.tempdir
-        return
 
     # Custom package unit tests can be added here
 
