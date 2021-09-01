@@ -48,8 +48,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Reorganized tests for the `pysat.Instrument` class into multiple files
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
    * Update minimum numpy in CI tests to 1.18 following NEP29
-   * Added `apply_marks_to_tests` to the `InstTestClass` to improve user
-     implementation of the end-to-end instrument tests.
+   * Made `InstTestClass` more portable to streamline user implementation of the
+     standard end-to-end instrument tests. 
 
 [3.0.1] - 2021-07-28
 --------------------
