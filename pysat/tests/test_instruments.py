@@ -76,7 +76,7 @@ class TestInstruments(InstTestClass):
 
     # Custom package unit tests can be added here
 
-    # Custom Integration Tests added to all instruments.
+    # Custom Integration Tests added to all test instruments in core package.
     @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
     @pytest.mark.parametrize("kwarg,output", [(None, 0.0),
                                               (dt.timedelta(hours=1), 3600.0)])
