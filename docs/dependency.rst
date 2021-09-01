@@ -103,80 +103,105 @@ developers.  Continuing the above example, developers may copy over the
   import customLibrary
 
   # Import the test classes from pysat
-  from pysat.tests.instrument_test_class import generate_instrument_list
   from pysat.tests.instrument_test_class import InstTestClass
 
+Before creating a test class that will inherit from ``InstTestClass``, the class
+should be told which tests to run on which instruments.  This can be done by
+using the ``apply_marks_to_tests`` method in the core class.
+
+.. code:: python
+
+  InstTestClass.apply_marks_to_tests(InstTestClass,
+                                     inst_loc=customLibrary.instruments)
+
+
+Now a class that pytest can run should be created, inheriting the tests and
+instrument instructions from the standard test class above.  Note that pytest
+will only run classes that begin with the word "Test".
+
+.. code:: Python
+
+  class TestInstruments(InstTestClass):
+  """Main class for instrument tests.
+
+  Note
+  ----
+  All standard tests, setup, and teardown inherited from the core pysat
+  instrument test class.
+
+  """
+
+All setup and teardown routines are inherited from the core class. Note that the
+test methods use temporary directories to store downloaded files to avoid
+breaking a user's directory structure.
+
+
+.. _pysat-dep-addtests:
+
+Adding custom tests in pysat
+----------------------------
+
+If the instrument library has custom routines that need testing, you can add
+additional test methods routines after the class declaration.  For instance,
+you may want to test that a specific instrument generates an error message
+when initialized improperly.
+
+.. code:: Python
+
+  @pytest.mark.parametrize("kw_dict", [{'inclination': 13, 'alt_apoapsis': 850},
+                                       {'TLE1': 'abc'}])
+  def test_sgp4_options_errors(self, kw_dict):
+      """Test optional keyword combos for sgp4 that generate errors."""
+
+      with pytest.raises(KeyError) as kerr:
+          self.test_inst = pysat.Instrument(
+              inst_module=pysatMissions.instruments.missions_sgp4,
+              **kw_dict)
+      assert str(kerr).find('Insufficient kwargs') >= 0
+      return
+
+
+Other times you may need to run a new test across all instruments.  For applying
+``@pytest.mark.parametrize`` across multiple instruments, you may need to create
+a list of instruments from your package.  At the top of the file, make sure to
+include:
+
+.. code:: Python
+
+  from pysat.tests.instrument_test_class import generate_instrument_list
   # Developers for instrument libraries should update the following line to
   # point to their own library location. For example,
   # instruments = generate_instrument_list(inst_loc=mypackage.instruments)
   instruments = generate_instrument_list(inst_loc=customLibrary.instruments)
 
 The above code scans the list of instruments and flags each instrument for one
-or more of the test types, as defined below.  This bit of the code should
-generally be unchanged.  Instruments are grouped in three lists:
+or more of the test types, as defined below.  Instruments are grouped in three
+lists:
 
 * instruments['names']: A list of all module names to check for
-  standardization
+standardization
 * instruments['download']: A list of dicts containing info to initialize
-  instruments for end-to-end testing
+instruments for end-to-end testing
 * instruments['no_download']: A list of dicts containing info to initialize
-  instruments without download support for specialized local tests
+instruments without download support for specialized local tests
 
-.. code:: python
-
-  # The following lines apply the custom instrument lists to each type of test
-  method_list = [func for func in dir(InstTestClass)
-                 if callable(getattr(InstTestClass, func))]
-  # Search tests for iteration via pytestmark, update instrument list
-  for method in method_list:
-      if hasattr(getattr(InstTestClass, method), 'pytestmark'):
-          # Get list of names of pytestmarks
-          nargs = len(getattr(InstTestClass, method).pytestmark)
-          names = [getattr(InstTestClass, method).pytestmark[j].name
-                   for j in range(0, nargs)]
-          # Add instruments from your library
-          if 'all_inst' in names:
-              mark = pytest.mark.parametrize("inst_name", instruments['names'])
-              getattr(InstTestClass, method).pytestmark.append(mark)
-          elif 'download' in names:
-              mark = pytest.mark.parametrize("inst_dict",
-	                                        instruments['download'])
-              getattr(InstTestClass, method).pytestmark.append(mark)
-          elif 'no_download' in names:
-              mark = pytest.mark.parametrize("inst_dict",
-                                             instruments['no_download'])
-              getattr(InstTestClass, method).pytestmark.append(mark)
-
-Finally, the :py:meth:`TestInstruments.setup_class` method should be updated
-with the location of the instrument subpackage.  Note that the routine uses 
-temporary directories to store downloaded files to avoid breaking user's
-directory structure.
+Then, the new test may be created under the ``TestInstruments`` class as before.
 
 .. code:: Python
 
-  class TestInstruments(InstTestClass):
-      """Uses class level setup and teardown so that all tests use the same
-      temporary directory. We do not want to geneate a new tempdir for each
-      test, as the load tests need to be the same as the download tests.
-      """
+  @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
+  def test_inst_file_date_range(self, inst_dict):
+      """Test operation of file_date_range keyword."""
 
-    def setup_class(self):
-        """Runs once before the tests to initialize the testing setup."""
-        # Make sure to use a temporary directory so that the user's setup is not
-        # altered
-        self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
-        pysat.params['data_dirs'] = self.tempdir.name
-        # Developers for instrument libraries should update the following line
-        # to point to their own subpackage location, e.g.,
-        # self.inst_loc = mypackage.instruments
-        self.inst_loc = pysat.instruments
+      file_date_range = pds.date_range(dt.datetime(2021, 1, 1),
+                                       dt.datetime(2021, 12, 31))
+      _, date = initialize_test_inst_and_date(inst_dict)
+      self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
+                                        file_date_range=file_date_range)
+      file_list = self.test_inst.files.files
 
-    def teardown_class(self):
-        """Runs once to clean up testing from this class."""
-        pysat.params['data_dirs'] = self.saved_path
-        self.tempdir.cleanup()
-        del self.inst_loc, self.saved_path, self.tempdir
+      assert all(file_date_range == file_list.index)
+      return
 
 
 .. _pysat-dep-testcust:
