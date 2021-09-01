@@ -40,7 +40,7 @@ user_info = {'pysat_testing': {'user': 'pysat_testing',
 #                                        user_info=user_info)
 instruments = generate_instrument_list(inst_loc=pysat.instruments,
                                        user_info=user_info)
-InstTestClass.apply_marks_to_instruments(InstTestClass, instruments=instruments)
+InstTestClass.apply_marks_to_tests(InstTestClass, instruments=instruments)
 
 
 class TestInstruments(InstTestClass):

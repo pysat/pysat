@@ -59,7 +59,7 @@ class InstTestClass(object):
                   'inst_ids': dict, 'tag': str, 'inst_id': str,
                   'acknowledgements': str, 'references': str}
 
-    def apply_marks_to_instruments(self, instruments):
+    def apply_marks_to_tests(self, instruments):
         """Apply custom instrument lists to each test method as a pytest mark.
 
         Parameters
