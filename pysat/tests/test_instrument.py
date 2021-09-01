@@ -21,13 +21,6 @@ from pysat.utils.time import filter_datetime_input
 
 xarray_epoch_name = 'time'
 
-testing_kwargs = {'test_init_kwarg': True, 'test_clean_kwarg': False,
-                  'test_preprocess_kwarg': 'test_phrase',
-                  'test_load_kwarg': 'bright_light',
-                  'test_list_files_kwarg': 'sleep_tight',
-                  'test_list_remote_kwarg': 'one_eye_open',
-                  'test_download_kwarg': 'exit_night'}
-
 
 # -----------------------------------------------------------------------------
 #
@@ -37,16 +30,33 @@ testing_kwargs = {'test_init_kwarg': True, 'test_clean_kwarg': False,
 class TestBasics(object):
     """Unit tests for pysat.Instrument object."""
 
+    def setup_class(self):
+        """Set up class-level variables once before all methods."""
+
+        self.testing_kwargs = {'test_init_kwarg': True,
+                               'test_clean_kwarg': False,
+                               'test_preprocess_kwarg': 'test_phrase',
+                               'test_load_kwarg': 'bright_light',
+                               'test_list_files_kwarg': 'sleep_tight',
+                               'test_list_remote_kwarg': 'one_eye_open',
+                               'test_download_kwarg': 'exit_night'}
+        return
+
+    def teardown_class(self):
+        """Clean up class-level variables once after all methods."""
+
+        del self.testing_kwargs
+        return
+
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        global testing_kwargs
         reload(pysat.instruments.pysat_testing)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
-                                         **testing_kwargs)
+                                         **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
@@ -149,7 +159,7 @@ class TestBasics(object):
         Parameters
         ----------
         end_date : dt.datetime or NoneType
-            End date for loadind data.  If None, assumes self.ref_time + 1 day.
+            End date for loading data.  If None, assumes self.ref_time + 1 day.
             (default=None)
 
         """
@@ -173,21 +183,32 @@ class TestBasics(object):
 
         return
 
-    def test_basic_instrument_load(self):
+    def eval_iter_list(self, start, stop):
+        """Evaluate successful generation of iter_list for `self.testInst`.
+
+        Parameters
+        ----------
+        start : dt.datetime or list of dt.datetime
+            Start date for generating iter_list.
+        stop : dt.datetime or list of dt.datetime
+            start date for generating iter_list.
+
+        """
+
+        if isinstance(start, dt.datetime):
+            out = pds.date_range(start, stop).tolist()
+        else:
+            out = pds.date_range(start[0], stop[0]).tolist()
+            out.extend(pds.date_range(start[1], stop[1]).tolist())
+        assert np.all(self.testInst._iter_list == out)
+        return
+
+    @pytest.mark.parametrize("kwargs", [{}, {'num_samples': 30}])
+    def test_basic_instrument_load(self, kwargs):
         """Test that the correct day loads with input year and doy."""
 
         # Load data by year and day of year
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-
-        # Test that the loaded date range is correct
-        self.eval_successful_load()
-        return
-
-    def test_basic_instrument_load_w_kwargs(self):
-        """Test that the correct day loads with optional kwarg."""
-
-        # Load data by year and day of year
-        self.testInst.load(self.ref_time.year, self.ref_doy, num_samples=30)
+        self.testInst.load(self.ref_time.year, self.ref_doy, **kwargs)
 
         # Test that the loaded date range is correct
         self.eval_successful_load()
@@ -353,10 +374,7 @@ class TestBasics(object):
         """Test loading by date."""
 
         self.testInst.load(date=self.ref_time)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.eval_successful_load()
         return
 
     def test_basic_instrument_load_by_dates(self):
@@ -364,24 +382,15 @@ class TestBasics(object):
 
         end_date = self.ref_time + dt.timedelta(days=2)
         self.testInst.load(date=self.ref_time, end_date=end_date)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        self.out = self.testInst.index[-1]
-        assert (self.out >= self.ref_time + dt.timedelta(days=1))
-        assert (self.out <= self.ref_time + dt.timedelta(days=2))
+        self.eval_successful_load(end_date=end_date)
         return
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
         """Ensure `.load(date=date)` only uses date portion of datetime."""
 
         # put in a date that has more than year, month, day
-        self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.testInst.load(date=(self.ref_time + dt.timedelta(minutes=71)))
+        self.eval_successful_load()
         return
 
     def test_basic_instrument_load_data(self):
@@ -397,158 +406,101 @@ class TestBasics(object):
         self.ref_time = dt.datetime(2008, 12, 31)
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.eval_successful_load()
         return
 
-    def test_next_load_default(self):
-        """Test if first day loads by default when first invoking `.next`."""
+    @pytest.mark.parametrize("operator,ref_time",
+                             [('next', dt.datetime(2008, 1, 1)),
+                              ('prev', dt.datetime(2010, 12, 31))])
+    def test_file_load_default(self, operator, ref_time):
+        """Test if correct day loads by default when first invoking `.next`."""
 
-        self.ref_time = dt.datetime(2008, 1, 1)
-        self.testInst.next()
-        self.out = self.testInst.index[0]
-        assert self.out == self.ref_time
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        getattr(self.testInst, operator)()
+
+        # Modify ref time since iterator changes load date.
+        self.ref_time = ref_time
+        self.eval_successful_load()
         return
 
-    def test_prev_load_default(self):
-        """Test if last day loads by default when first invoking `.prev`."""
-
-        self.ref_time = dt.datetime(2010, 12, 31)
-        self.testInst.prev()
-        self.out = self.testInst.index[0]
-        assert self.out == self.ref_time
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        return
-
-    def test_next_load_bad_start_file(self):
-        """Test Error for `.next()` when on a file not in iteration list."""
-
-        self.testInst.load(fname=self.testInst.files[1])
-        # set new bounds that doesn't include this date
-        self.testInst.bounds = (self.testInst.files[0], self.testInst.files[20],
-                                2, 1)
-        with pytest.raises(StopIteration) as err:
-            self.testInst.next()
-        estr = 'Unable to find loaded filename '
-        assert str(err).find(estr) >= 0
-
-        return
-
-    def test_prev_load_bad_start_file(self):
-        """Test Error for `.prev()` when on a file not in iteration list."""
+    @pytest.mark.parametrize("operator", [('next'), ('prev')])
+    def test_file_load_bad_start_file(self, operator):
+        """Test Error for in new day when on a file not in iteration list."""
 
         self.testInst.load(fname=self.testInst.files[12])
-        # set new bounds that doesn't include this date
+
+        # Set new bounds that do not include this date.
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
                                 2, 1)
         with pytest.raises(StopIteration) as err:
-            self.testInst.prev()
+            getattr(self.testInst, operator)()
         estr = 'Unable to find loaded filename '
         assert str(err).find(estr) >= 0
 
         return
 
-    def test_next_load_bad_start_date(self):
-        """Test that `.next()` raises Error on bad start date."""
+    @pytest.mark.parametrize("operator", [('next'), ('prev')])
+    def test_file_load_bad_start_date(self, operator):
+        """Test that day iterators raise Error on bad start date."""
 
         self.testInst.load(date=self.ref_time)
-        # set new bounds that doesn't include this date
+
+        # Set new bounds that do not include this date.
         self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
                                 self.ref_time + dt.timedelta(days=10),
                                 '2D', dt.timedelta(days=1))
 
         with pytest.raises(StopIteration) as err:
-            self.testInst.next()
+            getattr(self.testInst, operator)()
         estr = 'Unable to find loaded date '
         assert str(err).find(estr) >= 0
 
         return
 
-    def test_prev_load_bad_start_date(self):
-        """Test that `.prev()` raises Error on bad start date."""
-
-        self.ref_time = dt.datetime(2008, 1, 2)
-        self.testInst.load(date=self.ref_time)
-        # set new bounds that doesn't include this date
-        self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
-                                self.ref_time + dt.timedelta(days=10),
-                                '2D', dt.timedelta(days=1))
-        with pytest.raises(StopIteration) as err:
-            self.testInst.prev()
-        estr = 'Unable to find loaded date '
-        assert str(err).find(estr) >= 0
-
-        return
-
-    def test_next_load_empty_iteration(self):
-        """Ensure empty iteration list is fine via `.next()`."""
+    @pytest.mark.parametrize("operator", [('next'), ('prev')])
+    def test_file_load_empty_iteration(self, operator):
+        """Ensure empty iteration list is fine via day iteration."""
 
         self.testInst.bounds = (None, None, '10000D',
                                 dt.timedelta(days=10000))
         with pytest.raises(StopIteration) as err:
-            self.testInst.next()
+            getattr(self.testInst, operator)()
         estr = 'File list is empty. '
         assert str(err).find(estr) >= 0
 
-        return
-
-    def test_prev_load_empty_iteration(self):
-        """Ensure empty iteration list is fine via `.prev()`."""
-
-        self.testInst.bounds = (None, None, '10000D',
-                                dt.timedelta(days=10000))
-        with pytest.raises(StopIteration) as err:
-            self.testInst.prev()
-        estr = 'File list is empty. '
-        assert str(err).find(estr) >= 0
-
-        return
-
-    def test_next_fname_load_default(self):
-        """Test next day loads when invoking `.next()`."""
-
-        self.ref_time = dt.datetime(2008, 1, 2)
-        self.testInst.load(fname=self.testInst.files[0])
-        self.testInst.next()
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        return
-
-    def test_prev_fname_load_default(self):
-        """Test prev day loads when invoking `.prev()`."""
-
-        self.ref_time = dt.datetime(2008, 1, 3)
-        self.testInst.load(fname=self.testInst.files[3])
-        self.testInst.prev()
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
         return
 
     def test_basic_fname_instrument_load(self):
         """Test loading by filename from attached `.files`."""
 
-        self.ref_time = dt.datetime(2008, 1, 1)
-        self.testInst.load(fname=self.testInst.files[0])
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        # If mangle_file_date is true, index will not match exactly.
+        # Find the closest point.
+        ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
+        self.testInst.load(fname=self.testInst.files[ind])
+        self.eval_successful_load()
+        return
+
+    @pytest.mark.parametrize("operator,direction",
+                             [('next', 1),
+                              ('prev', -1)])
+    def test_fname_load_default(self, operator, direction):
+        """Test correct day loads when moving by day, starting w/ fname."""
+
+        # If mangle_file_date is true, index will not match exactly.
+        # Find the closest point.
+        ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
+        self.testInst.load(fname=self.testInst.files[ind])
+        getattr(self.testInst, operator)()
+
+        # Modify ref time since iterator changes load date.
+        self.ref_time = self.ref_time + direction * dt.timedelta(days=1)
+        self.eval_successful_load()
         return
 
     def test_filename_load(self):
         """Test if file is loadable by filename with no path."""
 
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
-        assert self.testInst.index[0] == self.ref_time
+        self.eval_successful_load()
         return
 
     def test_filenames_load(self):
@@ -576,28 +528,6 @@ class TestBasics(object):
         assert str(err).find(estr) >= 0
         return
 
-    def test_next_filename_load_default(self):
-        """Test next day loads when invoking `.next()` starting w/ filename."""
-
-        self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
-        self.testInst.next()
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time + dt.timedelta(days=1))
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        return
-
-    def test_prev_filename_load_default(self):
-        """Test prev day loads when invoking `.prev()` starting w/ filename."""
-
-        self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
-        self.testInst.prev()
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time - dt.timedelta(days=1))
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
-        return
-
     def test_list_files(self):
         """Test that `inst.files.files` returns a pandas series."""
 
@@ -605,23 +535,19 @@ class TestBasics(object):
         assert isinstance(files, pds.Series)
         return
 
-    def test_remote_file_list(self):
-        """Test remote_file_list for valid list of files."""
+    @pytest.mark.parametrize("remote_func,num", [('remote_file_list', 31),
+                                                 ('remote_date_range', 2)])
+    def test_remote_functions(self, remote_func, num):
+        """Test simulated remote functions for valid list of files."""
 
         stop = self.ref_time + dt.timedelta(days=30)
-        self.out = self.testInst.remote_file_list(start=self.ref_time,
-                                                  stop=stop)
-        assert filter_datetime_input(self.out.index[0]) == self.ref_time
-        assert filter_datetime_input(self.out.index[-1]) == stop
-        return
+        self.out = getattr(self.testInst, remote_func)(start=self.ref_time,
+                                                       stop=stop)
+        assert len(self.out) == num
 
-    def test_remote_date_range(self):
-        """Test remote_date_range for valid pair of dates."""
-
-        stop = self.ref_time + dt.timedelta(days=30)
-        self.out = self.testInst.remote_date_range(start=self.ref_time,
-                                                   stop=stop)
-        assert len(self.out) == 2
+        # Get index if a pds.Series is returned.
+        if isinstance(self.out, pds.Series):
+            self.out = self.out.index
         assert filter_datetime_input(self.out[0]) == self.ref_time
         assert filter_datetime_input(self.out[-1]) == stop
         return
@@ -712,34 +638,6 @@ class TestBasics(object):
         assert self.out == self.testInst.today()
         assert self.out - dt.timedelta(days=1) == self.testInst.yesterday()
         assert self.out + dt.timedelta(days=1) == self.testInst.tomorrow()
-        return
-
-    @pytest.mark.parametrize("in_time, islist",
-                             [(dt.datetime.utcnow(), False),
-                              (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
-                                  dt.timedelta(seconds=14400))), False),
-                              ([dt.datetime(2010, 1, 1, 12, i,
-                                            tzinfo=dt.timezone(
-                                                dt.timedelta(seconds=14400)))
-                                for i in range(3)], True)])
-    def test_filter_datetime(self, in_time, islist):
-        """Test range of allowed inputs for the Instrument datetime filter."""
-
-        # Because the input datetime is the middle of the day and the offset
-        # is four hours, the reference date and input date are the same
-        if islist:
-            self.ref_time = [dt.datetime(tt.year, tt.month, tt.day)
-                             for tt in in_time]
-            self.out = filter_datetime_input(in_time)
-        else:
-            self.ref_time = [dt.datetime(in_time.year, in_time.month,
-                                         in_time.day)]
-            self.out = [filter_datetime_input(in_time)]
-
-        # Test for the date values and timezone awareness status
-        for i, tt in enumerate(self.out):
-            assert self.out[i] == self.ref_time[i]
-            assert self.out[i].tzinfo is None or self.out[i].utcoffset() is None
         return
 
     def test_filtered_date_attribute(self):
@@ -1032,7 +930,7 @@ class TestBasics(object):
         # No custom functions
         assert self.out.find('Custom Functions: 0') > 0
         # No orbital info
-        assert self.out.find('Orbit Settins') < 0
+        assert self.out.find('Orbit Settings') < 0
         # Files exist for test inst
         assert self.out.find('Date Range:') > 0
         # No loaded data
@@ -1654,25 +1552,16 @@ class TestBasics(object):
 
         return
 
-    def test_left_bounds_with_prev(self):
+    @pytest.mark.parametrize("first,second", [('next', 'prev'),
+                                              ('prev', 'next')])
+    def test_passing_bounds_with_orbit_iteration(self, first, second):
         """Test if passing bounds raises StopIteration."""
 
         # load first data
-        self.testInst.next()
+        getattr(self.testInst, first)()
         with pytest.raises(StopIteration) as err:
-            # go back to no data
-            self.testInst.prev()
-        assert str(err).find("Outside the set date boundaries") >= 0
-        return
-
-    def test_right_bounds_with_next(self):
-        """Test if passing bounds raises StopIteration."""
-
-        # load last data
-        self.testInst.prev()
-        with pytest.raises(StopIteration) as err:
-            # move on to future data that doesn't exist
-            self.testInst.next()
+            # Iterate to a day outside the bounds.
+            getattr(self.testInst, second)()
         assert str(err).find("Outside the set date boundaries") >= 0
         return
 
@@ -2056,32 +1945,28 @@ class TestBasics(object):
 
         return
 
-    def test_set_bounds_too_few(self):
-        """Test Exception when setting bounds without a pair of dates."""
-
-        start = dt.datetime(2009, 1, 1)
-        with pytest.raises(ValueError) as verr:
-            self.testInst.bounds = [start]
-        errmsg = "Must supply both a start and stop date/file"
-        assert str(verr).find(errmsg) >= 0
-        return
-
-    @pytest.mark.parametrize("start,stop,errmsg",
-                             [(dt.datetime(2009, 1, 1), '2009-01-01.nofile',
+    @pytest.mark.parametrize("new_bounds,errmsg",
+                             [([dt.datetime(2009, 1, 1)],
+                               "Must supply both a start and stop date/file"),
+                              ([dt.datetime(2009, 1, 1), '2009-01-01.nofile'],
                                "must all be of the same type"),
-                              (dt.datetime(2009, 1, 1), 1,
+                              ([dt.datetime(2009, 1, 1), 1],
                                "must all be of the same type"),
-                              ([dt.datetime(2009, 1, 1)] * 2,
-                               '2009-01-01.nofile',
+                              ([[dt.datetime(2009, 1, 1)] * 2,
+                                '2009-01-01.nofile'],
                                "must have the same number of elements"),
-                              ([dt.datetime(2009, 1, 1)] * 2,
-                               [dt.datetime(2009, 1, 1), '2009-01-01.nofile'],
-                               "must all be of the same type")])
-    def test_set_bounds_error_message(self, start, stop, errmsg):
-        """Test Exception when setting bounds with mixed iterables."""
+                              ([[dt.datetime(2009, 1, 1)] * 2,
+                               [dt.datetime(2009, 1, 1), '2009-01-01.nofile']],
+                               "must all be of the same type"),
+                              ([dt.datetime(2009, 1, 1),
+                                dt.datetime(2009, 1, 1), '1D',
+                                dt.timedelta(days=1), False],
+                               'Too many input arguments.')])
+    def test_set_bounds_error_message(self, new_bounds, errmsg):
+        """Test ValueError when setting bounds with wrong inputs."""
 
         with pytest.raises(ValueError) as verr:
-            self.testInst.bounds = [start, stop]
+            self.testInst.bounds = new_bounds
         assert str(verr).find(errmsg) >= 0
         return
 
@@ -2097,39 +1982,6 @@ class TestBasics(object):
 
         self.testInst.bounds = ['2009-01-01.nofile', None]
         assert self.testInst.bounds[1][0] == self.testInst.files[-1]
-        return
-
-    def test_set_bounds_too_many(self):
-        """Ensure error if too many inputs to `inst.bounds`."""
-
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 1, 1)
-        width = dt.timedelta(days=1)
-        with pytest.raises(ValueError) as err:
-            self.testInst.bounds = [start, stop, '1D', width, False]
-        estr = 'Too many input arguments.'
-        assert str(err).find(estr) >= 0
-        return
-
-    def test_set_bounds_by_date(self):
-        """Test setting bounds with datetimes over simple range."""
-
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 1, 15)
-        self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop).tolist())
-        return
-
-    def test_set_bounds_by_date_wrong_order(self):
-        """Test error if bounds assignment has stop date before start."""
-
-        start = dt.datetime(2009, 1, 15)
-        stop = dt.datetime(2009, 1, 1)
-        with pytest.raises(Exception) as err:
-            self.testInst.bounds = (start, stop)
-        estr = 'Bounds must be set in increasing'
-        assert str(err).find(estr) >= 0
         return
 
     def test_set_bounds_by_default_dates(self):
@@ -2148,16 +2000,48 @@ class TestBasics(object):
         assert np.all(self.testInst._iter_list == full_list)
         return
 
-    def test_set_bounds_by_date_extra_time(self):
+    @pytest.mark.parametrize("start,stop", [(dt.datetime(2009, 1, 1),
+                                             dt.datetime(2009, 1, 15)),
+                                            ([dt.datetime(2009, 1, 1),
+                                              dt.datetime(2009, 2, 1)],
+                                             [dt.datetime(2009, 1, 15),
+                                              dt.datetime(2009, 2, 15)])])
+    def test_set_bounds_by_date(self, start, stop):
+        """Test setting bounds with datetimes over simple range and season."""
+
+        self.testInst.bounds = (start, stop)
+        self.eval_iter_list(start, stop)
+        return
+
+    @pytest.mark.parametrize("start,stop", [(dt.datetime(2009, 1, 15),
+                                             dt.datetime(2009, 1, 1)),
+                                            ([dt.datetime(2009, 1, 1),
+                                              dt.datetime(2009, 2, 1)],
+                                             [dt.datetime(2009, 1, 12),
+                                              dt.datetime(2009, 1, 15)])])
+    def test_set_bounds_by_date_wrong_order(self, start, stop):
+        """Test error if bounds assignment has stop date before start."""
+
+        with pytest.raises(Exception) as err:
+            self.testInst.bounds = (start, stop)
+        estr = 'Bounds must be set in increasing'
+        assert str(err).find(estr) >= 0
+        return
+
+    @pytest.mark.parametrize(
+        "start,stop", [(dt.datetime(2009, 1, 1, 1, 10),
+                        dt.datetime(2009, 1, 15, 1, 10)),
+                       ([dt.datetime(2009, 1, 1, 1, 10),
+                         dt.datetime(2009, 2, 1, 1, 10)],
+                        [dt.datetime(2009, 1, 15, 1, 10),
+                         dt.datetime(2009, 2, 15, 1, 10)])])
+    def test_set_bounds_by_date_extra_time(self, start, stop):
         """Test set bounds by date with extra time."""
 
-        start = dt.datetime(2009, 1, 1, 1, 10)
-        stop = dt.datetime(2009, 1, 15, 1, 10)
         self.testInst.bounds = (start, stop)
         start = filter_datetime_input(start)
         stop = filter_datetime_input(stop)
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop).tolist())
+        self.eval_iter_list(start, stop)
         return
 
     @pytest.mark.parametrize("start,stop", [(dt.datetime(2010, 12, 1),
@@ -2189,42 +2073,6 @@ class TestBasics(object):
             dates.append(inst.date)
         out = date_range.tolist()
         assert np.all(dates == out)
-        return
-
-    def test_set_bounds_by_date_season(self):
-        """Test set bounds by list of dates."""
-
-        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
-        self.testInst.bounds = (start, stop)
-        out = pds.date_range(start[0], stop[0]).tolist()
-        out.extend(pds.date_range(start[1], stop[1]).tolist())
-        assert np.all(self.testInst._iter_list == out)
-        return
-
-    def test_set_bounds_by_date_season_wrong_order(self):
-        """Test error if bounds season assignment has stop date before start."""
-        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop = [dt.datetime(2009, 1, 12), dt.datetime(2009, 1, 15)]
-        with pytest.raises(Exception) as err:
-            self.testInst.bounds = (start, stop)
-        estr = 'Bounds must be set in increasing'
-        assert str(err).find(estr) >= 0
-        return
-
-    def test_set_bounds_by_date_season_extra_time(self):
-        """Test set bounds by list of dates with extra time."""
-
-        start = [dt.datetime(2009, 1, 1, 1, 10),
-                 dt.datetime(2009, 2, 1, 1, 10)]
-        stop = [dt.datetime(2009, 1, 15, 1, 10),
-                dt.datetime(2009, 2, 15, 1, 10)]
-        self.testInst.bounds = (start, stop)
-        start = filter_datetime_input(start)
-        stop = filter_datetime_input(stop)
-        out = pds.date_range(start[0], stop[0]).tolist()
-        out.extend(pds.date_range(start[1], stop[1]).tolist())
-        assert np.all(self.testInst._iter_list == out)
         return
 
     def test_iterate_over_bounds_set_by_date_season(self):
@@ -2899,26 +2747,19 @@ class TestBasics(object):
         assert str(err).find(estr) >= 0
         return
 
-    def test_error_bad_inst_id_instrument_object(self):
-        """Ensure instantiation with invalid inst_id errors."""
+    @pytest.mark.parametrize(
+        "kwargs,estr",
+        [({'inst_id': 'invalid_inst_id'},
+          "'invalid_inst_id' is not one of the supported inst_ids."),
+         ({'inst_id': '', 'tag': 'bad_tag'},
+          "'bad_tag' is not one of the supported tags.")])
+    def test_error_bad_instrument_object(self, kwargs, estr):
+        """Ensure instantiation with invalid inst_id or tag errors."""
 
         with pytest.raises(ValueError) as err:
             pysat.Instrument(platform=self.testInst.platform,
                              name=self.testInst.name,
-                             inst_id='invalid_inst_id')
-        estr = "'invalid_inst_id' is not one of the supported inst_ids."
-        assert str(err).find(estr) >= 0
-        return
-
-    def test_error_bad_tag_instrument_object(self):
-        """Ensure instantiation with invalid inst_id errors."""
-
-        with pytest.raises(ValueError) as err:
-            pysat.Instrument(platform=self.testInst.platform,
-                             name=self.testInst.name,
-                             inst_id='',
-                             tag='bad_tag')
-        estr = "'bad_tag' is not one of the supported tags."
+                             **kwargs)
         assert str(err).find(estr) >= 0
         return
 
@@ -2951,14 +2792,13 @@ class TestBasicsInstModule(TestBasics):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        global testing_kwargs
         reload(pysat.instruments.pysat_testing)
         imod = pysat.instruments.pysat_testing
         self.testInst = pysat.Instrument(inst_module=imod,
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
-                                         **testing_kwargs)
+                                         **self.testing_kwargs)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -2982,14 +2822,13 @@ class TestBasicsXarray(TestBasics):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        global testing_kwargs
         reload(pysat.instruments.pysat_testing_xarray)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
-                                         **testing_kwargs)
+                                         **self.testing_kwargs)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -3008,13 +2847,12 @@ class TestBasics2D(TestBasics):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        global testing_kwargs
         reload(pysat.instruments.pysat_testing2d)
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
                                          num_samples=50,
                                          clean_level='clean',
                                          update_files=True,
-                                         **testing_kwargs)
+                                         **self.testing_kwargs)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -3038,14 +2876,13 @@ class TestBasics2DXarray(TestBasics):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        global testing_kwargs
         reload(pysat.instruments.pysat_testing2d_xarray)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
-                                         **testing_kwargs)
+                                         **self.testing_kwargs)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
@@ -3128,7 +2965,6 @@ class TestBasicsShiftedFileDates(TestBasics):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        global testing_kwargs
         reload(pysat.instruments.pysat_testing)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=10,
@@ -3136,7 +2972,7 @@ class TestBasicsShiftedFileDates(TestBasics):
                                          update_files=True,
                                          mangle_file_dates=True,
                                          strict_time_flag=True,
-                                         **testing_kwargs)
+                                         **self.testing_kwargs)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         self.out = None
