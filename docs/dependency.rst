@@ -114,6 +114,17 @@ using the ``apply_marks_to_tests`` method in the core class.
   InstTestClass.apply_marks_to_tests(InstTestClass,
                                      inst_loc=customLibrary.instruments)
 
+If custom info such as a username is required, it should be specified as part of
+this command so it is attached to each instrument for the tests.
+
+.. code:: python
+
+ user_info = {'pysat_testing': {'user': 'pysat_testing',
+                                'password': 'pysat.developers@gmail.com'}}
+ InstTestClass.apply_marks_to_tests(InstTestClass,
+                                    inst_loc=customLibrary.instruments,
+                                    user_info=user_info)
+
 
 Now a class that pytest can run should be created, inheriting the tests and
 instrument instructions from the standard test class above.  Note that pytest
@@ -179,11 +190,11 @@ or more of the test types, as defined below.  Instruments are grouped in three
 lists:
 
 * instruments['names']: A list of all module names to check for
-standardization
+  standardization
 * instruments['download']: A list of dicts containing info to initialize
-instruments for end-to-end testing
+  instruments for end-to-end testing
 * instruments['no_download']: A list of dicts containing info to initialize
-instruments without download support for specialized local tests
+  instruments without download support for specialized local tests
 
 Then, the new test may be created under the ``TestInstruments`` class as before.
 
