@@ -62,19 +62,21 @@ class InstTestClass(object):
 
     """
 
+    # Define standard attributes to check.
+    # Needs to be defined here for backwards compatibility.
+    module_attrs = ['platform', 'name', 'tags', 'inst_ids',
+                    'load', 'list_files', 'download']
+    inst_attrs = ['tag', 'inst_id', 'acknowledgements', 'references',
+                  'inst_module']
+    inst_callable = ['load', 'list_files', 'download', 'clean',
+                     'default']
+    attr_types = {'platform': str, 'name': str, 'tags': dict,
+                  'inst_ids': dict, 'tag': str, 'inst_id': str,
+                  'acknowledgements': str, 'references': str}
+
     def setup_class(self):
         """Initialize the testing setup once before all tests are run."""
 
-        # Define standard attributes to check.
-        self.module_attrs = ['platform', 'name', 'tags', 'inst_ids',
-                             'load', 'list_files', 'download']
-        self.inst_attrs = ['tag', 'inst_id', 'acknowledgements', 'references',
-                           'inst_module']
-        self.inst_callable = ['load', 'list_files', 'download', 'clean',
-                              'default']
-        self.attr_types = {'platform': str, 'name': str, 'tags': dict,
-                           'inst_ids': dict, 'tag': str, 'inst_id': str,
-                           'acknowledgements': str, 'references': str}
         # Use a temporary directory so that the user's setup is not altered.
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
