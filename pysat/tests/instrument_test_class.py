@@ -88,8 +88,7 @@ class InstTestClass(object):
 
         pysat.params['data_dirs'] = self.saved_path
         self.tempdir.cleanup()
-        del self.saved_path, self.tempdir, self.module_attrs
-        del self.inst_attrs, self.inst_callable, self.attr_types
+        del self.saved_path, self.tempdir
         return
 
     def apply_marks_to_tests(self, inst_loc, user_info=None):
