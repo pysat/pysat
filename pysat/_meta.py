@@ -550,7 +550,7 @@ class Meta(object):
 
                 return meta_row
             else:
-                raise KeyError('Key not found in MetaData')
+                raise KeyError("Key '{:}' not found in MetaData".format(key))
         else:
             raise NotImplementedError("".join(["No way to handle MetaData key ",
                                                "{}; ".format(key.__repr__()),
@@ -1060,7 +1060,7 @@ class Meta(object):
 
         """
         # Cycle through the top-level variables
-        for var in self.attrs():
+        for var in self.keys():
             if isinstance(mapper, dict):
                 map_var = mapper[var]
             else:
@@ -1069,11 +1069,11 @@ class Meta(object):
             # Update the attribute name
             hold_meta = self[var].copy()
             self.drop(var)
-            self[mapper[var]] = hold_meta
+            self[map_var] = hold_meta
 
         # Determine if the attribute is present in higher order structures
         for ndkey in self.keys_nD():
-            for var in self[ndkey].children.attrs():
+            for var in self[ndkey].children.keys():
                 if isinstance(mapper, dict):
                     map_var = mapper[var]
                 else:
@@ -1081,8 +1081,8 @@ class Meta(object):
 
                 # Update the attribute name
                 hold_meta = self[ndkey].children[var].copy()
-                self[ndkey].children.drop(var)  # THIS DOESN'T WORK HERE
-                self[ndkey].children[mapper[var]] = hold_meta
+                self[ndkey].children.drop(var)
+                self[ndkey].children[map_var] = hold_meta
 
         return
 
