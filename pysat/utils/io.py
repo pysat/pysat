@@ -259,7 +259,7 @@ def add_netcdf4_standards_to_meta(inst, epoch_name):
 
 
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
-                epoch_name='Epoch', pandas_format=True,
+                epoch_name='Epoch', pandas_format=True, decode_timedelta=False,
                 labels={'units': ('units', str), 'name': ('long_name', str),
                         'notes': ('notes', str), 'desc': ('desc', str),
                         'plot': ('plot_label', str), 'axis': ('axis', str),
@@ -285,6 +285,10 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
         xarray Dataset (False). (default=False)
+    decode_timedelta : bool
+        Used for xarray data (`pandas_format` is False).  If True, variables
+        with unit attributes that  are 'timelike' ('hours', 'minutes', etc) are
+        converted to `np.timedelta64`. (default=False)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -310,7 +314,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
 
     See Also
     --------
-    load_netcdf4_pandas and load_netcdf4_xarray
+    load_netcdf_pandas and load_netcdf_xarray
 
     """
     # Load data by type
@@ -321,7 +325,9 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     else:
         data, meta = load_netcdf_xarray(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
-                                        epoch_name=epoch_name, labels=labels)
+                                        epoch_name=epoch_name,
+                                        decode_timedelta=decode_timedelta,
+                                        labels=labels)
 
     return data, meta
 
@@ -585,7 +591,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
 
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
-                       epoch_name='Epoch',
+                       epoch_name='Epoch', decode_deltatime=False,
                        labels={'units': ('units', str),
                                'name': ('long_name', str),
                                'notes': ('notes', str), 'desc': ('desc', str),
@@ -610,6 +616,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         (default='NETCDF4')
     epoch_name : str
         Data key for time variable (default='Epoch')
+    decode_timedelta : bool
+        If True, variables with unit attributes that are 'timelike' ('hours',
+        'minutes', etc) are converted to `np.timedelta64`. (default=False)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -639,9 +648,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
-        data = xr.open_dataset(fnames[0])
+        data = xr.open_dataset(fnames[0], decode_deltatime=decode_deltatime)
     else:
-        data = xr.open_mfdataset(fnames, combine='by_coords')
+        data = xr.open_mfdataset(fnames, decode_deltatime=decode_deltatime,
+                                 combine='by_coords')
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
