@@ -1264,7 +1264,7 @@ class Meta(object):
         # Update the meta data
         self[self.var_case_name(epoch_name)] = new_dict
 
-        return  
+        return
 
     @classmethod
     def from_csv(cls, filename=None, col_names=None, sep=None, **kwargs):
