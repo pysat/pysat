@@ -591,7 +591,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
 
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
-                       epoch_name='Epoch', decode_deltatime=False,
+                       epoch_name='Epoch', decode_timedelta=False,
                        labels={'units': ('units', str),
                                'name': ('long_name', str),
                                'notes': ('notes', str), 'desc': ('desc', str),
@@ -648,9 +648,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
-        data = xr.open_dataset(fnames[0], decode_deltatime=decode_deltatime)
+        data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta)
     else:
-        data = xr.open_mfdataset(fnames, decode_deltatime=decode_deltatime,
+        data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
     # Copy the variable attributes from the data object to the metadata
