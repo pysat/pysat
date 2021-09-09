@@ -258,15 +258,15 @@ def add_netcdf4_standards_to_meta(inst, epoch_name):
     return
 
 
-def load_netcdf4(fnames, strict_meta=False, file_format='NETCDF4',
-                 epoch_name='Epoch', pandas_format=True,
-                 labels={'units': ('units', str), 'name': ('long_name', str),
-                         'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot_label', str), 'axis': ('axis', str),
-                         'scale': ('scale', str),
-                         'min_val': ('value_min', np.float64),
-                         'max_val': ('value_max', np.float64),
-                         'fill_val': ('fill', np.float64)}):
+def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
+                epoch_name='Epoch', pandas_format=True,
+                labels={'units': ('units', str), 'name': ('long_name', str),
+                        'notes': ('notes', str), 'desc': ('desc', str),
+                        'plot': ('plot_label', str), 'axis': ('axis', str),
+                        'scale': ('scale', str),
+                        'min_val': ('value_min', np.float64),
+                        'max_val': ('value_max', np.float64),
+                        'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -315,27 +315,27 @@ def load_netcdf4(fnames, strict_meta=False, file_format='NETCDF4',
     """
     # Load data by type
     if pandas_format:
-        data, meta = load_netcdf4_pandas(fnames, strict_meta=strict_meta,
-                                         file_format=file_format,
-                                         epoch_name=epoch_name, labels=labels)
+        data, meta = load_netcdf_pandas(fnames, strict_meta=strict_meta,
+                                        file_format=file_format,
+                                        epoch_name=epoch_name, labels=labels)
     else:
-        data, meta = load_netcdf4_xarray(fnames, strict_meta=strict_meta,
-                                         file_format=file_format,
-                                         epoch_name=epoch_name, labels=labels)
+        data, meta = load_netcdf_xarray(fnames, strict_meta=strict_meta,
+                                        file_format=file_format,
+                                        epoch_name=epoch_name, labels=labels)
 
     return data, meta
 
 
-def load_netcdf4_pandas(fnames, strict_meta=False, file_format='NETCDF4',
-                        epoch_name='Epoch',
-                        labels={'units': ('units', str),
-                                'name': ('long_name', str),
-                                'notes': ('notes', str), 'desc': ('desc', str),
-                                'plot': ('plot_label', str),
-                                'axis': ('axis', str), 'scale': ('scale', str),
-                                'min_val': ('value_min', np.float64),
-                                'max_val': ('value_max', np.float64),
-                                'fill_val': ('fill', np.float64)}):
+def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
+                       epoch_name='Epoch',
+                       labels={'units': ('units', str),
+                               'name': ('long_name', str),
+                               'notes': ('notes', str), 'desc': ('desc', str),
+                               'plot': ('plot_label', str),
+                               'axis': ('axis', str), 'scale': ('scale', str),
+                               'min_val': ('value_min', np.float64),
+                               'max_val': ('value_max', np.float64),
+                               'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat in a pandas format.
 
     Parameters
@@ -376,7 +376,7 @@ def load_netcdf4_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
     See Also
     --------
-    load_netcdf4
+    load_netcdf
 
     """
     # Ensure inputs are in the correct format
@@ -584,17 +584,17 @@ def load_netcdf4_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     return data, meta
 
 
-def load_netcdf4_xarray(fnames, strict_meta=False, file_format='NETCDF4',
-                        epoch_name='Epoch',
-                        labels={'units': ('units', str),
-                                'name': ('long_name', str),
-                                'notes': ('notes', str), 'desc': ('desc', str),
-                                'plot': ('plot_label', str),
-                                'axis': ('axis', str),
-                                'scale': ('scale', str),
-                                'min_val': ('value_min', np.float64),
-                                'max_val': ('value_max', np.float64),
-                                'fill_val': ('fill', np.float64)}):
+def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
+                       epoch_name='Epoch',
+                       labels={'units': ('units', str),
+                               'name': ('long_name', str),
+                               'notes': ('notes', str), 'desc': ('desc', str),
+                               'plot': ('plot_label', str),
+                               'axis': ('axis', str),
+                               'scale': ('scale', str),
+                               'min_val': ('value_min', np.float64),
+                               'max_val': ('value_max', np.float64),
+                               'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -627,7 +627,7 @@ def load_netcdf4_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     See Also
     --------
-    load_netcdf4
+    load_netcdf
 
     """
     # Ensure inputs are in the correct format
