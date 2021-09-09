@@ -28,9 +28,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Made changelog style and line length consistent
    * Added a paragraph describing how to access Instrument sub-module
      docstrings from an instantiated Instrument in an interactive session
-  * Updated examples in docstrings
-  * Improved docstring style and consistency
-  * Added docstring linting via flake-docstrings and hacking to CI tests
+   * Updated examples in docstrings
+   * Improved docstring style and consistency
+   * Added docstring linting via flake-docstrings and hacking to CI tests
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
@@ -49,7 +49,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
    * Update minimum numpy in CI tests to 1.18 following NEP29
    * Made `InstTestClass` more portable to streamline user implementation of the
-     standard end-to-end instrument tests. 
+     standard end-to-end instrument tests.
 
 [3.0.1] - 2021-07-28
 --------------------
