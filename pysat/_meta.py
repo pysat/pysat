@@ -1040,7 +1040,7 @@ class Meta(object):
         return name
 
     def rename(self, mapper):
-        """Returns preserved case name for case insensitive value of name.
+        """Update the preserved case name for case insensitive value of name.
 
         Parameters
         ----------
