@@ -31,6 +31,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Updated examples in docstrings
    * Improved docstring style and consistency
    * Added docstring linting via flake-docstrings and hacking to CI tests
+   * Added clarification to the tutorials
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
