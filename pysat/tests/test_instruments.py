@@ -33,10 +33,16 @@ user_info = {'pysat_testing': {'user': 'pysat_testing',
 # Developers for instrument libraries should update the following line to
 # point to their own subpackage location
 # e.g.,
-# InstTestClass.apply_marks_to_tests(InstTestClass, inst_loc=mypackage.inst)
+# InstTestClass.initialize_test_package(InstTestClass, inst_loc=mypackage.inst)
+
 # If user and password info supplied, use the following instead
-# InstTestClass.apply_marks_to_tests(InstTestClass, inst_loc=mypackage.inst,
-#                                    user_info=user_info)
+# InstTestClass.initialize_test_package(InstTestClass, inst_loc=mypackage.inst,
+#                                       user_info=user_info)
+
+# If custom tests need to be added to the class, the instrument lists may be
+# included as an optional output.
+# instruments = InstTestClass.initialize_test_package(InstTestClass,
+#                                                     inst_loc=mypackage.inst)
 instruments = InstTestClass.initialize_test_package(InstTestClass,
                                                     inst_loc=pysat.instruments,
                                                     user_info=user_info)
