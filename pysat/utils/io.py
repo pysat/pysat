@@ -258,7 +258,7 @@ def add_netcdf4_standards_to_meta(inst, epoch_name):
     return
 
 
-def load_netcdf4(fnames, strict_meta=False, file_format=None,
+def load_netcdf4(fnames, strict_meta=False, file_format='NETCDF4',
                  epoch_name='Epoch', pandas_format=True,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
@@ -271,15 +271,15 @@ def load_netcdf4(fnames, strict_meta=False, file_format=None,
 
     Parameters
     ----------
-    fnames : str, array_like, or NoneType
+    fnames : str or array_like
         Filename(s) to load, will fail if None (default=None)
     strict_meta : bool
         Flag that checks if metadata across fnames is the same if True
         (default=False)
-    file_format : str or NoneType
+    file_format : str
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
-        If None, defaults to 'NETCDF4'. (default=None)
+        (default='NETCDF4')
     epoch_name : str
         Data key for time variable (default='Epoch')
     pandas_format : bool
@@ -295,7 +295,7 @@ def load_netcdf4(fnames, strict_meta=False, file_format=None,
 
     Returns
     -------
-    out : pandas.DataFrame or xarray.Dataset
+    data : pandas.DataFrame or xarray.Dataset
         Class holding file data
     meta : pysat.Meta
         Class holding file meta data
@@ -304,15 +304,84 @@ def load_netcdf4(fnames, strict_meta=False, file_format=None,
     ------
     KeyError
         If epoch/time dimension could not be identified.
+    ValueError
+        When attempting to load data with more than 2 dimensions or if
+        `strict_meta` is True and meta data changes across files.
+
+    See Also
+    --------
+    load_netcdf4_pandas and load_netcdf4_xarray
 
     """
-    # Process the input values
-    fnames = pysat.utils.listify(fnames)
-
-    if file_format is None:
-        file_format = 'NETCDF4'
+    # Load data by type
+    if pandas_format:
+        data, meta = load_netcdf4_pandas(fnames, strict_meta=strict_meta,
+                                         file_format=file_format,
+                                         epoch_name=epoch_name, labels=labels)
     else:
-        file_format = file_format.upper()
+        data, meta = load_netcdf4_xarray(fnames, strict_meta=strict_meta,
+                                         file_format=file_format,
+                                         epoch_name=epoch_name, labels=labels)
+
+    return data, meta
+
+
+def load_netcdf4_pandas(fnames, strict_meta=False, file_format='NETCDF4',
+                        epoch_name='Epoch',
+                        labels={'units': ('units', str),
+                                'name': ('long_name', str),
+                                'notes': ('notes', str), 'desc': ('desc', str),
+                                'plot': ('plot_label', str),
+                                'axis': ('axis', str), 'scale': ('scale', str),
+                                'min_val': ('value_min', np.float64),
+                                'max_val': ('value_max', np.float64),
+                                'fill_val': ('fill', np.float64)}):
+    """Load netCDF-3/4 file produced by pysat in a pandas format.
+
+    Parameters
+    ----------
+    fnames : str or array_like
+        Filename(s) to load
+    strict_meta : bool
+        Flag that checks if metadata across fnames is the same if True
+        (default=False)
+    file_format : str
+        file_format keyword passed to netCDF4 routine.  Expects one of
+        'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
+        (default='NETCDF4')
+    epoch_name : str
+        Data key for time variable (default='Epoch')
+    labels : dict
+        Dict where keys are the label attribute names and the values are tuples
+        that have the label values and value types in that order.
+        (default={'units': ('units', str), 'name': ('long_name', str),
+        'notes': ('notes', str), 'desc': ('desc', str),
+        'min_val': ('value_min', np.float64),
+        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        Class holding file data
+    meta : pysat.Meta
+        Class holding file meta data
+
+    Raises
+    ------
+    KeyError
+        If epoch/time dimension could not be identified.
+    ValueError
+        When attempting to load data with more than 2 dimensions or if
+        `strict_meta` is True and meta data changes across files.
+
+    See Also
+    --------
+    load_netcdf4
+
+    """
+    # Ensure inputs are in the correct format
+    fnames = pysat.utils.listify(fnames)
+    file_format = file_format.upper()
 
     # Initialize local variables
     saved_meta = None
@@ -322,235 +391,283 @@ def load_netcdf4(fnames, strict_meta=False, file_format=None,
     two_d_dims = []
     meta = pysat.Meta(labels=labels)
 
-    # Load data by type
-    if pandas_format:
-        # The data is in a pandas.DataFrame
-        for fname in fnames:
-            with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
-                # Build a dictionary with all global ncattrs and add those
-                # attributes to a pysat meta object
-                for ncattr in data.ncattrs():
-                    if hasattr(meta, ncattr):
-                        meta.__setattr__('{:}_'.format(ncattr),
-                                         data.getncattr(ncattr))
+    # Load data for each file
+    for fname in fnames:
+        with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
+            # Build a dictionary with all global ncattrs and add those
+            # attributes to a pysat meta object
+            for ncattr in data.ncattrs():
+                if hasattr(meta, ncattr):
+                    mattr = '{:}_'.format(ncattr)
+                else:
+                    mattr = ncattr
+                meta.__setattr__(mattr, data.getncattr(ncattr))
+
+            # Load the metadata.  From here group unique dimensions and
+            # act accordingly, 1D, 2D, 3D
+            loaded_vars = {}
+            for key in data.variables.keys():
+                if len(data.variables[key].dimensions) == 1:
+                    # Load 1D data variables, assuming time is the dimension
+                    loaded_vars[key] = data.variables[key][:]
+
+                    # Load up metadata
+                    meta_dict = {}
+                    for nc_key in data.variables[key].ncattrs():
+                        meta_dict[nc_key] = data.variables[key].getncattr(
+                            nc_key)
+                    meta[key] = meta_dict
+
+                if len(data.variables[key].dimensions) == 2:
+                    # Part of dataframe within dataframe
+                    two_d_keys.append(key)
+                    two_d_dims.append(data.variables[key].dimensions)
+
+                if len(data.variables[key].dimensions) >= 3:
+                    raise ValueError(' '.join(('pysat only supports 1D and 2D',
+                                               'data in pandas. Please use',
+                                               'xarray for this file.')))
+
+            # We now have a list of keys that need to go into a dataframe,
+            # could be more than one, collect unique dimensions for 2D keys
+            for dim in set(two_d_dims):
+                # First or second dimension could be epoch. Use other
+                # dimension name as variable name
+                if dim[0] == epoch_name:
+                    obj_key = dim[1]
+                elif dim[1] == epoch_name:
+                    obj_key = dim[0]
+                else:
+                    raise KeyError('Epoch not found!')
+
+                # Collect variable names associated with dimension
+                idx_bool = [dim == i for i in two_d_dims]
+                idx, = np.where(np.array(idx_bool))
+                obj_var_keys = []
+                clean_var_keys = []
+                for i in idx:
+                    obj_var_keys.append(two_d_keys[i])
+                    clean_var_keys.append(
+                        two_d_keys[i].split(obj_key + '_')[-1])
+
+                # Figure out how to index this data, it could provide its
+                # own index - or we may have to create simple integer based
+                # DataFrame access. If the dimension is stored as its own
+                # variable then use that info for index
+                if obj_key in obj_var_keys:
+                    # String used to indentify dimension also in
+                    # data.variables will be used as an index
+                    index_key_name = obj_key
+
+                    # If the object index uses UNIX time, process into
+                    # datetime index
+                    if data.variables[obj_key].getncattr(
+                            meta.labels.name) == epoch_name:
+                        # Found the name to be used in DataFrame index
+                        index_name = epoch_name
+                        time_index_flag = True
                     else:
-                        meta.__setattr__(ncattr, data.getncattr(ncattr))
+                        time_index_flag = False
 
-                loaded_vars = {}
-                for key in data.variables.keys():
-                    # Load the metadata.  From here group unique dimensions and
-                    # act accordingly, 1D, 2D, 3D
-                    if len(data.variables[key].dimensions) == 1:
-                        if pandas_format:
-                            # Load 1D data variables, assuming basic
-                            # time dimension
-                            loaded_vars[key] = data.variables[key][:]
+                        # Label to be used in DataFrame index
+                        index_name = data.variables[obj_key].getncattr(
+                            meta.labels.name)
+                else:
+                    # Dimension is not itself a variable
+                    index_key_name = None
 
-                        # Load up metadata
-                        meta_dict = {}
-                        for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = data.variables[key].getncattr(
-                                nc_key)
-                        meta[key] = meta_dict
+                # Iterate over the variables and grab metadata
+                dim_meta_data = pysat.Meta(labels=labels)
 
-                    if len(data.variables[key].dimensions) == 2:
-                        # Part of dataframe within dataframe
-                        two_d_keys.append(key)
-                        two_d_dims.append(data.variables[key].dimensions)
+                # Store attributes in metadata, exept for dim name
+                for key, clean_key in zip(obj_var_keys, clean_var_keys):
+                    meta_dict = {}
+                    for nc_key in data.variables[key].ncattrs():
+                        meta_dict[nc_key] = data.variables[key].getncattr(
+                            nc_key)
+                    dim_meta_data[clean_key] = meta_dict
 
-                    if len(data.variables[key].dimensions) >= 3:
-                        raise ValueError(' '.join(('pysat only supports 1D',
-                                                   'and 2D data in pandas.',
-                                                   'Please use xarray for',
-                                                   'this data product.')))
+                dim_meta_dict = {'meta': dim_meta_data}
 
-                # We now have a list of keys that need to go into a dataframe,
-                # could be more than one, collect unique dimensions for 2D keys
-                for dim in set(two_d_dims):
-                    # First or second dimension could be epoch. Use other
-                    # dimension name as variable name
-                    if dim[0] == epoch_name:
-                        obj_key = dim[1]
-                    elif dim[1] == epoch_name:
-                        obj_key = dim[0]
-                    else:
-                        raise KeyError('Epoch not found!')
+                # Add top level meta
+                if index_key_name is not None:
+                    for nc_key in data.variables[obj_key].ncattrs():
+                        dim_meta_dict[nc_key] = data.variables[
+                            obj_key].getncattr(nc_key)
+                    meta[obj_key] = dim_meta_dict
 
-                    # Collect variable names associated with dimension
-                    idx_bool = [dim == i for i in two_d_dims]
-                    idx, = np.where(np.array(idx_bool))
-                    obj_var_keys = []
-                    clean_var_keys = []
-                    for i in idx:
-                        obj_var_keys.append(two_d_keys[i])
-                        clean_var_keys.append(
-                            two_d_keys[i].split(obj_key + '_')[-1])
+                # Iterate over all variables with this dimension
+                # data storage, whole shebang
+                loop_dict = {}
 
-                    # Figure out how to index this data, it could provide its
-                    # own index - or we may have to create simple integer based
-                    # DataFrame access. If the dimension is stored as its own
-                    # variable then use that info for index
-                    if obj_key in obj_var_keys:
-                        # String used to indentify dimension also in
-                        # data.variables will be used as an index
-                        index_key_name = obj_key
+                # List holds a series of slices, parsed from dict above
+                loop_list = []
+                for key, clean_key in zip(obj_var_keys, clean_var_keys):
+                    loop_dict[clean_key] = data.variables[
+                        key][:, :].flatten(order='C')
 
-                        # If the object index uses UNIX time, process into
-                        # datetime index
-                        if data.variables[obj_key].getncattr(
-                                meta.labels.name) == epoch_name:
-                            # Found the name to be used in DataFrame index
-                            index_name = epoch_name
-                            time_index_flag = True
-                        else:
-                            time_index_flag = False
+                # Find the number of time values
+                loop_lim = data.variables[obj_var_keys[0]].shape[0]
 
-                            # Label to be used in DataFrame index
-                            index_name = data.variables[obj_key].getncattr(
-                                meta.labels.name)
-                    else:
-                        # Dimension is not itself a variable
-                        index_key_name = None
+                # Find the number of values per time
+                step = len(data.variables[obj_var_keys[0]][0, :])
 
-                    # Iterate over the variables and grab metadata
-                    dim_meta_data = pysat.Meta(labels=labels)
+                # Check if there is an index we should use
+                if not (index_key_name is None):
+                    time_var = loop_dict.pop(index_key_name)
+                    if time_index_flag:
+                        # Create datetime index from data
+                        time_var = pds.to_datetime(1.0E6 * time_var)
+                    new_index = time_var
+                    new_index_name = index_name
+                else:
+                    # Using integer indexing if no index identified
+                    new_index = np.arange((loop_lim * step),
+                                          dtype=np.int64) % step
+                    new_index_name = 'index'
 
-                    # Store attributes in metadata, exept for dim name
-                    for key, clean_key in zip(obj_var_keys, clean_var_keys):
-                        meta_dict = {}
-                        for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = data.variables[key].getncattr(
-                                nc_key)
-                        dim_meta_data[clean_key] = meta_dict
+                # Load all data into frame
+                if len(loop_dict.keys()) > 1:
+                    loop_frame = pds.DataFrame(loop_dict,
+                                               columns=clean_var_keys)
+                    if obj_key in loop_frame:
+                        del loop_frame[obj_key]
 
-                    dim_meta_dict = {'meta': dim_meta_data}
+                    # Break massive frame into bunch of smaller frames
+                    for i in np.arange(loop_lim, dtype=np.int64):
+                        loop_list.append(loop_frame.iloc[(step * i):
+                                                         (step * (i + 1)), :])
+                        loop_list[-1].index = new_index[(step * i):
+                                                        (step * (i + 1))]
+                        loop_list[-1].index.name = new_index_name
+                else:
+                    loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
+                                            name=obj_var_keys[0])
 
-                    # Add top level meta
-                    if index_key_name is not None:
-                        for nc_key in data.variables[obj_key].ncattrs():
-                            dim_meta_dict[nc_key] = data.variables[
-                                obj_key].getncattr(nc_key)
-                        meta[obj_key] = dim_meta_dict
+                    # Break massive series into bunch of smaller series
+                    for i in np.arange(loop_lim, dtype=np.int64):
+                        loop_list.append(loop_frame.iloc[(step * i):
+                                                         (step * (i + 1))])
+                        loop_list[-1].index = new_index[(step * i):
+                                                        (step * (i + 1))]
+                        loop_list[-1].index.name = new_index_name
 
-                    # Iterate over all variables with this dimension
-                    # data storage, whole shebang
-                    loop_dict = {}
+                # Add 2D object data, all based on a unique dimension within
+                # netCDF, to loaded data dictionary
+                loaded_vars[obj_key] = loop_list
+                del loop_list
 
-                    # List holds a series of slices, parsed from dict above
-                    loop_list = []
-                    for key, clean_key in zip(obj_var_keys, clean_var_keys):
-                        loop_dict[clean_key] = data.variables[
-                            key][:, :].flatten(order='C')
+            # Prepare dataframe index for this netcdf file
+            time_var = loaded_vars.pop(epoch_name)
 
-                    # Find the number of time values
-                    loop_lim = data.variables[obj_var_keys[0]].shape[0]
+            # Convert from GPS seconds to seconds used in pandas (unix time,
+            # no leap seconds)
+            # time_var = convert_gps_to_unix_seconds(time_var)
+            loaded_vars[epoch_name] = pds.to_datetime(
+                (1.0E6 * time_var).astype(np.int64))
+            running_store.append(loaded_vars)
+            running_idx += len(loaded_vars[epoch_name])
 
-                    # Find the number of values per time
-                    step = len(data.variables[obj_var_keys[0]][0, :])
+            if strict_meta:
+                if saved_meta is None:
+                    saved_meta = meta.copy()
+                elif (meta != saved_meta):
+                    raise ValueError(' '.join(('Metadata across filenames',
+                                               'is not the same.')))
 
-                    # Check if there is an index we should use
-                    if not (index_key_name is None):
-                        time_var = loop_dict.pop(index_key_name)
-                        if time_index_flag:
-                            # Create datetime index from data
-                            time_var = pds.to_datetime(1.0E6 * time_var)
-                        new_index = time_var
-                        new_index_name = index_name
-                    else:
-                        # Using integer indexing if no index identified
-                        new_index = np.arange((loop_lim * step),
-                                              dtype=np.int64) % step
-                        new_index_name = 'index'
+    # Combine all of the data loaded across files together
+    out = []
+    for item in running_store:
+        out.append(pds.DataFrame.from_records(item, index=epoch_name))
+    data = pds.concat(out, axis=0)
 
-                    # Load all data into frame
-                    if len(loop_dict.keys()) > 1:
-                        loop_frame = pds.DataFrame(loop_dict,
-                                                   columns=clean_var_keys)
-                        if obj_key in loop_frame:
-                            del loop_frame[obj_key]
+    return data, meta
 
-                        # Break massive frame into bunch of smaller frames
-                        for i in np.arange(loop_lim, dtype=np.int64):
-                            loop_list.append(loop_frame.iloc[(step * i):
-                                                             (step * (i + 1)),
-                                                             :])
-                            loop_list[-1].index = new_index[(step * i):
-                                                            (step * (i + 1))]
-                            loop_list[-1].index.name = new_index_name
-                    else:
-                        loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
-                                                name=obj_var_keys[0])
 
-                        # Break massive series into bunch of smaller series
-                        for i in np.arange(loop_lim, dtype=np.int64):
-                            loop_list.append(loop_frame.iloc[(step * i):
-                                                             (step * (i + 1))])
-                            loop_list[-1].index = new_index[(step * i):
-                                                            (step * (i + 1))]
-                            loop_list[-1].index.name = new_index_name
+def load_netcdf4_xarray(fnames, strict_meta=False, file_format='NETCDF4',
+                        epoch_name='Epoch',
+                        labels={'units': ('units', str),
+                                'name': ('long_name', str),
+                                'notes': ('notes', str), 'desc': ('desc', str),
+                                'plot': ('plot_label', str),
+                                'axis': ('axis', str),
+                                'scale': ('scale', str),
+                                'min_val': ('value_min', np.float64),
+                                'max_val': ('value_max', np.float64),
+                                'fill_val': ('fill', np.float64)}):
+    """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
-                    # Add 2D object data, all based on a unique dimension within
-                    # netCDF, to loaded data dictionary
-                    loaded_vars[obj_key] = loop_list
-                    del loop_list
+    Parameters
+    ----------
+    fnames : str or array_like
+        Filename(s) to load
+    strict_meta : bool
+        Flag that checks if metadata across fnames is the same if True
+        (default=False)
+    file_format : str or NoneType
+        file_format keyword passed to netCDF4 routine.  Expects one of
+        'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
+        (default='NETCDF4')
+    epoch_name : str
+        Data key for time variable (default='Epoch')
+    labels : dict
+        Dict where keys are the label attribute names and the values are tuples
+        that have the label values and value types in that order.
+        (default={'units': ('units', str), 'name': ('long_name', str),
+        'notes': ('notes', str), 'desc': ('desc', str),
+        'min_val': ('value_min', np.float64),
+        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
 
-                # Prepare dataframe index for this netcdf file
-                time_var = loaded_vars.pop(epoch_name)
+    Returns
+    -------
+    data : xarray.Dataset
+        Class holding file data
+    meta : pysat.Meta
+        Class holding file meta data
 
-                # Convert from GPS seconds to seconds used in pandas (unix time,
-                # no leap)
-                # time_var = convert_gps_to_unix_seconds(time_var)
-                loaded_vars[epoch_name] = pds.to_datetime(
-                    (1.0E6 * time_var).astype(np.int64))
-                running_store.append(loaded_vars)
-                running_idx += len(loaded_vars[epoch_name])
+    See Also
+    --------
+    load_netcdf4
 
-                if strict_meta:
-                    if saved_meta is None:
-                        saved_meta = meta.copy()
-                    elif (meta != saved_meta):
-                        raise ValueError(' '.join(('Metadata across filenames',
-                                                   'is not the same.')))
+    """
+    # Ensure inputs are in the correct format
+    fnames = pysat.utils.listify(fnames)
+    file_format = file_format.upper()
 
-        # Combine all of the data loaded across files together
-        out = []
-        for item in running_store:
-            out.append(pds.DataFrame.from_records(item, index=epoch_name))
-        out = pds.concat(out, axis=0)
+    # Initialize local variables
+    meta = pysat.Meta(labels=labels)
+
+    # Load the data differently for single or multiple files
+    if len(fnames) == 1:
+        data = xr.open_dataset(fnames[0])
     else:
-        # The data is in xarray format, load differently for single or
-        # multiple files
-        if len(fnames) == 1:
-            out = xr.open_dataset(fnames[0])
+        data = xr.open_mfdataset(fnames, combine='by_coords')
+
+    # Copy the variable attributes from the data object to the metadata
+    for key in data.variables.keys():
+        meta_dict = {}
+        for nc_key in data.variables[key].attrs.keys():
+            meta_dict[nc_key] = data.variables[key].attrs[nc_key]
+        meta[key] = meta_dict
+
+        # Remove variable attributes from the data object
+        data.variables[key].attrs = {}
+
+    # Copy the file attributes from the data object to the metadata
+    for data_attr in data.attrs.keys():
+        if hasattr(meta, data_attr):
+            set_attr = "".join([data_attr, "_"])
         else:
-            out = xr.open_mfdataset(fnames, combine='by_coords')
+            set_attr = data_attr
+        meta.__setattr__(set_attr, data.attrs[data_attr])
 
-        # Copy the variable attributes from the data object to the metadata
-        for key in out.variables.keys():
-            meta_dict = {}
-            for nc_key in out.variables[key].attrs.keys():
-                meta_dict[nc_key] = out.variables[key].attrs[nc_key]
-            meta[key] = meta_dict
+    # Remove attributes from the data object
+    data.attrs = {}
 
-            # Remove variable attributes from the data object
-            out.variables[key].attrs = {}
+    # Close any open links to file through xarray.
+    data.close()
 
-        # Copy the file attributes from the data object to the metadata
-        for out_attr in out.attrs.keys():
-            if hasattr(meta, out_attr):
-                set_attr = "".join([out_attr, "_"])
-                meta.__setattr__(set_attr, out.attrs[out_attr])
-            else:
-                meta.__setattr__(out_attr, out.attrs[out_attr])
-
-        # Remove attributes from the data object
-        out.attrs = {}
-
-        # Close any open links to file through xarray.
-        out.close()
-        
-
-    return out, meta
+    return data, meta
 
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
@@ -753,7 +870,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
             # Attach epoch metadata
             cdfkey.setncatts(filter_netcdf4_metadata(
                 inst, inst.meta[epoch_name].to_dict(), np.int64))
-            
 
             # Attach the time index to the data
             cdfkey[:] = (inst.index.values.astype(np.int64)
