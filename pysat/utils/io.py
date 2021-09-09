@@ -1025,7 +1025,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                 # below collect data into a numpy array, then
                                 # write the full array in one go
                                 temp_cdf_data = np.zeros(
-                                    (num, dims[0]), dtype=coltype)
+                                    (num, dims[0])).astype(coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = inst[
                                         key].iloc[i][col].values
