@@ -21,8 +21,8 @@ import pandas as pds
 import xarray as xr
 
 import pysat
-from pysat import utils
 from pysat import logger
+from pysat import utils
 
 
 class Instrument(object):
@@ -240,6 +240,7 @@ class Instrument(object):
                          'max_val': ('value_max', np.float64),
                          'fill_val': ('fill', np.float64)},
                  custom=None, **kwargs):
+        """Initialize `pysat.Instrument` object."""
 
         # Set default tag, inst_id, and Instrument module
         self.tag = tag.lower()
@@ -479,7 +480,7 @@ class Instrument(object):
         self._base_attr = dir(self)
 
     def __eq__(self, other):
-        """Perform equality check
+        """Perform equality check.
 
         Parameters
         ----------
@@ -680,7 +681,7 @@ class Instrument(object):
 
         Note
         ----
-        inst['name'] is inst.data.name.
+        `inst['name']` is equivalent to `inst.data.name`
 
         See pandas or xarray .loc and .iloc documentation for more details
 
@@ -839,7 +840,7 @@ class Instrument(object):
                     return self.data.sel(indexers={epoch_name: key})
 
     def __setitem__(self, key, new):
-        """Convenience method for adding data to instrument.
+        """Set data in `pysat.Instrument` object.
 
         Parameters
         ----------
@@ -1882,8 +1883,7 @@ class Instrument(object):
 
     @property
     def empty(self):
-        """Boolean flag reflecting lack of data, True if there is no data.
-        """
+        """Boolean flag reflecting lack of data, True if there is no data."""
         return self._empty()
 
     @property
@@ -2411,8 +2411,8 @@ class Instrument(object):
                         fdict[oname] = nname
                     else:
                         # not in standard or higher order variable name keys
-                        estr = ' '.join((oname, ' is not',
-                                         'a known variable.'))
+                        estr = ' '.join(('cannot rename', oname, 'because it',
+                                         'is not a variable in this dataset.'))
                         raise ValueError(estr)
                 else:
                     # Variable name is in higher order list
@@ -2422,9 +2422,10 @@ class Instrument(object):
                         hdict[label] = nname[label]
                         # ensure variable is there
                         if label not in self.meta[oname]['children']:
-                            estr = ''.join((label, ' is not a known ',
-                                            'higher-order variable under ',
-                                            oname, '.'))
+                            estr = ' '.join(('cannot rename', label, 'because,'
+                                             'it is not a known',
+                                             'higher-order variable under',
+                                             oname, '.'))
                             raise ValueError(estr)
                         # Check for lowercase flag
                         if lowercase_data_labels:

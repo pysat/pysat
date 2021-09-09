@@ -44,7 +44,7 @@ def initialize_test_inst_and_date(inst_dict):
     return test_inst, date
 
 
-class InstTestClass():
+class InstTestClass(object):
     """Provide standardized tests for pysat instrument libraries.
 
     Note: Not diretly run by pytest, but inherited through test_instruments.py

@@ -1,5 +1,4 @@
-"""
-Creates a constellation with 5 testing instruments
+"""Create a constellation with 5 testing instruments.
 
 Attributes
 ----------

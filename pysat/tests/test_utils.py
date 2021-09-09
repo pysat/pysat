@@ -8,7 +8,6 @@
 import contextlib
 from importlib import reload
 import inspect
-from io import StringIO
 import numpy as np
 import os
 import portalocker
@@ -552,6 +551,36 @@ class TestLoadNetCDF4XArray(TestLoadNetCDF4):
 
         return
 
+    @pytest.mark.parametrize("kwargs,target", [({}, False),
+                                               ({'decode_timedelta': False},
+                                                False),
+                                               ({'decode_timedelta': True},
+                                                True)])
+    def test_read_netcdf4_with_time_meta_labels(self, kwargs, target):
+        """Test that read_netcdf correctly interprets time labels in meta."""
+        # Prepare output test data.
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime)
+        # Modify the variable attributes directly before writing to file.
+        self.testInst.data['uts'].attrs = {'units': 'seconds'}
+        self.testInst.data['mlt'].attrs = {'units': 'minutes'}
+        self.testInst.data['slt'].attrs = {'units': 'hours'}
+        # Write output test data.
+        self.testInst.data.to_netcdf(outfile)
+
+        # Load the written data
+        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+            outfile, pandas_format=self.testInst.pandas_format, **kwargs)
+
+        # Check that labels pass through as correct type.
+        vars = ['uts', 'mlt', 'slt']
+        for var in vars:
+            val = self.loaded_inst[var].values[0]
+            assert isinstance(val, np.timedelta64) == target, \
+                "Variable {:} not loaded correctly".format(var)
+        return
+
     def test_load_netcdf4_pandas_3d_error(self):
         """Test load_netcdf4 error with a pandas 3D file."""
         # Create a bunch of files by year and doy
@@ -736,31 +765,27 @@ class TestAvailableInst(TestWithRegistration):
     @pytest.mark.parametrize("inst_flag, plat_flag",
                              [(None, None), (False, False), (True, True)])
     def test_display_available_instruments(self, inst_loc, inst_flag,
-                                           plat_flag):
+                                           plat_flag, capsys):
         """Test display_available_instruments options."""
         # If using the pysat registry, make sure there is something registered
         if inst_loc is None:
             pysat.utils.registry.register(self.module_names)
 
-        # Initialize the STDOUT stream
-        new_stdout = StringIO()
+        pysat.utils.display_available_instruments(
+            inst_loc, show_inst_mod=inst_flag, show_platform_name=plat_flag)
 
-        with contextlib.redirect_stdout(new_stdout):
-            pysat.utils.display_available_instruments(
-                inst_loc, show_inst_mod=inst_flag, show_platform_name=plat_flag)
-
-        out = new_stdout.getvalue()
-        assert out.find("Description") > 0
+        captured = capsys.readouterr()
+        assert captured.out.find("Description") > 0
 
         if (inst_loc is None and plat_flag is None) or plat_flag:
-            assert out.find("Platform") == 0
-            assert out.find("Name") > 0
+            assert captured.out.find("Platform") == 0
+            assert captured.out.find("Name") > 0
 
         if (inst_loc is not None and inst_flag is None) or inst_flag:
-            assert out.find("Instrument_Module") >= 0
+            assert captured.out.find("Instrument_Module") >= 0
 
         if inst_loc is not None and inst_flag in [None, True]:
-            assert out.find(inst_loc.__name__) > 0
+            assert captured.out.find(inst_loc.__name__) > 0
 
         return
 

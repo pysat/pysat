@@ -228,28 +228,32 @@ class TestFilterDatetimeInput(object):
         assert out_date is None
         return
 
-    def test_filter_datetime_input_datetime(self):
-        """Test a successful `filter_datetime_input` with datetime input."""
+    @pytest.mark.parametrize("in_time, islist",
+                             [(dt.datetime.utcnow(), False),
+                              (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
+                                  dt.timedelta(seconds=14400))), False),
+                              ([dt.datetime(2010, 1, 1, 12, i,
+                                            tzinfo=dt.timezone(
+                                                dt.timedelta(seconds=14400)))
+                                for i in range(3)], True)])
+    def test_filter_datetime(self, in_time, islist):
+        """Test range of allowed inputs for the Instrument datetime filter."""
 
-        in_date = dt.datetime(2009, 1, 1, 1, 1)
-        out_date = pytime.filter_datetime_input(in_date)
-        assert out_date == dt.datetime(2009, 1, 1)
-        return
+        # Because the input datetime is the middle of the day and the offset
+        # is four hours, the reference date and input date are the same
+        if islist:
+            self.ref_time = [dt.datetime(tt.year, tt.month, tt.day)
+                             for tt in in_time]
+            self.out = pytime.filter_datetime_input(in_time)
+        else:
+            self.ref_time = [dt.datetime(in_time.year, in_time.month,
+                                         in_time.day)]
+            self.out = [pytime.filter_datetime_input(in_time)]
 
-    def test_filter_datetime_input_list(self):
-        """Test a successful `filter_datetime_input` with list input."""
-
-        in_date = [dt.datetime(2009, 1, 1, 1, 1)]
-        out_date = pytime.filter_datetime_input(in_date)
-        assert len(out_date) == len(in_date)
-        assert out_date[0] == dt.datetime(2009, 1, 1)
-        return
-
-    def test_filter_datetime_input_array(self):
-        """Test a successful `filter_datetime_input` with array input."""
-
-        in_date = np.array([dt.datetime(2009, 1, 1, 1, 1)])
-        out_date = pytime.filter_datetime_input(in_date)
-        assert len(out_date) == len(in_date)
-        assert out_date[0] == dt.datetime(2009, 1, 1)
+        # Test for the date values and timezone awareness status
+        for i, tt in enumerate(self.out):
+            assert tt == self.ref_time[i], \
+                "Filtered time has changed dates."
+            assert tt.tzinfo is None, \
+                "Filtered timezone was not removed at value {:d}.".format(i)
         return

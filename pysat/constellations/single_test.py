@@ -1,5 +1,4 @@
-"""
-Create a constellation with one testing instrument
+"""Create a constellation with one testing instrument.
 
 Attributes
 ----------

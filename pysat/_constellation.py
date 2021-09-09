@@ -3,7 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-""" Class for Instrument constellations
+"""Class for Instrument constellations.
 
 Note
 ----
@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pds
 
 import pysat
-from pysat import logger, utils
 
 
 class Constellation(object):
@@ -113,6 +112,7 @@ class Constellation(object):
     def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
                  const_module=None, instruments=None, index_res=None,
                  common_index=True):
+        """Initialize the Constellation object."""
 
         # Initalize the `instruments` attribute to be an empty list before
         # loading using each of the available input methods
@@ -127,7 +127,7 @@ class Constellation(object):
 
         if load_from_platform:
             # Get a dictionary of the registered Instruments
-            reg_inst = utils.available_instruments()
+            reg_inst = pysat.utils.available_instruments()
 
             # Determine which platforms and names are desired. If not specified,
             # use any value that fulfills the other constraints
@@ -186,7 +186,7 @@ class Constellation(object):
                                     flg_str, missed))
 
                 if len(log_msg) > 0:
-                    logger.warning("; ".join(log_msg))
+                    pysat.logger.warning("; ".join(log_msg))
 
                 # Set the Constellation attributes
                 self.platforms = added_platforms
@@ -231,14 +231,12 @@ class Constellation(object):
         return
 
     def __getitem__(self, *args, **kwargs):
-        """ Look up a member Instrument by index.
-        """
+        """Look up a member Instrument by index."""
 
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __repr__(self):
-        """ Print the basic Constellation properties
-        """
+        """Print the basic Constellation properties."""
 
         out_str = "".join(["pysat.Constellation(instruments=",
                            "{:}, index_res=".format(self.instruments),
@@ -247,9 +245,7 @@ class Constellation(object):
         return out_str
 
     def __str__(self):
-        """ Print names of instruments within constellation
-
-        """
+        """Print names of instruments within constellation."""
 
         # Define a convenience function for pluralizing words
         def is_plural(num):
@@ -297,7 +293,7 @@ class Constellation(object):
                 len(self.variables))
 
             output_str += '\nVariable Names:\n'
-            output_str += utils._core.fmt_output_in_cols(self.variables)
+            output_str += pysat.utils._core.fmt_output_in_cols(self.variables)
         else:
             output_str += 'No loaded data.\n'
 
@@ -307,7 +303,7 @@ class Constellation(object):
     # Define all hidden methods
 
     def _empty(self, all_inst=True):
-        """Boolean flag reflecting lack of data
+        """Boolean flag reflecting lack of data.
 
         Parameters
         ----------
@@ -335,7 +331,7 @@ class Constellation(object):
         return eflag
 
     def _index(self):
-        """Returns a common time index for the loaded data
+        """Return a common time index for the loaded data.
 
         Returns
         -------
@@ -359,9 +355,10 @@ class Constellation(object):
                     # If desired, determine the resolution
                     if self.index_res is None:
                         if inst.index.freq is None:
-                            out_res = utils.time.calc_res(inst.index)
+                            out_res = pysat.utils.time.calc_res(inst.index)
                         else:
-                            out_res = utils.time.freq_to_res(inst.index.freq)
+                            out_res = pysat.utils.time.freq_to_res(
+                                inst.index.freq)
                 else:
                     # Adjust the start and stop time as appropriate
                     if self.common_index:
@@ -378,9 +375,10 @@ class Constellation(object):
                     # If desired, determine the resolution
                     if self.index_res is None:
                         if inst.index.freq is None:
-                            new_res = utils.time.calc_res(inst.index)
+                            new_res = pysat.utils.time.calc_res(inst.index)
                         else:
-                            new_res = utils.time.freq_to_res(inst.index.freq)
+                            new_res = pysat.utils.time.freq_to_res(
+                                inst.index.freq)
 
                         if new_res < out_res:
                             out_res = new_res
@@ -397,7 +395,7 @@ class Constellation(object):
         return cindex
 
     def _get_unique_attr_vals(self, attr):
-        """ Get the unique elements of a list-like attribute
+        """Get the unique elements of a list-like attribute.
 
         Parameters
         ----------
@@ -434,7 +432,7 @@ class Constellation(object):
         return uniq_attrs
 
     def _set_inst_attr(self, attr, value):
-        """ Set an attribute across all instruments
+        """Set an attribute across all instruments.
 
         Parameters
         ----------
@@ -455,66 +453,82 @@ class Constellation(object):
 
     @property
     def bounds(self):
-        return self.instruments[0].bounds
+        """Obtain boundaries for Instruments in Constellation.
 
-    @bounds.setter
-    def bounds(self, value=None):
-        """ Sets boundaries for all Instruments in Constellation
+        When setting, sets for all instruments in Constellation.
 
         Parameters
         ----------
         value : tuple or NoneType
             Tuple containing starting time and ending time for Instrument
             bounds attribute or None (default=None)
-
         """
+        return self.instruments[0].bounds
 
+    @bounds.setter
+    def bounds(self, value=None):
+        # Set the bounds property.  See property docstring for details
         self._set_inst_attr('bounds', value)
         return
 
     @property
     def date(self):
         """Date for loaded data."""
+
         if len(self.index) > 0:
-            return utils.time.filter_datetime_input(self.index[0])
+            return pysat.utils.time.filter_datetime_input(self.index[0])
         else:
             return None
 
     @property
     def empty(self):
-        """Boolean flag reflecting lack of data, True if there is no Instrument
-        data in all Constellation Instrument.
+        """Boolean flag reflecting lack of data.
+
+        Note
+        -----
+        True if there is no Instrument data in all Constellation Instrument.
+
         """
+
         return self._empty(all_inst=False)
 
     @property
     def empty_partial(self):
-        """Boolean flag reflecting lack of data, True if there is no Instrument
-        data in any Constellation Instrument.
+        """Boolean flag reflecting lack of data.
+
+        Note
+        ----
+        True if there is no Instrument data in any Constellation Instrument.
+
         """
+
         return self._empty(all_inst=True)
 
     @property
     def index(self):
-        """Returns time index of loaded data."""
+        """Obtain time index of loaded data."""
+
         return self._index()
 
     def today(self):
-        """Returns UTC date for today, see pysat.Instrument for details."""
-        return utils.time.today()
+        """Obtain UTC date for today, see pysat.Instrument for details."""
+
+        return pysat.utils.time.today()
 
     def tomorrow(self):
-        """Returns UTC date for tomorrow, see pysat.Instrument for details."""
+        """Obtain UTC date for tomorrow, see pysat.Instrument for details."""
+
         return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
-        """Returns UTC date for yesterday, see pysat.Instrument for details."""
+        """Obtain UTC date for yesterday, see pysat.Instrument for details."""
+
         return self.today() - dt.timedelta(days=1)
 
     @property
     def variables(self):
-        """Returns a list of uniquely named variables from all the loaded data.
-        """
+        """Retrieve list of uniquely named variables from all loaded data."""
+
         # Determine which instrument variables share the same name
         data_vars = dict()
         for inst in self.instruments:
@@ -557,7 +571,7 @@ class Constellation(object):
         return
 
     def custom_clear(self):
-        """Clear the custom function list
+        """Clear the custom function list.
 
         See Also
         ---------
@@ -571,7 +585,7 @@ class Constellation(object):
         return
 
     def load(self, *args, **kwargs):
-        """ Load instrument data into Instrument object.data
+        """Load instrument data into Instrument `object.data`.
 
         Parameters
         ----------
@@ -591,12 +605,12 @@ class Constellation(object):
             instrument.load(*args, **kwargs)
 
         # Set the year and doy attributes for the constellation and instruments
-        self.yr, self.doy = utils.time.getyrdoy(self.date)
+        self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
 
         return
 
     def download(self, *args, **kwargs):
-        """ Download instrument data into Instrument object.data
+        """Download instrument data into Instrument `object.data`.
 
         Parameters
         ----------

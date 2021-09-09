@@ -7,6 +7,7 @@ Imports test methods from pysat.tests.instrument_test_class
 """
 
 import datetime as dt
+import pandas as pds
 import tempfile
 
 import pytest
@@ -129,4 +130,18 @@ class TestInstruments(InstTestClass):
         self.test_inst.load(date=date)
 
         assert len(self.test_inst['uts']) == num
+        return
+
+    @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
+    def test_inst_file_date_range(self, inst_dict):
+        """Test operation of file_date_range keyword."""
+
+        file_date_range = pds.date_range(dt.datetime(2021, 1, 1),
+                                         dt.datetime(2021, 12, 31))
+        _, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
+                                          file_date_range=file_date_range)
+        file_list = self.test_inst.files.files
+
+        assert all(file_date_range == file_list.index)
         return
