@@ -215,8 +215,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                                             pandas_format=pandas_format,
                                             labels=labels)
 
-        # Close any open links to file through xarray.
-        out.close()
 
     return out, meta
 

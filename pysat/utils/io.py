@@ -546,6 +546,10 @@ def load_netcdf4(fnames, strict_meta=False, file_format=None,
         # Remove attributes from the data object
         out.attrs = {}
 
+        # Close any open links to file through xarray.
+        out.close()
+        
+
     return out, meta
 
 
