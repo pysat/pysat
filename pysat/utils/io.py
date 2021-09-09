@@ -901,8 +901,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                         key].iloc[i][col].values
 
                                 # Write data
-                                cdfkey[:, :] = temp_cdf_data.astype(coltype)
-
+                                cdfkey[:, :] = temp_cdf_data
                             else:
                                 # We are dealing with a Series.  Get
                                 # information from within the series
@@ -929,7 +928,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                     temp_cdf_data[i, :] = inst[i, key].values
 
                                 # Write data
-                                cdfkey[:, :] = temp_cdf_data.astype(coltype)
+                                cdfkey[:, :] = temp_cdf_data
 
                         # We are done storing the actual data for the given
                         # higher order variable. Now we need to store the index
@@ -972,8 +971,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                                      dtype=coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = inst[i, key].index.values
-                            cdfkey[:, :] = (temp_cdf_data.astype(coltype)
-                                            * 1.0E-6).astype(coltype)
+                            cdfkey[:, :] = (temp_cdf_data * 1.0E-6).astype(
+                                coltype)
 
                         else:
                             if inst[key].iloc[data_loc].index.name is not None:
@@ -991,7 +990,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                             for i in range(num):
                                 temp_cdf_data[i, :] = inst[
                                     key].iloc[i].index.astype(str)
-                            cdfkey[:, :] = temp_cdf_data.astype(coltype)
+                            cdfkey[:, :] = temp_cdf_data
 
             # Attach attributes
             out_data.setncatts(attrb_dict)
