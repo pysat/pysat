@@ -186,7 +186,7 @@ include:
   instruments = generate_instrument_list(inst_loc=customLibrary.instruments)
 
 The above code scans the list of instruments and flags each instrument for one
-or more of the test types, as defined below.  Instruments are grouped in three
+or more of the test types, as defined below.  Instruments are grouped into three
 lists:
 
 * instruments['names']: A list of all module names to check for
