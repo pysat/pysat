@@ -221,6 +221,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
                                             file_format=file_format,
                                             epoch_name=epoch_name,
                                             pandas_format=pandas_format,
+                                            decode_timedelta=decode_timedelta,
                                             labels=labels)
 
     return data, meta
