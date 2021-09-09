@@ -143,7 +143,7 @@ def listify(iterable):
     return list_iter
 
 
-def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
+def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
                  epoch_name='Epoch', pandas_format=True, decode_timedelta=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
@@ -155,6 +155,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     .. deprecated:: 3.2.0
        Function moved to `pysat.utils.io`, this wrapper will be removed in
        the 3.2.0+ release.
+       No longer allow non-string file formats.
 
     Parameters
     ----------
@@ -163,10 +164,10 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     strict_meta : bool
         Flag that checks if metadata across fnames is the same if True
         (default=False)
-    file_format : str or NoneType
+    file_format : str
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
-        If None, defaults to 'NETCDF4'. (default=None)
+        (default='NETCDF4')
     epoch_name : str
         Data key for time variable (default='Epoch')
     pandas_format : bool
@@ -186,7 +187,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     Returns
     -------
-    out : pandas.DataFrame or xarray.Dataset
+    data : pandas.DataFrame or xarray.Dataset
         Class holding file data
     meta : pysat.Meta
         Class holding file meta data
@@ -209,14 +210,20 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                       DeprecationWarning, stacklevel=2)
         raise ValueError("Must supply a filename/list of filenames")
 
-    out, meta = pysat.utils.io.load_netcdf4(fnames, strict_meta=strict_meta,
-                                            file_format=file_format,
-                                            epoch_name=epoch_name,
-                                            pandas_format=pandas_format,
-                                            labels=labels)
+    if file_format is None:
+        warnings.warn("".join(["`file_format` must be a string value in ",
+                               "3.2.0+, instead of None use 'NETCDF4' for ",
+                               "same behavior."]),
+                      DeprecationWarning, stacklevel=2)
+        file_format = 'NETCDF4'
 
+    data, meta = pysat.utils.io.load_netcdf4(fnames, strict_meta=strict_meta,
+                                             file_format=file_format,
+                                             epoch_name=epoch_name,
+                                             pandas_format=pandas_format,
+                                             labels=labels)
 
-    return out, meta
+    return data, meta
 
 
 def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
