@@ -91,8 +91,8 @@ class InstTestClass(object):
         del self.saved_path, self.tempdir
         return
 
-    def apply_marks_to_tests(self, inst_loc, user_info=None):
-        """Apply custom instrument lists to each test method as a pytest mark.
+    def initialize_test_package(self, inst_loc, user_info=None):
+        """Generate custom instrument lists for each category of tests.
 
         Parameters
         ----------
@@ -103,6 +103,15 @@ class InstTestClass(object):
             Nested dictionary with user and password info for instrument module
             name.  If None, no user or password is assumed. (default=None)
             EX: user_info = {'jro_isr': {'user': 'myname', 'password': 'email'}}
+
+        Returns
+        -------
+        instruments : dict
+            A dictionary containing the lists of instruments from a given
+            package for each category of tests.  The categories are:
+            "names" : A list of all insrument modules by name.
+            "download" : Instrument objects with full download support.
+            "no_download" : Instrument objects without download support.
 
         """
 
@@ -136,7 +145,8 @@ class InstTestClass(object):
                     mark = pytest.mark.parametrize("inst_dict",
                                                    instruments['no_download'])
                     getattr(self, method).pytestmark.append(mark)
-        return
+
+        return instruments
 
     def assert_hasattr(self, obj, attr_name):
         """Provide useful info if object is missing a required attribute."""

@@ -37,13 +37,9 @@ user_info = {'pysat_testing': {'user': 'pysat_testing',
 # If user and password info supplied, use the following instead
 # InstTestClass.apply_marks_to_tests(InstTestClass, inst_loc=mypackage.inst,
 #                                    user_info=user_info)
-InstTestClass.apply_marks_to_tests(InstTestClass, inst_loc=pysat.instruments,
-                                   user_info=user_info)
-
-# Developers adding custom tests may need to create a list of instruments for
-# use with pytest.mark.parametrize.  See Integration Tests below for examples.
-instruments = generate_instrument_list(inst_loc=pysat.instruments,
-                                       user_info=user_info)
+instruments = InstTestClass.initialize_test_package(InstTestClass,
+                                                    inst_loc=pysat.instruments,
+                                                    user_info=user_info)
 
 
 class TestInstruments(InstTestClass):
@@ -59,7 +55,7 @@ class TestInstruments(InstTestClass):
     # Custom package unit tests can be added here
 
     # Custom Integration Tests added to all test instruments in core package.
-    @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
+    @pytest.mark.parametrize("inst_dict", instruments['download'])
     @pytest.mark.parametrize("kwarg,output", [(None, 0.0),
                                               (dt.timedelta(hours=1), 3600.0)])
     def test_inst_start_time(self, inst_dict, kwarg, output):
@@ -78,7 +74,7 @@ class TestInstruments(InstTestClass):
         assert self.test_inst['uts'][0] == output
         return
 
-    @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
+    @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_num_samples(self, inst_dict):
         """Test operation of num_samples keyword."""
 
@@ -93,7 +89,7 @@ class TestInstruments(InstTestClass):
         assert len(self.test_inst['uts']) == num
         return
 
-    @pytest.mark.parametrize("inst_dict", [x for x in instruments['download']])
+    @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_file_date_range(self, inst_dict):
         """Test operation of file_date_range keyword."""
 
