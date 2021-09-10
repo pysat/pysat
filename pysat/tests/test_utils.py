@@ -321,7 +321,13 @@ class TestLoadNetCDF4(object):
     def eval_loaded_data(self):
         """Evaluate loaded test data."""
         # Test that the written and loaded data matches the initial data
-        for dkey in self.testInst.data.columns:
+        if self.testInst.pandas_format:
+            keys = self.testInst.data.columns
+            new_keys = self.loaded_inst.columns
+        else:
+            keys = [key for key in self.testInst.data.variables]
+            new_keys = [key for key in self.loaded_inst.variables]
+        for dkey in keys:
             lkey = dkey.lower()
             if lkey in ['profiles', 'alt_profiles', 'series_profiles']:
                 # Test the loaded higher-dimension data
@@ -331,7 +337,7 @@ class TestLoadNetCDF4(object):
                         dkey)
             else:
                 assert np.all(self.testInst[dkey] == self.loaded_inst[lkey])
-        return
+        return keys, new_keys
 
     def test_load_netcdf4_empty_filenames(self):
         """Test raises ValueError without any filename input."""
@@ -362,18 +368,13 @@ class TestLoadNetCDF4(object):
 
         self.loaded_inst, meta = pysat.utils.load_netcdf4(
             outfile, pandas_format=self.testInst.pandas_format)
-        self.testInst.data = self.testInst.data.reindex(
-            sorted(self.testInst.data.columns), axis=1)
-        self.loaded_inst = self.loaded_inst.reindex(
-            sorted(self.loaded_inst.columns), axis=1)
-
-        # Check that names are lower case when written
-        pysat.utils.testing.assert_lists_equal(self.loaded_inst.columns,
-                                               self.testInst.data.columns,
-                                               test_case=False)
 
         # Test the loaded data
-        self.eval_loaded_data()
+        keys, new_keys = self.eval_loaded_data()
+
+        # Check that names are lower case when written
+        pysat.utils.testing.assert_lists_equal(keys, new_keys, test_case=False)
+
         return
 
     def test_basic_write_and_read_netcdf4_mixed_case_meta_format(self):
@@ -397,14 +398,10 @@ class TestLoadNetCDF4(object):
 
         self.loaded_inst, meta = pysat.utils.load_netcdf4(
             outfile, pandas_format=self.testInst.pandas_format)
-        self.testInst.data = self.testInst.data.reindex(
-            sorted(self.testInst.data.columns), axis=1)
-        self.loaded_inst = self.loaded_inst.reindex(
-            sorted(self.loaded_inst.columns), axis=1)
+        keys, new_keys = self.eval_loaded_data()
 
         # Check that names are in the expected case
-        pysat.utils.testing.assert_lists_equal(self.loaded_inst.columns,
-                                               self.testInst.data.columns)
+        pysat.utils.testing.assert_lists_equal(keys, new_keys)
 
         return
 
@@ -435,10 +432,6 @@ class TestLoadNetCDF4(object):
         # Load the data that was created
         lkwargs['pandas_format'] = self.testInst.pandas_format
         self.loaded_inst, meta = pysat.utils.load_netcdf4(outfile, **lkwargs)
-        self.testInst.data = self.testInst.data.reindex(
-            sorted(self.testInst.data.columns), axis=1)
-        self.loaded_inst = self.loaded_inst.reindex(
-            sorted(self.loaded_inst.columns), axis=1)
 
         # Test the loaded data
         self.eval_loaded_data()
