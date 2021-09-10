@@ -1084,7 +1084,7 @@ class Meta(object):
                 mapped_val = mapper(value)
 
             return mapped_val
-        
+
         # Cycle through the top-level variables
         for var in self.keys():
             # Update the attribute name
