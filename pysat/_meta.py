@@ -1057,30 +1057,52 @@ class Meta(object):
         variable name.
 
         """
+        def get_mapped_value(value, mapper):
+            """Adjust value using mapping dict or function.
+
+            Parameters
+            ----------
+            value : str
+                MetaData variable name to be adjusted
+            mapper : dict or function
+                Dictionary with old names as keys and new names as variables or
+                a function to apply to all names
+
+            Returns
+            -------
+            mapped_val : str or NoneType
+                Adjusted MetaData variablle name or NoneType if input value
+                should stay the same
+
+            """
+            if isinstance(mapper, dict):
+                if value in mapper.keys():
+                    mapped_val = mapper[value]
+                else:
+                    mapped_val = None
+            else:
+                mapped_val = mapper(value)
+
+            return mapped_val
+        
         # Cycle through the top-level variables
         for var in self.keys():
-            if isinstance(mapper, dict):
-                map_var = mapper[var]
-            else:
-                map_var = mapper(var)
-
             # Update the attribute name
-            hold_meta = self[var].copy()
-            self.drop(var)
-            self[map_var] = hold_meta
+            map_var = get_mapped_value(var, mapper)
+            if map_var is not None:
+                hold_meta = self[var].copy()
+                self.drop(var)
+                self[map_var] = hold_meta
 
         # Determine if the attribute is present in higher order structures
         for ndkey in self.keys_nD():
             for var in self[ndkey].children.keys():
-                if isinstance(mapper, dict):
-                    map_var = mapper[var]
-                else:
-                    map_var = mapper(var)
-
                 # Update the attribute name
-                hold_meta = self[ndkey].children[var].copy()
-                self[ndkey].children.drop(var)
-                self[ndkey].children[map_var] = hold_meta
+                map_var = get_mapped_value(var, mapper)
+                if map_var is not None:
+                    hold_meta = self[ndkey].children[var].copy()
+                    self[ndkey].children.drop(var)
+                    self[ndkey].children[map_var] = hold_meta
 
         return
 
