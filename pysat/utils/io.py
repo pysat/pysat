@@ -1154,6 +1154,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         xr_data.attrs = attrb_dict
 
         # Write the netCDF4 file
-        xr_data.to_netcdf(mode=mode, encoding=encoding)
+        xr_data.to_netcdf(fname, mode=mode, encoding=encoding)
 
     return
