@@ -128,36 +128,38 @@ def initialize_test_meta(epoch_name, data_keys):
                                            'start, 2008-01-01.'])}
 
     # Set profile metadata
-    profile_meta = pysat.Meta()
-    profile_meta['density'] = {'long_name': 'profiles'}
-    profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
-
-    # Set variable profile metadata
-    variable_profile_meta = pysat.Meta()
-    variable_profile_meta['variable_profiles'] = {'long_name': 'series'}
-    meta['variable_profiles'] = {'meta': variable_profile_meta,
-                                 'long_name': 'series'}
+    # Standard metadata required for xarray
+    meta['profiles'] = {'long_name': 'profiles'}
 
     # Set series profile metadata
+    # Children metadata required for 2D pandas
+    # TODO(#789): delete after removal of meta children
     series_profile_meta = pysat.Meta()
     series_profile_meta['series_profiles'] = {'long_name': 'series'}
     meta['series_profiles'] = {'meta': series_profile_meta,
                                'long_name': 'series'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
 
     # Set altitude profile metadata
+    # Children metadata required for 2D pandas
+    # TODO(#789): delete after removal of meta children
     alt_profile_meta = pysat.Meta()
     alt_profile_meta['density'] = {'long_name': 'profiles'}
     alt_profile_meta['fraction'] = {'long_name': 'profiles'}
+    alt_profile_meta['dummy_str'] = {'long_name': 'profiles'}
+    alt_profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
     meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
 
+    # Set variable profile metadata
+    # Standard metadata required for xarray
+    meta['variable_profiles'] = {'meta': 'variable_profiles',
+                                 'long_name': 'series'}
+    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
+
     # Set image metadata
-    image_meta = pysat.Meta()
-    image_meta['density'] = {'long_name': 'profiles'}
-    image_meta['fraction'] = {'long_name': 'profiles'}
-    meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
+    # Standard metadata required for xarray
+    meta['images'] = {'long_name': 'pixel value of image',
+                      'notes': 'function of image_lat and image_lon'}
     meta['x'] = {'long_name': 'x-value of image pixel',
                  'notes': 'Dummy Variable'}
     meta['y'] = {'long_name': 'y-value of image pixel',
@@ -168,8 +170,6 @@ def initialize_test_meta(epoch_name, data_keys):
                          'notes': 'Dummy Variable'}
     meta['image_lon'] = {'long_name': 'Longitude of image pixel',
                          'notes': 'Dummy Variable'}
-    meta['profile_height'] = {'long_name': 'profile height'}
-    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     # Set any dummy variable metadata present in instrument keys
     for var in data_keys:

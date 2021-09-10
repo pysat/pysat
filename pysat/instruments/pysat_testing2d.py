@@ -160,6 +160,14 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     # Set the meta data.
     meta = mm_test.initialize_test_meta('epoch', data.keys())
+
+    # Reset profiles as children meta
+    profile_meta = pysat.Meta()
+    profile_meta['density'] = {'long_name': 'profiles'}
+    profile_meta['dummy_str'] = {'long_name': 'profiles'}
+    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
+    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+
     return data, meta
 
 
