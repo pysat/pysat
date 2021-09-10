@@ -817,6 +817,16 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         elif isinstance(attrb_dict[akey], bool):
             attrb_dict[akey] = int(attrb_dict[akey])
 
+    # Check if there are multiple variables with same characters
+    # but with different case
+    lower_variables = [var.lower() for var in inst.variables]
+    unique_lower_variables = np.unique(lower_variables)
+    if len(unique_lower_variables) != len(lower_variables):
+        raise ValueError(' '.join(('There are multiple variables with the',
+                                   'same name but different case which',
+                                   'results in a loss of metadata. Please',
+                                   'make the names unique.')))
+
     # Handle output differently, depending on data format
     if inst.pandas_format:
         # Begin processing metadata for writing to the file. Look to see if the
@@ -840,16 +850,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         # Apply instrument specific post-processing to the export_meta
         if hasattr(inst._export_meta_post_processing, '__call__'):
             export_meta = inst._export_meta_post_processing(export_meta)
-
-        # Check if there are multiple variables with same characters
-        # but with different case
-        lower_variables = [var.lower() for var in inst.variables]
-        unique_lower_variables = np.unique(lower_variables)
-        if len(unique_lower_variables) != len(lower_variables):
-            raise ValueError(' '.join(('There are multiple variables with the',
-                                       'same name but different case which',
-                                       'results in a loss of metadata. Please',
-                                       'make the names unique.')))
 
         # General process for writing data:
         # 1) take care of the EPOCH information,
