@@ -479,13 +479,7 @@ class TestLoadNetCDF4(object):
 
 
 class TestLoadNetCDF4XArray(TestLoadNetCDF4):
-    """Unit tests for `load_netcdf4` using xarray data.
-
-    Note
-    ----
-    Make this a TestLoadNetCDF4 class test as a part of fixing #60.
-
-    """
+    """Unit tests for `load_netcdf4` using xarray data."""
 
     def setup(self):
         """Run to set up the test environment."""
@@ -524,24 +518,6 @@ class TestLoadNetCDF4XArray(TestLoadNetCDF4):
 
         # Clear the directory attributes
         del self.data_path, self.tempdir
-        return
-
-    def test_basic_write_and_read_netcdf4_default_format(self):
-        """Test basic netCDF4 writing and reading."""
-        # Write the output test data
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
-        self.testInst.data.to_netcdf(outfile)
-
-        # Load the written data
-        self.loaded_inst, meta = pysat.utils.load_netcdf4(
-            outfile, pandas_format=self.testInst.pandas_format)
-
-        # Compare the initial and loaded data
-        for key in self.testInst.data.data_vars.keys():
-            assert(np.all(self.testInst[key] == self.loaded_inst[key]))
-
         return
 
     @pytest.mark.parametrize("kwargs,target", [({}, False),
