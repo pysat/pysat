@@ -1342,17 +1342,6 @@ class TestBasics(object):
         assert (self.testInst[changed, 'doubleMLT'] == 0).all
         return
 
-    def test_setting_partial_data_by_index_and_name(self):
-        """Test setting partial data by index and name."""
-
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[self.testInst.index[0:10], 'doubleMLT'] = 0
-        assert (self.testInst[10:, 'doubleMLT']
-                == 2. * self.testInst[10:, 'mlt']).all
-        assert (self.testInst[0:10, 'doubleMLT'] == 0).all
-        return
-
     def test_modifying_data_inplace(self):
         """Test modification of data inplace."""
 
