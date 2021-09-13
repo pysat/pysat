@@ -183,7 +183,7 @@ class TestBasics(object):
 
         return
 
-    def eval_iter_list(self, start, stop, dates=False):
+    def eval_iter_list(self, start, stop, dates=False, freq=None):
         """Evaluate successful generation of iter_list for `self.testInst`.
 
         Parameters
@@ -195,14 +195,21 @@ class TestBasics(object):
         dates : bool
             If True, checks each date.  If False, checks against the _iter_list
             (default=False)
+        freq : int or NoneType
+            Frequency in days.  If None, use pandas default. (default=None)
 
         """
 
-        if isinstance(start, dt.datetime):
-            out = pds.date_range(start, stop).tolist()
+        if freq:
+            kwargs = {'freq': '{:}D'.format(freq)}
         else:
-            out = pds.date_range(start[0], stop[0]).tolist()
-            out.extend(pds.date_range(start[1], stop[1]).tolist())
+            kwargs = {}
+
+        if isinstance(start, dt.datetime):
+            out = pds.date_range(start, stop, **kwargs).tolist()
+        else:
+            out = pds.date_range(start[0], stop[0], **kwargs).tolist()
+            out.extend(pds.date_range(start[1], stop[1], **kwargs).tolist())
         if dates:
             dates = []
             for inst in self.testInst:
@@ -1579,11 +1586,7 @@ class TestBasics(object):
         start = self.ref_time
         stop = self.ref_time + dt.timedelta(days=15)
         self.testInst.bounds = (start, stop, '2D')
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start, stop, freq='2D').tolist()
-        assert np.all(dates == out)
+        self.eval_iter_list(start, stop, dates=True, freq=2)
         return
 
     def test_set_bounds_with_frequency_and_width(self):
@@ -2114,11 +2117,7 @@ class TestBasics(object):
         stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2)
 
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start_date, stop_date, freq='2D').tolist()
-        assert np.all(dates == out)
+        self.eval_iter_list(start_date, stop_date, dates=True, freq=2)
         return
 
     def test_set_bounds_fname_with_frequency_and_width(self):
