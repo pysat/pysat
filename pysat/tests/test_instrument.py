@@ -397,7 +397,7 @@ class TestBasics(object):
         """Test that correct day loads (checking down to the sec)."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert (self.testInst.index[0] == self.ref_time)
+        self.eval_successful_load()
         return
 
     def test_basic_instrument_load_leap_year(self):
