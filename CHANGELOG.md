@@ -17,6 +17,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `start_time` keyword for test instruments
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
+   * Removed `_test_download_travis` as a standard attribute for
+     `pysat.Instrument`
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
