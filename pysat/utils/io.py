@@ -1125,8 +1125,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
             # Attach attributes
             out_data.setncatts(attrb_dict)
     else:
-        # Attach the metadata to the xarray.Dataset
-        xr_data = inst.data
+        # Attach the metadata to a separate xarray.Dataset object, ensuring
+        # the Instrument data object is unchanged.
+        xr_data = xr.Dataset(inst.data)
         pysat_meta_to_xarray_attr(xr_data, inst.meta)
 
         # If the case needs to be preserved, update Dataset variables
