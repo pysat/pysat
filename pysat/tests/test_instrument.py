@@ -2142,18 +2142,15 @@ class TestBasics(object):
     @pytest.mark.parametrize("values", [('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-03.nofile',
-                                         dt.datetime(2009, 1, 3),
-                                         2, 2),
+                                         dt.datetime(2009, 1, 3), 2, 2),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         2, 3),
+                                         dt.datetime(2009, 1, 4), 2, 3),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-05.nofile',
-                                         dt.datetime(2009, 1, 5),
-                                         3, 1)])
+                                         dt.datetime(2009, 1, 5), 3, 1)])
     def test_iterate_bounds_fname_with_frequency_and_width(self, values):
         """File iteration in bounds with step/width > 1, exclude stop bounds."""
 
@@ -2166,23 +2163,19 @@ class TestBasics(object):
     @pytest.mark.parametrize("values", [('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         2, 2),
+                                         dt.datetime(2009, 1, 4), 2, 2),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         3, 1),
+                                         dt.datetime(2009, 1, 4), 3, 1),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         1, 4),
+                                         dt.datetime(2009, 1, 4), 1, 4),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-05.nofile',
-                                         dt.datetime(2009, 1, 5),
-                                         2, 3)])
+                                         dt.datetime(2009, 1, 5), 2, 3)])
     def test_iterate_bounds_fname_with_frequency_and_width_incl(self, values):
         """File iteration in bounds with step/width > 1, include stop bounds."""
 
@@ -2299,23 +2292,19 @@ class TestBasics(object):
     @pytest.mark.parametrize("values", [('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 10),
-                                         2, 2),
+                                         dt.datetime(2009, 1, 10), 2, 2),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-09.nofile',
-                                         dt.datetime(2009, 1, 9),
-                                         4, 1),
+                                         dt.datetime(2009, 1, 9), 4, 1),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11),
-                                         1, 3),
+                                         dt.datetime(2009, 1, 11), 1, 3),
                                         ('2009-01-01.nofile',
                                          dt.datetime(2009, 1, 1),
                                          '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11),
-                                         1, 11),
+                                         dt.datetime(2009, 1, 11), 1, 11),
                                         ])
     @pytest.mark.parametrize("reverse", [True, False])
     def test_iter_fname_with_frequency_and_width_incl(self, values, reverse):
