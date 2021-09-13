@@ -270,6 +270,22 @@ class TestBasics(object):
         assert str(err).find(estr) >= 0
         return
 
+    @pytest.mark.parametrize('attr', ['_test_download', '_test_download_ci',
+                                      '_password_req'])
+    @pytest.mark.parametrize('setting', [True, False])
+    def test_basic_instrument_download_kwargs(self, attr, setting):
+        """Check that download flags are appropriately set."""
+
+        inst_module = getattr(pysat.instruments,
+                              '_'.join((self.testInst.platform,
+                                        self.testInst.name)))
+        # Change settings
+        setattr(inst_module, attr, {'': {'': setting}})
+        self.testInst = pysat.Instrument(inst_module=inst_module)
+
+        assert getattr(self.testInst, attr) is setting
+        return
+
     def test_basic_instrument_load_yr_no_doy(self):
         """Ensure doy required if yr present."""
 
