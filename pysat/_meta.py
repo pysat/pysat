@@ -1090,8 +1090,16 @@ class Meta(object):
             # Update the attribute name
             map_var = get_mapped_value(var, mapper)
             if map_var is not None:
+                # Get and update the meta data
                 hold_meta = self[var].copy()
+                hold_meta.name = map_var
+
+                # Remove the metadata under the previous variable name
                 self.drop(var)
+                if var in self.ho_data:
+                    del self.ho_data[var]
+
+                # Re-add the meta data with the updated variable name
                 self[map_var] = hold_meta
 
         # Determine if the attribute is present in higher order structures
