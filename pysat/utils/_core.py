@@ -583,11 +583,11 @@ def generate_instrument_list(inst_loc, user_info=None):
                                             tag=tag,
                                             inst_id=inst_id,
                                             temporary_file_list=True)
-                    travis_skip = ((os.environ.get('TRAVIS') == 'true')
-                                   and not inst._test_download_travis)
-                    if inst._test_download:
-                        if not travis_skip:
-                            instrument_download.append(inst_dict)
+                    # Flag to skip tests on CI environment
+                    ci_skip = ((os.environ.get('CI') == 'true')
+                               and not inst._test_download_ci)
+                    if inst._test_download and not ci_skip:
+                        instrument_download.append(inst_dict)
                     elif not inst._password_req:
                         # We don't want to test download for this combo, but
                         # we do want to test the download warnings for
