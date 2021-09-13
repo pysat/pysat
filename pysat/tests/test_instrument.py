@@ -183,7 +183,7 @@ class TestBasics(object):
 
         return
 
-    def eval_iter_list(self, start, stop):
+    def eval_iter_list(self, start, stop, dates=False):
         """Evaluate successful generation of iter_list for `self.testInst`.
 
         Parameters
@@ -192,6 +192,9 @@ class TestBasics(object):
             Start date for generating iter_list.
         stop : dt.datetime or list of dt.datetime
             start date for generating iter_list.
+        dates : bool
+            If True, checks each date.  If False, checks against the _iter_list
+            (default=False)
 
         """
 
@@ -200,7 +203,13 @@ class TestBasics(object):
         else:
             out = pds.date_range(start[0], stop[0]).tolist()
             out.extend(pds.date_range(start[1], stop[1]).tolist())
-        assert np.all(self.testInst._iter_list == out)
+        if dates:
+            dates = []
+            for inst in self.testInst:
+                dates.append(inst.date)
+            assert np.all(dates == out)
+        else:
+            assert np.all(self.testInst._iter_list == out)
         return
 
     @pytest.mark.parametrize("kwargs", [{}, {'num_samples': 30}])
@@ -1910,17 +1919,25 @@ class TestBasics(object):
     @pytest.mark.parametrize("start,stop", [(dt.datetime(2010, 12, 1),
                                              dt.datetime(2010, 12, 31)),
                                             (dt.datetime(2009, 1, 1),
-                                             dt.datetime(2009, 1, 15))
+                                             dt.datetime(2009, 1, 15)),
+                                            ([dt.datetime(2009, 1, 1),
+                                              dt.datetime(2009, 2, 1)],
+                                             [dt.datetime(2009, 1, 15),
+                                              dt.datetime(2009, 2, 15)]),
+                                            ([dt.datetime(2009, 1, 1, 1, 10),
+                                              dt.datetime(2009, 2, 1, 1, 10)],
+                                             [dt.datetime(2009, 1, 15, 1, 10),
+                                              dt.datetime(2009, 2, 15, 1, 10)])
                                             ])
     def test_iterate_over_bounds_set_by_date(self, start, stop):
         """Test iterate over bounds via single date range."""
 
         self.testInst.bounds = (start, stop)
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start, stop).tolist()
-        assert np.all(dates == out)
+        # filter
+        start = filter_datetime_input(start)
+        stop = filter_datetime_input(stop)
+        # iterate
+        self.eval_iter_list(start, stop, dates=True)
         return
 
     def test_iterate_over_default_bounds(self):
@@ -1931,25 +1948,7 @@ class TestBasics(object):
         self.testInst.kwargs['list_files']['file_date_range'] = date_range
         self.testInst.files.refresh()
         self.testInst.bounds = (None, None)
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = date_range.tolist()
-        assert np.all(dates == out)
-        return
-
-    def test_iterate_over_bounds_set_by_date_season(self):
-        """Test iterate over bounds by list of dates."""
-
-        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
-        self.testInst.bounds = (start, stop)
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start[0], stop[0]).tolist()
-        out.extend(pds.date_range(start[1], stop[1]).tolist())
-        assert np.all(dates == out)
+        self.eval_iter_list(date_range[0], date_range[-1], dates=True)
         return
 
     @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
@@ -2008,26 +2007,6 @@ class TestBasics(object):
 
         return
 
-    def test_iterate_over_bounds_set_by_date_season_extra_time(self):
-        """Test iterate over season, with extra time."""
-
-        start = [dt.datetime(2009, 1, 1, 1, 10),
-                 dt.datetime(2009, 2, 1, 1, 10)]
-        stop = [dt.datetime(2009, 1, 15, 1, 10),
-                dt.datetime(2009, 2, 15, 1, 10)]
-        self.testInst.bounds = (start, stop)
-        # filter
-        start = filter_datetime_input(start)
-        stop = filter_datetime_input(stop)
-        # iterate
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start[0], stop[0]).tolist()
-        out.extend(pds.date_range(start[1], stop[1]).tolist())
-        assert np.all(dates == out)
-        return
-
     def test_set_bounds_by_fname(self):
         """Test set bounds by fname."""
 
@@ -2047,18 +2026,18 @@ class TestBasics(object):
         start_d = dt.datetime(2009, 1, 1)
         stop_d = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start_d, stop_d).tolist()
-        assert np.all(dates == out)
+        self.eval_iter_list(start_d, stop_d, dates=True)
         return
 
-    def test_set_bounds_by_fname_wrong_order(self):
+    @pytest.mark.parametrize("start,stop", [('2009-01-13.nofile',
+                                             '2009-01-01.nofile'),
+                                            (['2009-01-01.nofile',
+                                              '2009-02-03.nofile'],
+                                             ['2009-01-03.nofile',
+                                              '2009-02-01.nofile'])])
+    def test_set_bounds_by_fname_wrong_order(self, start, stop):
         """Test for error if stop file before start file."""
 
-        start = '2009-01-13.nofile'
-        stop = '2009-01-01.nofile'
         with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
         estr = 'Bounds must be in increasing date'
@@ -2098,17 +2077,6 @@ class TestBasics(object):
                           '2009-02-02.nofile', '2009-02-03.nofile'])
         return
 
-    def test_set_bounds_by_fname_season_wrong_order(self):
-        """Test for error if stop file before start file, season."""
-
-        start = ['2009-01-01.nofile', '2009-02-03.nofile']
-        stop = ['2009-01-03.nofile', '2009-02-01.nofile']
-        with pytest.raises(Exception) as err:
-            self.testInst.bounds = (start, stop)
-        estr = 'Bounds must be in increasing date'
-        assert str(err).find(estr) >= 0
-        return
-
     def test_iterate_over_bounds_set_by_fname_season(self):
         """Test set bounds using multiple filenames."""
 
@@ -2117,12 +2085,7 @@ class TestBasics(object):
         start_d = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
         stop_d = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
         self.testInst.bounds = (start, stop)
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start_d[0], stop_d[0]).tolist()
-        out.extend(pds.date_range(start_d[1], stop_d[1]).tolist())
-        assert np.all(dates == out)
+        self.eval_iter_list(start_d, stop_d, dates=True)
         return
 
     def test_set_bounds_fname_with_frequency(self):
