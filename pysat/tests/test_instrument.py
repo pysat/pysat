@@ -2510,7 +2510,7 @@ class TestBasicsInstModule(TestBasics):
                                          clean_level='clean',
                                          update_files=True,
                                          **self.testing_kwargs)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = imod._test_dates['']['']
         self.ref_doy = 1
         self.out = None
         return
@@ -2540,7 +2540,8 @@ class TestBasicsXarray(TestBasics):
                                          clean_level='clean',
                                          update_files=True,
                                          **self.testing_kwargs)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = \
+            pysat.instruments.pysat_testing_xarray._test_dates['']['']
         self.ref_doy = 1
         self.out = None
         return
@@ -2564,7 +2565,7 @@ class TestBasics2D(TestBasics):
                                          clean_level='clean',
                                          update_files=True,
                                          **self.testing_kwargs)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.ref_doy = 1
         self.out = None
         return
@@ -2594,7 +2595,8 @@ class TestBasics2DXarray(TestBasics):
                                          clean_level='clean',
                                          update_files=True,
                                          **self.testing_kwargs)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = \
+            pysat.instruments.pysat_testing2d_xarray._test_dates['']['']
         self.ref_doy = 1
         self.out = None
         return
@@ -2684,7 +2686,7 @@ class TestBasicsShiftedFileDates(TestBasics):
                                          mangle_file_dates=True,
                                          strict_time_flag=True,
                                          **self.testing_kwargs)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.ref_doy = 1
         self.out = None
         return
