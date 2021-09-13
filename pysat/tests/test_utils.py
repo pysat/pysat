@@ -327,16 +327,19 @@ class TestLoadNetCDF4(object):
         else:
             keys = [key for key in self.testInst.data.variables]
             new_keys = [key for key in self.loaded_inst.variables]
+
+        # Test the data values for each variable
         for dkey in keys:
             lkey = dkey.lower()
             if lkey in ['profiles', 'alt_profiles', 'series_profiles']:
                 # Test the loaded higher-dimension data
                 for tframe, lframe in zip(self.testInst.data[dkey],
-                                          self.loaded_inst[lkey]):
+                                          self.loaded_inst[dkey]):
                     assert np.all(tframe == lframe), "unequal {:s} data".format(
                         dkey)
             else:
-                assert np.all(self.testInst[dkey] == self.loaded_inst[lkey])
+                # Test the standard data structures
+                assert np.all(self.testInst[dkey] == self.loaded_inst[dkey])
         return keys, new_keys
 
     def test_load_netcdf4_empty_filenames(self):
@@ -360,14 +363,27 @@ class TestLoadNetCDF4(object):
             self.testInst.data = self.testInst.data.rename(str.upper,
                                                            axis='columns')
         else:
-            self.testInst.data = self.testInst.data.rename(
-                {dkey: dkey.upper()
-                 for dkey in self.testInst.data.data_vars.keys()})
+            map_keys = {dkey: dkey.upper()
+                        for dkey in self.testInst.data.data_vars.keys()}
+            self.testInst.data = self.testInst.data.rename(map_keys)
 
+        # Meta case is preserved and has not been altered
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
         self.loaded_inst, meta = pysat.utils.load_netcdf4(
             outfile, pandas_format=self.testInst.pandas_format)
+
+        # Revert data names to meta case
+        if self.testInst.pandas_format:
+            map_keys = {mkey.upper(): mkey
+                        for mkey in self.testInst.meta.keys()}
+            self.testInst.data = self.testInst.data.rename(map_keys,
+                                                           axis='columns')
+        else:
+            new_map_keys = {map_keys[mkey]: mkey
+                            for mkey in self.testInst.meta.keys()
+                            if mkey in map_keys.keys()}
+            self.testInst.data = self.testInst.data.rename(new_map_keys)
 
         # Test the loaded data
         keys, new_keys = self.eval_loaded_data()
