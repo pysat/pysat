@@ -105,8 +105,8 @@ _test_dates = {'': {'': dt.datetime(2019, 1, 1),
 # If not set, defaults to True
 _test_download = {'': {'': False, 'tag_string': True}}
 
-# For instruments using FTP for download, set _test_download_ci to False
-# These tests will still download locally but be skipped on CI
+# For instruments using FTP for download, set `_test_download_ci` to False.
+# These tests will still download locally but be skipped on CI.
 # If not set, defaults to True
 _test_download_ci = {'': {'': False, 'tag_string': False}}
 
