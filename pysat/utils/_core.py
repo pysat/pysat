@@ -583,7 +583,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                                             tag=tag,
                                             inst_id=inst_id,
                                             temporary_file_list=True)
-                    # Flag to skip tests on CI environment
+                    # Set flag to skip tests on a CI environment
                     ci_skip = ((os.environ.get('CI') == 'true')
                                and not inst._test_download_ci)
                     if inst._test_download and not ci_skip:

@@ -279,7 +279,7 @@ class TestBasics(object):
         inst_module = getattr(pysat.instruments,
                               '_'.join((self.testInst.platform,
                                         self.testInst.name)))
-        # Change settings
+        # Update settings for this test
         setattr(inst_module, attr, {'': {'': setting}})
         self.testInst = pysat.Instrument(inst_module=inst_module)
 

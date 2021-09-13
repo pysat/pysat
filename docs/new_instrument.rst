@@ -735,9 +735,9 @@ FTP Access
 Another thing to note about testing is that the CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
 HTTPS access is preferred whenever possible.  However, if this is not the case,
-the :py:attr:`_test_download_ci` flag can be used.  This has a similar function,
-except that it skips the download tests if on CI, but will run those
-tests if run locally.
+the :py:attr:`_test_download_ci` flag can be used.  This behaves similarly,
+except that it only run the download tests tests locally and will skip them if
+on a CI server.
 
 .. code:: python
 
