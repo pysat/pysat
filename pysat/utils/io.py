@@ -104,7 +104,7 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     # Coerce boolean types to integers and remove NoneType
     none_key = list()
     for key in mdata_dict:
-        if type(mdata_dict[key]) == bool:
+        if isinstance(mdata_dict[key], bool):
             mdata_dict[key] = int(mdata_dict[key])
         elif mdata_dict[key] is None:
             none_key.append(key)
@@ -115,12 +115,12 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     if coltype == str and not remove:
         remove = True
         warnings.warn('FillValue is not an acceptable '
-                      'parameter for strings - it will be removed')
+                      'parameter for strings - it will be removed.')
 
     # Make sure _FillValue is the same type as the data
     estr = ''.join(('FillValue for {a:s}{b:s} cannot be safely casted to ',
                     '{c:s}, but casting anyways. This may result in ',
-                    'unexpected behavior'))
+                    'unexpected behavior.'))
     if '_FillValue' in mdata_dict.keys():
         if remove:
             mdata_dict.pop('_FillValue')
