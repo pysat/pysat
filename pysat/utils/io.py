@@ -565,10 +565,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
             # Prepare dataframe index for this netcdf file
             time_var = loaded_vars.pop(epoch_name)
-
-            # Convert from GPS seconds to seconds used in pandas (unix time,
-            # no leap seconds)
-            # time_var = convert_gps_to_unix_seconds(time_var)
             loaded_vars[epoch_name] = pds.to_datetime(
                 (1.0E6 * time_var).astype(np.int64))
             running_store.append(loaded_vars)
