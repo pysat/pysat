@@ -135,9 +135,7 @@ class TestBasics(object):
         for start, stop in zip(starts, stops):
             tdate = stop - width + dt.timedelta(days=1)
             out.extend(pds.date_range(start, tdate, freq=step).tolist())
-        if reverse:
-            out = out[::-1]
-        assert np.all(dates == out)
+        pysat.utils.testing.assert_lists_equal(dates, out)
 
         output = {}
         output['expected_times'] = out
@@ -212,9 +210,10 @@ class TestBasics(object):
             dates = []
             for inst in self.testInst:
                 dates.append(inst.date)
-            assert np.all(dates == out)
+            pysat.utils.testing.assert_lists_equal(dates, out)
         else:
-            assert np.all(self.testInst._iter_list == out)
+            pysat.utils.testing.assert_lists_equal(self.testInst._iter_list,
+                                                   out)
         return
 
     @pytest.mark.parametrize("kwargs", [{}, {'num_samples': 30}])
@@ -2057,9 +2056,9 @@ class TestBasics(object):
         assert str(err).find(estr) >= 0
         return
 
-    @pytest.mark.parametrize("operator,step", [('next', 1), ('prev', -1)])
-    def test_iterate_over_bounds_set_by_fname_via_attr(self, operator, step):
-        """Test iterate over bounds set by fname via `.next()`."""
+    @pytest.mark.parametrize("operator", ['next', 'prev'])
+    def test_iterate_over_bounds_set_by_fname_via_attr(self, operator):
+        """Test iterate over bounds set by fname via operators."""
 
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
@@ -2075,7 +2074,7 @@ class TestBasics(object):
             except StopIteration:
                 loop_next = False
         out = pds.date_range(start_d, stop_d).tolist()
-        assert np.all(dates == out[::step])
+        pysat.utils.testing.assert_lists_equal(dates, out)
         return
 
     def test_set_bounds_by_fname_season(self):
