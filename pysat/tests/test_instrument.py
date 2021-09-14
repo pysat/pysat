@@ -270,6 +270,22 @@ class TestBasics(object):
         assert str(err).find(estr) >= 0
         return
 
+    @pytest.mark.parametrize('attr', ['_test_download', '_test_download_ci',
+                                      '_password_req'])
+    @pytest.mark.parametrize('setting', [True, False])
+    def test_basic_instrument_download_kwargs(self, attr, setting):
+        """Check that download flags are appropriately set."""
+
+        inst_module = getattr(pysat.instruments,
+                              '_'.join((self.testInst.platform,
+                                        self.testInst.name)))
+        # Update settings for this test
+        setattr(inst_module, attr, {'': {'': setting}})
+        self.testInst = pysat.Instrument(inst_module=inst_module)
+
+        assert getattr(self.testInst, attr) is setting
+        return
+
     def test_basic_instrument_load_yr_no_doy(self):
         """Ensure doy required if yr present."""
 
@@ -2994,17 +3010,14 @@ class TestDeprecation(object):
         warnings.simplefilter("always", DeprecationWarning)
         self.in_kwargs = {"platform": 'pysat', "name": 'testing',
                           "clean_level": 'clean'}
-        self.warn_msgs = ["".join(["`pysat.Instrument.download` kwarg `freq` ",
-                                   "has been deprecated and will be removed ",
-                                   "in pysat 3.2.0+"])]
-        self.warn_msgs = np.array(self.warn_msgs)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.in_kwargs, self.warn_msgs, self.ref_time
+        reload(pysat.instruments.pysat_testing)
+        del self.in_kwargs, self.ref_time
         return
 
     def test_download_freq_kwarg(self):
@@ -3015,10 +3028,48 @@ class TestDeprecation(object):
             tinst = pysat.Instrument(**self.in_kwargs)
             tinst.download(start=self.ref_time, freq='D')
 
+        self.warn_msgs = ["".join(["`pysat.Instrument.download` kwarg `freq` ",
+                                   "has been deprecated and will be removed ",
+                                   "in pysat 3.2.0+"])]
+        self.warn_msgs = np.array(self.warn_msgs)
+
         # Ensure the minimum number of warnings were raised
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
+
+        return
+
+    def test_download_travis_attr(self):
+        """Test deprecation of instrument attribute `_test_download_travis`."""
+
+        inst_module = pysat.instruments.pysat_testing
+        # Add deprecated attribute.
+        inst_module._test_download_travis = {'': {'': False}}
+
+        self.warn_msgs = [" ".join(["`_test_download_travis` has been",
+                                    "deprecated and will be replaced",
+                                    "by `_test_download_ci` in",
+                                    "3.2.0+"])]
+        self.warn_msgs = np.array(self.warn_msgs)
+
+        # Catch the warnings.
+        with warnings.catch_warnings(record=True) as war:
+            tinst = pysat.Instrument(inst_module=inst_module)
+
+        # Ensure attributes set properly.
+        assert tinst._test_download_ci is False
+
+        # Ensure the minimum number of warnings were raised.
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present.
         found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
             war, self.warn_msgs)
 
