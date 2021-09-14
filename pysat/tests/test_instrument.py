@@ -135,6 +135,8 @@ class TestBasics(object):
         for start, stop in zip(starts, stops):
             tdate = stop - width + dt.timedelta(days=1)
             out.extend(pds.date_range(start, tdate, freq=step).tolist())
+        if reverse:
+            out = out[::-1]
         pysat.utils.testing.assert_lists_equal(dates, out)
 
         output = {}
