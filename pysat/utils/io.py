@@ -401,8 +401,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     for fname in fnames:
         with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
             # Build a dictionary with all global ncattrs and add those
-            # attributes to a pysat meta object. Any custom Meta attributes 
-            # are automatically transferred to the holding pysat.Instrument 
+            # attributes to a pysat meta object. Any custom Meta attributes
+            # are automatically transferred to the holding pysat.Instrument
             # object by pysat.
             for ncattr in data.ncattrs():
                 if hasattr(meta, ncattr):
