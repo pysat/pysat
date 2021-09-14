@@ -401,7 +401,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     for fname in fnames:
         with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
             # Build a dictionary with all global ncattrs and add those
-            # attributes to a pysat meta object
+            # attributes to a pysat meta object. Any custom Meta attributes 
+            # are automatically transferred to the holding pysat.Instrument 
+            # object by pysat.
             for ncattr in data.ncattrs():
                 if hasattr(meta, ncattr):
                     mattr = '{:}_'.format(ncattr)
@@ -827,7 +829,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     if inst.pandas_format:
         # Begin processing metadata for writing to the file. Look to see if the
         # user supplied a list of export keys corresponding to internally
-        # tracked pysat metadat
+        # tracked pysat metadata
         export_meta = inst.generic_meta_translator(inst.meta)
         if inst._meta_translation_table is None:
             # Didn't find a translation table, using the strings
