@@ -208,8 +208,6 @@ class TestBasics(object):
             out = list()
             for (istart, istop) in zip(start, stop):
                 out.extend(pds.date_range(istart, istop, **kwargs).tolist())
-
-            out.extend(pds.date_range(start[1], stop[1], **kwargs).tolist())
         if dates:
             dates = []
             for inst in self.testInst:
