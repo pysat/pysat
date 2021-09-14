@@ -200,15 +200,15 @@ class TestBasics(object):
 
         """
 
-        if freq:
-            kwargs = {'freq': '{:}D'.format(freq)}
-        else:
-            kwargs = {}
+        kwargs = {'freq': '{:}D'.format(freq)} if freq else {}
 
         if isinstance(start, dt.datetime):
             out = pds.date_range(start, stop, **kwargs).tolist()
         else:
-            out = pds.date_range(start[0], stop[0], **kwargs).tolist()
+            out = list()
+            for (istart, istop) in zip(start, stop):
+                out.extend(pds.date_range(istart, istop, **kwargs).tolist())
+
             out.extend(pds.date_range(start[1], stop[1], **kwargs).tolist())
         if dates:
             dates = []
@@ -1603,22 +1603,26 @@ class TestBasics(object):
     def verify_inclusive_iteration(self, out, reverse=False):
         """Verify loaded dates for inclusive iteration, forward or backward."""
 
-        # verify range of loaded data when iterating forward
+        # Verify range of loaded data when iterating forward.
         for i, trange in enumerate(out['observed_times']):
-            # determine which range we are in
+            # Determine which range we are in.
             b_range = 0
             while out['expected_times'][i] > out['stops'][b_range]:
                 b_range += 1
-            # check loaded range is correct
-            assert trange[0] == out['expected_times'][i]
+            # Check loaded range is correct.
+            assert trange[0] == out['expected_times'][i], \
+                "Did not load the expected start time"
+
             check = out['expected_times'][i] + out['width']
             check -= dt.timedelta(days=1)
-            assert trange[1] > check
+            assert trange[1] > check, "End time outside of expected range"
+
             check = out['stops'][b_range] + dt.timedelta(days=1)
-            assert trange[1] < check
+            assert trange[1] < check, "End time outside of expected range"
+
             if reverse:
                 if i == 0:
-                    # check first load is before end of bounds
+                    # Check first load is before end of bounds.
                     check = out['stops'][b_range] - out['width']
                     check += dt.timedelta(days=1)
                     assert trange[0] == check
@@ -1636,17 +1640,20 @@ class TestBasics(object):
     def verify_exclusive_iteration(self, out, reverse=False):
         """Verify loaded dates for exclusive iteration, forward or backward."""
 
-        # verify range of loaded data
+        # Verify range of loaded data.
         for i, trange in enumerate(out['observed_times']):
-            # determine which range we are in
+            # Determine the current range.
             b_range = 0
             while out['expected_times'][i] > out['stops'][b_range]:
                 b_range += 1
-            # check loaded range is correct
-            assert trange[0] == out['expected_times'][i]
+
+            # Check to see if the loaded range is correct.
+            assert trange[0] == out['expected_times'][i], \
+                "Loaded start time is not correct"
             check = out['expected_times'][i] + out['width']
             check -= dt.timedelta(days=1)
             assert trange[1] > check
+
             if not reverse:
                 assert trange[1] < out['stops'][b_range]
             else:
@@ -1683,7 +1690,7 @@ class TestBasics(object):
         """Test iterate via date with mixed step/width, excludes stop date."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
+        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
@@ -1710,7 +1717,7 @@ class TestBasics(object):
         """Test iterate via date with mixed step/width, includes stop date."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
+        # Verify range of loaded data.
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
@@ -1733,7 +1740,8 @@ class TestBasics(object):
         """Test iteration via date step/width >1, includes stop date."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
+
+        # Verify range of loaded data.
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
@@ -1758,7 +1766,8 @@ class TestBasics(object):
         """Test iteration via date step/width > 1, exclude stop date."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
+
+        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -1786,7 +1795,8 @@ class TestBasics(object):
     def test_iter_date_season_frequency_and_width_incl(self, values, reverse):
         """Test iteration via date season step/width > 1, include stop date."""
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
+
+        # Verify range of loaded data.
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
@@ -1815,7 +1825,8 @@ class TestBasics(object):
         """Test iteration via date season step/width>1, exclude stop date."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
+
+        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -1936,10 +1947,9 @@ class TestBasics(object):
         """Test iterate over bounds via single date range."""
 
         self.testInst.bounds = (start, stop)
-        # filter
+        # Filter time inputs.
         start = filter_datetime_input(start)
         stop = filter_datetime_input(stop)
-        # iterate
         self.eval_iter_list(start, stop, dates=True)
         return
 
@@ -1977,7 +1987,8 @@ class TestBasics(object):
         """Test iterate over season, step/width > 1, exclude stop bounds."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
+
+        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
@@ -2005,7 +2016,8 @@ class TestBasics(object):
         """Test iterate over season, step/width > 1, includes stop bounds."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
+
+        # Verify range of loaded data.
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
