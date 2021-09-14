@@ -68,28 +68,38 @@ class TestBasics(object):
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
 
-    def support_iter_evaluations(self, values, for_loop=False, reverse=False):
-        """Support testing of .next/.prev via dates/files."""
-        # First, treat with no processing to provide testing as inputs
-        # supplied
-        if len(values) == 4:
-            # testing by date
-            starts = values[0]
-            stops = values[1]
-            step = values[2]
-            width = values[3]
-            self.testInst.bounds = (starts, stops, step, width)
-        elif len(values) == 6:
-            # testing by file
-            start_files = values[0]
-            starts = values[1]
-            stop_files = values[2]
-            stops = values[3]
-            step = values[4]
-            width = values[5]
-            self.testInst.bounds = (start_files, stop_files, step, width)
+    def generate_fname(self, date):
+        """Generate a filename for support of testing iterations."""
 
-        # create list of dates for consistency of later code
+        fname = '{year:04d}-{month:02d}-{day:02d}.nofile'
+        return fname.format(year=date.year, month=date.month, day=date.day)
+
+    def support_iter_evaluations(self, values, for_loop=False, reverse=False,
+                                 by_date=True):
+        """Support testing of .next/.prev via dates/files.
+
+        Parameters
+        ----------
+        values : list of four inputs
+            [starts, stops, step, width]
+        for_loop : bool
+            If True, iterate via for loop.  If False, iterate via while.
+            (default=False)
+        reverse : bool
+            Direction of iteration.  If True, use `.prev()`. If False, use
+            `.next()`.  (default=False)
+        by_date : bool
+            If True, set bounds by date.  If False, set bounds by filename.
+            (default=False)
+        """
+
+        # Extract specific values from input.
+        starts = values[0]
+        stops = values[1]
+        step = values[2]
+        width = values[3]
+
+        # Ensure dates are lists for consistency of later code.
         starts = np.asarray([starts])
         stops = np.asarray([stops])
         if len(starts.shape) > 1:
@@ -98,6 +108,17 @@ class TestBasics(object):
         else:
             starts = starts.tolist()
             stops = stops.tolist()
+
+        if by_date:
+            # Convert step and width to string and timedelta.
+            step = '{:}D'.format(step)
+            width = dt.timedelta(days=width)
+            self.testInst.bounds = (starts, stops, step, width)
+        else:
+            # Convert start and stop to filenames.
+            start_files = [self.generate_fname(date) for date in starts]
+            stop_files = [self.generate_fname(date) for date in stops]
+            self.testInst.bounds = (start_files, stop_files, step, width)
 
         # iterate until we run out of bounds
         dates = []
@@ -136,6 +157,7 @@ class TestBasics(object):
             tdate = stop - width + dt.timedelta(days=1)
             out.extend(pds.date_range(start, tdate, freq=step).tolist())
         if reverse:
+            # Ensure time order is consistent for verify methods.
             out = out[::-1]
         pysat.utils.testing.assert_lists_equal(dates, out)
 
@@ -1673,94 +1695,104 @@ class TestBasics(object):
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3), '2D',
-                                         dt.timedelta(days=2)),
+                                         dt.datetime(2009, 1, 3),
+                                         2, 2),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '2D',
-                                         dt.timedelta(days=3)),
+                                         dt.datetime(2009, 1, 4),
+                                         2, 3),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '3D',
-                                         dt.timedelta(days=1)),
+                                         dt.datetime(2009, 1, 5),
+                                         3, 1),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 17), '5D',
-                                         dt.timedelta(days=1))
+                                         dt.datetime(2009, 1, 17),
+                                         5, 1)
                                         ])
-    def test_iterate_bounds_with_frequency_and_width(self, values):
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_bounds_with_frequency_and_width(self, values, by_date):
         """Test iterate via date with mixed step/width, excludes stop date."""
 
-        out = self.support_iter_evaluations(values, for_loop=True)
+        out = self.support_iter_evaluations(values, for_loop=True,
+                                            by_date=by_date)
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '2D',
-                                         dt.timedelta(days=2)),
+                                         dt.datetime(2009, 1, 4),
+                                         2, 2),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '3D',
-                                         dt.timedelta(days=1)),
+                                         dt.datetime(2009, 1, 4),
+                                         3, 1),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '1D',
-                                         dt.timedelta(days=4)),
+                                         dt.datetime(2009, 1, 4),
+                                         1, 4),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '4D',
-                                         dt.timedelta(days=1)),
+                                         dt.datetime(2009, 1, 5),
+                                         4, 1),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '2D',
-                                         dt.timedelta(days=3)),
+                                         dt.datetime(2009, 1, 5),
+                                         2, 3),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '3D',
-                                         dt.timedelta(days=2))])
-    def test_iterate_bounds_with_frequency_and_width_incl(self, values):
+                                         dt.datetime(2009, 1, 5),
+                                         3, 2)])
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_bounds_with_frequency_and_width_incl(self, values,
+                                                          by_date):
         """Test iterate via date with mixed step/width, includes stop date."""
 
-        out = self.support_iter_evaluations(values, for_loop=True)
+        out = self.support_iter_evaluations(values, for_loop=True,
+                                            by_date=by_date)
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 10), '2D',
-                                         dt.timedelta(days=2)),
+                                         dt.datetime(2009, 1, 10),
+                                         2, 2),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 9), '4D',
-                                         dt.timedelta(days=1)),
+                                         dt.datetime(2009, 1, 9),
+                                         4, 1),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '1D',
-                                         dt.timedelta(days=3)),
+                                         dt.datetime(2009, 1, 11),
+                                         1, 3),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '1D',
-                                         dt.timedelta(days=11)),
+                                         dt.datetime(2009, 1, 11),
+                                         1, 11),
                                         ])
     @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_date_with_frequency_and_width_incl(self, values, reverse):
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_with_frequency_and_width_incl(self, values, reverse,
+                                                   by_date):
         """Test iteration via date step/width >1, includes stop date."""
 
-        out = self.support_iter_evaluations(values, reverse=reverse)
+        out = self.support_iter_evaluations(values, reverse=reverse,
+                                            by_date=by_date)
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '2D',
-                                         dt.timedelta(days=2)),
+                                         dt.datetime(2009, 1, 11),
+                                         2, 2),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',
-                                         dt.timedelta(days=3)),
+                                         dt.datetime(2009, 1, 12),
+                                         2, 3),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 13), '3D',
-                                         dt.timedelta(days=2)),
+                                         dt.datetime(2009, 1, 13),
+                                         3, 2),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3), '4D',
-                                         dt.timedelta(days=2)),
+                                         dt.datetime(2009, 1, 3),
+                                         4, 2),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',
-                                         dt.timedelta(days=1))])
+                                         dt.datetime(2009, 1, 12),
+                                         2, 1)])
     @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_date_with_frequency_and_width(self, values, reverse):
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_with_frequency_and_width(self, values, reverse, by_date):
         """Test iteration via date step/width > 1, exclude stop date."""
 
-        out = self.support_iter_evaluations(values, reverse=reverse)
+        out = self.support_iter_evaluations(values, reverse=reverse,
+                                            by_date=by_date)
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -1769,26 +1801,26 @@ class TestBasics(object):
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 4),
                                           dt.datetime(2009, 1, 13)),
-                                         '2D',
-                                         dt.timedelta(days=2)),
+                                         2, 2),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
-                                         '3D',
-                                         dt.timedelta(days=1)),
+                                         3, 1),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
-                                         '2D',
-                                         dt.timedelta(days=4))
+                                         2, 4)
                                         ])
     @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_date_season_frequency_and_width_incl(self, values, reverse):
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_season_frequency_and_width_incl(self, values, reverse,
+                                                     by_date):
         """Test iteration via date season step/width > 1, include stop date."""
 
-        out = self.support_iter_evaluations(values, reverse=reverse)
+        out = self.support_iter_evaluations(values, reverse=reverse,
+                                            by_date=by_date)
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
@@ -1797,26 +1829,26 @@ class TestBasics(object):
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 3),
                                           dt.datetime(2009, 1, 12)),
-                                         '2D',
-                                         dt.timedelta(days=2)),
+                                         2, 2),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
-                                         '3D',
-                                         dt.timedelta(days=1)),
+                                         3, 1),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
-                                         '2D',
-                                         dt.timedelta(days=4))
+                                         2, 4)
                                         ])
     @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_date_season_frequency_and_width(self, values, reverse):
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_season_frequency_and_width(self, values, reverse,
+                                                by_date):
         """Test iteration via date season step/width>1, exclude stop date."""
 
-        out = self.support_iter_evaluations(values, reverse=reverse)
+        out = self.support_iter_evaluations(values, reverse=reverse,
+                                            by_date=by_date)
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -1958,27 +1990,25 @@ class TestBasics(object):
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 3),
                                           dt.datetime(2009, 1, 12)),
-                                         '2D',
-                                         dt.timedelta(days=2)),
+                                         2, 2),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
-                                         '3D',
-                                         dt.timedelta(days=1)),
+                                         3, 1),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
-                                         '2D',
-                                         dt.timedelta(days=4))
+                                         2, 4)
                                         ])
-    def test_iterate_over_bounds_set_by_date_season_step_width(self, values):
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_over_bounds_season_step_width(self, values, by_date):
         """Test iterate over season, step/width > 1, exclude stop bounds."""
 
-        out = self.support_iter_evaluations(values, for_loop=True)
+        out = self.support_iter_evaluations(values, for_loop=True,
+                                            by_date=by_date)
 
-        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
@@ -1987,27 +2017,24 @@ class TestBasics(object):
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 4),
                                           dt.datetime(2009, 1, 13)),
-                                         '2D',
-                                         dt.timedelta(days=2)),
+                                         2, 2),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
-                                         '3D',
-                                         dt.timedelta(days=1)),
+                                         3, 1),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
-                                         '2D',
-                                         dt.timedelta(days=4))
+                                         2, 4)
                                         ])
-    def test_iterate_bounds_set_by_date_season_step_width_incl(self, values):
+    @pytest.mark.parametrize("by_date", [True, False])
+    def test_iterate_bounds_season_step_width_incl(self, values, by_date):
         """Test iterate over season, step/width > 1, includes stop bounds."""
 
-        out = self.support_iter_evaluations(values, for_loop=True)
-
-        # Verify range of loaded data.
+        out = self.support_iter_evaluations(values, for_loop=True,
+                                            by_date=by_date)
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
@@ -2138,252 +2165,6 @@ class TestBasics(object):
             snip = item.split('.')[0]
             date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
         assert np.all(date_list == out)
-        return
-
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-03.nofile',
-                                         dt.datetime(2009, 1, 3), 2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4), 2, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-05.nofile',
-                                         dt.datetime(2009, 1, 5), 3, 1)])
-    def test_iterate_bounds_fname_with_frequency_and_width(self, values):
-        """File iteration in bounds with step/width > 1, exclude stop bounds."""
-
-        out = self.support_iter_evaluations(values, for_loop=True)
-        self.verify_exclusive_iteration(out, reverse=False)
-
-        return
-
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4), 2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4), 3, 1),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4), 1, 4),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-05.nofile',
-                                         dt.datetime(2009, 1, 5), 2, 3)])
-    def test_iterate_bounds_fname_with_frequency_and_width_incl(self, values):
-        """File iteration in bounds with step/width > 1, include stop bounds."""
-
-        out = self.support_iter_evaluations(values, for_loop=True)
-        self.verify_inclusive_iteration(out, reverse=False)
-
-        return
-
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-03.nofile',
-                                          '2009-01-13.nofile'),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 13)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 3),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 3, 1)])
-    def test_iterate_fname_season_with_frequency_and_width(self, values):
-        """File season iteration with step/width > 1, exclude stop bounds."""
-
-        out = self.support_iter_evaluations(values, for_loop=True)
-        self.verify_exclusive_iteration(out, reverse=False)
-
-        return
-
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 3, 1),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 1, 4),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 2, 3)])
-    def test_iterate_fname_season_with_frequency_and_width_incl(self, values):
-        """File iteration in bounds with step/width > 1, include stop bounds."""
-
-        out = self.support_iter_evaluations(values, for_loop=True)
-        self.verify_inclusive_iteration(out, reverse=False)
-
-        return
-
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11), 2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-12.nofile',
-                                         dt.datetime(2009, 1, 12), 2, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-13.nofile',
-                                         dt.datetime(2009, 1, 13), 3, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-03.nofile',
-                                         dt.datetime(2009, 1, 3), 4, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-12.nofile',
-                                         dt.datetime(2009, 1, 12), 2, 1)])
-    @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_fname_with_frequency_and_width(self, values, reverse):
-        """Test iteration via fname step/width > 1, exclude stop file."""
-
-        out = self.support_iter_evaluations(values, reverse=reverse)
-        self.verify_exclusive_iteration(out, reverse=reverse)
-
-        return
-
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 10), 2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-09.nofile',
-                                         dt.datetime(2009, 1, 9), 4, 1),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11), 1, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11), 1, 11),
-                                        ])
-    @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_fname_with_frequency_and_width_incl(self, values, reverse):
-        """Test iteration via fname step/width > 1, include stop file."""
-
-        out = self.support_iter_evaluations(values, reverse=reverse)
-        self.verify_inclusive_iteration(out, reverse=reverse)
-
-        return
-
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-03.nofile',
-                                          '2009-01-13.nofile'),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 13)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 3),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 3, 1)])
-    @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_fname_season_with_frequency_and_width(self, values, reverse):
-        """Test iterate file season with step/width > 1, exclude stop bounds."""
-
-        out = self.support_iter_evaluations(values, reverse=reverse)
-        self.verify_exclusive_iteration(out, reverse=reverse)
-
-        return
-
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 3, 1),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 1, 4),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 2, 3)])
-    @pytest.mark.parametrize("reverse", [True, False])
-    def test_iter_fname_season_with_frequency_and_width_incl(self, values,
-                                                             reverse):
-        """Test iterate file season with step/width > 1, include stop bounds."""
-
-        out = self.support_iter_evaluations(values, reverse=reverse)
-        self.verify_inclusive_iteration(out, reverse=reverse)
-
         return
 
     def test_creating_empty_instrument_object(self):
