@@ -1687,7 +1687,6 @@ class TestBasics(object):
         """Test iterate via date with mixed step/width, excludes stop date."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
@@ -1714,7 +1713,6 @@ class TestBasics(object):
         """Test iterate via date with mixed step/width, includes stop date."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # Verify range of loaded data.
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
@@ -1737,8 +1735,6 @@ class TestBasics(object):
         """Test iteration via date step/width >1, includes stop date."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-
-        # Verify range of loaded data.
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
@@ -1763,8 +1759,6 @@ class TestBasics(object):
         """Test iteration via date step/width > 1, exclude stop date."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-
-        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -1791,9 +1785,8 @@ class TestBasics(object):
     @pytest.mark.parametrize("reverse", [True, False])
     def test_iter_date_season_frequency_and_width_incl(self, values, reverse):
         """Test iteration via date season step/width > 1, include stop date."""
-        out = self.support_iter_evaluations(values, reverse=reverse)
 
-        # Verify range of loaded data.
+        out = self.support_iter_evaluations(values, reverse=reverse)
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
@@ -1822,8 +1815,6 @@ class TestBasics(object):
         """Test iteration via date season step/width>1, exclude stop date."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-
-        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -2163,7 +2154,6 @@ class TestBasics(object):
         """File iteration in bounds with step/width > 1, exclude stop bounds."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
@@ -2188,7 +2178,6 @@ class TestBasics(object):
         """File iteration in bounds with step/width > 1, include stop bounds."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
@@ -2221,7 +2210,6 @@ class TestBasics(object):
         """File season iteration with step/width > 1, exclude stop bounds."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
@@ -2262,7 +2250,6 @@ class TestBasics(object):
         """File iteration in bounds with step/width > 1, include stop bounds."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-        # verify range of loaded data
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
@@ -2292,7 +2279,6 @@ class TestBasics(object):
         """Test iteration via fname step/width > 1, exclude stop file."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -2319,7 +2305,6 @@ class TestBasics(object):
         """Test iteration via fname step/width > 1, include stop file."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
@@ -2353,7 +2338,6 @@ class TestBasics(object):
         """Test iterate file season with step/width > 1, exclude stop bounds."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
         self.verify_exclusive_iteration(out, reverse=reverse)
 
         return
@@ -2396,7 +2380,6 @@ class TestBasics(object):
         """Test iterate file season with step/width > 1, include stop bounds."""
 
         out = self.support_iter_evaluations(values, reverse=reverse)
-        # verify range of loaded data
         self.verify_inclusive_iteration(out, reverse=reverse)
 
         return
