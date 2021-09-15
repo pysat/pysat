@@ -1977,8 +1977,6 @@ class TestBasics(object):
         """Test iterate over season, step/width > 1, exclude stop bounds."""
 
         out = self.support_iter_evaluations(values, for_loop=True)
-
-        # Verify range of loaded data.
         self.verify_exclusive_iteration(out, reverse=False)
 
         return
@@ -2007,7 +2005,6 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, for_loop=True)
 
-        # Verify range of loaded data.
         self.verify_inclusive_iteration(out, reverse=False)
 
         return
