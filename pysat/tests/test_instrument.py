@@ -102,14 +102,6 @@ class TestBasics(object):
         # Ensure dates are lists for consistency of later code.
         starts = pysat.utils.listify(starts)
         stops = pysat.utils.listify(stops)
-        starts = np.asarray([starts])
-        stops = np.asarray([stops])
-        if len(starts.shape) > 1:
-            starts = starts.squeeze().tolist()
-            stops = stops.squeeze().tolist()
-        else:
-            starts = starts.tolist()
-            stops = stops.tolist()
 
         if by_date:
             # Convert step and width to string and timedelta.
