@@ -825,30 +825,30 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                    'results in a loss of metadata. Please',
                                    'make the names unique.')))
 
+    # Begin processing metadata for writing to the file. Look to see if the
+    # user supplied a list of export keys corresponding to internally
+    # tracked pysat metadata
+    export_meta = inst.generic_meta_translator(inst.meta)
+    if inst._meta_translation_table is None:
+        # Didn't find a translation table, using the strings
+        # attached to the supplied pysat.Instrument object
+        meta_trans = {'name': inst.meta.labels.name,
+                      'units': inst.meta.labels.units,
+                      'desc': inst.meta.labels.desc,
+                      'notes': inst.meta.labels.notes}
+    else:
+        # User supplied labels in translation table
+        meta_trans = {mkey: inst._meta_translation_table[mkey]
+                      for mkey in ['name', 'units', 'desc', 'notes']}
+        pysat.logger.info(' '.join(('Using Metadata Translation Table:',
+                                    str(inst._meta_translation_table))))
+
+    # Apply instrument specific post-processing to the export_meta
+    if hasattr(inst._export_meta_post_processing, '__call__'):
+        export_meta = inst._export_meta_post_processing(export_meta)
+
     # Handle output differently, depending on data format
     if inst.pandas_format:
-        # Begin processing metadata for writing to the file. Look to see if the
-        # user supplied a list of export keys corresponding to internally
-        # tracked pysat metadata
-        export_meta = inst.generic_meta_translator(inst.meta)
-        if inst._meta_translation_table is None:
-            # Didn't find a translation table, using the strings
-            # attached to the supplied pysat.Instrument object
-            meta_trans = {'name': inst.meta.labels.name,
-                          'units': inst.meta.labels.units,
-                          'desc': inst.meta.labels.desc,
-                          'notes': inst.meta.labels.notes}
-        else:
-            # User supplied labels in translation table
-            meta_trans = {mkey: inst._meta_translation_table[mkey]
-                          for mkey in ['name', 'units', 'desc', 'notes']}
-            pysat.logger.info(' '.join(('Using Metadata Translation Table:',
-                                        str(inst._meta_translation_table))))
-
-        # Apply instrument specific post-processing to the export_meta
-        if hasattr(inst._export_meta_post_processing, '__call__'):
-            export_meta = inst._export_meta_post_processing(export_meta)
-
         # General process for writing data:
         # 1) take care of the EPOCH information,
         # 2) iterate over the variable colums in Instrument.data and check
