@@ -100,6 +100,8 @@ class TestBasics(object):
         width = values[3]
 
         # Ensure dates are lists for consistency of later code.
+        starts = pysat.utils.listify(starts)
+        stops = pysat.utils.listify(stops)
         starts = np.asarray([starts])
         stops = np.asarray([stops])
         if len(starts.shape) > 1:
