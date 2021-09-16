@@ -8,6 +8,7 @@
 import numpy as np
 import os
 import tempfile
+import warnings
 
 import pytest
 
@@ -373,3 +374,43 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         # Clear the directory attributes
         del self.data_path, self.tempdir
         return
+
+
+class TestDeprecation(object):
+    """Unit test for deprecation warnings."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         num_samples=100, update_files=True)
+        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+
+        warnings.simplefilter("always", DeprecationWarning)
+        self.warn_msgs = ["".join(["`base_instrument` has been deprecated ",
+                                   "and will be removed in 3.2.0+"])]
+        self.warn_msgs = np.array(self.warn_msgs)
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.warn_msgs, self.testInst, self.stime
+        return
+
+    def test_base_instrument_deprecation(self):
+
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile,
+                                              base_instrument=self.testInst)
+            except IndexError:
+                pass
+
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
