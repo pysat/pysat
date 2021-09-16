@@ -1877,6 +1877,7 @@ class Instrument(object):
                     stop_idx = stop_idx - self._iter_width + 1
                     # Stop index is exclusive when called this way, pad by 1
                     itemp = self.files.files.values[start_idx:(stop_idx + 1)]
+                    # Downselect based on step size.
                     itemp = itemp[::self._iter_step]
                     self._iter_list.extend(itemp)
 
