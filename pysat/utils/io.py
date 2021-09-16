@@ -730,6 +730,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
 
     Note
     ----
+    Depending on which kwargs are specified, the input class, `inst`, will
+    be modified.
+
     Stores 1-D data along dimension 'epoch' - the date time index.
 
     Stores higher order data (e.g. dataframes within series) separately
