@@ -1614,10 +1614,10 @@ class TestBasics(object):
 
             check = out['expected_times'][i] + out['width']
             check -= dt.timedelta(days=1)
-            assert trange[1] > check, "End time outside of expected range"
+            assert trange[1] > check, "End time higher than expected"
 
             check = out['stops'][b_range] + dt.timedelta(days=1)
-            assert trange[1] < check, "End time outside of expected range"
+            assert trange[1] < check, "End time lower than expected"
 
             if reverse:
                 if i == 0:
