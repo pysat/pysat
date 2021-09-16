@@ -1651,24 +1651,29 @@ class TestBasics(object):
                 "Loaded start time is not correct"
             check = out['expected_times'][i] + out['width']
             check -= dt.timedelta(days=1)
-            assert trange[1] > check
+            assert trange[1] > check, "End time lower than expected"
 
             if not reverse:
-                assert trange[1] < out['stops'][b_range]
+                assert trange[1] < out['stops'][b_range], \
+                    "End time higher than expected"
             else:
                 check = out['stops'][b_range] + dt.timedelta(days=1)
-                assert trange[1] < check
+                assert trange[1] < check, "End time higher than expected"
                 if i == 0:
                     # check first load is before end of bounds
                     check = out['stops'][b_range] - out['width']
                     check += dt.timedelta(days=1)
-                    assert trange[0] < check
-                    assert trange[1] < out['stops'][b_range]
+                    assert trange[0] < check, "Start time higher than expected"
+                    assert trange[1] < out['stops'][b_range], \
+                        "End time higher than expected"
                 elif i == len(out['observed_times']) - 1:
                     # last load at start of bounds
-                    assert trange[0] == out['starts'][b_range]
-                    assert trange[1] > out['starts'][b_range]
-                    assert trange[1] < out['starts'][b_range] + out['width']
+                    assert trange[0] == out['starts'][b_range], \
+                        "Loaded start time is not correct"
+                    assert trange[1] > out['starts'][b_range], \
+                        "End time lower than expected"
+                    assert trange[1] < out['starts'][b_range] + out['width'], \
+                        "End time higher than expected"
 
         return
 
