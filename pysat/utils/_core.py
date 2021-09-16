@@ -36,8 +36,12 @@ def scale_units(out_unit, in_unit):
     ----
     Accepted units include degrees ('deg', 'degree', 'degrees'),
     radians ('rad', 'radian', 'radians'),
-    hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
-    Can convert between degrees, radians, and hours or different lengths.
+    hours ('h', 'hr', 'hrs', 'hour', 'hours'), lengths ('m', 'km', 'cm'),
+    volumes ('m-3', 'cm-3', '/cc', 'n/cc', 'km-3', 'm$^{-3}$', 'cm$^{-3}$',
+    'km$^{-3}$'), and speeds ('m/s', 'cm/s', 'km/s', 'm s$^{-1}$',
+    'cm s$^{-1}$', 'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1').
+    Can convert between degrees, radians, and hours or different lengths,
+    volumes, or speeds.
 
     Examples
     --------
@@ -61,12 +65,16 @@ def scale_units(out_unit, in_unit):
                       'm': ['m', 'km', 'cm'],
                       'm/s': ['m/s', 'cm/s', 'km/s', 'm s$^{-1}$',
                               'cm s$^{-1}$', 'km s$^{-1}$', 'm s-1', 'cm s-1',
-                              'km s-1']}
-    replace_str = {'/s': [' s$^{-1}$', ' s-1']}
+                              'km s-1'],
+                      'm-3': ['m-3', 'cm-3', 'n/cc', '/cc', 'km-3', 'm$^{-3}$',
+                              'cm$^{-3}$', 'km$^{-3}$']}
+    replace_str = {'/s': [' s$^{-1}$', ' s-1'],
+                   '-3': ['$^{-3}$'], 'cm-3': ['n/cc', '/cc']}
 
     scales = {'deg': 180.0, 'rad': np.pi, 'h': 12.0,
               'm': 1.0, 'km': 0.001, 'cm': 100.0,
-              'm/s': 1.0, 'cm/s': 100.0, 'km/s': 0.001}
+              'm/s': 1.0, 'cm/s': 100.0, 'km/s': 0.001,
+              'm-3': 1.0, 'cm-3': 1.0e6, 'km-3': 1.0e-9}
 
     # Test input and determine transformation type
     out_key = out_unit.lower()
@@ -93,7 +101,7 @@ def scale_units(out_unit, in_unit):
     if in_key not in accepted_units.keys():
         raise ValueError('Unknown input unit {:}'.format(in_unit))
 
-    if out_key == 'm' or out_key == 'm/s' or in_key == 'm' or in_key == 'm/s':
+    if out_key in ['m', 'm/s', 'm-3'] or in_key in ['m', 'm/s', 'm-3']:
         if in_key != out_key:
             raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
                                                                  in_unit))
