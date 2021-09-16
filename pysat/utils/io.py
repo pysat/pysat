@@ -767,7 +767,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         base_attrb = dir(pysat.Instrument())
     else:
         warnings.warn("".join(["`base_instrument` has been deprecated and will",
-                               "be removed in 3.2.0+"]),
+                               " be removed in 3.2.0+"]),
                       DeprecationWarning, stacklevel=2)
         base_attrb = dir(base_instrument)
 
