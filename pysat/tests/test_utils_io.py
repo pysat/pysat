@@ -36,11 +36,11 @@ def prep_dir(inst):
         return False
 
 
-class TestLoadNetCDF4(object):
-    """Unit tests for `utils.io.load_netcdf4` and `utils.io.inst_to_netcdf`."""
+class TestLoadNetCDF(object):
+    """Unit tests for `utils.io.load_netcdf` and `utils.io.inst_to_netcdf`."""
 
     def setup(self):
-        """Run to set up the test environment."""
+        """Set up the test environment."""
 
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
@@ -100,16 +100,7 @@ class TestLoadNetCDF4(object):
                 assert np.all(self.testInst[dkey] == self.loaded_inst[dkey])
         return keys, new_keys
 
-    def test_load_netcdf4_empty_filenames(self):
-        """Test raises ValueError without any filename input."""
-        with pytest.raises(ValueError) as verr:
-            pysat.utils.load_netcdf4(fnames=None,
-                                     pandas_format=self.testInst.pandas_format)
-
-        assert str(verr).find("Must supply a filename/list of filenames") >= 0
-        return
-
-    def test_basic_write_and_read_netcdf4_mixed_case_data_format(self):
+    def test_basic_write_and_read_netcdf_mixed_case_data_format(self):
         """Test basic netCDF4 read/write with mixed case data variables."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
@@ -126,9 +117,10 @@ class TestLoadNetCDF4(object):
             self.testInst.data = self.testInst.data.rename(map_keys)
 
         # Meta case is preserved and has not been altered
-        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+        pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile,
+                                      preserve_meta_case=True)
 
-        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+        self.loaded_inst, meta = pysat.utils.io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format)
 
         # Revert data names to meta case
@@ -151,7 +143,7 @@ class TestLoadNetCDF4(object):
 
         return
 
-    def test_basic_write_and_read_netcdf4_mixed_case_meta_format(self):
+    def test_basic_write_and_read_netcdf_mixed_case_meta_format(self):
         """Test basic netCDF4 read/write with mixed case metadata variables."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
@@ -168,9 +160,10 @@ class TestLoadNetCDF4(object):
                 {dkey: dkey.upper()
                  for dkey in self.testInst.data.data_vars.keys()})
 
-        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+        pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile,
+                                      preserve_meta_case=True)
 
-        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+        self.loaded_inst, meta = pysat.utils.io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format)
         keys, new_keys = self.eval_loaded_data()
 
@@ -187,7 +180,8 @@ class TestLoadNetCDF4(object):
         self.testInst.load(date=self.stime)
         self.testInst['MLT'] = 1
         with pytest.raises(ValueError) as verr:
-            self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+            pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile,
+                                          preserve_meta_case=True)
 
         assert str(verr).find("multiple variables") >= 0
         return
@@ -201,11 +195,11 @@ class TestLoadNetCDF4(object):
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
-        self.testInst.to_netcdf4(outfile, **wkwargs)
+        pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile, **wkwargs)
 
         # Load the data that was created
         lkwargs['pandas_format'] = self.testInst.pandas_format
-        self.loaded_inst, meta = pysat.utils.load_netcdf4(outfile, **lkwargs)
+        self.loaded_inst, meta = pysat.utils.io.load_netcdf(outfile, **lkwargs)
 
         # Test the loaded data
         self.eval_loaded_data()
@@ -242,9 +236,9 @@ class TestLoadNetCDF4(object):
 
         fname = 'output.nc'
         outfile = os.path.join(self.testInst.files.data_path, fname)
-        self.testInst.to_netcdf4(outfile)
+        pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile)
 
-        _, meta = pysat.utils.load_netcdf4(
+        _, meta = pysat.utils.io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format)
 
         # Custom attribute correctly read from file
@@ -252,11 +246,11 @@ class TestLoadNetCDF4(object):
         return
 
 
-class TestLoadNetCDF4XArray(TestLoadNetCDF4):
-    """Unit tests for `load_netcdf4` using xarray data."""
+class TestLoadNetCDFXArray(TestLoadNetCDF):
+    """Unit tests for `load_netcdf` using xarray data."""
 
     def setup(self):
-        """Run to set up the test environment."""
+        """Set up the test environment."""
 
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
@@ -306,14 +300,14 @@ class TestLoadNetCDF4XArray(TestLoadNetCDF4):
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
         # Modify the variable attributes directly before writing to file.
-        self.testInst.data['uts'].attrs = {'units': 'seconds'}
-        self.testInst.data['mlt'].attrs = {'units': 'minutes'}
-        self.testInst.data['slt'].attrs = {'units': 'hours'}
+        self.testInst.meta['uts'] = {'units': 'seconds'}
+        self.testInst.meta['mlt'] = {'units': 'minutes'}
+        self.testInst.meta['slt'] = {'units': 'hours'}
         # Write output test data.
-        self.testInst.data.to_netcdf(outfile)
+        pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile)
 
         # Load the written data
-        self.loaded_inst, meta = pysat.utils.load_netcdf4(
+        self.loaded_inst, meta = pysat.utils.io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format, **kwargs)
 
         # Check that labels pass through as correct type.
@@ -324,27 +318,27 @@ class TestLoadNetCDF4XArray(TestLoadNetCDF4):
                 "Variable {:} not loaded correctly".format(var)
         return
 
-    def test_load_netcdf4_pandas_3d_error(self):
-        """Test load_netcdf4 error with a pandas 3D file."""
+    def test_load_netcdf_pandas_3d_error(self):
+        """Test load_netcdf error with a pandas 3D file."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime)
-        self.testInst.data.to_netcdf(outfile)
+        pysat.utils.io.inst_to_netcdf(self.testInst, fname=outfile)
 
         with pytest.raises(ValueError) as verr:
-            pysat.utils.load_netcdf4(outfile, epoch_name='time',
-                                     pandas_format=True)
+            pysat.utils.io.load_netcdf(outfile, epoch_name='time',
+                                       pandas_format=True)
 
         assert str(verr).find("only supports 1D and 2D data in pandas") >= 0
         return
 
 
-class TestLoadNetCDF42DPandas(TestLoadNetCDF4):
-    """Unit tests for `load_netcdf4` using 2d pandas data."""
+class TestLoadNetCDF2DPandas(TestLoadNetCDF):
+    """Unit tests for `load_netcdf` using 2d pandas data."""
 
     def setup(self):
-        """Run to set up the test environment."""
+        """Set up the test environment."""
 
         # Store current pysat directory
         self.data_path = pysat.params['data_dirs']
