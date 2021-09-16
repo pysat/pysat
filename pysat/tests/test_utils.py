@@ -21,27 +21,6 @@ from pysat.tests.registration_test_class import TestWithRegistration
 from pysat.utils import generate_instrument_list
 
 
-def prep_dir(inst):                                                             
-    """Prepare the directory to provide netCDF export file support.             
-                                                                                
-    Parameters                                                                  
-    ----------                                                                  
-    inst : pysat.Instrument                                                     
-        Instrument class object                                                 
-                                                                                
-    Returns                                                                     
-    -------                                                                     
-    bool                                                                        
-        True if directories create, False if not                                
-                                                                                
-    """                                                                         
-    # Create data directories                                                   
-    try:                                                                        
-        os.makedirs(inst.files.data_path)                                       
-        return True                                                             
-    except OSError:                                                             
-        return False
-
 class TestCIonly(object):
     """Tests where we mess with local settings.
 
@@ -529,12 +508,12 @@ class TestGenerateInstList(object):
             assert ('user_info' not in inst.keys())
         return
 
+
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
-    
-    def setup(self):                                                            
-        """Set up the test environment."""                                      
-                                                                                
+
+    def setup(self):
+        """Set up the test environment."""
         self.warn_msgs = ["".join(["function moved to `pysat.utils.io`, ",
                                    "deprecated wrapper will be removed in ",
                                    "pysat 3.2.0+"]),
@@ -544,15 +523,15 @@ class TestDeprecation(object):
                           "".join(["`file_format` must be a string value in ",
                                    "3.2.0+, instead of None use 'NETCDF4' ",
                                    "for same behavior."])]
-        return                                                                  
-                                                                                
-    def teardown(self):                                                         
-        """Clean up the test environment."""                                    
-                                                                                
-        # Clear the attributes with data in them                                
-        del self.warn_msgs                         
-        return     
-   
+        return
+
+    def teardown(self):
+        """Clean up the test environment."""
+
+        # Clear the attributes with data in them
+        del self.warn_msgs
+        return
+
     def test_load_netcdf4(self):
         """Test deprecation warnings from load_netcdf4"""
         with warnings.catch_warnings(record=True) as war:
@@ -561,22 +540,21 @@ class TestDeprecation(object):
                 pysat.utils.load_netcdf4(fnames='anything', file_format=None)
             except FileNotFoundError:
                 pass
-    
+
             try:
                 # generate fnames positional change warning
                 pysat.utils.load_netcdf4()
             except ValueError:
                 pass
 
-        # Ensure the minimum number of warnings were raised                     
-        assert len(war) >= len(self.warn_msgs)                                  
-                                                                                
-        # Test the warning messages, ensuring each attribute is present         
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(       
-            war, self.warn_msgs)                                                
-                                                                                
-        for i, good in enumerate(found_msgs):                                   
-            assert good, "didn't find warning about: {:}".format(               
-                self.warn_msgs[i])                                              
-                                                                                
-        return                              
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, self.warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(
+                self.warn_msgs[i])
+            return
