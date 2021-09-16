@@ -2996,7 +2996,14 @@ class TestDeprecation(object):
                           "clean_level": 'clean'}
         self.warn_msgs = ["".join(["`pysat.Instrument.download` kwarg `freq` ",
                                    "has been deprecated and will be removed ",
-                                   "in pysat 3.2.0+"])]
+                                   "in pysat 3.2.0+"]),
+                          "".join(["`pysat.Instrument.",
+                                   "_filter_netcdf4_metadata` ",
+                                   "has been deprecated and will be removed ",
+                                   "in pysat 3.2.0+. Use `pysat.utils.io.",
+                                   "filter_netcdf4_metadata` instead."]),
+                          "".join(["`fname` as a kwarg has been deprecated, ",
+                                   "must supply a filename 3.2.0+"])]
         self.warn_msgs = np.array(self.warn_msgs)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         return
@@ -3007,13 +3014,21 @@ class TestDeprecation(object):
         del self.in_kwargs, self.warn_msgs, self.ref_time
         return
 
-    def test_download_freq_kwarg(self):
-        """Test deprecation of download kwarg `freq`."""
+    def test_deprecations(self):
+        """Test deprecation messages generated within `_instrument.py`"""
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as war:
             tinst = pysat.Instrument(**self.in_kwargs)
             tinst.download(start=self.ref_time, freq='D')
+            tinst.load(date=self.ref_time)
+            mdata_dict = tinst.meta._data.to_dict()
+            tinst._filter_netcdf4_metadata(mdata_dict,
+                                           coltype='str')
+            try:
+                tinst.to_netcdf4()
+            except ValueError:
+                pass
 
         # Ensure the minimum number of warnings were raised
         assert len(war) >= len(self.warn_msgs)
