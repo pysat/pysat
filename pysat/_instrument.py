@@ -3259,7 +3259,7 @@ class Instrument(object):
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
-                   unlimited_time=True):
+                   unlimited_time=True, modify=False):
         """Store loaded data into a netCDF4 file.
 
         .. deprecated:: 3.2.0
@@ -3303,6 +3303,11 @@ class Instrument(object):
         unlimited_time : bool
              Flag specifying whether or not the epoch/time dimension should be
              unlimited; it is when the flag is True. (default=True)
+        modify : bool
+             Flag specifying whether or not the changes made to the Instrument
+             object needed to prepare it for writing should also be made to
+             this object.  If False, the current Instrument object will remain
+             unchanged. (default=False)
 
         Raises
         ------
@@ -3320,13 +3325,19 @@ class Instrument(object):
                           DeprecationWarning, stacklevel=2)
             raise ValueError("Must supply an output filename")
 
-        utils.io.inst_to_netcdf(self, fname=fname,
+        # Prepare the instrument object used to create the output file
+        inst = self if modify else self.copy()
+
+        # Write the output file
+        utils.io.inst_to_netcdf(inst, fname=fname,
                                 base_instrument=base_instrument,
                                 epoch_name=epoch_name, zlib=zlib,
                                 complevel=complevel, shuffle=shuffle,
                                 preserve_meta_case=preserve_meta_case,
                                 export_nan=export_nan,
                                 unlimited_time=unlimited_time)
+
+        return
 
 
 # ----------------------------------------------------------------------------
