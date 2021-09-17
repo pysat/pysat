@@ -511,48 +511,35 @@ class TestGenerateInstList(object):
 
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
-
-    def setup(self):
-        """Set up the test environment."""
-        self.warn_msgs = ["".join(["function moved to `pysat.utils.io`, ",
-                                   "deprecated wrapper will be removed in ",
-                                   "pysat 3.2.0+"]),
-                          "".join(["`fnames` as a kwarg has been deprecated, ",
-                                   "must supply a string or list of strings",
-                                   " in 3.2.0+"]),
-                          "".join(["`file_format` must be a string value in ",
-                                   "3.2.0+, instead of None use 'NETCDF4' ",
-                                   "for same behavior."])]
-        return
-
-    def teardown(self):
-        """Clean up the test environment."""
-
-        # Clear the attributes with data in them
-        del self.warn_msgs
-        return
-
+    
     def test_load_netcdf4(self):
         """Test deprecation warnings from load_netcdf4."""
         with warnings.catch_warnings(record=True) as war:
-            try:
-                # generate relocation warning and file_format warning
-                pysat.utils.load_netcdf4(fnames='anything', file_format=None)
-            except FileNotFoundError:
-                pass
+            kwarg_list = [{'fnames':None, 'file_format':None},
+                          {'fnames':'no_file'}]
+            for in_kwargs in kwarg_list:
+                try:
+                    # generate relocation warning and file_format warning
+                    pysat.utils.load_netcdf4(**in_kwargs)
+                except (FileNotFoundError, ValueError):
+                    pass
 
-            try:
-                # generate fnames positional change warning
-                pysat.utils.load_netcdf4()
-            except ValueError:
-                pass
+        warn_msgs = ["".join(["function moved to `pysat.utils.io`, ",
+                              "deprecated wrapper will be removed in ",
+                              "pysat 3.2.0+"]),
+                     "".join(["`fnames` as a kwarg has been deprecated, ",
+                              "must supply a string or list of strings",
+                              " in 3.2.0+"]),
+                     "".join(["`file_format` must be a string value in ",
+                              "3.2.0+, instead of None use 'NETCDF4' ",
+                              "for same behavior."])]
 
         # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
+        assert len(war) >= len(warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
         found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
+            war, warn_msgs)
 
         for i, good in enumerate(found_msgs):
             assert good, "didn't find warning about: {:}".format(
