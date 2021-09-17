@@ -1631,75 +1631,52 @@ class TestBasics(object):
                       == pds.date_range(start, stop, freq='10D').tolist())
         return
 
-    def verify_inclusive_iteration(self, out, reverse=False):
-        """Verify loaded dates for inclusive iteration, forward or backward."""
+    def verify_iteration(self, out, reverse=False, inclusive=True):
+        """Verify loaded dates for iteration, forward or backward."""
 
-        # Verify range of loaded data when iterating forward.
-        for i, trange in enumerate(out['observed_times']):
-            # Determine which range we are in.
-            b_range = 0
-            while out['expected_times'][i] > out['stops'][b_range]:
-                b_range += 1
-            # Check loaded range is correct.
-            assert trange[0] == out['expected_times'][i], \
-                "Did not load the expected start time"
+        # Inclusive checks require shifting some expected dates by 1.
+        delta_inc = dt.timedelta(days=1) if inclusive else dt.timedelta(days=0)
 
-            check = out['expected_times'][i] + out['width']
-            check -= dt.timedelta(days=1)
-            assert trange[1] > check, "End time higher than expected"
-
-            check = out['stops'][b_range] + dt.timedelta(days=1)
-            assert trange[1] < check, "End time lower than expected"
-
-            if reverse:
-                if i == 0:
-                    # Check first load is before end of bounds.
-                    check = out['stops'][b_range] - out['width']
-                    check += dt.timedelta(days=1)
-                    assert trange[0] == check
-                    assert trange[1] > out['stops'][b_range]
-                    check = out['stops'][b_range] + dt.timedelta(days=1)
-                    assert trange[1] < check
-                elif i == len(out['observed_times']) - 1:
-                    # last load at start of bounds
-                    assert trange[0] == out['starts'][b_range]
-                    assert trange[1] > out['starts'][b_range]
-                    assert trange[1] < out['starts'][b_range] + out['width']
-
-        return
-
-    def verify_exclusive_iteration(self, out, reverse=False):
-        """Verify loaded dates for exclusive iteration, forward or backward."""
-
-        # Verify range of loaded data.
+        # Verify range of loaded data for each iteration step.
         for i, trange in enumerate(out['observed_times']):
             # Determine the current range.
             b_range = 0
             while out['expected_times'][i] > out['stops'][b_range]:
                 b_range += 1
 
-            # Check to see if the loaded range is correct.
+            # Check that loaded range is correct.
             assert trange[0] == out['expected_times'][i], \
                 "Loaded start time is not correct"
+
             check = out['expected_times'][i] + out['width']
             check -= dt.timedelta(days=1)
             assert trange[1] > check, "End time lower than expected"
 
-            if not reverse:
-                assert trange[1] < out['stops'][b_range], \
-                    "End time higher than expected"
-            else:
-                check = out['stops'][b_range] + dt.timedelta(days=1)
-                assert trange[1] < check, "End time higher than expected"
+            check = out['stops'][b_range] + delta_inc
+            assert trange[1] < check, "End time higher than expected"
+
+            if reverse:
+                end_of_range = out['stops'][b_range] + dt.timedelta(days=1)
+                assert trange[1] < end_of_range, "End time higher than expected"
                 if i == 0:
-                    # check first load is before end of bounds
+                    # Check that first load is before end of bounds.
                     check = out['stops'][b_range] - out['width']
                     check += dt.timedelta(days=1)
-                    assert trange[0] < check, "Start time higher than expected"
-                    assert trange[1] < out['stops'][b_range], \
-                        "End time higher than expected"
-                elif i == len(out['observed_times']) - 1:
-                    # last load at start of bounds
+
+                    if inclusive:
+                        assert trange[0] == check, \
+                            "Incorrect start time"
+                        assert trange[1] > out['stops'][b_range], \
+                            "Stop time lower than expected"
+                    else:
+                        assert trange[0] < check, \
+                            "Start time higher than expected"
+
+                    check = out['stops'][b_range] + delta_inc
+                    assert trange[1] < check, \
+                        "Stop time higher than expected"
+                elif i == (len(out['observed_times']) - 1):
+                    # Check that last load is at start of bounds.
                     assert trange[0] == out['starts'][b_range], \
                         "Loaded start time is not correct"
                     assert trange[1] > out['starts'][b_range], \
@@ -1728,7 +1705,7 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
-        self.verify_exclusive_iteration(out, reverse=False)
+        self.verify_iteration(out, reverse=False, inclusive=False)
 
         return
 
@@ -1757,7 +1734,7 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
-        self.verify_inclusive_iteration(out, reverse=False)
+        self.verify_iteration(out, reverse=False, inclusive=True)
 
         return
 
@@ -1782,7 +1759,7 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
-        self.verify_inclusive_iteration(out, reverse=reverse)
+        self.verify_iteration(out, reverse=reverse, inclusive=True)
 
         return
 
@@ -1804,11 +1781,11 @@ class TestBasics(object):
     @pytest.mark.parametrize("reverse", [True, False])
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_with_frequency_and_width(self, values, reverse, by_date):
-        """Test iteration via date step/width > 1, exclude stop date."""
+        """Test iteration with step and width excluding stop date."""
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
-        self.verify_exclusive_iteration(out, reverse=reverse)
+        self.verify_iteration(out, reverse=reverse, inclusive=False)
 
         return
 
@@ -1836,7 +1813,7 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
-        self.verify_inclusive_iteration(out, reverse=reverse)
+        self.verify_iteration(out, reverse=reverse, inclusive=True)
 
         return
 
@@ -1864,7 +1841,7 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
-        self.verify_exclusive_iteration(out, reverse=reverse)
+        self.verify_iteration(out, reverse=reverse, inclusive=False)
 
         return
 
@@ -2023,7 +2000,7 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
-        self.verify_exclusive_iteration(out, reverse=False)
+        self.verify_iteration(out, reverse=False, inclusive=False)
 
         return
 
@@ -2049,7 +2026,7 @@ class TestBasics(object):
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
-        self.verify_inclusive_iteration(out, reverse=False)
+        self.verify_iteration(out, reverse=False, inclusive=True)
 
         return
 
