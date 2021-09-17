@@ -511,12 +511,12 @@ class TestGenerateInstList(object):
 
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
-    
+
     def test_load_netcdf4(self):
         """Test deprecation warnings from load_netcdf4."""
         with warnings.catch_warnings(record=True) as war:
-            kwarg_list = [{'fnames':None, 'file_format':None},
-                          {'fnames':'no_file'}]
+            kwarg_list = [{'fnames': None, 'file_format': None},
+                          {'fnames': 'no_file'}]
             for in_kwargs in kwarg_list:
                 try:
                     # generate relocation warning and file_format warning

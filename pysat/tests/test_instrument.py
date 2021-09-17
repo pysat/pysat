@@ -2750,10 +2750,10 @@ class TestDeprecation(object):
             tinst._filter_netcdf4_metadata(mdata_dict,
                                            coltype='str')
 
-        self.warn_msgs = ["".join(["`pysat.Instrument.",                        
-                                   "_filter_netcdf4_metadata` ",                
-                                   "has been deprecated and will be removed ",  
-                                   "in pysat 3.2.0+. Use `pysat.utils.io.",     
+        self.warn_msgs = ["".join(["`pysat.Instrument.",
+                                   "_filter_netcdf4_metadata` ",
+                                   "has been deprecated and will be removed ",
+                                   "in pysat 3.2.0+. Use `pysat.utils.io.",
                                    "filter_netcdf4_metadata` instead."])]
         self.warn_msgs = np.array(self.warn_msgs)
 
@@ -2781,7 +2781,7 @@ class TestDeprecation(object):
             except ValueError:
                 pass
 
-        self.warn_msgs = ["".join(["`fname` as a kwarg has been deprecated, ",  
+        self.warn_msgs = ["".join(["`fname` as a kwarg has been deprecated, ",
                                    "must supply a filename 3.2.0+"])]
         self.warn_msgs = np.array(self.warn_msgs)
 
