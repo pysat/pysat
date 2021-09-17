@@ -735,9 +735,9 @@ FTP Access
 Another thing to note about testing is that the CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
 HTTPS access is preferred whenever possible.  However, if this is not the case,
-the :py:attr:`_test_download_travis` flag can be used.  This has a similar
-function, except that it skips the download tests if on CI, but will run those
-tests if run locally.
+the :py:attr:`_test_download_ci` flag can be used.  This behaves similarly,
+except that it only runs the download tests locally and will skip them if
+on a CI server.
 
 .. code:: python
 
@@ -748,7 +748,7 @@ tests if run locally.
    inst_ids = {'': ['Level_1', 'Level_2']}
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
-   _test_download_travis = {'': {'Level_1': False}}
+   _test_download_ci = {'': {'Level_1': False}}
 
 Note that here we use the streamlined flag definition and only call out the
 tag that is False.  The other is True by default.

@@ -1147,7 +1147,7 @@ class Instrument(object):
             directory_format, file_format, multi_file_day, orbit_info, and
             pandas_format
         test attributes
-            _download_test, _download_test_travis, and _password_req
+            _test_download, _test_download_ci, and _password_req
 
         """
         # Declare the standard Instrument methods and attributes
@@ -1158,7 +1158,7 @@ class Instrument(object):
         inst_attrs = {'directory_format': None, 'file_format': None,
                       'multi_file_day': False, 'orbit_info': None,
                       'pandas_format': True}
-        test_attrs = {'_test_download': True, '_test_download_travis': True,
+        test_attrs = {'_test_download': True, '_test_download_ci': True,
                       '_password_req': False}
 
         # Set method defaults
@@ -1305,6 +1305,24 @@ class Instrument(object):
                     missing.append(iattr)
             else:
                 missing.append(iattr)
+
+        # Check and see if this instrument has deprecated _test_download_travis
+        # TODO(#807): Remove this check once _test_download_travis is removed.
+        if hasattr(self.inst_module, '_test_download_travis'):
+            local_attr = getattr(self.inst_module, '_test_download_travis')
+
+            # Test to see that this attribute is set for the desired
+            # inst_id and tag
+            if self.inst_id in local_attr.keys():
+                if self.tag in local_attr[self.inst_id].keys():
+                    # Update the test attribute value
+                    setattr(self, '_test_download_ci',
+                            local_attr[self.inst_id][self.tag])
+                    warnings.warn(" ".join(["`_test_download_travis` has been",
+                                            "deprecated and will be replaced",
+                                            "by `_test_download_ci` in",
+                                            "3.2.0+"]),
+                                  DeprecationWarning, stacklevel=2)
 
         if len(missing) > 0:
             logger.debug(''.join(['These Instrument test attributes kept their',
