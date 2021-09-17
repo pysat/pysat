@@ -533,7 +533,7 @@ class TestDeprecation(object):
         return
 
     def test_load_netcdf4(self):
-        """Test deprecation warnings from load_netcdf4"""
+        """Test deprecation warnings from load_netcdf4."""
         with warnings.catch_warnings(record=True) as war:
             try:
                 # generate relocation warning and file_format warning

@@ -3015,7 +3015,7 @@ class TestDeprecation(object):
         return
 
     def test_deprecations(self):
-        """Test deprecation messages generated within `_instrument.py`"""
+        """Test deprecation messages generated within `_instrument.py`."""
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as war:

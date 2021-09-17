@@ -398,7 +398,7 @@ class TestDeprecation(object):
         return
 
     def test_base_instrument_deprecation(self):
-
+        """Unit test for base_instrument deprecation warning."""
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         with warnings.catch_warnings(record=True) as war:
