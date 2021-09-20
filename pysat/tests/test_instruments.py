@@ -17,11 +17,11 @@ import pysat
 # import mypackage
 
 # Need initialize_test_inst_and_date if custom tests are being added.
-from pysat.tests.instrument_test_class import initialize_test_inst_and_date
-# Import the test classes from pysat
-from pysat.tests.instrument_test_class import InstTestClass
-from pysat.utils import generate_instrument_list
+# Need extra functions if custom tests are being added.
+import pysat.tests.classes.cls_instrument_library as cls_inst_lib
 
+# Import the test classes from pysat.
+from pysat.tests.classes.cls_instrument_library import InstLibTests
 
 # Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords
@@ -33,22 +33,22 @@ user_info = {'pysat_testing': {'user': 'pysat_testing',
 # Developers for instrument libraries should update the following line to
 # point to their own subpackage location
 # e.g.,
-# InstTestClass.initialize_test_package(InstTestClass, inst_loc=mypackage.inst)
+# InstLibTests.initialize_test_package(InstLibTests, inst_loc=mypackage.inst)
 
 # If user and password info supplied, use the following instead
-# InstTestClass.initialize_test_package(InstTestClass, inst_loc=mypackage.inst,
+# InstLibTests.initialize_test_package(InstLibTests, inst_loc=mypackage.inst,
 #                                       user_info=user_info)
 
 # If custom tests need to be added to the class, the instrument lists may be
 # included as an optional output.
-# instruments = InstTestClass.initialize_test_package(InstTestClass,
-#                                                     inst_loc=mypackage.inst)
-instruments = InstTestClass.initialize_test_package(InstTestClass,
-                                                    inst_loc=pysat.instruments,
-                                                    user_info=user_info)
+# instruments = InstLibTests.initialize_test_package(InstLibTests,
+#                                                    inst_loc=mypackage.inst)
+instruments = InstLibTests.initialize_test_package(InstLibTests,
+                                                   inst_loc=pysat.instruments,
+                                                   user_info=user_info)
 
 
-class TestInstruments(InstTestClass):
+class TestInstruments(InstLibTests):
     """Main class for instrument tests.
 
     Note
@@ -67,7 +67,7 @@ class TestInstruments(InstTestClass):
     def test_inst_start_time(self, inst_dict, kwarg, output):
         """Test operation of start_time keyword, including default behavior."""
 
-        _, date = initialize_test_inst_and_date(inst_dict)
+        _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         if kwarg:
             self.test_inst = pysat.Instrument(
                 inst_module=inst_dict['inst_module'], start_time=kwarg)
@@ -87,7 +87,7 @@ class TestInstruments(InstTestClass):
         # Number of samples needs to be <96 because freq is not settable.
         # Different test instruments have different default number of points.
         num = 10
-        _, date = initialize_test_inst_and_date(inst_dict)
+        _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                           num_samples=num)
         self.test_inst.load(date=date)
@@ -101,7 +101,7 @@ class TestInstruments(InstTestClass):
 
         file_date_range = pds.date_range(dt.datetime(2021, 1, 1),
                                          dt.datetime(2021, 12, 31))
-        _, date = initialize_test_inst_and_date(inst_dict)
+        _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                           file_date_range=file_date_range)
         file_list = self.test_inst.files.files
