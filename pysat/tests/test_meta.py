@@ -11,6 +11,7 @@ import numpy as np
 import os
 import pandas as pds
 import pytest
+import tempfile
 import warnings
 
 import pysat
@@ -23,6 +24,23 @@ logger = pysat.logger
 
 class TestBasics(object):
     """Basic unit tests for metadata operations."""
+
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+
+        # Use a temporary directory so that the user's setup is not altered.
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params['data_dirs'] = self.tempdir.name
+        return
+
+    def teardown_class(self):
+        """Clean up downloaded files and parameters from tests."""
+
+        pysat.params['data_dirs'] = self.saved_path
+        self.tempdir.cleanup()
+        del self.saved_path, self.tempdir
+        return
 
     def setup(self):
         """Set up the unit test environment for each method."""
