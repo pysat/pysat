@@ -103,16 +103,16 @@ developers.  Continuing the above example, developers may copy over the
   import customLibrary
 
   # Import the test classes from pysat
-  from pysat.tests.instrument_test_class import InstTestClass
+  from pysat.tests.classes.cls_instrument_library import InstLibTests
 
-Before creating a test class that will inherit from ``InstTestClass``, the class
+Before creating a test class that will inherit from ``InstLibTests``, the class
 should be told which tests to run on which instruments.  This can be done by
 using the ``initialize_test_package`` method in the core class.
 
 .. code:: python
 
-  InstTestClass.initialize_test_package(InstTestClass,
-                                        inst_loc=customLibrary.instruments)
+  InstLibTests.initialize_test_package(InstLibTests,
+                                       inst_loc=customLibrary.instruments)
 
 If custom info such as a username is required, it should be specified as part of
 this command so it is attached to each instrument for the tests.
@@ -121,9 +121,9 @@ this command so it is attached to each instrument for the tests.
 
  user_info = {'pysat_testing': {'user': 'pysat_testing',
                                 'password': 'pysat.developers@gmail.com'}}
- InstTestClass.initialize_test_package(InstTestClass,
-                                       inst_loc=customLibrary.instruments,
-                                       user_info=user_info)
+ InstLibTests.initialize_test_package(InstLibTests,
+                                      inst_loc=customLibrary.instruments,
+                                      user_info=user_info)
 
 
 Now a class that pytest can run should be created, inheriting the tests and
@@ -132,7 +132,7 @@ will only run classes that begin with the word "Test".
 
 .. code:: Python
 
-  class TestInstruments(InstTestClass):
+  class TestInstruments(InstLibTests):
   """Main class for instrument tests.
 
   Note
@@ -179,8 +179,8 @@ routine, make sure to use the optional output for the custom instrument lists:
 
 .. code:: Python
 
-  instruments = InstTestClass.initialize_test_package(
-    InstTestClass, inst_loc=customLibrary.instruments)
+  instruments = InstLibTests.initialize_test_package(
+    InstLibTests, inst_loc=customLibrary.instruments)
 
 The instruments in the custom library will be grouped into three lists:
 
