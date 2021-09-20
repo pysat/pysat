@@ -14,7 +14,7 @@ import tempfile
 
 import pysat  # required for reimporting pysat
 from pysat._params import Parameters  # required for eval statements
-from pysat.tests.ci_test_class import CICleanSetup
+from pysat.tests.classes.cls_ci_tests import CICleanSetup
 
 
 class TestBasics(object):
