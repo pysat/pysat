@@ -15,6 +15,10 @@ import pysat.tests.classes.cls_instrument_library as cls_inst_lib
 def initialize_test_inst_and_date(inst_dict):
     """Initialize the instrument object to test and date.
 
+    .. deprecated:: 3.1.0
+        `initialize_test_inst_and_date` will be removed in pysat 3.2.0, it is
+        moved to `pysat.tests.classes.cls_instrument_library`.
+
     Parameters
     ----------
     inst_dict : dict
@@ -30,11 +34,19 @@ def initialize_test_inst_and_date(inst_dict):
 
     """
 
+    warnings.warn(" ".join(["`initialize_test_inst_and_date` has been moved to",
+                            "`pysat.tests.classes.cls_instrument_library`.",
+                            "The link here will be removed in 3.2.0+."]),
+                  DeprecationWarning, stacklevel=2)
     return cls_inst_lib.initialize_test_inst_and_date(inst_dict)
 
 
 class InstTestClass(cls_inst_lib.InstLibTests):
     """Provide standardized tests for pysat instrument libraries.
+
+    .. deprecated:: 3.1.0
+        `InstTestClass` will be removed in pysat 3.2.0, it is replaced by
+        `pysat.tests.classes.cls_instrument_library.InstLibTests`.
 
     Note
     ----
@@ -49,4 +61,11 @@ class InstTestClass(cls_inst_lib.InstLibTests):
 
     """
 
+    def __init_subclass__(self):
+        """Throw a warning if used as a subclass."""
 
+        warnings.warn(" ".join(
+            ["`InstTestClass` has been deprecated and will be removed in",
+             "3.2.0+.  Please update code to use the `InstLibTests` class",
+             "under `pysat.tests.classes.cls_instrument_library`."]),
+            DeprecationWarning, stacklevel=2)
