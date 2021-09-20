@@ -15,7 +15,7 @@ import warnings
 
 import pysat
 import pysat.instruments.pysat_testing
-import pysat.tests.test_utils
+import pysat.tests.test_utils_io
 from pysat.utils import testing
 
 logger = pysat.logger
@@ -1502,7 +1502,7 @@ class TestBasics(object):
                                                    'no_nan_export': np.nan,
                                                    'extra_check': 1.}
         # Write the file
-        pysat.tests.test_utils.prep_dir(self.testInst)
+        pysat.tests.test_utils_io.prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.to_netcdf4(outfile)
@@ -1510,8 +1510,6 @@ class TestBasics(object):
         # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
             test_vars = open_f['test_nan_variable'].ncattrs()
-
-        pysat.tests.test_utils.remove_files(self.testInst)
 
         assert 'test_nan_export' in test_vars
         assert 'non_nan_export' not in test_vars
@@ -1534,7 +1532,7 @@ class TestBasics(object):
                                                    'no_nan_export': np.nan,
                                                    'extra_check': 1.}
         # Write the file
-        pysat.tests.test_utils.prep_dir(self.testInst)
+        pysat.tests.test_utils_io.prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         export_nan = self.testInst.meta._export_nan + ['test_nan_export']
@@ -1543,8 +1541,6 @@ class TestBasics(object):
         # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
             test_vars = open_f['test_nan_variable'].ncattrs()
-
-        pysat.tests.test_utils.remove_files(self.testInst)
 
         assert 'test_nan_export' in test_vars
         assert 'non_nan_export' not in test_vars
