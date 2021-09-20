@@ -12,7 +12,7 @@ import pytest
 
 import pysat
 from pysat import constellations
-from pysat.tests.registration_test_class import TestWithRegistration
+from pysat.tests.classes.cls_registration_tests import TestWithRegistration
 
 
 class TestConstellationInitReg(TestWithRegistration):
