@@ -9,11 +9,13 @@ Can be imported directly for external instrument libraries of pysat instruments.
 
 import datetime as dt
 from importlib import import_module
+import tempfile
 import warnings
 
 import pytest
 
 import pysat
+from pysat.utils import generate_instrument_list
 
 
 def initialize_test_inst_and_date(inst_dict):
@@ -47,17 +49,104 @@ def initialize_test_inst_and_date(inst_dict):
 class InstTestClass(object):
     """Provide standardized tests for pysat instrument libraries.
 
-    Note: Not diretly run by pytest, but inherited through test_instruments.py
+    Note
+    ----
+    Uses class level setup and teardown so that all tests use the same
+    temporary directory. We do not want to geneate a new tempdir for each test,
+    as the load tests need to be the same as the download tests.
+
+    Not directly run by pytest, but inherited through test_instruments.py
+
+    Users will need to run `apply_marks_to_tests` before setting up the test
+    class.
+
     """
 
+    # Define standard attributes to check.
+    # Needs to be defined here for backwards compatibility.
     module_attrs = ['platform', 'name', 'tags', 'inst_ids',
                     'load', 'list_files', 'download']
     inst_attrs = ['tag', 'inst_id', 'acknowledgements', 'references',
                   'inst_module']
-    inst_callable = ['load', 'list_files', 'download', 'clean', 'default']
+    inst_callable = ['load', 'list_files', 'download', 'clean',
+                     'default']
     attr_types = {'platform': str, 'name': str, 'tags': dict,
                   'inst_ids': dict, 'tag': str, 'inst_id': str,
                   'acknowledgements': str, 'references': str}
+
+    def setup_class(self):
+        """Initialize the testing setup once before all tests are run."""
+
+        # Use a temporary directory so that the user's setup is not altered.
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params['data_dirs'] = self.tempdir.name
+        return
+
+    def teardown_class(self):
+        """Clean up downloaded files and parameters from tests."""
+
+        pysat.params['data_dirs'] = self.saved_path
+        self.tempdir.cleanup()
+        del self.saved_path, self.tempdir
+        return
+
+    def initialize_test_package(self, inst_loc, user_info=None):
+        """Generate custom instrument lists for each category of tests.
+
+        Parameters
+        ----------
+        inst_loc : python subpackage
+            The location of the instrument subpackage to test, e.g.,
+            'pysat.instruments'
+        user_info : dict or NoneType
+            Nested dictionary with user and password info for instrument module
+            name.  If None, no user or password is assumed. (default=None)
+            EX: user_info = {'jro_isr': {'user': 'myname', 'password': 'email'}}
+
+        Returns
+        -------
+        instruments : dict
+            A dictionary containing the lists of instruments from a given
+            package for each category of tests.  The categories are:
+            "names" : A list of all insrument modules by name.
+            "download" : Instrument objects with full download support.
+            "no_download" : Instrument objects without download support.
+
+        """
+
+        # Attach location of package to test object for later reference.
+        self.inst_loc = inst_loc
+
+        # Find all instruments for testing from user-specified location.
+        instruments = generate_instrument_list(inst_loc=inst_loc,
+                                               user_info=user_info)
+
+        # Find all methods in the standard test class.
+        method_list = [func for func in dir(self)
+                       if callable(getattr(self, func))]
+        # Search tests for iteration via pytestmark, update w/ instrument list.
+        for method in method_list:
+            if hasattr(getattr(self, method), 'pytestmark'):
+                # Get list of names of pytestmarks.
+                n_args = len(getattr(self, method).pytestmark)
+                mark_names = [getattr(self, method).pytestmark[j].name
+                              for j in range(0, n_args)]
+                # Add instruments from your library.
+                if 'all_inst' in mark_names:
+                    mark = pytest.mark.parametrize("inst_name",
+                                                   instruments['names'])
+                    getattr(self, method).pytestmark.append(mark)
+                elif 'download' in mark_names:
+                    mark = pytest.mark.parametrize("inst_dict",
+                                                   instruments['download'])
+                    getattr(self, method).pytestmark.append(mark)
+                elif 'no_download' in mark_names:
+                    mark = pytest.mark.parametrize("inst_dict",
+                                                   instruments['no_download'])
+                    getattr(self, method).pytestmark.append(mark)
+
+        return instruments
 
     def assert_hasattr(self, obj, attr_name):
         """Provide useful info if object is missing a required attribute."""

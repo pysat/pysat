@@ -15,8 +15,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Standardized Instrument instantiation to always define `inst_module`
    * Extended testing options for `pysat.utils.testing` functions
    * Added `start_time` keyword for test instruments
+   * Added `_test_download_ci` as a standard attribute for `pysat.Instrument`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
+   * Removed `_test_download_travis` as a standard attribute for
+     `pysat.Instrument`.  The function is replaced by `_test_download_ci`
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -49,6 +52,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Reorganized tests for the `pysat.Instrument` class into multiple files
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
    * Update minimum numpy in CI tests to 1.18 following NEP29
+   * Made `InstTestClass` more portable to streamline user implementation of the
+     standard end-to-end instrument tests.
 
 [3.0.1] - 2021-07-28
 --------------------

@@ -105,10 +105,10 @@ _test_dates = {'': {'': dt.datetime(2019, 1, 1),
 # If not set, defaults to True
 _test_download = {'': {'': False, 'tag_string': True}}
 
-# For instruments using FTP for download, set _test_download_travis to False
-# These tests will still download locally but be skipped on Travis CI
+# For instruments using FTP for download, set `_test_download_ci` to False.
+# These tests will still download locally but be skipped on CI.
 # If not set, defaults to True
-_test_download_travis = {'': {'': False, 'tag_string': False}}
+_test_download_ci = {'': {'': False, 'tag_string': False}}
 
 # For instruments requiring a user passwrod, set _password_req to True
 # These instruments will not be downloaded as part of tests to preserve password
