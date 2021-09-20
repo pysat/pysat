@@ -1873,19 +1873,13 @@ class Instrument(object):
                                          'order.', istart, 'occurs after',
                                          istop))
                         raise ValueError(estr)
-                    itemp = self.files.get_file_array([istart], [istop])
-                    # downselect based upon step size
+                    # Account for width of load. Don't extend past bound.
+                    stop_idx = stop_idx - self._iter_width + 1
+                    # Stop index is exclusive when called this way, pad by 1
+                    itemp = self.files.files.values[start_idx:(stop_idx + 1)]
+                    # Downselect based on step size.
                     itemp = itemp[::self._iter_step]
-                    # Make sure iterations don't go past last day
-                    # get index of last in iteration list
-                    iter_idx = self.files.get_index(itemp[-1])
-                    # don't let loaded data go past stop bound
-                    if iter_idx + self._iter_width - 1 > stop_idx:
-                        i = np.ceil((self._iter_width - 1) / self._iter_step)
-                        i = -np.int64(i)
-                        self._iter_list.extend(itemp[:i])
-                    else:
-                        self._iter_list.extend(itemp)
+                    self._iter_list.extend(itemp)
 
             elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
                                                                   dt.datetime):
@@ -1921,9 +1915,10 @@ class Instrument(object):
                                          stop.strftime('%d %B %Y')))
                         raise ValueError(estr)
 
-                # account for width of load. Don't extend past bound.
+                # Account for width of load. Don't extend past bound.
                 ustops = [stop - width + dt.timedelta(days=1)
                           for stop in stops]
+                # Date range is inclusive, no need to pad.
                 self._iter_list = utils.time.create_date_range(starts,
                                                                ustops,
                                                                freq=freq)

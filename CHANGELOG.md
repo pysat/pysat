@@ -41,6 +41,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      leading and trailing non-parsed text in filenames (e.g., file extensions)
    * Added `decode_timedelta=False` for loading xarray from netcdf4 (#823)
    * Closed links to open files when loading data through xarray (#887)
+   * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
