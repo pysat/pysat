@@ -3,6 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
+"""Classes for storing and managing meta data."""
 
 from copy import deepcopy
 import numpy as np
@@ -75,42 +76,45 @@ class Meta(object):
     --------
     ::
 
-        # instantiate Meta object, default values for attribute labels are used
+        # Instantiate Meta object, default values for attribute labels are used
         meta = pysat.Meta()
-        # set a couple base units
-        # note that other base parameters not set below will
-        # be assigned a default value
-        meta['name'] = {'long_name': string, 'units': string}
-        # update 'units' to new value
-        meta['name'] = {'units': string}
-        # update 'long_name' to new value
-        meta['name'] = {'long_name': string}
-        # attach new info with partial information, 'long_name' set to 'name2'
-        meta['name2'] = {'units': string}
-        # units are set to '' by default
-        meta['name3'] = {'long_name': string}
 
-        # assigning custom meta parameters
-        meta['name4'] = {'units': string, 'long_name': string
-                         'custom1': string, 'custom2': value}
-        meta['name5'] = {'custom1': string, 'custom3': value}
+        # Set several variable units. Note that other base parameters are not
+        # set below, and so will be assigned a default value
+        meta['var_name'] = {meta.labels.name: 'Variable Name',
+                            meta.labels.units: 'MegaUnits'}
 
-        # assign multiple variables at once
-        meta[['name1', 'name2']] = {'long_name': [string1, string2],
-                                    'units': [string1, string2],
-                                    'custom10': [string1, string2]}
+        # Update only 'units' to new value.  You can use the value of
+        # `meta.labels.units` instead of the class attribute, as was done in
+        # the above example.
+        meta['var_name'] = {'units': 'MU'}
 
-        # assiging metadata for n-Dimensional variables
+        # Custom meta data variables may be assigned using the same method.
+        # This example uses non-standard meta data variables 'scale', 'PI',
+        # and 'axis_multiplier'.  You can include or not include any of the
+        # standard meta data information.
+        meta['var_name'] = {'units': 'MU', 'long_name': 'Variable Name',
+                            'scale': 'linear', 'axis_multiplier': 1e4}
+        meta['var_name'] = {'PI': 'Dr. R. Song'}
+
+        # Meta data may be assigned to multiple variables at once
+        meta[['var_name1', 'var_name2']] = {'long_name': ['Name1', 'Name2'],
+                                            'units': ['Units1', 'Units2'],
+                                            'scale': ['linear', 'linear']}
+
+        # Sometimes n-Dimensional (nD) variables require multi-dimensional
+        # meta data structures.
         meta2 = pysat.Meta()
-        meta2['name41'] = {'long_name': string, 'units': string}
-        meta2['name42'] = {'long_name': string, 'units': string}
-        meta['name4'] = {'meta': meta2}
+        meta2['var_name41'] = {'long_name': 'name1of4', 'units': 'Units1'}
+        meta2['var_name42'] = {'long_name': 'name2of4', 'units': 'Units2'}
+        meta['var_name4'] = {'meta': meta2}
 
-        # or
-        meta['name4'] = meta2
-        meta['name4'].children['name41']
+        # An alternative method to acheive the same result is:
+        meta['var_name4'] = meta2
+        meta['var_name4'].children['name41']
+        meta['var_name4'].children['name42']
 
-        # mixture of 1D and higher dimensional data
+        # You may, of course, have a mixture of 1D and nD data
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
@@ -119,17 +123,21 @@ class Meta(object):
                                       'units': [None, 'boo'],
                                       'long_name': [None, 'boohoo']}
 
-        # assign from another Meta object
+        # Meta data may be assigned from another Meta object using dict-like
+        # assignments
+        key1 = 'var_name'
+        key2 = 'var_name4'
         meta[key1] = meta2[key2]
 
-        # access fill info for a variable, presuming default label
-        meta[key1, 'fill']
+        # When accessing one meta data value for any data variable, first use
+        # the data variable and then the meta data label.
+        meta['var_name', 'fill']
 
-        # access same info, even if 'fill' not used to label fill values
-        meta[key1, meta.fill_label]
+        # A more robust method is to use the available Meta variable attributes
+        # in the attached MetaLabels class object.
+        meta[key1, meta.labels.fill_val]
 
-
-        # change a label used by Meta object
+        # You may change a label used by Meta object to have a different value
         meta.labels.fill_val = '_FillValue'
 
         # Note that the fill label is intended for use when interacting
