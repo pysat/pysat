@@ -3,7 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Tests the pysat meta object and code."""
+"""Tests the pysat Meta object."""
 
 import logging
 import netCDF4
@@ -19,11 +19,9 @@ import pysat.instruments.pysat_testing
 import pysat.tests.test_utils_io
 from pysat.utils import testing
 
-logger = pysat.logger
 
-
-class TestBasics(object):
-    """Basic unit tests for metadata operations."""
+class TestMeta(object):
+    """Basic unit tests for standard metadata operations."""
 
     def setup_class(self):
         """Initialize the testing setup once before all tests are run."""
@@ -45,14 +43,12 @@ class TestBasics(object):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'testing')
-        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-        self.meta = self.testInst.meta
+        self.testInst = None
+        self.meta = pysat.Meta()
 
         self.meta_labels = {'units': ('Units', str),
                             'name': ('Long_Name', str)}
         self.dval = None
-        self.out = None
         self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']
         self.default_val = {'notes': '', 'units': '', 'desc': ''}
@@ -61,12 +57,30 @@ class TestBasics(object):
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
-        del self.testInst, self.meta, self.out, self.stime, self.meta_labels
-        del self.default_name, self.default_nan, self.default_val, self.dval
-        del self.frame_list
+        del self.meta, self.meta_labels, self.default_name, self.default_nan
+        del self.default_val, self.dval, self.frame_list, self.testInst
         return
 
-    def check_meta_settings(self):
+    def set_meta(self, inst_kwargs=None):
+        """Set the `meta` and `testInst` attributes using test Instruments.
+
+        Parameters
+        ----------
+        inst_kwargs : NoneType or dict
+            kwargs to initialize pysat.Instrument object
+
+        """
+        if inst_kwargs is not None:
+            # Load the test Instrument
+            self.testInst = pysat.Instrument(**inst_kwargs)
+            stime = self.testInst.inst_module._test_dates['']['']
+            self.testInst.load(date=stime)
+
+            # Save the meta object and data variable list
+            self.meta = self.testInst.meta
+        return
+
+    def eval_meta_settings(self):
         """Test the Meta settings for a specified value."""
         # Test the Meta data for the data value, self.dval
         for lkey in self.default_name:
@@ -82,95 +96,177 @@ class TestBasics(object):
         assert self.dval not in self.meta.keys_nD()
         return
 
-    def test_default_label_value_raises_error(self):
-        """Test `MetaLabels.default_values_from_attr` errors with bad attr."""
+    def eval_ho_meta_settings(self, meta_dict):
+        """Test the Meta settings for higher order data.
 
-        with pytest.raises(ValueError) as verr:
-            self.meta.labels.default_values_from_attr('not_an_attr')
+        Parameters
+        ----------
+        meta_dict : dict
+            Dict with meta data labels as keys and values to test against
 
-        assert verr.match("unknown label attribute")
+        """
+
+        # Test the ND metadata results
+        testing.assert_list_contains(self.frame_list,
+                                     list(self.meta.ho_data['help'].keys()))
+        testing.assert_list_contains(self.frame_list,
+                                     list(self.meta['help']['children'].keys()))
+
+        # Test the meta settings at the base and nD level
+        for label in meta_dict.keys():
+            if label == 'meta':
+                testing.assert_lists_equal(
+                    list(self.meta['help']['children'].attrs()),
+                    list(meta_dict[label].attrs()))
+                testing.assert_lists_equal(
+                    list(self.meta['help']['children'].keys()),
+                    list(meta_dict[label].keys()))
+
+                for lvar in self.meta['help']['children'].attrs():
+                    for dvar in self.meta['help']['children'].keys():
+                        assert (self.meta['help']['children'][dvar, lvar]
+                                == meta_dict[label][dvar, lvar]), \
+                            "'help' child {:s} {:s} value {:} != {:}".format(
+                                dvar, lvar,
+                                self.meta['help']['children'][dvar,
+                                                              lvar].__repr__(),
+                                meta_dict[label][dvar, lvar].__repr__())
+            else:
+                assert self.meta['help']['children'].hasattr_case_neutral(label)
+                assert self.meta['help', label] == meta_dict[label], \
+                    "{:s} label value {:} != {:}".format(
+                        label, self.meta['help', label].__repr__(),
+                        meta_dict[label].__repr__())
+    
         return
 
-    @pytest.mark.parametrize("input", [1., 1, {}, None, []])
-    def test_default_value_from_type_unexpected_input(self, input, caplog):
-        """Test `MetaLabels.default_values_from_type` with unexpected input."""
-
-        with caplog.at_level(logging.INFO, logger='pysat'):
-            self.meta.labels.default_values_from_type(input)
-
-            captured = caplog.text
-
-            # Test for expected string
-            test_str = 'No type match found for '
-            assert captured.find(test_str) >= 0
-
-        return
-
-    @pytest.mark.parametrize("input",
-                             [float, np.float16, np.float32, np.float64])
-    def test_default_value_from_type_float_inputs(self, input, caplog):
-        """Test `MetaLabels.default_values_from_type` with float inputs."""
-
-        out = self.meta.labels.default_values_from_type(input)
-        assert np.isnan(out)
-
-        return
-
-    @pytest.mark.parametrize("input",
-                             [int, np.int8, np.int16, np.int32, np.int64])
-    def test_default_value_from_type_int_inputs(self, input, caplog):
-        """Test `MetaLabels.default_values_from_type` with int inputs."""
-
-        out = self.meta.labels.default_values_from_type(input)
-        assert out == -1
-
-        return
-
-    @pytest.mark.parametrize("input", [1., 1, {}, None, []])
-    def test_info_message_incorrect_input_meta_labels(self, input, caplog):
-        """Test for info message when labels input not correct."""
-
-        with caplog.at_level(logging.INFO, logger='pysat'):
-
-            meta = pysat.Meta(labels={'min_val': ('min_val', input)})
-
-            # Assign any new meta variable
-            meta['hi'] = {'units': 'goodbye'}
-            captured = caplog.text
-
-            # Test for expected string
-            test_str = ' '.join(('A problem may have been encountered with the',
-                                 'user supplied type for Meta attribute'))
-            assert captured.find(test_str) >= 0
-
-        return
-
-    def test_meta_repr(self):
-        """Test the `Meta.__repr__` function."""
-
-        self.out = self.meta.__repr__()
-        assert isinstance(self.out, str)
-        assert self.out.find('Meta(') >= 0
-        return
+    # -----------------------
+    # Test the Error messages
 
     def test_setting_nonpandas_metadata(self):
         """Test meta initialization with bad metadata."""
 
-        with pytest.raises(ValueError):
-            self.meta = pysat.Meta(metadata='Not a Panda')
+        with pytest.raises(ValueError) as verr:
+            pysat.Meta(metadata='Not a Panda')
+
+        assert str(verr).find("Input must be a pandas DataFrame type") >= 0
         return
 
-    @pytest.mark.parametrize("labels,vals",
+    # -------------------------
+    # Test the Warning messages
+
+    def test_init_labels_w_int_default(self):
+        """Test MetaLabels initiation with an integer label type."""
+
+        # Reinitialize the Meta and test for warning
+        self.meta_labels['fill_val'] = ("fill", int)
+
+        with warnings.catch_warnings(record=True) as war:
+            self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing',
+                                       'tag': 'default_meta',
+                                       'clean_level': 'clean',
+                                       'labels': self.meta_labels})
+
+        # Test the warning
+        default_str = ''.join(['Metadata set to defaults, as they were',
+                               ' missing in the Instrument'])
+        assert len(war) >= 1
+        assert war[0].category == UserWarning
+        assert default_str in str(war[0].message)
+
+        # Prepare to test the Metadata
+        self.dval = 'int32_dummy'
+        self.default_val['fill'] = -1
+        self.default_val['notes'] = default_str
+        self.default_nan.pop(self.default_nan.index('fill'))
+
+        # Test the Meta settings
+        self.eval_meta_settings()
+        return
+
+    # -------------------------
+    # Test the logging messages
+
+    @pytest.mark.parametrize("in_val", [1., 1, {}, None, []])
+    def test_info_message_incorrect_input_meta_labels(self, in_val, caplog):
+        """Test for info message when labels input not correct."""
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.meta = pysat.Meta(labels={'min_val': ('min_val', in_val)})
+
+            # Assign any new meta variable
+            self.meta['hi'] = {'units': 'goodbye'}
+
+            # Test for expected string
+            captured = caplog.text
+            test_str = ''.join(('A problem may have been encountered with the',
+                                ' user supplied type for Meta attribute'))
+            assert captured.find(test_str) >= 0
+
+        return
+
+    # ----------------------------
+    # Test the class magic methods
+
+    def test_repr(self):
+        """Test the `Meta.__repr__` method."""
+
+        out = self.meta.__repr__()
+        assert isinstance(out, str)
+        assert out.find('Meta(') >= 0
+        return
+
+    @pytest.mark.parametrize('long_str', [True, False])
+    @pytest.mark.parametrize('inst_kwargs',
+                             [None, {'platform': 'pysat', 'name': 'testing'},
+                              {'platform': 'pysat', 'name': 'testing2d'}])
+    def test_str(self, long_str, inst_kwargs):
+        """Test long string output with custom meta data."""
+        # Set the meta object
+        self.set_meta(inst_kwargs=inst_kwargs)
+        
+        # Get the output string
+        out = self.meta.__str__(long_str=long_str)
+
+        # Evaluate the common parts of the output string
+        assert out.find('pysat Meta object') >= 0
+        assert out.find('standard variables') > 0
+        assert out.find('ND variables') > 0
+
+        # Evaluate the extra parts of the long output string
+        if long_str:
+            ndvar = 0
+            for dvar in self.testInst.variables:
+                if out.find(dvar) > 0:
+                    ndvar += 1
+            assert ndvar > 0, "Represented data variable names missing"
+
+            assert out.find('Standard Metadata variables:') > 0
+
+            if inst_kwargs is not None and inst_kwargs['name'] == 'testing2d': 
+                assert out.find('ND Metadata variables:') > 0
+            else:
+                assert out.find('ND Metadata variables:') < 0
+        else:
+            assert out.find('Standard Metadata variables:') < 0
+            assert out.find('ND Metadata variables:') < 0
+        return
+
+    # -----------------------------
+    # Test the class public methods
+
+    @pytest.mark.parametrize("labels, vals",
                              [([], []),
                               (['units', 'long_name'], ['V', 'Longgggg']),
                               (['fill'], [-999])])
     def test_inst_data_assign_meta(self, labels, vals):
         """Test Meta initialization with data."""
+
         # Initialize the instrument
-        self.testInst.load(date=self.stime)
-        self.dval = 'test_inst_data_assign_meta'
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Update the testing data and set the new data dictionary
+        self.dval = 'test_inst_data_assign_meta'
         set_dict = {'data': self.testInst['mlt']}
         for i, slabel in enumerate(labels):
             if slabel in self.default_name:
@@ -185,15 +281,18 @@ class TestBasics(object):
         self.meta = self.testInst.meta
 
         # Test the Meta settings
-        self.check_meta_settings()
+        self.eval_meta_settings()
         return
 
     @pytest.mark.parametrize("mlabel,slist", [("units", []),
                                               ("notes", ['A', 'B'])])
     def test_inst_data_assign_meta_string_list(self, mlabel, slist):
         """Test string assignment to meta with a list of strings."""
-        # Initialize the Meta Data
-        self.testInst.load(date=self.stime)
+
+        # Initialize the instrument
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Alter the Meta Data
         self.dval = 'test_inst_data_assign_meta_string_list'
         self.testInst[self.dval] = {'data': self.testInst['mlt'],
                                     mlabel: slist}
@@ -203,53 +302,27 @@ class TestBasics(object):
         self.default_val[mlabel] = '\n\n'.join(slist)
 
         # Test the Meta settings
-        self.check_meta_settings()
-        return
-
-    def test_init_labels_w_int_default(self):
-        """Test MetaLabels initiation with an integer label type."""
-        # Reinitialize the Meta and test for warning
-        self.meta_labels['fill_val'] = ("fill", int)
-
-        with warnings.catch_warnings(record=True) as war:
-            self.testInst = pysat.Instrument('pysat', 'testing',
-                                             tag='default_meta',
-                                             clean_level='clean',
-                                             labels=self.meta_labels)
-            self.testInst.load(date=self.stime)
-
-        # Test the warning
-        default_str = ''.join(['Metadata set to defaults, as they were',
-                               ' missing in the Instrument'])
-        assert len(war) >= 1
-        assert war[0].category == UserWarning
-        assert default_str in str(war[0].message)
-
-        # Prepare to test the Metadata
-        self.meta = self.testInst.meta
-        self.dval = 'int32_dummy'
-        self.default_val['fill'] = -1
-        self.default_val['notes'] = default_str
-        self.default_nan.pop(self.default_nan.index('fill'))
-
-        # Test the Meta settings
-        self.check_meta_settings()
+        self.eval_meta_settings()
         return
 
     def test_inst_data_assign_meta_empty_list(self):
         """Test meta assignment from empty list."""
 
-        self.testInst.load(2009, 1)
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
         self.testInst['help'] = {'data': self.testInst['mlt'],
                                  'units': [],
                                  'long_name': 'The Doors'}
         assert self.testInst.meta['help', 'units'] == ''
+        return
 
     def test_inst_data_assign_meta_then_data(self):
         """Test meta assignment when data updated after metadata."""
+
         # Initialize the Meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Alter the Meta data
         self.dval = 'test_inst_data_assign_meta_then_data'
-        self.testInst.load(date=self.stime)
         self.testInst[self.dval] = {'data': self.testInst['mlt'], 'units': 'V'}
         self.testInst[self.dval] = self.testInst['mlt']
         self.meta = self.testInst.meta
@@ -258,107 +331,81 @@ class TestBasics(object):
         self.default_val['units'] = 'V'
 
         # Test the Meta settings
-        self.check_meta_settings()
+        self.eval_meta_settings()
         return
 
-    def test_inst_ho_data_assign_no_meta_default(self):
-        """Test the assignment of the higher order metadata without defaults."""
+    @pytest.mark.parametrize('meta_dict', [
+        None, {'units': 'V', 'long_name': 'test name'},
+        {'units': 'V', 'long_name': 'test name',
+         'meta': pysat.Meta(metadata=pds.DataFrame(
+             {'units': {'dummy_frame1': 'A', 'dummy_frame2': ''},
+              'desc': {'dummy_frame1': '',
+                       'dummy_frame2': 'A filler description'},
+              'long_name': {'dummy_frame1': 'Dummy 1',
+                            'dummy_frame2': 'Dummy 2'}}))},
+        {'units': 'V', 'long_name': 'test name', 'bananas': 0,
+         'meta': pysat.Meta(metadata=pds.DataFrame(
+             {'units': {'dummy_frame1': 'A', 'dummy_frame2': ''},
+              'desc': {'dummy_frame1': '',
+                       'dummy_frame2': 'A filler description'},
+              'long_name': {'dummy_frame1': 'Dummy 1',
+                            'dummy_frame2': 'Dummy 2'},
+              'bananas': {'dummy_frame1': 1, 'dummy_frame2': 2}}))}])
+    def test_inst_ho_data_assignment(self, meta_dict):
+        """Test the assignment of the higher order metadata."""
 
-        self.testInst.load(date=self.stime)
+        # Initialize the Meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Alter the Meta data
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
-        self.testInst['help'] = [frame] * len(self.testInst.data.index)
+        inst_data = [frame for i in range(self.testInst.index.shape[0])]
 
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta.ho_data['help'])
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta['help']['children'])
-        for label in ['units', 'desc']:
-            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-                label)
-        return
+        if meta_dict is None:
+            self.testInst['help'] = inst_data
+            meta_dict = {'units': '', 'long_name': 'help', 'desc': ''}
+        else:
+            meta_dict.update({'data': inst_data})
+            self.testInst['help'] = meta_dict
 
-    def test_inst_ho_data_assign_meta_default(self):
-        """Test the assignment of the default higher order metadata."""
+            if 'data' in meta_dict.keys():
+                del meta_dict['data']
 
-        self.testInst.load(date=self.stime)
-        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
-                              columns=self.frame_list)
-        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
-                                 'units': 'V', 'long_name': 'The Doors'}
+        self.meta = self.testInst.meta
 
-        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta.ho_data['help'])
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta['help']['children'])
-        for label in ['units', 'desc']:
-            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-                label)
-        return
-
-    def test_inst_ho_data_assign_meta(self):
-        """Test the assignment of custom higher order metadata."""
-
-        self.testInst.load(date=self.stime)
-        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
-                              columns=self.frame_list)
-        meta = pysat.Meta()
-        meta['dummy_frame1'] = {'units': 'A'}
-        meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
-                                 'units': 'V', 'long_name': 'The Doors',
-                                 'meta': meta}
-
-        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta.ho_data['help'])
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta['help']['children'])
-
-        for label in ['units', 'desc']:
-            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-                label)
-
-        assert self.testInst.meta['help']['children']['dummy_frame1',
-                                                      'units'] == 'A'
-        assert self.testInst.meta['help']['children']['dummy_frame1',
-                                                      'desc'] == ''
-        assert self.testInst.meta['help']['children']['dummy_frame2',
-                                                      'desc'] == 'nothing'
+        # Test the ND metadata results
+        self.eval_ho_meta_settings(meta_dict)
         return
 
     def test_inst_ho_data_assign_meta_then_data(self):
         """Test assignment of higher order metadata before assigning data."""
 
-        self.testInst.load(date=self.stime)
+        # Initialize the Meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Alter the Meta data
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
-        meta = pysat.Meta()
-        meta['dummy_frame1'] = {'units': 'A'}
-        meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
-                                 'units': 'V', 'long_name': 'The Doors',
-                                 'meta': meta}
+        inst_data = [frame for i in range(self.testInst.index.shape[0])]
+        meta_dict =  {'data': inst_data, 'units': 'V', 'long_name': 'The Doors',
+                      'meta': pysat.Meta(metadata=pds.DataFrame(
+                          {'units': {dvar: "{:d}".format(i)
+                                     for i, dvar in enumerate(self.frame_list)},
+                           'desc': {dvar: "{:s} desc".format(dvar)
+                                    for dvar in self.frame_list},
+                           'long_name': {dvar: dvar
+                                         for dvar in self.frame_list}}))}
 
-        self.testInst['help'] = [frame] * self.testInst.index.shape[0]
+        # Assign the metadata
+        self.testInst['help'] = meta_dict
 
-        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta.ho_data['help'])
-        testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta['help']['children'])
+        # Alter the data
+        self.testInst['help'] = inst_data
 
-        for label in ['units', 'desc']:
-            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-                label)
-
-        assert self.testInst.meta['help']['children']['dummy_frame1',
-                                                      'units'] == 'A'
-        assert self.testInst.meta['help']['children']['dummy_frame1',
-                                                      'desc'] == ''
-        assert self.testInst.meta['help']['children']['dummy_frame2',
-                                                      'desc'] == 'nothing'
+        # Test the ND metadata results
+        self.meta = self.testInst.meta
+        self.eval_ho_meta_settings(meta_dict)
         return
 
     def test_inst_ho_data_assign_meta_different_labels(self):
@@ -416,7 +463,7 @@ class TestBasics(object):
         self.default_name = []
 
         # Test the Meta settings
-        self.check_meta_settings()
+        self.eval_meta_settings()
         return
 
     def test_inst_assign_from_meta_w_ho(self):
@@ -492,44 +539,6 @@ class TestBasics(object):
         assert self.testInst.meta['help2']['children']['dummy_frame1',
                                                        'label'] == 'John Wick'
         assert 'children' not in self.testInst.meta.data.columns
-        return
-
-    def test_str_call_runs_long_standard(self):
-        """Test long string output with custom meta data."""
-
-        self.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
-        output = self.meta.__str__()
-        assert output.find('pysat Meta object') >= 0
-        assert output.find('hi') > 0
-        assert output.find('Standard Metadata variables') > 0
-        assert output.find('ND Metadata variables') < 0
-        return
-
-    def test_str_call_runs_short(self):
-        """Test short string output with custom meta data."""
-
-        self.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
-        output = self.testInst.meta.__str__(long_str=False)
-        assert output.find('pysat Meta object') >= 0
-        assert output.find('hi') < 0
-        assert output.find('Metadata variables') < 0
-        return
-
-    def test_str_call_runs_with_higher_order_data(self):
-        """Test string output with higher order data."""
-
-        ho_meta = pysat.Meta()
-        ho_meta['param1'] = {'units': 'blank', 'long_name': 'parameter1',
-                             'custom1': 14, 'custom2': np.nan,
-                             'custom3': 14.5, 'custom4': 'hello'}
-        ho_meta['param0'] = {'units': 'basic', 'long_name': 'parameter0',
-                             self.meta.labels.fill_val: '10', 'CUSTOM4': 143}
-        self.meta['kiwi'] = ho_meta
-        output = self.meta.__str__()
-        assert output.find('pysat Meta object') >= 0
-        assert output.find('kiwi') >= 0
-        assert output.find('ND Metadata variables') >= 0
-        assert output.find('Standard Metadata variables') < 0
         return
 
     def test_basic_pops(self):
@@ -1567,7 +1576,7 @@ class TestBasics(object):
         return
 
 
-class TestBasicsImmutable(TestBasics):
+class TestMetaImmutable(TestMeta):
     """Unit tests for immutable metadata."""
 
     def setup(self):
@@ -1584,7 +1593,6 @@ class TestBasicsImmutable(TestBasics):
 
         # Assign remaining values
         self.dval = None
-        self.out = None
         self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']
         self.default_val = {'notes': '', 'units': '', 'desc': ''}
@@ -1594,7 +1602,7 @@ class TestBasicsImmutable(TestBasics):
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.meta, self.out, self.stime, self.meta_labels
+        del self.testInst, self.meta, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
         del self.frame_list
         return
