@@ -1071,7 +1071,7 @@ class Meta(object):
             Returns
             -------
             mapped_val : str or NoneType
-                Adjusted MetaData variablle name or NoneType if input value
+                Adjusted MetaData variable name or NoneType if input value
                 should stay the same
 
             """

@@ -109,7 +109,7 @@ def scale_units(out_unit, in_unit):
         # the format is consistent
         rkey = ''
         for rr in replace_str.keys():
-            if out_key.find(rr):
+            if out_key.find(rr) >= 0:
                 rkey = rr
 
         out_key = out_unit.lower()
