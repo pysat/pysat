@@ -185,9 +185,9 @@ class Meta(object):
                 # Make sure defaults are taken care of for required metadata
                 self.accept_default_labels(self)
             else:
-                raise ValueError(''.join(('Input must be a pandas DataFrame',
-                                          'type. See other constructors for',
-                                          ' alternate inputs.')))
+                raise ValueError(''.join(('Input must be a pandas DataFrame ',
+                                          'type. See other constructors for ',
+                                          'alternate inputs.')))
         else:
             columns = [getattr(self.labels, mlab)
                        for mlab in self.labels.label_type.keys()]
@@ -1524,7 +1524,7 @@ class MetaLabels(object):
                                         use_names_default=True)
 
     def __repr__(self):
-        """Print MetaData instantiation parameters.
+        """Print MetaLabels instantiation parameters.
 
         Returns
         -------
@@ -1539,7 +1539,7 @@ class MetaLabels(object):
         return out_str
 
     def __str__(self):
-        """Print Meta instance, variables, and attributes.
+        """Print MetaLabels instance, variables, and attributes.
 
         Returns
         -------
