@@ -108,16 +108,16 @@ class InstPropertyTests(object):
 
         if file_bounds:
             if non_default:
-                # set bounds to second and second to last file
+                # Set bounds to second and second to last file
                 self.testInst.bounds = (self.testInst.files[1],
                                         self.testInst.files[-2])
             else:
-                # set bounds to first and last file
+                # Set bounds to first and last file
                 self.testInst.bounds = (self.testInst.files[0],
                                         self.testInst.files[-1])
         else:
             if non_default:
-                # set bounds to first and first date
+                # Set bounds to first and first date
                 self.testInst.bounds = (self.testInst.files.start_date,
                                         self.testInst.files.start_date)
 

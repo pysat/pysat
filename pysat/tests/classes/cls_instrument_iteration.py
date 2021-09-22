@@ -27,100 +27,22 @@ class InstIterationTests(object):
     """
 
     def generate_fname(self, date):
-        """Generate a filename for support of testing iterations."""
-
-        fname = '{year:04d}-{month:02d}-{day:02d}.nofile'
-        return fname.format(year=date.year, month=date.month, day=date.day)
-
-    def support_iter_evaluations(self, values, for_loop=False, reverse=False,
-                                 by_date=True):
-        """Support testing of .next/.prev via dates/files.
+        """Generate a filename for support of testing iterations.
 
         Parameters
         ----------
-        values : list of four inputs
-            [starts, stops, step, width]
-        for_loop : bool
-            If True, iterate via for loop.  If False, iterate via while.
-            (default=False)
-        reverse : bool
-            Direction of iteration.  If True, use `.prev()`. If False, use
-            `.next()`.  (default=False)
-        by_date : bool
-            If True, set bounds by date.  If False, set bounds by filename.
-            (default=False)
+        date : dt.datetime
+            A date to be converted to a filename.
+
+        Returns
+        -------
+        filename : str
+            Filename formatted to look like test instrument files.
+
         """
 
-        # Extract specific values from input.
-        starts = values[0]
-        stops = values[1]
-        step = values[2]
-        width = values[3]
-
-        # Ensure dates are lists for consistency of later code.
-        starts = pysat.utils.listify(starts)
-        stops = pysat.utils.listify(stops)
-
-        if by_date:
-            # Convert step and width to string and timedelta.
-            step = '{:}D'.format(step)
-            width = dt.timedelta(days=width)
-            self.testInst.bounds = (starts, stops, step, width)
-        else:
-            # Convert start and stop to filenames.
-            start_files = [self.generate_fname(date) for date in starts]
-            stop_files = [self.generate_fname(date) for date in stops]
-            self.testInst.bounds = (start_files, stop_files, step, width)
-
-        # iterate until we run out of bounds
-        dates = []
-        time_range = []
-        if for_loop:
-            # iterate via for loop option
-            for inst in self.testInst:
-                dates.append(inst.date)
-                time_range.append((inst.index[0],
-                                   inst.index[-1]))
-        else:
-            # .next/.prev iterations
-            if reverse:
-                iterator = self.testInst.prev
-            else:
-                iterator = self.testInst.next
-            try:
-                while True:
-                    iterator()
-                    dates.append(self.testInst.date)
-                    time_range.append((self.testInst.index[0],
-                                       self.testInst.index[-1]))
-            except StopIteration:
-                # reached the end
-                pass
-
-        # Deal with file or date iteration, make file inputs same as date for
-        # verification purposes.
-        if isinstance(step, int):
-            step = str(step) + 'D'
-        if isinstance(width, int):
-            width = dt.timedelta(days=width)
-
-        out = []
-        for start, stop in zip(starts, stops):
-            tdate = stop - width + dt.timedelta(days=1)
-            out.extend(pds.date_range(start, tdate, freq=step).tolist())
-        if reverse:
-            # Ensure time order is consistent for verify methods.
-            out = out[::-1]
-        pysat.utils.testing.assert_lists_equal(dates, out)
-
-        output = {}
-        output['expected_times'] = out
-        output['observed_times'] = time_range
-        output['starts'] = starts
-        output['stops'] = stops
-        output['width'] = width
-        output['step'] = step
-        return output
+        fname = '{year:04d}-{month:02d}-{day:02d}.nofile'
+        return fname.format(year=date.year, month=date.month, day=date.day)
 
     def eval_iter_list(self, start, stop, dates=False, freq=None):
         """Evaluate successful generation of iter_list for `self.testInst`.
@@ -157,51 +79,111 @@ class InstIterationTests(object):
                                                    out)
         return
 
-    @pytest.mark.parametrize("first,second", [('next', 'prev'),
-                                              ('prev', 'next')])
-    def test_passing_bounds_with_iteration(self, first, second):
-        """Test if passing bounds raises StopIteration."""
+    def support_iter_evaluations(self, values, for_loop=False, reverse=False,
+                                 by_date=True):
+        """Support testing of `.next()`/`.prev()` via dates/files.
 
-        # load first data
-        getattr(self.testInst, first)()
-        with pytest.raises(StopIteration) as err:
-            # Iterate to a day outside the bounds.
-            getattr(self.testInst, second)()
-        assert str(err).find("Outside the set date boundaries") >= 0
-        return
+        Parameters
+        ----------
+        values : list of four inputs
+            [starts, stops, step, width]
+        for_loop : bool
+            If True, iterate via for loop.  If False, iterate via while.
+            (default=False)
+        reverse : bool
+            Direction of iteration.  If True, use `.prev()`. If False, use
+            `.next()`.  (default=False)
+        by_date : bool
+            If True, set bounds by date.  If False, set bounds by filename.
+            (default=False)
 
-    def test_set_bounds_with_frequency(self):
-        """Test setting bounds with non-default step."""
+        """
 
-        start = self.ref_time
-        stop = self.ref_time + dt.timedelta(days=14)
-        self.testInst.bounds = (start, stop, 'M')
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop, freq='M').tolist())
-        return
+        # Extract specific values from input.
+        starts = values[0]
+        stops = values[1]
+        step = values[2]
+        width = values[3]
 
-    def test_iterate_bounds_with_frequency(self):
-        """Test iterating bounds with non-default step."""
+        # Ensure dates are lists for consistency of later code.
+        starts = pysat.utils.listify(starts)
+        stops = pysat.utils.listify(stops)
 
-        start = self.ref_time
-        stop = self.ref_time + dt.timedelta(days=15)
-        self.testInst.bounds = (start, stop, '2D')
-        self.eval_iter_list(start, stop, dates=True, freq=2)
-        return
+        if by_date:
+            # Convert step and width to string and timedelta.
+            step = '{:}D'.format(step)
+            width = dt.timedelta(days=width)
+            self.testInst.bounds = (starts, stops, step, width)
+        else:
+            # Convert start and stop to filenames.
+            start_files = [self.generate_fname(date) for date in starts]
+            stop_files = [self.generate_fname(date) for date in stops]
+            self.testInst.bounds = (start_files, stop_files, step, width)
 
-    def test_set_bounds_with_frequency_and_width(self):
-        """Set date bounds with step/width > 1."""
+        # Iterate until we run out of bounds
+        dates = []
+        time_range = []
+        if for_loop:
+            # Iterate via for loop option
+            for inst in self.testInst:
+                dates.append(inst.date)
+                time_range.append((inst.index[0],
+                                   inst.index[-1]))
+        else:
+            # .next/.prev iterations
+            if reverse:
+                iterator = self.testInst.prev
+            else:
+                iterator = self.testInst.next
+            try:
+                while True:
+                    iterator()
+                    dates.append(self.testInst.date)
+                    time_range.append((self.testInst.index[0],
+                                       self.testInst.index[-1]))
+            except StopIteration:
+                # Reached the end
+                pass
 
-        start = self.ref_time
-        stop = self.ref_time + pds.DateOffset(months=11, days=25)
-        stop = stop.to_pydatetime()
-        self.testInst.bounds = (start, stop, '10D', dt.timedelta(days=10))
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop, freq='10D').tolist())
-        return
+        # Deal with file or date iteration, make file inputs same as date for
+        # verification purposes.
+        if isinstance(step, int):
+            step = str(step) + 'D'
+        if isinstance(width, int):
+            width = dt.timedelta(days=width)
+
+        out = []
+        for start, stop in zip(starts, stops):
+            tdate = stop - width + dt.timedelta(days=1)
+            out.extend(pds.date_range(start, tdate, freq=step).tolist())
+        if reverse:
+            # Ensure time order is consistent for verify methods.
+            out = out[::-1]
+        pysat.utils.testing.assert_lists_equal(dates, out)
+
+        output = {}
+        output['expected_times'] = out
+        output['observed_times'] = time_range
+        output['starts'] = starts
+        output['stops'] = stops
+        output['width'] = width
+        output['step'] = step
+        return output
 
     def verify_iteration(self, out, reverse=False, inclusive=True):
-        """Verify loaded dates for iteration, forward or backward."""
+        """Verify loaded dates for iteration, forward or backward.
+
+        Parameters
+        ----------
+        reverse : bool
+            If True, use move backwards through the list. If False, move
+            forwards. (default=False)
+        inclusive : bool
+            If True, check that end of bounds is included in iterated dates.
+            If False, check that end of bounds is excluded from iterated dates.
+            (default=True)
+
+        """
 
         # Inclusive checks require shifting some expected dates by 1.
         delta_inc = dt.timedelta(days=1) if inclusive else dt.timedelta(days=0)
@@ -253,6 +235,49 @@ class InstIterationTests(object):
                     assert trange[1] < out['starts'][b_range] + out['width'], \
                         "End time higher than expected"
 
+        return
+
+    @pytest.mark.parametrize("first,second", [('next', 'prev'),
+                                              ('prev', 'next')])
+    def test_passing_bounds_with_iteration(self, first, second):
+        """Test if passing bounds raises StopIteration."""
+
+        # Load first data
+        getattr(self.testInst, first)()
+        with pytest.raises(StopIteration) as err:
+            # Iterate to a day outside the bounds.
+            getattr(self.testInst, second)()
+        assert str(err).find("Outside the set date boundaries") >= 0
+        return
+
+    def test_set_bounds_with_frequency(self):
+        """Test setting bounds with non-default step."""
+
+        start = self.ref_time
+        stop = self.ref_time + dt.timedelta(days=14)
+        self.testInst.bounds = (start, stop, 'M')
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop, freq='M').tolist())
+        return
+
+    def test_iterate_bounds_with_frequency(self):
+        """Test iterating bounds with non-default step."""
+
+        start = self.ref_time
+        stop = self.ref_time + dt.timedelta(days=15)
+        self.testInst.bounds = (start, stop, '2D')
+        self.eval_iter_list(start, stop, dates=True, freq=2)
+        return
+
+    def test_set_bounds_with_frequency_and_width(self):
+        """Set date bounds with step/width > 1."""
+
+        start = self.ref_time
+        stop = self.ref_time + pds.DateOffset(months=11, days=25)
+        stop = stop.to_pydatetime()
+        self.testInst.bounds = (start, stop, '10D', dt.timedelta(days=10))
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop, freq='10D').tolist())
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
@@ -719,7 +744,7 @@ class InstIterationTests(object):
         self.testInst.bounds = (start, stop, 2, 2)
         out = pds.date_range(start_date, stop_date - dt.timedelta(days=1),
                              freq='2D').tolist()
-        # convert filenames in list to a date
+        # Convert filenames in list to a date
         date_list = []
         for item in self.testInst._iter_list:
             snip = item.split('.')[0]
@@ -732,20 +757,20 @@ class InstIterationTests(object):
 
         self.testInst.bounds = (self.testInst.files.files.index[0],
                                 self.testInst.files.files.index[9])
-        # ensure no data to begin
+        # Ensure no data to begin
         assert self.testInst.empty
-        # perform comprehension and ensure there are as many as there should be
+        # Perform comprehension and ensure there are as many as there should be
         insts = [inst for inst in self.testInst]
         assert len(insts) == 10
-        # get list of dates
+        # Get list of dates
         dates = pds.Series([inst.date for inst in insts])
         assert dates.is_monotonic_increasing
-        # dates are unique
+        # Dates are unique
         assert np.all(np.unique(dates) == dates.values)
-        # iteration instruments are not the same as original
+        # Iteration instruments are not the same as original
         for inst in insts:
             assert not (inst is self.testInst)
-        # check there is data after iteration
+        # Check there is data after iteration
         assert not self.testInst.empty
 
         return
