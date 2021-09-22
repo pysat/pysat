@@ -27,7 +27,7 @@ class InstAccessTests(object):
     See Also
     ---------
     `pysat.tests.test_instrument.py`
-    
+
     """
 
     def eval_successful_load(self, end_date=None):
