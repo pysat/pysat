@@ -237,6 +237,19 @@ class InstIterationTests(object):
 
         return
 
+    @pytest.mark.parametrize("operator", [('next'), ('prev')])
+    def test_file_load_empty_iteration(self, operator):
+        """Ensure empty iteration list is fine via day iteration."""
+
+        self.testInst.bounds = (None, None, '10000D',
+                                dt.timedelta(days=10000))
+        with pytest.raises(StopIteration) as err:
+            getattr(self.testInst, operator)()
+        estr = 'File list is empty. '
+        assert str(err).find(estr) >= 0
+
+        return
+
     @pytest.mark.parametrize("first,second", [('next', 'prev'),
                                               ('prev', 'next')])
     def test_passing_bounds_with_iteration(self, first, second):
