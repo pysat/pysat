@@ -1,4 +1,13 @@
-"""Tests for data access in the pysat Instrument object and methods.
+"""Tests for data access and related functions in the pysat Instrument object.
+
+Includes:
+* data loading
+* equality method comparisons
+* index tests
+* setter and getter functions
+* concat
+* empty data flags
+* variable renaming
 
 Note
 ----
@@ -24,9 +33,10 @@ class InstAccessTests(object):
     ----
     Inherited by classes in test_instrument.py.  Setup and teardown methods are
     specified there.
+
     See Also
     ---------
-    `pysat.tests.test_instrument.py`
+    `pysat.tests.test_instrument`
 
     """
 
@@ -38,6 +48,10 @@ class InstAccessTests(object):
         end_date : dt.datetime or NoneType
             End date for loading data.  If None, assumes self.ref_time + 1 day.
             (default=None)
+
+        Note
+        ----
+        Success of test is tied to `self.ref_time`.
 
         """
         # Test that the first loaded time matches the first requested time
