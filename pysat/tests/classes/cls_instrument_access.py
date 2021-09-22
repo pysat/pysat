@@ -24,7 +24,10 @@ class InstAccessTests(object):
     ----
     Inherited by classes in test_instrument.py.  Setup and teardown methods are
     specified there.
-
+    See Also
+    ---------
+    `pysat.tests.test_instrument.py`
+    
     """
 
     def eval_successful_load(self, end_date=None):
@@ -93,7 +96,7 @@ class InstAccessTests(object):
         return
 
     def test_basic_instrument_load_yr_no_doy(self):
-        """Ensure doy required if yr present."""
+        """Ensure day of year required if year is present."""
 
         # Check that the correct error is raised
         with pytest.raises(TypeError) as err:
@@ -106,7 +109,7 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_doy(self, doy):
-        """Ensure doy load argument in valid range."""
+        """Ensure day of year load argument in valid range."""
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, doy)
@@ -117,7 +120,7 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize('end_doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_end_doy(self, end_doy):
-        """Ensure end_doy keyword in valid range."""
+        """Ensure `end_doy` keyword in valid range."""
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, 1, end_yr=self.ref_time.year,
@@ -128,7 +131,7 @@ class InstAccessTests(object):
         return
 
     def test_basic_instrument_load_yr_no_end_doy(self):
-        """Ensure end_doy required if end_yr present."""
+        """Ensure `end_doy` required if `end_yr` present."""
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, self.ref_doy,
@@ -176,7 +179,7 @@ class InstAccessTests(object):
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_instrument_load_errors_with_multifile(self, load_in, verr):
-        """Ensure load calls raises ValueError with multi_file_day as True."""
+        """Ensure load calls raises ValueError with `multi_file_day` as True."""
 
         self.testInst.multi_file_day = True
 
@@ -200,7 +203,7 @@ class InstAccessTests(object):
         return
 
     def test_basic_instrument_load_by_dates(self):
-        """Test date range loading, date and end_date."""
+        """Test date range loading, `date` and `end_date`."""
 
         end_date = self.ref_time + dt.timedelta(days=2)
         self.testInst.load(date=self.ref_time, end_date=end_date)
@@ -295,7 +298,7 @@ class InstAccessTests(object):
         """Test loading by filename from attached `.files`."""
 
         # If mangle_file_date is true, index will not match exactly.
-        # Find the closest point.
+        # Find the closest point instead.
         ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
         self.testInst.load(fname=self.testInst.files[ind])
         self.eval_successful_load()
@@ -305,7 +308,7 @@ class InstAccessTests(object):
                              [('next', 1),
                               ('prev', -1)])
     def test_fname_load_default(self, operator, direction):
-        """Test correct day loads when moving by day, starting w/ fname."""
+        """Test correct day loads when moving by day, starting with `fname`."""
 
         # If mangle_file_date is true, index will not match exactly.
         # Find the closest point.
@@ -389,7 +392,7 @@ class InstAccessTests(object):
         return
 
     def test_eq_different_object(self):
-        """Test equality using different pysat.Instrument objects."""
+        """Test equality using different `pysat.Instrument` objects."""
 
         reload(pysat.instruments.pysat_testing)
         obj1 = pysat.Instrument(platform='pysat', name='testing',
@@ -431,7 +434,7 @@ class InstAccessTests(object):
     @pytest.mark.parametrize("prepend, sort_dim_toggle",
                              [(True, True), (True, False), (False, False)])
     def test_concat_data(self, prepend, sort_dim_toggle):
-        """Test Instrument data concatonation."""
+        """Test `pysat.Instrument.data` concatenation."""
 
         # Load a data set to concatonate
         self.testInst.load(self.ref_time.year, self.ref_doy + 1)
@@ -465,7 +468,7 @@ class InstAccessTests(object):
         self.out = len(self.testInst.index)
         assert (self.out == len1 + len2)
 
-        # Detailed test for concatonation through index
+        # Detailed test for concatenation through index
         if prepend:
             assert np.all(self.testInst.index[:len1]
                           > self.testInst.index[len1:])
@@ -497,10 +500,10 @@ class InstAccessTests(object):
     def test_index_attribute(self):
         """Test the index attribute before and after loading data."""
 
-        # empty Instrument test
+        # Test that an index is present, even with an empty Instrument
         assert isinstance(self.testInst.index, pds.Index)
 
-        # now repeat the same test but with data loaded
+        # Test an index is present with data loaded in an Instrument
         self.testInst.load(date=self.ref_time)
         assert isinstance(self.testInst.index, pds.Index)
         return
@@ -508,9 +511,10 @@ class InstAccessTests(object):
     def test_index_return(self):
         """Test that the index is returned in the proper format."""
 
-        # load data
+        # Load data
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        # ensure we get the index back
+
+        # Ensure we get the index back
         if self.testInst.pandas_format:
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
@@ -698,10 +702,11 @@ class InstAccessTests(object):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.rename(values)
         for key in values:
-            # check for new name
+            # Check for new name
             assert values[key] in self.testInst.data
             assert values[key] in self.testInst.meta
-            # ensure old name not present
+
+            # Ensure old name not present
             assert key not in self.testInst.data
             assert key not in self.testInst.meta
         return
@@ -713,7 +718,7 @@ class InstAccessTests(object):
     def test_unknown_variable_error_renaming(self, values):
         """Test that unknown variable renaming raises an error."""
 
-        # check for error for unknown variable name
+        # Check for error for unknown variable name
         self.testInst.load(self.ref_time.year, self.ref_doy)
         with pytest.raises(ValueError) as verr:
             self.testInst.rename(values)
@@ -727,16 +732,18 @@ class InstAccessTests(object):
     def test_basic_variable_renaming_lowercase(self, values):
         """Test new variable names are converted to lowercase."""
 
-        # test single variable
+        # Test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.rename(values, lowercase_data_labels=True)
         for key in values:
-            # check for new name
+            # Check for new name
             assert values[key].lower() in self.testInst.data
             assert values[key].lower() in self.testInst.meta
-            # ensure case retained in meta
+
+            # Ensure case retained in meta
             assert values[key] == self.testInst.meta[values[key]].name
-            # ensure old name not present
+
+            # Ensure old name not present
             assert key not in self.testInst.data
             assert key not in self.testInst.meta
         return
