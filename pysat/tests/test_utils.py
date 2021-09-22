@@ -512,17 +512,17 @@ class TestGenerateInstList(object):
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
 
-    def test_load_netcdf4(self):
+    @pytest.mark.parametrize("fnames,f_fmt,msg_inds",
+                             [(None, None, [0, 1]),
+                              ('no_file', None, [0, 2])])
+    def test_load_netcdf4(self, fnames, f_fmt, msg_inds):
         """Test deprecation warnings from load_netcdf4."""
         with warnings.catch_warnings(record=True) as war:
-            kwarg_list = [{'fnames': None, 'file_format': None},
-                          {'fnames': 'no_file'}]
-            for in_kwargs in kwarg_list:
-                try:
-                    # generate relocation warning and file_format warning
-                    pysat.utils.load_netcdf4(**in_kwargs)
-                except (FileNotFoundError, ValueError):
-                    pass
+            try:
+                # generate relocation warning and file_format warning
+                pysat.utils.load_netcdf4(fnames=fnames, file_format=f_fmt)
+            except (FileNotFoundError, ValueError):
+                pass
 
         warn_msgs = ["".join(["function moved to `pysat.utils.io`, ",
                               "deprecated wrapper will be removed in ",
@@ -534,6 +534,7 @@ class TestDeprecation(object):
                               "3.2.0+, instead of None use 'NETCDF4' ",
                               "for same behavior."])]
 
+        warn_msgs = [warn_msgs[ind] for ind in msg_inds]
         # Ensure the minimum number of warnings were raised
         assert len(war) >= len(warn_msgs)
 
@@ -543,5 +544,5 @@ class TestDeprecation(object):
 
         for i, good in enumerate(found_msgs):
             assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
+                warn_msgs[i])
             return
