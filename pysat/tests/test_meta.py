@@ -61,6 +61,9 @@ class TestMeta(object):
         del self.default_val, self.dval, self.frame_list, self.testInst
         return
 
+    # ---------------
+    # Utility methods
+    
     def set_meta(self, inst_kwargs=None):
         """Set the `meta` and `testInst` attributes using test Instruments.
 
@@ -152,6 +155,120 @@ class TestMeta(object):
         assert str(verr).find("Input must be a pandas DataFrame type") >= 0
         return
 
+    def test_pop_w_bad_key(self):
+        """Test that a bad key will raise a KeyError for `meta.pop`."""
+
+        with pytest.raises(KeyError) as kerr:
+            self.meta.pop('not_a_key')
+
+        assert str(kerr).find('Key not present in metadata variables') >= 0
+        return
+
+    def test_getitem_w_bad_key(self):
+        """Test that a bad key will raise a KeyError in meta access."""
+
+        with pytest.raises(KeyError) as kerr:
+            self.meta['not_a_key']
+
+        assert str(kerr).find('not found in MetaData') >= 0
+        return
+
+    def test_getitem_w_index(self):
+        """Test raises NotImplementedError with an iteger index."""
+
+        with pytest.raises(NotImplementedError) as ierr:
+            self.meta[1]
+
+        assert str(ierr).find('expected tuple, list, or str') >= 0
+        return
+
+    def test_concat_strict_w_collision_in_metadata(self):
+        """Test raises RuntimeError when new meta names overlap."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Create a second object with the same data variables, but different
+        # units
+        concat_meta = self.meta.copy()
+        for dvar in self.testInst.variables:
+            concat_meta[dvar, concat_meta.labels.units] = 'Meta{:s}'.format(
+                self.meta[dvar, self.meta.labels.units])
+
+        with pytest.raises(RuntimeError) as rerr:
+            self.meta = self.meta.concat(concat_meta, strict=True)
+
+        assert str(rerr).find('Duplicated keys (variable names) across') >= 0
+        return
+
+    def test_multiple_meta_assignment_error(self):
+        """Test that assignment of multiple metadata raises a ValueError."""
+
+        with pytest.raises(ValueError) as verr:
+            self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                          'long_name': ['boo']}
+
+        assert str(verr).find(
+            'Length of data_vars and inputs must be equal') >= 0
+        return
+
+    def test_transfer_attributes_to_instrument(self):
+        """Test transfer of custom meta attributes."""
+
+        self.meta.mutable = True
+
+        # Set non-conflicting attribute
+        self.meta.new_attribute = 'hello'
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # Test transferred
+        assert self.testInst.new_attribute == 'hello'
+
+        # Ensure transferred attributes are removed
+        with pytest.raises(AttributeError):
+            self.meta.new_attribute
+        return
+
+    def test_transfer_attributes_to_instrument_strict_names(self):
+        """Test attr transfer with strict_names set to True."""
+
+        self.meta.mutable = True
+
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.jojo_beans = 'yep!'
+        self.meta.name = 'Failure!'
+        self.meta.date = 'yo yo2'
+        self.testInst.load(2009, 1)
+        self.testInst.jojo_beans = 'nope!'
+        with pytest.raises(RuntimeError):
+            self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                        strict_names=True)
+        return
+
+    def test_meta_immutable(self):
+        """Test setting of `meta.mutable`."""
+
+        self.meta.mutable = True
+        greeting = '...listen!'
+        self.meta.hey = greeting
+        assert self.meta.hey == greeting
+
+        self.meta.mutable = False
+        with pytest.raises(AttributeError):
+            self.meta.hey = greeting
+        return
+
+    def test_meta_immutable_at_instrument_instantiation(self):
+        """Test that meta is immutable at instrument Instantiation."""
+
+        assert self.testInst.meta.mutable is False
+
+        greeting = '...listen!'
+        with pytest.raises(AttributeError):
+            self.meta.hey = greeting
+        return
+
     # -------------------------
     # Test the Warning messages
 
@@ -222,9 +339,10 @@ class TestMeta(object):
                               {'platform': 'pysat', 'name': 'testing2d'}])
     def test_str(self, long_str, inst_kwargs):
         """Test long string output with custom meta data."""
+
         # Set the meta object
         self.set_meta(inst_kwargs=inst_kwargs)
-        
+
         # Get the output string
         out = self.meta.__str__(long_str=long_str)
 
@@ -340,10 +458,18 @@ class TestMeta(object):
             mcomp = self.meta[dvar]
             mpop = self.meta.pop(dvar)
 
-            # Test the popped object
-            testing.assert_lists_equal(list(mpop.keys()),
-                                       list(self.meta.attrs()))
-            assert mcomp == mpop
+            # Test the popped object labels
+            pop_attrs = list(mpop.keys())
+            pop_attrs.pop(pop_attrs.index('children'))
+            testing.assert_lists_equal(pop_attrs, list(self.meta.attrs()))
+
+            # Test the popped object values
+            pop_values = [mpop[pattr] for pattr in pop_attrs]
+            comp_values = [mcomp[pattr] for pattr in pop_attrs]
+            testing.assert_lists_equal(pop_values, comp_values)
+
+            if mpop['children'] is not None:
+                assert mpop['children'] == mcomp['children']
 
             # Test that the popped variable is no longer in the main object
             assert dvar not in self.meta.keys(), "pop did not remove metadata"
@@ -352,6 +478,36 @@ class TestMeta(object):
 
     # -------------------------------------
     # Test the class with standard metadata
+
+    @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
+    def test_assign_nonstandard_metalabels(self, inst_name):
+        """Test labels do not conform to the standard values if set that way.
+
+        Parameters
+        ----------
+        inst_name : str
+            String denoting the pysat testing instrument name
+
+        """
+
+        # Assign meta data with non-standard labels
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name,
+                                   'labels': self.meta_labels})
+
+        # Test that standard attributes are missing and non-standard
+        # attributes are present
+        standard_labels = pysat.MetaLabels()
+        for dval in self.testInst.variables:
+            for label in self.meta_labels.keys():
+                slabel = getattr(standard_labels, label)
+                assert not hasattr(self.meta[dval], slabel), \
+                    "standard label {:} should not be present for {:}".format(
+                        slabel.__repr__(), dval.__repr__())
+
+            assert hasattr(self.meta[dval], self.meta_labels[label][0]), \
+                "non-standard label {:} is missing for {:}".format(
+                    self.meta_labels[label][0].__repr__(), dval.__repr__())
+        return
 
     @pytest.mark.parametrize("labels, vals",
                              [([], []),
@@ -454,32 +610,6 @@ class TestMeta(object):
         self.eval_meta_settings()
         return
 
-    def test_basic_pops_w_bad_key(self):
-        """Test that a bad key will raise a KeyError for `meta.pop`."""
-
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew',
-                             'value_min': 0, 'value_max': 1}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo', 'fill': 1,
-                             'value_min': 0, 'value_max': 1}
-        with pytest.raises(KeyError):
-            _ = self.meta.pop('new4')
-        return
-
-    def test_basic_getitem_w_bad_key_string(self):
-        """Test that a bad key will raise a KeyError in meta access."""
-
-        with pytest.raises(KeyError):
-            self.meta['new4']
-        return
-
-    def test_basic_getitem_w_integer(self):
-        """Test that an iteger will raise NotImplementedError in meta access."""
-
-        with pytest.raises(NotImplementedError):
-            self.meta[1]
-        return
-
     def test_basic_concat(self):
         """Test that `meta.concat` adds new meta objects appropriately."""
 
@@ -491,19 +621,6 @@ class TestMeta(object):
         self.meta = self.meta.concat(meta2)
 
         assert (self.meta['new3'].units == 'hey3')
-        return
-
-    def test_concat_w_name_collision_strict(self):
-        """Test for a RuntimeError when new meta names overlap."""
-
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
-        meta2 = pysat.Meta()
-        meta2['new2'] = {'units': 'hey2', 'long_name': 'crew_brew'}
-        meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        with pytest.raises(RuntimeError):
-            self.meta = self.meta.concat(meta2, strict=True)
         return
 
     # -------------------------------
@@ -834,14 +951,6 @@ class TestMeta(object):
         assert self.meta['higher'].children == meta
         return
 
-    def test_multiple_meta_assignment_error(self):
-        """Test that assignment of multiple metadata raises a ValueError."""
-
-        with pytest.raises(ValueError):
-            self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
-                                          'long_name': ['boo']}
-        return
-
     def test_replace_meta_units(self):
         """Test replacement of metadata units."""
 
@@ -1147,15 +1256,6 @@ class TestMeta(object):
         assert (self.meta['new2'].Long_Name == 'boo2')
         return
 
-    def test_assign_Units_no_units(self):
-        """Test AttributeError if Units is lowercase."""
-
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
-        with pytest.raises(AttributeError):
-            self.meta['new'].units
-        return
-
     def test_get_Units_wrong_case(self):
         """Test that getting Units works if the case is wrong."""
 
@@ -1244,27 +1344,6 @@ class TestMeta(object):
         # Evaluate the results in the higher order data
         assert (self.meta['new2'].children['new21'].Units == 'hey2')
         assert (self.meta['new2'].children['new21'].Long_Name == 'boo2')
-        return
-
-    def test_change_Units_and_Name_case_w_ho_wrong_case(self):
-        """Test that `units` and `long_name` error if label case is wrong."""
-
-        self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        meta2 = pysat.Meta(labels=self.meta_labels)
-        meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = meta2
-        self.meta.labels.units = 'Units'
-        self.meta.labels.name = 'Long_Name'
-        with pytest.raises(AttributeError):
-            self.meta['new'].units
-        with pytest.raises(AttributeError):
-            self.meta['new'].long_name
-        with pytest.raises(AttributeError):
-            self.meta['new2'].children['new21'].units
-        with pytest.raises(AttributeError):
-            self.meta['new2'].children['new21'].long_name
         return
 
     def test_contains_case_insensitive(self):
@@ -1416,23 +1495,6 @@ class TestMeta(object):
         assert (self.meta['new2'].long_name == 'boo2')
         return
 
-    def test_transfer_attributes_to_instrument(self):
-        """Test transfer of custom meta attributes."""
-
-        self.meta.mutable = True
-
-        # Set non-conflicting attribute
-        self.meta.new_attribute = 'hello'
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-
-        # Test transferred
-        assert self.testInst.new_attribute == 'hello'
-
-        # Ensure transferred attributes are removed
-        with pytest.raises(AttributeError):
-            self.meta.new_attribute
-        return
-
     def test_transfer_attributes_to_instrument_leading_(self):
         """Ensure private custom meta attributes not transferred."""
 
@@ -1456,23 +1518,6 @@ class TestMeta(object):
         # Ensure private attribute still present
         assert self.meta._yo_yo == 'yo yo'
         assert self.meta.__yo_yo == 'yo yo'
-        return
-
-    def test_transfer_attributes_to_instrument_strict_names(self):
-        """Test attr transfer with strict_names set to True."""
-
-        self.meta.mutable = True
-
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.jojo_beans = 'yep!'
-        self.meta.name = 'Failure!'
-        self.meta.date = 'yo yo2'
-        self.testInst.load(2009, 1)
-        self.testInst.jojo_beans = 'nope!'
-        with pytest.raises(RuntimeError):
-            self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                        strict_names=True)
         return
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
@@ -1534,29 +1579,6 @@ class TestMeta(object):
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
-        return
-
-    def test_meta_immutable(self):
-        """Test setting of `meta.mutable`."""
-
-        self.meta.mutable = True
-        greeting = '...listen!'
-        self.meta.hey = greeting
-        assert self.meta.hey == greeting
-
-        self.meta.mutable = False
-        with pytest.raises(AttributeError):
-            self.meta.hey = greeting
-        return
-
-    def test_meta_immutable_at_instrument_instantiation(self):
-        """Test that meta is immutable at instrument Instantiation."""
-
-        assert self.testInst.meta.mutable is False
-
-        greeting = '...listen!'
-        with pytest.raises(AttributeError):
-            self.meta.hey = greeting
         return
 
     def test_meta_mutable_properties(self):
