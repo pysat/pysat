@@ -904,7 +904,7 @@ class TestGenerateInstList(object):
         for inst in self.inst_list['download']:
             # `user_info` should only be in `pysat_testmodel`
             assert (('user_info' in inst.keys())
-                    == ('pysat_testmodel' in str(inst['inst_module'])))
+                    == ('pysat_testmodel' == str(inst['inst_module'])))
             if 'user_info' in inst.keys():
                 # User info should be correct
                 assert inst['user_info'] == self.user_info['pysat_testmodel']
