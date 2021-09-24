@@ -902,9 +902,13 @@ class TestGenerateInstList(object):
         """Test that user info passes through to correct instruments."""
 
         for inst in self.inst_list['download']:
+            # pull out module name
+            mod_name = str(inst['inst_module']).split('from')[0].split('.')[-1]
+            # drop last '
+            mod_name = mod_name[:-2]
             # `user_info` should only be in `pysat_testmodel`
             assert (('user_info' in inst.keys())
-                    == ('pysat_testmodel' == str(inst['inst_module'])))
+                    == ('pysat_testmodel' == mod_name))
             if 'user_info' in inst.keys():
                 # User info should be correct
                 assert inst['user_info'] == self.user_info['pysat_testmodel']
