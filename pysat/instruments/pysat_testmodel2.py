@@ -76,10 +76,6 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     lev = np.linspace(-7, 7, 57)
     ilev = np.linspace(-6.875, 7.125, 57)
 
-    # Create an altitude data variable as a function of time, ilev, lat, lon
-    altitude = np.zeros((len(uts), len(ilev), len(latitude), len(longitude)))
-
-
     data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
                       coords={'time': index, 'latitude': latitude,
                               'longitude': longitude, 'lev': lev,
@@ -96,8 +92,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
         for j in np.arange(len(data['uts'])):
             dummy0[j, i, :, :] = i * 10. + j + inc_arr
     dummy0.data *= 100000.
-    data['altitude'] = (('time', 'ilev', 'latitude', 'longitude'),
-                        dummy0.data)
+    data['altitude'] = (('time', 'ilev', 'latitude', 'longitude'), dummy0.data)
 
     # Create fake 4D data set to support interpolation tests in pysatModels
     dummy3 = data['uts'] * data['ilev'] * data['latitude'] * data['longitude']
@@ -109,10 +104,11 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     # Create fake data values
     for i in np.arange(len(data['ilev'])):
         for j in np.arange(len(data['uts'])):
-            dummy3[j, i, :, :] = 2. * i * (np.sin(2*np.pi*j/24.) + inc_arr)
+            dummy3[j, i, :, :] = 2. * i * (np.sin(2 * np.pi * j / 24.)
+                                           + inc_arr)
 
     data['iv_mer'] = (('time', 'ilev', 'latitude', 'longitude'),
-                       dummy3.data)
+                      dummy3.data)
 
     slt = np.zeros([len(uts), len(longitude)])
     for i, ut in enumerate(uts):
@@ -157,23 +153,23 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
                       meta.labels.fill_val: np.nan}
 
     # Assign metadata for the new coordinate axis here, `lev` and `ilev`.
-    meta['lev'] =  {meta.labels.units: '',
-                    meta.labels.name: 'Pressure Level (midpoint)',
+    meta['lev'] = {meta.labels.units: '',
+                   meta.labels.name: 'Pressure Level (midpoint)',
+                   meta.labels.min_val: -6.875,
+                   meta.labels.max_val: 7.125,
+                   meta.labels.desc: ' '.join(('Log of atmospheric pressure',
+                                               'level.')),
+                   meta.labels.notes: 'p(lev) = p0 * exp(-lev)',
+                   meta.labels.fill_val: np.nan}
+
+    meta['ilev'] = {meta.labels.units: '',
+                    meta.labels.name: 'Pressure Level Interface',
                     meta.labels.min_val: -6.875,
                     meta.labels.max_val: 7.125,
                     meta.labels.desc: ' '.join(('Log of atmospheric pressure',
                                                 'level.')),
-                    meta.labels.notes: 'p(lev) = p0 * exp(-lev)',
+                    meta.labels.notes: 'p(ilev) = p0 * exp(-ilev)',
                     meta.labels.fill_val: np.nan}
-
-    meta['ilev'] =  {meta.labels.units: '',
-                     meta.labels.name: 'Pressure Level Interface',
-                     meta.labels.min_val: -6.875,
-                     meta.labels.max_val: 7.125,
-                     meta.labels.desc: ' '.join(('Log of atmospheric pressure',
-                                                 'level.')),
-                     meta.labels.notes: 'p(ilev) = p0 * exp(-ilev)',
-                     meta.labels.fill_val: np.nan}
 
     return data, meta
 
