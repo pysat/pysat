@@ -902,7 +902,8 @@ class TestGenerateInstList(object):
         """Test that user info passes through to correct instruments."""
 
         for inst in self.inst_list['download']:
-            # pull out module name
+            # pull out module name from
+            # <module 'module.name' from '.../files/....py'>
             mod_name = str(inst['inst_module']).split('from')[0].split('.')[-1]
             # drop last '
             mod_name = mod_name[:-2]
