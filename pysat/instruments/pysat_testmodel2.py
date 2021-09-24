@@ -14,7 +14,7 @@ logger = pysat.logger
 
 platform = 'pysat'
 name = 'testmodel2'
-tags = {'': 'Regular testing data set'}
+tags = {'': 'Regular TIEGCM-like testing data set'}
 inst_ids = {'': ['']}
 pandas_format = False
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
