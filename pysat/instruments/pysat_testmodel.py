@@ -99,7 +99,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
         # Simulate altitude values at model points
         # Initiliaze memory
         dummy0 = (data['uts'] * data['ilev'] * data['latitude']
-                 * data['longitude'])
+                  * data['longitude'])
         dummy0 *= 0
 
         # Provide a 2D linear gradient across latitude and longitude.
@@ -116,7 +116,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
 
         # Create fake 4D ion drift data set
         dummy0 = (data['uts'] * data['ilev'] * data['latitude']
-                 * data['longitude'])
+                  * data['longitude'])
         dummy0 *= 0
 
         # Calculate and assign fake data values
