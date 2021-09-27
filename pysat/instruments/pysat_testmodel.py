@@ -18,7 +18,7 @@ tags = {'': 'Regular testing data set',
         'tiegcm': 'Testing data set similar to TIEGCM'}
 inst_ids = {'': ['', 'tiegcm']}
 pandas_format = False
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+_test_dates = {'': {tag : dt.datetime(2009, 1, 1) for tag in tags}}
 
 
 # Init method
