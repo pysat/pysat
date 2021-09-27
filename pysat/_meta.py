@@ -1269,11 +1269,11 @@ class Meta(object):
                         # Use naming convention: new_name = 'pysat_attr_' + key
                         inst.__setattr__(key, adict[key])
                     else:
-                        rerr = ''.join(('Attribute ', key, 'attached to the '
-                                        'Meta object can not be transferred ',
-                                        'as it already exists in the ',
-                                        'Instrument object.'))
-                        raise RuntimeError(rerr)
+                        aerr = ''.join(('Attribute ', key.__repr__(),
+                                        ' attached to the Meta object cannot be'
+                                        ' transferred as it already exists in ',
+                                        'the Instrument object.'))
+                        raise AttributeError(aerr)
         return
 
     def add_epoch_metadata(self, epoch_name):
