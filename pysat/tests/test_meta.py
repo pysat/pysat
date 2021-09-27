@@ -212,61 +212,36 @@ class TestMeta(object):
             'Length of data_vars and inputs must be equal') >= 0
         return
 
-    def test_transfer_attributes_to_instrument(self):
-        """Test transfer of custom meta attributes."""
+    def test_transfer_attributes_overwrite_with_strict_names(self):
+        """Test raises AttributeError when overwriting with `strict_names`."""
 
+        # Set the Meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Update the Meta and Instrument objects 
         self.meta.mutable = True
-
-        # Set non-conflicting attribute
-        self.meta.new_attribute = 'hello'
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-
-        # Test transferred
-        assert self.testInst.new_attribute == 'hello'
-
-        # Ensure transferred attributes are removed
-        with pytest.raises(AttributeError):
-            self.meta.new_attribute
-        return
-
-    def test_transfer_attributes_to_instrument_strict_names(self):
-        """Test attr transfer with strict_names set to True."""
-
-        self.meta.mutable = True
-
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
         self.meta.jojo_beans = 'yep!'
-        self.meta.name = 'Failure!'
-        self.meta.date = 'yo yo2'
-        self.testInst.load(2009, 1)
         self.testInst.jojo_beans = 'nope!'
-        with pytest.raises(RuntimeError):
+
+        # Catch and evaluate error message
+        with pytest.raises(AttributeError) as aerr:
             self.meta.transfer_attributes_to_instrument(self.testInst,
                                                         strict_names=True)
+
+        assert str(aerr).find("cannot be transferred as it already exists") > 0s
         return
 
     def test_meta_immutable(self):
-        """Test setting of `meta.mutable`."""
+        """Test raises AttributeError if Meta is immutable."""
 
-        self.meta.mutable = True
-        greeting = '...listen!'
-        self.meta.hey = greeting
-        assert self.meta.hey == greeting
-
+        # Update Meta settings
         self.meta.mutable = False
-        with pytest.raises(AttributeError):
-            self.meta.hey = greeting
-        return
 
-    def test_meta_immutable_at_instrument_instantiation(self):
-        """Test that meta is immutable at instrument Instantiation."""
+        # Catch and test the error message
+        with pytest.raises(AttributeError) as aerr:
+            self.meta.hey = "this won't work."
 
-        assert self.testInst.meta.mutable is False
-
-        greeting = '...listen!'
-        with pytest.raises(AttributeError):
-            self.meta.hey = greeting
+        assert str(aerr).find("Cannot set attribute") >= 0
         return
 
     # -------------------------
@@ -479,6 +454,37 @@ class TestMeta(object):
     # -------------------------------------
     # Test the class with standard metadata
 
+    def test_meta_immutable_at_instrument_instantiation(self):
+        """Test that meta is immutable at instrument Instantiation."""
+
+        # Set the Meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Test the default value for `mutable`
+        assert self.meta.mutable is False, \
+            "Meta `mutable` attribute initialized to the wrong value."
+
+        return
+
+    def test_transfer_attributes_to_instrument(self):
+        """Test transfer of custom meta attributes."""
+
+        self.meta.mutable = True
+
+        # Set non-conflicting attribute
+        self.meta.new_attribute = 'hello'
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # Test to see if attribute was transferred successfully to Instrument
+        assert hasattr(self.testInst, "new_attribute"), \
+            "custom Meta attribute not transferred to Instrument."
+        assert self.testInst.new_attribute == 'hello'
+
+        # Ensure transferred attributes are removed from Meta
+        assert not hasattr(self.meta, "new_attribute"), \
+            "custom Meta attribute not removed during transfer to Instrument."
+        return
+
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     def test_assign_nonstandard_metalabels(self, inst_name):
         """Test labels do not conform to the standard values if set that way.
@@ -610,17 +616,16 @@ class TestMeta(object):
         self.eval_meta_settings()
         return
 
-    def test_basic_concat(self):
+    def test_concat(self):
         """Test that `meta.concat` adds new meta objects appropriately."""
 
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
+        # Create meta data to concatenate
         meta2 = pysat.Meta()
         meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        self.meta = self.meta.concat(meta2)
 
-        assert (self.meta['new3'].units == 'hey3')
+        # Perform and test for successful concatenation
+        self.meta = self.meta.concat(meta2)
+        assert self.meta['new3'].units == 'hey3'
         return
 
     # -------------------------------
@@ -744,9 +749,25 @@ class TestMeta(object):
             assert self.meta['profiles']['children'][dvar, 'bananas'] == 2
         return
 
+    def test_concat_w_ho(self):
+        """Test `meta.concat` adds new meta objects with higher order data."""
+
+        # Create meta data to concatenate
+        meta2 = pysat.Meta()
+        meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
+        meta2['new4'] = pysat.Meta(pds.DataFrame(
+            {'units': 'hey4', 'long_name': 'crew_brew', 'bob_level': 'max'}))
+
+        # Perform and test for successful concatenation
+        self.meta = self.meta.concat(meta2)
+        assert self.meta['new3'].units == 'hey3'
+        assert self.meta['new4'].children['new41'].units == 'hey4'
+        return
+
+
     def test_inst_assign_from_meta_w_ho(self):
         """Test assignment to Instrument from Meta with higher order data."""
-
+        # HERE
 
         # Initialize the Meta data
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
@@ -822,26 +843,8 @@ class TestMeta(object):
         assert 'children' not in self.testInst.meta.data.columns
         return
 
-    # End reorg
+    # End reorg HERE
 
-
-    def test_basic_concat_w_ho(self):
-        """Test `meta.concat` with higher order metadata."""
-
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
-        meta2 = pysat.Meta()
-        meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        meta3 = pysat.Meta()
-        meta3['new41'] = {'units': 'hey4', 'long_name': 'crew_brew',
-                          'bob_level': 'max'}
-        meta2['new4'] = meta3
-        self.meta = self.meta.concat(meta2)
-
-        assert (self.meta['new3'].units == 'hey3')
-        assert (self.meta['new4'].children['new41'].units == 'hey4')
-        return
 
     def test_basic_concat_w_ho_collision_strict(self):
         """Test for an error under strict concat with HO metadata."""
