@@ -127,12 +127,6 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
         data['dummy_drifts'] = (('time', 'ilev', 'latitude', 'longitude'),
                                 dummy0.data)
 
-        # # Fake 4D data consisting of non-physical values between 0 and 21
-        # # everywhere. Used for interpolation routines in pysatModels
-        # dummy2 = np.mod(data['dummy1'] * data['lev'], 21.0)
-        # data['dummy2'] = (('time', 'latitude', 'longitude', 'lev'),
-        #                   dummy2.data)
-
     slt = np.zeros([len(uts), len(longitude)])
     for i, ut in enumerate(uts):
         for j, long in enumerate(longitude):
