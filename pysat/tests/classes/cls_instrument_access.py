@@ -375,7 +375,7 @@ class InstAccessTests(object):
         self.testInst.load(date=self.ref_time)
         inst_copy = self.testInst.copy()
         inst_copy.data = self.testInst._null_data
-        assert not (inst_copy == self.testInst)
+        assert inst_copy != self.testInst
         return
 
     def test_eq_different_data_type(self):
@@ -389,7 +389,7 @@ class InstAccessTests(object):
         else:
             inst_copy.pandas_format = True
             inst_copy.data = pds.DataFrame()
-        assert not (inst_copy == self.testInst)
+        assert inst_copy != self.testInst
         return
 
     def test_eq_different_object(self):
