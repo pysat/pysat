@@ -435,7 +435,19 @@ class InstAccessTests(object):
     @pytest.mark.parametrize("prepend, sort_dim_toggle",
                              [(True, True), (True, False), (False, False)])
     def test_concat_data(self, prepend, sort_dim_toggle):
-        """Test `pysat.Instrument.data` concatenation."""
+        """Test `pysat.Instrument.data` concatenation.
+
+        Parameters
+        ----------
+        prepend : bool
+            Behavior of `concat_data`.  If True, assign new data before existing
+            data; if False append new data.
+        sort_dim_toggle : bool
+            If True, sort variable names in pandas before concatenation.  If
+            False, do not sort for pandas objects.  For xarray objects, rename
+            the epoch if True.
+
+        """
 
         # Load a data set to concatonate
         self.testInst.load(self.ref_time.year, self.ref_doy + 1)
@@ -527,7 +539,14 @@ class InstAccessTests(object):
                                         (['mlt', 'longitude']),
                                         (['longitude', 'mlt'])])
     def test_basic_data_access_by_name(self, labels):
-        """Check that data can be accessed at the instrument level."""
+        """Check that data can be accessed at the instrument level.
+
+        Parameters
+        ----------
+        labels : list of str
+            List of variable names to access.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all((self.testInst[labels]
@@ -539,7 +558,14 @@ class InstAccessTests(object):
                                        (slice(0, 10)),
                                        (np.arange(0, 10))])
     def test_data_access_by_indices_and_name(self, index):
-        """Check that variables and be accessed by each supported index type."""
+        """Check that variables and be accessed by each supported index type.
+
+        Parameters
+        ----------
+        index : int, list, slice, or np.array
+            Indices to retrieve data.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all(self.testInst[index, 'mlt']
@@ -659,7 +685,16 @@ class InstAccessTests(object):
                                      dt.datetime(2009, 1, 1, 0, 1)),
                                slice(dt.datetime(2009, 1, 1, 0, 1), None))])
     def test_setting_partial_data_by_inputs(self, changed, fixed):
-        """Check that data can be set using each supported input type."""
+        """Check that data can be set using each supported input type.
+
+        Parameters
+        ----------
+        changed : index-like parameters
+            Index of values that change during the test.
+        fixed : index-like parameters
+            Index of values that should remain the same during the test.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
@@ -682,7 +717,14 @@ class InstAccessTests(object):
     @pytest.mark.parametrize("index", [([0, 1, 2, 3, 4]),
                                        (np.array([0, 1, 2, 3, 4]))])
     def test_getting_all_data_by_index(self, index):
-        """Test getting all data by index."""
+        """Test getting all data by index.
+
+        Parameters
+        ----------
+        index : index-like parameters
+            Index of values to retrieve.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         a = self.testInst[index]
@@ -697,7 +739,15 @@ class InstAccessTests(object):
                                          'mlt': 'mlt2'},
                                         {'uts': 'long change with spaces'}])
     def test_basic_variable_renaming(self, values):
-        """Test basic variable renaming."""
+        """Test basic variable renaming.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
 
         # test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -717,7 +767,15 @@ class InstAccessTests(object):
                                         {'utS': 'uts1'},
                                         {'utS': 'uts'}])
     def test_unknown_variable_error_renaming(self, values):
-        """Test that unknown variable renaming raises an error."""
+        """Test that unknown variable renaming raises an error.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
 
         # Check for error for unknown variable name
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -731,7 +789,15 @@ class InstAccessTests(object):
                                          'mlt': 'Mlt2'},
                                         {'uts': 'Long Change with spaces'}])
     def test_basic_variable_renaming_lowercase(self, values):
-        """Test new variable names are converted to lowercase."""
+        """Test new variable names are converted to lowercase.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
 
         # Test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -754,7 +820,15 @@ class InstAccessTests(object):
                                          'alt_profiles':
                                              {'density': 'volume'}}])
     def test_ho_pandas_variable_renaming(self, values):
-        """Test rename of higher order pandas variable."""
+        """Test rename of higher order pandas variable.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
         # TODO(#789): Remove when meta children support is dropped.
 
         # check for pysat_testing2d instrument
@@ -792,7 +866,15 @@ class InstAccessTests(object):
                                         {'Nope_profiles':
                                         {'density': 'valid_HO_change'}}])
     def test_ho_pandas_unknown_variable_error_renaming(self, values):
-        """Test higher order pandas variable rename raises error if unknown."""
+        """Test higher order pandas variable rename raises error if unknown.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
         # TODO(#789): Remove when meta children support is dropped.
 
         # check for pysat_testing2d instrument
@@ -812,7 +894,15 @@ class InstAccessTests(object):
                                          'alt_profiles':
                                              {'density': 'VoLuMe'}}])
     def test_ho_pandas_variable_renaming_lowercase(self, values):
-        """Test rename higher order pandas variable uses lowercase."""
+        """Test rename higher order pandas variable uses lowercase.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
         # TODO(#789): Remove when meta children support is dropped.
 
         # check for pysat_testing2d instrument

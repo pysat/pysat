@@ -24,6 +24,10 @@ class InstIterationTests(object):
     Inherited by classes in test_instrument.py.  Setup and teardown methods are
     specified there.
 
+    See Also
+    ---------
+    `pysat.tests.test_instrument`
+
     """
 
     def generate_fname(self, date):
@@ -130,7 +134,7 @@ class InstIterationTests(object):
                 time_range.append((inst.index[0],
                                    inst.index[-1]))
         else:
-            # Iterate forwards or backwards using `.next` or `.prev`
+            # .next/.prev iterations
             if reverse:
                 iterator = self.testInst.prev
             else:
@@ -239,7 +243,14 @@ class InstIterationTests(object):
 
     @pytest.mark.parametrize("operator", [('next'), ('prev')])
     def test_file_load_empty_iteration(self, operator):
-        """Ensure empty iteration list is fine via day iteration."""
+        """Ensure empty iteration list is fine via day iteration.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+
+        """
 
         self.testInst.bounds = (None, None, '10000D',
                                 dt.timedelta(days=10000))
@@ -253,7 +264,16 @@ class InstIterationTests(object):
     @pytest.mark.parametrize("first,second", [('next', 'prev'),
                                               ('prev', 'next')])
     def test_passing_bounds_with_iteration(self, first, second):
-        """Test if passing bounds raises StopIteration."""
+        """Test if passing bounds raises StopIteration.
+
+        Parameters
+        ----------
+        first : str
+            Name of first iterator to use.
+        second : str
+            Name of second iterator to use, should be in the opposite direction.
+
+        """
 
         # Load first data
         getattr(self.testInst, first)()
@@ -308,7 +328,17 @@ class InstIterationTests(object):
                                         ])
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_bounds_with_frequency_and_width(self, values, by_date):
-        """Test iterate via date with mixed step/width, excludes stop date."""
+        """Test iterate via date with mixed step/width, excludes stop date.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
@@ -337,7 +367,17 @@ class InstIterationTests(object):
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_bounds_with_frequency_and_width_incl(self, values,
                                                           by_date):
-        """Test iterate via date with mixed step/width, includes stop date."""
+        """Test iterate via date with mixed step/width, includes stop date.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
@@ -362,7 +402,19 @@ class InstIterationTests(object):
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_with_frequency_and_width_incl(self, values, reverse,
                                                    by_date):
-        """Test iteration via date step/width >1, includes stop date."""
+        """Test iteration via date step/width >1, includes stop date.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        reverse : bool
+            If True, iterate backwards.  If False, iterate forwards.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
@@ -388,7 +440,19 @@ class InstIterationTests(object):
     @pytest.mark.parametrize("reverse", [True, False])
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_with_frequency_and_width(self, values, reverse, by_date):
-        """Test iteration with step and width excluding stop date."""
+        """Test iteration with step and width excluding stop date.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        reverse : bool
+            If True, iterate backwards.  If False, iterate forwards.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
@@ -416,7 +480,19 @@ class InstIterationTests(object):
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_season_frequency_and_width_incl(self, values, reverse,
                                                      by_date):
-        """Test iteration via date season step/width > 1, include stop date."""
+        """Test iteration via date season step/width > 1, include stop date.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        reverse : bool
+            If True, iterate backwards.  If False, iterate forwards.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
@@ -444,7 +520,19 @@ class InstIterationTests(object):
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_season_frequency_and_width(self, values, reverse,
                                                 by_date):
-        """Test iteration via date season step/width>1, exclude stop date."""
+        """Test iteration via date season step/width>1, exclude stop date.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        reverse : bool
+            If True, iterate backwards.  If False, iterate forwards.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, reverse=reverse,
                                             by_date=by_date)
@@ -470,7 +558,17 @@ class InstIterationTests(object):
                                 dt.timedelta(days=1), False],
                                'Too many input arguments.')])
     def test_set_bounds_error_message(self, new_bounds, errmsg):
-        """Test ValueError when setting bounds with wrong inputs."""
+        """Test ValueError when setting bounds with wrong inputs.
+
+        Parameters
+        ----------
+        new_bounds : list
+            Defines new iteration bounds incorrectly.
+        err_msg : str
+            A string pattern that shoul be raised by defining the bounds as
+            in new_bounds.
+
+        """
 
         with pytest.raises(ValueError) as verr:
             self.testInst.bounds = new_bounds
@@ -514,7 +612,16 @@ class InstIterationTests(object):
                                              [dt.datetime(2009, 1, 15),
                                               dt.datetime(2009, 2, 15)])])
     def test_set_bounds_by_date(self, start, stop):
-        """Test setting bounds with datetimes over simple range and season."""
+        """Test setting bounds with datetimes over simple range and season.
+
+        Parameters
+        ----------
+        start : dt.datetime or list of dt.datetime
+            The start of the new bounds.
+        stop : dt.datetime or list of dt.datetime
+            The stop of the new bounds.
+
+        """
 
         self.testInst.bounds = (start, stop)
         self.eval_iter_list(start, stop)
@@ -527,7 +634,16 @@ class InstIterationTests(object):
                                              [dt.datetime(2009, 1, 12),
                                               dt.datetime(2009, 1, 15)])])
     def test_set_bounds_by_date_wrong_order(self, start, stop):
-        """Test error if bounds assignment has stop date before start."""
+        """Test error if bounds assignment has stop date before start.
+
+        Parameters
+        ----------
+        start : dt.datetime or list of dt.datetime
+            The start of the new bounds.
+        stop : dt.datetime or list of dt.datetime
+            The stop of the new bounds.
+
+        """
 
         with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
@@ -543,7 +659,16 @@ class InstIterationTests(object):
                         [dt.datetime(2009, 1, 15, 1, 10),
                          dt.datetime(2009, 2, 15, 1, 10)])])
     def test_set_bounds_by_date_extra_time(self, start, stop):
-        """Test set bounds by date with extra time."""
+        """Test set bounds by date with extra time.
+
+        Parameters
+        ----------
+        start : dt.datetime or list of dt.datetime
+            The start of the new bounds.
+        stop : dt.datetime or list of dt.datetime
+            The stop of the new bounds.
+
+        """
 
         self.testInst.bounds = (start, stop)
         start = filter_datetime_input(start)
@@ -565,7 +690,16 @@ class InstIterationTests(object):
                                               dt.datetime(2009, 2, 15, 1, 10)])
                                             ])
     def test_iterate_over_bounds_set_by_date(self, start, stop):
-        """Test iterate over bounds via single date range."""
+        """Test iterate over bounds via single date range.
+
+        Parameters
+        ----------
+        start : dt.datetime or list of dt.datetime
+            The start of the new bounds.
+        stop : dt.datetime or list of dt.datetime
+            The stop of the new bounds.
+
+        """
 
         self.testInst.bounds = (start, stop)
         # Filter time inputs.
@@ -603,7 +737,17 @@ class InstIterationTests(object):
                                         ])
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_over_bounds_season_step_width(self, values, by_date):
-        """Test iterate over season, step/width > 1, exclude stop bounds."""
+        """Test iterate over season, step/width > 1, exclude stop bounds.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
@@ -629,7 +773,17 @@ class InstIterationTests(object):
                                         ])
     @pytest.mark.parametrize("by_date", [True, False])
     def test_iterate_bounds_season_step_width_incl(self, values, by_date):
-        """Test iterate over season, step/width > 1, includes stop bounds."""
+        """Test iterate over season, step/width > 1, includes stop bounds.
+
+        Parameters
+        ----------
+        values : tuple of size 4
+            Defines the iteration boundas: (start, stop, step, width). start
+            and stop should be datetime, step and width should be int.
+        by_date : bool
+            If True, iterate by date.  If False, iterate by filename.
+
+        """
 
         out = self.support_iter_evaluations(values, for_loop=True,
                                             by_date=by_date)
@@ -666,7 +820,16 @@ class InstIterationTests(object):
                                              ['2009-01-03.nofile',
                                               '2009-02-01.nofile'])])
     def test_set_bounds_by_fname_wrong_order(self, start, stop):
-        """Test for error if stop file before start file."""
+        """Test for error if stop file before start file.
+
+        Parameters
+        ----------
+        start : dt.datetime or list of dt.datetime
+            The start of the new bounds.
+        stop : dt.datetime or list of dt.datetime
+            The stop of the new bounds.
+
+        """
 
         with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
@@ -676,7 +839,14 @@ class InstIterationTests(object):
 
     @pytest.mark.parametrize("operator", ['next', 'prev'])
     def test_iterate_over_bounds_set_by_fname_via_attr(self, operator):
-        """Test iterate over bounds set by fname via operators."""
+        """Test iterate over bounds set by fname via operators.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+
+        """
 
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
