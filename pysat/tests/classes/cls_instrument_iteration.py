@@ -594,15 +594,14 @@ class InstIterationTests(object):
 
         start = self.testInst.files.start_date
         stop = self.testInst.files.stop_date
-        full_list = pds.date_range(start, stop).tolist()
         self.testInst.bounds = (None, None)
-        assert np.all(self.testInst._iter_list == full_list)
+        self.eval_iter_list(start, stop)
         self.testInst.bounds = None
-        assert np.all(self.testInst._iter_list == full_list)
+        self.eval_iter_list(start, stop)
         self.testInst.bounds = (start, None)
-        assert np.all(self.testInst._iter_list == full_list)
+        self.eval_iter_list(start, stop)
         self.testInst.bounds = (None, stop)
-        assert np.all(self.testInst._iter_list == full_list)
+        self.eval_iter_list(start, stop)
         return
 
     @pytest.mark.parametrize("start,stop", [(dt.datetime(2009, 1, 1),
