@@ -182,8 +182,8 @@ class TestMeta(object):
         assert str(ierr).find('expected tuple, list, or str') >= 0
         return
 
-    def test_concat_strict_w_collision_in_metadata(self):
-        """Test raises RuntimeError when new meta names overlap."""
+    def test_concat_strict_w_collision(self):
+        """Test raises KeyError when new meta names overlap."""
 
         # Set the meta object
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
@@ -191,14 +191,32 @@ class TestMeta(object):
         # Create a second object with the same data variables, but different
         # units
         concat_meta = self.meta.copy()
-        for dvar in self.testInst.variables:
-            concat_meta[dvar, concat_meta.labels.units] = 'Meta{:s}'.format(
-                self.meta[dvar, self.meta.labels.units])
 
-        with pytest.raises(RuntimeError) as rerr:
-            self.meta = self.meta.concat(concat_meta, strict=True)
+        # Test the error message
+        with pytest.raises(KeyError) as kerr:
+            self.meta.concat(concat_meta, strict=True)
 
-        assert str(rerr).find('Duplicated keys (variable names) across') >= 0
+        assert str(kerr).find(
+            'Duplicated keys (variable names) in Meta.keys()') >= 0
+        return
+
+    def test_concat_strict_w_ho_collision(self):
+        """Test raises KeyError when higher-order variable nams overlap."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
+
+        # Create a second object with the same higher-order data variables
+        concat_meta = pysat.Meta()
+        for dvar in self.meta.keys_nD():
+            concat_meta[dvar] = self.meta[dvar]
+
+        # Test the error message
+        with pytest.raises(KeyError) as kerr:
+            self.meta.concat(concat_meta, strict=True)
+
+        assert str(kerr).find(
+            'Duplicated keys (variable names) in Meta.keys()') >= 0
         return
 
     def test_multiple_meta_assignment_error(self):
@@ -228,7 +246,7 @@ class TestMeta(object):
             self.meta.transfer_attributes_to_instrument(self.testInst,
                                                         strict_names=True)
 
-        assert str(aerr).find("cannot be transferred as it already exists") > 0s
+        assert str(aerr).find("cannot be transferred as it already exists") > 0
         return
 
     def test_meta_immutable(self):
@@ -345,33 +363,14 @@ class TestMeta(object):
             assert out.find('ND Metadata variables:') < 0
         return
 
-    @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
-                                           "testing2d_xarray", "testing_xarray",
-                                           "testmodel"])
-    def test_equality_w_copy(self, inst_name):
-        """Test that meta remains the same when copied."""
+    def test_self_equality(self):
+        """Test Meta equality for the same objecct."""
 
-        # Initialize the instrument to create a full meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
-
-        # Create and test a copy
-        meta_copy = self.meta.copy()
-        assert meta_copy == self.meta, "copy of meta data differs"
-        return
-
-    def test_full_empty_inequality(self):
-        """Test that meta equality detects differences for full vs empty."""
-
-        # Initialize the instrument to create a full meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': "testing"})
-
-        # Create a different meta object
-        emeta = pysat.Meta()
-        assert emeta != self.meta, "meta equality not detectinng differences"
+        assert self.meta == self.meta
         return
 
     def test_equality(self):
-        """Test that meta equality works without copy."""
+        """Test that meta equality works with identically set objects."""
 
         # Add identical data to the test and comparison meta objects
         cmeta = pysat.Meta()
@@ -387,6 +386,58 @@ class TestMeta(object):
 
         # Test the equality
         assert cmeta == self.meta, "identical meta objects differ"
+        return
+
+    @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
+                                           "testing2d_xarray", "testing_xarray",
+                                           "testmodel"])
+    def test_equality_w_copy(self, inst_name):
+        """Test that meta remains the same when copied."""
+
+        # Initialize the instrument to create a full meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
+
+        # Create and test a copy
+        meta_copy = self.meta.copy()
+        assert meta_copy == self.meta, "copy of meta data differs"
+        return
+
+    @pytest.mark.parametrize("emeta", [pysat.Meta(), pysat.Instrument()])
+    def test_inequality(self):
+        """Test that meta inequality for different comparison objects."""
+
+        # Initialize the instrument to create a full meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': "testing"})
+
+        # Evaluate the inequality
+        assert emeta != self.meta, "meta equality not detectinng differences"
+        return
+
+    @pytest.mark.parametrize('val_dict', [
+        {'units': 'U', 'long_name': 'HO Val', 'radn': 'raiden'},
+        {'units': 'MetaU', 'long_name': 'HO Val'}])
+    def test_inequality_with_higher_order_meta(self, val_dict):
+        """Test inequality with higher order metadata."""
+
+        meta_dict = {'units': {'ho_val': 'U', 'ho_prof': 'e-'},
+                     'long_name': {'ho_val': 'HO Val', 'ho_prof': 'HO Profile'}}
+
+        # Set the default meta object
+        self.meta['ho_data'] = pysat.Meta(pds.DataFrame(meta_dict))
+
+        # Set the altrered meta object
+        cmeta = pysat.Meta()
+
+        for vkey in val_dict.keys():
+            if vkey in meta_dict.keys():
+                meta_dict[vkey]['ho_val'] = val_dict[vkey]
+            else:
+                meta_dict[vkey] = {'ho_val': val_dict[vkey]}
+
+        cmeta['ho_data'] = pysat.Meta(pds.DataFrame(meta_dict))
+
+        # Evaluate the inequality
+        assert cmeta != self.meta
         return
 
     @pytest.mark.parametrize("label_key", ["units", "name", "notes", "desc",
@@ -454,6 +505,131 @@ class TestMeta(object):
     # -------------------------------------
     # Test the class with standard metadata
 
+    # START HERE
+    def test_basic_meta_assignment(self):
+        """Test basic assignment of metadata."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        assert (self.meta['new'].units == 'hey')
+        assert (self.meta['new'].long_name == 'boo')
+        return
+
+    def test_basic_meta_assignment_w_Series(self):
+        """Test basic assignment of metadata with a pandas Series."""
+
+        self.meta['new'] = pds.Series({'units': 'hey', 'long_name': 'boo'})
+        assert (self.meta['new'].units == 'hey')
+        assert (self.meta['new'].long_name == 'boo')
+        return
+
+    def test_multiple_meta_assignment(self):
+        """Test assignment of multiple metadata."""
+
+        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                      'long_name': ['boo', 'boo2']}
+        assert self.meta['new'].units == 'hey'
+        assert self.meta['new'].long_name == 'boo'
+        assert self.meta['new2'].units == 'hey2'
+        assert self.meta['new2'].long_name == 'boo2'
+        return
+
+    def test_multiple_meta_retrieval(self):
+        """Test retrieval of multiple metadata."""
+
+        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                      'long_name': ['boo', 'boo2']}
+        self.meta[['new', 'new2']]
+        self.meta[['new', 'new2'], :]
+        self.meta[:, 'units']
+        self.meta['new', ('units', 'long_name')]
+        return
+
+    def test_multiple_meta_ho_data_retrieval(self):
+        """Test retrieval of multiple higher order metadata."""
+
+        meta = pysat.Meta()
+        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
+        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
+        self.meta[['higher', 'lower']] = {'meta': [meta, None],
+                                          'units': [None, 'boo'],
+                                          'long_name': [None, 'boohoo']}
+        assert self.meta['lower'].units == 'boo'
+        assert self.meta['lower'].long_name == 'boohoo'
+        assert self.meta['higher'].children == meta
+        return
+
+    def test_replace_meta_units(self):
+        """Test replacement of metadata units."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['new'] = {'units': 'yep'}
+        assert (self.meta['new'].units == 'yep')
+        assert (self.meta['new'].long_name == 'boo')
+        return
+
+    def test_replace_meta_long_name(self):
+        """Test replacement of metadata long_name."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['new'] = {'long_name': 'yep'}
+        assert (self.meta['new'].units == 'hey')
+        assert (self.meta['new'].long_name == 'yep')
+        return
+
+    def test_add_new_metadata_types(self):
+        """Test addition of new metadata types."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo',
+                            'description': 'boohoo'}
+
+        assert (self.meta['new'].units == 'hey')
+        assert (self.meta['new'].long_name == 'boo')
+        assert (self.meta['new'].description == 'boohoo')
+        return
+
+    def test_add_meta_then_add_new_metadata_types(self):
+        """Test addition of new metadata followed by new metadata types."""
+
+        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
+        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
+                             'description': 'boohoo'}
+        assert self.meta['new2'].units == 'hey'
+        assert self.meta['new2'].long_name == 'boo'
+        assert self.meta['new2'].description == 'boohoo'
+        assert self.meta['new1'].units == 'hey1'
+        assert self.meta['new1'].long_name == 'crew'
+        assert np.isnan(self.meta['new1'].description)
+        return
+
+    def test_add_meta_with_custom_then_add_new_metadata_types(self):
+        """Test addition of new metadata types followed by new metadata."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'crew',
+                            'description': 'boohoo'}
+        self.meta['new'] = {'units': 'hey2', 'long_name': 'boo'}
+        self.meta['new2'] = {'units': 'heyy', 'long_name': 'hoo'}
+        self.meta['new3'] = {'units': 'hey3', 'long_name': 'crew3',
+                             'description': 'boohoo3'}
+        assert self.meta['new'].units == 'hey2'
+        assert self.meta['new'].long_name == 'boo'
+        assert self.meta['new'].description == 'boohoo'
+        assert self.meta['new3'].description == 'boohoo3'
+        assert self.meta['new2'].long_name == 'hoo'
+        assert np.isnan(self.meta['new2'].description)
+        return
+
+    def test_add_meta_then_partially_add_new_metadata_types(self):
+        """Test partial reset of metadata while adding new metadata types."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'crew'}
+        self.meta['new'] = {'long_name': 'boo', 'description': 'boohoo'}
+
+        assert self.meta['new'].units == 'hey'
+        assert self.meta['new'].long_name == 'boo'
+        assert self.meta['new'].description == 'boohoo'
+        return
+
+    # END NEW REORG
     def test_meta_immutable_at_instrument_instantiation(self):
         """Test that meta is immutable at instrument Instantiation."""
 
@@ -749,29 +925,11 @@ class TestMeta(object):
             assert self.meta['profiles']['children'][dvar, 'bananas'] == 2
         return
 
-    def test_concat_w_ho(self):
-        """Test `meta.concat` adds new meta objects with higher order data."""
-
-        # Create meta data to concatenate
-        meta2 = pysat.Meta()
-        meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        meta2['new4'] = pysat.Meta(pds.DataFrame(
-            {'units': 'hey4', 'long_name': 'crew_brew', 'bob_level': 'max'}))
-
-        # Perform and test for successful concatenation
-        self.meta = self.meta.concat(meta2)
-        assert self.meta['new3'].units == 'hey3'
-        assert self.meta['new4'].children['new41'].units == 'hey4'
-        return
-
-
     def test_inst_assign_from_meta_w_ho(self):
         """Test assignment to Instrument from Meta with higher order data."""
-        # HERE
+        # I DON'T THINK THIS TEST DOES ANYTHING NEW, WHY IS IT HERE?
 
-        # Initialize the Meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
+        self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
         self.meta = pysat.Meta()
@@ -803,6 +961,7 @@ class TestMeta(object):
 
     def test_inst_assign_from_meta_w_ho_then_update(self):
         """Test assign `Instrument.meta` from separate Meta with HO data."""
+        # I ALSO DON'T THINK THIS TEST DOES ANYTHING THAT HASN'T BEEN TESTED
         self.testInst.load(date=self.stime)
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
@@ -843,270 +1002,55 @@ class TestMeta(object):
         assert 'children' not in self.testInst.meta.data.columns
         return
 
-    # End reorg HERE
+    def test_concat_w_ho(self):
+        """Test `meta.concat` adds new meta objects with higher order data."""
 
-
-    def test_basic_concat_w_ho_collision_strict(self):
-        """Test for an error under strict concat with HO metadata."""
-
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
-        meta2 = pysat.Meta()
-        meta2['new31'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        self.meta['new3'] = meta2
-        meta3 = pysat.Meta()
-        meta3['new31'] = {'units': 'hey4', 'long_name': 'crew_brew',
-                          'bob_level': 'max'}
-        meta2['new3'] = meta3
-        with pytest.raises(RuntimeError):
-            self.meta = self.meta.concat(meta2, strict=True)
-        return
-
-    def test_basic_concat_w_ho_collision_not_strict(self):
-        """Test under non-strict concat with HO metadata with overlap."""
-
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
+        # Create meta data to concatenate
         meta2 = pysat.Meta()
         meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        meta3 = pysat.Meta()
-        meta3['new41'] = {'units': 'hey4', 'long_name': 'crew_brew',
-                          'bob_level': 'max'}
-        meta2['new3'] = meta3
-        self.meta = self.meta.concat(meta2, strict=False)
+        meta2['new4'] = pysat.Meta(pds.DataFrame(
+            {'units': 'hey4', 'long_name': 'crew_brew', 'bob_level': 'max'}))
 
-        assert self.meta['new3'].children['new41'].units == 'hey4'
-        assert self.meta['new3'].children['new41'].bob_level == 'max'
-        assert self.meta['new2'].units == 'hey'
+        # Perform and test for successful concatenation
+        self.meta = self.meta.concat(meta2)
+        assert self.meta['new3'].units == 'hey3'
+        assert self.meta['new4'].children['new41'].units == 'hey4'
         return
 
-    def test_basic_concat_w_ho_collisions_not_strict(self):
-        """Test non-strict concat with HO metadata with multiple overlaps."""
+    def test_concat_not_strict_w_ho_collision(self):
+        """Test non-strict concat with overlapping higher-order data."""
 
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
-        meta2 = pysat.Meta()
-        meta2['new31'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        self.meta['new3'] = meta2
-        meta3 = pysat.Meta()
-        meta3['new31'] = {'units': 'hey4', 'long_name': 'crew_brew',
-                          'bob_level': 'max'}
-        meta2['new3'] = meta3
-        self.meta = self.meta.concat(meta2, strict=False)
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
 
-        assert self.meta['new3'].children['new31'].units == 'hey4'
-        assert self.meta['new3'].children['new31'].bob_level == 'max'
-        assert self.meta['new2'].units == 'hey'
+        # Create a second object with the same higher-order data variables
+        concat_meta = pysat.Meta()
+        for dvar in self.meta.keys_nD():
+            concat_meta[dvar] = self.meta[dvar]
+
+            # Change the units of the HO data variables
+            for cvar in concat_meta[dvar].children.keys():
+                # HERE FIX, DOESN'T WORK
+                concat_meta[dvar].children[cvar] = {
+                    concat_meta.labels.units: "UpdatedUnits"}
+
+        # Concatenate the data
+        self.meta = self.meta.concat(concat_meta, strict=False)
+
+        # Test that the Meta data kept the original values
+        testing.assert_list_contains(list(concat_meta.keys_nD()),
+                                     list(self.meta.keys_nD()))
+
+        for dvar in concat_meta.keys_nD():
+            testing.assert_lists_equal(list(concat_meta[dvar].children.keys()),
+                                       list(self.meta[dvar].children.keys()))
+
+            for cvar in concat_meta[dvar].children.keys():
+                # POSSIBLY FIX THIS
+                assert self.meta[dvar].children[
+                    cvar, self.meta.labels.units].find('Updated') < 0
         return
 
-    def test_basic_meta_assignment(self):
-        """Test basic assignment of metadata."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'boo')
-        return
-
-    def test_basic_meta_assignment_w_Series(self):
-        """Test basic assignment of metadata with a pandas Series."""
-
-        self.meta['new'] = pds.Series({'units': 'hey', 'long_name': 'boo'})
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'boo')
-        return
-
-    def test_multiple_meta_assignment(self):
-        """Test assignment of multiple metadata."""
-
-        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
-                                      'long_name': ['boo', 'boo2']}
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new2'].units == 'hey2'
-        assert self.meta['new2'].long_name == 'boo2'
-        return
-
-    def test_multiple_meta_retrieval(self):
-        """Test retrieval of multiple metadata."""
-
-        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
-                                      'long_name': ['boo', 'boo2']}
-        self.meta[['new', 'new2']]
-        self.meta[['new', 'new2'], :]
-        self.meta[:, 'units']
-        self.meta['new', ('units', 'long_name')]
-        return
-
-    def test_multiple_meta_ho_data_retrieval(self):
-        """Test retrieval of multiple higher order metadata."""
-
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta[['higher', 'lower']] = {'meta': [meta, None],
-                                          'units': [None, 'boo'],
-                                          'long_name': [None, 'boohoo']}
-        assert self.meta['lower'].units == 'boo'
-        assert self.meta['lower'].long_name == 'boohoo'
-        assert self.meta['higher'].children == meta
-        return
-
-    def test_replace_meta_units(self):
-        """Test replacement of metadata units."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new'] = {'units': 'yep'}
-        assert (self.meta['new'].units == 'yep')
-        assert (self.meta['new'].long_name == 'boo')
-        return
-
-    def test_replace_meta_long_name(self):
-        """Test replacement of metadata long_name."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new'] = {'long_name': 'yep'}
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'yep')
-        return
-
-    def test_add_new_metadata_types(self):
-        """Test addition of new metadata types."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo',
-                            'description': 'boohoo'}
-
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'boo')
-        assert (self.meta['new'].description == 'boohoo')
-        return
-
-    def test_add_meta_then_add_new_metadata_types(self):
-        """Test addition of new metadata followed by new metadata types."""
-
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
-        assert self.meta['new2'].units == 'hey'
-        assert self.meta['new2'].long_name == 'boo'
-        assert self.meta['new2'].description == 'boohoo'
-        assert self.meta['new1'].units == 'hey1'
-        assert self.meta['new1'].long_name == 'crew'
-        assert np.isnan(self.meta['new1'].description)
-        return
-
-    def test_add_meta_with_custom_then_add_new_metadata_types(self):
-        """Test addition of new metadata types followed by new metadata."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'crew',
-                            'description': 'boohoo'}
-        self.meta['new'] = {'units': 'hey2', 'long_name': 'boo'}
-        self.meta['new2'] = {'units': 'heyy', 'long_name': 'hoo'}
-        self.meta['new3'] = {'units': 'hey3', 'long_name': 'crew3',
-                             'description': 'boohoo3'}
-        assert self.meta['new'].units == 'hey2'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new'].description == 'boohoo'
-        assert self.meta['new3'].description == 'boohoo3'
-        assert self.meta['new2'].long_name == 'hoo'
-        assert np.isnan(self.meta['new2'].description)
-        return
-
-    def test_add_meta_then_partially_add_new_metadata_types(self):
-        """Test partial reset of metadata while adding new metadata types."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'crew'}
-        self.meta['new'] = {'long_name': 'boo', 'description': 'boohoo'}
-
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new'].description == 'boohoo'
-        return
-
-    def test_meta_equality(self):
-        """Test basic equality case."""
-
-        assert self.testInst.meta == self.testInst.meta
-        return
-
-    def test_false_meta_equality(self):
-        """Test inequality with different types."""
-
-        assert not (self.testInst.meta == self.testInst)
-        return
-
-    def test_equality_with_higher_order_meta(self):
-        """Test equality with higher order metadata."""
-
-        self.meta = pysat.Meta()
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta['higher'] = meta
-        meta2 = pysat.Meta()
-        meta2['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        meta3 = pysat.Meta()
-        meta3['higher'] = meta2
-        assert meta3 == self.meta
-        assert self.meta == meta3
-        return
-
-    def test_inequality_with_higher_order_meta(self):
-        """Test inequality with higher order metadata."""
-
-        self.meta = pysat.Meta()
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo', 'radn': 'raiden'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta['higher'] = meta
-        meta2 = pysat.Meta()
-        meta2['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        meta3 = pysat.Meta()
-        meta3['higher'] = meta2
-        assert not (meta3 == self.meta)
-        assert not (self.meta == meta3)
-        return
-
-    def test_inequality_with_higher_order_meta2(self):
-        """Test inequality with higher order metadata."""
-
-        self.meta = pysat.Meta()
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey2', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta['higher'] = meta
-        meta2 = pysat.Meta()
-        meta2['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        meta3 = pysat.Meta()
-        meta3['higher'] = meta2
-
-        assert not (meta3 == self.meta)
-        assert not (self.meta == meta3)
-        return
-
-    def test_inequality_with_higher_order_meta3(self):
-        """Test inequality with higher order metadata."""
-
-        self.meta = pysat.Meta()
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta['higher'] = meta
-        self.meta['lower'] = {'units': 'yoyooy'}
-        meta2 = pysat.Meta()
-        meta2['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        meta3 = pysat.Meta()
-        meta3['higher'] = meta2
-
-        assert not (meta3 == self.meta)
-        assert not (self.meta == meta3)
-        return
 
     def test_assign_higher_order_meta(self):
         """Test assign higher order metadata."""
