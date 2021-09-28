@@ -514,7 +514,8 @@ class TestDeprecation(object):
 
     @pytest.mark.parametrize("kwargs,msg_inds",
                              [({'fnames': None}, [0, 1]),
-                              ({'fnames': 'no_file', 'file_format': None}, [0, 2])])
+                              ({'fnames': 'no_file', 'file_format': None},
+                               [0, 2])])
     def test_load_netcdf4(self, kwargs, msg_inds):
         """Test deprecation warnings from load_netcdf4."""
         with warnings.catch_warnings(record=True) as war:
