@@ -1138,6 +1138,11 @@ class Meta(object):
         mdata : Meta
             Concatenated object
 
+        Raises
+        ------
+        KeyError
+            If there are duplicate keys and the `strict` flag is True.
+
         Note
         ----
         Uses units and name label of self if other_meta is different
@@ -1150,14 +1155,8 @@ class Meta(object):
         if strict:
             for key in other_meta.keys():
                 if key in mdata:
-                    raise RuntimeError(''.join(('Duplicated keys (variable ',
-                                                'names) across Meta ',
-                                                'objects in keys().')))
-            for key in other_meta.keys_nD():
-                if key in mdata:
-                    raise RuntimeError(''.join(('Duplicated keys (variable ',
-                                                'names) across Meta '
-                                                'objects in keys_nD().')))
+                    raise KeyError(''.join(('Duplicated keys (variable names) ',
+                                            'in Meta.keys().')))
 
         # Make sure labels between the two objects are the same
         other_meta_updated = other_meta.copy()
