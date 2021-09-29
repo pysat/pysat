@@ -25,7 +25,7 @@ class InstIterationTests(object):
     specified there.
 
     See Also
-    ---------
+    --------
     `pysat.tests.test_instrument`
 
     """
@@ -134,7 +134,7 @@ class InstIterationTests(object):
                 time_range.append((inst.index[0],
                                    inst.index[-1]))
         else:
-            # .next/.prev iterations
+            # Iterate forwards or backwards using `.next()` or `.prev()`
             if reverse:
                 iterator = self.testInst.prev
             else:

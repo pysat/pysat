@@ -35,7 +35,7 @@ class InstAccessTests(object):
     specified there.
 
     See Also
-    ---------
+    --------
     `pysat.tests.test_instrument`
 
     """
@@ -194,7 +194,7 @@ class InstAccessTests(object):
     def test_basic_instrument_load_mixed_inputs(self, input):
         """Ensure mixed load inputs raise ValueError.
 
-        parameters
+        Parameters
         ----------
         input : dict
             Dictionary of keywords and arguments to produce an error when
@@ -222,7 +222,7 @@ class InstAccessTests(object):
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_instrument_load_errors_with_multifile(self, load_in, verr):
-        """Ensure load by filename raises ValueError with `multi_file_day` as True.
+        """Ensure improper usage of load with `multi_file_day` raises ValueError.
 
         Parameters
         ----------
@@ -266,7 +266,7 @@ class InstAccessTests(object):
     def test_basic_instrument_load_by_date_with_extra_time(self):
         """Ensure `.load(date=date)` only uses date portion of datetime."""
 
-        # put in a date that has more than year, month, day
+        # Put in a date that has more than year, month, day
         self.testInst.load(date=(self.ref_time + dt.timedelta(minutes=71)))
         self.eval_successful_load()
         return
@@ -902,21 +902,21 @@ class InstAccessTests(object):
         """
         # TODO(#789): Remove when meta children support is dropped.
 
-        # check for pysat_testing2d instrument
+        # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
                 self.testInst.rename(values)
                 for key in values:
                     for ikey in values[key]:
-                        # check column name unchanged
+                        # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
-                        # check for new name in HO data
+                        # Check for new name in HO data
                         assert values[key][ikey] in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert values[key][ikey] in check_var
-                        # ensure old name not present
+                        # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var
@@ -977,26 +977,26 @@ class InstAccessTests(object):
         """
         # TODO(#789): Remove when meta children support is dropped.
 
-        # check for pysat_testing2d instrument
+        # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
                 self.testInst.rename(values)
                 for key in values:
                     for ikey in values[key]:
-                        # check column name unchanged
+                        # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
-                        # check for new name in HO data
+                        # Check for new name in HO data
                         test_val = values[key][ikey]
                         assert test_val in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
-                        # case insensitive check
+                        # Case insensitive check
                         assert values[key][ikey] in check_var
-                        # ensure new case in there
+                        # Ensure new case in there
                         check_var = check_var[values[key][ikey]].name
                         assert values[key][ikey] == check_var
-                        # ensure old name not present
+                        # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var

@@ -27,7 +27,7 @@ class InstPropertyTests(object):
     specified there.
 
     See Also
-    ---------
+    --------
     `pysat.tests.test_instrument`
 
     """
