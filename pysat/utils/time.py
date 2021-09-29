@@ -282,44 +282,29 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     if len(year) == 0:
         raise ValueError('Length of array must be larger than 0.')
 
-    year = year.astype(int)
+    # Establish default month
     if month is None:
-        month = np.ones(len(year), dtype=int)
-    else:
-        month = month.astype(int)
+        # If no month, assume January.  All days will be treated as day of year.
+        month = np.ones(len(year))
 
-    if uts is None:
-        uts = np.zeros(len(year))
+    # Initial day is first of given month.
+    day0 = np.ones(len(year))
+
     if day is None:
+        # If no day, assume first of month.
         day = np.ones(len(year))
-    day = day.astype(int)
+    if uts is None:
+        # If no seconds, assume start of day.
+        uts = np.zeros(len(year))
 
-    # Track changes in seconds
-    uts_del = uts.copy().astype(np.float64)
+    # Initialize all dates as first of month and convert to index.
+    df = pds.DataFrame({'year': year, 'month': month, 'day': day0})
+    index = pds.DatetimeIndex(pds.to_datetime(df))
 
-    # Determine where there are changes in year and month that need to be
-    # accounted for
-    _, idx = np.unique((year * 100.0 + month), return_index=True)
+    # Add days (offset by 1) and seconds to each index.
+    index += (day - 1).astype('timedelta64[D]') + uts.astype('timedelta64[s]')
 
-    # Create another index array for faster algorithm below
-    idx2 = np.hstack((idx, len(year) + 1))
-
-    # Computes UTC seconds offset for each unique set of year and month
-    for _idx, _idx2 in zip(idx[1:], idx2[2:]):
-        temp = (dt.datetime(year[_idx], month[_idx], 1)
-                - dt.datetime(year[0], month[0], 1))
-        uts_del[_idx:_idx2] += temp.total_seconds()
-
-    # Add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day - 1) * 86400.0
-
-    # Add in seconds since unix epoch to first day
-    uts_del += (dt.datetime(year[0], month[0], 1)
-                - dt.datetime(1970, 1, 1)).total_seconds()
-
-    # Going to use routine that defaults to nanseconds for epoch
-    uts_del *= 1E9
-    return pds.to_datetime(uts_del)
+    return index
 
 
 def filter_datetime_input(date):
