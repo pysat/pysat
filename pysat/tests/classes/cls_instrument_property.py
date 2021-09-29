@@ -132,7 +132,7 @@ class InstPropertyTests(object):
                              [(False, False), (True, False), (False, True),
                               (True, True)])
     def test_download_updated_files(self, caplog, file_bounds, non_default):
-        """Test download_updated_files and default bounds are updated.
+        """Test `download_updated_files` and default bounds are updated.
 
         Parameters
         ----------

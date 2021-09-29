@@ -660,6 +660,9 @@ class InstIterationTests(object):
     def test_set_bounds_by_date_extra_time(self, start, stop):
         """Test set bounds by date with extra time.
 
+        Note
+        ----
+        Only the date portion is retained, hours and shorter timespans are dropped.
         Parameters
         ----------
         start : dt.datetime or list of dt.datetime

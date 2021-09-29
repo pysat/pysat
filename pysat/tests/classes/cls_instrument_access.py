@@ -130,7 +130,7 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_doy(self, doy):
-        """Ensure day of year load argument in valid range.
+        """Ensure error raised if day of year load argument out of valid range.
 
         Parameters
         ----------
@@ -148,7 +148,7 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize('end_doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_end_doy(self, end_doy):
-        """Ensure `end_doy` keyword in valid range.
+        """Ensure error raised if `end_doy` keyword out of valid range.
 
         Parameters
         ----------
@@ -222,7 +222,7 @@ class InstAccessTests(object):
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_instrument_load_errors_with_multifile(self, load_in, verr):
-        """Ensure load calls raises ValueError with `multi_file_day` as True.
+        """Ensure load by filename raises ValueError with `multi_file_day` as True.
 
         Parameters
         ----------
@@ -311,7 +311,7 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize("operator", [('next'), ('prev')])
     def test_file_load_bad_start_file(self, operator):
-        """Test Error for in new day when on a file not in iteration list.
+        """Test Error when starting iteration on a file not in iteration list.
 
         Parameters
         ----------
@@ -610,7 +610,7 @@ class InstAccessTests(object):
                                         (['mlt', 'longitude']),
                                         (['longitude', 'mlt'])])
     def test_basic_data_access_by_name(self, labels):
-        """Check that data can be accessed at the instrument level.
+        """Check that data can be accessed by name at the instrument level.
 
         Parameters
         ----------
@@ -629,7 +629,7 @@ class InstAccessTests(object):
                                        (slice(0, 10)),
                                        (np.arange(0, 10))])
     def test_data_access_by_indices_and_name(self, index):
-        """Check that variables and be accessed by each supported index type.
+        """Check that variables can be accessed by each supported index type.
 
         Parameters
         ----------
@@ -756,7 +756,7 @@ class InstAccessTests(object):
                                      dt.datetime(2009, 1, 1, 0, 1)),
                                slice(dt.datetime(2009, 1, 1, 0, 1), None))])
     def test_setting_partial_data_by_inputs(self, changed, fixed):
-        """Check that data can be set using each supported input type.
+        """Check that data can be set using each supported index type.
 
         Parameters
         ----------
