@@ -294,8 +294,11 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     df = pds.DataFrame({'year': year, 'month': month, 'day': day0})
     index = pds.DatetimeIndex(pds.to_datetime(df))
 
-    # Add days (offset by 1) and seconds to each index.
-    index += (day - 1).astype('timedelta64[D]') + uts.astype('timedelta64[s]')
+    # Add days (offset by 1) to each index.
+    index += (day - 1).astype('timedelta64[D]')
+
+    # Add seconds to each index.  Need to convert to nanoseconds first.
+    index += (1e9 * uts).astype('timedelta64[ns]')
 
     return index
 
