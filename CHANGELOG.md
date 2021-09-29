@@ -42,6 +42,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `decode_timedelta=False` for loading xarray from netcdf4 (#823)
    * Closed links to open files when loading data through xarray (#887)
    * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
+   * Fixed a bug in `pysat.utils.time.create_datetime_index` (#906)
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
