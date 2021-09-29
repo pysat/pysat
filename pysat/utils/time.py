@@ -281,11 +281,11 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         month = np.ones(len(year))
 
     # Initial day is first of given month.
-    day0 = np.ones(len(year))
+    day0 = np.ones(shape=len(year))
 
     if day is None:
         # If no day, assume first of month.
-        day = np.ones(len(year))
+        day = day0
     if uts is None:
         # If no seconds, assume start of day.
         uts = np.zeros(len(year))
