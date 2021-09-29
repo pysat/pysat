@@ -114,6 +114,7 @@ class InstPropertyTests(object):
             Name of remote function to test.
         num : int
             Number of filenames that should be retrieved by remote_func.
+
         """
 
         stop = self.ref_time + dt.timedelta(days=30)
