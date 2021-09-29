@@ -1217,6 +1217,11 @@ class Meta(object):
             If True, produces an error if the Instrument object already
             has an attribute with the same name to be copied (default=False).
 
+        Raises
+        ------
+        ValueError
+            If `inst` type is not pysat.Instrument.
+
         Note
         ----
         pysat's load_netCDF and similar routines are only able to attach
@@ -1227,6 +1232,12 @@ class Meta(object):
         Will not transfer names that conflict with pysat default attributes.
 
         """
+
+        # Test the instrument parameter for type
+        if not isinstance(inst, pysat.Instrument):
+            raise ValueError("".join(["Can't transfer Meta attributes to ",
+                                      "non-Instrument object of type ",
+                                      str(type(inst))]))
 
         # Save the base Instrument attributes
         banned = inst._base_attr
