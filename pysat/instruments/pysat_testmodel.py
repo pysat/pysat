@@ -15,10 +15,10 @@ logger = pysat.logger
 platform = 'pysat'
 name = 'testmodel'
 tags = {'': 'Regular testing data set',
-        'tiegcm': 'Testing data set similar to TIEGCM'}
-inst_ids = {'': ['', 'tiegcm']}
+        'pressure_levels': 'Testing data with pressure levels as the Z-coordinate instead of altitude.'}
+inst_ids = {'': [tag for tag in tags.keys()]]}
 pandas_format = False
-_test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags}}
+_test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 
 
 # Init method
@@ -149,7 +149,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     # Set the meta data.
     meta = mm_test.initialize_test_meta('time', data.keys())
 
-    if tag == 'tiegcm':
+    if tag == 'pressure_levels':
         # Assigning new metadata for altitude since it differs from default info
         meta['altitude'] = {meta.labels.units: 'cm',
                             meta.labels.name: 'altitude',
