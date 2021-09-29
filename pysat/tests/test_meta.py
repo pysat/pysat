@@ -47,7 +47,12 @@ class TestMeta(object):
         self.meta = pysat.Meta()
 
         self.meta_labels = {'units': ('Units', str),
-                            'name': ('Long_Name', str)}
+                            'name': ('Long_Name', str),
+                            'desc': ('Description', str),
+                            'notes': ('Note', str),
+                            'min_val': ('Minimum', np.float64),
+                            'max_val': ('Maximum', np.float64),
+                            'fill_val': ('Fill_Value', np.float64)}
         self.dval = None
         self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']
@@ -63,7 +68,7 @@ class TestMeta(object):
 
     # ---------------
     # Utility methods
-    
+
     def set_meta(self, inst_kwargs=None):
         """Set the `meta` and `testInst` attributes using test Instruments.
 
@@ -140,7 +145,7 @@ class TestMeta(object):
                     "{:s} label value {:} != {:}".format(
                         label, self.meta['help', label].__repr__(),
                         meta_dict[label].__repr__())
-    
+
         return
 
     # -----------------------
@@ -236,7 +241,7 @@ class TestMeta(object):
         # Set the Meta object
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
-        # Update the Meta and Instrument objects 
+        # Update the Meta and Instrument objects
         self.meta.mutable = True
         self.meta.jojo_beans = 'yep!'
         self.testInst.jojo_beans = 'nope!'
@@ -262,6 +267,20 @@ class TestMeta(object):
         assert str(aerr).find("Cannot set attribute") >= 0
         return
 
+    def test_transfer_attributes_to_non_instrument(self):
+        """Test raises ValueError when transferring custom meta to non-Inst."""
+
+        # Set the Meta object without setting testInst
+        self.meta.mutable = True
+        self.meta.new_attribute = 'hello'
+
+        # Catch and test error message
+        with pytest.raises(ValueError) as verr:
+            self.meta.transfer_attributes_to_instrument(self.testInst)
+
+        assert str(verr).find("Can't transfer Meta attributes to non-") >= 0
+        return
+
     # -------------------------
     # Test the Warning messages
 
@@ -269,7 +288,7 @@ class TestMeta(object):
         """Test MetaLabels initiation with an integer label type."""
 
         # Reinitialize the Meta and test for warning
-        self.meta_labels['fill_val'] = ("fill", int)
+        self.meta_labels = {'fill_val': ("fill", int)}
 
         with warnings.catch_warnings(record=True) as war:
             self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing',
@@ -346,15 +365,18 @@ class TestMeta(object):
 
         # Evaluate the extra parts of the long output string
         if long_str:
-            ndvar = 0
-            for dvar in self.testInst.variables:
-                if out.find(dvar) > 0:
-                    ndvar += 1
-            assert ndvar > 0, "Represented data variable names missing"
+            if inst_kwargs is not None:
+                ndvar = 0
+                for dvar in self.testInst.variables:
+                    if out.find(dvar) > 0:
+                        ndvar += 1
+                assert ndvar > 0, "Represented data variable names missing"
 
-            assert out.find('Standard Metadata variables:') > 0
+                assert out.find('Standard Metadata variables:') > 0
+            else:
+                assert out.find('Standard Metadata variables:') < 0
 
-            if inst_kwargs is not None and inst_kwargs['name'] == 'testing2d': 
+            if inst_kwargs is not None and inst_kwargs['name'] == 'testing2d':
                 assert out.find('ND Metadata variables:') > 0
             else:
                 assert out.find('ND Metadata variables:') < 0
@@ -377,12 +399,12 @@ class TestMeta(object):
 
         for mobj in [self.meta, cmeta]:
             mobj['test_var'] = {'units': 'testU',
-                               'name': 'test variable',
-                                'notes': "test notes",
-                                'desc': "test description",
-                                "min_val": 0.0,
-                                "max_val": 10.0,
-                                "fill_val": -1.0}
+                                'name': 'test variable',
+                                'notes': 'test notes',
+                                'desc': 'test description',
+                                'min_val': 0.0,
+                                'max_val': 10.0,
+                                'fill_val': -1.0}
 
         # Test the equality
         assert cmeta == self.meta, "identical meta objects differ"
@@ -392,7 +414,14 @@ class TestMeta(object):
                                            "testing2d_xarray", "testing_xarray",
                                            "testmodel"])
     def test_equality_w_copy(self, inst_name):
-        """Test that meta remains the same when copied."""
+        """Test that meta remains the same when copied.
+
+        Parameters
+        ----------
+        inst_name : str
+            String corresponding to a pysat test Instrument name.
+
+        """
 
         # Initialize the instrument to create a full meta object
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
@@ -403,8 +432,16 @@ class TestMeta(object):
         return
 
     @pytest.mark.parametrize("emeta", [pysat.Meta(), pysat.Instrument()])
-    def test_inequality(self):
-        """Test that meta inequality for different comparison objects."""
+    def test_inequality(self, emeta):
+        """Test that meta inequality for different comparison objects.
+
+        Parameters
+        ----------
+        emeta : object
+            Object of any type that is not equal to the Meta data from the
+            `pysat_testing.py` Instrument.
+
+        """
 
         # Initialize the instrument to create a full meta object
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': "testing"})
@@ -460,7 +497,7 @@ class TestMeta(object):
             meta_dict[label_key] = "different"
         else:
             meta_dict[label_key] = 99.0
-        
+
         cmeta = pysat.Meta()
         cmeta['test_var'] = meta_dict
 
@@ -469,7 +506,6 @@ class TestMeta(object):
             "differences not detected in label {:s}".format(label_key)
         return
 
-    
     @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
                                            "testing2d_xarray", "testing_xarray",
                                            "testmodel"])
@@ -505,44 +541,110 @@ class TestMeta(object):
     # -------------------------------------
     # Test the class with standard metadata
 
+    @pytest.mark.parametrize("custom_attr", [None, 'custom_meta'])
+    @pytest.mark.parametrize("assign_type", [dict, pds.Series])
+    def test_meta_assignment(self, custom_attr, assign_type):
+        """Test basic assignment of metadata using different data types.
+
+        Parameters
+        ----------
+        custom_attr : str or NoneType
+            Custom meta attribute label or None to use only defaults.
+        assign_type : type
+            Data types that may be used to set metadata for a data variable.
+
+        """
+
+        # Set the desired values
+        self.dval = 'test_meta_dict_assignment'
+        self.default_val = {
+            getattr(self.meta.labels, mattr): ' '.join(['test', mattr])
+            if isinstance(self.meta.labels.label_type[mattr], str) else -47
+            for mattr in self.meta.labels.label_type.keys()}
+        self.default_name = []
+        self.default_nan = []
+
+        if custom_attr is not None:
+            self.default_val[custom_attr] = 'Custom Attribute Value'
+
+        # Assign the meta data using a dictionary
+        self.meta[self.dval] = assign_type(self.default_val)
+
+        # Evaluate the meta data
+        self.eval_meta_settings()
+        return
+
+    @pytest.mark.parametrize("custom_attr", [None, 'custom_meta'])
+    @pytest.mark.parametrize("assign_type", [dict, pds.Series])
+    def test_multiple_meta_assignment(self, custom_attr, assign_type):
+        """Test assignment of multiple metadata.
+
+        Parameters
+        ----------
+        custom_attr : str or NoneType
+            Custom meta attribute label or None to use only defaults.
+        assign_type : type
+            Data types that may be used to set metadata for a data variable.
+
+        """
+
+        # Set the desired values
+        dvals = ['mult1', 'mult2']
+        default_vals = {
+            getattr(self.meta.labels, mattr): [
+                ' '.join(['test', mattr, self.dval])
+                if isinstance(self.meta.labels.label_type[mattr], str) else -47
+                for self.dval in dvals]
+            for mattr in self.meta.labels.label_type.keys()}
+        self.default_name = []
+        self.default_nan = []
+
+        if custom_attr is not None:
+            default_vals[custom_attr] = ['Custom Attr {:s}'.format(self.dval)
+                                         for self.dval in dvals]
+
+        # Assign the meta data
+        self.meta[dvals] = assign_type(default_vals)
+
+        # Test the data assignment for each value
+        for i, self.dval in enumerate(dvals):
+            self.default_val = {mattr: default_vals[mattr][i]
+                                for mattr in default_vals.keys()}
+            self.eval_meta_settings()
+        return
+
+    @pytest.mark.parametrize('num_mvals', [0, 1, 3])
+    @pytest.mark.parametrize('num_dvals', [0, 1, 3])
+    def test_selected_meta_retrieval(self, num_mvals, num_dvals):
+        """Test metadata retrieval using various restrictions.
+
+        Parameters
+        ----------
+        num_mvals : int
+            Number of meta attributes to retrieve
+        num_dvals : int
+            Number of data values to retrieve
+
+        """
+
+        # Set the meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Get the selection criteria
+        dvals = list(self.testInst.variables[:num_dvals])
+        mvals = [getattr(self.meta.labels, mattr)
+                 for mattr in list(self.meta_labels.keys())[:num_mvals]]
+
+        # Retrieve meta data for desired values
+        sel_meta = self.meta[dvals, mvals]
+
+        # Evaluate retrieved data
+        assert isinstance(sel_meta, pds.DataFrame)
+        testing.assert_lists_equal(dvals, list(sel_meta.index))
+        testing.assert_lists_equal(mvals, list(sel_meta.columns))
+        return
+
     # START HERE
-    def test_basic_meta_assignment(self):
-        """Test basic assignment of metadata."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'boo')
-        return
-
-    def test_basic_meta_assignment_w_Series(self):
-        """Test basic assignment of metadata with a pandas Series."""
-
-        self.meta['new'] = pds.Series({'units': 'hey', 'long_name': 'boo'})
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'boo')
-        return
-
-    def test_multiple_meta_assignment(self):
-        """Test assignment of multiple metadata."""
-
-        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
-                                      'long_name': ['boo', 'boo2']}
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new2'].units == 'hey2'
-        assert self.meta['new2'].long_name == 'boo2'
-        return
-
-    def test_multiple_meta_retrieval(self):
-        """Test retrieval of multiple metadata."""
-
-        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
-                                      'long_name': ['boo', 'boo2']}
-        self.meta[['new', 'new2']]
-        self.meta[['new', 'new2'], :]
-        self.meta[:, 'units']
-        self.meta['new', ('units', 'long_name')]
-        return
 
     def test_multiple_meta_ho_data_retrieval(self):
         """Test retrieval of multiple higher order metadata."""
@@ -574,17 +676,6 @@ class TestMeta(object):
         self.meta['new'] = {'long_name': 'yep'}
         assert (self.meta['new'].units == 'hey')
         assert (self.meta['new'].long_name == 'yep')
-        return
-
-    def test_add_new_metadata_types(self):
-        """Test addition of new metadata types."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo',
-                            'description': 'boohoo'}
-
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'boo')
-        assert (self.meta['new'].description == 'boohoo')
         return
 
     def test_add_meta_then_add_new_metadata_types(self):
@@ -645,6 +736,8 @@ class TestMeta(object):
     def test_transfer_attributes_to_instrument(self):
         """Test transfer of custom meta attributes."""
 
+        # Set the Meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
         self.meta.mutable = True
 
         # Set non-conflicting attribute
@@ -777,7 +870,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Alter the Meta data
-        self.dval = "test_inst_assing_from_meta"
+        self.dval = "test_inst_assign_from_meta"
         self.testInst['new_data'] = self.testInst['mlt']
         self.testInst[self.dval] = self.testInst['mlt']
         self.testInst.meta[self.dval] = self.testInst.meta['new_data']
@@ -861,14 +954,14 @@ class TestMeta(object):
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
         inst_data = [frame for i in range(self.testInst.index.shape[0])]
-        meta_dict =  {'data': inst_data, 'units': 'V', 'long_name': 'The Doors',
-                      'meta': pysat.Meta(metadata=pds.DataFrame(
-                          {'units': {dvar: "{:d}".format(i)
-                                     for i, dvar in enumerate(self.frame_list)},
-                           'desc': {dvar: "{:s} desc".format(dvar)
-                                    for dvar in self.frame_list},
-                           'long_name': {dvar: dvar
-                                         for dvar in self.frame_list}}))}
+        meta_dict = {'data': inst_data, 'units': 'V', 'long_name': 'The Doors',
+                     'meta': pysat.Meta(metadata=pds.DataFrame(
+                         {'units': {dvar: "{:d}".format(i)
+                                    for i, dvar in enumerate(self.frame_list)},
+                          'desc': {dvar: "{:s} desc".format(dvar)
+                                   for dvar in self.frame_list},
+                          'long_name': {dvar: dvar
+                                        for dvar in self.frame_list}}))}
 
         # Assign the metadata
         self.testInst['help'] = meta_dict
@@ -929,7 +1022,7 @@ class TestMeta(object):
         """Test assignment to Instrument from Meta with higher order data."""
         # I DON'T THINK THIS TEST DOES ANYTHING NEW, WHY IS IT HERE?
 
-        self.testInst.load(date=self.stime)
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
         self.meta = pysat.Meta()
@@ -962,7 +1055,7 @@ class TestMeta(object):
     def test_inst_assign_from_meta_w_ho_then_update(self):
         """Test assign `Instrument.meta` from separate Meta with HO data."""
         # I ALSO DON'T THINK THIS TEST DOES ANYTHING THAT HASN'T BEEN TESTED
-        self.testInst.load(date=self.stime)
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
         self.meta = pysat.Meta()
@@ -1008,8 +1101,9 @@ class TestMeta(object):
         # Create meta data to concatenate
         meta2 = pysat.Meta()
         meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        meta2['new4'] = pysat.Meta(pds.DataFrame(
-            {'units': 'hey4', 'long_name': 'crew_brew', 'bob_level': 'max'}))
+        meta2['new4'] = pysat.Meta(pds.DataFrame({
+            'units': {'new41': 'hey4'}, 'long_name': {'new41': 'crew_brew'},
+            'bob_level': {'new41': 'max'}}))
 
         # Perform and test for successful concatenation
         self.meta = self.meta.concat(meta2)
@@ -1050,7 +1144,6 @@ class TestMeta(object):
                 assert self.meta[dvar].children[
                     cvar, self.meta.labels.units].find('Updated') < 0
         return
-
 
     def test_assign_higher_order_meta(self):
         """Test assign higher order metadata."""
@@ -1442,9 +1535,10 @@ class TestMeta(object):
         assert (self.meta['new2'].long_name == 'boo2')
         return
 
-    def test_transfer_attributes_to_instrument_leading_(self):
+    def test_transfer_attributes_to_instrument_leading_underscore(self):
         """Ensure private custom meta attributes not transferred."""
 
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
         self.meta.mutable = True
 
         # Set private attributes
@@ -1470,6 +1564,7 @@ class TestMeta(object):
     def test_transfer_attributes_to_instrument_strict_names_false(self):
         """Test attr transfer with strict_names set to False."""
 
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
         self.meta.mutable = True
 
         self.meta.new_attribute = 'hello'
@@ -1477,7 +1572,7 @@ class TestMeta(object):
         self.meta.jojo_beans = 'yep!'
         self.meta.name = 'Failure!'
         self.meta.date = 'yo yo2'
-        self.testInst.load(2009, 1)
+
         self.testInst.jojo_beans = 'nope!'
         self.meta.transfer_attributes_to_instrument(self.testInst,
                                                     strict_names=False)
@@ -1544,7 +1639,7 @@ class TestMeta(object):
 
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
-        self.testInst.load(2009, 1)
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Normally this parameter would be set at instrument code level
         self.testInst.meta.mutable = True
@@ -1579,7 +1674,7 @@ class TestMeta(object):
 
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
-        self.testInst.load(2009, 1)
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Create new variable
         self.testInst['test_nan_variable'] = 1.0
