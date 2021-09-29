@@ -78,7 +78,7 @@ class InstAccessTests(object):
     def test_basic_instrument_load(self, kwargs):
         """Test that the correct day loads with input year and doy.
 
-        parameters
+        Parameters
         ----------
         kwargs : dict
             Dictionary of keywords and arguments to invoke when loading.
@@ -820,7 +820,7 @@ class InstAccessTests(object):
 
         """
 
-        # test single variable
+        # Test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.rename(values)
         for key in values:
@@ -948,11 +948,12 @@ class InstAccessTests(object):
         """
         # TODO(#789): Remove when meta children support is dropped.
 
-        # check for pysat_testing2d instrument
+        # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
-                # check for error for unknown column or HO variable name
+
+                # Check for error for unknown column or HO variable name
                 with pytest.raises(ValueError) as verr:
                     self.testInst.rename(values)
                 assert str(verr).find("cannot rename") >= 0
