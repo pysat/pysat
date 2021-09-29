@@ -269,13 +269,6 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
     """
 
-    # We need a timeseries index for storing satellite data in pandas, but
-    # creating a datetime object for everything is too slow.  Instead, we
-    # calculate the number of nanoseconds elapsed since first sample and
-    # create timeseries index from that.  This yields a factor of 20
-    # improvement compared to previous method, which itself was an order of
-    # magnitude faster than datetime.
-
     # Get list of unique year, and month
     if not hasattr(year, '__iter__'):
         raise ValueError('Must provide an iterable for all inputs.')
