@@ -243,8 +243,8 @@ class Instrument(object):
         """Initialize `pysat.Instrument` object."""
 
         # Set default tag, inst_id, and Instrument module
-        self.tag = tag.lower()
-        self.inst_id = inst_id.lower()
+        self.tag = '' if tag is None else tag.lower()
+        self.inst_id = '' if inst_id is None else inst_id.lower()
         self.inst_module = inst_module
 
         if self.inst_module is None:
