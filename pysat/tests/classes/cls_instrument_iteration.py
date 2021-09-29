@@ -662,7 +662,9 @@ class InstIterationTests(object):
 
         Note
         ----
-        Only the date portion is retained, hours and shorter timespans are dropped.
+        Only the date portion is retained, hours and shorter timespans are
+        dropped.
+
         Parameters
         ----------
         start : dt.datetime or list of dt.datetime
