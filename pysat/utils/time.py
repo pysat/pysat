@@ -278,7 +278,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     # Establish default month
     if month is None:
         # If no month, assume January.  All days will be treated as day of year.
-        month = np.ones(len(year))
+        month = np.ones(shape=len(year))
 
     # Initial day is first of given month.
     day0 = np.ones(shape=len(year))
@@ -288,7 +288,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         day = day0
     if uts is None:
         # If no seconds, assume start of day.
-        uts = np.zeros(len(year))
+        uts = np.zeros(shape=len(year))
 
     # Initialize all dates as first of month and convert to index.
     df = pds.DataFrame({'year': year, 'month': month, 'day': day0})
