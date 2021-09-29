@@ -15,7 +15,8 @@ logger = pysat.logger
 platform = 'pysat'
 name = 'testmodel'
 tags = {'': 'Regular testing data set',
-        'pressure_levels': 'Testing data with pressure levels as the Z-coordinate instead of altitude.'}
+        'pressure_levels': ' '.join(('Testing data with pressure levels as the',
+                                     'Z-coordinate instead of altitude.'))}
 inst_ids = {'': [tag for tag in tags.keys()]}
 pandas_format = False
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
