@@ -520,7 +520,7 @@ class TestDeprecation(object):
         """Test deprecation warnings from load_netcdf4."""
         with warnings.catch_warnings(record=True) as war:
             try:
-                # generate relocation warning and file_format warning
+                # Generate relocation warning and file_format warning
                 pysat.utils.load_netcdf4(**kwargs)
             except (FileNotFoundError, ValueError):
                 pass
