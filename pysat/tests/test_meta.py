@@ -613,9 +613,10 @@ class TestMeta(object):
             self.eval_meta_settings()
         return
 
+    @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     @pytest.mark.parametrize('num_mvals', [0, 1, 3])
     @pytest.mark.parametrize('num_dvals', [0, 1, 3])
-    def test_selected_meta_retrieval(self, num_mvals, num_dvals):
+    def test_selected_meta_retrieval(self, inst_name, num_mvals, num_dvals):
         """Test metadata retrieval using various restrictions.
 
         Parameters
@@ -628,12 +629,31 @@ class TestMeta(object):
         """
 
         # Set the meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
 
         # Get the selection criteria
         dvals = list(self.testInst.variables[:num_dvals])
         mvals = [getattr(self.meta.labels, mattr)
                  for mattr in list(self.meta_labels.keys())[:num_mvals]]
+
+        # If dvals is greater than zero and there is higher order data,
+        # make sure at least one is included
+        nd_inds = list()
+        if len(dvals) > 0:
+            nd_vals = [key for key in self.meta.keys_nD()]
+
+            if len(nd_vals) > 0:
+                for val in nd_vals:
+                    if val in dvals:
+                        nd_inds.append(dvals.index(val))
+    
+                if len(nd_inds) == 0:
+                    dvals[0] = nd_vals[0]
+                    nd_inds = [0]
+
+                if len(mvals) > 0:
+                    mvals[0] = 'children'
+                    
 
         # Retrieve meta data for desired values
         sel_meta = self.meta[dvals, mvals]
@@ -642,23 +662,15 @@ class TestMeta(object):
         assert isinstance(sel_meta, pds.DataFrame)
         testing.assert_lists_equal(dvals, list(sel_meta.index))
         testing.assert_lists_equal(mvals, list(sel_meta.columns))
+
+        # If there is higher order data, test the retrieval
+        if len(nd_inds) > 0:
+            warnings.warn(''.join(['TODO: Higher order data cannot be ',
+                                   'retrieved in batches']))
+            
         return
 
     # START HERE
-
-    def test_multiple_meta_ho_data_retrieval(self):
-        """Test retrieval of multiple higher order metadata."""
-
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta[['higher', 'lower']] = {'meta': [meta, None],
-                                          'units': [None, 'boo'],
-                                          'long_name': [None, 'boohoo']}
-        assert self.meta['lower'].units == 'boo'
-        assert self.meta['lower'].long_name == 'boohoo'
-        assert self.meta['higher'].children == meta
-        return
 
     def test_replace_meta_units(self):
         """Test replacement of metadata units."""
