@@ -176,34 +176,34 @@ class InstAccessTests(object):
 
         return
 
-    @pytest.mark.parametrize("input", [{'yr': 2009, 'doy': 1,
-                                        'date': dt.datetime(2009, 1, 1)},
-                                       {'yr': 2009, 'doy': 1,
-                                        'end_date': dt.datetime(2009, 1, 1)},
-                                       {'yr': 2009, 'doy': 1,
-                                        'fname': 'dummy_str.nofile'},
-                                       {'yr': 2009, 'doy': 1,
-                                        'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
-                                        'fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
-                                        'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
-                                        'fname': 'dummy_str.nofile',
-                                        'end_yr': 2009, 'end_doy': 1}])
-    def test_basic_instrument_load_mixed_inputs(self, input):
+    @pytest.mark.parametrize("kwargs", [{'yr': 2009, 'doy': 1,
+                                         'date': dt.datetime(2009, 1, 1)},
+                                        {'yr': 2009, 'doy': 1,
+                                         'end_date': dt.datetime(2009, 1, 1)},
+                                        {'yr': 2009, 'doy': 1,
+                                         'fname': 'dummy_str.nofile'},
+                                        {'yr': 2009, 'doy': 1,
+                                         'stop_fname': 'dummy_str.nofile'},
+                                        {'date': dt.datetime(2009, 1, 1),
+                                         'fname': 'dummy_str.nofile'},
+                                        {'date': dt.datetime(2009, 1, 1),
+                                         'stop_fname': 'dummy_str.nofile'},
+                                        {'date': dt.datetime(2009, 1, 1),
+                                         'fname': 'dummy_str.nofile',
+                                         'end_yr': 2009, 'end_doy': 1}])
+    def test_basic_instrument_load_mixed_inputs(self, kwargs):
         """Ensure mixed load inputs raise ValueError.
 
         Parameters
         ----------
-        input : dict
+        kwargs : dict
             Dictionary of keywords and arguments to produce an error when
             instrument is loaded.
 
         """
 
         with pytest.raises(ValueError) as err:
-            self.testInst.load(**input)
+            self.testInst.load(**kwargs)
         estr = 'An inconsistent set of inputs have been'
         assert str(err).find(estr) >= 0
         return
