@@ -291,10 +291,12 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         uts = np.zeros(shape=len(year))
 
     # Initialize all dates as first of month and convert to index.
+    # This method allows month-day and day of year to be used.
     df = pds.DataFrame({'year': year, 'month': month, 'day': day0})
     index = pds.DatetimeIndex(pds.to_datetime(df))
 
     # Add days (offset by 1) to each index.
+    # Day is added here in case input is in day of year format.
     index += (day - 1).astype('timedelta64[D]')
 
     # Add seconds to each index.  Need to convert to nanoseconds first.
