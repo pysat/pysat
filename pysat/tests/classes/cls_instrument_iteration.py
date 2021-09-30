@@ -644,7 +644,7 @@ class InstIterationTests(object):
 
         """
 
-        with pytest.raises(Exception) as err:
+        with pytest.raises(ValueError) as err:
             self.testInst.bounds = (start, stop)
         estr = 'Bounds must be set in increasing'
         assert str(err).find(estr) >= 0
@@ -835,7 +835,7 @@ class InstIterationTests(object):
 
         """
 
-        with pytest.raises(Exception) as err:
+        with pytest.raises(ValueError) as err:
             self.testInst.bounds = (start, stop)
         estr = 'Bounds must be in increasing date'
         assert str(err).find(estr) >= 0
