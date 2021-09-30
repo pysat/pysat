@@ -257,7 +257,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
             Array of number of days as np.int. If month=None then value
             interpreted as day of year, otherwise, day of month. (default=None)
         uts : array-like or NoneType
-            Array of UT seconds of minute as np.float64 values (default=None)
+            Array of UT seconds as np.float64 values (default=None)
 
     Returns
     -------
