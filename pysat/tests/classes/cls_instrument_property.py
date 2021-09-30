@@ -232,7 +232,7 @@ class InstPropertyTests(object):
         return
 
     def test_copy(self):
-        """Test `.copy()`."""
+        """Test `Instrument.copy()`."""
 
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
@@ -359,7 +359,7 @@ class InstPropertyTests(object):
         return
 
     def test_str_w_load_lots_data(self):
-        """Test string output with loaded data."""
+        """Test string output with loaded data with many variables."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.__str__()
@@ -368,7 +368,7 @@ class InstPropertyTests(object):
         return
 
     def test_str_w_load_less_data(self):
-        """Test string output with loaded data."""
+        """Test string output with loaded data with few (4) variables."""
 
         # Load the test data
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -390,18 +390,6 @@ class InstPropertyTests(object):
         """Test if init function supplied by instrument can modify object."""
 
         assert self.testInst.new_thing
-        return
-
-    def test_custom_instrument_load(self):
-        """Test if the correct day is being loaded with routines."""
-
-        import pysat.instruments.pysat_testing as test
-        self.out = pysat.Instrument(inst_module=test, tag='',
-                                    clean_level='clean')
-        self.ref_time = dt.datetime(2009, 2, 1)
-        self.ref_doy = 32
-        self.out.load(self.ref_time.year, self.ref_doy)
-        assert self.out.date == self.ref_time
         return
 
     @pytest.mark.parametrize('del_routine', ['list_files', 'load'])
@@ -494,8 +482,8 @@ class InstPropertyTests(object):
                                               'test_preprocess_kwarg'),
                                              ('load',
                                               'test_load_kwarg'),
-                                             ('list_files',
-                                              'test_list_files_kwarg'),
+                                             ('init',
+                                              'test_init_kwarg'),
                                              ('list_files',
                                               'test_list_files_kwarg'),
                                              ('list_remote_files',

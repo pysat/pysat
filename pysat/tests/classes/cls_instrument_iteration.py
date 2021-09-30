@@ -333,7 +333,7 @@ class InstIterationTests(object):
         Parameters
         ----------
         values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
+            Defines the iteration bounds: (start, stop, step, width). start
             and stop should be datetime, step and width should be int.
         by_date : bool
             If True, iterate by date.  If False, iterate by filename.
@@ -445,7 +445,7 @@ class InstIterationTests(object):
         Parameters
         ----------
         values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
+            Defines the iteration bounds: (start, stop, step, width). start
             and stop should be datetime, step and width should be int.
         reverse : bool
             If True, iterate backwards.  If False, iterate forwards.
@@ -828,10 +828,10 @@ class InstIterationTests(object):
 
         Parameters
         ----------
-        start : dt.datetime or list of dt.datetime
-            The start of the new bounds.
-        stop : dt.datetime or list of dt.datetime
-            The stop of the new bounds.
+        start : str or list of strs
+            The starting filename(s) for the new bounds.
+        stop : str or list of strs
+            The stop filename(s) for the new bounds.
 
         """
 
@@ -939,7 +939,7 @@ class InstIterationTests(object):
         assert np.all(date_list == out)
         return
 
-    def test_list_comprehension(self):
+    def test_iteration_in_list_comprehension(self):
         """Test list comprehensions for length, uniqueness, iteration."""
 
         self.testInst.bounds = (self.testInst.files.files.index[0],
