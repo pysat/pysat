@@ -482,8 +482,6 @@ class InstPropertyTests(object):
                                               'test_preprocess_kwarg'),
                                              ('load',
                                               'test_load_kwarg'),
-                                             ('init',
-                                              'test_init_kwarg'),
                                              ('list_files',
                                               'test_list_files_kwarg'),
                                              ('list_remote_files',
