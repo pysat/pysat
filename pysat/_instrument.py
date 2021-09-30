@@ -242,9 +242,18 @@ class Instrument(object):
                  custom=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
+        # Check for deprecated usage of None.
+        if None in [tag, inst_id]:
+            warnings.warn(" ".join(["The usage of None in `tag` and `inst_id`",
+                                    "has been deprecated and will be removed",
+                                    "in 3.2.0+. Please use '' instead of",
+                                    "None."]),
+                          DeprecationWarning, stacklevel=2)
+
         # Set default tag, inst_id, and Instrument module
-        self.tag = tag.lower()
-        self.inst_id = inst_id.lower()
+        self.tag = '' if tag is None else tag.lower()
+        self.inst_id = '' if inst_id is None else inst_id.lower()
+
         self.inst_module = inst_module
 
         if self.inst_module is None:
