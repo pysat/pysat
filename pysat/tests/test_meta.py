@@ -92,13 +92,20 @@ class TestMeta(object):
         """Test the Meta settings for a specified value."""
         # Test the Meta data for the data value, self.dval
         for lkey in self.default_name:
-            assert self.meta[self.dval, lkey] == self.dval
+            assert self.meta[self.dval, lkey] == self.dval, \
+                "{:} differs from the default value ({:} != {:})".format(
+                    lkey.__repr__(), self.meta[self.dval, lkey].__repr__(),
+                    self.dval.__repr__())
 
         for lkey in self.default_nan:
-            assert np.isnan(self.meta[self.dval, lkey])
+            assert np.isnan(self.meta[self.dval, lkey]), \
+                "{:} should be NaN but is not.".format(lkey.__repr__())
 
         for lkey in self.default_val.keys():
-            assert self.meta[self.dval, lkey] == self.default_val[lkey]
+            assert self.meta[self.dval, lkey] == self.default_val[lkey],  \
+                "{:} values not equal ({:} != {:})".format(
+                    lkey.__repr__(), self.meta[self.dval, lkey].__repr__(),
+                    self.default_val[lkey].__repr__())
 
         assert 'children' not in self.meta.data.columns
         assert self.dval not in self.meta.keys_nD()
@@ -279,6 +286,28 @@ class TestMeta(object):
             self.meta.transfer_attributes_to_instrument(self.testInst)
 
         assert str(verr).find("Can't transfer Meta attributes to non-") >= 0
+        return
+
+    @pytest.mark.parametrize("bad_key,bad_val,err_msg",
+                             [("col_names", [], "col_names must include"),
+                              ("filename", None, "Must supply an instrument"),
+                              ("filename", 5, "Keyword name must be related"),
+                              ("filename", 'fake_inst',
+                               "Unable to create valid file path")])
+    def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
+        """Test error handling when loading metadata from a CSV file."""
+
+        # Initialize the bad reading inputs
+        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
+        kwargs = {'filename': name, 'na_values': [],
+                  'keep_default_na': False, 'col_names': None}
+        kwargs[bad_key] = bad_val
+
+        # Raise the expected error and test the message
+        with pytest.raises(ValueError) as verr:
+            self.meta.from_csv(**kwargs)
+
+        assert str(verr.value).find(err_msg) >= 0
         return
 
     # -------------------------
@@ -670,69 +699,64 @@ class TestMeta(object):
             
         return
 
-    # START HERE
-
-    def test_replace_meta_units(self):
+    def test_replace_meta(self):
         """Test replacement of metadata units."""
 
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new'] = {'units': 'yep'}
-        assert (self.meta['new'].units == 'yep')
-        assert (self.meta['new'].long_name == 'boo')
-        return
+        # Set the meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': "testing"})
 
-    def test_replace_meta_long_name(self):
-        """Test replacement of metadata long_name."""
+        # Change the meta and update the evaluation data
+        self.dval = self.testInst.variables[0]
 
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new'] = {'long_name': 'yep'}
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'yep')
+        for val in self.default_val.keys():
+            # These values will be unaltered, use what was set
+            self.default_val[val] = self.meta[self.dval, val]
+
+        for val in self.default_nan:
+            # Change these meta values to the best number for testing
+            self.meta[self.dval] = {val: -47.0}
+            self.default_val[val] = -47.0
+
+        for val in self.default_name:
+            # Change these meta values to a new name for testing
+            new_val = " ".join(["New", self.meta[self.dval, val]])
+            self.meta[self.dval] = {val: new_val}
+            self.default_val[val] = new_val
+
+        self.default_nan = []
+        self.default_name = []
+
+        # Evaluate the updated meta data
+        self.eval_meta_settings()
         return
 
     def test_add_meta_then_add_new_metadata_types(self):
         """Test addition of new metadata followed by new metadata types."""
 
-        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                             'description': 'boohoo'}
-        assert self.meta['new2'].units == 'hey'
-        assert self.meta['new2'].long_name == 'boo'
-        assert self.meta['new2'].description == 'boohoo'
-        assert self.meta['new1'].units == 'hey1'
-        assert self.meta['new1'].long_name == 'crew'
-        assert np.isnan(self.meta['new1'].description)
+        # Set a meta value using only standard labels
+        meta_dict = {self.meta.labels.units: 'U'}
+        self.meta['no_custom'] = meta_dict
+
+        # Set another meta value using standard and custom labels
+        meta_dict['custom_label'] = 'I am a custom value'
+        self.meta['yes_custom'] = meta_dict
+
+        # Evaluate the results
+        for mlabel in meta_dict.keys():
+            for dval in ['yes_custom', 'no_custom']:
+                if mlabel == 'custom_label' and dval == 'no_custom':
+                    # Because no type was specified for this label,
+                    # it defaults to float with a fill value of NaN
+                    # regardless of the values it is set to.
+                    assert np.isnan(self.meta[dval, mlabel]), \
+                        "Custom label set after init didn't default to NaN"
+                else:
+                    assert self.meta[dval, mlabel] == meta_dict[mlabel], \
+                        "{:} label has unexpected value ({:} != {:})".format(
+                            dval.__repr__(), self.meta[dval, mlabel].__repr__(),
+                            meta_dict[mlabel].__repr__())
         return
 
-    def test_add_meta_with_custom_then_add_new_metadata_types(self):
-        """Test addition of new metadata types followed by new metadata."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'crew',
-                            'description': 'boohoo'}
-        self.meta['new'] = {'units': 'hey2', 'long_name': 'boo'}
-        self.meta['new2'] = {'units': 'heyy', 'long_name': 'hoo'}
-        self.meta['new3'] = {'units': 'hey3', 'long_name': 'crew3',
-                             'description': 'boohoo3'}
-        assert self.meta['new'].units == 'hey2'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new'].description == 'boohoo'
-        assert self.meta['new3'].description == 'boohoo3'
-        assert self.meta['new2'].long_name == 'hoo'
-        assert np.isnan(self.meta['new2'].description)
-        return
-
-    def test_add_meta_then_partially_add_new_metadata_types(self):
-        """Test partial reset of metadata while adding new metadata types."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'crew'}
-        self.meta['new'] = {'long_name': 'boo', 'description': 'boohoo'}
-
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new'].description == 'boohoo'
-        return
-
-    # END NEW REORG
     def test_meta_immutable_at_instrument_instantiation(self):
         """Test that meta is immutable at instrument Instantiation."""
 
@@ -907,6 +931,236 @@ class TestMeta(object):
         # Perform and test for successful concatenation
         self.meta = self.meta.concat(meta2)
         assert self.meta['new3'].units == 'hey3'
+        return
+
+    def test_meta_csv_load(self):
+        """Test load metadata from a CSV file."""
+
+        # Set the meta data from a Comma Separated Value file
+        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
+        self.meta = self.meta.from_csv(filename=name, na_values=[],
+                                       keep_default_na=False,
+                                       col_names=['name', 'long_name', 'idx',
+                                                  'units', 'description'])
+        # Set the evaluation data
+        self.dval = 'iv_mer'
+        self.default_val = {'long_name': 'Ion Drift Meridional',
+                            'idx': 117, 'units': 'm/s',
+                            'description': 'Constructed using IGRF mag field.'}
+        self.default_name = []
+        self.default_nan = []
+
+        # Test the output
+        self.eval_meta_settings()
+        testing.assert_lists_equal([val for val in self.meta.keys()],
+                                   ['yrdoy', 'uts', 'glat', 'glong', 'alt',
+                                    'pos_eci_x', 'pos_eci_y', 'pos_eci_z',
+                                    'vel_eci_x', 'vel_eci_y', 'vel_eci_z',
+                                    'sza', 'slt', 'apex_alt', 'apex_lat',
+                                    'apex_long', 'inv_lat', 'mag_incl', 'mlat',
+                                    'mlt', 'bg_n', 'bg_e', 'bg_d', 'rpa_flag',
+                                    'dm_flag', 'iv_x', 'iv_x_var', 'iv_y',
+                                    'iv_y_var', 'iv_z', 'iv_z_var', 'ion_dens',
+                                    'ion_dens_var', 'ion_temp', 'ion_temp_var',
+                                    'frac_dens_o', 'frac_dens_o_var',
+                                    'frac_dens_h', 'frac_dens_h_var',
+                                    'sens_pot', 'sens_pot_var', 'dm_a_flag',
+                                    'dm_a_dens', 'dm_a_dens_var', 'dm_b_flag',
+                                    'dm_b_dens', 'dm_b_dens_var', 'bg_x',
+                                    'bg_y', 'bg_z', 'sra', 'ion_dens_zni',
+                                    'vel_sc_x', 'vel_sc_y', 'vel_sc_z',
+                                    'velr_sc_x', 'velr_sc_y', 'velr_sc_z',
+                                    'offset_flag', 'iv_zon', 'iv_zon_var',
+                                    'iv_par', 'iv_par_var', 'iv_mer',
+                                    'iv_mer_var', 'unit_zon_x', 'unit_zon_y',
+                                    'unit_zon_z', 'unit_par_x', 'unit_par_y',
+                                    'unit_par_z', 'unit_mer_x', 'unit_mer_y',
+                                    'unit_mer_z'])
+        return
+
+    def test_transfer_attributes_to_instrument_leading_underscore(self):
+        """Ensure private custom meta attributes not transferred."""
+
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+        self.meta.mutable = True
+
+        # Set standard, hidden, and private attributes
+        self.meta.standard_attribute = 'hello'
+        self.meta._hidden_attribute = 'is it me'
+        self.meta.__private_attribute = "you're looking for"
+
+        # Include standard parameters as well
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # Test correct attachment to Instrument
+        assert self.testInst.standard_attribute == 'hello'
+        assert not hasattr(self.testInst, "_hidden_attribute")
+        assert not hasattr(self.testInst, "__private_attribute")
+
+        # Test correct transfer from Meta
+        assert not hasattr(self.meta, "standard_attribute")
+        assert self.meta._hidden_attribute == 'is it me'
+        assert self.meta.__private_attribute == "you're looking for"
+        return
+
+    def test_transfer_attributes_to_instrument_strict_names_false(self):
+        """Test attr transfer with strict_names set to False."""
+
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+        self.meta.mutable = True
+
+        # Add the same attribute with different values to Meta and Instrument
+        self.meta.overwrite_attribute = 'Meta Value'
+        self.testInst.overwrite_attribute = 'Inst Value'
+
+        # Overwrite the Instrument attribute value with the meta vale
+        self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                    strict_names=False)
+
+        # Test the result
+        assert self.testInst.overwrite_attribute == 'Meta Value'
+        return
+
+    def test_meta_merge(self):
+        """Test merging two meta object."""
+
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Create a second meta object to merge
+        self.dval = 'merged_data'
+        meta_dict = {'units': 'U', 'long_name': 'Merged Data',
+                     'custom_label': 'PI Information'}
+        merge_meta = pysat.Meta()
+        merge_meta[self.dval] = meta_dict
+
+        # Test that the data to merge in is not present
+        assert self.dval not in self.meta.keys()
+
+        # Merge the Meta objects into `self.meta`.
+        self.meta.merge(merge_meta)
+
+        # Test the results
+        assert self.dval in self.meta.keys()
+
+        for label in meta_dict.keys():
+            assert self.meta[self.dval, label] == meta_dict[label], \
+                "{:} label has unexpected value ({:} != {:})".format(
+                    label.__repr__(), self.meta[self.dval, label].__repr__(),
+                    meta_dict[label].__repr__())
+        return
+
+    @pytest.mark.parametrize("num_drop", [0, 1, 3])
+    def test_meta_drop(self, num_drop):
+        """Test successful deletion of meta data for specific values.
+
+        Parameters
+        ----------
+        num_drop : int
+            Number of variables to drop in a single go.
+
+        """
+
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Get the data variables to drop
+        self.dval = self.testInst.variables[:num_drop]
+        testing.assert_list_contains(self.dval,
+                                     [val for val in self.meta.keys()])
+
+        # Drop the values
+        self.meta.drop(self.dval)
+
+        # Test the successful deletion
+        meta_vals = [val for val in self.meta.keys()]
+
+        assert len(meta_vals) == len(self.testInst.variables) - num_drop
+        for val in self.dval:
+            assert val not in meta_vals, \
+                "{:} not dropped from Meta".format(val.__repr__())
+        return
+
+    @pytest.mark.parametrize("num_keep", [0, 1, 3])
+    def test_meta_keep(self, num_keep):
+        """Test successful deletion of meta data for values not specified.
+
+        Parameters
+        ----------
+        num_keep : int
+            Number of variables to keep in a single go.
+
+        """
+
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Get the data variables to drop
+        self.dval = self.testInst.variables[:num_keep]
+        testing.assert_list_contains(self.dval,
+                                     [val for val in self.meta.keys()])
+
+        # Drop the values
+        self.meta.keep(self.dval)
+
+        # Test the successful deletion of unspecified values
+        testing.assert_lists_equal(self.dval, [val for val in self.meta.keys()])
+        return
+
+    @pytest.mark.parametrize('use_method', [True, False])
+    def test_nan_metadata_filtered_netcdf4(self, use_method):
+        """Test that metadata set to NaN is excluded from netCDF output.
+
+        Parameters
+        ----------
+        use_method : bool
+            Use meta method and `export_nan` kwarg if True, use defaults
+            if False
+
+        """
+        # TODO: consider moving to class with netCDF tests
+
+        # Create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Create new variable
+        self.testInst['test_nan_variable'] = 1.0
+
+        # Assign additional metadata
+        self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan}
+
+        # Get the export kwarg and set the evaluation data
+        if use_method:
+            # Keep a non-standard set of NaN meta labels in the file
+            present = self.testInst.meta._export_nan
+            missing = [present.pop()]
+            present.append('test_nan_export')
+            export_nan = list(present)
+        else:
+            # Keep the standard set of NaN meta labels in the file
+            export_nan = None
+            present = self.testInst.meta._export_nan
+            missing = ['test_nan_export']
+        
+        # Write the file
+        pysat.tests.test_utils_io.prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.to_netcdf4(outfile, export_nan=export_nan)
+
+        # Load file back and test metadata is as expected
+        with netCDF4.Dataset(outfile) as open_f:
+            test_vars = open_f['test_nan_variable'].ncattrs()
+
+        testing.assert_list_contains(present, test_vars)
+
+        for mvar in missing:
+            assert mvar not in test_vars, \
+                '{:} was written to the netCDF file'.format(mvar.__repr__())
+
         return
 
     # -------------------------------
@@ -1152,11 +1406,12 @@ class TestMeta(object):
                                        list(self.meta[dvar].children.keys()))
 
             for cvar in concat_meta[dvar].children.keys():
-                # POSSIBLY FIX THIS
+                # TODO: Isssue #911 will either fix this or require warning test
                 assert self.meta[dvar].children[
                     cvar, self.meta.labels.units].find('Updated') < 0
         return
 
+    # HERE
     def test_assign_higher_order_meta(self):
         """Test assign higher order metadata."""
 
@@ -1242,39 +1497,6 @@ class TestMeta(object):
         assert self.meta['new2'].long_name == 'boo2'
         return
 
-    def test_meta_csv_load(self):
-        """Test load metadata from a csv file."""
-
-        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
-        mdata = pysat.Meta.from_csv(filename=name, na_values=[],
-                                    keep_default_na=False,
-                                    col_names=['name', 'long_name', 'idx',
-                                               'units', 'description'])
-        assert mdata['yrdoy'].long_name == 'Date'
-        assert (mdata['unit_mer_z'].long_name
-                == 'Unit Vector - Meridional Dir - S/C z')
-        assert (mdata['iv_mer'].description
-                == 'Constructed using IGRF mag field.')
-        return
-
-    @pytest.mark.parametrize("bad_key,bad_val,err_msg",
-                             [("col_names", [], "col_names must include"),
-                              ("filename", None, "Must provide an instrument"),
-                              ("filename", 5, "keyword name must be related"),
-                              ("filename", 'fake_inst',
-                               "keyword name must be related")])
-    def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
-        """Test error handling when loading metadata from a csv file."""
-
-        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
-        kwargs = {'filename': name, 'na_values': [],
-                  'keep_default_na': False, 'col_names': None}
-        kwargs[bad_key] = bad_val
-        with pytest.raises(ValueError) as excinfo:
-            pysat.Meta.from_csv(**kwargs)
-        assert str(excinfo.value).find('') >= 0
-        return
-
     # assign multiple values to default
     def test_multiple_input_names_null_value(self):
         """Test setting multiple input names to null."""
@@ -1355,47 +1577,6 @@ class TestMeta(object):
         assert self.meta['new_9'].Long_Name == 'booboo9'
         assert self.meta['new_5'].Units == 'hey9'
         assert self.meta['new_5'].Long_Name == 'boo9'
-        return
-
-    def test_change_case_of_meta_labels(self):
-        """Test changing case of meta labels after initialization."""
-
-        self.meta_labels = {'units': ('units', str), 'name': ('long_name', str)}
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta.labels.units = 'Units'
-        self.meta.labels.name = 'Long_Name'
-        assert (self.meta['new'].Units == 'hey')
-        assert (self.meta['new'].Long_Name == 'boo')
-        assert (self.meta['new2'].Units == 'hey2')
-        assert (self.meta['new2'].Long_Name == 'boo2')
-        return
-
-    def test_case_change_of_meta_labels_w_ho(self):
-        """Test change case of meta labels after initialization with HO data."""
-
-        # Set the initial labels
-        self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        meta2 = pysat.Meta(labels=self.meta_labels)
-
-        # Set meta data values
-        meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = meta2
-
-        # Change the label name
-        self.meta.labels.units = 'Units'
-        self.meta.labels.name = 'Long_Name'
-
-        # Evaluate the results in the main data
-        assert (self.meta['new'].Units == 'hey')
-        assert (self.meta['new'].Long_Name == 'boo')
-
-        # Evaluate the results in the higher order data
-        assert (self.meta['new2'].children['new21'].Units == 'hey2')
-        assert (self.meta['new2'].children['new21'].Long_Name == 'boo2')
         return
 
     def test_contains_case_insensitive(self):
@@ -1547,94 +1728,6 @@ class TestMeta(object):
         assert (self.meta['new2'].long_name == 'boo2')
         return
 
-    def test_transfer_attributes_to_instrument_leading_underscore(self):
-        """Ensure private custom meta attributes not transferred."""
-
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-        self.meta.mutable = True
-
-        # Set private attributes
-        self.meta._yo_yo = 'yo yo'
-        self.meta.__yo_yo = 'yo yo'
-
-        # Include standard parameters as well
-        self.meta.new_attribute = 'hello'
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-
-        # Test private not transferred
-        assert not hasattr(self.testInst, "_yo_yo")
-        assert not hasattr(self.testInst, "__yo_yo")
-
-        # Check to make sure other values still transferred
-        assert self.testInst.new_attribute == 'hello'
-
-        # Ensure private attribute still present
-        assert self.meta._yo_yo == 'yo yo'
-        assert self.meta.__yo_yo == 'yo yo'
-        return
-
-    def test_transfer_attributes_to_instrument_strict_names_false(self):
-        """Test attr transfer with strict_names set to False."""
-
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-        self.meta.mutable = True
-
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.jojo_beans = 'yep!'
-        self.meta.name = 'Failure!'
-        self.meta.date = 'yo yo2'
-
-        self.testInst.jojo_beans = 'nope!'
-        self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                    strict_names=False)
-        assert self.testInst.jojo_beans == 'yep!'
-        return
-
-    def test_merge_meta(self):
-        """Test `meta.merge`."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta.merge(meta2)
-
-        assert (self.meta['new'].units == 'hey')
-        assert (self.meta['new'].long_name == 'boo')
-        assert (self.meta['NEW21'].units == 'hey2')
-        assert (self.meta['NEW21'].long_name == 'boo2')
-        assert (self.meta['NEW21'].YoYoYO == 'yolo')
-        return
-
-    def test_drop_meta(self):
-        """Test `meta.drop`."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                              'YoYoYO': 'yolo'}
-        self.meta.drop(['new'])
-
-        assert not ('new' in self.meta.data.index)
-        assert (self.meta['NEW21'].units == 'hey2')
-        assert (self.meta['NEW21'].long_name == 'boo2')
-        assert (self.meta['NEW21'].YoYoYO == 'yolo')
-        return
-
-    def test_keep_meta(self):
-        """Test `meta.keep`."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                              'YoYoYO': 'yolo'}
-        self.meta.keep(['new21'])
-
-        assert not ('new' in self.meta.data.index)
-        assert (self.meta['NEW21'].units == 'hey2')
-        assert (self.meta['NEW21'].long_name == 'boo2')
-        assert (self.meta['NEW21'].YoYoYO == 'yolo')
-        return
-
     def test_meta_mutable_properties(self):
         """Test that @properties are always mutable."""
 
@@ -1644,72 +1737,6 @@ class TestMeta(object):
         self.meta.ho_data = {}
         self.meta.labels.units = 'nT'
         self.meta.labels.name = 'my name'
-        return
-
-    def test_nan_metadata_filtered_netcdf4_via_meta_attribute(self):
-        """Test that metadata set to NaN is excluded from netcdf."""
-
-        # create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-
-        # Normally this parameter would be set at instrument code level
-        self.testInst.meta.mutable = True
-        self.testInst.meta._export_nan += ['test_nan_export']
-        self.testInst.meta.mutable = False
-
-        # Create new variable
-        self.testInst['test_nan_variable'] = 1.0
-
-        # Assign additional metadata
-        self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan,
-                                                   'no_nan_export': np.nan,
-                                                   'extra_check': 1.}
-        # Write the file
-        pysat.tests.test_utils_io.prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        self.testInst.to_netcdf4(outfile)
-
-        # Load file back and test metadata is as expected
-        with netCDF4.Dataset(outfile) as open_f:
-            test_vars = open_f['test_nan_variable'].ncattrs()
-
-        assert 'test_nan_export' in test_vars
-        assert 'non_nan_export' not in test_vars
-        assert 'extra_check' in test_vars
-
-        return
-
-    def test_nan_metadata_filtered_netcdf4_via_method(self):
-        """Test that metadata set to NaN is excluded from netcdf via nc call."""
-
-        # create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-
-        # Create new variable
-        self.testInst['test_nan_variable'] = 1.0
-
-        # Assign additional metadata
-        self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan,
-                                                   'no_nan_export': np.nan,
-                                                   'extra_check': 1.}
-        # Write the file
-        pysat.tests.test_utils_io.prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        export_nan = self.testInst.meta._export_nan + ['test_nan_export']
-        self.testInst.to_netcdf4(outfile, export_nan=export_nan)
-
-        # Load file back and test metadata is as expected
-        with netCDF4.Dataset(outfile) as open_f:
-            test_vars = open_f['test_nan_variable'].ncattrs()
-
-        assert 'test_nan_export' in test_vars
-        assert 'non_nan_export' not in test_vars
-        assert 'extra_check' in test_vars
-
         return
 
 
