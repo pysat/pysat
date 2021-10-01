@@ -26,6 +26,10 @@ class InstPropertyTests(object):
     Inherited by classes in test_instrument.py.  Setup and teardown methods are
     specified there.
 
+    See Also
+    --------
+    `pysat.tests.test_instrument`
+
     """
 
     def test_basic_instrument_bad_keyword_init(self):
@@ -45,7 +49,14 @@ class InstPropertyTests(object):
     @pytest.mark.parametrize('kwarg', ['supported_tags', 'start', 'stop',
                                        'freq', 'date_array', 'data_path'])
     def test_basic_instrument_reserved_keyword(self, kwarg):
-        """Check for error when instantiating with reserved keywords."""
+        """Check for error when instantiating with reserved keywords.
+
+        Parameters
+        ----------
+        kwarg : str
+            Name of reserved keyword.
+
+        """
 
         # Check that the correct error is raised
         with pytest.raises(ValueError) as err:
@@ -64,7 +75,16 @@ class InstPropertyTests(object):
                                       '_password_req'])
     @pytest.mark.parametrize('setting', [True, False])
     def test_basic_instrument_download_kwargs(self, attr, setting):
-        """Check that download flags are appropriately set."""
+        """Check that download flags are appropriately set.
+
+        Parameters
+        ----------
+        attr : str
+            Name of test attribute to check.
+        setting : bool
+            Setting to test for attr.
+
+        """
 
         inst_module = getattr(pysat.instruments,
                               '_'.join((self.testInst.platform,
@@ -86,7 +106,16 @@ class InstPropertyTests(object):
     @pytest.mark.parametrize("remote_func,num", [('remote_file_list', 31),
                                                  ('remote_date_range', 2)])
     def test_remote_functions(self, remote_func, num):
-        """Test simulated remote functions for valid list of files."""
+        """Test simulated remote functions for valid list of files.
+
+        Parameters
+        ----------
+        remote_func : str
+            Name of remote function to test.
+        num : int
+            Number of filenames that should be retrieved by remote_func.
+
+        """
 
         stop = self.ref_time + dt.timedelta(days=30)
         self.out = getattr(self.testInst, remote_func)(start=self.ref_time,
@@ -104,20 +133,29 @@ class InstPropertyTests(object):
                              [(False, False), (True, False), (False, True),
                               (True, True)])
     def test_download_updated_files(self, caplog, file_bounds, non_default):
-        """Test download_updated_files and default bounds are updated."""
+        """Test `download_updated_files` and default bounds are updated.
+
+        Parameters
+        ----------
+        file_bounds : bool
+            If True, check by filename.  If False, check by date.
+        non_default : bool
+            If True, check that bounds are updated appropriately.
+
+        """
 
         if file_bounds:
             if non_default:
-                # set bounds to second and second to last file
+                # Set bounds to second and second to last file
                 self.testInst.bounds = (self.testInst.files[1],
                                         self.testInst.files[-2])
             else:
-                # set bounds to first and last file
+                # Set bounds to first and last file
                 self.testInst.bounds = (self.testInst.files[0],
                                         self.testInst.files[-1])
         else:
             if non_default:
-                # set bounds to first and first date
+                # Set bounds to first and first date
                 self.testInst.bounds = (self.testInst.files.start_date,
                                         self.testInst.files.start_date)
 
@@ -194,7 +232,7 @@ class InstPropertyTests(object):
         return
 
     def test_copy(self):
-        """Test `.copy()`."""
+        """Test `Instrument.copy()`."""
 
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
@@ -321,7 +359,7 @@ class InstPropertyTests(object):
         return
 
     def test_str_w_load_lots_data(self):
-        """Test string output with loaded data."""
+        """Test string output with loaded data with many variables."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.__str__()
@@ -330,7 +368,7 @@ class InstPropertyTests(object):
         return
 
     def test_str_w_load_less_data(self):
-        """Test string output with loaded data."""
+        """Test string output with loaded data with few (4) variables."""
 
         # Load the test data
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -354,21 +392,16 @@ class InstPropertyTests(object):
         assert self.testInst.new_thing
         return
 
-    def test_custom_instrument_load(self):
-        """Test if the correct day is being loaded with routines."""
-
-        import pysat.instruments.pysat_testing as test
-        self.out = pysat.Instrument(inst_module=test, tag='',
-                                    clean_level='clean')
-        self.ref_time = dt.datetime(2009, 2, 1)
-        self.ref_doy = 32
-        self.out.load(self.ref_time.year, self.ref_doy)
-        assert self.out.date == self.ref_time
-        return
-
     @pytest.mark.parametrize('del_routine', ['list_files', 'load'])
     def test_custom_instrument_load_incomplete(self, del_routine):
-        """Test if exception is thrown if supplied routines are incomplete."""
+        """Test if exception is thrown if supplied routines are incomplete.
+
+        Parameters
+        ----------
+        del_routine : str
+            Name of required routine to delete from module.
+
+        """
 
         import pysat.instruments.pysat_testing as test
         delattr(test, del_routine)
@@ -399,8 +432,19 @@ class InstPropertyTests(object):
                                                    'test_download_kwarg',
                                                    'exit_night')
                                                   ])
-    def test_instrument_function_keywords(self, func, kwarg, val, caplog):
-        """Test if Instrument function keywords are registered by pysat."""
+    def test_instrument_function_keywords(self, caplog, func, kwarg, val):
+        """Test if Instrument function keywords are registered by pysat.
+
+        Parameters
+        ----------
+        func : str
+            Function name to test.
+        kwarg : str
+            Keyword argument of function to modify.
+        val : str
+            Replacement value for modified kwarg.
+
+        """
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             # Trigger load functions
@@ -440,15 +484,22 @@ class InstPropertyTests(object):
                                               'test_load_kwarg'),
                                              ('list_files',
                                               'test_list_files_kwarg'),
-                                             ('list_files',
-                                              'test_list_files_kwarg'),
                                              ('list_remote_files',
                                               'test_list_remote_kwarg'),
                                              ('download',
                                               'test_download_kwarg')
                                              ])
-    def test_instrument_function_keyword_liveness(self, func, kwarg, caplog):
-        """Test if changed keywords are propagated by pysat to functions."""
+    def test_instrument_function_keyword_liveness(self, caplog, func, kwarg):
+        """Test if changed keywords are propagated by pysat to functions.
+
+        Parameters
+        ----------
+        func : str
+            Function name to test.
+        kwarg : str
+            Keyword argument of function to modify.
+
+        """
 
         # Assign a new value to a keyword argument
         val = 'live_value'
@@ -541,7 +592,17 @@ class InstPropertyTests(object):
          ({'inst_id': '', 'tag': 'bad_tag'},
           "'bad_tag' is not one of the supported tags.")])
     def test_error_bad_instrument_object(self, kwargs, estr):
-        """Ensure instantiation with invalid inst_id or tag errors."""
+        """Ensure instantiation with invalid inst_id or tag errors.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary with keys for instrument instantiation.  One of the
+            values should be bad to trigger an error message.
+        estr : str
+            Text that should be contained in the error message.
+
+        """
 
         with pytest.raises(ValueError) as err:
             pysat.Instrument(platform=self.testInst.platform,

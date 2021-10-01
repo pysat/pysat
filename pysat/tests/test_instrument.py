@@ -85,11 +85,6 @@ class TestBasicsInstModule(TestBasics):
         return
 
 
-# -----------------------------------------------------------------------------
-#
-# Repeat tests above with xarray data
-#
-# -----------------------------------------------------------------------------
 class TestBasicsXarray(TestBasics):
     """Basic tests for xarray `pysat.Instrument`."""
 
@@ -338,3 +333,32 @@ class TestDeprecation(object):
                 self.warn_msgs[i])
 
         return
+
+    @pytest.mark.parametrize("kwargs", [{'inst_id': None}, {'tag': None}])
+    def test_inst_init_with_none(self, kwargs):
+        """Check that instantiation with None raises a DeprecationWarning.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary of optional kwargs to pass through for instrument
+            instantiation.
+
+        """
+
+        with warnings.catch_warnings(record=True) as war:
+            pysat.Instrument('pysat', 'testing', **kwargs)
+
+        warn_msgs = [" ".join(["The usage of None in `tag` and `inst_id`",
+                               "has been deprecated and will be removed",
+                               "in 3.2.0+. Please use '' instead of",
+                               "None."])]
+        # Ensure the minimum number of warnings were raised.
+        assert len(war) >= len(warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present.
+        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
+            war, warn_msgs)
+
+        for i, good in enumerate(found_msgs):
+            assert good, "didn't find warning about: {:}".format(warn_msgs[i])
