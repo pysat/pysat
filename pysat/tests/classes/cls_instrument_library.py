@@ -102,7 +102,7 @@ class InstLibTests(object):
         ----------
         inst_loc : python subpackage
             The location of the instrument subpackage to test, e.g.,
-            'pysat.instruments'
+            `pysat.instruments`
         user_info : dict or NoneType
             Nested dictionary with user and password info for instrument module
             name.  If None, no user or password is assumed. (default=None)
@@ -157,7 +157,7 @@ class InstLibTests(object):
 
         Parameters
         ----------
-        obj : str
+        obj : object
             Name of object to check.
         attr_name : str
             Name of required attribute that must be present in `obj`.
@@ -174,7 +174,7 @@ class InstLibTests(object):
 
         Parameters
         ----------
-        obj : str
+        obj : object
             Name of object to check.
         obj_type : str
             Required type of object.
@@ -198,7 +198,7 @@ class InstLibTests(object):
 
         """
 
-        # ensure that each module is at minimum importable
+        # Ensure that each module is at minimum importable
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
         # Check for presence of basic instrument module attributes
@@ -291,7 +291,7 @@ class InstLibTests(object):
 
         test_inst, date = initialize_test_inst_and_date(inst_dict)
 
-        # check for username
+        # Check for username.
         dl_dict = inst_dict['user_info'] if 'user_info' in \
             inst_dict.keys() else {}
         test_inst.download(date, date, **dl_dict)
@@ -365,7 +365,7 @@ class InstLibTests(object):
 
         if hasattr(getattr(self.inst_loc, name), 'list_remote_files'):
             assert callable(test_inst.remote_file_list)
-            # check for username
+            # Check for username
             dl_dict = inst_dict['user_info'] if 'user_info' in \
                 inst_dict.keys() else {}
             files = test_inst.remote_file_list(start=date, stop=date, **dl_dict)
