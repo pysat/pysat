@@ -172,36 +172,38 @@ class TestCreateDatetimeIndex(object):
 
     def setup(self):
         """Set up the unit test environment before each method."""
-        self.year = 2012 * np.ones(4)
-        self.month = 2 * np.ones(4)
-        self.day = 28 * np.ones(4)
-        self.uts = np.arange(0, 4)
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
-        del self.year, self.month, self.day, self.uts
         return
 
-    def test_create_datetime_index(self):
+    @pytest.mark.parametrize("kwargs, target",
+                             [({'year': 2012 * np.ones(4),
+                                'month': 2 * np.ones(4),
+                                'day': 28 * np.ones(4),
+                                'uts': np.arange(0, 4)},
+                              [dt.datetime(2012, 2, 28),
+                               dt.datetime(2012, 2, 28, 0, 0, 3)]),
+                              ({'year': 2012 * np.ones(4),
+                                'day': 366 * np.ones(4),
+                                'uts': np.arange(0, 4)},
+                               [dt.datetime(2012, 12, 31),
+                                dt.datetime(2012, 12, 31, 0, 0, 3)]),
+                              ({'year': [2012, 2012, 2012, 2008],
+                                'day': 366 * np.ones(4),
+                                'uts': np.arange(0, 4)},
+                               [dt.datetime(2012, 12, 31),
+                                dt.datetime(2008, 12, 31, 0, 0, 3)]),
+                              ({'year': 2012 * np.ones(4)},
+                               [dt.datetime(2012, 1, 1),
+                                dt.datetime(2012, 1, 1)])])
+    def test_create_datetime_index(self, kwargs, target):
         """Test create an array of datetime objects from arrays of inputs."""
 
-        dates = pytime.create_datetime_index(year=self.year, month=self.month,
-                                             day=self.day, uts=self.uts)
+        dates = pytime.create_datetime_index(**kwargs)
 
-        testing.assert_lists_equal([dates[0], dates[-1]],
-                                   [dt.datetime(2012, 2, 28),
-                                    dt.datetime(2012, 2, 28, 0, 0, 3)])
-        return
-
-    def test_create_datetime_index_wo_month_day_uts(self):
-        """Test ability to generate missing parameters."""
-
-        dates = pytime.create_datetime_index(year=self.year)
-
-        testing.assert_lists_equal([dates[0], dates[-1]],
-                                   [dt.datetime(2012, 1, 1),
-                                    dt.datetime(2012, 1, 1)])
+        testing.assert_lists_equal([dates[0], dates[-1]], target)
         return
 
     @pytest.mark.parametrize("in_args,err_msg", [
