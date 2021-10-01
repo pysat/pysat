@@ -1,4 +1,13 @@
-"""Tests for data access in the pysat Instrument object and methods.
+"""Tests for data access and related functions in the pysat Instrument object.
+
+Includes:
+* data loading
+* equality method comparisons
+* index tests
+* setter and getter functions
+* concat
+* empty data flags
+* variable renaming
 
 Note
 ----
@@ -25,6 +34,10 @@ class InstAccessTests(object):
     Inherited by classes in test_instrument.py.  Setup and teardown methods are
     specified there.
 
+    See Also
+    --------
+    `pysat.tests.test_instrument`
+
     """
 
     def eval_successful_load(self, end_date=None):
@@ -35,6 +48,10 @@ class InstAccessTests(object):
         end_date : dt.datetime or NoneType
             End date for loading data.  If None, assumes self.ref_time + 1 day.
             (default=None)
+
+        Note
+        ----
+        Success of test is tied to `self.ref_time`.
 
         """
         # Test that the first loaded time matches the first requested time
@@ -59,7 +76,14 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize("kwargs", [{}, {'num_samples': 30}])
     def test_basic_instrument_load(self, kwargs):
-        """Test that the correct day loads with input year and doy."""
+        """Test that the correct day loads with input year and doy.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary of keywords and arguments to invoke when loading.
+
+        """
 
         # Load data by year and day of year
         self.testInst.load(self.ref_time.year, self.ref_doy, **kwargs)
@@ -93,7 +117,7 @@ class InstAccessTests(object):
         return
 
     def test_basic_instrument_load_yr_no_doy(self):
-        """Ensure doy required if yr present."""
+        """Ensure day of year required if year is present."""
 
         # Check that the correct error is raised
         with pytest.raises(TypeError) as err:
@@ -106,7 +130,14 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_doy(self, doy):
-        """Ensure doy load argument in valid range."""
+        """Ensure error raised if day of year load argument out of valid range.
+
+        Parameters
+        ----------
+        doy : int
+            Day of year to create an error when loading.
+
+        """
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, doy)
@@ -117,7 +148,14 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize('end_doy', [0, 367, 1000, -1, -10000])
     def test_basic_instrument_load_yr_bad_end_doy(self, end_doy):
-        """Ensure end_doy keyword in valid range."""
+        """Ensure error raised if `end_doy` keyword out of valid range.
+
+        Parameters
+        ----------
+        end_doy : int
+            Day of year to create an error when loading by end_date.
+
+        """
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, 1, end_yr=self.ref_time.year,
@@ -128,7 +166,7 @@ class InstAccessTests(object):
         return
 
     def test_basic_instrument_load_yr_no_end_doy(self):
-        """Ensure end_doy required if end_yr present."""
+        """Ensure `end_doy` required if `end_yr` present."""
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, self.ref_doy,
@@ -138,26 +176,34 @@ class InstAccessTests(object):
 
         return
 
-    @pytest.mark.parametrize("input", [{'yr': 2009, 'doy': 1,
-                                        'date': dt.datetime(2009, 1, 1)},
-                                       {'yr': 2009, 'doy': 1,
-                                        'end_date': dt.datetime(2009, 1, 1)},
-                                       {'yr': 2009, 'doy': 1,
-                                        'fname': 'dummy_str.nofile'},
-                                       {'yr': 2009, 'doy': 1,
-                                        'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
-                                        'fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
-                                        'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
-                                        'fname': 'dummy_str.nofile',
-                                        'end_yr': 2009, 'end_doy': 1}])
-    def test_basic_instrument_load_mixed_inputs(self, input):
-        """Ensure mixed load inputs raise ValueError."""
+    @pytest.mark.parametrize("kwargs", [{'yr': 2009, 'doy': 1,
+                                         'date': dt.datetime(2009, 1, 1)},
+                                        {'yr': 2009, 'doy': 1,
+                                         'end_date': dt.datetime(2009, 1, 1)},
+                                        {'yr': 2009, 'doy': 1,
+                                         'fname': 'dummy_str.nofile'},
+                                        {'yr': 2009, 'doy': 1,
+                                         'stop_fname': 'dummy_str.nofile'},
+                                        {'date': dt.datetime(2009, 1, 1),
+                                         'fname': 'dummy_str.nofile'},
+                                        {'date': dt.datetime(2009, 1, 1),
+                                         'stop_fname': 'dummy_str.nofile'},
+                                        {'date': dt.datetime(2009, 1, 1),
+                                         'fname': 'dummy_str.nofile',
+                                         'end_yr': 2009, 'end_doy': 1}])
+    def test_basic_instrument_load_mixed_inputs(self, kwargs):
+        """Ensure mixed load inputs raise ValueError.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Dictionary of keywords and arguments to produce an error when
+            instrument is loaded.
+
+        """
 
         with pytest.raises(ValueError) as err:
-            self.testInst.load(**input)
+            self.testInst.load(**kwargs)
         estr = 'An inconsistent set of inputs have been'
         assert str(err).find(estr) >= 0
         return
@@ -176,7 +222,17 @@ class InstAccessTests(object):
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_instrument_load_errors_with_multifile(self, load_in, verr):
-        """Ensure load calls raises ValueError with multi_file_day as True."""
+        """Ensure improper usage of load with `multi_file_day` raises ValueError.
+
+        Parameters
+        ----------
+        load_in : str or NoneType
+            If 'fname', load by filename. If None, load without kwargs.
+        verr : str
+            Text that should be contained in the error message generated by
+            the improper load configuration above.
+
+        """
 
         self.testInst.multi_file_day = True
 
@@ -200,7 +256,7 @@ class InstAccessTests(object):
         return
 
     def test_basic_instrument_load_by_dates(self):
-        """Test date range loading, date and end_date."""
+        """Test date range loading, `date` and `end_date`."""
 
         end_date = self.ref_time + dt.timedelta(days=2)
         self.testInst.load(date=self.ref_time, end_date=end_date)
@@ -210,7 +266,7 @@ class InstAccessTests(object):
     def test_basic_instrument_load_by_date_with_extra_time(self):
         """Ensure `.load(date=date)` only uses date portion of datetime."""
 
-        # put in a date that has more than year, month, day
+        # Put in a date that has more than year, month, day
         self.testInst.load(date=(self.ref_time + dt.timedelta(minutes=71)))
         self.eval_successful_load()
         return
@@ -235,7 +291,16 @@ class InstAccessTests(object):
                              [('next', dt.datetime(2008, 1, 1)),
                               ('prev', dt.datetime(2010, 12, 31))])
     def test_file_load_default(self, operator, ref_time):
-        """Test if correct day loads by default when first invoking `.next`."""
+        """Test if correct day loads by default when first invoking iteration.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+        ref_time : dt.datetime
+            Expected date to load when iteration is first invoked.
+
+        """
 
         getattr(self.testInst, operator)()
 
@@ -246,7 +311,14 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize("operator", [('next'), ('prev')])
     def test_file_load_bad_start_file(self, operator):
-        """Test Error for in new day when on a file not in iteration list."""
+        """Test Error when starting iteration on a file not in iteration list.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+
+        """
 
         self.testInst.load(fname=self.testInst.files[12])
 
@@ -262,7 +334,14 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize("operator", [('next'), ('prev')])
     def test_file_load_bad_start_date(self, operator):
-        """Test that day iterators raise Error on bad start date."""
+        """Test that day iterators raise Error on bad start date.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+
+        """
 
         self.testInst.load(date=self.ref_time)
 
@@ -278,24 +357,11 @@ class InstAccessTests(object):
 
         return
 
-    @pytest.mark.parametrize("operator", [('next'), ('prev')])
-    def test_file_load_empty_iteration(self, operator):
-        """Ensure empty iteration list is fine via day iteration."""
-
-        self.testInst.bounds = (None, None, '10000D',
-                                dt.timedelta(days=10000))
-        with pytest.raises(StopIteration) as err:
-            getattr(self.testInst, operator)()
-        estr = 'File list is empty. '
-        assert str(err).find(estr) >= 0
-
-        return
-
     def test_basic_fname_instrument_load(self):
         """Test loading by filename from attached `.files`."""
 
         # If mangle_file_date is true, index will not match exactly.
-        # Find the closest point.
+        # Find the closest point instead.
         ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
         self.testInst.load(fname=self.testInst.files[ind])
         self.eval_successful_load()
@@ -305,7 +371,16 @@ class InstAccessTests(object):
                              [('next', 1),
                               ('prev', -1)])
     def test_fname_load_default(self, operator, direction):
-        """Test correct day loads when moving by day, starting w/ fname."""
+        """Test correct day loads when moving by day, starting with `fname`.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+        direction : int
+            Positive if moving forward, negative if moving backward.
+
+        """
 
         # If mangle_file_date is true, index will not match exactly.
         # Find the closest point.
@@ -371,7 +446,7 @@ class InstAccessTests(object):
         self.testInst.load(date=self.ref_time)
         inst_copy = self.testInst.copy()
         inst_copy.data = self.testInst._null_data
-        assert not (inst_copy == self.testInst)
+        assert inst_copy != self.testInst
         return
 
     def test_eq_different_data_type(self):
@@ -385,11 +460,11 @@ class InstAccessTests(object):
         else:
             inst_copy.pandas_format = True
             inst_copy.data = pds.DataFrame()
-        assert not (inst_copy == self.testInst)
+        assert inst_copy != self.testInst
         return
 
     def test_eq_different_object(self):
-        """Test equality using different pysat.Instrument objects."""
+        """Test equality using different `pysat.Instrument` objects."""
 
         reload(pysat.instruments.pysat_testing)
         obj1 = pysat.Instrument(platform='pysat', name='testing',
@@ -431,7 +506,19 @@ class InstAccessTests(object):
     @pytest.mark.parametrize("prepend, sort_dim_toggle",
                              [(True, True), (True, False), (False, False)])
     def test_concat_data(self, prepend, sort_dim_toggle):
-        """Test Instrument data concatonation."""
+        """Test `pysat.Instrument.data` concatenation.
+
+        Parameters
+        ----------
+        prepend : bool
+            Behavior of `concat_data`.  If True, assign new data before existing
+            data; if False append new data.
+        sort_dim_toggle : bool
+            If True, sort variable names in pandas before concatenation.  If
+            False, do not sort for pandas objects.  For xarray objects, rename
+            the epoch if True.
+
+        """
 
         # Load a data set to concatonate
         self.testInst.load(self.ref_time.year, self.ref_doy + 1)
@@ -465,7 +552,7 @@ class InstAccessTests(object):
         self.out = len(self.testInst.index)
         assert (self.out == len1 + len2)
 
-        # Detailed test for concatonation through index
+        # Detailed test for concatenation through index
         if prepend:
             assert np.all(self.testInst.index[:len1]
                           > self.testInst.index[len1:])
@@ -497,10 +584,10 @@ class InstAccessTests(object):
     def test_index_attribute(self):
         """Test the index attribute before and after loading data."""
 
-        # empty Instrument test
+        # Test that an index is present, even with an empty Instrument
         assert isinstance(self.testInst.index, pds.Index)
 
-        # now repeat the same test but with data loaded
+        # Test an index is present with data loaded in an Instrument
         self.testInst.load(date=self.ref_time)
         assert isinstance(self.testInst.index, pds.Index)
         return
@@ -508,9 +595,10 @@ class InstAccessTests(object):
     def test_index_return(self):
         """Test that the index is returned in the proper format."""
 
-        # load data
+        # Load data
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        # ensure we get the index back
+
+        # Ensure we get the index back
         if self.testInst.pandas_format:
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
@@ -522,7 +610,14 @@ class InstAccessTests(object):
                                         (['mlt', 'longitude']),
                                         (['longitude', 'mlt'])])
     def test_basic_data_access_by_name(self, labels):
-        """Check that data can be accessed at the instrument level."""
+        """Check that data can be accessed by name at the instrument level.
+
+        Parameters
+        ----------
+        labels : list of str
+            List of variable names to access.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all((self.testInst[labels]
@@ -534,7 +629,14 @@ class InstAccessTests(object):
                                        (slice(0, 10)),
                                        (np.arange(0, 10))])
     def test_data_access_by_indices_and_name(self, index):
-        """Check that variables and be accessed by each supported index type."""
+        """Check that variables can be accessed by each supported index type.
+
+        Parameters
+        ----------
+        index : int, list, slice, or np.array
+            Indices to retrieve data.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all(self.testInst[index, 'mlt']
@@ -654,7 +756,16 @@ class InstAccessTests(object):
                                      dt.datetime(2009, 1, 1, 0, 1)),
                                slice(dt.datetime(2009, 1, 1, 0, 1), None))])
     def test_setting_partial_data_by_inputs(self, changed, fixed):
-        """Check that data can be set using each supported input type."""
+        """Check that data can be set using each supported index type.
+
+        Parameters
+        ----------
+        changed : index-like parameters
+            Index of values that change during the test.
+        fixed : index-like parameters
+            Index of values that should remain the same during the test.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
@@ -677,14 +788,21 @@ class InstAccessTests(object):
     @pytest.mark.parametrize("index", [([0, 1, 2, 3, 4]),
                                        (np.array([0, 1, 2, 3, 4]))])
     def test_getting_all_data_by_index(self, index):
-        """Test getting all data by index."""
+        """Test getting all data by index.
+
+        Parameters
+        ----------
+        index : index-like parameters
+            Index of values to retrieve.
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        a = self.testInst[index]
+        inst_subset = self.testInst[index]
         if self.testInst.pandas_format:
-            assert len(a) == len(index)
+            assert len(inst_subset) == len(index)
         else:
-            assert a.sizes[self.xarray_epoch_name] == len(index)
+            assert inst_subset.sizes[self.xarray_epoch_name] == len(index)
         return
 
     @pytest.mark.parametrize("values", [{'uts': 'uts1'},
@@ -692,16 +810,25 @@ class InstAccessTests(object):
                                          'mlt': 'mlt2'},
                                         {'uts': 'long change with spaces'}])
     def test_basic_variable_renaming(self, values):
-        """Test basic variable renaming."""
+        """Test basic variable renaming.
 
-        # test single variable
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
+
+        # Test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.rename(values)
         for key in values:
-            # check for new name
+            # Check for new name
             assert values[key] in self.testInst.data
             assert values[key] in self.testInst.meta
-            # ensure old name not present
+
+            # Ensure old name not present
             assert key not in self.testInst.data
             assert key not in self.testInst.meta
         return
@@ -711,9 +838,17 @@ class InstAccessTests(object):
                                         {'utS': 'uts1'},
                                         {'utS': 'uts'}])
     def test_unknown_variable_error_renaming(self, values):
-        """Test that unknown variable renaming raises an error."""
+        """Test that unknown variable renaming raises an error.
 
-        # check for error for unknown variable name
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
+
+        # Check for error for unknown variable name
         self.testInst.load(self.ref_time.year, self.ref_doy)
         with pytest.raises(ValueError) as verr:
             self.testInst.rename(values)
@@ -725,18 +860,28 @@ class InstAccessTests(object):
                                          'mlt': 'Mlt2'},
                                         {'uts': 'Long Change with spaces'}])
     def test_basic_variable_renaming_lowercase(self, values):
-        """Test new variable names are converted to lowercase."""
+        """Test new variable names are converted to lowercase.
 
-        # test single variable
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
+
+        # Test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst.rename(values, lowercase_data_labels=True)
         for key in values:
-            # check for new name
+            # Check for new name
             assert values[key].lower() in self.testInst.data
             assert values[key].lower() in self.testInst.meta
-            # ensure case retained in meta
+
+            # Ensure case retained in meta
             assert values[key] == self.testInst.meta[values[key]].name
-            # ensure old name not present
+
+            # Ensure old name not present
             assert key not in self.testInst.data
             assert key not in self.testInst.meta
         return
@@ -746,24 +891,32 @@ class InstAccessTests(object):
                                          'alt_profiles':
                                              {'density': 'volume'}}])
     def test_ho_pandas_variable_renaming(self, values):
-        """Test rename of higher order pandas variable."""
+        """Test rename of higher order pandas variable.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
         # TODO(#789): Remove when meta children support is dropped.
 
-        # check for pysat_testing2d instrument
+        # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
                 self.testInst.rename(values)
                 for key in values:
                     for ikey in values[key]:
-                        # check column name unchanged
+                        # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
-                        # check for new name in HO data
+                        # Check for new name in HO data
                         assert values[key][ikey] in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert values[key][ikey] in check_var
-                        # ensure old name not present
+                        # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var
@@ -784,14 +937,23 @@ class InstAccessTests(object):
                                         {'Nope_profiles':
                                         {'density': 'valid_HO_change'}}])
     def test_ho_pandas_unknown_variable_error_renaming(self, values):
-        """Test higher order pandas variable rename raises error if unknown."""
+        """Test higher order pandas variable rename raises error if unknown.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
         # TODO(#789): Remove when meta children support is dropped.
 
-        # check for pysat_testing2d instrument
+        # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
-                # check for error for unknown column or HO variable name
+
+                # Check for error for unknown column or HO variable name
                 with pytest.raises(ValueError) as verr:
                     self.testInst.rename(values)
                 assert str(verr).find("cannot rename") >= 0
@@ -804,29 +966,37 @@ class InstAccessTests(object):
                                          'alt_profiles':
                                              {'density': 'VoLuMe'}}])
     def test_ho_pandas_variable_renaming_lowercase(self, values):
-        """Test rename higher order pandas variable uses lowercase."""
+        """Test rename higher order pandas variable uses lowercase.
+
+        Parameters
+        ----------
+        values : dict
+            Variables to be renamed.  A dict where each key is the current
+            variable and its value is the new variable name.
+
+        """
         # TODO(#789): Remove when meta children support is dropped.
 
-        # check for pysat_testing2d instrument
+        # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
                 self.testInst.rename(values)
                 for key in values:
                     for ikey in values[key]:
-                        # check column name unchanged
+                        # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
-                        # check for new name in HO data
+                        # Check for new name in HO data
                         test_val = values[key][ikey]
                         assert test_val in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
-                        # case insensitive check
+                        # Case insensitive check
                         assert values[key][ikey] in check_var
-                        # ensure new case in there
+                        # Ensure new case in there
                         check_var = check_var[values[key][ikey]].name
                         assert values[key][ikey] == check_var
-                        # ensure old name not present
+                        # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var

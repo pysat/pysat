@@ -85,11 +85,6 @@ class TestBasicsInstModule(TestBasics):
         return
 
 
-# -----------------------------------------------------------------------------
-#
-# Repeat tests above with xarray data
-#
-# -----------------------------------------------------------------------------
 class TestBasicsXarray(TestBasics):
     """Basic tests for xarray `pysat.Instrument`."""
 
