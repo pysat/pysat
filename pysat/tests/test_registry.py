@@ -11,7 +11,7 @@ import pytest
 import sys
 
 import pysat
-from pysat.tests.classes.cls_registration_tests import TestWithRegistration
+from pysat.tests.classes.cls_registration import TestWithRegistration
 from pysat.utils import registry
 
 
