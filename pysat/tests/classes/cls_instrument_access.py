@@ -798,11 +798,11 @@ class InstAccessTests(object):
         """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        a = self.testInst[index]
+        inst_subset = self.testInst[index]
         if self.testInst.pandas_format:
-            assert len(a) == len(index)
+            assert len(inst_subset) == len(index)
         else:
-            assert a.sizes[self.xarray_epoch_name] == len(index)
+            assert inst_subset.sizes[self.xarray_epoch_name] == len(index)
         return
 
     @pytest.mark.parametrize("values", [{'uts': 'uts1'},
