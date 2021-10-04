@@ -164,9 +164,18 @@ the options as a dict of kwargs with the name `_test_load_opt`:
 
 The structure of the dict should be similar to the `_test_dates` construction.
 See :ref:`rst_test-temp` for more information on structuring test attributes
-for custom instrument libraries. Note that this test only verifies that the 
-instrument can be loaded with that option.  To test for specific outcomes, see
-the following section.
+for custom instrument libraries. For multiple options, a list of dicts should
+be used.
+
+.. code:: python
+
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _test_load_opt = {'': {'Level_1': [{'myoption': True},
+                                      {'myoption': False, 'num_samples': 30}]}}
+
+Note that this test only verifies that the instrument can be loaded with that
+option.  To test for specific outcomes, see the following section.
 
 
 .. _pysat-dep-addtests:
