@@ -273,6 +273,15 @@ class Instrument(object):
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
         else:
+            # Check if user supplied platform or name
+            if isinstance(platform, str) or isinstance(name, str):
+                warnings.warn(" ".join(("inst_module supplied along with",
+                                        "platform/name. Defaulting to",
+                                        "inst_module specification.",
+                                        "platform =", self.inst_module.platform,
+                                        ", name =", self.inst_module.name)),
+                              stacklevel=2)
+
             # User has provided a module, assign platform and name here
             for iattr in ['platform', 'name']:
                 if hasattr(self.inst_module, iattr):

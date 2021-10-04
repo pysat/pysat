@@ -10,6 +10,7 @@ import datetime as dt
 from importlib import reload
 import logging
 import numpy as np
+import warnings
 
 import pandas as pds
 import pytest
@@ -632,3 +633,29 @@ class InstPropertyTests(object):
         estr = 'Unknown Variable'
         assert str(err).find(estr) >= 0
         return
+
+    @pytest.mark.parametrize("kwargs", [{'platform': 'doctor'},
+                                        {'name': 'who'},
+                                        {'platform': 'doctor', 'name': 'who'}])
+    def test_warn_inst_module_platform_name(self, kwargs):
+        """Test that warning is raised if multiple specifications provided.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Additional specifications provided that should raise a warning.
+
+        """
+
+        with warnings.catch_warnings(record=True) as war:
+            tinst = pysat.Instrument(inst_module=self.testInst.inst_module,
+                                     **kwargs)
+
+        default_str = ' '.join(["inst_module supplied along with",
+                                "platform/name. Defaulting to"])
+        assert len(war) >= 1
+        assert war[0].category == UserWarning
+        assert default_str in str(war[0].message)
+
+        # Make sure isntrument loaded as inst_module
+        assert tinst.inst_module == self.testInst.inst_module
