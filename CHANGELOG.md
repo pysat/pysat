@@ -18,6 +18,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `_test_download_ci` as a standard attribute for `pysat.Instrument`
    * Added a testing model similar to TIEGCM to
      `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
+   * Added the capability to test loading with optional kwargs through
+     `_test_load_opt`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
