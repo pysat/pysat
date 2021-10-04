@@ -36,11 +36,12 @@ def initialize_test_inst_and_date(inst_dict):
 
     """
 
+    kwargs = {} if 'kwargs' not in inst_dict.keys() else inst_dict['kwargs']
     test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                  tag=inst_dict['tag'],
                                  inst_id=inst_dict['inst_id'],
                                  temporary_file_list=True,
-                                 update_files=True)
+                                 update_files=True, **kwargs)
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
@@ -144,6 +145,10 @@ class InstLibTests(object):
                 elif 'download' in mark_names:
                     mark = pytest.mark.parametrize("inst_dict",
                                                    instruments['download'])
+                    getattr(self, method).pytestmark.append(mark)
+                elif 'load_options' in mark_names:
+                    mark = pytest.mark.parametrize("inst_dict",
+                                                   instruments['load_options'])
                     getattr(self, method).pytestmark.append(mark)
                 elif 'no_download' in mark_names:
                     mark = pytest.mark.parametrize("inst_dict",
@@ -299,7 +304,7 @@ class InstLibTests(object):
         return
 
     @pytest.mark.second
-    @pytest.mark.download
+    @pytest.mark.load_options
     @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty', 'clean'])
     def test_load(self, clean_level, inst_dict):
         """Test that instruments load at each cleaning level.
