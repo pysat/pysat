@@ -256,6 +256,32 @@ class TestBasicsShiftedFileDates(TestBasics):
         return
 
 
+class TestBasicsEmpty(object):
+    """Unit tests for empty instrument objects."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument()
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst
+        return
+
+    def test_empty_repr_eval(self):
+        """Test that repr functions on empty `Instrument`."""
+
+        self.out = eval(repr(self.testInst))
+        assert isinstance(self.out, pysat.Instrument)
+        assert self.out.platform == ''
+        assert self.out.name == ''
+        assert self.out.inst_module is None
+        return
+
+
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
 
