@@ -262,8 +262,12 @@ class Instrument(object):
                 self.platform = platform.lower()
                 self.name = name.lower()
 
-                # Look to module for instrument functions and defaults
-                self._assign_attrs(by_name=True)
+                if len(self.platform) > 0:
+                    # Look to module for instrument functions and defaults
+                    self._assign_attrs(by_name=True)
+                else:
+                    # Assign defaults since string is empty
+                    self._assign_attrs()
             elif (platform is None) and (name is None):
                 # Creating "empty" Instrument object with this path
                 self.name = ''
