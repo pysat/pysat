@@ -16,12 +16,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Extended testing options for `pysat.utils.testing` functions
    * Added `start_time` keyword for test instruments
    * Added `_test_download_ci` as a standard attribute for `pysat.Instrument`
-   * Added a testing model similar to TIEGCM to 
+   * Added a testing model similar to TIEGCM to
      `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
-   * Removed `_test_download_travis` as a standard attribute for
+   * Deprecated `_test_download_travis` as a standard attribute for
      `pysat.Instrument`.  The function is replaced by `_test_download_ci`
+   * Deprecated `pysat.tests.instrument_test_class.initialize_test_inst_and_date`
+     which is moved to `pysat.tests.classes.cls_instrument_library`.
+   * Deprecated `pysat.tests.instrument_test_class.InstTestClass`, which is
+     replaced by `pysat.tests.classes.cls_instrument_library.InstLibTests`.
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -57,7 +61,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Reorganized tests for the `pysat.Instrument` class into multiple files
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
    * Update minimum numpy in CI tests to 1.18 following NEP29
-   * Made `InstTestClass` more portable to streamline user implementation of the
+   * Made `InstLibTests` more portable to streamline user implementation of the
      standard end-to-end instrument tests.
    * Moved test classes to `pysat.tests.classes`
    * Reorganized the core test_instrument.py as a series of classes
