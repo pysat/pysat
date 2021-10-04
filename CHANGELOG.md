@@ -16,7 +16,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Extended testing options for `pysat.utils.testing` functions
    * Added `start_time` keyword for test instruments
    * Added `_test_download_ci` as a standard attribute for `pysat.Instrument`
-   * Added a testing model similar to TIEGCM to 
+   * Added a testing model similar to TIEGCM to
      `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
@@ -46,6 +46,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
    * Allow `tag` and `inst_id` to be specified as None (#892)
    * Fixed a bug in `pysat.utils.time.create_datetime_index` (#906)
+   * Added a warning if `inst_module` and `platform`/`name` are used to
+     instantiate an instrument (#850). In case of this, `inst_module` takes
+     priority.
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
