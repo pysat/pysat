@@ -123,34 +123,36 @@ class TestMeta(object):
 
         # Test the ND metadata results
         testing.assert_list_contains(self.frame_list,
-                                     list(self.meta.ho_data['help'].keys()))
-        testing.assert_list_contains(self.frame_list,
-                                     list(self.meta['help']['children'].keys()))
+                                     list(self.meta.ho_data[self.dval].keys()))
+        testing.assert_list_contains(
+            self.frame_list, list(self.meta[self.dval]['children'].keys()))
 
         # Test the meta settings at the base and nD level
         for label in meta_dict.keys():
             if label == 'meta':
                 testing.assert_lists_equal(
-                    list(self.meta['help']['children'].attrs()),
+                    list(self.meta[self.dval]['children'].attrs()),
                     list(meta_dict[label].attrs()))
                 testing.assert_lists_equal(
-                    list(self.meta['help']['children'].keys()),
+                    list(self.meta[self.dval]['children'].keys()),
                     list(meta_dict[label].keys()))
 
-                for lvar in self.meta['help']['children'].attrs():
-                    for dvar in self.meta['help']['children'].keys():
-                        assert (self.meta['help']['children'][dvar, lvar]
+                for lvar in self.meta[self.dval]['children'].attrs():
+                    for dvar in self.meta[self.dval]['children'].keys():
+                        assert (self.meta[self.dval]['children'][dvar, lvar]
                                 == meta_dict[label][dvar, lvar]), \
-                            "'help' child {:s} {:s} value {:} != {:}".format(
-                                dvar, lvar,
-                                self.meta['help']['children'][dvar,
+                            "{:s} child {:s} {:s} value {:} != {:}".format(
+                                self.dval.__repr__(), dvar.__repr__(),
+                                lvar.__repr__(),
+                                self.meta[self.dval]['children'][dvar,
                                                               lvar].__repr__(),
                                 meta_dict[label][dvar, lvar].__repr__())
             else:
-                assert self.meta['help']['children'].hasattr_case_neutral(label)
-                assert self.meta['help', label] == meta_dict[label], \
+                assert self.meta[self.dval]['children'].hasattr_case_neutral(
+                    label)
+                assert self.meta[self.dval, label] == meta_dict[label], \
                     "{:s} label value {:} != {:}".format(
-                        label, self.meta['help', label].__repr__(),
+                        label, self.meta[self.dval, label].__repr__(),
                         meta_dict[label].__repr__())
 
         return
@@ -1193,13 +1195,14 @@ class TestMeta(object):
         frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
                               columns=self.frame_list)
         inst_data = [frame for i in range(self.testInst.index.shape[0])]
-
+        self.dval = 'test_val'
+        
         if meta_dict is None:
-            self.testInst['help'] = inst_data
-            meta_dict = {'units': '', 'long_name': 'help', 'desc': ''}
+            self.testInst[self.dval] = inst_data
+            meta_dict = {'units': '', 'long_name': self.dval, 'desc': ''}
         else:
             meta_dict.update({'data': inst_data})
-            self.testInst['help'] = meta_dict
+            self.testInst[self.dval] = meta_dict
 
             if 'data' in meta_dict.keys():
                 del meta_dict['data']
@@ -1208,6 +1211,43 @@ class TestMeta(object):
 
         # Test the ND metadata results
         self.eval_ho_meta_settings(meta_dict)
+        return
+
+    @pytest.mark.parametrize("num_ho, num_lo", [(1, 1), (2, 2)]) 
+    def test_assign_mult_higher_order_meta_from_dict(self, num_ho, num_lo):
+        """Test assign higher order metadata from dict with multiple types.
+
+        Parameters
+        ----------
+        num_ho : int
+            Number of higher order data values to initialize
+        num_lo : int
+            Number of lower order data valuess to initialize
+
+        """
+
+        # Initialize the higher-order meta data
+        ho_meta = pysat.Meta()
+        for flist in self.frame_list:
+            ho_meta[flist] = {'units': 'U', 'long_name': flist}
+
+        # Initialize the meta dict for setting the data values
+        dvals = ['higher_{:d}'.format(i) for i in range(num_ho)]
+        dvals.extend(['lower_{:d}'.format(i) for i in range(num_lo)])
+
+        meta_dict = {'units': ['U' for i in range(len(dvals))],
+                     'long_name': [val for val in dvals],
+                     'meta': [ho_meta for i in range(num_ho)]}
+        meta_dict['meta'].extend([None for i in range(num_lo)])
+
+        # Assign and test the meta data
+        self.meta[dvals] = meta_dict
+
+        for i, self.dval in enumerate(dvals):
+            if i < num_ho:
+                self.eval_ho_meta_settings(meta_dict)
+            else:
+                self.eval_meta_settings()
         return
 
     def test_inst_ho_data_assign_meta_then_data(self):
@@ -1228,12 +1268,13 @@ class TestMeta(object):
                                    for dvar in self.frame_list},
                           'long_name': {dvar: dvar
                                         for dvar in self.frame_list}}))}
+        self.dval = 'test_data'
 
         # Assign the metadata
-        self.testInst['help'] = meta_dict
+        self.testInst[self.dval] = meta_dict
 
         # Alter the data
-        self.testInst['help'] = inst_data
+        self.testInst[self.dval] = inst_data
 
         # Test the ND metadata results
         self.meta = self.testInst.meta
@@ -1294,22 +1335,23 @@ class TestMeta(object):
         self.meta = pysat.Meta()
         self.meta['dummy_frame1'] = {'units': 'A'}
         self.meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data': [frame] * self.testInst.index.shape[0],
-                                 'units': 'V', 'long_name': 'The Doors',
-                                 'meta': self.meta}
-        self.testInst['help2'] = self.testInst['help']
-        self.testInst.meta['help2'] = self.testInst.meta['help']
+        self.dval = 'help'
+        self.testInst[self.dval] = {
+            'data': [frame] * self.testInst.index.shape[0],
+            'units': 'V', 'long_name': 'The Doors', 'meta': self.meta}
+        self.testInst['help2'] = self.testInst[self.dval]
+        self.testInst.meta['help2'] = self.testInst.meta[self.dval]
 
-        assert self.testInst.meta['help'].children['dummy_frame1',
-                                                   'units'] == 'A'
+        assert self.testInst.meta[self.dval].children['dummy_frame1',
+                                                      'units'] == 'A'
         assert self.testInst.meta['help2', 'long_name'] == 'The Doors'
         testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta.ho_data['help'])
+                                     self.testInst.meta.ho_data[self.dval])
         testing.assert_list_contains(self.frame_list,
-                                     self.testInst.meta['help']['children'])
+                                     self.testInst.meta[self.dval]['children'])
         for label in ['units', 'desc']:
-            assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-                label)
+            assert self.testInst.meta[self.dval][
+                'children'].hasattr_case_neutral(label)
 
         assert self.testInst.meta['help2']['children']['dummy_frame1',
                                                        'desc'] == ''
@@ -1412,53 +1454,6 @@ class TestMeta(object):
         return
 
     # HERE
-    def test_assign_higher_order_meta(self):
-        """Test assign higher order metadata."""
-
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta['higher'] = meta
-        return
-
-    def test_assign_higher_order_meta_from_dict(self):
-        """Test assign higher order metadata from dict."""
-
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta['higher'] = {'meta': meta}
-        assert self.meta['higher'].children == meta
-        return
-
-    def test_assign_higher_order_meta_from_dict_w_multiple(self):
-        """Test assign higher order metadata from dict with multiple types."""
-
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta[['higher', 'lower']] = {'meta': [meta, None],
-                                          'units': [None, 'boo'],
-                                          'long_name': [None, 'boohoo']}
-        assert self.meta['lower'].units == 'boo'
-        assert self.meta['lower'].long_name == 'boohoo'
-        assert self.meta['higher'].children == meta
-        return
-
-    def test_assign_higher_order_meta_from_dict_w_multiple_2(self):
-        """Test assign higher order metadata from dict with multiple types."""
-
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta[['higher', 'lower', 'lower2']] = \
-            {'meta': [meta, None, meta],
-             'units': [None, 'boo', None],
-             'long_name': [None, 'boohoo', None]}
-        assert self.meta['lower'].units == 'boo'
-        assert self.meta['lower'].long_name == 'boohoo'
-        assert self.meta['higher'].children == meta
-        return
 
     def test_create_new_metadata_from_old(self):
         """Test create new metadata from old metadata."""
