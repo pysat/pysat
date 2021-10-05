@@ -13,7 +13,7 @@ import pytest
 import tempfile
 
 import pysat
-from pysat.tests.ci_test_class import CICleanSetup
+from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
 from pysat.utils import testing
 
