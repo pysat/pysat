@@ -36,7 +36,7 @@ def initialize_test_inst_and_date(inst_dict):
 
     """
 
-    kwargs = {} if 'kwargs' not in inst_dict.keys() else inst_dict['kwargs']
+    kwargs = inst_dict['kwargs'] if 'kwargs' in inst_dict.keys() else {}
     test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                  tag=inst_dict['tag'],
                                  inst_id=inst_dict['inst_id'],
