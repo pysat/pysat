@@ -45,6 +45,7 @@ class TestMeta(object):
 
         self.testInst = None
         self.meta = pysat.Meta()
+        self.mutable = True
 
         self.meta_labels = {'units': ('Units', str),
                             'name': ('Long_Name', str),
@@ -64,18 +65,22 @@ class TestMeta(object):
         """Clean up the unit test environment after each method."""
         del self.meta, self.meta_labels, self.default_name, self.default_nan
         del self.default_val, self.dval, self.frame_list, self.testInst
+        del self.mutable
         return
 
     # ---------------
     # Utility methods
 
-    def set_meta(self, inst_kwargs=None):
+    def set_meta(self, inst_kwargs=None, keep_mutable=False):
         """Set the `meta` and `testInst` attributes using test Instruments.
 
         Parameters
         ----------
         inst_kwargs : NoneType or dict
             kwargs to initialize pysat.Instrument object
+        keep_mutable : bool
+            Keep the default `meta.mutable` value if True, if False set to
+            class `mutable` attribute. (default=False)
 
         """
         if inst_kwargs is not None:
@@ -86,6 +91,10 @@ class TestMeta(object):
 
             # Save the meta object and data variable list
             self.meta = self.testInst.meta
+
+            # Update the mutable flag, if desired
+            if not keep_mutable:
+                self.meta.mutable = self.mutable
         return
 
     def eval_meta_settings(self):
@@ -139,14 +148,23 @@ class TestMeta(object):
 
                 for lvar in self.meta[self.dval]['children'].attrs():
                     for dvar in self.meta[self.dval]['children'].keys():
-                        assert (self.meta[self.dval]['children'][dvar, lvar]
-                                == meta_dict[label][dvar, lvar]), \
-                            "{:s} child {:s} {:s} value {:} != {:}".format(
-                                self.dval.__repr__(), dvar.__repr__(),
-                                lvar.__repr__(),
-                                self.meta[self.dval]['children'][dvar,
-                                                              lvar].__repr__(),
-                                meta_dict[label][dvar, lvar].__repr__())
+                        if lvar in self.default_nan:
+                            assert np.isnan(
+                                self.meta[self.dval]['children'][dvar, lvar]), \
+                                "{:s} child {:s} {:s} value {:} != NaN".format(
+                                    self.dval.__repr__(), dvar.__repr__(),
+                                    lvar.__repr__(),
+                                    self.meta[self.dval]['children'][
+                                        dvar, lvar].__repr__())
+                        else:
+                            assert (self.meta[self.dval]['children'][dvar, lvar]
+                                    == meta_dict[label][dvar, lvar]), \
+                                "{:s} child {:s} {:s} value {:} != {:}".format(
+                                    self.dval.__repr__(), dvar.__repr__(),
+                                    lvar.__repr__(),
+                                    self.meta[self.dval]['children'][
+                                        dvar, lvar].__repr__(),
+                                    meta_dict[label][dvar, lvar].__repr__())
             else:
                 assert self.meta[self.dval]['children'].hasattr_case_neutral(
                     label)
@@ -194,6 +212,30 @@ class TestMeta(object):
             self.meta[1]
 
         assert str(ierr).find('expected tuple, list, or str') >= 0
+        return
+
+    @pytest.mark.parametrize("parent_child", [
+        (['alt_profiles', 'profiles'], 'density'),
+        (['alt_profiles', 'profiles'], ['density', 'dummy_str']),
+        (['alt_profiles', 'profiles'], 'density', 'units'),
+        (['alt_profiles', 'profiles'], 'density', ['units', 'long_name'])])
+    def test_getitem_w_ho_child_slicing(self, parent_child):
+        """Test raises NotImplementedError with parent/child slicing.
+
+        Parameters
+        ----------
+        parent_child : list
+            List of inputs with unsupported parent/child slicing options
+
+        """
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
+
+        with pytest.raises(NotImplementedError) as ierr:
+            self.meta[parent_child]
+
+        assert str(ierr).find("retrieve child meta data from multiple") >= 0
         return
 
     def test_concat_strict_w_collision(self):
@@ -244,43 +286,10 @@ class TestMeta(object):
             'Length of data_vars and inputs must be equal') >= 0
         return
 
-    def test_transfer_attributes_overwrite_with_strict_names(self):
-        """Test raises AttributeError when overwriting with `strict_names`."""
-
-        # Set the Meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-
-        # Update the Meta and Instrument objects
-        self.meta.mutable = True
-        self.meta.jojo_beans = 'yep!'
-        self.testInst.jojo_beans = 'nope!'
-
-        # Catch and evaluate error message
-        with pytest.raises(AttributeError) as aerr:
-            self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                        strict_names=True)
-
-        assert str(aerr).find("cannot be transferred as it already exists") > 0
-        return
-
-    def test_meta_immutable(self):
-        """Test raises AttributeError if Meta is immutable."""
-
-        # Update Meta settings
-        self.meta.mutable = False
-
-        # Catch and test the error message
-        with pytest.raises(AttributeError) as aerr:
-            self.meta.hey = "this won't work."
-
-        assert str(aerr).find("Cannot set attribute") >= 0
-        return
-
     def test_transfer_attributes_to_non_instrument(self):
         """Test raises ValueError when transferring custom meta to non-Inst."""
 
         # Set the Meta object without setting testInst
-        self.meta.mutable = True
         self.meta.new_attribute = 'hello'
 
         # Catch and test error message
@@ -682,10 +691,6 @@ class TestMeta(object):
                     dvals[0] = nd_vals[0]
                     nd_inds = [0]
 
-                if len(mvals) > 0:
-                    mvals[0] = 'children'
-                    
-
         # Retrieve meta data for desired values
         sel_meta = self.meta[dvals, mvals]
 
@@ -695,10 +700,20 @@ class TestMeta(object):
         testing.assert_lists_equal(mvals, list(sel_meta.columns))
 
         # If there is higher order data, test the retrieval
-        if len(nd_inds) > 0:
-            warnings.warn(''.join(['TODO: Higher order data cannot be ',
-                                   'retrieved in batches']))
+        for pind in nd_inds:
+            # Get the desired number of child variables
+            self.dval = dvals[pind]
+            cvals = [kk for kk in self.meta[self.dval].children.keys()][
+                :num_dvals]
+
+        # Retrieve meta data for desired values
+            sel_meta = self.meta[self.dval, cvals, mvals]
             
+            # Evaluate retrieved data
+            assert isinstance(sel_meta, pds.DataFrame)
+            testing.assert_lists_equal(cvals, list(sel_meta.index))
+            testing.assert_lists_equal(mvals, list(sel_meta.columns))
+
         return
 
     def test_replace_meta(self):
@@ -732,6 +747,42 @@ class TestMeta(object):
         self.eval_meta_settings()
         return
 
+    @pytest.mark.parametrize("num_dvars", [0, 1, 3])
+    @pytest.mark.parametrize("use_upper", [True, False])
+    def test_replace_multiple_meta_w_list(self, num_dvars, use_upper):
+        """Test replace multiple metadata units as a list.
+
+        Parameters
+        ----------
+        num_dvars : int
+            Number of data variables for which 'units' will be updated.
+        use_upper : bool
+            Use upper-case for variable names, testing case-insensitivity
+
+        """
+
+        # Set the meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': "testing"})
+        self.default_name = []
+
+        # Update the meta data
+        dvals = [self.dval.upper() if use_upper else self.dval
+                 for self.dval in  self.testInst.variables[:num_dvars]]
+
+        for label in self.default_nan:
+            self.default_val[label] = -47
+            lval = [self.default_val[label] for self.dval in dvals]
+            self.meta[dvals] = {label: lval}
+
+        # Evaluate the meta data
+        self.default_nan = []
+
+        for i, self.dval in enumerate(dvals):
+            for label in self.default_val.keys():
+                self.default_val[label] = self.meta[self.dval, label]
+            self.eval_meta_settings()
+        return
+
     def test_add_meta_then_add_new_metadata_types(self):
         """Test addition of new metadata followed by new metadata types."""
 
@@ -763,33 +814,13 @@ class TestMeta(object):
         """Test that meta is immutable at instrument Instantiation."""
 
         # Set the Meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'},
+                      keep_mutable=True)
 
         # Test the default value for `mutable`
         assert self.meta.mutable is False, \
             "Meta `mutable` attribute initialized to the wrong value."
 
-        return
-
-    def test_transfer_attributes_to_instrument(self):
-        """Test transfer of custom meta attributes."""
-
-        # Set the Meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-        self.meta.mutable = True
-
-        # Set non-conflicting attribute
-        self.meta.new_attribute = 'hello'
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-
-        # Test to see if attribute was transferred successfully to Instrument
-        assert hasattr(self.testInst, "new_attribute"), \
-            "custom Meta attribute not transferred to Instrument."
-        assert self.testInst.new_attribute == 'hello'
-
-        # Ensure transferred attributes are removed from Meta
-        assert not hasattr(self.meta, "new_attribute"), \
-            "custom Meta attribute not removed during transfer to Instrument."
         return
 
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
@@ -870,16 +901,6 @@ class TestMeta(object):
 
         # Test the Meta settings
         self.eval_meta_settings()
-        return
-
-    def test_inst_data_assign_meta_empty_list(self):
-        """Test meta assignment from empty list."""
-
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-        self.testInst['help'] = {'data': self.testInst['mlt'],
-                                 'units': [],
-                                 'long_name': 'The Doors'}
-        assert self.testInst.meta['help', 'units'] == ''
         return
 
     def test_inst_data_assign_meta_then_data(self):
@@ -978,51 +999,6 @@ class TestMeta(object):
                                     'unit_zon_z', 'unit_par_x', 'unit_par_y',
                                     'unit_par_z', 'unit_mer_x', 'unit_mer_y',
                                     'unit_mer_z'])
-        return
-
-    def test_transfer_attributes_to_instrument_leading_underscore(self):
-        """Ensure private custom meta attributes not transferred."""
-
-        # Set meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-        self.meta.mutable = True
-
-        # Set standard, hidden, and private attributes
-        self.meta.standard_attribute = 'hello'
-        self.meta._hidden_attribute = 'is it me'
-        self.meta.__private_attribute = "you're looking for"
-
-        # Include standard parameters as well
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-
-        # Test correct attachment to Instrument
-        assert self.testInst.standard_attribute == 'hello'
-        assert not hasattr(self.testInst, "_hidden_attribute")
-        assert not hasattr(self.testInst, "__private_attribute")
-
-        # Test correct transfer from Meta
-        assert not hasattr(self.meta, "standard_attribute")
-        assert self.meta._hidden_attribute == 'is it me'
-        assert self.meta.__private_attribute == "you're looking for"
-        return
-
-    def test_transfer_attributes_to_instrument_strict_names_false(self):
-        """Test attr transfer with strict_names set to False."""
-
-        # Set meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-        self.meta.mutable = True
-
-        # Add the same attribute with different values to Meta and Instrument
-        self.meta.overwrite_attribute = 'Meta Value'
-        self.testInst.overwrite_attribute = 'Inst Value'
-
-        # Overwrite the Instrument attribute value with the meta vale
-        self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                    strict_names=False)
-
-        # Test the result
-        assert self.testInst.overwrite_attribute == 'Meta Value'
         return
 
     def test_meta_merge(self):
@@ -1165,6 +1141,19 @@ class TestMeta(object):
 
         return
 
+    def test_create_new_metadata_from_old(self):
+        """Test create new metadata from old metadata."""
+
+        # Set the meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Create new meta data
+        new_meta = pysat.Meta(metadata=self.meta.data)
+
+        # Evaluate using equality
+        assert self.meta == new_meta
+        return
+
     # -------------------------------
     # Tests for higher order metadata
 
@@ -1226,6 +1215,9 @@ class TestMeta(object):
 
         """
 
+        # Initialize the lower order evaluation data
+        self.default_val['units'] = 'U'
+
         # Initialize the higher-order meta data
         ho_meta = pysat.Meta()
         for flist in self.frame_list:
@@ -1245,7 +1237,9 @@ class TestMeta(object):
 
         for i, self.dval in enumerate(dvals):
             if i < num_ho:
-                self.eval_ho_meta_settings(meta_dict)
+                eval_dict = {label: meta_dict[label][i]
+                             for label in meta_dict.keys()}
+                self.eval_ho_meta_settings(eval_dict)
             else:
                 self.eval_meta_settings()
         return
@@ -1455,76 +1449,6 @@ class TestMeta(object):
 
     # HERE
 
-    def test_create_new_metadata_from_old(self):
-        """Test create new metadata from old metadata."""
-
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        self.meta[['higher', 'lower', 'lower2']] = \
-            {'meta': [meta, None, meta],
-             'units': [None, 'boo', None],
-             'long_name': [None, 'boohoo', None],
-             'fill': [1, 1, 1],
-             'value_min': [0, 0, 0],
-             'value_max': [1, 1, 1]}
-        meta2 = pysat.Meta(metadata=self.meta.data)
-        m1 = meta2['lower']
-        m2 = self.meta['lower']
-        assert m1['children'] is None
-        assert m2['children'] is None
-        for key in m1.index:
-            if key not in ['children']:
-                assert m1[key] == m2[key]
-        # make sure both have the same indexes
-        assert np.all(m1.index == m2.index)
-        return
-
-    def test_replace_meta_units_list(self):
-        """Test replace metadata units as a list."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta[['new2', 'new']] = {'units': ['yeppers', 'yep']}
-        assert self.meta['new'].units == 'yep'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new2'].units == 'yeppers'
-        assert self.meta['new2'].long_name == 'boo2'
-        return
-
-    # assign multiple values to default
-    def test_multiple_input_names_null_value(self):
-        """Test setting multiple input names to null."""
-
-        self.meta[['test1', 'test2']] = {}
-        assert self.meta['test1', 'units'] == ''
-        assert self.meta['test2', 'long_name'] == 'test2'
-        return
-
-    def test_multiple_input_names_null_value_preexisting_values(self):
-        """Test setting multiple input names to null w/ pre-existing values."""
-
-        self.meta[['test1', 'test2']] = {'units': ['degrees', 'hams'],
-                                         'long_name': ['testing', 'further']}
-        self.meta[['test1', 'test2']] = {}
-        assert self.meta['test1', 'units'] == 'degrees'
-        assert self.meta['test2', 'long_name'] == 'further'
-        return
-
-    # test behaviors related to case changes
-    def test_assign_capitalized_labels(self):
-        """Test assignment of capitalized label names."""
-
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
-        self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
-
-        assert (self.meta['new'].Units == 'hey')
-        assert (self.meta['new'].Long_Name == 'boo')
-        assert (self.meta['new2'].Units == 'hey2')
-        assert (self.meta['new2'].Long_Name == 'boo2')
-        return
-
     def test_get_Units_wrong_case(self):
         """Test that getting Units works if the case is wrong."""
 
@@ -1709,30 +1633,6 @@ class TestMeta(object):
         assert not (self.meta.hasattr_case_neutral('YoYoYyo'))
         return
 
-    # check support on case preservation, but case insensitive
-    def test_replace_meta_units_list_weird_case(self):
-        """Test that replacing meta units is case independent."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta[['NEW2', 'new']] = {'units': ['yeppers', 'yep']}
-
-        assert (self.meta['new'].units == 'yep')
-        assert (self.meta['new'].long_name == 'boo')
-        assert (self.meta['new2'].units == 'yeppers')
-        assert (self.meta['new2'].long_name == 'boo2')
-        return
-
-    def test_meta_mutable_properties(self):
-        """Test that @properties are always mutable."""
-
-        self.meta = pysat.Meta()
-        self.meta.mutable = False
-        self.meta.data = pds.DataFrame()
-        self.meta.ho_data = {}
-        self.meta.labels.units = 'nT'
-        self.meta.labels.name = 'my name'
-        return
 
 
 class TestMetaImmutable(TestMeta):
@@ -1741,16 +1641,17 @@ class TestMetaImmutable(TestMeta):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        # Instrument object and disable mutability
-        self.testInst = pysat.Instrument('pysat', 'testing',
-                                         clean_level='clean')
-        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-        self.meta = self.testInst.meta
-        self.meta.mutable = False
-        self.meta_labels = {'units': ('Units', str),
-                            'name': ('Long_Name', str)}
+        self.testInst = None
+        self.meta = pysat.Meta()
+        self.mutable = False
 
-        # Assign remaining values
+        self.meta_labels = {'units': ('Units', str),
+                            'name': ('Long_Name', str),
+                            'desc': ('Description', str),
+                            'notes': ('Note', str),
+                            'min_val': ('Minimum', np.float64),
+                            'max_val': ('Maximum', np.float64),
+                            'fill_val': ('Fill_Value', np.float64)}
         self.dval = None
         self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']
@@ -1760,8 +1661,136 @@ class TestMetaImmutable(TestMeta):
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
+        del self.meta, self.meta_labels, self.default_name, self.default_nan
+        del self.default_val, self.dval, self.frame_list, self.testInst
+        del self.mutable
+        return
 
-        del self.testInst, self.meta, self.stime, self.meta_labels
-        del self.default_name, self.default_nan, self.default_val, self.dval
-        del self.frame_list
+    def test_meta_mutable_properties(self):
+        """Test that @properties are always mutable."""
+
+        # Set anything that can be immutable to be immutable
+        self.meta.mutable = self.mutable
+
+        # Test that data and label values can be updated
+        for prop, set_val in [('data', pds.DataFrame()), ('ho_data', {})]:
+            try:
+                setattr(self.meta, prop, set_val)
+            except AttributeError:
+                raise AssertionError(
+                    "Couldn't update mutable property {:}".format(
+                        prop.__repr__()))
+
+        set_val = "test value"
+        for label in ['units', 'name', 'desc', 'notes', 'min_val', 'max_val',
+                      'fill_val']:
+            try:
+                setattr(self.meta.labels, label, set_val)
+                assert getattr(self.meta.labels, label) == set_val
+            except AttributeError:
+                prop = ".".join([prop_root, label])
+                raise AssertionError(
+                    "Couldn't update mutable property {:}".format(
+                        prop.__repr__()))
+        return
+
+    def test_meta_immutable(self):
+        """Test raises AttributeError if Meta is immutable."""
+
+        # Update Meta settings
+        self.meta.mutable = self.mutable
+
+        # Catch and test the error message
+        with pytest.raises(AttributeError) as aerr:
+            self.meta.hey = "this won't work."
+
+        assert str(aerr).find("Cannot set attribute") >= 0
+        return
+
+
+class TestMetaMutable(object):
+    """Mutable-specific Meta data unit tests."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument(platform='pysat', name='testing')
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
+        self.meta = self.testInst.meta
+        self.meta.mutable = True
+
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+        del self.meta, self.testInst
+        return
+
+    def test_transfer_attributes_overwrite_with_strict_names(self):
+        """Test raises AttributeError when overwriting with `strict_names`."""
+
+        # Update the Meta and Instrument objects
+        self.meta.jojo_beans = 'yep!'
+        self.testInst.jojo_beans = 'nope!'
+
+        # Catch and evaluate error message
+        with pytest.raises(AttributeError) as aerr:
+            self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                        strict_names=True)
+
+        assert str(aerr).find("cannot be transferred as it already exists") > 0
+        return
+
+    def test_transfer_attributes_to_instrument_strict_names_false(self):
+        """Test attr transfer with strict_names set to False."""
+
+        # Add the same attribute with different values to Meta and Instrument
+        self.meta.overwrite_attribute = 'Meta Value'
+        self.testInst.overwrite_attribute = 'Inst Value'
+
+        # Overwrite the Instrument attribute value with the meta vale
+        self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                    strict_names=False)
+
+        # Test the result
+        assert self.testInst.overwrite_attribute == 'Meta Value'
+        return
+
+    def test_transfer_attributes_to_instrument(self):
+        """Test transfer of custom meta attributes."""
+
+        # Set non-conflicting attribute
+        self.meta.new_attribute = 'hello'
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # Test to see if attribute was transferred successfully to Instrument
+        assert hasattr(self.testInst, "new_attribute"), \
+            "custom Meta attribute not transferred to Instrument."
+        assert self.testInst.new_attribute == 'hello'
+
+        # Ensure transferred attributes are removed from Meta
+        assert not hasattr(self.meta, "new_attribute"), \
+            "custom Meta attribute not removed during transfer to Instrument."
+        return
+
+    def test_transfer_attributes_to_instrument_leading_underscore(self):
+        """Ensure private custom meta attributes not transferred."""
+
+        # Set standard, hidden, and private attributes
+        self.meta.standard_attribute = 'hello'
+        self.meta._hidden_attribute = 'is it me'
+        self.meta.__private_attribute = "you're looking for"
+
+        # Include standard parameters as well
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # Test correct attachment to Instrument
+        assert self.testInst.standard_attribute == 'hello'
+        assert not hasattr(self.testInst, "_hidden_attribute")
+        assert not hasattr(self.testInst, "__private_attribute")
+
+        # Test correct transfer from Meta
+        assert not hasattr(self.meta, "standard_attribute")
+        assert self.meta._hidden_attribute == 'is it me'
+        assert self.meta.__private_attribute == "you're looking for"
         return
