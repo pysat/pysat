@@ -536,9 +536,22 @@ class Meta(object):
                 # If tuple length is 2, index, column
                 new_index = match_name(self.var_case_name, key[0],
                                        self.data.index)
-                new_name = match_name(self.attr_case_name, key[1],
-                                      self.data.columns)
-                return self.data.loc[new_index, new_name]
+                try:
+                    # Assume this is a label name
+                    new_name = match_name(self.attr_case_name, key[1],
+                                          self.data.columns)
+                    return self.data.loc[new_index, new_name]
+                except KeyError:
+                    # This may instead be a child variable
+                    try:
+                        new_child_index = match_name(
+                            self.attr_case_name, key[1],
+                            self[new_index].children.data.index)
+                        return self.ho_data[new_index].data.loc[new_child_index]
+                    except AttributeError:
+                        raise NotImplementedError(
+                            ''.join(['Cannot retrieve child meta data ',
+                                     'from multiple parents']))
 
             elif len(key) == 3:
                 # If tuple length is 3, index, child_index, column
