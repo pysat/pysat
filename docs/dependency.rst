@@ -213,14 +213,20 @@ routine, make sure to use the optional output for the custom instrument lists:
   instruments = InstLibTests.initialize_test_package(
     InstLibTests, inst_loc=customLibrary.instruments)
 
-The instruments in the custom library will be grouped into three lists:
+The instruments in the custom library will be grouped into four lists:
 
 * instruments['names']: A list of all module names to check for
   standardization
 * instruments['download']: A list of dicts containing info to initialize
-  instruments for end-to-end testing
+  instruments for end-to-end testing.  Used to access instruments on remote
+  servers.
+* instruments['load_options']: A list of dicts containing info to initialize
+  instruments for end-to-end testing.  Includes all items in
+  instruments['download'] along with alternate instruments with optional
+  kwarg inputs. Used to load data products that have already been downloaded.
 * instruments['no_download']: A list of dicts containing info to initialize
-  instruments without download support for specialized local tests
+  instruments without download support for specialized local tests.  Used for
+  limited testing since remote data access is not available.
 
 Then, the new test may be created under the ``TestInstruments`` class as before.
 
