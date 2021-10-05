@@ -492,14 +492,27 @@ class Meta(object):
         --------
         ::
 
-            meta['name']
-            meta['name1', 'units']
-            meta[['name1', 'name2'], 'units']
-            meta[:, 'units']
+            import pysat
+            inst = pysat.Instrument('pysat', 'testing2d')
+            inst.load(date=inst.inst_module._test_dates[''][''])
+            meta = inst.meta
 
-            # for higher order data
-            meta['name1', 'subvar', 'units']
-            meta['name1', ('units', 'scale')]
+            # For standard data, many slicing options are available
+            meta['uts']
+            meta['uts', 'units']
+            meta['uts', ['units', 'long_name']]
+            meta[['uts', 'mlt'], 'units']
+            meta[['uts', 'mlt'], ['units', 'long_name']]
+            meta[:, 'units']
+            meta[:, ['units', 'long_name']]
+
+            # For higher order data, slicing is not supported for multiple
+            # parents with any children
+            meta['profiles', 'density', 'units']
+            meta['profiles', 'density', ['units', 'long_name']]
+            meta['profiles', ['density', 'dummy_str'], ['units', 'long_name']]
+            meta['profiles', ('units', 'long_name')]
+            meta[['series_profiles', 'profiles'], ('units', 'long_name')]
 
         """
         # Define a local convenience function
@@ -529,9 +542,18 @@ class Meta(object):
 
             elif len(key) == 3:
                 # If tuple length is 3, index, child_index, column
-                new_index = self.var_case_name(key[0])
-                new_child_index = self.var_case_name(key[1])
-                new_name = self.attr_case_name(key[2])
+                new_index = match_name(self.var_case_name, key[0],
+                                       self.data.index)
+                try:
+                    new_child_index = match_name(
+                        self.attr_case_name, key[1],
+                        self[new_index].children.data.index)
+                except AttributeError:
+                    raise NotImplementedError(
+                        'Cannot retrieve child meta data from multiple parents')
+
+                new_name = match_name(self.attr_case_name, key[2],
+                                      self.data.columns)
                 return self.ho_data[new_index].data.loc[new_child_index,
                                                         new_name]
 
