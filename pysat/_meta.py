@@ -321,19 +321,19 @@ class Meta(object):
         else:
             super(Meta, self).__setattr__(name, value)
 
-    def __setitem__(self, data_vars, input_data):
+    def __setitem__(self, data_vars, input_dat):
         """Add metadata.
 
         Parameters
         ----------
         data_vars : str, list
             Data variable names for the input metadata
-        input_data : dict, pds.Series, or Meta
+        input_dat : dict, pds.Series, or Meta
             Input metadata to be assigned
 
         """
 
-        input_data = deepcopy(input_data)
+        input_data = deepcopy(input_dat)
 
         if isinstance(input_data, dict):
             # If not passed an iterable, make it one
