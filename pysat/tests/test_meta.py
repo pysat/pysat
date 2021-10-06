@@ -49,8 +49,8 @@ class TestMeta(object):
 
         self.meta_labels = {'units': ('Units', str),
                             'name': ('Long_Name', str),
-                            'desc': ('Description', str),
-                            'notes': ('Note', str),
+                            'desc': ('Desc', str),
+                            'notes': ('Notes', str),
                             'min_val': ('Minimum', np.float64),
                             'max_val': ('Maximum', np.float64),
                             'fill_val': ('Fill_Value', np.float64)}
@@ -661,6 +661,8 @@ class TestMeta(object):
 
         Parameters
         ----------
+        inst_name : str
+            Name of the pysat test instrument
         num_mvals : int
             Number of meta attributes to retrieve
         num_dvals : int
@@ -686,7 +688,7 @@ class TestMeta(object):
                 for val in nd_vals:
                     if val in dvals:
                         nd_inds.append(dvals.index(val))
-    
+
                 if len(nd_inds) == 0:
                     dvals[0] = nd_vals[0]
                     nd_inds = [0]
@@ -708,7 +710,7 @@ class TestMeta(object):
 
         # Retrieve meta data for desired values
             sel_meta = self.meta[self.dval, cvals, mvals]
-            
+
             # Evaluate retrieved data
             assert isinstance(sel_meta, pds.DataFrame)
             testing.assert_lists_equal(cvals, list(sel_meta.index))
@@ -767,7 +769,7 @@ class TestMeta(object):
 
         # Update the meta data
         dvals = [self.dval.upper() if use_upper else self.dval
-                 for self.dval in  self.testInst.variables[:num_dvars]]
+                 for self.dval in self.testInst.variables[:num_dvars]]
 
         for label in self.default_nan:
             self.default_val[label] = -47
@@ -1122,7 +1124,7 @@ class TestMeta(object):
             export_nan = None
             present = self.testInst.meta._export_nan
             missing = ['test_nan_export']
-        
+
         # Write the file
         pysat.tests.test_utils_io.prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
@@ -1152,6 +1154,157 @@ class TestMeta(object):
 
         # Evaluate using equality
         assert self.meta == new_meta
+        return
+
+    def test_retrieve_wrong_case(self):
+        """Test that label retrieval work when the case is wrong."""
+
+        # Set default meta data with capitalized labels
+        self.meta = pysat.Meta(labels=self.meta_labels)
+        self.dval = 'retrieve_wrong_case'
+        self.meta[self.dval] = {'Long_Name': self.dval}
+
+        # Evaluate data with lower case labels
+        self.default_nan = [self.meta_labels[mkey][0].lower()
+                            for mkey in ['fill_val', 'max_val', 'min_val']]
+        self.eval_meta_settings()
+        return
+
+    @pytest.mark.parametrize("num_dvals", [0, 1, 3])
+    def test_set_wrong_case(self, num_dvals):
+        """Test that setting labels works if the case is wrong.
+
+        Parameters
+        ----------
+        num_dvals : int
+            Number of data values to retrieve
+
+        """
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing',
+                                   'labels': self.meta_labels})
+
+        # Set data using lower case labels
+        dvals = self.testInst.variables[:num_dvals]
+
+        for label in ['fill_val', 'max_val', 'min_val']:
+            self.meta[dvals] = {self.meta_labels[label][0].lower():
+                                [-47 for i in range(num_dvals)]}
+
+        # Evaluate the data with lower case labels
+        self.default_name = []
+        self.default_nan = []
+        for self.dval in dvals:
+            self.default_val = {label.lower(): self.meta[self.dval, label]
+                                for label, mtype in self.meta_labels.values()}
+            self.eval_meta_settings()
+        return
+
+    def test_data_retrieval_case_insensitive(self):
+        """Test that data variables are case insensitive for keys in meta."""
+
+        # Initalize the meta data
+        self.dval = "test_val"
+        self.meta[self.dval] = self.default_val
+
+        # Test that the data value is present using real key and upper-case
+        # version of that key
+        assert self.dval in self.meta.keys()
+
+        # Cannot specify keys for case-insensitive look-up
+        assert self.dval.upper() in self.meta
+        return
+
+    def test_ho_data_retrieval_case_insensitive(self):
+        """Test that higher order data variables are case insensitive."""
+
+        # Initalize the meta data
+        self.dval = "test_val"
+        self.meta[self.dval] = self.default_val
+
+        cmeta = pysat.Meta()
+        cval = '_'.join([self.dval, 'child'])
+        cmeta[cval] = self.default_val
+        self.meta[self.dval] = cmeta
+
+        # Test that the data value is present using real key and upper-case
+        # version of that key
+        assert self.dval in self.meta.keys()
+
+        # Test the child variable, which should only be present through the
+        # children attribute. Cannot specify keys for case-insensitive look-up.
+        assert cval not in self.meta.keys()
+        assert cval in self.meta[self.dval].children.keys()
+        assert cval.upper() in self.meta[self.dval].children
+        return
+
+    @pytest.mark.parametrize("data_val", ['test_val', 'TEST_VAL', 'Test_Val',
+                                          'TeSt_vAl'])
+    def test_var_case_name(self, data_val):
+        """Test `meta.var_case_name` preserves the required output case.
+
+        Parameters
+        ----------
+        data_val : str
+            Data value name
+
+        """
+
+        # Set the meta data variable
+        self.meta[data_val] = self.default_val
+
+        # Evaluate method performance using different input variations
+        assert data_val == self.meta.var_case_name(data_val.lower())
+        assert data_val == self.meta.var_case_name(data_val.upper())
+        assert data_val == self.meta.var_case_name(data_val.capitalize())
+        assert data_val == self.meta.var_case_name(data_val)
+        return
+
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_attribute_name_case(self, label):
+        """Test that `meta.attribute_case_name` preserves the stored case.
+
+        Parameters
+        ----------
+        label : str
+            Label name
+
+        """
+
+        # Set the meta data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = {label: 'Test meta data for meta label'}
+
+        # Test the meta method using different input variations
+        assert self.meta.attr_case_name(label.upper()) == label
+        assert self.meta.attr_case_name(label.lower()) == label
+        assert self.meta.attr_case_name(label.capitalize()) == label
+        assert self.meta.attr_case_name(label) == label
+        return
+
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_hasattr_case_neutral(self, label):
+        """Test `meta.hasattr_case_neutral` identifies the label name.
+
+        Parameters
+        ----------
+        label : str
+            Label name
+
+        """
+
+        # Set the meta data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = {label: 'Test meta data for meta label'}
+
+        # Test the meta method using different input variations
+        assert self.meta.hasattr_case_neutral(label.upper())
+        assert self.meta.hasattr_case_neutral(label.lower())
+        assert self.meta.hasattr_case_neutral(label.capitalize())
+        assert self.meta.hasattr_case_neutral(label)
         return
 
     # -------------------------------
@@ -1185,7 +1338,7 @@ class TestMeta(object):
                               columns=self.frame_list)
         inst_data = [frame for i in range(self.testInst.index.shape[0])]
         self.dval = 'test_val'
-        
+
         if meta_dict is None:
             self.testInst[self.dval] = inst_data
             meta_dict = {'units': '', 'long_name': self.dval, 'desc': ''}
@@ -1202,7 +1355,7 @@ class TestMeta(object):
         self.eval_ho_meta_settings(meta_dict)
         return
 
-    @pytest.mark.parametrize("num_ho, num_lo", [(1, 1), (2, 2)]) 
+    @pytest.mark.parametrize("num_ho, num_lo", [(1, 1), (2, 2)])
     def test_assign_mult_higher_order_meta_from_dict(self, num_ho, num_lo):
         """Test assign higher order metadata from dict with multiple types.
 
@@ -1447,192 +1600,59 @@ class TestMeta(object):
                     cvar, self.meta.labels.units].find('Updated') < 0
         return
 
-    # HERE
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_ho_attribute_name_case(self, label):
+        """Test that `meta.attribute_case_name` preserves the HO stored case.
 
-    def test_get_Units_wrong_case(self):
-        """Test that getting Units works if the case is wrong."""
+        Parameters
+        ----------
+        label : str
+            Label name
 
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
-        self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
+        """
 
-        assert (self.meta['new', 'units'] == 'hey')
-        assert (self.meta['new', 'long_name'] == 'boo')
-        assert (self.meta['new2', 'units'] == 'hey2')
-        assert (self.meta['new2', 'long_name'] == 'boo2')
+        # Only set `label` in the child data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = self.default_val
+        cmeta = pysat.Meta()
+        cval = "_".join([self.dval, "child"])
+        cmeta[cval] = {label: 'Test meta data for child meta label'}
+        self.meta[self.dval] = cmeta
+
+        # Test the meta method using different input variations
+        assert self.meta.attr_case_name(label.upper()) == label
+        assert self.meta.attr_case_name(label.lower()) == label
+        assert self.meta.attr_case_name(label.capitalize()) == label
+        assert self.meta.attr_case_name(label) == label
         return
 
-    def test_set_Units_wrong_case(self):
-        """Test that setting Units works if the case is wrong."""
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_ho_hasattr_case_neutral(self, label):
+        """Test `meta.hasattr_case_neutral` identifies the HO label name.
 
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
+        Parameters
+        ----------
+        label : str
+            Label name
 
-        assert self.meta['new'].Units == 'hey'
-        assert self.meta['new'].Long_Name == 'boo'
-        assert self.meta['new2'].Units == 'hey2'
-        assert self.meta['new2'].Long_Name == 'boo2'
+        """
+
+        # Only set `label` in the child data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = self.default_val
+        cmeta = pysat.Meta()
+        cval = "_".join([self.dval, "child"])
+        cmeta[cval] = {label: 'Test meta data for child meta label'}
+        self.meta[self.dval] = cmeta
+
+        # Test the meta method using different input variations
+        assert self.meta.hasattr_case_neutral(label.upper())
+        assert self.meta.hasattr_case_neutral(label.lower())
+        assert self.meta.hasattr_case_neutral(label.capitalize())
+        assert self.meta.hasattr_case_neutral(label)
         return
-
-    def test_repeated_set_Units_wrong_case(self):
-        """Test that setting Units repeatedly works if the case is wrong."""
-
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        for i in np.arange(10):
-            self.meta['new'] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
-            self.meta['new_%d' % i] = {'units': 'hey%d' % i,
-                                       'long_name': 'boo%d' % i}
-
-        for i in np.arange(10):
-            self.meta['new_5'] = {'units': 'hey%d' % i,
-                                  'long_name': 'boo%d' % i}
-            self.meta['new_%d' % i] = {'units': 'heyhey%d' % i,
-                                       'long_name': 'booboo%d' % i}
-
-        assert self.meta['new'].Units == 'hey9'
-        assert self.meta['new'].Long_Name == 'boo9'
-        assert self.meta['new_9'].Units == 'heyhey9'
-        assert self.meta['new_9'].Long_Name == 'booboo9'
-        assert self.meta['new_5'].Units == 'hey9'
-        assert self.meta['new_5'].Long_Name == 'boo9'
-        return
-
-    def test_contains_case_insensitive(self):
-        """Test that labels are case insensitive for keys in meta."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        assert ('new2' in self.meta)
-        assert ('NEW2' in self.meta)
-        return
-
-    def test_contains_case_insensitive_w_ho(self):
-        """Test that labels are case insensitive for keys in ho meta."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta['new2'] = meta2
-        assert ('new2' in self.meta)
-        assert ('NEW2' in self.meta)
-        assert ('new21' not in self.meta)
-        assert ('NEW21' not in self.meta)
-        return
-
-    def test_get_variable_name_case_preservation(self):
-        """Test `meta.var_case_name` preserves the required output case."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2'}
-
-        assert ('NEW2' == self.meta.var_case_name('new2'))
-        assert ('NEW2' == self.meta.var_case_name('nEw2'))
-        assert ('NEW2' == self.meta.var_case_name('neW2'))
-        assert ('NEW2' == self.meta.var_case_name('NEW2'))
-        return
-
-    def test_get_attribute_name_case_preservation(self):
-        """Test that meta labels and values preserve the input case."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2',
-                             'YoYoYO': 'yolo'}
-        self.meta['new'] = {'yoyoyo': 'YOLO'}
-
-        assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
-        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
-        assert (self.meta['new', 'YoYoYO'] == 'YOLO')
-        assert (self.meta['new2', 'yoyoyo'] == 'yolo')
-        assert (self.meta['new2', 'YoYoYO'] == 'yolo')
-        return
-
-    def test_get_attribute_name_case_preservation_w_higher_order(self):
-        """Test that get attribute names preserves the case with ho metadata."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta['NEW2'] = meta2
-        self.meta['new'] = {'yoyoyo': 'YOLO'}
-
-        assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
-        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
-        assert (self.meta['new', 'YoYoYO'] == 'YOLO')
-        assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
-        assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].children.attr_case_name('YoYoYo')
-                == 'YoYoYO')
-        return
-
-    def test_get_attribute_name_case_preservation_w_higher_order_2(self):
-        """Test that get attribute names preserves the case with ho metadata."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta['NEW2'] = meta2
-        self.meta['NEW'] = {'yoyoyo': 'YOLO'}
-
-        assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
-        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
-        assert (self.meta['NEW', 'YoYoYO'] == 'YOLO')
-        assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
-        assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].children.attr_case_name('YoYoYo')
-                == 'YoYoYO')
-        return
-
-    def test_get_attribute_name_case_preservation_w_ho_reverse_order(self):
-        """Test that getting attribute names preserves the case in reverse."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta['new'] = {'yoyoyo': 'YOLO'}
-        self.meta['NEW2'] = meta2
-
-        assert (self.meta.attr_case_name('YoYoYo') == 'yoyoyo')
-        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
-        assert (self.meta['new', 'YoYoYO'] == 'YOLO')
-        assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
-        assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].children.attr_case_name('YoYoYo')
-                == 'yoyoyo')
-        return
-
-    def test_has_attr_name_case_preservation_w_ho_reverse_order(self):
-        """Test that has_attr_name preserves the case with ho in reverse."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta['new'] = {'yoyoyo': 'YOLO'}
-        self.meta['NEW2'] = meta2
-
-        assert (self.meta.hasattr_case_neutral('YoYoYo'))
-        assert (self.meta.hasattr_case_neutral('yoyoyo'))
-        assert not (self.meta.hasattr_case_neutral('YoYoYyo'))
-        return
-
-    def test_has_attr_name_case_preservation_w_higher_order(self):
-        """Test that has_attr_name preserves the case with higher order."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta['NEW2'] = meta2
-
-        assert not (self.meta.hasattr_case_neutral('YoYoYo'))
-        assert not (self.meta.hasattr_case_neutral('yoyoyo'))
-        assert not (self.meta.hasattr_case_neutral('YoYoYyo'))
-        return
-
 
 
 class TestMetaImmutable(TestMeta):
@@ -1688,7 +1708,7 @@ class TestMetaImmutable(TestMeta):
                 setattr(self.meta.labels, label, set_val)
                 assert getattr(self.meta.labels, label) == set_val
             except AttributeError:
-                prop = ".".join([prop_root, label])
+                prop = ".".join(["labels", label])
                 raise AssertionError(
                     "Couldn't update mutable property {:}".format(
                         prop.__repr__()))
