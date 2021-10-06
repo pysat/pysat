@@ -552,7 +552,7 @@ class Meta(object):
                             self.attr_case_name, key[1],
                             self[new_index].children.data.index)
                         return self.ho_data[new_index].data.loc[new_child_index]
-                    except AttributeError as aerr:
+                    except AttributeError:
                         raise NotImplementedError(
                             ''.join(['Cannot retrieve child meta data ',
                                      'from multiple parents']))

@@ -1100,7 +1100,7 @@ class TestMeta(object):
             if False
 
         """
-        # TODO: consider moving to class with netCDF tests
+        # TODO(#585): consider moving to class with netCDF tests
 
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
@@ -1595,7 +1595,7 @@ class TestMeta(object):
                                        list(self.meta[dvar].children.keys()))
 
             for cvar in concat_meta[dvar].children.keys():
-                # TODO: Isssue #911 will either fix this or require warning test
+                # TODO(#911): will either fix this or require warning test
                 assert self.meta[dvar].children[
                     cvar, self.meta.labels.units].find('Updated') < 0
         return
