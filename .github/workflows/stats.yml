@@ -27,6 +27,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r test_requirements.txt
         pip install -r requirements.txt
+        python setup.py install
         pip install `awk '{print $1}' ecosystem.txt`
 
     - name: Set up pysat
