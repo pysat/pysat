@@ -147,6 +147,37 @@ test methods use temporary directories to store downloaded files to avoid
 breaking a user's directory structure.
 
 
+.. _pysat-dep-options:
+
+Adding custom kwargs to load tests
+----------------------------------
+
+If an instrument in a custom library has a custom kwarg, this can be added as
+part of the standard load tests.  When writing the instrument module, simply add
+the options as a dict of kwargs with the name `_test_load_opt`:
+
+.. code:: python
+
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _test_load_opt = {'': {'Level_1': {'myoption': True}}}
+
+The structure of the dict should be similar to the `_test_dates` construction.
+See :ref:`rst_test-temp` for more information on structuring test attributes
+for custom instrument libraries. For multiple options, a list of dicts should
+be used.
+
+.. code:: python
+
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _test_load_opt = {'': {'Level_1': [{'myoption': True},
+                                      {'myoption': False, 'num_samples': 30}]}}
+
+Note that this test only verifies that the instrument can be loaded with that
+option.  To test for specific outcomes, see the following section.
+
+
 .. _pysat-dep-addtests:
 
 Adding custom tests in pysat
@@ -182,14 +213,20 @@ routine, make sure to use the optional output for the custom instrument lists:
   instruments = InstLibTests.initialize_test_package(
     InstLibTests, inst_loc=customLibrary.instruments)
 
-The instruments in the custom library will be grouped into three lists:
+The instruments in the custom library will be grouped into four lists:
 
 * instruments['names']: A list of all module names to check for
   standardization
 * instruments['download']: A list of dicts containing info to initialize
-  instruments for end-to-end testing
+  instruments for end-to-end testing.  Used to access instruments on remote
+  servers.
+* instruments['load_options']: A list of dicts containing info to initialize
+  instruments for end-to-end testing.  Includes all items in
+  instruments['download'] along with alternate instruments with optional
+  kwarg inputs. Used to load data products that have already been downloaded.
 * instruments['no_download']: A list of dicts containing info to initialize
-  instruments without download support for specialized local tests
+  instruments without download support for specialized local tests.  Used for
+  limited testing since remote data access is not available.
 
 Then, the new test may be created under the ``TestInstruments`` class as before.
 
