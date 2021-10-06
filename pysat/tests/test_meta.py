@@ -1346,8 +1346,8 @@ class TestMeta(object):
             meta_dict.update({'data': inst_data})
             self.testInst[self.dval] = meta_dict
 
-            if 'data' in meta_dict.keys():
-                del meta_dict['data']
+            # Remove data key for evaluation
+            del meta_dict['data']
 
         self.meta = self.testInst.meta
 
@@ -1687,7 +1687,9 @@ class TestMetaImmutable(TestMeta):
         del self.mutable
         return
 
-    def test_meta_mutable_properties(self):
+    @pytest.mark.parametrize("prop,set_val", [('data', pds.DataFrame()),
+                                              ('ho_data', {})])
+    def test_meta_mutable_properties(self, prop, set_val):
         """Test that @properties are always mutable."""
 
         # Set anything that can be immutable to be immutable
@@ -1696,23 +1698,24 @@ class TestMetaImmutable(TestMeta):
         # Test that data and label values can be updated
         for prop, set_val in [('data', pds.DataFrame()), ('ho_data', {})]:
             try:
+                # Pandas does not support dataframe equality
                 setattr(self.meta, prop, set_val)
             except AttributeError:
                 raise AssertionError(
                     "Couldn't update mutable property {:}".format(
                         prop.__repr__()))
 
+    @pytest.mark.parametrize("label", ['units', 'name', 'desc', 'notes',
+                                       'min_val', 'max_val', 'fill_val'])
+    def test_meta_mutable_properties_labels(self, label):
+        """Test that @properties are always mutable."""
+
+        # Set anything that can be immutable to be immutable
+        self.meta.mutable = self.mutable
+
         set_val = "test value"
-        for label in ['units', 'name', 'desc', 'notes', 'min_val', 'max_val',
-                      'fill_val']:
-            try:
-                setattr(self.meta.labels, label, set_val)
-                assert getattr(self.meta.labels, label) == set_val
-            except AttributeError:
-                prop = ".".join(["labels", label])
-                raise AssertionError(
-                    "Couldn't update mutable property {:}".format(
-                        prop.__repr__()))
+        setattr(self.meta.labels, label, set_val)
+        assert getattr(self.meta.labels, label) == set_val
         return
 
     def test_meta_immutable(self):
