@@ -426,7 +426,7 @@ class TestMeta(object):
         return
 
     def test_self_equality(self):
-        """Test Meta equality for the same objecct."""
+        """Test Meta equality for the same object."""
 
         assert self.meta == self.meta
         return
