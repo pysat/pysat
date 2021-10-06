@@ -541,14 +541,17 @@ class Meta(object):
                     new_name = match_name(self.attr_case_name, key[1],
                                           self.data.columns)
                     return self.data.loc[new_index, new_name]
-                except KeyError:
-                    # This may instead be a child variable
+                except KeyError as kerr:
+                    # This may instead be a child variable, check for children
+                    if self[new_index].children is None:
+                        raise kerr
+
                     try:
                         new_child_index = match_name(
                             self.attr_case_name, key[1],
                             self[new_index].children.data.index)
                         return self.ho_data[new_index].data.loc[new_child_index]
-                    except AttributeError:
+                    except AttributeError as aerr:
                         raise NotImplementedError(
                             ''.join(['Cannot retrieve child meta data ',
                                      'from multiple parents']))
