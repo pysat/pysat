@@ -70,6 +70,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      standard end-to-end instrument tests.
    * Moved test classes to `pysat.tests.classes`
    * Reorganized the core test_instrument.py as a series of classes
+   * Added CI reports for supported data products
 
 [3.0.1] - 2021-07-28
 --------------------
