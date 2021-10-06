@@ -543,7 +543,8 @@ class Meta(object):
                     return self.data.loc[new_index, new_name]
                 except KeyError as kerr:
                     # This may instead be a child variable, check for children
-                    if self[new_index].children is None:
+                    if(hasattr(self[new_index], 'children')
+                       and self[new_index].children is None):
                         raise kerr
 
                     try:

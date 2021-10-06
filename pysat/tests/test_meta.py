@@ -1648,10 +1648,11 @@ class TestMeta(object):
         self.meta[self.dval] = cmeta
 
         # Test the meta method using different input variations
-        assert self.meta.hasattr_case_neutral(label.upper())
-        assert self.meta.hasattr_case_neutral(label.lower())
-        assert self.meta.hasattr_case_neutral(label.capitalize())
-        assert self.meta.hasattr_case_neutral(label)
+        assert self.meta[self.dval].children.hasattr_case_neutral(label.upper())
+        assert self.meta[self.dval].children.hasattr_case_neutral(label.lower())
+        assert self.meta[self.dval].children.hasattr_case_neutral(
+            label.capitalize())
+        assert self.meta[self.dval].children.hasattr_case_neutral(label)
         return
 
 
@@ -1667,8 +1668,8 @@ class TestMetaImmutable(TestMeta):
 
         self.meta_labels = {'units': ('Units', str),
                             'name': ('Long_Name', str),
-                            'desc': ('Description', str),
-                            'notes': ('Note', str),
+                            'desc': ('Desc', str),
+                            'notes': ('Notes', str),
                             'min_val': ('Minimum', np.float64),
                             'max_val': ('Maximum', np.float64),
                             'fill_val': ('Fill_Value', np.float64)}
