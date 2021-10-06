@@ -54,6 +54,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Update minimum numpy in CI tests to 1.18 following NEP29
    * Made `InstTestClass` more portable to streamline user implementation of the
      standard end-to-end instrument tests.
+   * Separated MetaLabels tests from Meta test class
+   * Organized and reduced duplication in the Meta test class
 
 [3.0.1] - 2021-07-28
 --------------------
