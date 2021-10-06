@@ -6,36 +6,27 @@
 """Tests the pysat MetaLabels object."""
 
 import logging
+import numpy as np
 import pytest
 
 import pysat
 
 
 class TestMetaLabels(object):
-    """Basic unit tests for the MetaLabels class."""
+    """Unit and integration tests for the MetaLabels class."""
 
-    
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'testing')
-        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-        self.meta_labels = self.testInst.meta.labels
+        testInst = pysat.Instrument('pysat', 'testing')
+        self.meta_labels = testInst.meta.labels
+        self.meta = pysat.Meta()
 
-        self.label_dict = {'units': ('Units', str),
-                           'name': ('Long_Name', str)}
-        self.dval = None
-        self.default_name = ['long_name']
-        self.default_nan = ['fill', 'value_min', 'value_max']
-        self.default_val = {'notes': '', 'units': '', 'desc': ''}
-        self.frame_list = ['dummy_frame1', 'dummy_frame2']
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
-        del self.testInst, self.meta, self.stime, self.meta_labels
-        del self.default_name, self.default_nan, self.default_val, self.dval
-        del self.frame_list
+        del self.meta, self.meta_labels
         return
 
     # -----------------------
