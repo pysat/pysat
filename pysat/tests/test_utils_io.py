@@ -408,8 +408,6 @@ class TestNetCDF4Integration(object):
             if False
 
         """
-        # TODO(#585): consider moving to class with netCDF tests
-
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst = pysat.Instrument('pysat', 'testing')
