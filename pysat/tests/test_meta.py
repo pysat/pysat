@@ -6,12 +6,10 @@
 """Tests the pysat Meta object."""
 
 import logging
-import netCDF4
 import numpy as np
 import os
 import pandas as pds
 import pytest
-import tempfile
 import warnings
 
 import pysat
@@ -22,23 +20,6 @@ from pysat.utils import testing
 
 class TestMeta(object):
     """Basic unit tests for standard metadata operations."""
-
-    def setup_class(self):
-        """Initialize the testing setup once before all tests are run."""
-
-        # Use a temporary directory so that the user's setup is not altered.
-        self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
-        pysat.params['data_dirs'] = self.tempdir.name
-        return
-
-    def teardown_class(self):
-        """Clean up downloaded files and parameters from tests."""
-
-        pysat.params['data_dirs'] = self.saved_path
-        self.tempdir.cleanup()
-        del self.saved_path, self.tempdir
-        return
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -1089,60 +1070,6 @@ class TestMeta(object):
         testing.assert_lists_equal(self.dval, [val for val in self.meta.keys()])
         return
 
-    @pytest.mark.parametrize('use_method', [True, False])
-    def test_nan_metadata_filtered_netcdf4(self, use_method):
-        """Test that metadata set to NaN is excluded from netCDF output.
-
-        Parameters
-        ----------
-        use_method : bool
-            Use meta method and `export_nan` kwarg if True, use defaults
-            if False
-
-        """
-        # TODO(#585): consider moving to class with netCDF tests
-
-        # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-
-        # Create new variable
-        self.testInst['test_nan_variable'] = 1.0
-
-        # Assign additional metadata
-        self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan}
-
-        # Get the export kwarg and set the evaluation data
-        if use_method:
-            # Keep a non-standard set of NaN meta labels in the file
-            present = self.testInst.meta._export_nan
-            missing = [present.pop()]
-            present.append('test_nan_export')
-            export_nan = list(present)
-        else:
-            # Keep the standard set of NaN meta labels in the file
-            export_nan = None
-            present = self.testInst.meta._export_nan
-            missing = ['test_nan_export']
-
-        # Write the file
-        pysat.tests.test_utils_io.prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
-        self.testInst.to_netcdf4(outfile, export_nan=export_nan)
-
-        # Load file back and test metadata is as expected
-        with netCDF4.Dataset(outfile) as open_f:
-            test_vars = open_f['test_nan_variable'].ncattrs()
-
-        testing.assert_list_contains(present, test_vars)
-
-        for mvar in missing:
-            assert mvar not in test_vars, \
-                '{:} was written to the netCDF file'.format(mvar.__repr__())
-
-        return
-
     def test_create_new_metadata_from_old(self):
         """Test create new metadata from old metadata."""
 
@@ -1425,6 +1352,7 @@ class TestMeta(object):
 
         # Test the ND metadata results
         self.meta = self.testInst.meta
+        del meta_dict['data']
         self.eval_ho_meta_settings(meta_dict)
         return
 
