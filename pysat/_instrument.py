@@ -242,9 +242,18 @@ class Instrument(object):
                  custom=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
+        # Check for deprecated usage of None.
+        if None in [tag, inst_id]:
+            warnings.warn(" ".join(["The usage of None in `tag` and `inst_id`",
+                                    "has been deprecated and will be removed",
+                                    "in 3.2.0+. Please use '' instead of",
+                                    "None."]),
+                          DeprecationWarning, stacklevel=2)
+
         # Set default tag, inst_id, and Instrument module
-        self.tag = tag.lower()
-        self.inst_id = inst_id.lower()
+        self.tag = '' if tag is None else tag.lower()
+        self.inst_id = '' if inst_id is None else inst_id.lower()
+
         self.inst_module = inst_module
 
         if self.inst_module is None:
@@ -264,6 +273,15 @@ class Instrument(object):
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
         else:
+            # Check if user supplied platform or name
+            if isinstance(platform, str) or isinstance(name, str):
+                warnings.warn(" ".join(("inst_module supplied along with",
+                                        "platform/name. Defaulting to",
+                                        "inst_module specification.",
+                                        "platform =", self.inst_module.platform,
+                                        ", name =", self.inst_module.name)),
+                              stacklevel=2)
+
             # User has provided a module, assign platform and name here
             for iattr in ['platform', 'name']:
                 if hasattr(self.inst_module, iattr):
@@ -1834,19 +1852,13 @@ class Instrument(object):
                                          'order.', istart, 'occurs after',
                                          istop))
                         raise ValueError(estr)
-                    itemp = self.files.get_file_array([istart], [istop])
-                    # downselect based upon step size
+                    # Account for width of load. Don't extend past bound.
+                    stop_idx = stop_idx - self._iter_width + 1
+                    # Stop index is exclusive when called this way, pad by 1
+                    itemp = self.files.files.values[start_idx:(stop_idx + 1)]
+                    # Downselect based on step size.
                     itemp = itemp[::self._iter_step]
-                    # Make sure iterations don't go past last day
-                    # get index of last in iteration list
-                    iter_idx = self.files.get_index(itemp[-1])
-                    # don't let loaded data go past stop bound
-                    if iter_idx + self._iter_width - 1 > stop_idx:
-                        i = np.ceil((self._iter_width - 1) / self._iter_step)
-                        i = -np.int64(i)
-                        self._iter_list.extend(itemp[:i])
-                    else:
-                        self._iter_list.extend(itemp)
+                    self._iter_list.extend(itemp)
 
             elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
                                                                   dt.datetime):
@@ -1882,9 +1894,10 @@ class Instrument(object):
                                          stop.strftime('%d %B %Y')))
                         raise ValueError(estr)
 
-                # account for width of load. Don't extend past bound.
+                # Account for width of load. Don't extend past bound.
                 ustops = [stop - width + dt.timedelta(days=1)
                           for stop in stops]
+                # Date range is inclusive, no need to pad.
                 self._iter_list = utils.time.create_date_range(starts,
                                                                ustops,
                                                                freq=freq)
