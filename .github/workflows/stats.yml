@@ -3,7 +3,12 @@
 
 name: Statistics of supported instruments
 
-on: [push]
+on:
+  push:
+    branch: main
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '0 0 7 * *'
 
 jobs:
   build:
@@ -14,7 +19,7 @@ jobs:
       matrix:
         python-version: [3.9]
 
-    name: Documentation tests
+    name: Summary of instrument libraries
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
