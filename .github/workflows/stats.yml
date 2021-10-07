@@ -4,8 +4,6 @@
 name: Statistics of supported instruments
 
 on:
-  push:
-    branch: main
   schedule:
     # * is a special character in YAML so you have to quote this string
     # minute hour day month year
@@ -32,6 +30,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        # Need to install pysat before ecosystem
         python setup.py install
         pip install -r test_requirements.txt
         pip install `awk '{print $1}' ecosystem.txt`
