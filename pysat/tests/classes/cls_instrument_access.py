@@ -463,21 +463,6 @@ class InstAccessTests(object):
         assert inst_copy != self.testInst
         return
 
-    def test_eq_different_object(self):
-        """Test equality using different `pysat.Instrument` objects."""
-
-        reload(pysat.instruments.pysat_testing)
-        obj1 = pysat.Instrument(platform='pysat', name='testing',
-                                num_samples=10, clean_level='clean',
-                                update_files=True)
-
-        reload(pysat.instruments.pysat_testing_xarray)
-        obj2 = pysat.Instrument(platform='pysat', name='testing_xarray',
-                                num_samples=10, clean_level='clean',
-                                update_files=True)
-        assert not (obj1 == obj2)
-        return
-
     def test_eq_different_type(self):
         """Test equality False when non-Instrument object."""
 

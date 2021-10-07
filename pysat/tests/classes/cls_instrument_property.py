@@ -595,19 +595,6 @@ class InstPropertyTests(object):
         assert str(err).find(estr) >= 0
         return
 
-    def test_supplying_instrument_module_requires_name_and_platform(self):
-        """Ensure instantiation via inst_module with missing name errors."""
-
-        class Dummy(object):
-            pass
-        Dummy.name = 'help'
-
-        with pytest.raises(AttributeError) as err:
-            pysat.Instrument(inst_module=Dummy)
-        estr = 'Supplied module '
-        assert str(err).find(estr) >= 0
-        return
-
     def test_get_var_type_code_unknown_type(self):
         """Ensure that Error is thrown if unknown type is supplied."""
 
