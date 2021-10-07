@@ -798,8 +798,8 @@ class TestAvailableInst(TestWithRegistration):
 
         captured = capsys.readouterr()
         # Numbers should match supported data products in `pysat.instruments`
-        assert captured.out.find("9 supported data products with download") > 0
-        assert captured.out.find("1 supported data products with local") > 0
+        assert captured.out.find("supported data products with download") > 0
+        assert captured.out.find("supported data products with local") > 0
 
         return
 
