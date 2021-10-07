@@ -271,6 +271,23 @@ class TestBasicsEmpty(object):
         del self.testInst
         return
 
+    def test_creating_empty_instrument_object(self):
+        """Ensure empty Instrument instantiation runs."""
+
+        null = pysat.Instrument()
+        assert isinstance(null, pysat.Instrument)
+        return
+
+    def test_incorrect_creation_empty_instrument_object(self):
+        """Ensure instantiation with missing name errors."""
+
+        with pytest.raises(ValueError) as err:
+            # Both name and platform should be empty
+            pysat.Instrument(platform='cnofs')
+        estr = 'Inputs platform and name must both'
+        assert str(err).find(estr) >= 0
+        return
+
     def test_empty_repr_eval(self):
         """Test that repr functions on empty `Instrument`."""
 
