@@ -29,7 +29,7 @@ tags = {'': 'Regular testing data set',
 inst_ids = {'': [tag for tag in tags.keys()]}
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 _test_download = {'': {'no_download': False}}
-
+_test_load_opt = {'': {'': {'num_samples': 13}}}
 
 # Init method
 init = mm_test.init
