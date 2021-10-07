@@ -56,6 +56,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
 * Maintenance
+   * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
    * Streamlined unit tests for `test_orbits`
