@@ -569,23 +569,6 @@ class InstPropertyTests(object):
 
         return
 
-    def test_creating_empty_instrument_object(self):
-        """Ensure empty Instrument instantiation runs."""
-
-        null = pysat.Instrument()
-        assert isinstance(null, pysat.Instrument)
-        return
-
-    def test_incorrect_creation_empty_instrument_object(self):
-        """Ensure instantiation with missing name errors."""
-
-        with pytest.raises(ValueError) as err:
-            # Both name and platform should be empty
-            pysat.Instrument(platform='cnofs')
-        estr = 'Inputs platform and name must both'
-        assert str(err).find(estr) >= 0
-        return
-
     @pytest.mark.parametrize(
         "kwargs,estr",
         [({'inst_id': 'invalid_inst_id'},
@@ -609,19 +592,6 @@ class InstPropertyTests(object):
             pysat.Instrument(platform=self.testInst.platform,
                              name=self.testInst.name,
                              **kwargs)
-        assert str(err).find(estr) >= 0
-        return
-
-    def test_supplying_instrument_module_requires_name_and_platform(self):
-        """Ensure instantiation via inst_module with missing name errors."""
-
-        class Dummy(object):
-            pass
-        Dummy.name = 'help'
-
-        with pytest.raises(AttributeError) as err:
-            pysat.Instrument(inst_module=Dummy)
-        estr = 'Supplied module '
         assert str(err).find(estr) >= 0
         return
 

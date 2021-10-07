@@ -55,6 +55,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added a warning if `inst_module` and `platform`/`name` are used to
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
+   * Fixed a bug when instantiating empty `pysat.Instrument()` (#851)
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
