@@ -666,9 +666,8 @@ class TestMeta(object):
             nd_vals = [key for key in self.meta.keys_nD()]
 
             if len(nd_vals) > 0:
-                for val in nd_vals:
-                    if val in dvals:
-                        nd_inds.append(dvals.index(val))
+                nd_inds = [dvals.index(self.dval) for self.dval in nd_vals
+                           if self.dval in dvals]
 
                 if len(nd_inds) == 0:
                     dvals[0] = nd_vals[0]
