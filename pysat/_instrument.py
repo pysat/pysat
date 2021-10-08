@@ -3156,11 +3156,14 @@ class Instrument(object):
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
 
+        If no remote file listing method is available, existing local files are
+        assumed to be up-to-date and gaps are assumed to be missing files.
+
         """
 
-        # get list of remote files
+        # Get list of remote files
         remote_files = self.remote_file_list()
-        if remote_files.empty:
+        if remote_files is not None and remote_files.empty:
             logger.warning(' '.join(('No remote files found. Unable to',
                                      'download latest data.')))
             return
@@ -3169,22 +3172,42 @@ class Instrument(object):
         self.files.refresh()
         local_files = self.files.files
 
-        # Compare local and remote files. First look for dates that are in
-        # remote but not in local
-        new_dates = []
-        for date in remote_files.index:
-            if date not in local_files:
-                new_dates.append(date)
+        # If there is no way to get a remote file list, get a date array
+        # for the requested times that aren't available locally.  Otherwise,
+        # compare the remote and local file lists.
+        if remote_files is None:
+            # Get an array of the desired dates
+            if 'date_array' in kwargs.keys():
+                new_dates = kwargs['date_array']
+            else:
+                new_dates = pds.date_range(kwargs['start'], kwargs['stop'],
+                                           freq='1D')
 
-        # Now compare filenames between common dates as it may be a new version
-        # or revision.  This will have a problem with filenames that are
-        # faking daily data from monthly.
-        for date in local_files.index:
-            if date in remote_files.index:
-                if remote_files[date] != local_files[date]:
+            # Determine which dates are mising
+            missing_inds = [i for i, req_dates in enumerate(new_dates)
+                            if req_dates not in local_files.index]
+
+            # Extract only the missing dates
+            new_dates = new_dates[missing_inds]
+            logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
+                                 'files are missing locally.')))
+        else:
+            # Compare local and remote files. First look for dates that are in
+            # remote but not in local
+            new_dates = []
+            for date in remote_files.index:
+                if date not in local_files:
                     new_dates.append(date)
-        logger.info(' '.join(('Found {} files that'.format(len(new_dates)),
-                              'are new or updated.')))
+
+            # Now compare filenames between common dates as it may be a new
+            # version or revision.  This will have a problem with filenames
+            # that are faking daily data from monthly.
+            for date in local_files.index:
+                if date in remote_files.index:
+                    if remote_files[date] != local_files[date]:
+                        new_dates.append(date)
+            logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
+                                 'files are new or updated.')))
 
         # Download date for dates in new_dates (also includes new names)
         self.download(date_array=new_dates, **kwargs)
