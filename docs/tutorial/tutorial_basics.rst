@@ -224,16 +224,16 @@ to the :py:class:`Instrument` already, be sure to include them here.
 
 The specific location the data is downloaded to depends upon user settings.
 By default, pysat data directories are organized via
-``os.path.join(top_level, platform, name, tag, inst_id)``, where the top-level is one of the
-directories in ``pysat.params['data_dirs']``. The specific structure for your
-system is stored in ``pysat.params['directory_format']``.
+``os.path.join(top_level, platform, name, tag, inst_id)``, where the top-level
+is one of the directories in ``pysat.params['data_dirs']``. The specific
+structure for your system is stored in ``pysat.params['directory_format']``.
 
 Presuming defaults, this example downloads DMSP data to
-``os.path.join(top_level, dmsp, ivm, utd, f12)``. If this is the first download, then the first
-of the pysat data directories will be used by default. If there was already DMSP
-data on your system under one of the ``pysat.params['data_dirs']``, then the
-same top-level directory as existing DMSP data will be used. To pick a
-different directory to download data to, use
+``os.path.join(top_level, dmsp, ivm, utd, f12)``. If this is the first download,
+then the first of the pysat data directories will be used by default. If there
+was already DMSP data on your system under one of the
+``pysat.params['data_dirs']``, then the same top-level directory as existing
+DMSP data will be used. To pick a different directory to download data to, use
 
 .. code:: python
 
@@ -254,6 +254,12 @@ will obtain the full set of files present on the server and compare the version,
 revision, and cycle numbers for the server files with those on the local
 system.  Any files missing or out of date on the local system are downloaded
 from the server. This command downloads, as needed, the entire dataset.
+
+Instruments that don't have a :py:meth:`pysat.Instrument.remote_file_list`
+method can still use this method, but with less clever updating functionality.
+Because remote file information cannot be obtained, it will assume there should
+be a file for every day and only attempt to download files for the days where
+files are missing.
 
 .. note:: Science data servers may not have the same reliability and
 	  bandwidth as commercial providers
