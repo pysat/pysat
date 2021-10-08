@@ -374,6 +374,7 @@ class TestLoadNetCDF4(object):
 
         # Test the loaded data
         self.eval_loaded_data()
+
         return
 
     def test_basic_write_and_read_netcdf4_mixed_case_meta_format(self):
