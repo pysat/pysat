@@ -3226,7 +3226,7 @@ class Instrument(object):
             logger.info('Did not find any new or updated files.')
 
         return
-            
+
     def download(self, start=None, stop=None, date_array=None,
                  **kwargs):
         """Download data for given Instrument object from start to stop.
