@@ -169,7 +169,7 @@ class InstPropertyTests(object):
         # - download new files, and
         # - update local file list.
         assert "local files" in caplog.text
-        assert "that are new or updated" in caplog.text
+        assert "files are new" in caplog.text
         assert "Downloading data to" in caplog.text
         assert "Updating pysat file list" in caplog.text
 

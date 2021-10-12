@@ -3190,7 +3190,7 @@ class Instrument(object):
             # Extract only the missing dates
             new_dates = new_dates[missing_inds]
             logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
-                                 'files are missing locally.')))
+                                 'files are new.')))
         else:
             # Compare local and remote files. First look for dates that are in
             # remote but not in local
