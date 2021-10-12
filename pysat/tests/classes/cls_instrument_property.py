@@ -130,14 +130,21 @@ class InstPropertyTests(object):
         assert filter_datetime_input(self.out[-1]) == stop
         return
 
-    @pytest.mark.parametrize("file_bounds, non_default",
-                             [(False, False), (True, False), (False, True),
-                              (True, True)])
-    def test_download_updated_files(self, caplog, file_bounds, non_default):
+    @pytest.mark.parametrize("no_remote_files", [True, False])
+    @pytest.mark.parametrize("download_keys", [
+        (["start"]), (["start", "stop"]), (["date_array"])])
+    @pytest.mark.parametrize("file_bounds", [True, False])
+    @pytest.mark.parametrize("non_default", [True, False])
+    def test_download_updated_files(self, caplog, no_remote_files,
+                                    download_keys, file_bounds, non_default):
         """Test `download_updated_files` and default bounds are updated.
 
         Parameters
         ----------
+        no_remote_files : bool
+            If True, `list_remote_files` method is removed from Instrument.
+        download_keys : list
+            List of keys to set for `download` kwargs.
         file_bounds : bool
             If True, check by filename.  If False, check by date.
         non_default : bool
@@ -145,6 +152,26 @@ class InstPropertyTests(object):
 
         """
 
+        dkwargs = {}
+        if "start" in download_keys:
+            dkwargs["start"] = self.testInst.files.files.index[0] \
+                - dt.timedelta(days=1)
+        if "stop" in download_keys:
+            dkwargs["stop"] = self.testInst.files.files.index[-1] \
+                + dt.timedelta(days=1)
+        if "date_array" in download_keys:
+            dkwargs["date_array"] = pds.date_range(
+                self.testInst.files.files.index[0] - dt.timedelta(days=1),
+                self.testInst.files.files.index[-1] + dt.timedelta(days=1),
+                freq='1D')
+
+        # If desired, test using an Instrument without `list_remote_files`
+        if no_remote_files:
+            inst_module = self.testInst.inst_module
+            del inst_module.list_remote_files
+            self.testInst = pysat.Instrument(inst_module=inst_module)
+
+        # Set the Instrument bounds
         if file_bounds:
             if non_default:
                 # Set bounds to second and second to last file
@@ -161,7 +188,7 @@ class InstPropertyTests(object):
                                         self.testInst.files.start_date)
 
         with caplog.at_level(logging.INFO, logger='pysat'):
-            self.testInst.download_updated_files()
+            self.testInst.download_updated_files(**dkwargs)
 
         # Test the logging output for the following conditions:
         # - perform a local search,
