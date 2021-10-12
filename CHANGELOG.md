@@ -16,10 +16,18 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Extended testing options for `pysat.utils.testing` functions
    * Added `start_time` keyword for test instruments
    * Added `_test_download_ci` as a standard attribute for `pysat.Instrument`
+   * Added a testing model similar to TIEGCM to
+     `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
+   * Added the capability to test loading with optional kwargs through
+     `_test_load_opt` instrument attribute
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
-   * Removed `_test_download_travis` as a standard attribute for
+   * Deprecated `_test_download_travis` as a standard attribute for
      `pysat.Instrument`.  The function is replaced by `_test_download_ci`
+   * Deprecated `pysat.tests.instrument_test_class.initialize_test_inst_and_date`
+     which is moved to `pysat.tests.classes.cls_instrument_library`.
+   * Deprecated `pysat.tests.instrument_test_class.InstTestClass`, which is
+     replaced by `pysat.tests.classes.cls_instrument_library.InstLibTests`.
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -41,7 +49,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      leading and trailing non-parsed text in filenames (e.g., file extensions)
    * Added `decode_timedelta=False` for loading xarray from netcdf4 (#823)
    * Closed links to open files when loading data through xarray (#887)
+   * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
+   * Allow `tag` and `inst_id` to be specified as None (#892)
+   * Fixed a bug in `pysat.utils.time.create_datetime_index` (#906)
+   * Added a warning if `inst_module` and `platform`/`name` are used to
+     instantiate an instrument (#850). In case of this, `inst_module` takes
+     priority.
 * Maintenance
+   * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
    * Streamlined unit tests for `test_orbits`
@@ -52,8 +67,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Reorganized tests for the `pysat.Instrument` class into multiple files
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
    * Update minimum numpy in CI tests to 1.18 following NEP29
-   * Made `InstTestClass` more portable to streamline user implementation of the
+   * Made `InstLibTests` more portable to streamline user implementation of the
      standard end-to-end instrument tests.
+   * Moved test classes to `pysat.tests.classes`
+   * Reorganized the core test_instrument.py as a series of classes
    * Separated MetaLabels tests from Meta test class
    * Organized and reduced duplication in the Meta test class
 
