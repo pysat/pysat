@@ -171,7 +171,9 @@ class InstPropertyTests(object):
             del inst_module.list_remote_files
             self.testInst = pysat.Instrument(inst_module=inst_module)
 
-        # Set the Instrument bounds
+        # Set the Instrument bounds to enable different types of file
+        # checking at the download level. This is an integration test and
+        # may need to be moved.
         if file_bounds:
             if non_default:
                 # Set bounds to second and second to last file
