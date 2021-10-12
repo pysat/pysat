@@ -3184,7 +3184,7 @@ class Instrument(object):
                     stop = kwargs['stop']
                 else:
                     stop = kwargs['start'] + dt.timedelta(days=1)
-                    
+
                 new_dates = pds.date_range(kwargs['start'], stop, freq='1D')
             else:
                 new_dates = pds.date_range(local_files.index[0],
