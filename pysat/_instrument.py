@@ -3216,12 +3216,17 @@ class Instrument(object):
             logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
                                  'files are new or updated.')))
 
-        # Update download kwargs to include new `date_array` value
-        kwargs['date_array'] = new_dates
+        if len(new_dates) > 0:
+            # Update download kwargs to include new `date_array` value
+            kwargs['date_array'] = new_dates
 
-        # Download date for dates in new_dates (also includes new names)
-        self.download(**kwargs)
+            # Download date for dates in new_dates (also includes new names)
+            self.download(**kwargs)
+        else:
+            logger.info('Did not find any new or updated files.')
 
+        return
+            
     def download(self, start=None, stop=None, date_array=None,
                  **kwargs):
         """Download data for given Instrument object from start to stop.
@@ -3359,8 +3364,7 @@ class Instrument(object):
                                        self.files[dsel2][-1],
                                        curr_bound[2], curr_bound[3])
         else:
-            logger.warning(''.join(['Requested download over an empty date ',
-                                    'range: {:} to {:}'.format(start, stop)]))
+            logger.warning('Requested download over an empty date range')
 
         return
 
