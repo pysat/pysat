@@ -3179,9 +3179,16 @@ class Instrument(object):
             # Get an array of the desired dates
             if 'date_array' in kwargs.keys():
                 new_dates = kwargs['date_array']
+            elif 'start' in kwargs.keys():
+                if 'stop' in kwargs.keys():
+                    stop = kwargs['stop']
+                else:
+                    stop = kwargs['start'] + dt.timedelta(days=1)
+                    
+                new_dates = pds.date_range(kwargs['start'], stop, freq='1D')
             else:
-                new_dates = pds.date_range(kwargs['start'], kwargs['stop'],
-                                           freq='1D')
+                new_dates = pds.date_range(local_files.index[0],
+                                           local_files.index[-1], freq='1D')
 
             # Determine which dates are mising
             missing_inds = [i for i, req_dates in enumerate(new_dates)
@@ -3209,8 +3216,11 @@ class Instrument(object):
             logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
                                  'files are new or updated.')))
 
+        # Update download kwargs to include new `date_array` value
+        kwargs['date_array'] = new_dates
+
         # Download date for dates in new_dates (also includes new names)
-        self.download(date_array=new_dates, **kwargs)
+        self.download(**kwargs)
 
     def download(self, start=None, stop=None, date_array=None,
                  **kwargs):
