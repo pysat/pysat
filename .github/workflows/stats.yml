@@ -4,10 +4,7 @@
 name: Statistics of supported instruments
 
 on:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    # minute hour day month year
-    - cron:  '30 17 8 * *'
+  workflow_dispatch
 
 jobs:
   build:
@@ -21,8 +18,6 @@ jobs:
     name: Summary of instrument libraries
     steps:
     - uses: actions/checkout@v2
-      with:
-        ref: enh/558
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
