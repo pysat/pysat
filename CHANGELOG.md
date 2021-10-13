@@ -56,6 +56,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
    * Fixed a bug when instantiating empty `pysat.Instrument()` (#851)
+   * Fixed a bug where empty check for xarray instruments fail when time not
+     present. (#922)
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
