@@ -3156,8 +3156,15 @@ class Instrument(object):
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
 
+
         If no remote file listing method is available, existing local files are
         assumed to be up-to-date and gaps are assumed to be missing files.
+
+        If `start`, `stop`, or `date_array` are provided, only files at/between
+        these times are considered for updating.  If no times are provided and
+        a remote listing method is available, all new files will be downloaded.
+        If no remote listing method is available, the current file limits are
+        used as the starting and ending times.
 
         """
 
@@ -3190,6 +3197,13 @@ class Instrument(object):
                 new_dates = pds.date_range(local_files.index[0],
                                            local_files.index[-1], freq='1D')
 
+            # Provide updating information
+            logger.info(''.join(['No remote file listing method, looking for ',
+                                 'file gaps between ',
+                                 '{:} and {:} (inclusive).'.format(
+                                     new_dates[0].strftime('%d %b %Y'),
+                                     new_dates[-1].strftime('%d %b %Y'))]))
+
             # Determine which dates are mising
             missing_inds = [i for i, req_dates in enumerate(new_dates)
                             if req_dates not in local_files.index]
@@ -3205,6 +3219,13 @@ class Instrument(object):
             for date in remote_files.index:
                 if date not in local_files:
                     new_dates.append(date)
+
+            # Provide updating information
+            logger.info(''.join(['A remote file listing method exists, looking',
+                                 ' for updated files and gaps between ',
+                                 '{:} and {:} (inclusive).'.format(
+                                     new_dates[0].strftime('%d %b %Y'),
+                                     new_dates[-1].strftime('%d %b %Y'))]))
 
             # Now compare filenames between common dates as it may be a new
             # version or revision.  This will have a problem with filenames
