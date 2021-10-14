@@ -132,11 +132,9 @@ class InstPropertyTests(object):
 
     @pytest.mark.parametrize("no_remote_files", [True, False])
     @pytest.mark.parametrize("download_keys", [
-        (["start"]), (["start", "stop"]), (["date_array"])])
-    @pytest.mark.parametrize("file_bounds", [True, False])
-    @pytest.mark.parametrize("non_default", [True, False])
+        (["start"]), (["start", "stop"]), (["date_array"]), ([])])
     def test_download_updated_files(self, caplog, no_remote_files,
-                                    download_keys, file_bounds, non_default):
+                                    download_keys):
         """Test `download_updated_files` and default bounds are updated.
 
         Parameters
@@ -145,10 +143,6 @@ class InstPropertyTests(object):
             If True, `list_remote_files` method is removed from Instrument.
         download_keys : list
             List of keys to set for `download` kwargs.
-        file_bounds : bool
-            If True, check by filename.  If False, check by date.
-        non_default : bool
-            If True, check that bounds are updated appropriately.
 
         """
 
@@ -171,6 +165,52 @@ class InstPropertyTests(object):
             del inst_module.list_remote_files
             self.testInst = pysat.Instrument(inst_module=inst_module)
 
+        # Run the method and get the log output
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.testInst.download_updated_files(**dkwargs)
+
+        # Test the logging output for the following conditions:
+        # - perform a local search,
+        # - new files are found,
+        # - download new files, and
+        # - update local file list.
+        assert "local files" in caplog.text
+        assert "files are new" in caplog.text
+
+        # Test for logging output based on the presence of a remote file
+        # listing method
+        if no_remote_files:
+            assert "No remote file listing method, looking " in caplog.text
+
+            # If no start/stop date is provided and there is no remote method,
+            # no files to update will be found since there are no gaps.
+            if len(download_keys) == 0:
+                assert "Did not find any new or updated files" in caplog.text
+                assert "Updating pysat file list" not in caplog.text
+            else:
+                assert "Downloading data to" in caplog.text
+                assert "Updating pysat file list" in caplog.text
+        else:
+            assert "Downloading data to" in caplog.text
+            assert "Updating pysat file list" in caplog.text
+            assert "A remote file listing method exists, looking" in caplog.text
+
+        return
+
+    @pytest.mark.parametrize("file_bounds", [True, False])
+    @pytest.mark.parametrize("non_default", [True, False])
+    def test_download_bounds(self, caplog, file_bounds, non_default):
+        """Test `download` with updated bounds.
+
+        Parameters
+        ----------
+        file_bounds : bool
+            If True, check by filename.  If False, check by date.
+        non_default : bool
+            If True, check that bounds are updated appropriately.
+
+        """
+
         # Set the Instrument bounds to enable different types of file
         # checking at the download level. This is an integration test and
         # may need to be moved.
@@ -190,18 +230,9 @@ class InstPropertyTests(object):
                                         self.testInst.files.start_date)
 
         with caplog.at_level(logging.INFO, logger='pysat'):
-            self.testInst.download_updated_files(**dkwargs)
+            self.testInst.download()
 
-        # Test the logging output for the following conditions:
-        # - perform a local search,
-        # - new files are found,
-        # - download new files, and
-        # - update local file list.
-        assert "local files" in caplog.text
-        assert "files are new" in caplog.text
-        assert "Downloading data to" in caplog.text
-        assert "Updating pysat file list" in caplog.text
-
+        # Test for logging output based on the bound setting method
         if non_default:
             assert "Updating instrument object bounds " not in caplog.text
         else:
