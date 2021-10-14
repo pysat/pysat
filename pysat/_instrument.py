@@ -857,14 +857,14 @@ class Instrument(object):
                     # Try to get a subset of time, using label based indexing
                     return self.data.sel(indexers={epoch_name: key})
 
-    def __setitem__(self, key, new):
+    def __setitem__(self, key, new_data):
         """Set data in `pysat.Instrument` object.
 
         Parameters
         ----------
         key : str, tuple, dict
             String label, or dict or tuple of indices for new data
-        new : dict, pandas.DataFrame, or xarray.Dataset
+        new_data : dict, pandas.DataFrame, or xarray.Dataset
             New data as a dict (assigned with key 'data'), DataFrame, or
             Dataset
 
@@ -888,6 +888,8 @@ class Instrument(object):
         long_name = 'name', and units = ''.
 
         """
+
+        new = copy.deepcopy(new_data)
 
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name

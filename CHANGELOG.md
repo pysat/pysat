@@ -71,6 +71,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      standard end-to-end instrument tests.
    * Moved test classes to `pysat.tests.classes`
    * Reorganized the core test_instrument.py as a series of classes
+   * Separated MetaLabels tests from Meta test class
+   * Organized and reduced duplication in the Meta test class
 
 [3.0.1] - 2021-07-28
 --------------------
