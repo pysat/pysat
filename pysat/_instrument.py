@@ -3215,17 +3215,14 @@ class Instrument(object):
         else:
             # Compare local and remote files. First look for dates that are in
             # remote but not in local
+            # Provide updating information
+            logger.info(''.join(['A remote file listing method exists, looking',
+                                 ' for updated files and gaps at all times.']))
+
             new_dates = []
             for date in remote_files.index:
                 if date not in local_files:
                     new_dates.append(date)
-
-            # Provide updating information
-            logger.info(''.join(['A remote file listing method exists, looking',
-                                 ' for updated files and gaps between ',
-                                 '{:} and {:} (inclusive).'.format(
-                                     new_dates[0].strftime('%d %b %Y'),
-                                     new_dates[-1].strftime('%d %b %Y'))]))
 
             # Now compare filenames between common dates as it may be a new
             # version or revision.  This will have a problem with filenames
