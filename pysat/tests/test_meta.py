@@ -187,7 +187,7 @@ class TestMeta(object):
         return
 
     def test_getitem_w_index(self):
-        """Test raises NotImplementedError with an iteger index."""
+        """Test raises NotImplementedError with an integer index."""
 
         with pytest.raises(NotImplementedError) as ierr:
             self.meta[1]
@@ -454,7 +454,7 @@ class TestMeta(object):
 
     @pytest.mark.parametrize("emeta", [pysat.Meta(), pysat.Instrument()])
     def test_inequality(self, emeta):
-        """Test that meta inequality for different comparison objects.
+        """Test meta inequality for different comparison objects.
 
         Parameters
         ----------
