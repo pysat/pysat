@@ -2695,27 +2695,27 @@ class Instrument(object):
 
             inst = pysat.Instrument('pysat', 'testing')
 
-            # load a single day by year and day of year
+            # Load a single day by year and day of year
             inst.load(2009, 1)
 
-            # load a single day by date
+            # Load a single day by date
             date = dt.datetime(2009, 1, 1)
             inst.load(date=date)
 
-            # load a single file, first file in this example
+            # Load a single file, first file in this example
             inst.load(fname=inst.files[0])
 
-            # load a range of days, data between
+            # Load a range of days, data between
             # Jan. 1st (inclusive) - Jan. 3rd (exclusive)
             inst.load(2009, 1, 2009, 3)
 
-            # same procedure using datetimes
+            # Same procedure using datetimes
             date = dt.datetime(2009, 1, 1)
             end_date = dt.datetime(2009, 1, 3)
             inst.load(date=date, end_date=end_date)
 
-            # same procedure using filenames
-            # note the change in index due to inclusive slicing on filenames!
+            # Same procedure using filenames. Note the change in index due to
+            # inclusive slicing on filenames!
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
@@ -3013,8 +3013,8 @@ class Instrument(object):
         if self.meta.data.empty:
             self.meta[self.variables] = {self.meta.labels.name: self.variables}
 
-        # If loading by file set the yr, doy, and date
-        if not self._load_by_date:
+        # If loading by file and there is data, set the yr, doy, and date
+        if not self._load_by_date and not self.empty:
             if self.pad is not None:
                 temp = first_time
             else:
