@@ -3234,6 +3234,7 @@ class Instrument(object):
                 if date in remote_files.index:
                     if remote_files[date] != local_files[date]:
                         new_dates.append(date)
+            new_dates = np.sort(new_dates)
             logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
                                  'files are new or updated.')))
 
