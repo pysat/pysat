@@ -405,10 +405,10 @@ class Meta(object):
                         else:
                             self._data.loc[var, ikey] = to_be_set
                 else:
-                    # key is 'meta' or 'children'
-                    # process higher order stuff. Meta inputs could be part of
-                    # larger multiple parameter assignment
-                    # so not all names may actually have 'meta' to add
+                    # Key is 'meta' or 'children', providing higher order
+                    # metadata. Meta inputs could be part of a larger multiple
+                    # parameter assignment, so not all names may actually have
+                    # a 'meta' object to add.
                     for j, (item, val) in enumerate(zip(data_vars,
                                                         input_data['meta'])):
                         if val is not None:
@@ -417,13 +417,13 @@ class Meta(object):
                             self[item] = val
 
         elif isinstance(input_data, pds.Series):
-            # Outputs from Meta object are a Series. Thus this takes in input
+            # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
                 child = in_dict.pop('children')
                 if child is not None:
-                    # if not child.data.empty:
+                    # If there is data in the child object, assign it here
                     self.ho_data[data_vars] = child
 
             # Remaining items are simply assigned
@@ -1151,13 +1151,12 @@ class Meta(object):
 
         # Determine if the attribute is present in higher order structures
         for ndkey in self.keys_nD():
-            for var in self[ndkey].children.keys():
-                # Update the attribute name
-                map_var = get_mapped_value(var, mapper)
-                if map_var is not None:
-                    hold_meta = self[ndkey].children[var].copy()
-                    self[ndkey].children.drop(var)
-                    self[ndkey].children[map_var] = hold_meta
+            # The children attribute is a Meta class object. Recursively call
+            # the current routine. The only way to avoid Meta undoing the
+            # renaming process is to assign the meta data to `ho_data`.
+            child_meta = self[ndkey].children.copy()
+            child_meta.rename(mapper)
+            self.ho_data[ndkey] = child_meta
 
         return
 
