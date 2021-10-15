@@ -138,7 +138,8 @@ class TestDeprecation(object):
 
                 pass
 
-        self.warn_msgs = ["`InstTestClass` has been deprecated"]
+        self.warn_msgs = ["`InstTestClass` has been deprecated",
+                          "`test_load` now uses `@pytest.mark.load_options`"]
         self.warn_msgs = np.array(self.warn_msgs)
 
         # Ensure the minimum number of warnings were raised
