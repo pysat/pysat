@@ -69,3 +69,10 @@ class InstTestClass(cls_inst_lib.InstLibTests):
              "3.2.0+.  Please update code to use the `InstLibTests` class",
              "under `pysat.tests.classes.cls_instrument_library`."]),
             DeprecationWarning, stacklevel=2)
+        warnings.warn(" ".join(
+            ["`test_load` now uses `@pytest.mark.load_options` in place",
+             "of `@pytest.mark.download`.  The old behavior will be removed in",
+             "3.2.0+.  Please update code or use the new"
+             "`InstLibTests.initialize_test_package` function",
+             "under `pysat.tests.classes.cls_instrument_library`."]),
+            DeprecationWarning, stacklevel=2)
