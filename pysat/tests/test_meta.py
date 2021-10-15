@@ -1233,6 +1233,53 @@ class TestMeta(object):
         assert self.meta.hasattr_case_neutral(label)
         return
 
+    def test_meta_rename_function(self):
+        """Test `meta.rename` method using a function."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Rename the meta variables to be all upper case, this will differ
+        # from the Instrument variables, as pysat defaults to lower case
+        self.meta.rename(str.upper)
+
+        for dvar in self.testInst.variables:
+            assert dvar not in self.meta.keys(), \
+                "variable not renamed: {:}".format(repr(dvar))
+            assert dvar.upper() in self.meta.keys(), \
+                "renamed variable missing: {:}".format(repr(dvar.upper()))
+
+        return
+
+    def test_meta_rename_dict(self):
+        """Test `meta.rename` method using a dict."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Create a renaming dictionary, which only changes three of the
+        # variable names
+        rename_dict = {dvar: dvar.upper()
+                       for i, dvar in enumerate(self.testInst.variables)
+                       if i < 3}
+
+        # Rename the meta variables to be all upper case, this will differ
+        # from the Instrument variables, as pysat defaults to lower case
+        self.meta.rename(rename_dict)
+
+        for dvar in self.testInst.variables:
+            if dvar in rename_dict.keys():
+                assert dvar not in self.meta.keys(), \
+                    "variable not renamed: {:}".format(repr(dvar))
+                assert rename_dict[dvar] in self.meta.keys(), \
+                    "renamed variable missing: {:}".format(
+                        repr(rename_dict[dvar]))
+            else:
+                assert dvar in self.meta.keys(), \
+                    "unmapped variable renamed: {:}".format(repr(dvar))
+
+        return
+
     # -------------------------------
     # Tests for higher order metadata
 
@@ -1502,6 +1549,97 @@ class TestMeta(object):
         assert self.meta[self.dval].children.hasattr_case_neutral(
             label.capitalize())
         assert self.meta[self.dval].children.hasattr_case_neutral(label)
+        return
+
+    def test_ho_meta_rename_function(self):
+        """Test `meta.rename` method with ho data using a function."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
+
+        # Rename the meta variables to be all upper case, this will differ
+        # from the Instrument variables, as pysat defaults to lower case
+        self.meta.rename(str.upper)
+
+        for dvar in self.testInst.variables:
+            mvar = dvar.upper()
+
+            # Test the lower order variables
+            assert dvar not in self.meta.keys(), \
+                "variable not renamed: {:}".format(repr(dvar))
+            assert mvar in self.meta.keys(), \
+                "renamed variable missing: {:}".format(repr(mvar))
+
+            if mvar in self.meta.keys_nD():
+                # Get the variable names from the children
+                if hasattr(self.testInst[dvar][0], 'columns'):
+                    columns = getattr(self.testInst[dvar][0], 'columns')
+                else:
+                    columns = [dvar]
+
+                # Test the higher order variables
+                for cvar in columns:
+                    cmvar = cvar.upper()
+                    assert cvar not in self.meta[mvar].children.keys(), \
+                        "HO variable not renamed: {:} ({:})".format(
+                            repr(cvar), repr(mvar))
+                    assert cmvar in self.meta[mvar].children.keys(), \
+                        "renamed HO variable missing: {:} ({:})".format(
+                            repr(cmvar), repr(mvar))
+
+        return
+
+    def test_ho_meta_rename_dict(self):
+        """Test `meta.rename` method with ho data using a dict."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
+
+        # Create a renaming dictionary, which only changes up to four of the
+        # variable names
+        rename_dict = {dvar: dvar.upper()
+                       for i, dvar in enumerate(self.testInst.variables)
+                       if i < 3 or dvar == 'profiles'}
+        rename_dict['density'] = 'DeNsItY'
+
+        # Rename the meta variables to be all upper case, this will differ
+        # from the Instrument variables, as pysat defaults to lower case
+        self.meta.rename(rename_dict)
+
+        for dvar in self.testInst.variables:
+            # Test the lower order variables
+            if dvar in rename_dict.keys():
+                mvar = rename_dict[dvar]
+                assert dvar not in self.meta.keys(), \
+                    "variable not renamed: {:}".format(repr(dvar))
+                assert mvar in self.meta.keys(), \
+                    "renamed variable missing: {:}".format(repr(mvar))
+            else:
+                mvar = dvar
+                assert dvar in self.meta.keys(), \
+                    "unmapped variable renamed: {:}".format(repr(dvar))
+
+            if mvar in self.meta.keys_nD():
+                # Get the variable names from the children
+                if hasattr(self.testInst[dvar][0], 'columns'):
+                    columns = getattr(self.testInst[dvar][0], 'columns')
+                else:
+                    columns = [dvar]
+
+                # Test the higher order variables.
+                for cvar in columns:
+                    if cvar in rename_dict.keys():
+                        cmvar = rename_dict[cvar]
+                        assert cvar not in self.meta[mvar].children.keys(), \
+                            "HO variable not renamed: {:} ({:})".format(
+                                repr(cvar), repr(mvar))
+                        assert cmvar in self.meta[mvar].children.keys(), \
+                            "renamed HO variable missing: {:} ({:})".format(
+                                repr(cmvar), repr(mvar))
+                    else:
+                        assert cvar in self.meta[mvar].children.keys(), \
+                            "unmapped HO variable renamed: {:} ({:})".format(
+                                repr(cvar), repr(mvar))
         return
 
 
