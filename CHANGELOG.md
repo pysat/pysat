@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
    * Added the capability to test loading with optional kwargs through
      `_test_load_opt` instrument attribute
+   * Added `rename` and `add_epoch_metadata` methods to the Meta class
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
