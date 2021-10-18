@@ -101,7 +101,7 @@ class InstAccessTests(object):
         """
 
         # Get a date that is not covered by an Instrument object.
-        no_data_date = self.testInst.files[0] - np.timedelta(months=1)
+        no_data_date = self.testInst.files[0] - dt.timedelta(months=1)
 
         with caplog.at_level(logging.INFO, logger='pysat'):
 
