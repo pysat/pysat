@@ -17,6 +17,7 @@ Base class stored here, but tests inherited by test_instrument.py
 
 import datetime as dt
 from importlib import reload
+import logging
 import numpy as np
 
 import pandas as pds
@@ -24,6 +25,8 @@ import pytest
 import xarray as xr
 
 import pysat
+
+logger = pysat.logger
 
 
 class InstAccessTests(object):
@@ -90,6 +93,36 @@ class InstAccessTests(object):
 
         # Test that the loaded date range is correct
         self.eval_successful_load()
+        return
+
+    def test_basic_instrument_load_no_data(self, caplog):
+        """Test Instrument load with no data for appropriate log messages.
+
+        """
+
+        # Get a date that is not covered by an Instrument object.
+        no_data_date = self.testInst.files[0] - np.timedelta(months=1)
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+
+            # Attempt to load data for a date with no data
+            self.testInst.load(date=no_data_date)
+
+            # Confirm by checking against caplog that metadata was
+            # not assigned.
+            captured = caplog.text
+
+            assert captured.out.find("Metadata was not assigned as there") >= 0
+
+            # Generate string to verify proper no data message
+            output_str = '{platform} {name} {tag} {inst_id}'
+            output_str = output_str.format(platform=self.testInst.platform,
+                                           name=self.testInst.name,
+                                           tag=self.testInst.tag,
+                                           inst_id=self.testInst.inst_id)
+
+            assert captured.out.find(''.join(("No ", output_str))) >= 0
+
         return
 
     def test_basic_instrument_load_two_days(self):
