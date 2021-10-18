@@ -1280,6 +1280,52 @@ class TestMeta(object):
 
         return
 
+    def test_add_epoch(self):
+        """Test that epoch metadata is added upon request."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Test that the epoch meta data is absent
+        assert self.testInst.index.name not in self.meta.keys()
+
+        # Add the epoch meta data
+        self.meta.add_epoch_metadata(self.testInst.index.name)
+
+        # Test the new metadata
+        assert self.testInst.index.name in self.meta.keys()
+        for label in [self.meta.labels.units, self.meta.labels.name,
+                      self.meta.labels.desc, self.meta.labels.notes]:
+            mval = self.meta[self.testInst.index.name, label]
+            assert mval.find('Milliseconds since 1970-1-1 00:00:00') >= 0, \
+                "unexpected value for {:} label {:}: {:}".format(
+                    self.testInst.index.name, label, repr(mval))
+
+        return
+
+    def test_update_epoch(self):
+        """Test that epoch metadata is updated upon request."""
+
+        # Set the meta object
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Set units to a special value
+        self.meta['time'] = {self.meta.labels.units: "U"}
+
+        # Update the epoch meta data that was set to unknown default values
+        self.meta.add_epoch_metadata("time")
+
+        # Test the new metadata
+        assert "U" == self.meta["time", self.meta.labels.units]
+        assert "time" == self.meta["time", self.meta.labels.name]
+        for label in [self.meta.labels.desc, self.meta.labels.notes]:
+            mval = self.meta["time", label]
+            assert mval.find('Milliseconds since 1970-1-1 00:00:00') >= 0, \
+                "unexpected value for time label {:}: {:}".format(
+                    label, repr(mval))
+
+        return
+
     # -------------------------------
     # Tests for higher order metadata
 
