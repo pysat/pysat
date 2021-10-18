@@ -233,6 +233,7 @@ class TestBasics2DXarray(TestBasics):
     @pytest.mark.parametrize("data,target",
                              [(xr.Dataset(), True),
                               (xr.Dataset({'time': []}), True),
+                              (xr.Dataset({'lat': [], 'lon': []}), True),
                               (xr.Dataset({'time': [], 'lon': [0.]}), False),
                               (xr.Dataset({'lat': [0.], 'lon': [0.]}), False)])
     def test_xarray_empty_conditions(self, data, target):
