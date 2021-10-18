@@ -60,6 +60,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed a bug when instantiating empty `pysat.Instrument()` (#851)
    * Fixed IndexError encountered when loading a mult-day file by filename with
      no data for that day.
+   * Added logging output when metadata not assigned due to a lack of
+     instrument data (#924)
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
