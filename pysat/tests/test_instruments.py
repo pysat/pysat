@@ -138,7 +138,8 @@ class TestDeprecation(object):
 
                 pass
 
-        self.warn_msgs = ["`InstTestClass` has been deprecated"]
+        self.warn_msgs = ["`InstTestClass` has been deprecated",
+                          "`test_load` now uses `@pytest.mark.load_options`"]
         self.warn_msgs = np.array(self.warn_msgs)
 
         # Ensure the minimum number of warnings were raised
@@ -179,3 +180,12 @@ class TestDeprecation(object):
                 self.warn_msgs[i])
 
         return
+
+    def test_old_pytest_mark_presence(self):
+        """Test that pytest mark is backwards compatible."""
+
+        n_args = len(InstLibTests.test_load.pytestmark)
+        mark_names = [InstLibTests.test_load.pytestmark[j].name
+                      for j in range(0, n_args)]
+
+        assert "download" in mark_names

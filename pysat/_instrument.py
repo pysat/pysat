@@ -2698,27 +2698,27 @@ class Instrument(object):
 
             inst = pysat.Instrument('pysat', 'testing')
 
-            # load a single day by year and day of year
+            # Load a single day by year and day of year
             inst.load(2009, 1)
 
-            # load a single day by date
+            # Load a single day by date
             date = dt.datetime(2009, 1, 1)
             inst.load(date=date)
 
-            # load a single file, first file in this example
+            # Load a single file, first file in this example
             inst.load(fname=inst.files[0])
 
-            # load a range of days, data between
+            # Load a range of days, data between
             # Jan. 1st (inclusive) - Jan. 3rd (exclusive)
             inst.load(2009, 1, 2009, 3)
 
-            # same procedure using datetimes
+            # Same procedure using datetimes
             date = dt.datetime(2009, 1, 1)
             end_date = dt.datetime(2009, 1, 3)
             inst.load(date=date, end_date=end_date)
 
-            # same procedure using filenames
-            # note the change in index due to inclusive slicing on filenames!
+            # Same procedure using filenames. Note the change in index due to
+            # inclusive slicing on filenames!
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
@@ -3016,8 +3016,8 @@ class Instrument(object):
         if self.meta.data.empty:
             self.meta[self.variables] = {self.meta.labels.name: self.variables}
 
-        # If loading by file set the yr, doy, and date
-        if not self._load_by_date:
+        # If loading by file and there is data, set the yr, doy, and date
+        if not self._load_by_date and not self.empty:
             if self.pad is not None:
                 temp = first_time
             else:
@@ -3159,11 +3159,21 @@ class Instrument(object):
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
 
+
+        If no remote file listing method is available, existing local files are
+        assumed to be up-to-date and gaps are assumed to be missing files.
+
+        If `start`, `stop`, or `date_array` are provided, only files at/between
+        these times are considered for updating.  If no times are provided and
+        a remote listing method is available, all new files will be downloaded.
+        If no remote listing method is available, the current file limits are
+        used as the starting and ending times.
+
         """
 
-        # get list of remote files
+        # Get list of remote files
         remote_files = self.remote_file_list()
-        if remote_files.empty:
+        if remote_files is not None and remote_files.empty:
             logger.warning(' '.join(('No remote files found. Unable to',
                                      'download latest data.')))
             return
@@ -3172,25 +3182,72 @@ class Instrument(object):
         self.files.refresh()
         local_files = self.files.files
 
-        # Compare local and remote files. First look for dates that are in
-        # remote but not in local
-        new_dates = []
-        for date in remote_files.index:
-            if date not in local_files:
-                new_dates.append(date)
+        # If there is no way to get a remote file list, get a date array
+        # for the requested times that aren't available locally.  Otherwise,
+        # compare the remote and local file lists.
+        if remote_files is None:
+            # Get an array of the desired dates
+            if 'date_array' in kwargs.keys():
+                new_dates = kwargs['date_array']
+            elif 'start' in kwargs.keys():
+                if 'stop' in kwargs.keys():
+                    stop = kwargs['stop']
+                else:
+                    stop = kwargs['start'] + dt.timedelta(days=1)
 
-        # Now compare filenames between common dates as it may be a new version
-        # or revision.  This will have a problem with filenames that are
-        # faking daily data from monthly.
-        for date in local_files.index:
-            if date in remote_files.index:
-                if remote_files[date] != local_files[date]:
+                new_dates = pds.date_range(kwargs['start'], stop, freq='1D')
+            else:
+                new_dates = pds.date_range(local_files.index[0],
+                                           local_files.index[-1], freq='1D')
+
+            # Provide updating information
+            logger.info(''.join(['No remote file listing method, looking for ',
+                                 'file gaps between ',
+                                 '{:} and {:} (inclusive).'.format(
+                                     new_dates[0].strftime('%d %b %Y'),
+                                     new_dates[-1].strftime('%d %b %Y'))]))
+
+            # Determine which dates are mising
+            missing_inds = [i for i, req_dates in enumerate(new_dates)
+                            if req_dates not in local_files.index]
+
+            # Extract only the missing dates
+            new_dates = new_dates[missing_inds]
+            logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
+                                 'files are new.')))
+        else:
+            # Compare local and remote files. First look for dates that are in
+            # remote but not in local
+            # Provide updating information
+            logger.info(''.join(['A remote file listing method exists, looking',
+                                 ' for updated files and gaps at all times.']))
+
+            new_dates = []
+            for date in remote_files.index:
+                if date not in local_files:
                     new_dates.append(date)
-        logger.info(' '.join(('Found {} files that'.format(len(new_dates)),
-                              'are new or updated.')))
 
-        # Download date for dates in new_dates (also includes new names)
-        self.download(date_array=new_dates, **kwargs)
+            # Now compare filenames between common dates as it may be a new
+            # version or revision.  This will have a problem with filenames
+            # that are faking daily data from monthly.
+            for date in local_files.index:
+                if date in remote_files.index:
+                    if remote_files[date] != local_files[date]:
+                        new_dates.append(date)
+            new_dates = np.sort(new_dates)
+            logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
+                                 'files are new or updated.')))
+
+        if len(new_dates) > 0:
+            # Update download kwargs to include new `date_array` value
+            kwargs['date_array'] = new_dates
+
+            # Download date for dates in new_dates (also includes new names)
+            self.download(**kwargs)
+        else:
+            logger.info('Did not find any new or updated files.')
+
+        return
 
     def download(self, start=None, stop=None, date_array=None,
                  **kwargs):
@@ -3329,8 +3386,7 @@ class Instrument(object):
                                        self.files[dsel2][-1],
                                        curr_bound[2], curr_bound[3])
         else:
-            logger.warning(''.join(['Requested download over an empty date ',
-                                    'range: {:} to {:}'.format(start, stop)]))
+            logger.warning('Requested download over an empty date range')
 
         return
 

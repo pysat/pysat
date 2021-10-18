@@ -374,6 +374,7 @@ class TestLoadNetCDF4(object):
 
         # Test the loaded data
         self.eval_loaded_data()
+
         return
 
     def test_basic_write_and_read_netcdf4_mixed_case_meta_format(self):
@@ -787,6 +788,19 @@ class TestAvailableInst(TestWithRegistration):
 
         if inst_loc is not None and inst_flag in [None, True]:
             assert captured.out.find(inst_loc.__name__) > 0
+
+        return
+
+    @pytest.mark.parametrize("inst_loc", [None, [pysat.instruments]])
+    def test_display_instrument_stats(self, inst_loc, capsys):
+        """Test display_instrument_stats options."""
+
+        pysat.utils.display_instrument_stats(inst_loc)
+
+        captured = capsys.readouterr()
+        # Numbers should match supported data products in `pysat.instruments`
+        assert captured.out.find("supported data products with download") > 0
+        assert captured.out.find("supported data products with local") > 0
 
         return
 

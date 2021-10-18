@@ -20,6 +20,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
    * Added the capability to test loading with optional kwargs through
      `_test_load_opt` instrument attribute
+   * Added the ability to only download new files if remote file listing
+     capabilities are not available for the Instrument.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -56,6 +58,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
    * Fixed a bug when instantiating empty `pysat.Instrument()` (#851)
+   * Fixed IndexError encountered when loading a multi-day file by filename with
+     no data for that day.
    * Fixed a bug where empty check for xarray instruments fail when time not
      present. (#922)
 * Maintenance
@@ -73,6 +77,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      standard end-to-end instrument tests.
    * Moved test classes to `pysat.tests.classes`
    * Reorganized the core test_instrument.py as a series of classes
+   * Added CI reports for supported data products
 
 [3.0.1] - 2021-07-28
 --------------------
