@@ -1104,7 +1104,7 @@ class Instrument(object):
             return data.empty
         else:
             if len(data.indexes.keys()) > 0:
-                # Check if any of the present keys are empty
+                # Check if all of the present keys are empty
                 key_empty = []
                 for key in data.indexes.keys():
                     key_empty.append(len(data.indexes[key]) == 0)
