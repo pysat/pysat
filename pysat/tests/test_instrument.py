@@ -4,8 +4,8 @@
 from importlib import reload
 import numpy as np
 import pytest
-import xarray as xr
 import warnings
+import xarray as xr
 
 import pysat
 import pysat.instruments.pysat_testing
