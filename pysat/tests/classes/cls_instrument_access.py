@@ -121,7 +121,10 @@ class InstAccessTests(object):
                                            tag=self.testInst.tag,
                                            inst_id=self.testInst.inst_id)
             output_str = ''.join(("No ", output_str))
+
+            # Remove any extra spaces. Follows code in _instrument.
             output_str = " ".join(output_str.split())
+
             assert captured.find(output_str) >= 0
 
         return
