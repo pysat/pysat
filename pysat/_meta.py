@@ -277,31 +277,31 @@ class Meta(object):
         method from https://stackoverflow.com/a/15751135
 
         """
-        # mutable handled explicitly to avoid recursion
+        # Mutable handled explicitly to avoid recursion
         if name != 'mutable':
 
-            # check if this attribute is a property
+            # Check if this attribute is a property
             propobj = getattr(self.__class__, name, None)
             if isinstance(propobj, property):
-                # check if the property is settable
+                # Check if the property is settable
                 if propobj.fset is None:
                     raise AttributeError(''.join("can't set attribute  ",
                                                  name, " to ", value, ", ",
                                                  "property has no fset"))
 
-                # make mutable in case fset needs it to be
+                # Make self mutable in case fset needs it to be
                 mutable_tmp = self.mutable
                 self.mutable = True
 
-                # set the property
+                # Set the property
                 propobj.fset(self, value)
 
-                # restore mutability flag
+                # Restore mutability flag
                 self.mutable = mutable_tmp
             else:
-                # a normal attribute
+                # A normal attribute
                 if self.mutable:
-                    # use Object to avoid recursion
+                    # Use Object to avoid recursion
                     super(Meta, self).__setattr__(name, value)
                 else:
                     estr = ' '.join(("Cannot set attribute", name, "to {val!s}",
@@ -765,6 +765,7 @@ class Meta(object):
     def data(self, new_frame):
         # Set the data property.  See docstring for property above.
         self._data = new_frame
+        return
 
     @property
     def ho_data(self):
@@ -780,6 +781,7 @@ class Meta(object):
     def ho_data(self, new_dict):
         # Set the ho_data property.  See docstring for property above.
         self._ho_data = new_dict
+        return
 
     @property
     def empty(self):
@@ -792,8 +794,8 @@ class Meta(object):
 
         """
 
-        # only need to check on lower data since lower data
-        # is set when higher metadata assigned
+        # Only need to check on lower data since lower data
+        # is set when higher metadata assigned.
         if self.data.empty:
             return True
         else:
@@ -1161,9 +1163,6 @@ class Meta(object):
         # Save the base Instrument attributes
         banned = inst._base_attr
 
-        # Current attributes
-        inst_attr = dir(inst)
-
         # Get base attribute set, and attributes attached to instance
         base_attrb = self._base_attr
         this_attrb = dir(self)
@@ -1178,7 +1177,7 @@ class Meta(object):
                     if key[0] != '_':
                         adict[key] = getattr(self, key)
                         transfer_key.append(key)
-                        # remove key from meta
+                        # Remove key from meta
                         delattr(self, key)
 
         # Store any non-standard attributes in Instrument get list of
