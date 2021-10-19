@@ -16,7 +16,6 @@ Base class stored here, but tests inherited by test_instrument.py
 """
 
 import datetime as dt
-from importlib import reload
 import logging
 import numpy as np
 
