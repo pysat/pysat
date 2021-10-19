@@ -49,8 +49,9 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         Instrument tag (accepts '')
     inst_id : str or NoneType
         Instrument satellite ID (accepts '')
-    malformed_index : bool False
+    malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
+        (default=False)
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
         will begin at midnight.
