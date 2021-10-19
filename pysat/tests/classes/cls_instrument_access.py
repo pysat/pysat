@@ -105,7 +105,10 @@ class InstAccessTests(object):
 
         with caplog.at_level(logging.INFO, logger='pysat'):
 
-            # Attempt to load data for a date with no data
+            # Attempt to load data for a date with no data.
+            # Test doesn't check against loading by filename since that produces
+            # an error if there is no file. Loading by yr, doy no different
+            # than date in this case.
             self.testInst.load(date=no_data_d)
 
             # Confirm by checking against caplog that metadata was
