@@ -1331,6 +1331,7 @@ class TestBasics(object):
 
     def test_get_attribute_name_case_preservation_list_input(self):
         """Test that meta labels and values preserve the input case, list input.
+
         """
 
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
