@@ -5,6 +5,7 @@ from importlib import reload
 import numpy as np
 import pytest
 import warnings
+import xarray as xr
 
 import pysat
 import pysat.instruments.pysat_testing
@@ -228,6 +229,27 @@ class TestBasics2DXarray(TestBasics):
         assert np.all(np.all(self.testInst[changed, changed, 'doubleProfile']
                              == 0))
         return
+
+    @pytest.mark.parametrize("data,target",
+                             [(xr.Dataset(), True),
+                              (xr.Dataset({'time': []}), True),
+                              (xr.Dataset({'lat': [], 'lon': []}), True),
+                              (xr.Dataset({'time': [], 'lon': [0.]}), False),
+                              (xr.Dataset({'lat': [0.], 'lon': [0.]}), False)])
+    def test_xarray_empty_conditions(self, data, target):
+        """Test that multiple xarray empty conditions are satisfied.
+
+        Parameters
+        ----------
+        data : xr.Dataset
+            Sample data object to check for emptiness.
+        target : bool
+            Target response for `self.testInst.empty`.
+
+        """
+
+        self.testInst.data = data
+        assert self.testInst.empty == target
 
 
 class TestBasicsShiftedFileDates(TestBasics):
