@@ -362,8 +362,8 @@ class Meta(object):
             # attribute will be enforced upon new data by default for
             # consistency.
             input_keys = [ikey for ikey in input_data]
-            for iname in input_keys:
-                new_name = self.attr_case_name(iname)
+            new_names = self.attr_case_name(input_keys)
+            for iname, new_name in zip(input_keys, new_names):
                 if new_name != iname:
                     input_data[new_name] = input_data.pop(iname)
 
@@ -437,11 +437,8 @@ class Meta(object):
             # attribute names consistent with other variables and attributes
             # this covers custom attributes not handled by default routine
             # above
-            attr_names = input_data.attrs()
-            new_names = []
-            for name in attr_names:
-                new_names.append(self.attr_case_name(name))
-            input_data.data.columns = new_names
+            attr_names = [item for item in input_data.attrs()]
+            input_data.data.columns = self.attr_case_name(attr_names)
 
             # Same thing for variables
             var_names = input_data.data.index
@@ -1009,13 +1006,14 @@ class Meta(object):
 
         Parameters
         ----------
-        name : str
+        name : str or list of str
             Name of variable to get stored case form
 
         Returns
         -------
-        out_name : str
-            Name in proper case
+        out_name : str or list of str
+            Name in proper case. Returns a str if a str provided as input, a
+            list of str otherwise.
 
         Note
         ----
@@ -1026,20 +1024,39 @@ class Meta(object):
         variable name.
 
         """
-        lower_name = name.lower()
-        for out_name in self.attrs():
-            if lower_name == out_name.lower():
-                return out_name
 
-        # check if attribute present in higher order structures
+        if isinstance(name, str):
+            return_list = False
+        else:
+            return_list = True
+
+        # Ensure we operate on a list of names
+        names = pysat.utils.listify(name)
+
+        # Get a lower-case version of the name(s)
+        lower_names = [iname.lower() for iname in names]
+
+        # Create a list of all attribute names and lower case attribute names
+        self_keys = [key for key in self.attrs()]
         for key in self.keys_nD():
-            for out_name in self[key].children.attrs():
-                if lower_name == out_name.lower():
-                    return out_name
+            self_keys.extend(self[key].children.attrs())
+        lower_self_keys = [key.lower() for key in self_keys]
 
-        # nothing was found if still here
-        # pass name back, free to be whatever
-        return name
+        case_names = []
+        for lname, iname in zip(lower_names, names):
+            if lname in lower_self_keys:
+                for out_name, lout_name in zip(self_keys, lower_self_keys):
+                    if lname == lout_name:
+                        case_names.append(out_name)
+                        break
+            else:
+                # Name not currently used. Free.
+                case_names.append(iname)
+
+        if not return_list:
+            case_names = case_names[0]
+
+        return case_names
 
     def concat(self, other_meta, strict=False):
         """Concats two metadata objects together.
