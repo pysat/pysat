@@ -331,7 +331,8 @@ class Meta(object):
                 for key in input_data:
                     input_data[key] = [input_data[key]]
             elif isinstance(data_vars, slice) and (data_vars.step is None):
-                # Check for use of instrument[indx, :] or instrument[idx]
+                # Using instrument[indx, :] or instrument[idx],
+                # which means all variables are at issue.
                 data_vars = [dkey for dkey in self.data.keys()]
 
             # Make sure the variable names are in good shape.  The Meta object
@@ -394,12 +395,11 @@ class Meta(object):
                         else:
                             self._data.loc[var, ikey] = to_be_set
                 else:
-                    # key is 'meta' or 'children'
-                    # process higher order stuff. Meta inputs could be part of
+                    # key is 'meta' or 'children'.
+                    # Process higher order stuff. Meta inputs could be part of
                     # larger multiple parameter assignment
-                    # so not all names may actually have 'meta' to add
-                    for j, (item, val) in enumerate(zip(data_vars,
-                                                        input_data['meta'])):
+                    # so not all names may actually have 'meta' to add.
+                    for item, val in zip(data_vars, input_data['meta']):
                         if val is not None:
                             # Assign meta data, using a recursive call...
                             # heads to if Meta instance call
@@ -407,15 +407,14 @@ class Meta(object):
 
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus this takes in input
-            # from a Meta object. Set data using standard assignment via a dict
+            # from a Meta object. Set data using standard assignment via dict.
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
                 child = in_dict.pop('children')
                 if child is not None:
-                    # if not child.data.empty:
                     self.ho_data[data_vars] = child
 
-            # Remaining items are simply assigned
+            # Remaining items are simply assigned via recursive call.
             self[data_vars] = in_dict
 
         elif isinstance(input_data, Meta):
@@ -423,14 +422,14 @@ class Meta(object):
             # data_vars is only a single name here (by choice for support)
             if (data_vars in self._ho_data) and (input_data.empty):
                 # No actual metadata provided and there is already some
-                # higher order metadata in self
+                # higher order metadata in self.
                 return
 
-            # Get Meta approved variable data_vars
+            # Get Meta approved variable data names.
             new_item_name = self.var_case_name(data_vars)
 
             # Ensure that Meta labels of object to be assigned are
-            # consistent with self.  input_data accepts self's labels
+            # consistent with self.  input_data accepts self's labels.
             input_data.accept_default_labels(self)
 
             # Go through and ensure Meta object to be added has variable and
@@ -448,7 +447,7 @@ class Meta(object):
             # Assign Meta object now that things are consistent with Meta
             # object settings, but first make sure there are lower dimension
             # metadata parameters, passing in an empty dict fills in defaults
-            # if there is no existing metadata info
+            # if there is no existing metadata info.
             self[new_item_name] = {}
 
             # Now add to higher order data
@@ -489,16 +488,12 @@ class Meta(object):
         # Define a local convenience function
         def match_name(func, var_name, index_or_column):
             """Alter variables using input function."""
-            if isinstance(var_name, str):
-                # If variable is a string, use it as input
-                return func(var_name)
-            elif isinstance(var_name, slice):
+            if isinstance(var_name, slice):
                 # If variable is a slice, use it to select data from the
                 # supplied index or column input
-                return [func(var) for var in index_or_column[var_name]]
+                return func(index_or_column[var_name])
             else:
-                # Otherwise, assume the variable iterable input
-                return [func(var) for var in var_name]
+                return func(var_name)
 
         # Access desired metadata based on key data type
         if isinstance(key, tuple):
