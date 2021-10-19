@@ -101,18 +101,18 @@ class InstAccessTests(object):
         """
 
         # Get a date that is not covered by an Instrument object.
-        no_data_date = self.testInst.files[0] - dt.timedelta(months=1)
+        no_data_d = self.testInst.files.files.index[0] - dt.timedelta(weeks=10)
 
         with caplog.at_level(logging.INFO, logger='pysat'):
 
             # Attempt to load data for a date with no data
-            self.testInst.load(date=no_data_date)
+            self.testInst.load(date=no_data_d)
 
             # Confirm by checking against caplog that metadata was
             # not assigned.
             captured = caplog.text
 
-            assert captured.out.find("Metadata was not assigned as there") >= 0
+            assert captured.find("Metadata was not assigned as there") >= 0
 
             # Generate string to verify proper no data message
             output_str = '{platform} {name} {tag} {inst_id}'
@@ -120,8 +120,9 @@ class InstAccessTests(object):
                                            name=self.testInst.name,
                                            tag=self.testInst.tag,
                                            inst_id=self.testInst.inst_id)
-
-            assert captured.out.find(''.join(("No ", output_str))) >= 0
+            output_str = ''.join(("No ", output_str))
+            output_str = " ".join(output_str.split())
+            assert captured.find(output_str) >= 0
 
         return
 
