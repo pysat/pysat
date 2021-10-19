@@ -341,7 +341,7 @@ class Meta(object):
             # is case insensitive, but case preserving. Convert given data_vars
             # into ones Meta has already seen. If new, then input names
             # become the standard
-            data_vars = [self.var_case_name(var) for var in data_vars]
+            data_vars = self.var_case_name(data_vars)
             for var in data_vars:
                 if var not in self:
                     self._insert_default_values(var)
@@ -448,9 +448,7 @@ class Meta(object):
 
             # Same thing for variables
             var_names = input_data.data.index
-            new_names = []
-            for name in var_names:
-                new_names.append(self.var_case_name(name))
+            new_names = self.var_case_name(var_names)
             input_data.data.index = new_names
 
             # Assign Meta object now that things are consistent with Meta
@@ -861,7 +859,7 @@ class Meta(object):
 
         """
         # Create a list of variable names to keep
-        keep_names = [self.var_case_name(name) for name in keep_names]
+        keep_names = self.var_case_name(keep_names)
 
         # Get a list of current variable names
         current_names = self._data.index
