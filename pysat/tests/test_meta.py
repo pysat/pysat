@@ -1184,8 +1184,8 @@ class TestBasics(object):
 
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        assert ('new2' in self.meta)
-        assert ('NEW2' in self.meta)
+        assert 'new2' in self.meta
+        assert 'NEW2' in self.meta
         return
 
     def test_contains_case_insensitive_w_ho(self):
@@ -1195,10 +1195,10 @@ class TestBasics(object):
         meta2 = pysat.Meta()
         meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta['new2'] = meta2
-        assert ('new2' in self.meta)
-        assert ('NEW2' in self.meta)
-        assert ('new21' not in self.meta)
-        assert ('NEW21' not in self.meta)
+        assert 'new2' in self.meta
+        assert 'NEW2' in self.meta
+        assert 'new21' not in self.meta
+        assert 'NEW21' not in self.meta
         return
 
     def test_get_variable_name_case_preservation(self):
@@ -1327,6 +1327,40 @@ class TestBasics(object):
         assert not (self.meta.hasattr_case_neutral('YoYoYo'))
         assert not (self.meta.hasattr_case_neutral('yoyoyo'))
         assert not (self.meta.hasattr_case_neutral('YoYoYyo'))
+        return
+
+    def test_get_attribute_name_case_preservation_list_input(self):
+        """Test that meta labels and values preserve the input case, list input.
+
+        """
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2',
+                             'YoYoYO': 'yolo'}
+        self.meta['new'] = {'yoyoyo': 'YOLO'}
+
+        outputs = self.meta.attr_case_name(['YoYoYo', 'yoyoyo', 'yoYOYo'])
+        targets = ['YoYoYO'] * len(outputs)
+        assert np.all(outputs == targets)
+        return
+
+    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self):
+        """Test that get attribute names preserves the case with ho metadata."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                          'YoYoYO': 'yolo'}
+        self.meta['NEW2'] = meta2
+        self.meta['new'] = {'yoyoyo': 'YOLO'}
+
+        outputs = self.meta.attr_case_name(['YoYoYo', 'yoyoyo', 'yoYOYo'])
+        targets = ['YoYoYO'] * len(outputs)
+        assert np.all(outputs == targets)
+
+        outputs = self.meta['new2'].children.attr_case_name(['YoYoYo', 'yoyoyo',
+                                                             'yoYOYo'])
+        assert np.all(outputs == targets)
         return
 
     # check support on case preservation, but case insensitive
