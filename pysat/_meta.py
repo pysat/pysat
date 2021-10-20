@@ -338,11 +338,16 @@ class Meta(object):
             # Make sure the variable names are in good shape.  The Meta object
             # is case insensitive, but case preserving. Convert given data_vars
             # into ones Meta has already seen. If new, then input names
-            # become the standard
+            # become the standard.
             data_vars = self.var_case_name(data_vars)
+            meta_vars = list(self.keys())
+            meta_vars.extend(list(self.keys_nD()))
+            def_vars = list()
             for var in data_vars:
-                if var not in self:
-                    self._insert_default_values(var)
+                if var not in meta_vars:
+                    def_vars.append(var)
+            if len(def_vars) > 0:
+                self._insert_default_values(def_vars)
 
             # Check if input dict empty.  If so, no metadata was assigned by
             # the user.  This is an empty call and we can head out,
@@ -661,7 +666,7 @@ class Meta(object):
 
         Parameters
         ----------
-        data_var : str
+        data_var : str or list of str
             Name of the data variable
 
         Note
@@ -671,20 +676,26 @@ class Meta(object):
         data type.
 
         """
-        # Cycle through each label type to create a list off label names
-        # and label default values
+        # Cycle through each label type to create a list of label names
+        # and label default values.
         labels = list()
         default_vals = list()
-        for lattr in self.labels.label_type.keys():
+        name_idx = None
+        for i, lattr in enumerate(self.labels.label_type.keys()):
             labels.append(getattr(self.labels, lattr))
 
             if lattr in ['name']:
-                default_vals.append(data_var)
+                default_vals.append('')
+                name_idx = i
             else:
                 default_vals.append(self.labels.default_values_from_attr(lattr))
 
-        # Assign the default values to the DataFrame for this data variable
-        self._data.loc[data_var, labels] = default_vals
+        # Assign the default values to the DataFrame for this data variable(s).
+        data_vars = pysat.utils.listify(data_var)
+        for var in data_vars:
+            if name_idx is not None:
+                default_vals[name_idx] = var
+            self._data.loc[var, labels] = default_vals
 
         return
 
