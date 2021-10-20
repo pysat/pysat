@@ -445,9 +445,7 @@ class Meta(object):
             input_data.data.columns = self.attr_case_name(attr_names)
 
             # Same thing for variables
-            var_names = input_data.data.index
-            new_names = self.var_case_name(var_names)
-            input_data.data.index = new_names
+            input_data.data.index = self.var_case_name(input_data.data.index)
 
             # Assign Meta object now that things are consistent with Meta
             # object settings, but first make sure there are lower dimension
