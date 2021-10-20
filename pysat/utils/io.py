@@ -66,14 +66,15 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     coltype : type
         Data type provided by pysat.Instrument._get_data_info
     remove : bool
-        Removes FillValue and associated parameters disallowed for strings
-        (default=False)
+        Removes FillValue and associated parameters that are disallowed for
+        strings.  Forced to be True if `coltype` is str. (default=False)
     export_nan : list or NoneType
-        Metadata parameters allowed to be NaN (default=None)
+        Metadata parameters allowed to be NaN. If None, assumes no Metadata
+        parameters are allowed to be Nan. (default=None)
 
     Returns
     -------
-    dict
+    filtered_dict : dict
         Modified as needed for netCDf4
 
     Warnings
@@ -83,11 +84,12 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
 
     Note
     ----
-    Remove forced to True if coltype consistent with a string type
-
     Metadata values that are NaN and not listed in export_nan are removed.
 
     """
+
+    if export_nan is None:
+        export_nan = []
 
     # Remove any metadata with a value of NaN not present in export_nan
     filtered_dict = mdata_dict.copy()
@@ -97,20 +99,19 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
                 if key not in export_nan:
                     filtered_dict.pop(key)
         except TypeError:
-            # If a TypeError thrown, it's not NaN
+            # If a TypeError thrown, it's not NaN because it's not a float
             pass
-    mdata_dict = filtered_dict
 
     # Coerce boolean types to integers and remove NoneType
     none_key = list()
-    for key in mdata_dict:
-        if isinstance(mdata_dict[key], bool):
-            mdata_dict[key] = int(mdata_dict[key])
-        elif mdata_dict[key] is None:
+    for key in filtered_dict:
+        if isinstance(filtered_dict[key], bool):
+            filtered_dict[key] = int(filtered_dict[key])
+        elif filtered_dict[key] is None:
             none_key.append(key)
 
     for key in none_key:
-        del mdata_dict[key]
+        del filtered_dict[key]
 
     if coltype == str and not remove:
         remove = True
@@ -121,18 +122,18 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     estr = ''.join(('FillValue for {a:s}{b:s} cannot be safely casted to ',
                     '{c:s}, but casting anyways. This may result in ',
                     'unexpected behavior.'))
-    if '_FillValue' in mdata_dict.keys():
+    if '_FillValue' in filtered_dict.keys():
         if remove:
-            mdata_dict.pop('_FillValue')
+            filtered_dict.pop('_FillValue')
         else:
-            if not np.can_cast(mdata_dict['_FillValue'], coltype):
-                if 'FieldNam' in mdata_dict:
-                    wstr = estr.format(a=mdata_dict['FieldNam'],
+            if not np.can_cast(filtered_dict['_FillValue'], coltype):
+                if 'FieldNam' in filtered_dict:
+                    wstr = estr.format(a=filtered_dict['FieldNam'],
                                        b=" ({:s})".format(
-                                           str(mdata_dict['_FillValue'])),
+                                           str(filtered_dict['_FillValue'])),
                                        c=coltype)
                 else:
-                    wstr = estr.format(a=str(mdata_dict['_FillValue']),
+                    wstr = estr.format(a=str(filtered_dict['_FillValue']),
                                        b="", c=coltype)
                 warnings.warn(wstr)
 
@@ -143,14 +144,14 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
                                      [''] * len(inst.variables)}
 
     # Make sure FillValue is the same type as the data
-    if 'FillVal' in mdata_dict.keys():
+    if 'FillVal' in filtered_dict.keys():
         if remove:
-            mdata_dict.pop('FillVal')
+            filtered_dict.pop('FillVal')
         else:
-            mdata_dict['FillVal'] = np.array(mdata_dict['FillVal']).astype(
-                coltype)
+            filtered_dict['FillVal'] = np.array(
+                filtered_dict['FillVal']).astype(coltype)
 
-    return mdata_dict
+    return filtered_dict
 
 
 def add_netcdf4_standards_to_meta(inst, epoch_name):
