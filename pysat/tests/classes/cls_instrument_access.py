@@ -110,24 +110,24 @@ class InstAccessTests(object):
             # than date in this case.
             self.testInst.load(date=no_data_d)
 
-            # Confirm by checking against caplog that metadata was
-            # not assigned.
-            captured = caplog.text
+        # Confirm by checking against caplog that metadata was
+        # not assigned.
+        captured = caplog.text
 
-            assert captured.find("Metadata was not assigned as there") >= 0
+        assert captured.find("Metadata was not assigned as there") >= 0
 
-            # Generate string to verify proper no data message
-            output_str = '{platform} {name} {tag} {inst_id}'
-            output_str = output_str.format(platform=self.testInst.platform,
-                                           name=self.testInst.name,
-                                           tag=self.testInst.tag,
-                                           inst_id=self.testInst.inst_id)
-            output_str = ''.join(("No ", output_str))
+        # Generate string to verify proper no data message
+        output_str = '{platform} {name} {tag} {inst_id}'
+        output_str = output_str.format(platform=self.testInst.platform,
+                                       name=self.testInst.name,
+                                       tag=self.testInst.tag,
+                                       inst_id=self.testInst.inst_id)
+        output_str = ''.join(("No ", output_str))
 
-            # Remove any extra spaces. Follows code in _instrument.
-            output_str = " ".join(output_str.split())
+        # Remove any extra spaces. Follows code in _instrument.
+        output_str = " ".join(output_str.split())
 
-            assert captured.find(output_str) >= 0
+        assert captured.find(output_str) >= 0
 
         return
 
