@@ -461,6 +461,73 @@ class TestNetCDF4Integration(object):
 
         return
 
+    @pytest.mark.parametrize("remove", [True, False])
+    @pytest.mark.parametrize("export_nan", [None, ['fill']])
+    @pytest.mark.parametrize("dvar", ["uts", "string_dummy", "unicode_dummy",
+                                      "int8_dummy", "int64_dummy"])
+    def test_filter_netcdf4_metadata(self, remove, export_nan, dvar):
+        """Test `io.test_filter_netcdf4_metadata`.
+
+        Parameters
+        ----------
+        remove : bool
+            Removes FillValue and associated parameters that are disallowed for
+            strings.  Forced to be True if `coltype` is str.
+        export_nan : list or NoneType
+            Metadata parameters allowed to be NaN. If None, assumes no Metadata
+            parameters are allowed to be Nan.
+        dval : str
+            Data variable for different test Instrument values to be tested
+
+        """
+
+        # Set the input parameters
+        mdict = self.testInst.meta[dvar].to_dict()
+        data_type = type(self.testInst[dvar][0])
+
+        # Get the filtered output
+        with warnings.catch_warnings(record=True) as war:
+            fdict = io.filter_netcdf4_metadata(self.testInst, mdict, data_type,
+                                               export_nan=export_nan,
+                                               remove=remove)
+
+        # Evaluate the warnings
+        if len(war) > 0:
+            assert data_type == str and not remove, \
+                "unexpected warning(s). First (of {:d}) warning: {:s}".format(
+                    len(war), war[0].message)
+
+            # Test the warning
+            testing.eval_warnings(war,
+                                  ["FillValue is not an acceptable parameter"],
+                                  warn_type=UserWarning)
+
+        # Test the filtered output
+        if export_nan is None:
+            export_nan = []
+
+        # NOTE HERE: missing evaluation for `remove` flag
+        for mkey in mdict.keys():
+            if mkey not in fdict.keys():
+                try:
+                    is_nan = np.isnan(mdict[mkey])
+                except TypeError:
+                    is_nan = False
+
+                assert ((mdict[mkey] is None) | is_nan), \
+                    "{:} is not a fill value: {:}".format(repr(mkey),
+                                                          repr(mdict[mkey]))
+                assert mkey not in export_nan, \
+                    "{:} should have been exported".format(repr(mkey))
+            else:
+                if mkey in export_nan and np.isnan(mdict[mkey]):
+                    assert np.isnan(fdict[mkey])
+                else:
+                    assert fdict[mkey] == mdict[mkey], \
+                        "meta data {:} changed".format(repr(mkey))
+
+        return
+
 
 class TestXarrayIO(object):
     """Unit tests for the Xarray I/O utilities."""
@@ -555,9 +622,5 @@ class TestDeprecation(object):
             except IndexError:
                 pass
 
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
+        testing.eval_warnings(war, self.warn_msgs)
+        return
