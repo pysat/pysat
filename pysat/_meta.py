@@ -1085,16 +1085,18 @@ class Meta(object):
 
         """
         mdata = self.copy()
+        mdata_keys = [key.lower() for key in mdata.keys()]
+        mdata_keys.extend([key.lower() for key in mdata.keys_nD()])
 
         # Check the inputs
         if strict:
             for key in other_meta.keys():
-                if key in mdata:
+                if key.lower() in mdata_keys:
                     raise RuntimeError(''.join(('Duplicated keys (variable ',
                                                 'names) across Meta ',
                                                 'objects in keys().')))
             for key in other_meta.keys_nD():
-                if key in mdata:
+                if key.lower in mdata_keys:
                     raise RuntimeError(''.join(('Duplicated keys (variable ',
                                                 'names) across Meta '
                                                 'objects in keys_nD().')))
