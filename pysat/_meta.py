@@ -962,10 +962,10 @@ class Meta(object):
             else:
                 case_names.append(iname)
 
-        if return_list:
-            return case_names
-        else:
-            return case_names[0]
+        if not return_list:
+            case_names = case_names[0]
+
+        return case_names
 
     def keys(self):
         """Yield variable names stored for 1D variables."""
