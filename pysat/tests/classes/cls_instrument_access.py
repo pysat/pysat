@@ -95,9 +95,7 @@ class InstAccessTests(object):
         return
 
     def test_basic_instrument_load_no_data(self, caplog):
-        """Test Instrument load with no data for appropriate log messages.
-
-        """
+        """Test Instrument load with no data for appropriate log messages."""
 
         # Get a date that is not covered by an Instrument object.
         no_data_d = self.testInst.files.files.index[0] - dt.timedelta(weeks=10)
