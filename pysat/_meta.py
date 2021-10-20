@@ -1096,7 +1096,7 @@ class Meta(object):
                                                 'names) across Meta ',
                                                 'objects in keys().')))
             for key in other_meta.keys_nD():
-                if key.lower in mdata_keys:
+                if key.lower() in mdata_keys:
                     raise RuntimeError(''.join(('Duplicated keys (variable ',
                                                 'names) across Meta '
                                                 'objects in keys_nD().')))
