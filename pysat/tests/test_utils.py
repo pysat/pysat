@@ -19,6 +19,7 @@ import warnings
 import pysat
 from pysat.tests.classes.cls_registration import TestWithRegistration
 from pysat.utils import generate_instrument_list
+from pysat.utils import testing
 
 
 class TestCIonly(object):
@@ -540,10 +541,5 @@ class TestDeprecation(object):
         assert len(war) >= len(warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                warn_msgs[i])
-            return
+        testing.eval_warnings(war, warn_msgs)
+        return

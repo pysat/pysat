@@ -15,6 +15,7 @@ import pysat.instruments.pysat_testing_xarray
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
 from pysat.tests.classes.cls_instrument_iteration import InstIterationTests
 from pysat.tests.classes.cls_instrument_property import InstPropertyTests
+from pysat.utils import testing
 
 
 class TestBasics(InstAccessTests, InstIterationTests, InstPropertyTests):
@@ -292,13 +293,7 @@ class TestDeprecation(object):
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
-
+        testing.eval_warnings(war, self.warn_msgs)
         return
 
     def test_download_travis_attr(self):
@@ -325,13 +320,7 @@ class TestDeprecation(object):
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present.
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
-
+        testing.eval_warnings(war, self.warn_msgs)
         return
 
     def test_filter_netcdf4_metadata(self):
@@ -356,13 +345,7 @@ class TestDeprecation(object):
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
-
+        testing.eval_warnings(war, self.warn_msgs)
         return
 
     def test_to_netcdf4(self):
@@ -384,13 +367,7 @@ class TestDeprecation(object):
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
-
+        testing.eval_warnings(war, self.warn_msgs)
         return
 
     @pytest.mark.parametrize("kwargs", [{'inst_id': None}, {'tag': None}])
@@ -416,8 +393,5 @@ class TestDeprecation(object):
         assert len(war) >= len(warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present.
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(warn_msgs[i])
+        testing.eval_warnings(war, warn_msgs)
+        return

@@ -14,18 +14,10 @@ import warnings
 import pytest
 
 import pysat
-# Make sure to import your instrument package here
-# e.g.,
-# import mypackage
-
-# Need extra functions if custom tests are being added.
 import pysat.tests.classes.cls_instrument_library as cls_inst_lib
-
-# Import the test classes from pysat.
 from pysat.tests.classes.cls_instrument_library import InstLibTests
-
-# Import old classes for Deprecation tests.
 import pysat.tests.instrument_test_class as itc
+from pysat.utils import testing
 
 # Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords
@@ -145,13 +137,7 @@ class TestDeprecation(object):
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
-
+        testing.eval_warnings(war, self.warn_msgs)
         return
 
     def test_old_initialize_inst_and_date(self):
@@ -171,11 +157,5 @@ class TestDeprecation(object):
         assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        found_msgs = pysat.instruments.methods.testing.eval_dep_warnings(
-            war, self.warn_msgs)
-
-        for i, good in enumerate(found_msgs):
-            assert good, "didn't find warning about: {:}".format(
-                self.warn_msgs[i])
-
+        testing.eval_warnings(war, self.warn_msgs)
         return
