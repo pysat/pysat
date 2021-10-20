@@ -1000,12 +1000,11 @@ class Meta(object):
         Does not check higher order meta objects
 
         """
-        has_name = False
 
         if attr_name.lower() in [dcol.lower() for dcol in self.data.columns]:
-            has_name = True
+            return True
 
-        return has_name
+        return False
 
     def attr_case_name(self, name):
         """Retrieve preserved case name for case insensitive value of name.
