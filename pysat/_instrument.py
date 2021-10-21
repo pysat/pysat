@@ -3011,6 +3011,10 @@ class Instrument(object):
 
                 if warn_default:
                     warnings.warn(default_warn, stacklevel=2)
+            else:
+                estr = ''.join(('Metadata was not assigned as there was ',
+                                'no data returned.'))
+                pysat.logger.info(estr)
 
         # Check if load routine actually returns meta
         if self.meta.data.empty:

@@ -60,6 +60,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed a bug when instantiating empty `pysat.Instrument()` (#851)
    * Fixed IndexError encountered when loading a multi-day file by filename with
      no data for that day.
+   * Added logging output when metadata not assigned due to a lack of
+     instrument data (#924)
    * Fixed a bug where empty check for xarray instruments fail when time not
      present. (#922)
 * Maintenance
