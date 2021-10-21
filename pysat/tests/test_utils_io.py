@@ -462,20 +462,22 @@ class TestNetCDF4Integration(object):
         return
 
     @pytest.mark.parametrize("remove", [True, False])
+    @pytest.mark.parametrize("check_type", [None, ['value_max']])
     @pytest.mark.parametrize("export_nan", [None, ['fill']])
     @pytest.mark.parametrize("dvar", ["uts", "string_dummy", "unicode_dummy",
                                       "int8_dummy", "int64_dummy"])
-    def test_filter_netcdf4_metadata(self, remove, export_nan, dvar):
+    def test_filter_netcdf4_metadata(self, remove, check_type, export_nan,
+                                     dvar):
         """Test `io.test_filter_netcdf4_metadata`.
 
         Parameters
         ----------
         remove : bool
-            Removes FillValue and associated parameters that are disallowed for
-            strings.  Forced to be True if `coltype` is str.
+            Values for the `remove` kwarg
+        check_type : list or NoneType
+            Values for the `check_type` kwarg
         export_nan : list or NoneType
-            Metadata parameters allowed to be NaN. If None, assumes no Metadata
-            parameters are allowed to be Nan.
+            Values for the `export_nan` kwarg
         dval : str
             Data variable for different test Instrument values to be tested
 
@@ -483,13 +485,18 @@ class TestNetCDF4Integration(object):
 
         # Set the input parameters
         mdict = self.testInst.meta[dvar].to_dict()
-        data_type = type(self.testInst[dvar][0])
+
+        if dvar.find('int8') >= 0:
+            data_type = bool
+        else:
+            data_type = type(self.testInst[dvar][0])
 
         # Get the filtered output
         with warnings.catch_warnings(record=True) as war:
             fdict = io.filter_netcdf4_metadata(self.testInst, mdict, data_type,
                                                export_nan=export_nan,
-                                               remove=remove)
+                                               remove=remove,
+                                               check_type=check_type)
 
         # Evaluate the warnings
         if len(war) > 0:
@@ -498,27 +505,41 @@ class TestNetCDF4Integration(object):
                     len(war), war[0].message)
 
             # Test the warning
-            testing.eval_warnings(war,
-                                  ["FillValue is not an acceptable parameter"],
+            testing.eval_warnings(war, ["Unable to cast"],
                                   warn_type=UserWarning)
 
-        # Test the filtered output
+        # Prepare the input variables to test the filtered output
         if export_nan is None:
             export_nan = []
 
-        # NOTE HERE: missing evaluation for `remove` flag
+        if check_type is None:
+            check_type = []
+
+        # Test the filtered output
         for mkey in mdict.keys():
             if mkey not in fdict.keys():
+                # Determine of the data is NaN
                 try:
                     is_nan = np.isnan(mdict[mkey])
                 except TypeError:
                     is_nan = False
 
-                assert ((mdict[mkey] is None) | is_nan), \
-                    "{:} is not a fill value: {:}".format(repr(mkey),
-                                                          repr(mdict[mkey]))
-                assert mkey not in export_nan, \
-                    "{:} should have been exported".format(repr(mkey))
+                if mkey in check_type:
+                    assert not isinstance(mdict[mkey], data_type), \
+                        "{:} is a {:}, it shouldn't have been removed".format(
+                            repr(mkey), repr(data_type))
+                    assert (remove | (not remove & len(war) > 0)
+                            | ((mdict[mkey] is None) | is_nan)), \
+                        "{:} value {:} should have been recast".format(
+                            repr(mkey), repr(mdict[mkey]))
+                else:
+
+                    assert ((mdict[mkey] is None) | is_nan), \
+                        "{:} is not a fill value: {:}".format(repr(mkey),
+                                                              repr(mdict[mkey]))
+
+                    assert mkey not in export_nan, \
+                        "{:} should have been exported".format(repr(mkey))
             else:
                 if mkey in export_nan and np.isnan(mdict[mkey]):
                     assert np.isnan(fdict[mkey])

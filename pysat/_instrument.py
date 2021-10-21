@@ -15,7 +15,6 @@ import types
 import warnings
 import weakref
 
-import netCDF4
 import numpy as np
 import pandas as pds
 import xarray as xr
@@ -1672,8 +1671,15 @@ class Instrument(object):
                                "filter_netcdf4_metadata` instead."]),
                       DeprecationWarning, stacklevel=2)
 
+        if remove:
+            check_type = [self.meta.labels.fill_val, self.meta.labels.max_val,
+                          self.meta.labels.min_val]
+        else:
+            check_type = None
+
         return utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
                                                 remove=remove,
+                                                check_type=check_type,
                                                 export_nan=export_nan)
 
     # -----------------------------------------------------------------------

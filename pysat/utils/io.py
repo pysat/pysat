@@ -54,7 +54,7 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta):
 
 
 def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
-                            export_nan=None):
+                            check_type=None, export_nan=None):
     """Filter metadata properties to be consistent with netCDF4.
 
     Parameters
@@ -64,10 +64,16 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     mdata_dict : dict
         Dictionary equivalent to Meta object info
     coltype : type
-        Data type provided by pysat.Instrument._get_data_info
+        Data type provided by pysat.Instrument._get_data_info.  If boolean,
+        int will be used instead.
     remove : bool
-        Removes FillValue and associated parameters that are disallowed for
-        strings.  Forced to be True if `coltype` is str. (default=False)
+        Remove metadata that should be the same type as `coltype`, but isn't
+        if True.  Recast data if False. (default=False)
+    check_type : list or NoneType
+        List of keys associated with `meta_dict` that should have the same
+        data type as `coltype`.  These will be removed from the filtered
+        output if they differ.  If None, this check will not be performed.
+        (default=None)
     export_nan : list or NoneType
         Metadata parameters allowed to be NaN. If None, assumes no Metadata
         parameters are allowed to be Nan. (default=None)
@@ -80,7 +86,8 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     Warnings
     --------
     UserWarning
-        When data removed due to conflict between value and type
+        When data are removed due to conflict between value and type, and
+        removal was not explicitly requested (`remove` is False).
 
     Note
     ----
@@ -88,8 +95,15 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
 
     """
 
+    # Set the empty lists for NoneType inputs
+    if check_type is None:
+        check_type = []
+
     if export_nan is None:
         export_nan = []
+
+    if coltype is bool:
+        coltype = int
 
     # Remove any metadata with a value of NaN not present in export_nan
     filtered_dict = mdata_dict.copy()
@@ -102,54 +116,30 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
             # If a TypeError thrown, it's not NaN because it's not a float
             pass
 
-    # Coerce boolean types to integers and remove NoneType
-    none_key = list()
+    # Coerce boolean types to integers, remove NoneType, and test for
+    # consisent data type
+    remove_keys = list()
     for key in filtered_dict:
+        # Cast the boolean data as integers
         if isinstance(filtered_dict[key], bool):
             filtered_dict[key] = int(filtered_dict[key])
-        elif filtered_dict[key] is None:
-            none_key.append(key)
 
-    for key in none_key:
+        # Remove NoneType data and check for matching data types
+        if filtered_dict[key] is None:
+            remove_keys.append(key)
+        elif key in check_type and not isinstance(filtered_dict[key], coltype):
+            if remove:
+                remove_keys.append(key)
+            else:
+                try:
+                    filtered_dict[key] = coltype(filtered_dict[key])
+                except TypeError:
+                    warnings.warn(''.join(['Unable to cast ', key, ' data as ',
+                                           repr(coltype), ', removing']))
+                    remove_keys.append(key)
+
+    for key in remove_keys:
         del filtered_dict[key]
-
-    if coltype == str and not remove:
-        remove = True
-        warnings.warn('FillValue is not an acceptable '
-                      'parameter for strings - it will be removed.')
-
-    # Make sure _FillValue is the same type as the data
-    estr = ''.join(('FillValue for {a:s}{b:s} cannot be safely casted to ',
-                    '{c:s}, but casting anyways. This may result in ',
-                    'unexpected behavior.'))
-    if '_FillValue' in filtered_dict.keys():
-        if remove:
-            filtered_dict.pop('_FillValue')
-        else:
-            if not np.can_cast(filtered_dict['_FillValue'], coltype):
-                if 'FieldNam' in filtered_dict:
-                    wstr = estr.format(a=filtered_dict['FieldNam'],
-                                       b=" ({:s})".format(
-                                           str(filtered_dict['_FillValue'])),
-                                       c=coltype)
-                else:
-                    wstr = estr.format(a=str(filtered_dict['_FillValue']),
-                                       b="", c=coltype)
-                warnings.warn(wstr)
-
-    # Check if load routine actually returns meta
-    if inst.meta.data.empty:
-        inst.meta[inst.variables] = {inst.meta.labels.name: inst.variables,
-                                     inst.meta.labels.units:
-                                     [''] * len(inst.variables)}
-
-    # Make sure FillValue is the same type as the data
-    if 'FillVal' in filtered_dict.keys():
-        if remove:
-            filtered_dict.pop('FillVal')
-        else:
-            filtered_dict['FillVal'] = np.array(
-                filtered_dict['FillVal']).astype(coltype)
 
     return filtered_dict
 
@@ -681,7 +671,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                    mode='w', zlib=False, complevel=4, shuffle=True,
-                   preserve_meta_case=False, export_nan=None,
+                   preserve_meta_case=False, check_type=None, export_nan=None,
                    unlimited_time=True):
     """Store pysat data in a netCDF4 file.
 
@@ -717,6 +707,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         preserves case) are used to name variables in the written netCDF
         file. If False, then the variable strings used to access data from
         the pysat.Instrument object are used instead. (default=False)
+    check_type : list or NoneType
+        List of keys associated with `meta_dict` that should have the same
+        data type as `coltype`.  These will be removed from the filtered
+        output if they differ.  If None, this check will not be performed.
+        (default=None)
     export_nan : list or NoneType
         By default, the metadata variables where a value of NaN is allowed
         and written to the netCDF4 file is maintained by the Meta object
@@ -757,6 +752,16 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     # Check export NaNs first
     if export_nan is None:
         export_nan = inst.meta._export_nan
+
+    # Add standard fill, value_max, and value_min values to `check_type`
+    if check_type is None:
+        check_type = [inst.meta.labels.fill_val, inst.meta.labels.max_val,
+                      inst.meta.labels.min_val]
+    else:
+        for label in [inst.meta.labels.fill_val, inst.meta.labels.max_val,
+                      inst.meta.labels.min_val]:
+            if label not in check_type:
+                check_type.append(label)
 
     # Ensure the metadata is set and updated to netCDF4 standards
     add_netcdf4_standards_to_meta(inst, epoch_name)
@@ -912,9 +917,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                                      complevel=complevel,
                                                      shuffle=shuffle)
                     if case_key in export_meta.keys():
+                        remove = True if coltype == str else False
                         cdfkey.setncatts(filter_netcdf4_metadata(
                             inst, export_meta[case_key], coltype,
-                            export_nan=export_nan))
+                            export_nan=export_nan, check_type=check_type,
+                            remove=remove))
                     else:
                         pysat.logger.info(
                             ''.join(('Unable to find MetaData for ', key)))
@@ -941,7 +948,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                         if case_key in export_meta.keys():
                             cdfkey.setncatts(filter_netcdf4_metadata(
                                 inst, export_meta[case_key], coltype,
-                                remove=True, export_nan=export_nan))
+                                remove=True, export_nan=export_nan,
+                                check_type=check_type))
                         else:
                             pysat.logger.info(
                                 ''.join(('Unable to find MetaData for ',
@@ -1014,9 +1022,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
 
                                 lkey = '_'.join((case_key, col))
                                 if lkey in export_meta.keys():
+                                    remove = True if coltype == str else False
                                     cdfkey.setncatts(filter_netcdf4_metadata(
                                         inst, export_meta[lkey], coltype,
-                                        export_nan=export_nan))
+                                        export_nan=export_nan,
+                                        check_type=check_type))
                                 else:
                                     pysat.logger.info(
                                         ''.join(('Unable to find MetaData for ',
@@ -1045,9 +1055,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                     complevel=complevel, shuffle=shuffle)
 
                                 if case_key in export_meta.keys():
+                                    remove = True if coltype == str else False
                                     cdfkey.setncatts(filter_netcdf4_metadata(
                                         inst, export_meta[case_key], coltype,
-                                        export_nan=export_nan))
+                                        export_nan=export_nan, remove=remove,
+                                        check_type=check_type))
                                 else:
                                     pysat.logger.info(
                                         ''.join(('Unable to find MetaData for ',
@@ -1079,9 +1091,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                                          complevel=complevel,
                                                          shuffle=shuffle)
                         if case_key in export_meta.keys():
+                            remove = True if coltype == str else False
                             new_dict = filter_netcdf4_metadata(
                                 inst, export_meta[case_key], coltype,
-                                export_nan=export_nan)
+                                remove=remove, export_nan=export_nan,
+                                check_type=check_type)
                         else:
                             pysat.logger.info(
                                 ''.join(('Unable to find MetaData for ',
