@@ -916,14 +916,13 @@ class Meta(object):
 
         Parameters
         ----------
-        name : str or list of str
-            variable name(s) in any case
+        name : str or list
+            Single or multiple variable name(s) using any capitalization scheme.
 
         Returns
         -------
-        out_name : str or list of str
-            String with case preserved as in the meta object. A list of str
-            is returned unless a str is input.
+        case_names : str or list
+            Maintains the same type as input, returning the stored name(s) of the meta object.
 
         Note
         ----
@@ -932,10 +931,7 @@ class Meta(object):
         case of a given variable name is the same across the Meta object.
 
         """
-        if isinstance(name, str):
-            return_list = False
-        else:
-            return_list = True
+        return_list = False if isinstance(name, str) else True
 
         # Ensure we operate on a list of names
         names = pysat.utils.listify(name)
@@ -993,7 +989,7 @@ class Meta(object):
         Returns
         -------
         has_name : bool
-            True if case-insensitive check for attribute name is True
+            True if the case-insensitive check for attribute name is successful, False if no attribute name is present.
 
         Note
         ----
