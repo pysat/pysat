@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------
 """Tests the pysat utility io routines."""
 
+import logging
 import numpy as np
 import os
 import tempfile
@@ -457,7 +458,7 @@ class TestNetCDF4Integration(object):
 
         for mvar in missing:
             assert mvar not in test_vars, \
-                '{:} was written to the netCDF file'.format(mvar.__repr__())
+                '{:} was written to the netCDF file'.format(repr(mvar))
 
         return
 
@@ -546,6 +547,90 @@ class TestNetCDF4Integration(object):
                 else:
                     assert fdict[mkey] == mdict[mkey], \
                         "meta data {:} changed".format(repr(mkey))
+
+        return
+
+    @pytest.mark.parametrize('missing', [True, False])
+    def test_add_netcdf4_standards_to_meta(self, caplog, missing):
+        """Test for SPDF ISTP/IACG NetCDF standards after update.
+
+        Parameters
+        ----------
+        missing : bool
+            If True, remove data from Meta to create missing data
+
+        """
+
+        # Update the test metadata
+        if missing:
+            drop_var = self.testInst.variables[0]
+            self.testInst.meta.drop(drop_var)
+
+        # Save the un-updated metadata
+        init_meta = self.testInst.meta.copy()
+
+        # Test the initial meta data for missing Epoch time
+        assert self.testInst.index.name not in init_meta
+
+        # Update the metadata
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            io.add_netcdf4_standards_to_meta(self.testInst,
+                                             self.testInst.index.name)
+
+        # Test the logging message
+        captured = caplog.text
+        if missing:
+            assert captured.find('Unable to find MetaData for {:s}'.format(
+                drop_var)) >= 0
+        else:
+            assert len(captured) == 0
+
+        # Test the metadata update
+        new_labels = ['Format', 'Var_Type', 'Time_Base', 'Time_Scale',
+                      'MonoTon', 'Depend_0', 'Display_Type']
+        assert init_meta != self.testInst.meta
+        assert self.testInst.index.name in self.testInst.meta
+        for var in init_meta.keys():
+            for label in new_labels:
+                assert label not in init_meta[var]
+                assert label in self.testInst.meta[var]
+
+        return
+
+    def test_add_netcdf4_standards_to_ho_meta(self):
+        """Test for SPDF ISTP/IACG NetCDF standards with HO data."""
+
+        # Reset the test instrument
+        self.testInst = pysat.Instrument('pysat', 'testing2d')
+        self.testInst.load(
+            date=pysat.instruments.pysat_testing2d._test_dates[''][''])
+
+        # Save the un-updated metadata
+        init_meta = self.testInst.meta.copy()
+
+        # Test the initial meta data for missing Epoch time
+        assert self.testInst.index.name not in init_meta
+
+        # Update the metadata
+        io.add_netcdf4_standards_to_meta(self.testInst,
+                                         self.testInst.index.name)
+
+        # Test the metadata update
+        new_labels = ['Format', 'Var_Type', 'Time_Base', 'Time_Scale',
+                      'MonoTon', 'Depend_0', 'Depend_1', 'Display_Type']
+        assert init_meta != self.testInst.meta
+        assert self.testInst.index.name in self.testInst.meta
+        for var in init_meta.keys():
+            for label in new_labels:
+                assert label not in init_meta[var]
+                assert label in self.testInst.meta[var]
+
+            assert 'Depend_1' not in init_meta[var]
+            if init_meta[var].children is None:
+                assert np.isnan(self.testInst.meta[var, 'Depend_1'])
+            else:
+                assert self.testInst.meta[
+                    var, 'Depend_1'] in self.testInst.variables
 
         return
 
