@@ -1451,7 +1451,7 @@ class Instrument(object):
                     output_str = ' '.join((output_str, 'valid filenames found'))
                 else:
                     output_str = ' '.join((output_str, 'data for', fname[0]))
-                    if len(fname) > 1: 
+                    if len(fname) > 1:
                         output_str = ' '.join((output_str, '::', fname[-1]))
 
         # Remove extra spaces, if any are present
