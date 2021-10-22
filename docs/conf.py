@@ -22,6 +22,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..'))
 import pysat
+pysat.params['data_dirs'] = '.'
 
 
 # added by RS, trying to get __init__ method documented
