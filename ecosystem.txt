@@ -1,0 +1,4 @@
+pysatCDAAC instruments
+pysatMadrigal instruments
+pysatNASA instruments
+pysatSpaceWeather instruments

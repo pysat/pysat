@@ -5,6 +5,24 @@ Note
 Not directly called by pytest, but imported as part of test_instruments.py.
 Can be imported directly for external instrument libraries of pysat instruments.
 
+Examples
+--------
+::
+
+    # Import custom instrument library
+    import mypackage
+
+    # Import the test classes from pysat.
+    from pysat.tests.classes.cls_instrument_library import InstLibTests
+
+    InstLibTests.initialize_test_package(InstLibTests,
+                                         inst_loc=mypackage.instruments,
+                                         user_info=user_info)
+
+    class TestInstruments(InstLibTests):
+        '''Create a testable object from standard library.'''
+
+
 """
 
 import datetime as dt
@@ -142,13 +160,14 @@ class InstLibTests(object):
                     mark = pytest.mark.parametrize("inst_name",
                                                    instruments['names'])
                     getattr(self, method).pytestmark.append(mark)
+                elif 'load_options' in mark_names:
+                    # Prioritize load_options mark if present
+                    mark = pytest.mark.parametrize("inst_dict",
+                                                   instruments['load_options'])
+                    getattr(self, method).pytestmark.append(mark)
                 elif 'download' in mark_names:
                     mark = pytest.mark.parametrize("inst_dict",
                                                    instruments['download'])
-                    getattr(self, method).pytestmark.append(mark)
-                elif 'load_options' in mark_names:
-                    mark = pytest.mark.parametrize("inst_dict",
-                                                   instruments['load_options'])
                     getattr(self, method).pytestmark.append(mark)
                 elif 'no_download' in mark_names:
                     mark = pytest.mark.parametrize("inst_dict",
@@ -304,7 +323,10 @@ class InstLibTests(object):
         return
 
     @pytest.mark.second
+    # Need to maintain download mark for backwards compatibility.
+    # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
+    @pytest.mark.download
     @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty', 'clean'])
     def test_load(self, clean_level, inst_dict):
         """Test that instruments load at each cleaning level.

@@ -5,6 +5,7 @@ from importlib import reload
 import numpy as np
 import pytest
 import warnings
+import xarray as xr
 
 import pysat
 import pysat.instruments.pysat_testing
@@ -230,6 +231,27 @@ class TestBasics2DXarray(TestBasics):
                              == 0))
         return
 
+    @pytest.mark.parametrize("data,target",
+                             [(xr.Dataset(), True),
+                              (xr.Dataset({'time': []}), True),
+                              (xr.Dataset({'lat': [], 'lon': []}), True),
+                              (xr.Dataset({'time': [], 'lon': [0.]}), False),
+                              (xr.Dataset({'lat': [0.], 'lon': [0.]}), False)])
+    def test_xarray_empty_conditions(self, data, target):
+        """Test that multiple xarray empty conditions are satisfied.
+
+        Parameters
+        ----------
+        data : xr.Dataset
+            Sample data object to check for emptiness.
+        target : bool
+            Target response for `self.testInst.empty`.
+
+        """
+
+        self.testInst.data = data
+        assert self.testInst.empty == target
+
 
 class TestBasicsShiftedFileDates(TestBasics):
     """Basic tests for pandas `pysat.Instrument` with shifted file dates."""
@@ -254,6 +276,83 @@ class TestBasicsShiftedFileDates(TestBasics):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
+        return
+
+
+class TestInstGeneral(object):
+    """Unit tests for empty instrument objects."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.empty_inst = pysat.Instrument()
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.empty_inst
+        return
+
+    def test_creating_empty_instrument_object(self):
+        """Ensure empty Instrument instantiation runs."""
+
+        assert isinstance(self.empty_inst, pysat.Instrument)
+        return
+
+    def test_empty_repr_eval(self):
+        """Test that repr functions on empty `Instrument`."""
+
+        self.out = eval(repr(self.empty_inst))
+        assert isinstance(self.out, pysat.Instrument)
+        assert self.out.platform == ''
+        assert self.out.name == ''
+        assert self.out.inst_module is None
+        return
+
+    @pytest.mark.parametrize("kwargs", [{'platform': 'cnofs'},
+                                        {'name': 'ivm'}])
+    def test_incorrect_creation_empty_instrument_object(self, kwargs):
+        """Ensure instantiation with missing name errors.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Kwargs to pass through for instrument instantiation.
+
+        """
+
+        with pytest.raises(ValueError) as err:
+            # Both name and platform should be empty
+            pysat.Instrument(**kwargs)
+        estr = 'Inputs platform and name must both'
+        assert str(err).find(estr) >= 0
+        return
+
+    def test_supplying_instrument_module_requires_name_and_platform(self):
+        """Ensure instantiation via inst_module with missing name errors."""
+
+        class Dummy(object):
+            pass
+        Dummy.name = 'help'
+
+        with pytest.raises(AttributeError) as err:
+            pysat.Instrument(inst_module=Dummy)
+        estr = 'Supplied module '
+        assert str(err).find(estr) >= 0
+        return
+
+    def test_eq_different_object(self):
+        """Test equality using different `pysat.Instrument` objects."""
+
+        obj1 = pysat.Instrument(platform='pysat', name='testing',
+                                num_samples=10, clean_level='clean',
+                                update_files=True)
+
+        obj2 = pysat.Instrument(platform='pysat', name='testing_xarray',
+                                num_samples=10, clean_level='clean',
+                                update_files=True)
+        assert not (obj1 == obj2)
         return
 
 

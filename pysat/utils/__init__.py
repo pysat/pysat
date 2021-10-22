@@ -8,6 +8,7 @@ for the pysat data directory structure.
 
 from pysat.utils._core import available_instruments
 from pysat.utils._core import display_available_instruments
+from pysat.utils._core import display_instrument_stats
 from pysat.utils._core import generate_instrument_list
 from pysat.utils._core import listify
 from pysat.utils._core import load_netcdf4

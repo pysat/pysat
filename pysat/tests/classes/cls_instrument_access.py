@@ -16,7 +16,7 @@ Base class stored here, but tests inherited by test_instrument.py
 """
 
 import datetime as dt
-from importlib import reload
+import logging
 import numpy as np
 
 import pandas as pds
@@ -24,6 +24,8 @@ import pytest
 import xarray as xr
 
 import pysat
+
+logger = pysat.logger
 
 
 class InstAccessTests(object):
@@ -90,6 +92,41 @@ class InstAccessTests(object):
 
         # Test that the loaded date range is correct
         self.eval_successful_load()
+        return
+
+    def test_basic_instrument_load_no_data(self, caplog):
+        """Test Instrument load with no data for appropriate log messages."""
+
+        # Get a date that is not covered by an Instrument object.
+        no_data_d = self.testInst.files.files.index[0] - dt.timedelta(weeks=10)
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+
+            # Attempt to load data for a date with no data.
+            # Test doesn't check against loading by filename since that produces
+            # an error if there is no file. Loading by yr, doy no different
+            # than date in this case.
+            self.testInst.load(date=no_data_d)
+
+        # Confirm by checking against caplog that metadata was
+        # not assigned.
+        captured = caplog.text
+
+        assert captured.find("Metadata was not assigned as there") >= 0
+
+        # Generate string to verify proper no data message
+        output_str = '{platform} {name} {tag} {inst_id}'
+        output_str = output_str.format(platform=self.testInst.platform,
+                                       name=self.testInst.name,
+                                       tag=self.testInst.tag,
+                                       inst_id=self.testInst.inst_id)
+        output_str = ''.join(("No ", output_str))
+
+        # Remove any extra spaces. Follows code in _instrument.
+        output_str = " ".join(output_str.split())
+
+        assert captured.find(output_str) >= 0
+
         return
 
     def test_basic_instrument_load_two_days(self):
@@ -461,21 +498,6 @@ class InstAccessTests(object):
             inst_copy.pandas_format = True
             inst_copy.data = pds.DataFrame()
         assert inst_copy != self.testInst
-        return
-
-    def test_eq_different_object(self):
-        """Test equality using different `pysat.Instrument` objects."""
-
-        reload(pysat.instruments.pysat_testing)
-        obj1 = pysat.Instrument(platform='pysat', name='testing',
-                                num_samples=10, clean_level='clean',
-                                update_files=True)
-
-        reload(pysat.instruments.pysat_testing_xarray)
-        obj2 = pysat.Instrument(platform='pysat', name='testing_xarray',
-                                num_samples=10, clean_level='clean',
-                                update_files=True)
-        assert not (obj1 == obj2)
         return
 
     def test_eq_different_type(self):
