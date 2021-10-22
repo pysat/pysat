@@ -133,9 +133,10 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
             else:
                 try:
                     filtered_dict[key] = coltype(filtered_dict[key])
-                except TypeError:
-                    warnings.warn(''.join(['Unable to cast ', key, ' data as ',
-                                           repr(coltype), ', removing']))
+                except (TypeError, ValueError):
+                    warnings.warn(''.join(['Unable to cast ', key, ' data, ',
+                                           repr(filtered_dict[key]), ', as ',
+                                           repr(coltype), '; removing']))
                     remove_keys.append(key)
 
     for key in remove_keys:
@@ -939,7 +940,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                     # individual object types are.  Then, act as needed.
 
                     # Use info in coltype to get real datatype of object
-                    if (coltype == str):
+                    if coltype == str:
                         cdfkey = out_data.createVariable(case_key, coltype,
                                                          dimensions=epoch_name,
                                                          zlib=zlib,
