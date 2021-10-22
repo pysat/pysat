@@ -386,6 +386,19 @@ class TestAvailableInst(TestWithRegistration):
 
         return
 
+    @pytest.mark.parametrize("inst_loc", [None, [pysat.instruments]])
+    def test_display_instrument_stats(self, inst_loc, capsys):
+        """Test display_instrument_stats options."""
+
+        pysat.utils.display_instrument_stats(inst_loc)
+
+        captured = capsys.readouterr()
+        # Numbers should match supported data products in `pysat.instruments`
+        assert captured.out.find("supported data products with download") > 0
+        assert captured.out.find("supported data products with local") > 0
+
+        return
+
     def test_import_error_in_available_instruments(self):
         """Test handling of import errors in available_instruments."""
 

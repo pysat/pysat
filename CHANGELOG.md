@@ -21,6 +21,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added the capability to test loading with optional kwargs through
      `_test_load_opt` instrument attribute
    * Added `rename` and `add_epoch_metadata` methods to the Meta class
+   * Added the ability to only download new files if remote file listing
+     capabilities are not available for the Instrument.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -56,6 +58,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added a warning if `inst_module` and `platform`/`name` are used to
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
+   * Fixed a bug when instantiating empty `pysat.Instrument()` (#851)
+   * Fixed IndexError encountered when loading a multi-day file by filename with
+     no data for that day.
+   * Added logging output when metadata not assigned due to a lack of
+     instrument data (#924)
+   * Fixed a bug where empty check for xarray instruments fail when time not
+     present. (#922)
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
@@ -74,6 +83,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Reorganized the core test_instrument.py as a series of classes
    * Separated MetaLabels tests from Meta test class
    * Organized and reduced duplication in the Meta test class
+   * Added CI reports for supported data products
 
 [3.0.1] - 2021-07-28
 --------------------

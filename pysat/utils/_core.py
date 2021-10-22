@@ -414,6 +414,32 @@ def generate_instrument_list(inst_loc, user_info=None):
     return output
 
 
+def display_instrument_stats(inst_locs=None):
+    """Display supported instrument stats.
+
+    Parameters
+    ----------
+    inst_locs : list of packages
+        List of instrument library modules to inspect for pysat support.
+        If None, report on default pysat package.  (default=None)
+
+    """
+
+    if inst_locs is None:
+        inst_locs = [pysat.instruments]
+
+    num_dl = 0
+    num_nodl = 0
+    for inst_loc in inst_locs:
+        instruments = generate_instrument_list(inst_loc=inst_loc)
+        num_dl += len(instruments['download'])
+        num_nodl += len(instruments['no_download'])
+
+    print("\n{:} supported data products with download access".format(num_dl))
+    print("{:} supported data products with local access".format(num_nodl))
+    return
+
+
 def available_instruments(inst_loc=None):
     """Obtain basic information about instruments in a given subpackage.
 
