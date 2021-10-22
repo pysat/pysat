@@ -1425,16 +1425,12 @@ class Instrument(object):
                 output_str = ' '.join(('Returning', output_str, 'data for',
                                        date.strftime('%d %B %Y')))
             else:
-                if len(fname) == 1:
-                    # this check was zero
-                    output_str = ' '.join(('Returning', output_str,
-                                           'data from', fname[0]))
-                else:
-                    output_str = ' '.join(('Returning', output_str,
-                                           'data from', fname[0], '::',
-                                           fname[-1]))
+                output_str = ' '.join(('Returning', output_str, 'data from',
+                                       fname[0]))
+                if len(fname) > 1:
+                    output_str = ' '.join((output_str, '::', fname[-1]))
         else:
-            # no data signal
+            # There was no data signal
             if date is not None:
                 if bad_datetime:
                     output_str = ' '.join(('Bad datetime for', output_str,
@@ -1443,16 +1439,13 @@ class Instrument(object):
                     output_str = ' '.join(('No', output_str, 'data for',
                                            date.strftime('%d %B %Y')))
             else:
-                if len(fname) == 1:
-                    output_str = ' '.join(('No', output_str, 'data for',
-                                           fname[0]))
-                elif len(fname) == 0:
-                    output_str = ' '.join(('No', output_str, 'valid',
-                                           'filenames found'))
+                output_str = ' '.join(('No', output_str))
+                if len(fname) == 0:
+                    output_str = ' '.join((output_str, 'valid filenames found'))
                 else:
-                    output_str = ' '.join(('No', output_str, 'data for',
-                                           fname[0], '::',
-                                           fname[-1]))
+                    output_str = ' '.join((output_str, 'data for', fname[0]))
+                    if len(fname) > 1: 
+                        output_str = ' '.join((output_str, '::', fname[-1]))
 
         # Remove extra spaces, if any are present
         output_str = " ".join(output_str.split())
@@ -1504,13 +1497,14 @@ class Instrument(object):
         or the file. Looks for self._load_by_date flag.
 
         """
+        load_kwargs = {'inc': self.load_step}
 
         if self._load_by_date:
-            prev_date = self.date - self.load_step
-            return self._load_data(date=prev_date, inc=self.load_step)
+            load_kwargs['date'] = self.date - self.load_step
         else:
-            prev_id = self._fid - self.load_step - 1
-            return self._load_data(fid=prev_id, inc=self.load_step)
+            load_kwargs['fid'] = self._fid - self.load_step - 1
+
+        return self._load_data(**load_kwargs)
 
     def _set_load_parameters(self, date=None, fid=None):
         """Set the necesssary load attributes.
@@ -1538,6 +1532,7 @@ class Instrument(object):
             self.yr = None
             self.doy = None
             self._load_by_date = False
+        return
 
     def _get_var_type_code(self, coltype):
         """Determine the two-character type code for a given variable type.
@@ -1566,7 +1561,7 @@ class Instrument(object):
         var_types = {np.int64: 'i8', np.int32: 'i4', np.int16: 'i2',
                      np.int8: 'i1', np.uint64: 'u8', np.uint32: 'u4',
                      np.uint16: 'u2', np.uint8: 'u1', np.float64: 'f8',
-                     np.float32: 'f4'}
+                     np.float32: 'f4', np.datetime64: 'i8'}
 
         if isinstance(coltype, np.dtype):
             var_type = coltype.kind + str(coltype.itemsize)
@@ -1591,14 +1586,14 @@ class Instrument(object):
         -------
         data : pandas object
             Data that was supplied, reformatted if necessary
-        data_type : type
+        data_type : type or dtype
             Type for data values
         datetime_flag : bool
             True if data is np.datetime64, False otherwise
 
         """
         # Get the data type
-        data_type = data.dtype.type
+        data_type = data.dtype
 
         # Check for object type
         if data_type != np.dtype('O'):
@@ -3303,7 +3298,7 @@ class Instrument(object):
 
         .. deprecated:: 3.2.0
             Changed `fname` from a kwarg to an arg of type str in the 3.2.0+
-            release. Removed `base_instrument` as a kwarg.
+            release.
 
         Parameters
         ----------
