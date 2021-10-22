@@ -63,7 +63,7 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
         Object containing data and metadata
     mdata_dict : dict
         Dictionary equivalent to Meta object info
-    coltype : type
+    coltype : type or dtype
         Data type provided by pysat.Instrument._get_data_info.  If boolean,
         int will be used instead.
     remove : bool
@@ -104,6 +104,8 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
 
     if coltype is bool:
         coltype = int
+    elif isinstance(coltype, np.dtype):
+        coltype = coltype.type
 
     # Remove any metadata with a value of NaN not present in export_nan
     filtered_dict = mdata_dict.copy()
@@ -772,11 +774,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     # to the main input Instrument will be written to the netCDF4
     if base_instrument is None:
         base_attrb = dir(pysat.Instrument())
-    else:
-        warnings.warn("".join(["`base_instrument` has been deprecated and will",
-                               " be removed in 3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        base_attrb = dir(base_instrument)
 
     # Store any non standard attributes. Compare this Instrument's attributes
     # to the standard, filtering out any 'private' attributes (those that start
