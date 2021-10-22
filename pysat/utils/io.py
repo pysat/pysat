@@ -1023,7 +1023,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                     remove = True if coltype == str else False
                                     cdfkey.setncatts(filter_netcdf4_metadata(
                                         inst, export_meta[lkey], coltype,
-                                        export_nan=export_nan,
+                                        export_nan=export_nan, remove=remove,
                                         check_type=check_type))
                                 else:
                                     pysat.logger.info(
