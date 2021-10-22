@@ -14,15 +14,24 @@ from pysat.utils import testing
 from pysat.utils import time as pytime
 
 
-class TestGetYearDay(object):
-    """Unit tests for `getyrdoy`."""
+class TestGetTimes(object):
+    """Unit tests for datetime conversion functions."""
 
-    @pytest.mark.parametrize("date,tst_yr,tst_doy",
+    @pytest.mark.parametrize("in_date,tst_yr,tst_doy",
                              [(dt.datetime(2009, 1, 1), 2009, 1),
                               (dt.datetime(2008, 12, 31), 2008, 366)])
-    def test_getyrdoy(self, date, tst_yr, tst_doy):
-        """Test the date to year, day of year code function."""
-        out_yr, out_doy = pytime.getyrdoy(date)
+    def test_getyrdoy(self, in_date, tst_yr, tst_doy):
+        """Test the date to year, day of year code function.
+
+        Parameters
+        ----------
+        in_date : dt.datetime
+            Datetime object
+        out_year : float
+            Decimal year
+
+        """
+        out_yr, out_doy = pytime.getyrdoy(in_date)
 
         assert tst_yr == out_yr, "wrong output year"
         assert tst_doy == out_doy, "wrong output day of year"
@@ -35,6 +44,27 @@ class TestGetYearDay(object):
             pytime.getyrdoy(2009.1)
 
         assert str(aerr).find("Must supply a datetime object") >= 0
+        return
+
+    @pytest.mark.parametrize("in_dtime,out_year",
+                             [(dt.datetime(2009, 1, 1), 2009.0),
+                              (dt.datetime(2008, 12, 31, 23, 59, 59),
+                               2008.9999999683768469)])
+    def test_datetime_to_dec_year(self, in_dtime, out_year):
+        """Test the datetime to decimal year function.
+
+        Parameters
+        ----------
+        in_dtime : dt.datetime
+            Datetime object
+        out_year : float
+            Decimal year
+
+        """
+
+        test_year = pytime.datetime_to_dec_year(in_dtime)
+
+        assert test_year == out_year
         return
 
 
