@@ -1598,7 +1598,7 @@ class Instrument(object):
 
         """
         # Get the data type
-        data_type = data.dtype
+        data_type = data.dtype.type
 
         # Check for object type
         if data_type != np.dtype('O'):
