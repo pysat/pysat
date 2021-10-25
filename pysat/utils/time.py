@@ -54,7 +54,7 @@ def datetime_to_dec_year(dtime):
     Returns
     -------
     year : float
-        Year with decimal containing time incriments of less than a year
+        Year with decimal containing time increments of less than a year
 
     """
 
