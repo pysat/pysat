@@ -19,7 +19,7 @@ Supported Instruments
 pysat supports many different data sets as Instruments and Constellations.
 Similar types of data and data from the same data repository are grouped
 together into separate packages. This reduces the amount of dependencies you
-may need to install, when you only want to use a small subset of the data pysat
+may need to install when you only want to use a small subset of the data pysat
 currently supports.
 
 .. toctree::
