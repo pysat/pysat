@@ -118,7 +118,17 @@ These utilities are available directly from the :py:mod:`pysat.utils` module.
 
 Coordinates
 ^^^^^^^^^^^
+
 .. automodule:: pysat.utils.coords
+   :members:
+
+
+.. _api-utils-io:
+
+I/O
+^^^
+
+.. automodule:: pysat.utils.io
    :members:
 
 
@@ -126,6 +136,7 @@ Coordinates
 
 Files
 ^^^^^
+
 .. automodule:: pysat.utils.files
   :members:
 
@@ -134,6 +145,7 @@ Files
 
 Registry
 ^^^^^^^^
+
 .. automodule:: pysat.utils.registry
    :members:
 
@@ -142,6 +154,7 @@ Registry
 
 Time
 ^^^^
+
 .. automodule:: pysat.utils.time
    :members:
 
@@ -150,6 +163,7 @@ Time
 
 Testing
 ^^^^^^^
+
 .. automodule:: pysat.utils.testing
    :members:
 
