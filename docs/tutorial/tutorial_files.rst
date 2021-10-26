@@ -13,7 +13,7 @@ and machines may understand and parse without any outside information.
 This process is built with a variety of options to help meet the range of needs
 of the scientific community.
 
-For many users a netCDF4 file suitable for distribution to research collegues
+For many users a netCDF4 file suitable for distribution to research colleagues
 may be created using default parameters as shown below.
 
 .. code:: python
@@ -28,9 +28,9 @@ may be created using default parameters as shown below.
 
    # Create netCDF4 file
    fname = 'example/file/path/name/test.nc'
-   inst.to_netcdf(fname)
+   inst.to_netcdf4(fname)
 
-This process writes all of the data within `test.data` to a netCDF4 file,
+This process writes all of the data within `inst.data` to a netCDF4 file,
 including the metadata stored at `inst.meta.data`, as well as adds a variety
 of supplemental attributes to the file indicating the file's conventions,
 creation date, etc.
@@ -114,7 +114,7 @@ Instrument object.
        test_init_kwarg:
        test_preprocess_kwarg:
        pysat_version: 3.0.1
-       Conventions: SPDF ISTP/IACG Modified for NetCDF
+       Conventions: pysat-simplified SPDF ISTP/IACG for NetCDF
        Text_Supplement:
        Date_End: Thu, 01 Jan 2009,  2009-01-01T23:59:59.000 UTC
        Date_Start: Thu, 01 Jan 2009,  2009-01-01T00:00:00.000 UTC
@@ -133,10 +133,9 @@ Instrument object.
        groups:
 
 When writing files pysat processes metadata for both xarray and pandas before
-writing the file in the same manner. When writing the file itself, for xarray,
-pysat leverages xarray's built-in file writing capabilities. For pandas,
-pysat interfaces with netCDF4 directly to translate both 1D and higher
-dimensional data into netCDF4.
+writing the file. For xarray, pysat leverages xarray's built-in file writing
+capabilities. For pandas, pysat interfaces with netCDF4 directly to translate
+both 1D and higher dimensional data into netCDF4.
 
 Translating Metadata
 ^^^^^^^^^^^^^^^^^^^^
@@ -179,7 +178,7 @@ maximum and minimum supported variables values `inst.meta.labels.max_val` and
                                    inst.meta.labels.notes: ['Var_Notes']}
 
    # Write netCDF file
-   inst.to_netcdf(fname)
+   inst.to_netcdf4(fname)
 
 
 
