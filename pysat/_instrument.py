@@ -1103,11 +1103,14 @@ class Instrument(object):
         if self.pandas_format:
             return data.empty
         else:
-            if 'time' in data.indexes:
-                return len(data.indexes['time']) == 0
-            elif 'Epoch' in data.indexes:
-                return len(data.indexes['Epoch']) == 0
+            if len(data.indexes.keys()) > 0:
+                # Check if all of the present keys are empty
+                key_empty = []
+                for key in data.indexes.keys():
+                    key_empty.append(len(data.indexes[key]) == 0)
+                return all(key_empty)
             else:
+                # No keys, therefore empty
                 return True
 
     def _index(self, data=None):
@@ -3008,6 +3011,10 @@ class Instrument(object):
 
                 if warn_default:
                     warnings.warn(default_warn, stacklevel=2)
+            else:
+                estr = ''.join(('Metadata was not assigned as there was ',
+                                'no data returned.'))
+                pysat.logger.info(estr)
 
         # Check if load routine actually returns meta
         if self.meta.data.empty:

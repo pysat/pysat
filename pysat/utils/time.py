@@ -43,6 +43,36 @@ def getyrdoy(date):
         return date.year, doy
 
 
+def datetime_to_dec_year(dtime):
+    """Convert datetime timestamp to a decimal year.
+
+    Parameters
+    ----------
+    dtime : dt.datetime
+        Datetime timestamp
+
+    Returns
+    -------
+    year : float
+        Year with decimal containing time increments of less than a year
+
+    """
+
+    year = float(dtime.year)
+    day = float(dtime.strftime("%j")) - 1.0
+    days_of_year = float(dt.datetime(dtime.year, 12, 31).strftime("%j"))
+
+    # Add fraction of day to the day
+    day += (dtime.hour + (dtime.minute
+                          + (dtime.second + dtime.microsecond * 1.0e-6) / 60.0)
+            / 60.0) / 24.0
+
+    # Determine the fraction of days in this year and add to year
+    year += (day / days_of_year)
+
+    return year
+
+
 def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
                century=2000):
     """Convert string dates to dt.datetime.
@@ -212,7 +242,7 @@ def freq_to_res(freq):
 
 
 def create_date_range(start, stop, freq='D'):
-    """Create array of datetime objects using input frequency from start to stop.
+    """Create array of datetime objects using input freq from start to stop.
 
     Parameters
     ----------

@@ -24,6 +24,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      capabilities are not available for the Instrument.
    * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
      list of str as input as well as str.
+   * Added a time function to calculate decimal year from datetime.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -60,8 +61,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
    * Fixed a bug when instantiating empty `pysat.Instrument()` (#851)
-   * Fixed IndexError encountered when loading a mult-day file by filename with
+   * Fixed IndexError encountered when loading a multi-day file by filename with
      no data for that day.
+   * Added logging output when metadata not assigned due to a lack of
+     instrument data (#924)
+   * Fixed a bug where empty check for xarray instruments fail when time not
+     present. (#922)
 * Maintenance
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
