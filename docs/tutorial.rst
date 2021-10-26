@@ -16,4 +16,4 @@ Tutorial
    tutorial/tutorial_custom.rst
    tutorial/tutorial_analysis.rst
    tutorial/tutorial_constellation.rst
-   tutorial/tutorial_writing_files.rst
+   tutorial/tutorial_files.rst
