@@ -100,37 +100,37 @@ Instrument object.
 
 .. code::
 
-     In [5]: netCDF4.Dataset(fname)
-    Out[5]:
-    <class 'netCDF4._netCDF4.Dataset'>
-    root group (NETCDF4 data model, file format HDF5):
-        acknowledgements: Test instruments provided through the pysat project.
-            https://www.github.com/pysat/pysat
-        new_thing: 1
-        references: Stoneback, Russell, et al. (2021).
-            pysat/pysat v3.0 (Version v3.0). Zenodo.
-            http://doi.org/10.5281/zenodo.1199703
-        test_clean_kwarg:
-        test_init_kwarg:
-        test_preprocess_kwarg:
-        pysat_version: 3.0.1
-        Conventions: SPDF ISTP/IACG Modified for NetCDF
-        Text_Supplement:
-        Date_End: Thu, 01 Jan 2009,  2009-01-01T23:59:59.000 UTC
-        Date_Start: Thu, 01 Jan 2009,  2009-01-01T00:00:00.000 UTC
-        File: ['.', 'test.nc']
-        File_Date: Thu, 01 Jan 2009,  2009-01-01T23:59:59.000 UTC
-        Generation_Date: 20211022
-        Logical_File_ID: test
-        dimensions(sizes): Epoch(86400)
-        variables(dimensions): int64 Epoch(Epoch), float64 uts(Epoch),
-            float64 mlt(Epoch), float64 slt(Epoch), float64 longitude(Epoch),
-            float64 latitude(Epoch), float64 altitude(Epoch), int64 orbit_num(Epoch),
-            int64 dummy1(Epoch), int64 dummy2(Epoch), float64 dummy3(Epoch),
-            float64 dummy4(Epoch), <class 'str'> string_dummy(Epoch),
-            <class 'str'> unicode_dummy(Epoch), int8 int8_dummy(Epoch),
-            int16 int16_dummy(Epoch), int32 int32_dummy(Epoch), int64 int64_dummy(Epoch)
-        groups:
+   In []: netCDF4.Dataset(fname)
+   Out[]:
+   <class 'netCDF4._netCDF4.Dataset'>
+   root group (NETCDF4 data model, file format HDF5):
+       acknowledgements: Test instruments provided through the pysat project.
+           https://www.github.com/pysat/pysat
+       new_thing: 1
+       references: Stoneback, Russell, et al. (2021).
+           pysat/pysat v3.0 (Version v3.0). Zenodo.
+           http://doi.org/10.5281/zenodo.1199703
+       test_clean_kwarg:
+       test_init_kwarg:
+       test_preprocess_kwarg:
+       pysat_version: 3.0.1
+       Conventions: SPDF ISTP/IACG Modified for NetCDF
+       Text_Supplement:
+       Date_End: Thu, 01 Jan 2009,  2009-01-01T23:59:59.000 UTC
+       Date_Start: Thu, 01 Jan 2009,  2009-01-01T00:00:00.000 UTC
+       File: ['.', 'test.nc']
+       File_Date: Thu, 01 Jan 2009,  2009-01-01T23:59:59.000 UTC
+       Generation_Date: 20211022
+       Logical_File_ID: test
+       dimensions(sizes): Epoch(86400)
+       variables(dimensions): int64 Epoch(Epoch), float64 uts(Epoch),
+           float64 mlt(Epoch), float64 slt(Epoch), float64 longitude(Epoch),
+           float64 latitude(Epoch), float64 altitude(Epoch), int64 orbit_num(Epoch),
+           int64 dummy1(Epoch), int64 dummy2(Epoch), float64 dummy3(Epoch),
+           float64 dummy4(Epoch), <class 'str'> string_dummy(Epoch),
+           <class 'str'> unicode_dummy(Epoch), int8 int8_dummy(Epoch),
+           int16 int16_dummy(Epoch), int32 int32_dummy(Epoch), int64 int64_dummy(Epoch)
+       groups:
 
 When writing files pysat processes metadata for both xarray and pandas before
 writing the file in the same manner. When writing the file itself, for xarray,
