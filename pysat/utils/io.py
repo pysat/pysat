@@ -308,7 +308,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
 
     See Also
     --------
-    load_netcdf_pandas and load_netcdf_xarray
+    load_netcdf_pandas, load_netcdf_xarray
 
     """
     # Load data by type
