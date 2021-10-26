@@ -788,7 +788,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     # Add additional metadata to conform to standards
     attrb_dict['pysat_version'] = pysat.__version__
     if 'Conventions' not in attrb_dict:
-        attrb_dict['Conventions'] = 'SPDF ISTP/IACG Modified for NetCDF'
+        attrb_dict['Conventions'] = 'pysat-simplified SPDF ISTP/IACG for NetCDF'
     if 'Text_Supplement' not in attrb_dict:
         attrb_dict['Text_Supplement'] = ''
 
