@@ -989,7 +989,8 @@ class Meta(object):
         Returns
         -------
         has_name : bool
-            True if the case-insensitive check for attribute name is successful, False if no attribute name is present.
+            True if the case-insensitive check for attribute name is successful,
+            False if no attribute name is present.
 
         Note
         ----
