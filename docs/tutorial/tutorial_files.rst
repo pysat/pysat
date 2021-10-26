@@ -71,7 +71,7 @@ metadata stored within a variable as directly loaded using `netCDF4` is
 included below. Note that pysat added the Format, Depend_0, Display_Type,
 and Var_Type metadata parameters, part of the SPDF standard.
 
-.. code:: python
+.. code::
 
    In []: data['longitude']
    Out[]:
@@ -98,7 +98,7 @@ file attributes are present along with some user defined values, such
 as references and acknowledgements, that are attached to the pysat testing
 Instrument object.
 
-.. code:: python
+.. code::
 
      In [5]: netCDF4.Dataset(fname)
     Out[5]:
@@ -188,7 +188,7 @@ Loading Files
 
 pysat includes support for loading netCDF4 files, particularly those produced
 by pysat, directly into compatible pandas and xarray formats,
-including metadata. Functions are provided unser `pysat.utils.io` and includes
+including metadata. Functions are provided under `pysat.utils.io` and includes
 a genereal data indepdent interface, `pysat.utils.load_netcdf4`, as well as
 pandas and xarray specific readers,
 `pysat.utils.io.load_netcdf_pandas` and `pysat.utils.io.load_netcdf_xarray`
