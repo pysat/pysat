@@ -519,7 +519,7 @@ class TestNetCDF4Integration(object):
         # Test the filtered output
         for mkey in mdict.keys():
             if mkey not in fdict.keys():
-                # Determine of the data is NaN
+                # Determine if the data is NaN
                 try:
                     is_nan = np.isnan(mdict[mkey])
                 except TypeError:
@@ -552,7 +552,7 @@ class TestNetCDF4Integration(object):
 
     @pytest.mark.parametrize('missing', [True, False])
     def test_add_netcdf4_standards_to_meta(self, caplog, missing):
-        """Test for SPDF ISTP/IACG NetCDF standards after update.
+        """Test for simplified SPDF ISTP/IACG NetCDF standards after update.
 
         Parameters
         ----------
