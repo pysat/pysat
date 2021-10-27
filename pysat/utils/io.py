@@ -17,7 +17,7 @@ import xarray as xr
 import pysat
 
 
-def pysat_meta_to_xarray_attr(xr_data, pysat_meta):
+def pysat_meta_to_xarray_attr(xr_data, pysat_meta, export_nan=None):
     """Attach pysat metadata to xarray Dataset as attributes.
 
     Parameters
@@ -26,18 +26,41 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta):
         Xarray Dataset whose attributes will be updated
     pysat_meta : pysat.MetaData
         pysat MetaData class object supplying attribute data
+    export_nan : list or NoneType
+        Metadata parameters allowed to be NaN. If None, assumes no Metadata
+        parameters are allowed to be Nan. (default=None)
 
     """
 
-    def is_fill(meta_value):
+    def is_fill(meta_value, nan_valid):
+        """Determine if this value is a fill value or not.
+
+        Parameters
+        ----------
+        meta_value : int, float, str
+            Value to evaluate.  Expected fill values are '' or NaN.
+        nan_valid : bool
+            If True, this value may legitimately be set to NaN.
+
+        Returns
+        -------
+        bool
+            True if `meta_value` is a fill value, False if it is not.
+
+        """
+
         if meta_value is not None:
             try:
                 if len(meta_value) > 0:
                     return False
             except TypeError:
-                if not np.isnan(meta_value):
+                if nan_valid or not np.isnan(meta_value):
                     return False
         return True
+
+    # Initialize the export_nan list
+    if export_nan is None:
+        export_nan = []
 
     # Cycle through all the pysat MetaData measurements
     for data_key in pysat_meta.keys():
@@ -45,8 +68,10 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta):
         if data_key in xr_data.data_vars.keys():
             # Cycle through all the pysat MetaData labels
             for meta_key in pysat_meta[data_key].keys():
-                # Assign attributes if the MetaData is not set to a fill value
-                if not is_fill(pysat_meta[data_key][meta_key]):
+                # Assign attributes if the MetaData is not set to a fill value,
+                # unless the value is NaN and this is expected
+                if not is_fill(pysat_meta[data_key][meta_key],
+                               meta_key in export_nan):
                     xr_data.data_vars[data_key].attrs[meta_key] = pysat_meta[
                         data_key][meta_key]
 
@@ -1142,7 +1167,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         # Attach the metadata to a separate xarray.Dataset object, ensuring
         # the Instrument data object is unchanged.
         xr_data = xr.Dataset(inst.data)
-        pysat_meta_to_xarray_attr(xr_data, inst.meta)
+        pysat_meta_to_xarray_attr(xr_data, inst.meta, export_nan)
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
