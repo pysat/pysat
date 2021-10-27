@@ -278,7 +278,8 @@ def add_netcdf4_standards_to_meta(inst, epoch_name):
 
 
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
-                epoch_name='Epoch', pandas_format=True, decode_timedelta=False,
+                epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
+                pandas_format=True, decode_timedelta=False,
                 labels={'units': ('units', str), 'name': ('long_name', str),
                         'notes': ('notes', str), 'desc': ('desc', str),
                         'plot': ('plot_label', str), 'axis': ('axis', str),
@@ -301,6 +302,11 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         (default='NETCDF4')
     epoch_name : str
         Data key for time variable (default='Epoch')
+    epoch_unit : str
+        Units of epoch data to convert to datetime (default='ms')
+    epoch_origin : str or timestamp-convertable
+        Origin of epoch calculation, following convention for
+        `pandas.to_datetime`.  (default='unix')
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
         xarray Dataset (False). (default=False)
@@ -340,7 +346,10 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     if pandas_format:
         data, meta = load_netcdf_pandas(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
-                                        epoch_name=epoch_name, labels=labels)
+                                        epoch_name=epoch_name,
+                                        epoch_unit=epoch_unit,
+                                        epoch_origin=epoch_origin,
+                                        labels=labels)
     else:
         data, meta = load_netcdf_xarray(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
@@ -352,7 +361,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
 
 
 def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
-                       epoch_name='Epoch',
+                       epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
                        labels={'units': ('units', str),
                                'name': ('long_name', str),
                                'notes': ('notes', str), 'desc': ('desc', str),
@@ -376,6 +385,11 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         (default='NETCDF4')
     epoch_name : str
         Data key for time variable (default='Epoch')
+    epoch_unit : str
+        Units of epoch data to convert to datetime (default='ms')
+    epoch_origin : str or timestamp-convertable
+        Origin of epoch calculation, following convention for
+        `pandas.to_datetime`.  (default='unix')
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -544,7 +558,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     time_var = loop_dict.pop(index_key_name)
                     if time_index_flag:
                         # Create datetime index from data
-                        time_var = pds.to_datetime(1.0E6 * time_var)
+                        time_var = pds.to_datetime(time_var, unit=epoch_unit,
+                                                   origin=epoch_origin)
                     new_index = time_var
                     new_index_name = index_name
                 else:
@@ -586,8 +601,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
             # Prepare dataframe index for this netcdf file
             time_var = loaded_vars.pop(epoch_name)
-            loaded_vars[epoch_name] = pds.to_datetime(
-                (1.0E6 * time_var).astype(np.int64))
+            loaded_vars[epoch_name] = pds.to_datetime(time_var, unit=epoch_unit,
+                                                      origin=epoch_origin)
             running_store.append(loaded_vars)
             running_idx += len(loaded_vars[epoch_name])
 

@@ -152,7 +152,8 @@ def listify(iterable):
 
 
 def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
-                 epoch_name='Epoch', pandas_format=True, decode_timedelta=False,
+                 epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
+                 pandas_format=True, decode_timedelta=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'min_val': ('value_min', np.float64),
@@ -178,6 +179,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
         (default='NETCDF4')
     epoch_name : str
         Data key for time variable (default='Epoch')
+    epoch_unit : str
+        Units of epoch data to convert to datetime (default='ms')
+    epoch_origin : str or timestamp-convertable
+        Origin of epoch calculation, following convention for
+        `pandas.to_datetime`.  (default='unix')
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
         xarray Dataset (False). (default=False)
@@ -228,6 +234,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
     data, meta = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
                                             file_format=file_format,
                                             epoch_name=epoch_name,
+                                            epoch_unit=epoch_unit,
+                                            epoch_origin=epoch_origin,
                                             pandas_format=pandas_format,
                                             decode_timedelta=decode_timedelta,
                                             labels=labels)
