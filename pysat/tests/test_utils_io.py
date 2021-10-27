@@ -694,7 +694,7 @@ class TestXarrayIO(object):
                 else:
                     assert label not in export_nan, "did not attach {:}".format(
                         repr(label))
-                    
+
                     try:
                         dval = meta.labels.default_values_from_type(type(mval))
                         assert mval == dval
