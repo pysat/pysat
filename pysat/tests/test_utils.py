@@ -244,7 +244,7 @@ class Testifyfunctions(object):
         return
 
     @pytest.mark.parametrize('astrlike', [[1, 2], (1, 2), np.array([1, 2]), 1])
-    def test_stringify(self, astrlike):
+    def test_stringify_non_str_types(self, astrlike):
         """Test stringify returns type as is for inputs other than str and byte.
 
         """
