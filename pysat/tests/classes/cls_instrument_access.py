@@ -827,40 +827,11 @@ class InstAccessTests(object):
             assert inst_subset.sizes[self.xarray_epoch_name] == len(index)
         return
 
-    @pytest.mark.parametrize("values", [{'uts': 'uts1'},
-                                        {'uts': 'uts2',
-                                         'mlt': 'mlt2'},
-                                        {'uts': 'long change with spaces'}])
-    def test_basic_variable_renaming(self, values):
-        """Test basic variable renaming.
-
-        Parameters
-        ----------
-        values : dict
-            Variables to be renamed.  A dict where each key is the current
-            variable and its value is the new variable name.
-
-        """
-
-        # Test single variable
-        self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst.rename(values)
-        for key in values:
-            # Check for new name
-            assert values[key] in self.testInst.data
-            assert values[key] in self.testInst.meta
-
-            # Ensure old name not present
-            assert key not in self.testInst.data
-            assert key not in self.testInst.meta
-        return
-
-    @pytest.mark.parametrize("values", [{'help': 'I need somebody'},
-                                        {'UTS': 'litte_uts'},
-                                        {'utS': 'uts1'},
-                                        {'utS': 'uts'}])
+    @pytest.mark.parametrize("values", [
+        {'help': 'I need somebody'}, {'UTS': 'litte_uts', 'mlt': 'big_mlt'},
+        {'utS': 'uts1', 'help': {'me': 'do', 'things': 'well'}}])
     def test_unknown_variable_error_renaming(self, values):
-        """Test that unknown variable renaming raises an error.
+        """Test that unknown variable renaming raises a logger warning.
 
         Parameters
         ----------
@@ -872,46 +843,57 @@ class InstAccessTests(object):
 
         # Check for error for unknown variable name
         self.testInst.load(self.ref_time.year, self.ref_doy)
+
+        # Capture the ValueError and message
         with pytest.raises(ValueError) as verr:
             self.testInst.rename(values)
+
+        # Evaluate the error message text
         assert str(verr).find("cannot rename") >= 0
         return
 
-    @pytest.mark.parametrize("values", [{'uts': 'UTS1'},
-                                        {'uts': 'UTs2',
-                                         'mlt': 'Mlt2'},
-                                        {'uts': 'Long Change with spaces'}])
-    def test_basic_variable_renaming_lowercase(self, values):
-        """Test new variable names are converted to lowercase.
+    @pytest.mark.parametrize("lowercase", [True, False])
+    @pytest.mark.parametrize("mapper", [{'uts': 'UTS1'},
+                                        {'uts': 'UTs2', 'mlt': 'Mlt2'},
+                                        {'uts': 'Long Change with spaces'},
+                                        str.upper])
+    def test_basic_variable_renaming(self, lowercase, mapper):
+        """Test new variable names are converted as desired in meta and data.
 
         Parameters
         ----------
-        values : dict
+        lowercase : bool
+            Instrument variables will be lowercase if True, as mapped if False
+        mapper : dict or func
             Variables to be renamed.  A dict where each key is the current
             variable and its value is the new variable name.
 
         """
+        # Initialize the testing dict
+        if isinstance(mapper, dict):
+            values = mapper
+        else:
+            values = {var: mapper(var) for var in self.testInst.variables}
 
         # Test single variable
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.testInst.rename(values, lowercase_data_labels=True)
-        for key in values:
-            # Check for new name
-            assert values[key].lower() in self.testInst.data
-            assert values[key].lower() in self.testInst.meta
+        self.testInst.rename(mapper, lowercase_data_labels=lowercase)
 
-            # Ensure case retained in meta
-            assert values[key] == self.testInst.meta[values[key]].name
+        for key in values:
+            # Check for new name in the data and metadata
+            inst_var = values[key].lower() if lowercase else values[key]
+            assert inst_var in self.testInst.variables
+            assert values[key] in self.testInst.meta.keys()
 
             # Ensure old name not present
-            assert key not in self.testInst.data
-            assert key not in self.testInst.meta
+            assert key not in self.testInst.variables
+            assert key not in self.testInst.meta.keys()
         return
 
-    @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
-                                        {'profiles': {'density': 'mass'},
-                                         'alt_profiles':
-                                             {'density': 'volume'}}])
+    @pytest.mark.parametrize("values", [
+        {'profiles': {'density': 'ionization'}},
+        {'profiles': {'density': 'mass'},
+         'alt_profiles': {'density': 'volume'}}])
     def test_ho_pandas_variable_renaming(self, values):
         """Test rename of higher order pandas variable.
 
@@ -934,10 +916,12 @@ class InstAccessTests(object):
                         # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
+
                         # Check for new name in HO data
                         assert values[key][ikey] in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert values[key][ikey] in check_var
+
                         # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
