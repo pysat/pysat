@@ -206,7 +206,7 @@ class TestListify(object):
         tst_iterable = [np.nan
                         for i in range(int(np.product(np.shape(iterable))))]
         utils.testing.assert_lists_equal(new_iterable, tst_iterable,
-                                               test_nan=True)
+                                         test_nan=True)
         return
 
     @pytest.mark.parametrize('iterable', [1, np.full((1, 1), 1),
@@ -469,7 +469,7 @@ class TestGenerateInstList(object):
         self.user_info = {'pysat_testmodel': {'user': 'GideonNav',
                                               'password': 'pasSWORD!'}}
         self.inst_list = utils.generate_instrument_list(
-            inst_loc = pysat.instruments, user_info=self.user_info)
+            inst_loc=pysat.instruments, user_info=self.user_info)
         return
 
     def teardown(self):
@@ -586,7 +586,3 @@ class TestMappedValue(object):
             assert val.upper() == utils.get_mapped_value(val, str.upper)
 
         return
-
-        
-
-        

@@ -1118,7 +1118,7 @@ class Meta(object):
                     else:
                         raise ValueError('unknown mapped value at {:}'.format(
                             repr(var)))
-                else:  
+                else:
                     # Get and update the meta data
                     hold_meta = self[var].copy()
                     hold_meta.name = map_var

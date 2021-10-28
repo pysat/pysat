@@ -890,27 +890,33 @@ class InstAccessTests(object):
             assert key not in self.testInst.meta.keys()
         return
 
-    @pytest.mark.parametrize("values", [
+    @pytest.mark.parametrize("mapper", [
         {'profiles': {'density': 'ionization'}},
         {'profiles': {'density': 'mass'},
-         'alt_profiles': {'density': 'volume'}}])
-    def test_ho_pandas_variable_renaming(self, values):
+         'alt_profiles': {'density': 'volume'}},
+        str.upper])
+    def test_ho_pandas_variable_renaming(self, mapper):
         """Test rename of higher order pandas variable.
 
         Parameters
         ----------
-        values : dict
-            Variables to be renamed.  A dict where each key is the current
-            variable and its value is the new variable name.
+        mapper : dict or function
+            A function or dict that maps how the variables will be renamed.
 
         """
         # TODO(#789): Remove when meta children support is dropped.
+
+        # Initialize the testing dict
+        if isinstance(mapper, dict):
+            values = mapper
+        else:
+            values = {var: mapper(var) for var in self.testInst.variables}
 
         # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
                 self.testInst.load(self.ref_time.year, self.ref_doy)
-                self.testInst.rename(values)
+                self.testInst.rename(mapper)
                 for key in values:
                     for ikey in values[key]:
                         # Check column name unchanged
@@ -918,14 +924,20 @@ class InstAccessTests(object):
                         assert key in self.testInst.meta
 
                         # Check for new name in HO data
-                        assert values[key][ikey] in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
-                        assert values[key][ikey] in check_var
+
+                        if isinstance(values[key], dict):
+                            map_val = values[key][ikey]
+                        else:
+                            map_val = mapper(ikey)
+
+                        assert map_val in self.testInst[0, key]
+                        assert map_val in check_var
 
                         # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
-                        check_var = self.testInst.meta[key]['children']
-                        assert ikey not in check_var
+                        if map_val.lower() != ikey:
+                            assert ikey not in check_var
         return
 
     @pytest.mark.parametrize("values", [{'profiles':
