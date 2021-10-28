@@ -713,8 +713,8 @@ class Meta(object):
 
         Parameters
         ----------
-        data_var : str or list of str
-            Name of the data variable
+        data_var : str or list
+            Single or multiple data variable name(s).
 
         Note
         ----
@@ -1058,14 +1058,13 @@ class Meta(object):
 
         Parameters
         ----------
-        name : str or list of str
-            Name of variable to get stored case form
+        name : str or list
+            Single or multiple variable name(s) to get stored case form.
 
         Returns
         -------
-        out_name : str or list of str
-            Name in proper case. Returns a str if a str provided as input, a
-            list of str otherwise.
+        out_name : str or list
+            Maintains same type as input. Name(s) in proper case.
 
         Note
         ----
