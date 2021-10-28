@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added a warning evaluation utility to `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
+   * Added kwargs for epoch units and origin in `pysat.utils.io.load_netCDF`.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
