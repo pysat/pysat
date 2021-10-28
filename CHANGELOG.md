@@ -27,6 +27,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Added a time function to calculate decimal year from datetime.
+   * Allow `Instrument.rename` to take a fuction or mapping dict as input,
+     after adapting routine to use `Meta.rename`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
