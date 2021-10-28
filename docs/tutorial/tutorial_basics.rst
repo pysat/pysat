@@ -423,7 +423,6 @@ Explorer `(ICON) <https://icon.ssl.berkeley.edu>`_.
   notes               Notes about variable
   max                 Maximum valid value
   min                 Minimum valid value
-  scale               Axis scale, linear or log
   units               Variable units
 ===============     ===================================
 

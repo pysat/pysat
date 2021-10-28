@@ -127,37 +127,34 @@ def initialize_test_meta(epoch_name, data_keys):
                                            '5820 second periods since the ',
                                            'start, 2008-01-01.'])}
 
-    # Set profile metadata
-    profile_meta = pysat.Meta()
-    profile_meta['density'] = {'long_name': 'profiles'}
-    profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+    # Standard metadata required for xarray.
+    meta['profiles'] = {'long_name': 'profiles'}
 
-    # Set variable profile metadata
-    variable_profile_meta = pysat.Meta()
-    variable_profile_meta['variable_profiles'] = {'long_name': 'series'}
-    meta['variable_profiles'] = {'meta': variable_profile_meta,
-                                 'long_name': 'series'}
-
-    # Set series profile metadata
+    # Children metadata required for 2D pandas.
+    # TODO(#789): Delete after removal of Meta children.
     series_profile_meta = pysat.Meta()
     series_profile_meta['series_profiles'] = {'long_name': 'series'}
     meta['series_profiles'] = {'meta': series_profile_meta,
                                'long_name': 'series'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
 
-    # Set altitude profile metadata
+    # Children metadata required for 2D pandas.
+    # TODO(#789): Delete after removal of Meta children.
     alt_profile_meta = pysat.Meta()
     alt_profile_meta['density'] = {'long_name': 'profiles'}
     alt_profile_meta['fraction'] = {'long_name': 'profiles'}
+    alt_profile_meta['dummy_str'] = {'long_name': 'profiles'}
+    alt_profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
     meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
 
-    # Set image metadata
-    image_meta = pysat.Meta()
-    image_meta['density'] = {'long_name': 'profiles'}
-    image_meta['fraction'] = {'long_name': 'profiles'}
-    meta['images'] = {'meta': image_meta, 'long_name': 'profiles'}
+    # Standard metadata required for xarray.
+    meta['variable_profiles'] = {'meta': 'variable_profiles',
+                                 'long_name': 'series'}
+    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
+
+    # Standard metadata required for xarray.
+    meta['images'] = {'long_name': 'pixel value of image',
+                      'notes': 'function of image_lat and image_lon'}
     meta['x'] = {'long_name': 'x-value of image pixel',
                  'notes': 'Dummy Variable'}
     meta['y'] = {'long_name': 'y-value of image pixel',
@@ -168,8 +165,6 @@ def initialize_test_meta(epoch_name, data_keys):
                          'notes': 'Dummy Variable'}
     meta['image_lon'] = {'long_name': 'Longitude of image pixel',
                          'notes': 'Dummy Variable'}
-    meta['profile_height'] = {'long_name': 'profile height'}
-    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     # Set any dummy variable metadata present in instrument keys
     for var in data_keys:
@@ -520,34 +515,3 @@ def define_range():
                  'angle': [0.0, 2.0 * np.pi]}
 
     return def_range
-
-
-def eval_dep_warnings(warns, check_msgs):
-    """Evaluate deprecation warnings by category and message.
-
-    Parameters
-    ----------
-    warns : list
-        List of warnings.WarningMessage objects
-    check_msgs : list
-        List of strings containing the expected warning messages
-
-    Returns
-    -------
-    found_msgs : list
-        List of booleans corresponding to `check_msgs`, which are True when
-        the messages are found and False when they are not
-
-    """
-
-    # Initialize the output
-    found_msgs = [False for msg in check_msgs]
-
-    # Test the warning messages, ensuring each attribute is present
-    for iwar in warns:
-        if iwar.category == DeprecationWarning:
-            for i, msg in enumerate(check_msgs):
-                if str(iwar.message).find(msg) >= 0:
-                    found_msgs[i] = True
-
-    return found_msgs

@@ -113,3 +113,39 @@ def nan_equal(value1, value2):
             pass
 
     return is_equal
+
+
+def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
+    """Evaluate warnings by category and message.
+
+    Parameters
+    ----------
+    warns : list
+        List of warnings.WarningMessage objects
+    check_msgs : list
+        List of strings containing the expected warning messages
+    warn_type : type
+        Type for the warning messages (default=DeprecationWarning)
+
+    Raises
+    ------
+    AssertionError
+        If warning category doesn't match type or an expected message is missing
+
+    """
+
+    # Initialize the output
+    found_msgs = [False for msg in check_msgs]
+
+    # Test the warning messages, ensuring each attribute is present
+    for iwar in warns:
+        for i, msg in enumerate(check_msgs):
+            if str(iwar.message).find(msg) >= 0:
+                assert iwar.category == warn_type, \
+                    "bad warning type for message: {:}".format(msg)
+                found_msgs[i] = True
+
+    assert np.all(found_msgs), "did not find {:d} expected {:}".format(
+        len(found_msgs) - np.sum(found_msgs), repr(warn_type))
+
+    return
