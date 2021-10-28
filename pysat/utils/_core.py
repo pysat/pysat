@@ -152,7 +152,7 @@ def listify(iterable):
 
 
 def stringify(strlike):
-    """Converts input into a str type.
+    """Convert input into a str type.
 
     Parameters
     ----------
@@ -161,7 +161,8 @@ def stringify(strlike):
 
     Returns
     -------
-    strlike: str
+    strlike: str or input type
+        If input is not string-like then the input type is retained.
 
     """
 
