@@ -981,6 +981,11 @@ class Meta(object):
         case of a given variable name is the same across the Meta object.
 
         """
+
+        # Ensure input is a str if string-like
+        name = pysat.utils.stringify(name)
+
+        # Flag if list-like input provided.
         return_list = False if isinstance(name, str) else True
 
         # Ensure we operate on a list of names
@@ -1076,10 +1081,11 @@ class Meta(object):
 
         """
 
-        if isinstance(name, str):
-            return_list = False
-        else:
-            return_list = True
+        # Ensure input is a str if string-like
+        name = pysat.utils.stringify(name)
+
+        # Flag if list-like object provided
+        return_list = False if isinstance(name, str) else True
 
         # Ensure we operate on a list of names
         names = pysat.utils.listify(name)
