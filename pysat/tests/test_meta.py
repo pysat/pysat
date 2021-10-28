@@ -1187,6 +1187,21 @@ class TestMeta(object):
         assert data_val == self.meta.var_case_name(data_val)
         return
 
+    @pytest.mark.parametrize("data_val", ['test_val', 'TEST_VAL', 'Test_Val',
+                                          'TeSt_vAl'])
+    def test_var_case_name_list_input(self, data_val):
+        """Test `meta.var_case_name` preserves case for list inputs."""
+
+        self.meta[data_val] = self.default_val
+
+        output = self.meta.var_case_name([data_val.lower(),
+                                          data_val.capitalize(),
+                                          data_val.upper(),
+                                          data_val])
+        target = [data_val] * len(output)
+        assert np.all(target == output)
+        return
+
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
     def test_attribute_name_case(self, label):
@@ -1212,6 +1227,43 @@ class TestMeta(object):
 
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
+    def test_get_attribute_name_case_preservation_list_input(self, label):
+        """Test that meta labels and values preserve the input case, list input.
+
+        """
+
+        # Set the meta data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = {label: 'Test meta data for meta label'}
+
+        # Test the meta method using different input variations
+        ins = [label.upper(), label.lower(), label.capitalize(),
+               label]
+        outs = [label] * len(ins)
+        assert np.all(self.meta.attr_case_name(ins) == outs)
+        return
+
+    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self):
+        """Test that get attribute names preserves the case with ho metadata."""
+
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                          'YoYoYO': 'yolo'}
+        self.meta['NEW2'] = meta2
+        self.meta['new'] = {'yoyoyo': 'YOLO'}
+
+        outputs = self.meta.attr_case_name(['YoYoYo', 'yoyoyo', 'yoYOYo'])
+        targets = ['YoYoYO'] * len(outputs)
+        assert np.all(outputs == targets)
+
+        outputs = self.meta['new2'].children.attr_case_name(['YoYoYo', 'yoyoyo',
+                                                             'yoYOYo'])
+        assert np.all(outputs == targets)
+        return
+
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
     def test_hasattr_case_neutral(self, label):
         """Test `meta.hasattr_case_neutral` identifies the label name.
 
@@ -1231,21 +1283,6 @@ class TestMeta(object):
         assert self.meta.hasattr_case_neutral(label.lower())
         assert self.meta.hasattr_case_neutral(label.capitalize())
         assert self.meta.hasattr_case_neutral(label)
-        return
-
-    def test_var_case_name_list_input(self):
-        """Test `meta.var_case_name` preserves the required output case."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2'}
-
-        output = self.meta.var_case_name(['new2', 'nEw2', 'neW2', 'NEW2'])
-        target = ['NEW2'] * len(output)
-        assert np.all(target == output)
-
-        output = self.meta.var_case_name(['new', 'nEw', 'neW', 'NEW'])
-        target = ['new'] * len(output)
-        assert np.all(target == output)
         return
 
     def test_meta_rename_function(self):
@@ -1316,40 +1353,6 @@ class TestMeta(object):
                 "unexpected value for {:} label {:}: {:}".format(
                     self.testInst.index.name, label, repr(mval))
 
-        return
-
-    def test_get_attribute_name_case_preservation_list_input(self):
-        """Test that meta labels and values preserve the input case, list input.
-
-        """
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['NEW2'] = {'units': 'hey2', 'long_name': 'boo2',
-                             'YoYoYO': 'yolo'}
-        self.meta['new'] = {'yoyoyo': 'YOLO'}
-
-        outputs = self.meta.attr_case_name(['YoYoYo', 'yoyoyo', 'yoYOYo'])
-        targets = ['YoYoYO'] * len(outputs)
-        assert np.all(outputs == targets)
-        return
-
-    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self):
-        """Test that get attribute names preserves the case with ho metadata."""
-
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta['NEW2'] = meta2
-        self.meta['new'] = {'yoyoyo': 'YOLO'}
-
-        outputs = self.meta.attr_case_name(['YoYoYo', 'yoyoyo', 'yoYOYo'])
-        targets = ['YoYoYO'] * len(outputs)
-        assert np.all(outputs == targets)
-
-        outputs = self.meta['new2'].children.attr_case_name(['YoYoYo', 'yoyoyo',
-                                                             'yoYOYo'])
-        assert np.all(outputs == targets)
         return
 
     def test_update_epoch(self):
