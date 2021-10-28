@@ -22,6 +22,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..'))
 import pysat
+pysat.params['data_dirs'] = '.'
 
 
 # added by RS, trying to get __init__ method documented
@@ -132,7 +133,7 @@ latex_documents = [(master_doc, '{:s}.tex'.format(project), title, author,
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = '../logo.png'
+latex_logo = './images/logo.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.

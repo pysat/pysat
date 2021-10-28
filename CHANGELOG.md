@@ -20,6 +20,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
    * Added the capability to test loading with optional kwargs through
      `_test_load_opt` instrument attribute
+   * Added `rename` and `add_epoch_metadata` methods to the Meta class
+   * Added I/O utilities to the utility module, extracting existing methods
+     from the Instrument class and core utility module.
+   * Added a warning evaluation utility to `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
@@ -29,10 +33,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
      `pysat.Instrument`.  The function is replaced by `_test_download_ci`
-   * Deprecated `pysat.tests.instrument_test_class.initialize_test_inst_and_date`
+   * Deprecated
+     `pysat.tests.instrument_test_class.initialize_test_inst_and_date`,
      which is moved to `pysat.tests.classes.cls_instrument_library`.
    * Deprecated `pysat.tests.instrument_test_class.InstTestClass`, which is
      replaced by `pysat.tests.classes.cls_instrument_library.InstLibTests`.
+   * Deprecated `pysat.Instrument._filter_netcdf4_metadata` and replaced it
+     with `pysat.utils.io.filter_netcdf4_metadata`.
+   * Changed `fname` from a kwarg to an arg in `pysat.Instruments.to_netcdf4`
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -57,6 +65,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
    * Allow `tag` and `inst_id` to be specified as None (#892)
    * Fixed a bug in `pysat.utils.time.create_datetime_index` (#906)
+   * Fixed a bug in `pysat.utils.scale_units`.
    * Added a warning if `inst_module` and `platform`/`name` are used to
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
@@ -68,6 +77,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed a bug where empty check for xarray instruments fail when time not
      present. (#922)
 * Maintenance
+   * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
    * Added missing unit tests for `pysat.utils.file.parse_delimited_filename`
    * Streamlined unit tests for `test_orbits`
@@ -82,6 +92,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      standard end-to-end instrument tests.
    * Moved test classes to `pysat.tests.classes`
    * Reorganized the core test_instrument.py as a series of classes
+   * Separated MetaLabels tests from Meta test class
+   * Organized and reduced duplication in the Meta test class
    * Added CI reports for supported data products
 
 [3.0.1] - 2021-07-28
