@@ -1243,23 +1243,39 @@ class TestMeta(object):
         assert np.all(self.meta.attr_case_name(ins) == outs)
         return
 
-    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self):
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
+                                                                         label):
         """Test that get attribute names preserves the case with ho metadata."""
 
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        # Set a meta data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = self.default_val
+
+        # Set an attribute with case in `label`
+        cval = ''.join([self.dval, '21'])
         meta2 = pysat.Meta()
-        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
-                          'YoYoYO': 'yolo'}
-        self.meta['NEW2'] = meta2
-        self.meta['new'] = {'yoyoyo': 'YOLO'}
+        meta2[cval] = {label: 'Test meta data for meta label'}
 
-        outputs = self.meta.attr_case_name(['YoYoYo', 'yoyoyo', 'yoYOYo'])
-        targets = ['YoYoYO'] * len(outputs)
+        # Attach child metadata to root meta
+        dval2 = ''.join([self.dval, '2'])
+        self.meta[dval2] = meta2
+
+        # Attempt to assign to same label at root but potentially different
+        # case.
+        self.meta[self.dval] = {label.lower(): 'Test meta data for meta label'}
+
+        # Create inputs and get the attribute case names
+        ins = [label.upper(), label.lower(), label.capitalize(),
+               label]
+        outputs = self.meta.attr_case_name(ins)
+
+        targets = [label] * len(ins)
+
+        # Confirm original input case retained.
         assert np.all(outputs == targets)
 
-        outputs = self.meta['new2'].children.attr_case_name(['YoYoYo', 'yoyoyo',
-                                                             'yoYOYo'])
-        assert np.all(outputs == targets)
         return
 
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
