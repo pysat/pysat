@@ -1104,59 +1104,43 @@ class Meta(object):
         variable name.
 
         """
-        def get_mapped_value(value, mapper):
-            """Adjust value using mapping dict or function.
-
-            Parameters
-            ----------
-            value : str
-                MetaData variable name to be adjusted
-            mapper : dict or function
-                Dictionary with old names as keys and new names as variables or
-                a function to apply to all names
-
-            Returns
-            -------
-            mapped_val : str or NoneType
-                Adjusted MetaData variable name or NoneType if input value
-                should stay the same
-
-            """
-            if isinstance(mapper, dict):
-                if value in mapper.keys():
-                    mapped_val = mapper[value]
-                else:
-                    mapped_val = None
-            else:
-                mapped_val = mapper(value)
-
-            return mapped_val
 
         # Cycle through the top-level variables
         for var in self.keys():
             # Update the attribute name
-            map_var = get_mapped_value(var, mapper)
+            map_var = core_utils.get_mapped_value(var, mapper)
             if map_var is not None:
-                # Get and update the meta data
-                hold_meta = self[var].copy()
-                hold_meta.name = map_var
+                if isinstance(map_var, dict):
+                    if var in self.keys_nD():
+                        child_meta = self[var].children.copy()
+                        child_meta.rename(map_var)
+                        self.ho_data[var] = child_meta
+                    else:
+                        raise ValueError('unknown mapped value at {:}'.format(
+                            repr(var)))
+                else:  
+                    # Get and update the meta data
+                    hold_meta = self[var].copy()
+                    hold_meta.name = map_var
 
-                # Remove the metadata under the previous variable name
-                self.drop(var)
-                if var in self.ho_data:
-                    del self.ho_data[var]
+                    # Remove the metadata under the previous variable name
+                    self.drop(var)
+                    if var in self.ho_data:
+                        del self.ho_data[var]
 
-                # Re-add the meta data with the updated variable name
-                self[map_var] = hold_meta
+                    # Re-add the meta data with the updated variable name
+                    self[map_var] = hold_meta
 
-        # Determine if the attribute is present in higher order structures
-        for ndkey in self.keys_nD():
-            # The children attribute is a Meta class object. Recursively call
-            # the current routine. The only way to avoid Meta undoing the
-            # renaming process is to assign the meta data to `ho_data`.
-            child_meta = self[ndkey].children.copy()
-            child_meta.rename(mapper)
-            self.ho_data[ndkey] = child_meta
+                    # Determine if the attribute is present in higher order
+                    # structures
+                    if map_var in self.keys_nD():
+                        # The children attribute is a Meta class object.
+                        # Recursively call the current routine. The only way to
+                        # avoid Meta undoing the renaming process is to assign
+                        # the meta data to `ho_data`.
+                        child_meta = self[map_var].children.copy()
+                        child_meta.rename(mapper)
+                        self.ho_data[map_var] = child_meta
 
         return
 
