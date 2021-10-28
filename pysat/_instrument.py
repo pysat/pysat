@@ -2369,9 +2369,12 @@ class Instrument(object):
         --------
         ::
 
-            # Standard renaming
+            # Standard renaming using a dict
             new_mapper = {'old_name': 'new_name', 'old_name2':, 'new_name2'}
             inst.rename(new_mapper)
+
+            # Standard renaming using a function
+            inst.rename(str.upper)
 
 
         If using a pandas-type Instrument with higher-order data and a
@@ -2387,15 +2390,26 @@ class Instrument(object):
             mapper = {'uts': 'pysat_uts',
                       'profiles': {'density': 'pysat_density'}}
             inst.rename(mapper)
+            print(inst[0, 'profiles'].columns)  # 'density' will be updated
+
+            # To rename higher-order data at both levels using a dictionary,
+            # you need two calls
+            mapper2 = {'profiles': 'pysat_profile'}
+            inst.rename(mapper2)
+            print(inst[0, 'pysat_profile'].columns)
+
+            # A function will affect both standard and higher-order data.
+            # Remember this function also updates the Meta data
+            inst.rename(str.capitalize)
+            print(inst.meta['Pysat_profile']['children'])
 
 
-        pysat supports differing case for variable labels across the
-        data and metadata objects attached to an Instrument. Since
-        metadata is case-preserving (on assignment) but case-insensitive,
-        the labels used for data are always valid for metadata. This
-        feature may be used to provide friendlier variable names within
-        pysat while also maintaining external format compatibility
-        when writing files.
+        pysat supports differing case for variable labels across the data and
+        metadata objects attached to an Instrument. Since Meta is
+        case-preserving (on assignment) but case-insensitive to access, the
+        labels used for data are always valid for metadata. This feature may be
+        used to provide friendlier variable names within pysat while also
+        maintaining external format compatibility when writing files.
         ::
 
             # Example with lowercase_data_labels
@@ -2410,7 +2424,7 @@ class Instrument(object):
 
             # Case is retained within inst.meta, though data access to meta is
             # case insensitive
-            print('True meta variable name is ', inst.meta['pysat_uts'].name)
+            print('True meta variable name is ', inst.meta['pysat_uts'].)
 
             # Note that the labels in meta may be used when creating a file.
             # Thus, 'Pysat_UTS' would be found in the resulting file
@@ -2430,10 +2444,6 @@ class Instrument(object):
                     raise ValueError(''.join(['cannot rename ', repr(vkey),
                                               ' because it is not a variable ',
                                               'in this Instrument']))
-
-        # Initalize the metadata mapping dict, which is only needed because
-        # of the potential higher-order input dictionaries
-        mdict = {}
 
         if self.pandas_format:
             # Initialize dict for renaming normal pandas data
@@ -2469,6 +2479,8 @@ class Instrument(object):
                                 if hmap is not None:
                                     hdict[hkey] = hmap
 
+                            pdict[vkey] = map_key
+
                         # Check for lowercase flag
                         change = True
                         if lowercase_data_labels:
@@ -2480,9 +2492,6 @@ class Instrument(object):
                                 change = False
                         else:
                             gdict = hdict
-
-                        # Update the meta dict
-                        mdict[vkey] = hdict
 
                         # Change the higher-order variable names frame-by-frame
                         if change:
@@ -2516,9 +2525,6 @@ class Instrument(object):
                         else:
                             pdict[vkey] = map_key
 
-                        # Update the meta dict
-                        mdict[vkey] = map_key
-
             # Change variable names for attached data object
             self.data.rename(columns=pdict, inplace=True)
         else:
@@ -2532,13 +2538,12 @@ class Instrument(object):
                         gdict[vkey] = map_key.lower()
                     else:
                         gdict[vkey] = map_key
-                    mdict[vkey] = map_key
 
             # Rename data variables using native xarray rename method
             self.data = self.data.rename(gdict)
 
-        # Update the metadata, which does not usse `lowercase_data_labels` flag
-        self.meta.rename(mdict)
+        # Update the metadata, which does not use `lowercase_data_labels` flag
+        self.meta.rename(mapper)
 
         return
 
