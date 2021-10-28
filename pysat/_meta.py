@@ -514,6 +514,7 @@ class Meta(object):
         # Define a local convenience function
         def match_name(func, var_name, index_or_column):
             """Alter variables using input function."""
+
             if isinstance(var_name, slice):
                 # If variable is a slice, use it to select data from the
                 # supplied index or column input
@@ -1095,8 +1096,8 @@ class Meta(object):
 
         # Create a list of all attribute names and lower case attribute names
         self_keys = [key for key in self.attrs()]
-        for key in self.keys_nD():
-            self_keys.extend(self[key].children.attrs())
+        for key in list(self.keys_nD()):
+            self_keys.extend(self.ho_data[key].data.columns)
         lower_self_keys = [key.lower() for key in self_keys]
 
         case_names = []
