@@ -151,6 +151,25 @@ def listify(iterable):
     return list_iter
 
 
+def stringify(strlike):
+    """Converts input into a str type.
+
+    Parameters
+    ----------
+    strlike: str or bytes
+        Input values in str or byte form
+
+    Returns
+    -------
+    strlike: str
+
+    """
+
+    if isinstance(strlike, bytes):
+        return strlike.decode('utf-8')
+    return strlike
+
+
 def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
                  epoch_name='Epoch', pandas_format=True, decode_timedelta=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),

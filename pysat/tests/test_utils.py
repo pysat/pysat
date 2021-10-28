@@ -182,8 +182,8 @@ class TestScaleUnits(object):
         return
 
 
-class TestListify(object):
-    """Unit tests for the `listify` function."""
+class Testifyfunctions(object):
+    """Unit tests for the `ify` functions."""
 
     @pytest.mark.parametrize('iterable,nitem', [
         ('test', 1), (['test'], 1), ([[['test']]], 1), ([[[['test']]]], 1),
@@ -232,6 +232,26 @@ class TestListify(object):
         tst_iterable = [np.timedelta64(1)
                         for i in range(int(np.product(np.shape(iterable))))]
         pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
+        return
+
+    @pytest.mark.parametrize('strlike', ['test_string',
+                                         b'Les \xc3\x83\xc2\xa9vad\xc3\x83s'])
+    def test_stringify(self, strlike):
+        """Test stringify returns str with str and byte inputs."""
+
+        output = pysat.utils.stringify(strlike)
+        assert isinstance(output, str)
+        return
+
+    @pytest.mark.parametrize('astrlike', [[1, 2], (1, 2), np.array([1, 2]), 1])
+    def test_stringify(self, astrlike):
+        """Test stringify returns type as is for inputs other than str and byte.
+
+        """
+
+        target = type(astrlike)
+        output = pysat.utils.stringify(astrlike)
+        assert type(output) == target
         return
 
 
