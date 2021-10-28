@@ -1626,10 +1626,7 @@ class TestMeta(object):
                 # Test the higher order variables
                 for cvar in columns:
                     cmvar = cvar.upper()
-                    assert cvar not in self.meta[mvar].children.keys(), \
-                        "HO variable not renamed: {:} ({:})".format(
-                            repr(cvar), repr(mvar))
-                    assert cmvar in self.meta[mvar].children.keys(), \
+                    assert cmvar in self.meta[mvar].children, \
                         "renamed HO variable missing: {:} ({:})".format(
                             repr(cmvar), repr(mvar))
 
@@ -1646,7 +1643,7 @@ class TestMeta(object):
         rename_dict = {dvar: dvar.upper()
                        for i, dvar in enumerate(self.testInst.variables)
                        if i < 3 or dvar == 'profiles'}
-        rename_dict['density'] = 'DeNsItY'
+        rename_dict['profiles'] = {'density': 'DeNsItY'}
 
         # Rename the meta variables to be all upper case, this will differ
         # from the Instrument variables, as pysat defaults to lower case
@@ -1656,36 +1653,37 @@ class TestMeta(object):
             # Test the lower order variables
             if dvar in rename_dict.keys():
                 mvar = rename_dict[dvar]
-                assert dvar not in self.meta.keys(), \
-                    "variable not renamed: {:}".format(repr(dvar))
-                assert mvar in self.meta.keys(), \
-                    "renamed variable missing: {:}".format(repr(mvar))
+
+                if isinstance(mvar, dict):
+                    assert dvar in self.meta.keys_nD()
+
+                    # Get the variable names from the children
+                    if hasattr(self.testInst[dvar][0], 'columns'):
+                        columns = getattr(self.testInst[dvar][0], 'columns')
+                    else:
+                        columns = [dvar]
+
+                    # Test the higher order variables.
+                    for cvar in columns:
+                        if cvar in mvar.keys():
+                            cmvar = mvar[cvar]
+                            assert cmvar in self.meta[dvar].children.keys(), \
+                                "renamed HO variable missing: {:} ({:})".format(
+                                    repr(cmvar), repr(dvar))
+                        else:
+                            assert cvar in self.meta[dvar].children.keys(), \
+                                "unmapped HO var altered: {:} ({:})".format(
+                                    repr(cvar), repr(dvar))
+                else:
+                    assert dvar not in self.meta.keys(), \
+                        "variable not renamed: {:}".format(repr(dvar))
+                    assert mvar in self.meta.keys(), \
+                        "renamed variable missing: {:}".format(repr(mvar))
             else:
                 mvar = dvar
                 assert dvar in self.meta.keys(), \
                     "unmapped variable renamed: {:}".format(repr(dvar))
 
-            if mvar in self.meta.keys_nD():
-                # Get the variable names from the children
-                if hasattr(self.testInst[dvar][0], 'columns'):
-                    columns = getattr(self.testInst[dvar][0], 'columns')
-                else:
-                    columns = [dvar]
-
-                # Test the higher order variables.
-                for cvar in columns:
-                    if cvar in rename_dict.keys():
-                        cmvar = rename_dict[cvar]
-                        assert cvar not in self.meta[mvar].children.keys(), \
-                            "HO variable not renamed: {:} ({:})".format(
-                                repr(cvar), repr(mvar))
-                        assert cmvar in self.meta[mvar].children.keys(), \
-                            "renamed HO variable missing: {:} ({:})".format(
-                                repr(cmvar), repr(mvar))
-                    else:
-                        assert cvar in self.meta[mvar].children.keys(), \
-                            "unmapped HO variable renamed: {:} ({:})".format(
-                                repr(cvar), repr(mvar))
         return
 
 
