@@ -1352,7 +1352,7 @@ class TestMeta(object):
         assert np.all(outputs == targets)
         return
 
-     def test_update_epoch(self):
+    def test_update_epoch(self):
         """Test that epoch metadata is updated upon request."""
 
         # Set the meta object
@@ -1363,7 +1363,6 @@ class TestMeta(object):
 
         # Update the epoch meta data that was set to unknown default values
         self.meta.add_epoch_metadata("time")
-
 
         # Test the new metadata
         assert "U" == self.meta["time", self.meta.labels.units]

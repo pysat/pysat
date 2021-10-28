@@ -971,7 +971,8 @@ class Meta(object):
         Returns
         -------
         case_names : str or list
-            Maintains the same type as input, returning the stored name(s) of the meta object.
+            Maintains the same type as input, returning the stored name(s) of
+            the meta object.
 
         Note
         ----
