@@ -302,6 +302,21 @@ class TestMeta(object):
         assert str(verr.value).find(err_msg) >= 0
         return
 
+    def test_meta_rename_bad_ho_input(self):
+        """Test raises ValueError when treating normal data like HO data."""
+
+        # Initialize the meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
+
+        # Set a bad mapping dictionary
+        mapper = {'mlt': {'mlt_profile': 'mlt_density_is_not_real'}}
+
+        with pytest.raises(ValueError) as verr:
+            self.meta.rename(mapper)
+
+        assert str(verr).find("unknown mapped value at 'mlt'") >= 0
+        return
+    
     # -------------------------
     # Test the Warning messages
 
