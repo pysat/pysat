@@ -1095,6 +1095,11 @@ class Meta(object):
             Dictionary with old names as keys and new names as variables or
             a function to apply to all names
 
+        Raises
+        ------
+        ValueError
+            When normal data is treated like higher-order data in dict mapping.
+
         Note
         ----
         Checks first within standard attributes. If not found there, checks
