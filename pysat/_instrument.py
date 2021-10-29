@@ -2424,7 +2424,7 @@ class Instrument(object):
 
             # Case is retained within inst.meta, though data access to meta is
             # case insensitive
-            print('True meta variable name is ', inst.meta['pysat_uts'].)
+            print('True meta variable name is ', inst.meta['pysat_uts'].name)
 
             # Note that the labels in meta may be used when creating a file.
             # Thus, 'Pysat_UTS' would be found in the resulting file
