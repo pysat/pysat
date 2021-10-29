@@ -1142,29 +1142,6 @@ class TestMeta(object):
         assert self.dval.upper() in self.meta
         return
 
-    def test_ho_data_retrieval_case_insensitive(self):
-        """Test that higher order data variables are case insensitive."""
-
-        # Initalize the meta data
-        self.dval = "test_val"
-        self.meta[self.dval] = self.default_val
-
-        cmeta = pysat.Meta()
-        cval = '_'.join([self.dval, 'child'])
-        cmeta[cval] = self.default_val
-        self.meta[self.dval] = cmeta
-
-        # Test that the data value is present using real key and upper-case
-        # version of that key
-        assert self.dval in self.meta.keys()
-
-        # Test the child variable, which should only be present through the
-        # children attribute. Cannot specify keys for case-insensitive look-up.
-        assert cval not in self.meta.keys()
-        assert cval in self.meta[self.dval].children.keys()
-        assert cval.upper() in self.meta[self.dval].children
-        return
-
     @pytest.mark.parametrize("data_val", ['test_val', 'TEST_VAL', 'Test_Val',
                                           'TeSt_vAl'])
     def test_var_case_name(self, data_val):
@@ -1241,41 +1218,6 @@ class TestMeta(object):
                label]
         outs = [label] * len(ins)
         assert np.all(self.meta.attr_case_name(ins) == outs)
-        return
-
-    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
-                                       'MeTa_lAbEl'])
-    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
-                                                                         label):
-        """Test that get attribute names preserves the case with ho metadata."""
-
-        # Set a meta data variable
-        self.dval = 'test_val'
-        self.meta[self.dval] = self.default_val
-
-        # Set an attribute with case in `label`
-        cval = ''.join([self.dval, '21'])
-        meta2 = pysat.Meta()
-        meta2[cval] = {label: 'Test meta data for meta label'}
-
-        # Attach child metadata to root meta
-        dval2 = ''.join([self.dval, '2'])
-        self.meta[dval2] = meta2
-
-        # Attempt to assign to same label at root but potentially different
-        # case.
-        self.meta[self.dval] = {label.lower(): 'Test meta data for meta label'}
-
-        # Create inputs and get the attribute case names
-        ins = [label.upper(), label.lower(), label.capitalize(),
-               label]
-        outputs = self.meta.attr_case_name(ins)
-
-        targets = [label] * len(ins)
-
-        # Confirm original input case retained.
-        assert np.all(outputs == targets)
-
         return
 
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
@@ -1754,6 +1696,64 @@ class TestMeta(object):
                         assert cvar in self.meta[mvar].children.keys(), \
                             "unmapped HO variable renamed: {:} ({:})".format(
                                 repr(cvar), repr(mvar))
+        return
+
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
+                                                                         label):
+        """Test that get attribute names preserves the case with ho metadata."""
+
+        # Set a meta data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = self.default_val
+
+        # Set an attribute with case in `label`
+        cval = ''.join([self.dval, '21'])
+        meta2 = pysat.Meta()
+        meta2[cval] = {label: 'Test meta data for meta label'}
+
+        # Attach child metadata to root meta
+        dval2 = ''.join([self.dval, '2'])
+        self.meta[dval2] = meta2
+
+        # Attempt to assign to same label at root but potentially different
+        # case.
+        self.meta[self.dval] = {label.lower(): 'Test meta data for meta label'}
+
+        # Create inputs and get the attribute case names
+        ins = [label.upper(), label.lower(), label.capitalize(),
+               label]
+        outputs = self.meta.attr_case_name(ins)
+
+        targets = [label] * len(ins)
+
+        # Confirm original input case retained.
+        assert np.all(outputs == targets)
+
+        return
+
+    def test_ho_data_retrieval_case_insensitive(self):
+        """Test that higher order data variables are case insensitive."""
+
+        # Initalize the meta data
+        self.dval = "test_val"
+        self.meta[self.dval] = self.default_val
+
+        cmeta = pysat.Meta()
+        cval = '_'.join([self.dval, 'child'])
+        cmeta[cval] = self.default_val
+        self.meta[self.dval] = cmeta
+
+        # Test that the data value is present using real key and upper-case
+        # version of that key
+        assert self.dval in self.meta.keys()
+
+        # Test the child variable, which should only be present through the
+        # children attribute. Cannot specify keys for case-insensitive look-up.
+        assert cval not in self.meta.keys()
+        assert cval in self.meta[self.dval].children.keys()
+        assert cval.upper() in self.meta[self.dval].children
         return
 
 
