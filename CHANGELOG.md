@@ -605,8 +605,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Further along the road toward windows compatibility
 * Fixed orbit number reporting in orbits.current
 * Added support for Defense Meteorological Satellite Program (DMSP) Ion Velocity
-  Meter (IVM) data. Downloads from the Madrigal database
-  (https://openmadrigal.org)
+  Meter (IVM) data. Downloads from the Madrigal database.
 * Added support for both sat_id and tag variations within filenames in the NASA
   CDAWeb template
 * Updated docummentation covering requirements for adding new instruments to
