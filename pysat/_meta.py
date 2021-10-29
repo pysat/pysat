@@ -350,7 +350,6 @@ class Meta(object):
             # become the standard.
             data_vars = self.var_case_name(data_vars)
             meta_vars = list(self.keys())
-            meta_vars.extend(list(self.keys_nD()))
             def_vars = list()
             for var in data_vars:
                 if var not in meta_vars:
@@ -1002,7 +1001,6 @@ class Meta(object):
 
         # Create a list of all variable names and lower case variable names
         self_keys = [key for key in self.keys()]
-        self_keys.extend([key for key in self.keys_nD()])
         lower_self_keys = [key.lower() for key in self_keys]
 
         for iname, lower_name in zip(names, lower_names):
@@ -1218,12 +1216,11 @@ class Meta(object):
         """
         mdata = self.copy()
         mdata_keys = [key.lower() for key in mdata.keys()]
-        mdata_keys.extend([key.lower() for key in mdata.keys_nD()])
 
         # Check the inputs
         if strict:
             for key in other_meta.keys():
-                if key in mdata:
+                if key.lower() in mdata_keys:
                     raise KeyError(''.join(('Duplicated keys (variable names) ',
                                             'in Meta.keys().')))
 
