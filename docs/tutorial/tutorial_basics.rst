@@ -183,7 +183,7 @@ and :py:data:`name` keywords.
 
 You can also specify the specific keyword arguements needed for the standard
 pysat methods.  DMSP data is hosted by the `Madrigal database
-<http://cedar.openmadrigal.org/openmadrigal/>`_, a community resource for
+<http://cedar.openmadrigal.org/index.html>`_, a community resource for
 geospace data. The proper process for downloading DMSP and other Madrigal data
 is built into the open source tool
 `madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_,

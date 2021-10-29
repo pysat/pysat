@@ -18,8 +18,7 @@ import warnings
 
 import pysat
 from pysat.tests.classes.cls_registration import TestWithRegistration
-from pysat.utils import generate_instrument_list
-from pysat.utils import testing
+from pysat import utils
 
 
 class TestCIonly(object):
@@ -129,7 +128,7 @@ class TestScaleUnits(object):
     def test_scale_units_same(self):
         """Test scale_units when both units are the same."""
 
-        self.scale = pysat.utils.scale_units("happy", "happy")
+        self.scale = utils.scale_units("happy", "happy")
 
         assert self.scale == 1.0
         return
@@ -137,7 +136,7 @@ class TestScaleUnits(object):
     def test_scale_units_angles(self):
         """Test scale_units for angles."""
         for out_unit in self.deg_units:
-            self.scale = pysat.utils.scale_units(out_unit, "deg")
+            self.scale = utils.scale_units(out_unit, "deg")
             self.eval_unit_scale(out_unit, 'angles')
         return
 
@@ -145,7 +144,7 @@ class TestScaleUnits(object):
         """Test scale_units for distances."""
 
         for out_unit in self.dist_units:
-            self.scale = pysat.utils.scale_units(out_unit, "m")
+            self.scale = utils.scale_units(out_unit, "m")
             self.eval_unit_scale(out_unit, 'distance')
         return
 
@@ -153,7 +152,7 @@ class TestScaleUnits(object):
         """Test scale_units for velocities."""
 
         for out_unit in self.vel_units:
-            self.scale = pysat.utils.scale_units(out_unit, "m/s")
+            self.scale = utils.scale_units(out_unit, "m/s")
             self.eval_unit_scale(out_unit, 'velocity')
         return
 
@@ -165,7 +164,7 @@ class TestScaleUnits(object):
         """Test raises ValueError for bad input combinations."""
 
         with pytest.raises(ValueError) as verr:
-            pysat.utils.scale_units(*in_args)
+            utils.scale_units(*in_args)
 
         assert str(verr).find(err_msg) > 0
         return
@@ -177,7 +176,7 @@ class TestScaleUnits(object):
         """Test raises ValueError for all mismatched input pairings."""
 
         with pytest.raises(ValueError):
-            pysat.utils.scale_units(unit1, unit2)
+            utils.scale_units(unit1, unit2)
 
         return
 
@@ -192,9 +191,9 @@ class TestListify(object):
     def test_listify_list_string_inputs(self, iterable, nitem):
         """Test listify with various list levels of a string."""
 
-        new_iterable = pysat.utils.listify(iterable)
+        new_iterable = utils.listify(iterable)
         tst_iterable = ['test' for i in range(nitem)]
-        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
+        utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
     @pytest.mark.parametrize('iterable', [np.nan, np.full((1, 1), np.nan),
@@ -203,11 +202,11 @@ class TestListify(object):
     def test_listify_nan_arrays(self, iterable):
         """Test listify with various np.arrays of NaNs."""
 
-        new_iterable = pysat.utils.listify(iterable)
+        new_iterable = utils.listify(iterable)
         tst_iterable = [np.nan
                         for i in range(int(np.product(np.shape(iterable))))]
-        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable,
-                                               test_nan=True)
+        utils.testing.assert_lists_equal(new_iterable, tst_iterable,
+                                         test_nan=True)
         return
 
     @pytest.mark.parametrize('iterable', [1, np.full((1, 1), 1),
@@ -216,9 +215,9 @@ class TestListify(object):
     def test_listify_int_arrays(self, iterable):
         """Test listify with various np.arrays of integers."""
 
-        new_iterable = pysat.utils.listify(iterable)
+        new_iterable = utils.listify(iterable)
         tst_iterable = [1 for i in range(int(np.product(np.shape(iterable))))]
-        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
+        utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
     @pytest.mark.parametrize('iterable', [
@@ -228,10 +227,10 @@ class TestListify(object):
     def test_listify_class_arrays(self, iterable):
         """Test listify with various np.arrays of classes."""
 
-        new_iterable = pysat.utils.listify(iterable)
+        new_iterable = utils.listify(iterable)
         tst_iterable = [np.timedelta64(1)
                         for i in range(int(np.product(np.shape(iterable))))]
-        pysat.utils.testing.assert_lists_equal(new_iterable, tst_iterable)
+        utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
 
@@ -288,8 +287,8 @@ class TestFmtCols(object):
     def test_neg_ncols(self):
         """Test the output if the column number is negative."""
         self.in_kwargs['ncols'] = -5
-        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
-                                                            **self.in_kwargs)
+        self.out_str = utils._core.fmt_output_in_cols(self.in_str,
+                                                      **self.in_kwargs)
         assert len(self.out_str) == 0
         return
 
@@ -300,7 +299,7 @@ class TestFmtCols(object):
         """Test raises appropriate Errors for bad input values."""
         self.in_kwargs[key] = val
         with pytest.raises(raise_type):
-            pysat.utils._core.fmt_output_in_cols(self.in_str, **self.in_kwargs)
+            utils._core.fmt_output_in_cols(self.in_str, **self.in_kwargs)
         return
 
     @pytest.mark.parametrize("ncol", [(3), (5), (10)])
@@ -314,8 +313,8 @@ class TestFmtCols(object):
         self.nrows = int(np.ceil(self.in_kwargs['max_num'] / ncol))
 
         # Get and test the output
-        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
-                                                            **self.in_kwargs)
+        self.out_str = utils._core.fmt_output_in_cols(self.in_str,
+                                                      **self.in_kwargs)
         self.eval_output()
         return
 
@@ -332,8 +331,8 @@ class TestFmtCols(object):
         self.nrows = nrow
 
         # Get and test the output
-        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
-                                                            **self.in_kwargs)
+        self.out_str = utils._core.fmt_output_in_cols(self.in_str,
+                                                      **self.in_kwargs)
         self.eval_output()
         return
 
@@ -349,8 +348,8 @@ class TestFmtCols(object):
         self.lpad = in_pad
 
         # Get and test the output
-        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
-                                                            **self.in_kwargs)
+        self.out_str = utils._core.fmt_output_in_cols(self.in_str,
+                                                      **self.in_kwargs)
         self.eval_output()
         return
 
@@ -366,9 +365,9 @@ class TestAvailableInst(TestWithRegistration):
         """Test display_available_instruments options."""
         # If using the pysat registry, make sure there is something registered
         if inst_loc is None:
-            pysat.utils.registry.register(self.module_names)
+            utils.registry.register(self.module_names)
 
-        pysat.utils.display_available_instruments(
+        utils.display_available_instruments(
             inst_loc, show_inst_mod=inst_flag, show_platform_name=plat_flag)
 
         captured = capsys.readouterr()
@@ -390,7 +389,7 @@ class TestAvailableInst(TestWithRegistration):
     def test_display_instrument_stats(self, inst_loc, capsys):
         """Test display_instrument_stats options."""
 
-        pysat.utils.display_instrument_stats(inst_loc)
+        utils.display_instrument_stats(inst_loc)
 
         captured = capsys.readouterr()
         # Numbers should match supported data products in `pysat.instruments`
@@ -402,7 +401,7 @@ class TestAvailableInst(TestWithRegistration):
     def test_import_error_in_available_instruments(self):
         """Test handling of import errors in available_instruments."""
 
-        idict = pysat.utils.available_instruments(os.path)
+        idict = utils.available_instruments(os.path)
 
         for platform in idict.keys():
             for name in idict[platform].keys():
@@ -436,9 +435,9 @@ class TestNetworkLock(object):
         """Test network locking with a timeout."""
         # Open the file two times
         with pytest.raises(portalocker.AlreadyLocked):
-            with pysat.utils.NetworkLock(self.fname, timeout=0.1):
-                with pysat.utils.NetworkLock(self.fname, mode='wb', timeout=0.1,
-                                             fail_when_locked=True):
+            with utils.NetworkLock(self.fname, timeout=0.1):
+                with utils.NetworkLock(self.fname, mode='wb', timeout=0.1,
+                                       fail_when_locked=True):
                     pass
         return
 
@@ -446,9 +445,8 @@ class TestNetworkLock(object):
         """Test network locking without a timeout."""
         # Open the file two times
         with pytest.raises(portalocker.LockException):
-            with pysat.utils.NetworkLock(self.fname, timeout=None):
-                with pysat.utils.NetworkLock(self.fname, timeout=None,
-                                             mode='w'):
+            with utils.NetworkLock(self.fname, timeout=None):
+                with utils.NetworkLock(self.fname, timeout=None, mode='w'):
                     pass
         return
 
@@ -456,8 +454,8 @@ class TestNetworkLock(object):
         """Test network locking without file conditions set."""
         # Open the file two times
         with pytest.raises(portalocker.LockException):
-            with pysat.utils.NetworkLock(self.fname, timeout=0.1):
-                lock = pysat.utils.NetworkLock(self.fname, timeout=0.1)
+            with utils.NetworkLock(self.fname, timeout=0.1):
+                lock = utils.NetworkLock(self.fname, timeout=0.1)
                 lock.acquire(check_interval=0.05, fail_when_locked=False)
         return
 
@@ -470,8 +468,8 @@ class TestGenerateInstList(object):
 
         self.user_info = {'pysat_testmodel': {'user': 'GideonNav',
                                               'password': 'pasSWORD!'}}
-        self.inst_list = generate_instrument_list(inst_loc=pysat.instruments,
-                                                  user_info=self.user_info)
+        self.inst_list = utils.generate_instrument_list(
+            inst_loc=pysat.instruments, user_info=self.user_info)
         return
 
     def teardown(self):
@@ -483,8 +481,8 @@ class TestGenerateInstList(object):
     def test_generate_module_names(self):
         """Test generation of module names."""
 
-        pysat.utils.testing.assert_lists_equal(self.inst_list['names'],
-                                               pysat.instruments.__all__)
+        utils.testing.assert_lists_equal(self.inst_list['names'],
+                                         pysat.instruments.__all__)
 
     @pytest.mark.parametrize("list_name", [('download'), ('no_download')])
     def test_generate_module_list_attributes(self, list_name):
@@ -535,7 +533,7 @@ class TestDeprecation(object):
         with warnings.catch_warnings(record=True) as war:
             try:
                 # Generate relocation warning and file_format warning
-                pysat.utils.load_netcdf4(**kwargs)
+                utils.load_netcdf4(**kwargs)
             except (FileNotFoundError, ValueError):
                 pass
 
@@ -554,5 +552,37 @@ class TestDeprecation(object):
         assert len(war) >= len(warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, warn_msgs)
+        utils.testing.eval_warnings(war, warn_msgs)
+        return
+
+
+class TestMappedValue(object):
+    """Unit tests for utility `get_mapped_value`."""
+
+    def setup(self):
+        """Set up a clean testing environment."""
+        self.data_vals = ['one', 'two', 'three', 'four']
+        return
+
+    def teardown(self):
+        """Clean up the current testing enviornment."""
+        del self.data_vals
+        return
+
+    def test_get_mapped_value_dict(self):
+        """Test successful mapping from dict input."""
+
+        map_dict = {val: val.upper() for val in self.data_vals}
+
+        for val in self.data_vals:
+            assert val.upper() == utils.get_mapped_value(val, map_dict)
+
+        return
+
+    def test_get_mapped_value_func(self):
+        """Test successful mapping from an input function."""
+
+        for val in self.data_vals:
+            assert val.upper() == utils.get_mapped_value(val, str.upper)
+
         return

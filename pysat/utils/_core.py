@@ -235,6 +235,35 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
     return data, meta
 
 
+def get_mapped_value(value, mapper):
+    """Adjust value using mapping dict or function.
+
+    Parameters
+    ----------
+    value : str
+        MetaData variable name to be adjusted
+    mapper : dict or function
+        Dictionary with old names as keys and new names as variables or
+        a function to apply to all names
+
+    Returns
+    -------
+    mapped_val : str or NoneType
+        Adjusted MetaData variable name or NoneType if input value
+        should stay the same
+
+    """
+    if isinstance(mapper, dict):
+        if value in mapper.keys():
+            mapped_val = mapper[value]
+        else:
+            mapped_val = None
+    else:
+        mapped_val = mapper(value)
+
+    return mapped_val
+
+
 def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
     """Format a string with desired output values in columns.
 
