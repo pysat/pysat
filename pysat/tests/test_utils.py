@@ -182,8 +182,8 @@ class TestScaleUnits(object):
         return
 
 
-class Testifyfunctions(object):
-    """Unit tests for the `ify` functions."""
+class TestIfyFunctions(object):
+    """Unit tests for the various `*ify` functions."""
 
     @pytest.mark.parametrize('iterable,nitem', [
         ('test', 1), (['test'], 1), ([[['test']]], 1), ([[[['test']]]], 1),
