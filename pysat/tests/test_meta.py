@@ -316,7 +316,7 @@ class TestMeta(object):
 
         assert str(verr).find("unknown mapped value at 'mlt'") >= 0
         return
-    
+
     # -------------------------
     # Test the Warning messages
 
