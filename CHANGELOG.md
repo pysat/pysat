@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added hidden Constellation methods to determine unique attribute elements
      and set Instrument attributes across all instruments
    * Extended Constellation unit tests
+   * Added more quality checks to the Constellation initialization
    * Standardized Instrument instantiation to always define `inst_module`
    * Extended testing options for `pysat.utils.testing` functions
    * Added `start_time` keyword for test instruments
