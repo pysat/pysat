@@ -93,8 +93,9 @@ class Constellation(object):
     Raises
     ------
     ValueError
-        When `instruments` is not list-like or when all inputs to load through
-        the registered Instrument list are unknown.
+        When `instruments` is not list-like, when all inputs to load through
+        the registered Instrument list are unknown, or when one of the items
+        assigned is not an Instrument.
     AttributeError
         When module provided through `const_module` is missing the required
         attribute `instruments`.
