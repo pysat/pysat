@@ -216,7 +216,18 @@ class TestLoadNetCDF(object):
         ({'epoch_unit': 'ns', 'epoch_origin': dt.datetime(1980, 1, 6)},
          dt.timedelta(microseconds=1))])
     def test_read_netcdf4_w_epoch_kwargs(self, kwargs, target):
-        """Test success of writing and reading a netCDF4 file."""
+        """Test success of writing and reading a netCDF4 file.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Optional kwargs to input into `load_netcdf`. Allows the epoch
+            calculation to use custom origin and units.
+        target : dt.timedelta
+            Expected interpretation of 1 sec of time in loaded data when a given
+            epoch unit is specified.  Default unit for pds.to_datetime is 1 ms.
+
+        """
 
         # TODO(#947) Expand to xarray objects
         if not self.testInst.pandas_format:
@@ -249,7 +260,7 @@ class TestLoadNetCDF(object):
         # Find distance from origin
         default_uts = (self.testInst.index[0] - unix_origin).total_seconds()
         loaded_uts = (self.loaded_inst.index[0] - file_origin).total_seconds()
-        # Ratio of distances should equal ratio of step sizes
+        # Ratio of distances should equal ratio of interpreted units
         assert (default_uts / loaded_uts) == (dt.timedelta(seconds=1) / target)
         return
 
