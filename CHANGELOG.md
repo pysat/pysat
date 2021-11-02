@@ -27,6 +27,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Added kwargs for epoch units and origin in `pysat.utils.io.load_netCDF`.
+   * Added a time function to calculate decimal year from datetime.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
