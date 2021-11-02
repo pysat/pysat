@@ -233,8 +233,11 @@ class TestLoadNetCDF(object):
         self.loaded_inst, meta = io.load_netcdf(outfile, **kwargs)
 
         # Check that the step size is expected
-        delta_time = (self.loaded_inst.index[1] - self.loaded_inst.index[0])
-        assert delta_time == target
+        default_delta = (self.testInst.index[1] - self.testInst.index[0])
+        loaded_delta = (self.loaded_inst.index[1] - self.loaded_inst.index[0])
+        # Ratio of step_sizes should equal ratio of interpreted units
+        assert ((default_delta / loaded_delta)
+                == (dt.timedelta(seconds=1) / target))
 
         unix_origin = dt.datetime(1970, 1, 1)
         if 'epoch_origin' in kwargs.keys():
