@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      of platforms, names, tags, and/or inst_ids, which are new attributes
    * Added hidden Constellation methods to determine unique attribute elements
      and set Instrument attributes across all instruments
+   * Added hidden Constellation method to sequentially call Instrument methods
    * Extended Constellation unit tests
    * Added more quality checks to the Constellation initialization
    * Standardized Instrument instantiation to always define `inst_module`

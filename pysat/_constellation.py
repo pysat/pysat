@@ -455,6 +455,38 @@ class Constellation(object):
 
         return
 
+    def _call_inst_method(self, method, *args, **kwargs):
+        """Call a method across all instrumennts.
+
+        Parameters
+        ----------
+        method : str
+            Instrument method name
+        *args : list-like
+            Optional list of arguments for the method
+        **kwargs : dict-like
+            Optional dict of keyword arguments for the method
+
+        Raises
+        ------
+        AttributeError
+            If `method` is missing from any Constellation Instrument.
+
+        """
+
+        for instrument in self.instruments:
+            # Test to see that method exists
+            if not hasattr(instrument, method):
+                raise AttributeError(
+                    'unknown method {:} in Instrument {:}'.format(
+                        repr(method), repr(instrument)))
+
+            # Apply method to Instrument
+            inst_method = getattr(instrument, method)
+            inst_method(*args, **kwargs)
+
+        return
+
     # -----------------------------------------------------------------------
     # Define the public methods and properties
 
@@ -572,9 +604,7 @@ class Constellation(object):
 
         """
 
-        for instrument in self.instruments:
-            instrument.custom_attach(*args, **kwargs)
-
+        self._call_inst_method('custom_attach', *args, **kwargs)
         return
 
     def custom_clear(self):
@@ -586,9 +616,7 @@ class Constellation(object):
 
         """
 
-        for instrument in self.instruments:
-            instrument.custom_clear()
-
+        self._call_inst_method('custom_clear')
         return
 
     def load(self, *args, **kwargs):
@@ -608,8 +636,7 @@ class Constellation(object):
         """
 
         # Load the data for each instrument
-        for instrument in self.instruments:
-            instrument.load(*args, **kwargs)
+        self._call_inst_method('load', *args, **kwargs)
 
         # Set the year and doy attributes for the constellation and instruments
         self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
@@ -638,7 +665,5 @@ class Constellation(object):
 
         """
 
-        for instrument in self.instruments:
-            instrument.download(*args, **kwargs)
-
+        self._call_inst_method('download', *args, **kwargs)
         return

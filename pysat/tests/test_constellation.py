@@ -382,10 +382,19 @@ class TestConstellationFunc(object):
         return
 
     def test_get_unique_attr_vals_bad_type(self):
-        """Test raises AttributeError for bad input attribute type."""
+        """Test raises TypeError for bad input attribute type."""
 
         with pytest.raises(TypeError) as terr:
             self.const._get_unique_attr_vals('empty')
 
         assert str(terr).find("attribute is not list-like") >= 0
+        return
+
+    def test_bad_call_inst_method(self):
+        """Test raises AttributeError for missing Instrument method."""
+
+        with pytest.raises(AttributeError) as aerr:
+            self.const._call_inst_method('not a method')
+
+        assert str(aerr).find("unknown method") >= 0
         return
