@@ -468,11 +468,13 @@ class Constellation(object):
         """
 
         for instrument in self.instruments:
+            # Test to see that method exists
             if not hasattr(instrument, method):
                 raise AttributeError(
                     'unknown method {:} in Instrument {:}'.format(
                         repr(method), repr(instrument)))
 
+            # Apply method to Instrument
             inst_method = getattr(instrument, method)
             inst_method(*args, **kwargs)
 
