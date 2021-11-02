@@ -302,6 +302,21 @@ class TestMeta(object):
         assert str(verr.value).find(err_msg) >= 0
         return
 
+    def test_meta_rename_bad_ho_input(self):
+        """Test raises ValueError when treating normal data like HO data."""
+
+        # Initialize the meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
+
+        # Set a bad mapping dictionary
+        mapper = {'mlt': {'mlt_profile': 'mlt_density_is_not_real'}}
+
+        with pytest.raises(ValueError) as verr:
+            self.meta.rename(mapper)
+
+        assert str(verr).find("unknown mapped value at 'mlt'") >= 0
+        return
+
     # -------------------------
     # Test the Warning messages
 
@@ -1142,29 +1157,6 @@ class TestMeta(object):
         assert self.dval.upper() in self.meta
         return
 
-    def test_ho_data_retrieval_case_insensitive(self):
-        """Test that higher order data variables are case insensitive."""
-
-        # Initalize the meta data
-        self.dval = "test_val"
-        self.meta[self.dval] = self.default_val
-
-        cmeta = pysat.Meta()
-        cval = '_'.join([self.dval, 'child'])
-        cmeta[cval] = self.default_val
-        self.meta[self.dval] = cmeta
-
-        # Test that the data value is present using real key and upper-case
-        # version of that key
-        assert self.dval in self.meta.keys()
-
-        # Test the child variable, which should only be present through the
-        # children attribute. Cannot specify keys for case-insensitive look-up.
-        assert cval not in self.meta.keys()
-        assert cval in self.meta[self.dval].children.keys()
-        assert cval.upper() in self.meta[self.dval].children
-        return
-
     @pytest.mark.parametrize("data_val", ['test_val', 'TEST_VAL', 'Test_Val',
                                           'TeSt_vAl'])
     def test_var_case_name(self, data_val):
@@ -1185,6 +1177,21 @@ class TestMeta(object):
         assert data_val == self.meta.var_case_name(data_val.upper())
         assert data_val == self.meta.var_case_name(data_val.capitalize())
         assert data_val == self.meta.var_case_name(data_val)
+        return
+
+    @pytest.mark.parametrize("data_val", ['test_val', 'TEST_VAL', 'Test_Val',
+                                          'TeSt_vAl'])
+    def test_var_case_name_list_input(self, data_val):
+        """Test `meta.var_case_name` preserves case for list inputs."""
+
+        self.meta[data_val] = self.default_val
+
+        output = self.meta.var_case_name([data_val.lower(),
+                                          data_val.capitalize(),
+                                          data_val.upper(),
+                                          data_val])
+        target = [data_val] * len(output)
+        assert np.all(target == output)
         return
 
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
@@ -1208,6 +1215,24 @@ class TestMeta(object):
         assert self.meta.attr_case_name(label.lower()) == label
         assert self.meta.attr_case_name(label.capitalize()) == label
         assert self.meta.attr_case_name(label) == label
+        return
+
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_get_attribute_name_case_preservation_list_input(self, label):
+        """Test that meta labels and values preserve the input case, list input.
+
+        """
+
+        # Set the meta data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = {label: 'Test meta data for meta label'}
+
+        # Test the meta method using different input variations
+        ins = [label.upper(), label.lower(), label.capitalize(),
+               label]
+        outs = [label] * len(ins)
+        assert np.all(self.meta.attr_case_name(ins) == outs)
         return
 
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
@@ -1626,10 +1651,7 @@ class TestMeta(object):
                 # Test the higher order variables
                 for cvar in columns:
                     cmvar = cvar.upper()
-                    assert cvar not in self.meta[mvar].children.keys(), \
-                        "HO variable not renamed: {:} ({:})".format(
-                            repr(cvar), repr(mvar))
-                    assert cmvar in self.meta[mvar].children.keys(), \
+                    assert cmvar in self.meta[mvar].children, \
                         "renamed HO variable missing: {:} ({:})".format(
                             repr(cmvar), repr(mvar))
 
@@ -1646,7 +1668,7 @@ class TestMeta(object):
         rename_dict = {dvar: dvar.upper()
                        for i, dvar in enumerate(self.testInst.variables)
                        if i < 3 or dvar == 'profiles'}
-        rename_dict['density'] = 'DeNsItY'
+        rename_dict['profiles'] = {'density': 'DeNsItY'}
 
         # Rename the meta variables to be all upper case, this will differ
         # from the Instrument variables, as pysat defaults to lower case
@@ -1656,36 +1678,95 @@ class TestMeta(object):
             # Test the lower order variables
             if dvar in rename_dict.keys():
                 mvar = rename_dict[dvar]
-                assert dvar not in self.meta.keys(), \
-                    "variable not renamed: {:}".format(repr(dvar))
-                assert mvar in self.meta.keys(), \
-                    "renamed variable missing: {:}".format(repr(mvar))
+
+                if isinstance(mvar, dict):
+                    assert dvar in self.meta.keys_nD()
+
+                    # Get the variable names from the children
+                    if hasattr(self.testInst[dvar][0], 'columns'):
+                        columns = getattr(self.testInst[dvar][0], 'columns')
+                    else:
+                        columns = [dvar]
+
+                    # Test the higher order variables.
+                    for cvar in columns:
+                        if cvar in mvar.keys():
+                            cmvar = mvar[cvar]
+                            assert cmvar in self.meta[dvar].children.keys(), \
+                                "renamed HO variable missing: {:} ({:})".format(
+                                    repr(cmvar), repr(dvar))
+                        else:
+                            assert cvar in self.meta[dvar].children.keys(), \
+                                "unmapped HO var altered: {:} ({:})".format(
+                                    repr(cvar), repr(dvar))
+                else:
+                    assert dvar not in self.meta.keys(), \
+                        "variable not renamed: {:}".format(repr(dvar))
+                    assert mvar in self.meta.keys(), \
+                        "renamed variable missing: {:}".format(repr(mvar))
             else:
                 mvar = dvar
                 assert dvar in self.meta.keys(), \
                     "unmapped variable renamed: {:}".format(repr(dvar))
 
-            if mvar in self.meta.keys_nD():
-                # Get the variable names from the children
-                if hasattr(self.testInst[dvar][0], 'columns'):
-                    columns = getattr(self.testInst[dvar][0], 'columns')
-                else:
-                    columns = [dvar]
+        return
 
-                # Test the higher order variables.
-                for cvar in columns:
-                    if cvar in rename_dict.keys():
-                        cmvar = rename_dict[cvar]
-                        assert cvar not in self.meta[mvar].children.keys(), \
-                            "HO variable not renamed: {:} ({:})".format(
-                                repr(cvar), repr(mvar))
-                        assert cmvar in self.meta[mvar].children.keys(), \
-                            "renamed HO variable missing: {:} ({:})".format(
-                                repr(cmvar), repr(mvar))
-                    else:
-                        assert cvar in self.meta[mvar].children.keys(), \
-                            "unmapped HO variable renamed: {:} ({:})".format(
-                                repr(cvar), repr(mvar))
+    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
+                                       'MeTa_lAbEl'])
+    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
+                                                                         label):
+        """Test that get attribute names preserves the case with ho metadata."""
+
+        # Set a meta data variable
+        self.dval = 'test_val'
+        self.meta[self.dval] = self.default_val
+
+        # Set an attribute with case in `label`
+        cval = ''.join([self.dval, '21'])
+        meta2 = pysat.Meta()
+        meta2[cval] = {label: 'Test meta data for meta label'}
+
+        # Attach child metadata to root meta
+        dval2 = ''.join([self.dval, '2'])
+        self.meta[dval2] = meta2
+
+        # Attempt to assign to same label at root but potentially different
+        # case.
+        self.meta[self.dval] = {label.lower(): 'Test meta data for meta label'}
+
+        # Create inputs and get the attribute case names
+        ins = [label.upper(), label.lower(), label.capitalize(),
+               label]
+        outputs = self.meta.attr_case_name(ins)
+
+        targets = [label] * len(ins)
+
+        # Confirm original input case retained.
+        assert np.all(outputs == targets)
+
+        return
+
+    def test_ho_data_retrieval_case_insensitive(self):
+        """Test that higher order data variables are case insensitive."""
+
+        # Initalize the meta data
+        self.dval = "test_val"
+        self.meta[self.dval] = self.default_val
+
+        cmeta = pysat.Meta()
+        cval = '_'.join([self.dval, 'child'])
+        cmeta[cval] = self.default_val
+        self.meta[self.dval] = cmeta
+
+        # Test that the data value is present using real key and upper-case
+        # version of that key
+        assert self.dval in self.meta.keys()
+
+        # Test the child variable, which should only be present through the
+        # children attribute. Cannot specify keys for case-insensitive look-up.
+        assert cval not in self.meta.keys()
+        assert cval in self.meta[self.dval].children.keys()
+        assert cval.upper() in self.meta[self.dval].children
         return
 
 

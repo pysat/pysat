@@ -109,7 +109,7 @@ class TestConstellationInit(object):
         with pytest.raises(AttributeError) as aerr:
             pysat.Constellation(const_module=self.instruments)
 
-        assert str(aerr).find("missing required attribute 'instruments'")
+        assert str(aerr).find("missing required attribute 'instruments'") >= 0
         return
 
     def test_construct_raises_noniterable_error(self):
@@ -118,7 +118,17 @@ class TestConstellationInit(object):
         with pytest.raises(ValueError) as verr:
             self.const = pysat.Constellation(instruments=self.instruments[0])
 
-        assert str(verr).find("instruments argument must be list-like")
+        assert str(verr).find("instruments argument must be list-like") >= 0
+        return
+
+    def test_construct_non_inst_list(self):
+        """Test error raised when Constellation inputs aren't instruments."""
+
+        with pytest.raises(ValueError) as verr:
+            self.const = pysat.Constellation(instruments=[self.instruments[0],
+                                                          'not an inst'])
+
+        assert str(verr).find("Constellation input is not an Instrument") >= 0
         return
 
     def test_construct_null(self):
@@ -372,10 +382,19 @@ class TestConstellationFunc(object):
         return
 
     def test_get_unique_attr_vals_bad_type(self):
-        """Test raises AttributeError for bad input attribute type."""
+        """Test raises TypeError for bad input attribute type."""
 
         with pytest.raises(TypeError) as terr:
             self.const._get_unique_attr_vals('empty')
 
         assert str(terr).find("attribute is not list-like") >= 0
+        return
+
+    def test_bad_call_inst_method(self):
+        """Test raises AttributeError for missing Instrument method."""
+
+        with pytest.raises(AttributeError) as aerr:
+            self.const._call_inst_method('not a method')
+
+        assert str(aerr).find("unknown method") >= 0
         return

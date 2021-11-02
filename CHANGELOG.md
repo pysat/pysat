@@ -11,7 +11,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      of platforms, names, tags, and/or inst_ids, which are new attributes
    * Added hidden Constellation methods to determine unique attribute elements
      and set Instrument attributes across all instruments
+   * Added hidden Constellation method to sequentially call Instrument methods
    * Extended Constellation unit tests
+   * Added more quality checks to the Constellation initialization
    * Standardized Instrument instantiation to always define `inst_module`
    * Extended testing options for `pysat.utils.testing` functions
    * Added `start_time` keyword for test instruments
@@ -27,7 +29,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Added kwargs for epoch units and origin in `pysat.utils.io.load_netCDF`.
+   * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
+     list of str as input as well as str.
    * Added a time function to calculate decimal year from datetime.
+   * Allow `Instrument.rename` to take a fuction or mapping dict as input,
+     after adapting routine to use `Meta.rename`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -604,8 +610,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Further along the road toward windows compatibility
 * Fixed orbit number reporting in orbits.current
 * Added support for Defense Meteorological Satellite Program (DMSP) Ion Velocity
-  Meter (IVM) data. Downloads from the Madrigal database
-  (https://openmadrigal.org)
+  Meter (IVM) data. Downloads from the Madrigal database.
 * Added support for both sat_id and tag variations within filenames in the NASA
   CDAWeb template
 * Updated docummentation covering requirements for adding new instruments to
