@@ -685,6 +685,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
+    # TODO(#947) Add conversion for timestamps, including origin and unit
+
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
         meta_dict = {}

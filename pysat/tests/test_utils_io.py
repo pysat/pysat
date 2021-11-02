@@ -218,6 +218,7 @@ class TestLoadNetCDF(object):
     def test_read_netcdf4_w_epoch_kwargs(self, kwargs, target):
         """Test success of writing and reading a netCDF4 file."""
 
+        # TODO(#947) Expand to xarray objects
         if not self.testInst.pandas_format:
             pytest.skip('Not yet implemented for xrray')
 
