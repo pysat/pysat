@@ -93,8 +93,9 @@ class Constellation(object):
     Raises
     ------
     ValueError
-        When `instruments` is not list-like or when all inputs to load through
-        the registered Instrument list are unknown.
+        When `instruments` is not list-like, when all inputs to load through
+        the registered Instrument list are unknown, or when one of the items
+        assigned is not an Instrument.
     AttributeError
         When module provided through `const_module` is missing the required
         attribute `instruments`.
@@ -217,12 +218,18 @@ class Constellation(object):
             self.instruments.extend(list(instruments))
 
         # For each Instrument added by `const_module` or `instruments`, extend
-        # the platforms/names/tags/inst_ids
-        for inst_ind in np.arange(inst_len, len(self.instruments)):
-            self.platforms.append(self.instruments[inst_ind].platform)
-            self.names.append(self.instruments[inst_ind].name)
-            self.tags.append(self.instruments[inst_ind].tag)
-            self.inst_ids.append(self.instruments[inst_ind].inst_id)
+        # the platforms/names/tags/inst_ids and test that they are Instruments
+        for inst_ind, inst in enumerate(self.instruments):
+            if not isinstance(inst, pysat.Instrument):
+                raise ValueError(
+                    'Constellation input is not an Instrument: {:}'.format(
+                        repr(inst)))
+
+            if inst_ind >= inst_len:
+                self.platforms.append(inst.platform)
+                self.names.append(inst.name)
+                self.tags.append(inst.tag)
+                self.inst_ids.append(inst.inst_id)
 
         # Set the index attributes
         self.index_res = index_res
