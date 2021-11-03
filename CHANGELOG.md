@@ -69,7 +69,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
    * Allow `tag` and `inst_id` to be specified as None (#892)
    * Fixed a bug in `pysat.utils.time.create_datetime_index` (#906)
-   * Fixed a bug in `pysat.utils.scale_units`.
+   * Fixed a bug in `pysat.utils.scale_units` and ensured '/cc' compatibility.
    * Added a warning if `inst_module` and `platform`/`name` are used to
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
