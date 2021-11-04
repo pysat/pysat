@@ -349,6 +349,23 @@ class TestMeta(object):
         self.eval_meta_settings()
         return
 
+    def test_set_meta_with_array(self):
+        """Test that setting meta as an array raises appropriate warning."""
+
+        with warnings.catch_warnings(record=True) as war:
+            self.meta['fake_var'] = {'units': [1, 2]}
+
+        # Test the warning
+        default_str = ' '.join(['Array elements are not allowed in meta.',
+                                'Dropping input for fake_var with key units'])
+        assert len(war) >= 1
+        assert war[0].category == UserWarning
+        assert default_str in str(war[0].message)
+
+        # Check that meta is blank
+        assert self.meta['fake_var']['units'] == ''
+        return
+
     # -------------------------
     # Test the logging messages
 
