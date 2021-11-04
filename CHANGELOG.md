@@ -28,7 +28,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added a warning evaluation utility to `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
-   * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
+   * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support
      list of str as input as well as str.
    * Added a time function to calculate decimal year from datetime.
    * Allow `Instrument.rename` to take a fuction or mapping dict as input,
@@ -80,6 +80,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      instrument data (#924)
    * Fixed a bug where empty check for xarray instruments fail when time not
      present. (#922)
+   * Improved feedback when users try to set meta with an array.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
@@ -99,6 +100,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Separated MetaLabels tests from Meta test class
    * Organized and reduced duplication in the Meta test class
    * Added CI reports for supported data products
+   * Added a cap on coveralls to ensure success of continuous integration
 
 [3.0.1] - 2021-07-28
 --------------------
