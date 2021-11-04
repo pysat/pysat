@@ -25,7 +25,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `rename` and `add_epoch_metadata` methods to the Meta class
    * Added I/O utilities to the utility module, extracting existing methods
      from the Instrument class and core utility module.
-   * Added a warning evaluation utility to `pysat.utils.testing`.
+   * Added a warning evaluation and directory creation functions to
+     `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
