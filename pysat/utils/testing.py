@@ -163,7 +163,7 @@ def prep_dir(data_path):
     Returns
     -------
     bool
-        True if directories create, False if not
+        True if the directories were created, False if not for any reason (including current existence).
 
     """
     # Create data directories, if possible
