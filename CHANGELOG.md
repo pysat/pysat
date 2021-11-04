@@ -26,7 +26,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `rename` and `add_epoch_metadata` methods to the Meta class
    * Added I/O utilities to the utility module, extracting existing methods
      from the Instrument class and core utility module.
-   * Added a warning evaluation utility to `pysat.utils.testing`.
+   * Added a warning evaluation and directory creation functions to
+     `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
@@ -70,7 +71,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
    * Allow `tag` and `inst_id` to be specified as None (#892)
    * Fixed a bug in `pysat.utils.time.create_datetime_index` (#906)
-   * Fixed a bug in `pysat.utils.scale_units`.
+   * Fixed a bug in `pysat.utils.scale_units` and ensured '/cc' compatibility.
    * Added a warning if `inst_module` and `platform`/`name` are used to
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
