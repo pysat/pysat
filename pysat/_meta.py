@@ -403,8 +403,8 @@ class Meta(object):
                             else:
                                 warnings.warn(' '.join(('Array elements are',
                                                         'not allowed in meta.',
-                                                        'Dropping input :',
-                                                        key)))
+                                                        'Dropping input for',
+                                                        var, 'with key', ikey)))
                         else:
                             self._data.loc[var, ikey] = to_be_set
                 else:
