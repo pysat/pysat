@@ -105,6 +105,24 @@ class TestInstruments(InstLibTests):
         assert all(file_date_range == file_list.index)
         return
 
+    @pytest.mark.parametrize("inst_dict", instruments['download'])
+    def test_inst_max_latitude(self, inst_dict):
+        """Test operation of num_samples keyword."""
+
+        # Number of samples needs to be <96 because freq is not settable.
+        # Different test instruments have different default number of points.
+        num = 10
+        _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
+        self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'])
+        if self.test_inst.name != 'testmodel':
+            self.test_inst.load(date=date, max_latitude=10.)
+            assert np.all(np.abs(self.test_inst['latitude']) <= 10.)
+        else:
+            # Skipping testmodel Instrument
+            assert True
+
+        return
+
 
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
