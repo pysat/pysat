@@ -6,13 +6,26 @@
 """Tests the pysat utility testing routines."""
 
 import numpy as np
+import os
 import pytest
+import tempfile
+import warnings
 
 from pysat.utils import testing
 
 
 class TestTestingUtils(object):
     """Unit tests for `pysat.utils.testing` functions."""
+
+    def setup(self):
+        """Create a clean test environment."""
+        warnings.simplefilter("always")
+        return
+
+    def teardown(self):
+        """Clean up the test environment."""
+        warnings.resetwarnings()
+        return
 
     @pytest.mark.parametrize("slist, blist",
                              [([1, 2.0], [1, 2.0, 3]),
@@ -81,4 +94,113 @@ class TestTestingUtils(object):
         """Test successful evaluation of un-equivalent values."""
 
         assert not testing.nan_equal(val1, val2)
+        return
+
+    @pytest.mark.parametrize("warn_type", [
+        UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
+        FutureWarning, PendingDeprecationWarning, ImportWarning,
+        UnicodeWarning, BytesWarning, ResourceWarning])
+    def test_good_eval_warnings(self, warn_type):
+        """Test warning evaluation function success.
+
+        Parameters
+        ----------
+        warn_type : Warning
+            Warning class to be raised
+
+        """
+        warn_msg = 'test warning'
+
+        # Raise the desired warning
+        with warnings.catch_warnings(record=True) as war:
+            warnings.warn(warn_msg, warn_type)
+
+        # Evaluate the warning output
+        testing.eval_warnings(war, [warn_msg], warn_type)
+        return
+
+    @pytest.mark.parametrize("warn_type", [
+        UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
+        FutureWarning, PendingDeprecationWarning, ImportWarning,
+        UnicodeWarning, BytesWarning, ResourceWarning])
+    def test_eval_warnings_bad_type(self, warn_type):
+        """Test warning evaluation function failure for mismatched type.
+
+        Parameters
+        ----------
+        warn_type : Warning
+            Warning class to be raised
+
+        """
+        warn_msg = 'test warning'
+        bad_type = UserWarning if warn_type != UserWarning else BytesWarning
+
+        # Raise the desired warning
+        with warnings.catch_warnings(record=True) as war:
+            warnings.warn(warn_msg, warn_type)
+
+        # Catch and evaluate the expected error
+        with pytest.raises(AssertionError) as aerr:
+            testing.eval_warnings(war, [warn_msg], bad_type)
+
+        assert str(aerr).find('bad warning type for message') >= 0
+        return
+
+    @pytest.mark.parametrize("warn_type", [
+        UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
+        FutureWarning, PendingDeprecationWarning, ImportWarning,
+        UnicodeWarning, BytesWarning, ResourceWarning])
+    def test_eval_warnings_bad_msg(self, warn_type):
+        """Test warning evaluation function failure for mismatched message.
+
+        Parameters
+        ----------
+        warn_type : Warning
+            Warning class to be raised
+
+        """
+        warn_msg = 'test warning'
+        bad_msg = 'not correct'
+
+        # Raise the desired warning
+        with warnings.catch_warnings(record=True) as war:
+            warnings.warn(warn_msg, warn_type)
+
+        # Catch and evaluate the expected error
+        with pytest.raises(AssertionError) as aerr:
+            testing.eval_warnings(war, [bad_msg], warn_type)
+
+        assert str(aerr).find('did not find') >= 0
+        return
+
+    def test_prep_dir_exists(self):
+        """Test successful pass at creating existing directory."""
+
+        # Create a temporary directory
+        tempdir = tempfile.TemporaryDirectory()
+        assert os.path.isdir(tempdir.name)
+
+        # Assert prep_dir does not re-create the directory
+        assert not testing.prep_dir(tempdir.name)
+
+        # Clean up temporary directory
+        tempdir.cleanup()
+        return
+
+    def test_prep_dir_new(self):
+        """Test successful pass at creating existing directory."""
+
+        # Create a temporary directory and get it's name
+        tempdir = tempfile.TemporaryDirectory()
+        new_dir = tempdir.name
+        
+        # Clean up temporary directory
+        tempdir.cleanup()
+        assert not os.path.isdir(new_dir)
+
+        # Assert prep_dir re-creates the directory
+        assert testing.prep_dir(new_dir)
+
+        # Clean up the test directory
+        os.rmdir(new_dir)
         return
