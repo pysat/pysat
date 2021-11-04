@@ -190,7 +190,7 @@ class TestTestingUtils(object):
     def test_prep_dir_new(self):
         """Test successful pass at creating existing directory."""
 
-        # Create a temporary directory and get it's name
+        # Create a temporary directory and get its name
         tempdir = tempfile.TemporaryDirectory()
         new_dir = tempdir.name
 
