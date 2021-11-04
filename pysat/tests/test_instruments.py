@@ -107,11 +107,8 @@ class TestInstruments(InstLibTests):
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_max_latitude(self, inst_dict):
-        """Test operation of num_samples keyword."""
+        """Test operation of max_latitude keyword."""
 
-        # Number of samples needs to be <96 because freq is not settable.
-        # Different test instruments have different default number of points.
-        num = 10
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'])
         if self.test_inst.name != 'testmodel':
