@@ -193,7 +193,7 @@ class TestTestingUtils(object):
         # Create a temporary directory and get it's name
         tempdir = tempfile.TemporaryDirectory()
         new_dir = tempdir.name
-        
+
         # Clean up temporary directory
         tempdir.cleanup()
         assert not os.path.isdir(new_dir)
