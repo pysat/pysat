@@ -116,7 +116,7 @@ class TestInstruments(InstLibTests):
             assert np.all(np.abs(self.test_inst['latitude']) <= 10.)
         else:
             # Skipping testmodel Instrument
-            assert True
+            pytest.skip("kwarg not implemented in testmodel")
 
         return
 
