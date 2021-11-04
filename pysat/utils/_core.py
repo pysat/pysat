@@ -105,21 +105,24 @@ def scale_units(out_unit, in_unit):
         if in_key != out_key:
             raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
                                                                  in_unit))
+
         # Recast units as keys for the scales dictionary and ensure that
         # the format is consistent
-        rkey = ''
+        rkeys = []
         for rr in replace_str.keys():
-            if out_key.find(rr) >= 0:
-                rkey = rr
+            if out_key.find(rr) >= 0 or rr.find(out_key) >= 0:
+                rkeys.append(rr)
 
+        # Redefine keys to find correct values for scaling
         out_key = out_unit.lower()
         in_key = in_unit.lower()
 
-        if rkey in replace_str.keys():
+        for rkey in rkeys:
             for rval in replace_str[rkey]:
                 out_key = out_key.replace(rval, rkey)
                 in_key = in_key.replace(rval, rkey)
 
+    # Calculate the scaling factor
     unit_scale = scales[out_key] / scales[in_key]
 
     return unit_scale

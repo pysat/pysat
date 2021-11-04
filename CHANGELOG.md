@@ -25,7 +25,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `rename` and `add_epoch_metadata` methods to the Meta class
    * Added I/O utilities to the utility module, extracting existing methods
      from the Instrument class and core utility module.
-   * Added a warning evaluation utility to `pysat.utils.testing`.
+   * Added a warning evaluation and directory creation functions to
+     `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Added kwargs for epoch units and origin in `pysat.utils.io.load_netCDF`.
@@ -70,7 +71,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed an issue in generating filenames for `pysat.Instrument._iter_list`
    * Allow `tag` and `inst_id` to be specified as None (#892)
    * Fixed a bug in `pysat.utils.time.create_datetime_index` (#906)
-   * Fixed a bug in `pysat.utils.scale_units`.
+   * Fixed a bug in `pysat.utils.scale_units` and ensured '/cc' compatibility.
    * Added a warning if `inst_module` and `platform`/`name` are used to
      instantiate an instrument (#850). In case of this, `inst_module` takes
      priority.
@@ -81,6 +82,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      instrument data (#924)
    * Fixed a bug where empty check for xarray instruments fail when time not
      present. (#922)
+   * Improved feedback when users try to set meta with an array.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
@@ -100,6 +102,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Separated MetaLabels tests from Meta test class
    * Organized and reduced duplication in the Meta test class
    * Added CI reports for supported data products
+   * Added a cap on coveralls to ensure success of continuous integration
 
 [3.0.1] - 2021-07-28
 --------------------

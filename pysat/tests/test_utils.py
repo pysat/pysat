@@ -83,6 +83,7 @@ class TestScaleUnits(object):
         self.dist_units = ["m", "km", "cm"]
         self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
                           'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
+        self.vol_units = ["m-3", "cm-3", "/cc", 'n/cc', 'm$^{-3}$', 'cm$^{-3}$']
         self.scale = 0.0
         return
 
@@ -90,6 +91,7 @@ class TestScaleUnits(object):
         """Clean up the test environment."""
 
         del self.deg_units, self.dist_units, self.vel_units, self.scale
+        del self.vol_units
         return
 
     def eval_unit_scale(self, out_unit, scale_type):
@@ -123,6 +125,11 @@ class TestScaleUnits(object):
                 assert self.scale == 1.0
             elif out_unit.find("km") == 0:
                 assert self.scale == 0.001
+        elif scale_type.lower() == 'volume':
+            if out_unit.find("m") == 0:
+                assert self.scale == 1.0
+            else:
+                assert self.scale == 1000000.0
         return
 
     def test_scale_units_same(self):
@@ -154,6 +161,14 @@ class TestScaleUnits(object):
         for out_unit in self.vel_units:
             self.scale = utils.scale_units(out_unit, "m/s")
             self.eval_unit_scale(out_unit, 'velocity')
+        return
+
+    def test_scale_units_vol(self):
+        """Test scale_units for volumes."""
+
+        for out_unit in self.vol_units:
+            self.scale = utils.scale_units(out_unit, "m-3")
+            self.eval_unit_scale(out_unit, 'volume')
         return
 
     @pytest.mark.parametrize("in_args,err_msg", [

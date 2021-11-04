@@ -20,28 +20,6 @@ from pysat.utils import io
 from pysat.utils import testing
 
 
-def prep_dir(inst):
-    """Prepare the directory to provide netCDF export file support.
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        Instrument class object
-
-    Returns
-    -------
-    bool
-        True if directories create, False if not
-
-    """
-    # Create data directories
-    try:
-        os.makedirs(inst.files.data_path)
-        return True
-    except OSError:
-        return False
-
-
 class TestLoadNetCDF(object):
     """Unit tests for `utils.io.load_netcdf` and `utils.io.inst_to_netcdf`."""
 
@@ -60,7 +38,7 @@ class TestLoadNetCDF(object):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
         # Create testing directory
-        prep_dir(self.testInst)
+        testing.prep_dir(self.testInst.files.data_path)
 
         # Initalize the loaded data
         self.loaded_inst = None
@@ -325,7 +303,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
             '']['']
 
         # Create testing directory
-        prep_dir(self.testInst)
+        testing.prep_dir(self.testInst.files.data_path)
 
         # Initalize the loaded data
         self.loaded_inst = None
@@ -410,7 +388,7 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
 
         # Create testing directory
-        prep_dir(self.testInst)
+        testing.prep_dir(self.testInst.files.data_path)
 
         # Initialize the loaded data object
         self.loaded_inst = None
@@ -501,7 +479,7 @@ class TestNetCDF4Integration(object):
             missing = ['test_nan_export']
 
         # Write the file
-        prep_dir(self.testInst)
+        testing.prep_dir(self.testInst.files.data_path)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.to_netcdf4(outfile, export_nan=export_nan)
