@@ -1,4 +1,4 @@
-coveralls
+coveralls<3.3
 flake8
 flake8-docstrings
 hacking
