@@ -235,6 +235,22 @@ class TestIfyFunctions(object):
         utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
+    @pytest.mark.parametrize('iterable', [{'key1': 1, 'key2': 2}.keys(),
+                                          {'key1': 1, 'key2': 2}.values()])
+    def test_listify_failure_with_dict_iterable(self, iterable):
+        """Test listify failes with various dict iterables.
+
+        Parameters
+        ----------
+        iterable : dict_keys or dict_values
+            Iterable dict object
+
+        """
+
+        new_iterable = utils.listify(iterable)
+        assert new_iterable[0] == iterable
+        return
+
     @pytest.mark.parametrize('iterable', [
         np.timedelta64(1), np.full((1, 1), np.timedelta64(1)),
         np.full((2, 2), np.timedelta64(1)),

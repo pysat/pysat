@@ -141,9 +141,16 @@ def listify(iterable):
     list
         An enclosing 1-D list of iterable if not already a list
 
+    Note
+    ----
+    Does not accept dict_keys or dict_values as input.
+
     """
 
+    # Cast as an array-like object
     arr_iter = np.asarray(iterable)
+
+    # Treat output differently based on the array shape
     if arr_iter.shape == ():
         list_iter = [arr_iter.tolist()]
     elif arr_iter.shape[0] == 0:
