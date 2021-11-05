@@ -39,7 +39,8 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         start_time=None, num_samples=86400, test_load_kwarg=None):
+         start_time=None, num_samples=86400, test_load_kwarg=None,
+         max_latitude=90.):
     """Load the test files.
 
     Parameters
@@ -67,6 +68,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         current day. (default=86400)
     test_load_kwarg : any or NoneType
         Testing keyword (default=None)
+    max_latitude : float
+        Latitude simulated as `max_latitude` * cos(theta(t))`, where
+        theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.).
 
     Returns
     -------
@@ -131,7 +135,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
-    latitude = 90.0 * np.cos(angle)
+    latitude = max_latitude * np.cos(angle)
     data['latitude'] = ((epoch_name), latitude)
 
     # create constant altitude at 400 km

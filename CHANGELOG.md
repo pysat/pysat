@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Standardized Instrument instantiation to always define `inst_module`
    * Extended testing options for `pysat.utils.testing` functions
    * Added `start_time` keyword for test instruments
+   * Added `max_latitude` keyword for non-model test instruments
    * Added `_test_download_ci` as a standard attribute for `pysat.Instrument`
    * Added a testing model similar to TIEGCM to
      `pysat.instruments.pysat_testmodel` as tag='pressure_levels'.
