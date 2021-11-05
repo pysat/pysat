@@ -202,7 +202,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
         (default='NETCDF4')
     epoch_name : str
         Data key for epoch variable.  The epoch variable is expected to be an
-        array of interger or float values denoting time elapsed from an origin
+        array of integer or float values denoting time elapsed from an origin
         specified by `epoch_origin` with units specified by `epoch_unit`. This
         epoch variable will be converted to a `DatetimeIndex` for consistency
         across pysat instruments.  (default='Epoch')
@@ -215,9 +215,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
         two specific strings for commonly used calendars.  These conversions are
         handled by `pandas.to_datetime`.
         If ‘unix’ (or POSIX) time; origin is set to 1970-01-01.
-        If ‘julian’, unit must be ‘D’, and origin is set to beginning of Julian
-        Calendar. Julian day number 0 is assigned to the day starting at noon on
-        January 1, 4713 BC.
+        If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
+        Julian Calendar. Julian day number 0 is assigned to the day starting at
+        noon on January 1, 4713 BC.
         (default='unix')
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
