@@ -307,8 +307,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         epoch variable will be converted to a `DatetimeIndex` for consistency
         across pysat instruments.  (default='Epoch')
     epoch_unit : str
-        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us', 'ns').
-        (default='ms')
+        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
+        'ns'). (default='ms')
     epoch_origin : str or timestamp-convertable
         Origin of epoch calculation, following convention for
         `pandas.to_datetime`.  Accepts timestamp-convertable objects, as well as
@@ -401,8 +401,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         epoch variable will be converted to a `DatetimeIndex` for consistency
         across pysat instruments.  (default='Epoch')
     epoch_unit : str
-        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us', 'ns').
-        (default='ms')
+        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
+        'ns'). (default='ms')
     epoch_origin : str or timestamp-convertable
         Origin of epoch calculation, following convention for
         `pandas.to_datetime`.  Accepts timestamp-convertable objects, as well as
@@ -707,8 +707,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
-    # TODO(#947) Add conversion for timestamps that may have been treated incorrectly,
-    # including origin and unit.  At the moment this is only done for Pandas data.
+    # TODO(#947) Add conversion for timestamps that may have been treated
+    # incorrectly, including origin and unit.  At the moment this is only done
+    # for Pandas data.
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():

@@ -207,8 +207,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
         epoch variable will be converted to a `DatetimeIndex` for consistency
         across pysat instruments.  (default='Epoch')
     epoch_unit : str
-        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us', 'ns').
-        (default='ms')
+        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
+        'ns'). (default='ms')
     epoch_origin : str or timestamp-convertable
         Origin of epoch calculation, following convention for
         `pandas.to_datetime`.  Accepts timestamp-convertable objects, as well as
