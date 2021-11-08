@@ -307,7 +307,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         epoch variable will be converted to a `DatetimeIndex` for consistency
         across pysat instruments.  (default='Epoch')
     epoch_unit : str
-        The unit of the epoch variable ('D', 's', 'ms', 'us', 'ns').
+        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us', 'ns').
         (default='ms')
     epoch_origin : str or timestamp-convertable
         Origin of epoch calculation, following convention for
@@ -317,8 +317,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         If ‘unix’ (or POSIX) time; origin is set to 1970-01-01.
         If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
         Julian Calendar. Julian day number 0 is assigned to the day starting at
-        noon on January 1, 4713 BC.
-        (default='unix')
+        noon on January 1, 4713 BC. (default='unix')
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
         xarray Dataset (False). (default=False)
@@ -402,7 +401,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         epoch variable will be converted to a `DatetimeIndex` for consistency
         across pysat instruments.  (default='Epoch')
     epoch_unit : str
-        The unit of the epoch variable ('D', 's', 'ms', 'us', 'ns').
+        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us', 'ns').
         (default='ms')
     epoch_origin : str or timestamp-convertable
         Origin of epoch calculation, following convention for
@@ -412,8 +411,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         If ‘unix’ (or POSIX) time; origin is set to 1970-01-01.
         If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
         Julian Calendar. Julian day number 0 is assigned to the day starting at
-        noon on January 1, 4713 BC.
-        (default='unix')
+        noon on January 1, 4713 BC. (default='unix')
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -709,7 +707,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
-    # TODO(#947) Add conversion for timestamps, including origin and unit
+    # TODO(#947) Add conversion for timestamps that may have been treated incorrectly,
+    # including origin and unit.  At the moment this is only done for Pandas data.
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
