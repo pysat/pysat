@@ -7,6 +7,7 @@
 
 import numpy as np
 import os
+from pysat.utils.files import check_and_make_path
 
 
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
@@ -169,7 +170,7 @@ def prep_dir(data_path):
     """
     # Create data directories, if possible
     try:
-        os.makedirs(data_path)
+        check_and_make_path(data_path)
         return True
     except OSError:
         return False
