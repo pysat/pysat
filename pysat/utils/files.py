@@ -15,7 +15,7 @@ import string
 
 import pandas as pds
 
-from pysat.utils._core import available_instruments
+from pysat.utils._core import available_instruments, listify
 from pysat.utils.time import create_datetime_index
 
 
@@ -703,3 +703,56 @@ def check_and_make_path(path):
             raise ValueError('Desired and constructed paths differ')
 
     return
+
+def get_file_information(paths, root_dir=''):
+    """Return file information for paths.
+
+    Wrapper around `os.stat`
+
+    Parameters
+    ----------
+    paths : str or list
+        Full pathnames of files to get attribute information.
+    root_dir : str
+        Common root path shared by all paths, if any. (default='')
+
+    Returns
+    -------
+    file_info : dict
+        Keyed by file attribute. Each attribute maps to a list
+        of values for each file in `paths`.
+
+    """
+
+    paths = listify(paths)
+
+    # Mapping of output key to the attribute name returned by `os.stat`
+    attrs = {'content_modified_time': 'st_mtime', 'mode': 'st_mode',
+             'size': 'st_size', 'inode': 'st_ino', 'device': 'st_dev',
+             'nlink': 'st_nlink', 'uid': 'st_uid', 'gid': 'st_gid',
+             'last_access_time': 'st_atime',
+             'metadata_update_time': 'st_ctime'}
+
+    # Initiliaze output dictionary.
+    file_info = {}
+    for attr in attrs.keys():
+        file_info[attr] = []
+
+    # Add common root directory to paths, if supplied.
+    if root_dir != '':
+        for i, path in enumerate(paths):
+            paths[i] = os.path.join(root_dir, path)
+
+    # Collect file attributes and store.
+    attrbs = []
+    for path in paths:
+        info = os.stat(path)
+        for attr in attrs.keys():
+            file_info[attr].append(getattr(info, attrs[attr]))
+
+    # Convert times to datetimes.
+    for attr in ['content_modified_time', 'last_access_time',
+                 'metadata_update_time']:
+        file_info[attr] = pds.to_datetime(file_info[attr], unit='s')
+
+    return file_info
