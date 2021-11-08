@@ -30,7 +30,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
-   * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support
+   * Added kwargs for epoch units and origin in `pysat.utils.io.load_netCDF`.
+   * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
      list of str as input as well as str.
    * Added a time function to calculate decimal year from datetime.
    * Allow `Instrument.rename` to take a fuction or mapping dict as input,

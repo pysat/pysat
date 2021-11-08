@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------
 """Tests the pysat utility io routines."""
 
+import datetime as dt
 import logging
 import numpy as np
 import os
@@ -184,6 +185,61 @@ class TestLoadNetCDF(object):
 
         # Test the loaded data
         self.eval_loaded_data()
+        return
+
+    @pytest.mark.parametrize("kwargs, target", [
+        ({}, dt.timedelta(seconds=1)),
+        ({'epoch_unit': 'ns'}, dt.timedelta(microseconds=1)),
+        ({'epoch_origin': dt.datetime(1980, 1, 6)}, dt.timedelta(seconds=1)),
+        ({'epoch_unit': 'ns', 'epoch_origin': dt.datetime(1980, 1, 6)},
+         dt.timedelta(microseconds=1))])
+    def test_read_netcdf4_w_epoch_kwargs(self, kwargs, target):
+        """Test success of writing and reading a netCDF4 file.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Optional kwargs to input into `load_netcdf`. Allows the epoch
+            calculation to use custom origin and units.
+        target : dt.timedelta
+            Expected interpretation of 1 sec of time in loaded data when a given
+            epoch unit is specified.  Default unit for pds.to_datetime is 1 ms.
+
+        """
+
+        # TODO(#947) Expand to xarray objects once functionality is updated
+        if not self.testInst.pandas_format:
+            pytest.skip('Not yet implemented for xarray')
+
+        # Create a bunch of files by year and doy
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime)
+        io.inst_to_netcdf(self.testInst, fname=outfile)
+
+        # Load the data that was created
+        kwargs['pandas_format'] = self.testInst.pandas_format
+        self.loaded_inst, meta = io.load_netcdf(outfile, **kwargs)
+
+        # Check that the step size is expected
+        default_delta = (self.testInst.index[1] - self.testInst.index[0])
+        loaded_delta = (self.loaded_inst.index[1] - self.loaded_inst.index[0])
+        # Ratio of step_sizes should equal ratio of interpreted units
+        assert ((default_delta / loaded_delta)
+                == (dt.timedelta(seconds=1) / target))
+
+        unix_origin = dt.datetime(1970, 1, 1)
+        if 'epoch_origin' in kwargs.keys():
+            file_origin = kwargs['epoch_origin']
+        else:
+            # Use unix origin as default
+            file_origin = unix_origin
+
+        # Find distance from origin
+        default_uts = (self.testInst.index[0] - unix_origin).total_seconds()
+        loaded_uts = (self.loaded_inst.index[0] - file_origin).total_seconds()
+        # Ratio of distances should equal ratio of interpreted units
+        assert (default_uts / loaded_uts) == (dt.timedelta(seconds=1) / target)
         return
 
     def test_netcdf_prevent_attribute_override(self):
