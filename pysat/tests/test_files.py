@@ -15,7 +15,6 @@ import pytest
 import pysat
 import pysat.instruments.pysat_testing
 from pysat.tests.classes.cls_ci import CICleanSetup
-from pysat.utils import NetworkLock
 from pysat.utils.testing import create_files
 
 
