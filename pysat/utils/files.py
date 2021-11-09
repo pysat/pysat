@@ -746,7 +746,6 @@ def get_file_information(paths, root_dir=''):
             paths[i] = os.path.join(root_dir, path)
 
     # Collect file attributes and store.
-    attrbs = []
     for path in paths:
         info = os.stat(path)
         for attr in attrs.keys():
