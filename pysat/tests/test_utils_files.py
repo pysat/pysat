@@ -298,6 +298,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
         # Store new format like a typical user would
         pysat.params['directory_format'] = templ
 
+
 class TestFileInformation(CICleanSetup):
     """Unit tests for file information."""
 
