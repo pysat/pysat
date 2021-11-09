@@ -16,7 +16,7 @@ import pysat
 from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
 from pysat.utils import testing
-from pysat.utils import time
+
 
 
 class TestParseDelimitedFilenames(object):
