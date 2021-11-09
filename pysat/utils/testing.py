@@ -8,6 +8,8 @@
 import numpy as np
 import os
 from pysat.utils.files import check_and_make_path
+from pysat.utils import NetworkLock
+from pysat.utils import time
 
 
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
@@ -175,6 +177,7 @@ def prep_dir(data_path):
     except OSError:
         return False
 
+
 def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                  version=False, content=None, timeout=None):
     """Create a file set using the year and day of year.
@@ -213,7 +216,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
 
     if freq is None:
         freq = '1D'
-    dates = pysat.utils.time.create_date_range(start, stop, freq=freq)
+    dates = time.create_date_range(start, stop, freq=freq)
 
     if root_fname is None:
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
@@ -229,7 +232,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
 
     # create empty file
     for date in dates:
-        yr, doy = pysat.utils.time.getyrdoy(date)
+        yr, doy = time.getyrdoy(date)
         if use_doy:
             doy = doy
         else:
