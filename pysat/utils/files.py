@@ -705,6 +705,7 @@ def check_and_make_path(path):
 
     return
 
+
 def get_file_information(paths, root_dir=''):
     """Return file information for paths.
 
