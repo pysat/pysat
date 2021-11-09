@@ -16,7 +16,7 @@ import pysat
 from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
 from pysat.utils import testing
-
+from pysat.utils import time
 
 class TestParseDelimitedFilenames(object):
     """Unit tests for the `parse_delimited_filename` function."""
@@ -296,3 +296,69 @@ class TestFileDirectoryTranslations(CICleanSetup):
 
         # Store new format like a typical user would
         pysat.params['directory_format'] = templ
+
+class TestFileInformation(CICleanSetup):
+    """Unit tests for file information."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+        self.out = ''
+
+        # Use a two-year as default.  Some tests will use custom ranges.
+        self.start = dt.datetime(2008, 1, 1)
+        self.stop = dt.datetime(2009, 12, 31)
+
+        # Store current pysat directory
+        self.data_paths = pysat.params['data_dirs']
+
+        # Create temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
+
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing, clean_level='clean',
+            update_files=True)
+
+        # Create instrument directories in tempdir
+        testing.prep_dir(self.testInst.files.data_path)
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+        pysat.params['data_dirs'] = self.data_paths
+        self.tempdir.cleanup()
+        del self.testInst, self.out, self.tempdir, self.start, self.stop
+        return
+
+    def test_get_file_information(self):
+        """Check utils.files.get_file_information works."""
+
+        # Create a bunch of files by year and doy
+        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
+                              '{day:03d}_stuff.pysat_testing_file'))
+        testing.create_files(self.testInst, self.start, self.stop, freq='1D',
+                             root_fname=root_fname)
+
+        # Use from_os function to get pandas Series of files and dates
+        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
+                                    format_str=root_fname)
+
+        # Get file attributes
+        root_dir = self.testInst.files.data_path
+        file_info = futils.get_file_information(files.values,
+                                                root_dir=root_dir)
+
+        # Check overall length for each output key.
+        for key in file_info.keys():
+            assert len(file_info[key]) == len(files)
+
+        # Ensure general correctness of time. If epoch or units wrong
+        # then time will be way off. Allowing for difference between local
+        # and UTC times.
+        today = pysat.utils.time.today()
+        assert np.all(file_info['content_modified_time']
+                      <= today + dt.timedelta(days=1))
+        assert np.all(file_info['content_modified_time']
+                      >= today - dt.timedelta(days=2))
+
+        return
