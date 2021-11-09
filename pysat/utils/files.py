@@ -15,7 +15,8 @@ import string
 
 import pandas as pds
 
-from pysat.utils._core import available_instruments, listify
+from pysat.utils._core import available_instruments
+from pysat.utils._core import listify
 from pysat.utils.time import create_datetime_index
 
 
