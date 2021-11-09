@@ -18,6 +18,7 @@ from pysat.utils import files as futils
 from pysat.utils import testing
 from pysat.utils import time
 
+
 class TestParseDelimitedFilenames(object):
     """Unit tests for the `parse_delimited_filename` function."""
 
