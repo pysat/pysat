@@ -7,9 +7,10 @@
 
 import numpy as np
 import os
+import time
 from pysat.utils.files import check_and_make_path
 from pysat.utils import NetworkLock
-from pysat.utils import time
+from pysat.utils import putime
 
 
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
@@ -193,7 +194,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
 
     if freq is None:
         freq = '1D'
-    dates = time.create_date_range(start, stop, freq=freq)
+    dates = putime.create_date_range(start, stop, freq=freq)
 
     if root_fname is None:
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
@@ -209,7 +210,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
 
     # create empty file
     for date in dates:
-        yr, doy = time.getyrdoy(date)
+        yr, doy = putime.getyrdoy(date)
         if use_doy:
             doy = doy
         else:
