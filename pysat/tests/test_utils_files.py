@@ -322,7 +322,7 @@ class TestFileInformation(CICleanSetup):
             update_files=True)
 
         # Create instrument directories in tempdir
-        testing.prep_dir(self.testInst.files.data_path)
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
         return
 
     def teardown(self):
@@ -363,4 +363,41 @@ class TestFileInformation(CICleanSetup):
         assert np.all(file_info['content_modified_time']
                       >= today - dt.timedelta(days=2))
 
+        return
+
+    def test_check_and_make_path_exists(self):
+        """Test successful pass at creating existing directory."""
+
+        # Create a temporary directory
+        tempdir = tempfile.TemporaryDirectory()
+        assert os.path.isdir(tempdir.name)
+
+        # Assert prep_dir does not re-create the directory
+        assert not pysat.utils.files.check_and_make_path(tempdir.name)
+
+        # Clean up temporary directory
+        tempdir.cleanup()
+        return
+
+    @pytest.mark.parametrize("trailer", [None, '', 'extra',
+                                         os.path.join('extra', 'extra')])
+    def test_check_and_make_path_new(self, trailer):
+        """Test successful pass at creating existing directory."""
+
+        # Create a temporary directory and get its name
+        tempdir = tempfile.TemporaryDirectory()
+        new_dir = tempdir.name
+
+        if trailer is not None:
+            new_dir = os.path.join(new_dir, trailer)
+
+        # Clean up temporary directory
+        tempdir.cleanup()
+        assert not os.path.isdir(new_dir)
+
+        # Assert prep_dir re-creates the directory
+        assert pysat.utils.files.check_and_make_path(new_dir)
+
+        # Clean up the test directory
+        os.rmdir(new_dir)
         return

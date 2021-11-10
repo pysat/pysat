@@ -155,29 +155,6 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
     return
 
 
-def prep_dir(data_path):
-    """Prepare the directory to provide netCDF export file support.
-
-    Parameters
-    ----------
-    data_path : str
-        Desired data path
-
-    Returns
-    -------
-    bool
-        True if the directories were created, False if not for any reason
-        (including current existence).
-
-    """
-    # Create data directories, if possible
-    try:
-        check_and_make_path(data_path)
-        return True
-    except OSError:
-        return False
-
-
 def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                  version=False, content=None, timeout=None):
     """Create a file set using the year and day of year.
