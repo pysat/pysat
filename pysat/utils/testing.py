@@ -8,6 +8,7 @@
 import numpy as np
 import os
 import time
+
 from pysat.utils import NetworkLock
 from pysat.utils import time as putime
 from pysat.utils.files import check_and_make_path
