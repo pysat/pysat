@@ -10,7 +10,7 @@ import os
 import time
 from pysat.utils.files import check_and_make_path
 from pysat.utils import NetworkLock
-from pysat.utils import putime
+from pysat.utils import time as putime
 
 
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
