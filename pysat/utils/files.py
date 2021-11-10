@@ -666,6 +666,11 @@ def check_and_make_path(path):
         Directory path without any file names. Creates all
         necessary directories to complete the path.
 
+    Returns
+    -------
+    made_dir : bool
+        True, if new directory made. False, if path already existed.
+
     Raises
     ------
     ValueError
@@ -703,7 +708,9 @@ def check_and_make_path(path):
         if os.path.normpath(root_path) != os.path.normpath(path):
             raise ValueError('Desired and constructed paths differ')
 
-    return
+        return True
+    else:
+        return False
 
 
 def get_file_information(paths, root_dir=''):
