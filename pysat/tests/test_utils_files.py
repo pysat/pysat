@@ -299,8 +299,8 @@ class TestFileDirectoryTranslations(CICleanSetup):
         pysat.params['directory_format'] = templ
 
 
-class TestFileInformation(CICleanSetup):
-    """Unit tests for file information."""
+class TestFileUtils(CICleanSetup):
+    """Unit tests for general file/path utilities."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
