@@ -396,8 +396,8 @@ class Meta(object):
                                     to_be_set, self.labels.label_type[iattr]):
                                 # If this is a disagreement between byte data
                                 # and an expected str, resolve it here
-                                if isinstance(to_be_set, bytes) and isinstance(
-                                        self.labels.label_type[iattr], str):
+                                if(isinstance(to_be_set, bytes)
+                                   and self.labels.label_type[iattr] == str):
                                     to_be_set = to_be_set.decode("utf-8")
                                 else:
                                     warnings.warn(''.join((
@@ -408,11 +408,20 @@ class Meta(object):
                                     good_set = False
                         else:
                             # Extend the meta labels. Ensure the attribute
-                            # name has no spaces.
+                            # name has no spaces and that bytes are used instead
+                            # of strings
                             iattr = ikey.replace(" ", "_")
+                            itype = type(to_be_set)
+                            if itype == bytes:
+                                itype = str
+
+                            # Update the MetaLabels object
                             setattr(self.labels, iattr, ikey)
-                            self.labels.label_type[iattr] = type(to_be_set)
+                            self.labels.label_type[iattr] = itype
                             self.labels.label_attrs[ikey] = iattr
+
+                            # Update the existing metadata to include this
+                            # new label
                             self._label_setter(ikey, ikey, type(to_be_set))
 
                         # Set the data
