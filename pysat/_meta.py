@@ -386,26 +386,37 @@ class Meta(object):
                 if ikey not in ['children', 'meta']:
                     for i, var in enumerate(data_vars):
                         to_be_set = input_data[ikey][i]
-                        if hasattr(to_be_set, '__iter__') \
-                           and not isinstance(to_be_set, str):
-                            # We have some list-like object that can only
-                            # store a single element
-                            if len(to_be_set) == 0:
-                                # Empty list, ensure there is something to set
-                                to_be_set = ['']
-                            if isinstance(to_be_set[0], str) \
-                                    or isinstance(to_be_set, bytes):
-                                if isinstance(to_be_set, bytes):
-                                    to_be_set = to_be_set.decode("utf-8")
+                        good_set = True
 
-                                self._data.loc[var, ikey] = '\n\n'.join(
-                                    to_be_set)
-                            else:
-                                warnings.warn(' '.join(('Array elements are',
-                                                        'not allowed in meta.',
-                                                        'Dropping input for',
-                                                        var, 'with key', ikey)))
+                        # See if this meta data key has already been defined
+                        # in MetaLabels
+                        if ikey in self.labels.label_attrs.keys():
+                            iattr = self.labels.label_attrs[ikey]
+                            if not isinstance(
+                                    to_be_set, self.labels.label_type[iattr]):
+                                # If this is a disagreement between byte data
+                                # and an expected str, resolve it here
+                                if isinstance(to_be_set, bytes) and isinstance(
+                                        self.labels.label_type[iattr], str):
+                                    to_be_set = to_be_set.decode("utf-8")
+                                else:
+                                    warnings.warn(''.join((
+                                        'Metadata does not have expected type ',
+                                        repr(self.labels.label_type[iattr]),
+                                        '. Dropping input for  ', var,
+                                        ' with key ', ikey)))
+                                    good_set = False
                         else:
+                            # Extend the meta labels. Ensure the attribute
+                            # name has no spaces.
+                            iattr = ikey.replace(" ", "_")
+                            setattr(self.labels, iattr, ikey)
+                            self.labels.label_type[iattr] = type(to_be_set)
+                            self.labels.label_attrs[ikey] = iattr
+                            self._label_setter(ikey, ikey, type(to_be_set))
+
+                        # Set the data
+                        if good_set:
                             self._data.loc[var, ikey] = to_be_set
                 else:
                     # Key is 'meta' or 'children', providing higher order
@@ -1541,20 +1552,19 @@ class MetaLabels(object):
                            'notes': notes[1], 'desc': desc[1],
                            'min_val': min_val[1], 'max_val': max_val[1],
                            'fill_val': fill_val[1]}
-
-        # Set the default labels and types
-        self.units = units[0]
-        self.name = name[0]
-        self.notes = notes[0]
-        self.desc = desc[0]
-        self.min_val = min_val[0]
-        self.max_val = max_val[0]
-        self.fill_val = fill_val[0]
+        self.label_attrs = {units[0]: 'units', name[0]: 'name',
+                            notes[0]: 'notes', desc[0]: 'desc',
+                            min_val[0]: 'min_val', max_val[0]: 'max_val',
+                            fill_val[0]: 'fill_val'}
 
         # Set the custom labels and label types
         for custom_label in kwargs.keys():
-            setattr(self, custom_label, kwargs[custom_label][0])
             self.label_type[custom_label] = kwargs[custom_label][1]
+            self.label_attrs[kwargs[custom_label][0]] = custom_label
+
+        # Set the label attributes
+        for label_val in self.label_attrs.keys():
+            setattr(self, self.label_attrs[label_val], label_val)
 
         return
 
