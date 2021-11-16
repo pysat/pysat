@@ -360,7 +360,7 @@ class TestFileUtils(CICleanSetup):
         assert np.all(file_info['content_modified_time']
                       <= today + dt.timedelta(days=1))
         assert np.all(file_info['content_modified_time']
-                      >= today - dt.timedelta(days=2))
+                      >= today - dt.timedelta(days=1))
 
         return
 
