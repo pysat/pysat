@@ -306,8 +306,8 @@ class TestFileUtils(CICleanSetup):
         self.out = ''
 
         # Use a two-year as default.  Some tests will use custom ranges.
-        self.start = dt.datetime(2008, 1, 1)
-        self.stop = dt.datetime(2009, 12, 31)
+        self.start = pysat.instruments.pysat_testing._test_dates['']['']
+        self.stop = self.start + dt.timedelta(years=2) - dt.timedelta(days=1)
 
         # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
