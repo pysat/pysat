@@ -730,6 +730,10 @@ def get_file_information(paths, root_dir=''):
         Keyed by file attribute. Each attribute maps to a list
         of values for each file in `paths`.
 
+    See Also
+    --------
+    os.stat : Get variety of file attributes
+
     """
 
     paths = listify(paths)
