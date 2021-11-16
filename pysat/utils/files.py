@@ -674,7 +674,8 @@ def check_and_make_path(path):
     Raises
     ------
     ValueError
-        If input path and internally constructed path are not equal.
+        If input path and internally constructed path are not equal, or
+        if an invalid path supplied.
 
     """
 
