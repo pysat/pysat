@@ -335,6 +335,7 @@ class TestFileUtils(CICleanSetup):
 
     def test_get_file_information(self):
         """Test `utils.files.get_file_information` success with existing files.
+
         """
 
         # Create a bunch of files by year and doy
