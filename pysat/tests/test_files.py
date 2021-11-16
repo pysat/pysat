@@ -14,8 +14,8 @@ import pytest
 
 import pysat
 import pysat.instruments.pysat_testing
-from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.instruments.methods.testing import create_files
+from pysat.tests.classes.cls_ci import CICleanSetup
 
 
 def create_dir(inst=None, temporary_file_list=False):
