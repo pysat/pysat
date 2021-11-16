@@ -10,6 +10,7 @@ from importlib import reload
 import numpy as np
 import os
 import pandas as pds
+import pysat.instruments.methods.testing as testing
 import pytest
 import tempfile
 
