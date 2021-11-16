@@ -334,7 +334,8 @@ class TestFileUtils(CICleanSetup):
         return
 
     def test_get_file_information(self):
-        """Test `utils.files.get_file_information` success with existing files."""
+        """Test `utils.files.get_file_information` success with existing files.
+        """
 
         # Create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
