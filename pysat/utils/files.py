@@ -715,9 +715,7 @@ def check_and_make_path(path):
 
 
 def get_file_information(paths, root_dir=''):
-    """Return file information for paths.
-
-    Wrapper around `os.stat`
+    """Create an easily accessible dict with values from `os.stat` attributes for input path(s).
 
     Parameters
     ----------
