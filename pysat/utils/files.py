@@ -719,7 +719,7 @@ def check_and_make_path(path):
 
 
 def get_file_information(paths, root_dir=''):
-    """Create an easily accessible dict with values from `os.stat` attributes for input path(s).
+    """Create a dict with values from `os.stat` attributes for input path(s).
 
     Parameters
     ----------
