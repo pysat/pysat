@@ -696,6 +696,10 @@ def check_and_make_path(path):
                 make_dir.append(local_dir)
             root_path, local_dir = os.path.split(root_path)
 
+            # Check that we continue to have a remotely valid path
+            if len(root_path) == 0:
+                raise ValueError('Invalid path specification.')
+
         if len(local_dir) > 0:
             # Avoid case where input is path='/stuff/level/'.
             # The trailing '/' leads to a local_dir=''

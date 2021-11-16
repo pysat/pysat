@@ -9,6 +9,7 @@ import datetime as dt
 from importlib import reload
 import numpy as np
 import os
+import pandas as pds
 import pytest
 import tempfile
 
@@ -307,7 +308,7 @@ class TestFileUtils(CICleanSetup):
 
         # Use a two-year as default.  Some tests will use custom ranges.
         self.start = pysat.instruments.pysat_testing._test_dates['']['']
-        self.stop = self.start + dt.timedelta(years=2) - dt.timedelta(days=1)
+        self.stop = self.start + pds.DateOffset(years=2) - dt.timedelta(days=1)
 
         # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
@@ -399,4 +400,14 @@ class TestFileUtils(CICleanSetup):
 
         # Clean up the test directory
         os.rmdir(new_dir)
+        return
+
+
+    @pytest.mark.parametrize("path", ['no_starting_path_info',
+                                      os.path.join('no', ' way ', ' brah ')])
+    def test_check_and_make_path_error(self, path):
+
+        with pytest.raises(ValueError):
+            pysat.utils.files.check_and_make_path(path)
+
         return
