@@ -149,5 +149,3 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
         len(found_msgs) - np.sum(found_msgs), repr(warn_type))
 
     return
-
-
