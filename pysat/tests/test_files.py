@@ -13,8 +13,8 @@ import time
 import pytest
 
 import pysat
-import pysat.instruments.pysat_testing
 from pysat.instruments.methods.testing import create_files
+import pysat.instruments.pysat_testing
 from pysat.tests.classes.cls_ci import CICleanSetup
 
 
