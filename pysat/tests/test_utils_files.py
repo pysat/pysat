@@ -10,7 +10,7 @@ from importlib import reload
 import numpy as np
 import os
 import pandas as pds
-import pysat.instruments.methods.testing as testing
+import pysat.instruments.methods.testing as pimtesting
 import pytest
 import tempfile
 
@@ -339,8 +339,8 @@ class TestFileUtils(CICleanSetup):
         # Create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
                               '{day:03d}_stuff.pysat_testing_file'))
-        testing.create_files(self.testInst, self.start, self.stop, freq='1D',
-                             root_fname=root_fname)
+        pimtesting.create_files(self.testInst, self.start, self.stop, freq='1D',
+                                root_fname=root_fname)
 
         # Use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
@@ -403,10 +403,10 @@ class TestFileUtils(CICleanSetup):
         os.rmdir(new_dir)
         return
 
-
     @pytest.mark.parametrize("path", ['no_starting_path_info',
                                       os.path.join('no', ' way ', ' brah ')])
     def test_check_and_make_path_error(self, path):
+        """Test ValueError raised for invalid paths."""
 
         with pytest.raises(ValueError):
             pysat.utils.files.check_and_make_path(path)
