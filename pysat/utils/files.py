@@ -719,7 +719,10 @@ def check_and_make_path(path):
             os.mkdir(root_path)
 
         if os.path.normpath(root_path) != os.path.normpath(path):
-            raise ValueError('Desired and constructed paths differ')
+            estr = ''.join(['Desired and constructed paths unexpectedly differ',
+                            '. Please post an issue at https://github.com/pysa',
+                            't/pysat/issues'])
+            raise ValueError()
 
         return True
     else:
