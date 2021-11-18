@@ -533,7 +533,7 @@ def create_files(inst, start, stop, freq='1D', use_doy=True, root_fname=None,
     stop : dt.datetime
         The date for the last file to create
     freq : str
-        Frequency of file output.  Codes correspond to pandas.date_range 
+        Frequency of file output.  Codes correspond to pandas.date_range
         codes (default='1D')
     use_doy : bool
         If True, use Day of Year (doy)
@@ -541,8 +541,9 @@ def create_files(inst, start, stop, freq='1D', use_doy=True, root_fname=None,
         (default=True)
     root_fname : str
         The format of the file name to create.  Uses standard pysat variables.
-        Ex: 'pysat_testing_junk_{year:04d}_{day:03d}.txt'
-        (default=None)
+        Ex: 'pysat_testing_junk_{year:04d}_{day:03d}.txt' Supports template
+        variables 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
+        'revision', 'cycle'. (default=None)
     version : bool
         If True, iterate over version / revision / cycle
         If False, ignore version / revision / cycle
@@ -553,6 +554,24 @@ def create_files(inst, start, stop, freq='1D', use_doy=True, root_fname=None,
     timeout : float
         Time is seconds to lock the files being created.  If None, no timeout is
         used.  (default=None)
+
+    Examples
+    --------
+    >>> import datetime as dt
+    >>> inst = pysat.Instrument('pysat', 'testing')
+    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
+    ...              root_fname='pysat_testing_junk_{year:04d}_{day:03d}.txt')
+
+    Command creates empty files located at `inst.files.data_path`, one per day,
+    spanning 2008, where `year` and `day` are filled in using the provided
+    template string appropriately. Produced files look like:
+    'pysat_testing_junk_2008_001.txt'
+
+    >>> root_fname='pysat_testing_junk_{year:04d}_{month:02d}_{day:02d}.txt'
+    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
+    ...              root_fname=root_fname, use_doy=False)
+
+    Produced files look like: 'pysat_testing_junk_2008_01_01.txt'
 
     """
 
