@@ -679,6 +679,14 @@ def check_and_make_path(path):
 
     """
 
+    # Account for home references, multi-platform
+    path = os.path.expanduser(path)
+
+    # Account for paths that recover ground, ... /path1/../path2/../path_final
+    # To ensure we don't lose leading relative paths, we use abspath instead
+    # of normpath.
+    path = os.path.abspath(path)
+
     if not os.path.exists(path):
         # Make path, checking to see that each level exists before attempting
         root_path, local_dir = os.path.split(path)

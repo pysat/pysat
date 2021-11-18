@@ -383,7 +383,10 @@ class TestFileUtils(CICleanSetup):
         return
 
     @pytest.mark.parametrize("trailer", [None, '', 'extra',
-                                         os.path.join('extra', 'extra')])
+                                         os.path.join('extra', 'extra'),
+                                         os.path.join('yes', 'way', '..',
+                                                      'brah'),
+                                         os.path.join('.', 'yeppers')])
     def test_check_and_make_path_new(self, trailer):
         """Test successful pass at creating existing directory."""
 
