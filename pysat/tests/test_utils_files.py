@@ -9,12 +9,13 @@ import datetime as dt
 from importlib import reload
 import numpy as np
 import os
+import platform
 import pandas as pds
-import pysat.instruments.methods.testing as pimtesting
 import pytest
 import tempfile
 
 import pysat
+import pysat.instruments.methods.testing as pimtesting
 from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
 from pysat.utils import testing
@@ -403,6 +404,30 @@ class TestFileUtils(CICleanSetup):
 
         # Assert check_and_make_path re-creates the directory
         assert pysat.utils.files.check_and_make_path(new_dir)
+
+        # Clean up the test directory
+        os.rmdir(new_dir)
+        return
+
+    def test_check_and_make_path_expand_path(self):
+        """Test successful pass at creating directory relative to home."""
+
+        if platform.system == 'Windows':
+            home = '%homedrive%%homepath%'
+        else:
+            home = '~'
+
+        # Create path to a testing directory
+        new_dir = os.path.join(home, 'pysat_check_path_testing')
+
+        assert not os.path.isdir(new_dir)
+
+        # Assert check_and_make_path creates the directory
+        assert pysat.utils.files.check_and_make_path(new_dir, expand_path=True)
+
+        new_dir = os.path.expanduser(new_dir)
+        new_dir = os.path.expandvars(new_dir)
+        assert os.path.isdir(new_dir)
 
         # Clean up the test directory
         os.rmdir(new_dir)
