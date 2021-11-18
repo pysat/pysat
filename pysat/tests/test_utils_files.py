@@ -375,7 +375,7 @@ class TestFileUtils(CICleanSetup):
         tempdir = tempfile.TemporaryDirectory()
         assert os.path.isdir(tempdir.name)
 
-        # Assert prep_dir does not re-create the directory
+        # Assert check_and_make_path does not re-create the directory
         assert not pysat.utils.files.check_and_make_path(tempdir.name)
 
         # Clean up temporary directory
@@ -401,7 +401,7 @@ class TestFileUtils(CICleanSetup):
         tempdir.cleanup()
         assert not os.path.isdir(new_dir)
 
-        # Assert prep_dir re-creates the directory
+        # Assert check_and_make_path re-creates the directory
         assert pysat.utils.files.check_and_make_path(new_dir)
 
         # Clean up the test directory
