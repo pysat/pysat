@@ -412,5 +412,6 @@ class TestFileUtils(CICleanSetup):
 
         with pytest.raises(ValueError) as verr:
             pysat.utils.files.check_and_make_path(path)
+        assert str(verr).find('Invalid path specification.') >= 0
 
         return
