@@ -9,8 +9,8 @@ import datetime as dt
 from importlib import reload
 import numpy as np
 import os
-import platform
 import pandas as pds
+import platform
 import pytest
 import tempfile
 

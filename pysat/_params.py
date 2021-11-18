@@ -9,9 +9,9 @@ import json
 import numpy as np
 import os
 
-import pysat.utils
 from portalocker import Lock
 
+import pysat.utils
 from pysat.utils.files import check_and_make_path
 
 
