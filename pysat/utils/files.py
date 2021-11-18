@@ -657,14 +657,17 @@ def update_data_directory_structure(new_template, test_run=True,
     return
 
 
-def check_and_make_path(path):
+def check_and_make_path(path, expand_path=False):
     """Check if path exists and create it if needed.
 
     Parameters
     ----------
-    path : string
+    path : str
         Directory path without any file names. Creates all
         necessary directories to complete the path.
+    expand_path : bool
+        If True, input `path` will be processed through `os.path.expanduser`
+        and `os.path.expandvars`.
 
     Returns
     -------
@@ -679,13 +682,10 @@ def check_and_make_path(path):
 
     """
 
-    # Account for home references, multi-platform
-    path = os.path.expanduser(path)
-
-    # Account for paths that recover ground, ... /path1/../path2/../path_final
-    # To ensure we don't lose leading relative paths, we use abspath instead
-    # of normpath.
-    path = os.path.abspath(path)
+    if expand_path:
+        # Account for home references, multi-platform
+        path = os.path.expanduser(path)
+        path = os.path.expandvars(path)
 
     if not os.path.exists(path):
         # Make path, checking to see that each level exists before attempting
@@ -716,7 +716,10 @@ def check_and_make_path(path):
         while len(make_dir) > 0:
             local_dir = make_dir.pop()
             root_path = os.path.join(root_path, local_dir)
-            os.mkdir(root_path)
+            if (local_dir != '..') and (local_dir != '.'):
+                # Deal with case of path='... /path1/../final_path' or
+                # path='... /path1/./final_path'
+                os.mkdir(root_path)
 
         if os.path.normpath(root_path) != os.path.normpath(path):
             estr = ''.join(['Desired and constructed paths unexpectedly differ',
