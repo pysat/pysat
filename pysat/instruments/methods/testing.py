@@ -520,7 +520,8 @@ def define_range():
     return def_range
 
 
-def create_files(inst, start, stop, freq='1D', use_doy=True, root_fname=None,
+def create_files(inst, start, stop, freq='1D', use_doy=True,
+                 root_fname='pysat_testing_{year:04d}_{day:03d}.txt',
                  version=False, content=None, timeout=None):
     """Create a file set using the year and day of year.
 
@@ -540,10 +541,9 @@ def create_files(inst, start, stop, freq='1D', use_doy=True, root_fname=None,
         If False, use month / day
         (default=True)
     root_fname : str
-        The format of the file name to create.  Uses standard pysat variables.
-        Ex: 'pysat_testing_junk_{year:04d}_{day:03d}.txt' Supports template
+        The format of the file name to create. Supports standard pysat template
         variables 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', 'cycle'. (default=None)
+        'revision', 'cycle'. (default='pysat_testing_{year:04d}_{day:03d}.txt')
     version : bool
         If True, iterate over version / revision / cycle
         If False, ignore version / revision / cycle
@@ -559,28 +559,27 @@ def create_files(inst, start, stop, freq='1D', use_doy=True, root_fname=None,
     --------
     >>> import datetime as dt
     >>> inst = pysat.Instrument('pysat', 'testing')
-    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
-    ...              root_fname='pysat_testing_junk_{year:04d}_{day:03d}.txt')
-
-    Command creates empty files located at `inst.files.data_path`, one per day,
-    spanning 2008, where `year` and `day` are filled in using the provided
-    template string appropriately. Produced files look like:
-    'pysat_testing_junk_2008_001.txt'
-
-    >>> root_fname='pysat_testing_junk_{year:04d}_{month:02d}_{day:02d}.txt'
+    >>> root_fname='pysat_testing_{year:04d}_{month:02d}_{day:02d}.txt'
     >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
     ...              root_fname=root_fname, use_doy=False)
 
-    Produced files look like: 'pysat_testing_junk_2008_01_01.txt'
+
+    Command creates empty files located at `inst.files.data_path`, one per day,
+    spanning 2008, where `year`, `month`, and `day` are filled in using the
+    provided template string appropriately. Produced files look like:
+    'pysat_testing_2008_01_01.txt'
+
+    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31))
+
+    In this case we use all of the function defaults which produces a set of
+    files on a daily basis, labeled by year and day of year. Produced files look
+    like: 'pysat_testing_2008_001.txt'
 
     """
 
     # Define the time range and file naming variables
     dates = putime.create_date_range(start, stop, freq=freq)
 
-    if root_fname is None:
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
-                              'stuff.pysat_testing_file'))
     if version:
         versions = np.array([1, 2])
         revisions = np.array([0, 1])
