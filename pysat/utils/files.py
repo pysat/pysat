@@ -722,7 +722,7 @@ def check_and_make_path(path):
             estr = ''.join(['Desired and constructed paths unexpectedly differ',
                             '. Please post an issue at https://github.com/pysa',
                             't/pysat/issues'])
-            raise ValueError()
+            raise ValueError(estr)
 
         return True
     else:
