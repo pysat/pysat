@@ -520,7 +520,7 @@ def define_range():
     return def_range
 
 
-def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
+def create_files(inst, start, stop, freq='1D', use_doy=True, root_fname=None,
                  version=False, content=None, timeout=None):
     """Create a file set using the year and day of year.
 
@@ -533,8 +533,8 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
     stop : dt.datetime
         The date for the last file to create
     freq : str
-        Frequency of file output.  Ex: '1D', '100min'
-        (default=None)
+        Frequency of file output.  Codes correspond to pandas.date_range 
+        codes (default='1D')
     use_doy : bool
         If True, use Day of Year (doy)
         If False, use month / day
@@ -556,8 +556,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
 
     """
 
-    if freq is None:
-        freq = '1D'
+    # Define the time range and file naming variables
     dates = putime.create_date_range(start, stop, freq=freq)
 
     if root_fname is None:
@@ -572,12 +571,10 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
         revisions = [None]
         cycles = [None]
 
-    # create empty file
+    # Create empty files
     for date in dates:
         yr, doy = putime.getyrdoy(date)
-        if use_doy:
-            doy = doy
-        else:
+        if not use_doy:
             doy = date.day
         for version in versions:
             for revision in revisions:

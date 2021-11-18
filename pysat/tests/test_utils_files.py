@@ -410,7 +410,7 @@ class TestFileUtils(CICleanSetup):
     def test_check_and_make_path_error(self, path):
         """Test ValueError raised for invalid paths."""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as verr:
             pysat.utils.files.check_and_make_path(path)
 
         return
