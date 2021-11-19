@@ -31,11 +31,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
    * Added kwargs for epoch units and origin in `pysat.utils.io.load_netCDF`.
-   * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support 
+   * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support
      list of str as input as well as str.
    * Added a time function to calculate decimal year from datetime.
    * Allow `Instrument.rename` to take a fuction or mapping dict as input,
      after adapting routine to use `Meta.rename`
+   * Added an update method and type evaluation method to MetaLabels.
+   * Allowed MetaLabels to be expanded through setting new Meta data values.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
