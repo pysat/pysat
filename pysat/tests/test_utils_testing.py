@@ -172,35 +172,3 @@ class TestTestingUtils(object):
 
         assert str(aerr).find('did not find') >= 0
         return
-
-    def test_prep_dir_exists(self):
-        """Test successful pass at creating existing directory."""
-
-        # Create a temporary directory
-        tempdir = tempfile.TemporaryDirectory()
-        assert os.path.isdir(tempdir.name)
-
-        # Assert prep_dir does not re-create the directory
-        assert not testing.prep_dir(tempdir.name)
-
-        # Clean up temporary directory
-        tempdir.cleanup()
-        return
-
-    def test_prep_dir_new(self):
-        """Test successful pass at creating existing directory."""
-
-        # Create a temporary directory and get its name
-        tempdir = tempfile.TemporaryDirectory()
-        new_dir = tempdir.name
-
-        # Clean up temporary directory
-        tempdir.cleanup()
-        assert not os.path.isdir(new_dir)
-
-        # Assert prep_dir re-creates the directory
-        assert testing.prep_dir(new_dir)
-
-        # Clean up the test directory
-        os.rmdir(new_dir)
-        return

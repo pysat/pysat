@@ -6,7 +6,6 @@
 """Utilities to perform common evaluations."""
 
 import numpy as np
-import os
 
 
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
@@ -150,26 +149,3 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
         len(found_msgs) - np.sum(found_msgs), repr(warn_type))
 
     return
-
-
-def prep_dir(data_path):
-    """Prepare the directory to provide netCDF export file support.
-
-    Parameters
-    ----------
-    data_path : str
-        Desired data path
-
-    Returns
-    -------
-    bool
-        True if the directories were created, False if not for any reason
-        (including current existence).
-
-    """
-    # Create data directories, if possible
-    try:
-        os.makedirs(data_path)
-        return True
-    except OSError:
-        return False

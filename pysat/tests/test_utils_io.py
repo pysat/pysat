@@ -38,7 +38,7 @@ class TestLoadNetCDF(object):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
 
         # Create testing directory
-        testing.prep_dir(self.testInst.files.data_path)
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
 
         # Initalize the loaded data
         self.loaded_inst = None
@@ -303,7 +303,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
             '']['']
 
         # Create testing directory
-        testing.prep_dir(self.testInst.files.data_path)
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
 
         # Initalize the loaded data
         self.loaded_inst = None
@@ -388,7 +388,7 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
 
         # Create testing directory
-        testing.prep_dir(self.testInst.files.data_path)
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
 
         # Initialize the loaded data object
         self.loaded_inst = None
@@ -479,7 +479,7 @@ class TestNetCDF4Integration(object):
             missing = ['test_nan_export']
 
         # Write the file
-        testing.prep_dir(self.testInst.files.data_path)
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.to_netcdf4(outfile, export_nan=export_nan)

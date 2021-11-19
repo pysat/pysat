@@ -197,6 +197,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added .copy function to Instrument, Files, and Orbits classes
    * Updated Parameters to ensure paths provided for pysat.params['data_dirs']
      are created if they don't already exist
+   * Added funtion to get file attributes, utils.files.get_file_information
 * Deprecations
    * Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
      pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions

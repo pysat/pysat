@@ -11,6 +11,7 @@ import os
 
 from portalocker import Lock
 
+import pysat.utils
 from pysat.utils.files import check_and_make_path
 
 
@@ -257,13 +258,7 @@ class Parameters(object):
 
         """
 
-        paths = np.asarray(path)
-        if paths.shape == ():
-            paths = [paths.tolist()]
-        elif paths.shape[0] > 1:
-            paths = paths.squeeze().tolist()
-        elif paths.shape[0] == 1:
-            paths = paths.tolist()
+        paths = pysat.utils.listify(path)
 
         # Account for a user prefix in the path, such as ~
         paths = [os.path.expanduser(pval) for pval in paths]

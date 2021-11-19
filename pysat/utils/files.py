@@ -16,6 +16,7 @@ import string
 import pandas as pds
 
 from pysat.utils._core import available_instruments
+from pysat.utils._core import listify
 from pysat.utils.time import create_datetime_index
 
 
@@ -656,21 +657,35 @@ def update_data_directory_structure(new_template, test_run=True,
     return
 
 
-def check_and_make_path(path):
+def check_and_make_path(path, expand_path=False):
     """Check if path exists and create it if needed.
 
     Parameters
     ----------
-    path : string
+    path : str
         Directory path without any file names. Creates all
         necessary directories to complete the path.
+    expand_path : bool
+        If True, input `path` will be processed through `os.path.expanduser`
+        and `os.path.expandvars`.
+
+    Returns
+    -------
+    made_dir : bool
+        True, if new directory made. False, if path already existed.
 
     Raises
     ------
     ValueError
-        If input path and internally constructed path are not equal.
+        If input path and internally constructed path are not equal, or
+        if an invalid path supplied.
 
     """
+
+    if expand_path:
+        # Account for home references, multi-platform
+        path = os.path.expanduser(path)
+        path = os.path.expandvars(path)
 
     if not os.path.exists(path):
         # Make path, checking to see that each level exists before attempting
@@ -689,6 +704,10 @@ def check_and_make_path(path):
                 make_dir.append(local_dir)
             root_path, local_dir = os.path.split(root_path)
 
+            # Check that we continue to have a remotely valid path
+            if len(root_path) == 0:
+                raise ValueError('Invalid path specification.')
+
         if len(local_dir) > 0:
             # Avoid case where input is path='/stuff/level/'.
             # The trailing '/' leads to a local_dir=''
@@ -697,9 +716,72 @@ def check_and_make_path(path):
         while len(make_dir) > 0:
             local_dir = make_dir.pop()
             root_path = os.path.join(root_path, local_dir)
-            os.mkdir(root_path)
+            if (local_dir != '..') and (local_dir != '.'):
+                # Deal with case of path='... /path1/../final_path' or
+                # path='... /path1/./final_path'
+                os.mkdir(root_path)
 
         if os.path.normpath(root_path) != os.path.normpath(path):
-            raise ValueError('Desired and constructed paths differ')
+            estr = ''.join(['Desired and constructed paths unexpectedly differ',
+                            '. Please post an issue at https://github.com/pysa',
+                            't/pysat/issues'])
+            raise ValueError(estr)
 
-    return
+        return True
+    else:
+        return False
+
+
+def get_file_information(paths, root_dir=''):
+    """Create a dict with values from `os.stat` attributes for input path(s).
+
+    Parameters
+    ----------
+    paths : str or list
+        Full pathnames of files to get attribute information.
+    root_dir : str
+        Common root path shared by all paths, if any. (default='')
+
+    Returns
+    -------
+    file_info : dict
+        Keyed by file attribute. Each attribute maps to a list
+        of values for each file in `paths`.
+
+    See Also
+    --------
+    os.stat : Get variety of file attributes
+
+    """
+
+    paths = listify(paths)
+
+    # Mapping of output key to the attribute name returned by `os.stat`
+    attrs = {'content_modified_time': 'st_mtime', 'mode': 'st_mode',
+             'size': 'st_size', 'inode': 'st_ino', 'device': 'st_dev',
+             'nlink': 'st_nlink', 'uid': 'st_uid', 'gid': 'st_gid',
+             'last_access_time': 'st_atime',
+             'metadata_update_time': 'st_ctime'}
+
+    # Initiliaze output dictionary.
+    file_info = {}
+    for attr in attrs.keys():
+        file_info[attr] = []
+
+    # Add common root directory to paths, if supplied.
+    if root_dir != '':
+        for i, path in enumerate(paths):
+            paths[i] = os.path.join(root_dir, path)
+
+    # Collect file attributes and store.
+    for path in paths:
+        info = os.stat(path)
+        for attr in attrs.keys():
+            file_info[attr].append(getattr(info, attrs[attr]))
+
+    # Convert times to datetimes.
+    for attr in ['content_modified_time', 'last_access_time',
+                 'metadata_update_time']:
+        file_info[attr] = pds.to_datetime(file_info[attr], unit='s')
+
+    return file_info

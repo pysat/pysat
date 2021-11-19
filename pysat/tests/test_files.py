@@ -13,9 +13,9 @@ import time
 import pytest
 
 import pysat
+from pysat.instruments.methods.testing import create_files
 import pysat.instruments.pysat_testing
 from pysat.tests.classes.cls_ci import CICleanSetup
-from pysat.utils import NetworkLock
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -32,87 +32,6 @@ def create_dir(inst=None, temporary_file_list=False):
     except OSError:
         # File already exists
         pass
-    return
-
-
-def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
-                 version=False, content=None, timeout=None):
-    """Create a file set using the year and day of year.
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        A test instrument, used to generate file path
-    start : dt.datetime
-        The date for the first file to create
-    stop : dt.datetime
-        The date for the last file to create
-    freq : str
-        Frequency of file output.  Ex: '1D', '100min'
-        (default=None)
-    use_doy : bool
-        If True, use Day of Year (doy)
-        If False, use month / day
-        (default=True)
-    root_fname : str
-        The format of the file name to create.  Uses standard pysat variables.
-        Ex: 'pysat_testing_junk_{year:04d}_{day:03d}.txt'
-        (default=None)
-    version : bool
-        If True, iterate over version / revision / cycle
-        If False, ignore version / revision / cycle
-        (default=False)
-    content : str
-        Custom text to write to temporary files
-        (default=None)
-    timeout : float
-        Time is seconds to lock the files being created.  If None, no timeout is
-        used.  (default=None)
-
-    """
-
-    if freq is None:
-        freq = '1D'
-    dates = pysat.utils.time.create_date_range(start, stop, freq=freq)
-
-    if root_fname is None:
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
-                              'stuff.pysat_testing_file'))
-    if version:
-        versions = np.array([1, 2])
-        revisions = np.array([0, 1])
-        cycles = np.array([0, 1])
-    else:
-        versions = [None]
-        revisions = [None]
-        cycles = [None]
-
-    # create empty file
-    for date in dates:
-        yr, doy = pysat.utils.time.getyrdoy(date)
-        if use_doy:
-            doy = doy
-        else:
-            doy = date.day
-        for version in versions:
-            for revision in revisions:
-                for cycle in cycles:
-
-                    fname = os.path.join(inst.files.data_path,
-                                         root_fname.format(year=yr,
-                                                           day=doy,
-                                                           month=date.month,
-                                                           hour=date.hour,
-                                                           minute=date.minute,
-                                                           second=date.second,
-                                                           version=version,
-                                                           revision=revision,
-                                                           cycle=cycle))
-                    with NetworkLock(fname, 'w') as fout:
-                        if content is not None:
-                            fout.write(content)
-                        if timeout is not None:
-                            time.sleep(timeout)
     return
 
 

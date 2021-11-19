@@ -9,10 +9,13 @@ import datetime as dt
 from importlib import reload
 import numpy as np
 import os
+import pandas as pds
+import platform
 import pytest
 import tempfile
 
 import pysat
+import pysat.instruments.methods.testing as pimtesting
 from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
 from pysat.utils import testing
@@ -296,3 +299,147 @@ class TestFileDirectoryTranslations(CICleanSetup):
 
         # Store new format like a typical user would
         pysat.params['directory_format'] = templ
+
+
+class TestFileUtils(CICleanSetup):
+    """Unit tests for general file/path utilities."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+        self.out = ''
+
+        # Use a two-year as default.  Some tests will use custom ranges.
+        self.start = pysat.instruments.pysat_testing._test_dates['']['']
+        self.stop = self.start + pds.DateOffset(years=2) - dt.timedelta(days=1)
+
+        # Store current pysat directory
+        self.data_paths = pysat.params['data_dirs']
+
+        # Create temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
+
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing, clean_level='clean',
+            update_files=True)
+
+        # Create instrument directories in tempdir
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+        pysat.params['data_dirs'] = self.data_paths
+        self.tempdir.cleanup()
+        del self.testInst, self.out, self.tempdir, self.start, self.stop
+        return
+
+    def test_get_file_information(self):
+        """Test `utils.files.get_file_information` success with existing files.
+
+        """
+
+        # Create a bunch of files by year and doy
+        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
+                              '{day:03d}_stuff.pysat_testing_file'))
+        pimtesting.create_files(self.testInst, self.start, self.stop, freq='1D',
+                                root_fname=root_fname)
+
+        # Use from_os function to get pandas Series of files and dates
+        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
+                                    format_str=root_fname)
+
+        # Get file attributes
+        root_dir = self.testInst.files.data_path
+        file_info = futils.get_file_information(files.values,
+                                                root_dir=root_dir)
+
+        # Check overall length for each output key.
+        for key in file_info.keys():
+            assert len(file_info[key]) == len(files)
+
+        # Ensure general correctness of time. If epoch or units wrong
+        # then time will be way off. Allowing for difference between local
+        # and UTC times.
+        today = pysat.utils.time.today()
+        assert np.all(file_info['content_modified_time']
+                      <= today + dt.timedelta(days=1))
+        assert np.all(file_info['content_modified_time']
+                      >= today - dt.timedelta(days=1))
+
+        return
+
+    def test_check_and_make_path_exists(self):
+        """Test successful pass at creating existing directory."""
+
+        # Create a temporary directory
+        tempdir = tempfile.TemporaryDirectory()
+        assert os.path.isdir(tempdir.name)
+
+        # Assert check_and_make_path does not re-create the directory
+        assert not pysat.utils.files.check_and_make_path(tempdir.name)
+
+        # Clean up temporary directory
+        tempdir.cleanup()
+        return
+
+    @pytest.mark.parametrize("trailer", [None, '', 'extra',
+                                         os.path.join('extra', 'extra'),
+                                         os.path.join('yes', 'way', '..',
+                                                      'brah'),
+                                         os.path.join('.', 'yeppers')])
+    def test_check_and_make_path_new(self, trailer):
+        """Test successful pass at creating existing directory."""
+
+        # Create a temporary directory and get its name
+        tempdir = tempfile.TemporaryDirectory()
+        new_dir = tempdir.name
+
+        if trailer is not None:
+            new_dir = os.path.join(new_dir, trailer)
+
+        # Clean up temporary directory
+        tempdir.cleanup()
+        assert not os.path.isdir(new_dir)
+
+        # Assert check_and_make_path re-creates the directory
+        assert pysat.utils.files.check_and_make_path(new_dir)
+
+        # Clean up the test directory
+        os.rmdir(new_dir)
+        return
+
+    def test_check_and_make_path_expand_path(self):
+        """Test successful pass at creating directory relative to home."""
+
+        if platform.system == 'Windows':
+            home = '%homedrive%%homepath%'
+        else:
+            home = '~'
+
+        # Create path to a testing directory
+        new_dir = os.path.join(home, 'pysat_check_path_testing')
+
+        assert not os.path.isdir(new_dir)
+
+        # Assert check_and_make_path creates the directory
+        assert pysat.utils.files.check_and_make_path(new_dir, expand_path=True)
+
+        new_dir = os.path.expanduser(new_dir)
+        new_dir = os.path.expandvars(new_dir)
+        assert os.path.isdir(new_dir)
+
+        # Clean up the test directory
+        os.rmdir(new_dir)
+        return
+
+    @pytest.mark.parametrize("path", ['no_starting_path_info',
+                                      os.path.join('no', ' way ', ' brah ')])
+    def test_check_and_make_path_error(self, path):
+        """Test ValueError raised for invalid paths."""
+
+        with pytest.raises(ValueError) as verr:
+            pysat.utils.files.check_and_make_path(path)
+        assert str(verr).find('Invalid path specification.') >= 0
+
+        return
