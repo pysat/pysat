@@ -537,20 +537,17 @@ def create_files(inst, start, stop, freq='1D', use_doy=True,
         Frequency of file output.  Codes correspond to pandas.date_range
         codes (default='1D')
     use_doy : bool
-        If True, use Day of Year (doy)
-        If False, use month / day
+        If True use Day of Year (doy), if False use day of month and month.
         (default=True)
     root_fname : str
         The format of the file name to create. Supports standard pysat template
         variables 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
         'revision', 'cycle'. (default='pysat_testing_{year:04d}_{day:03d}.txt')
     version : bool
-        If True, iterate over version / revision / cycle
-        If False, ignore version / revision / cycle
-        (default=False)
+        If True, iterate over version / revision / cycle. If False,
+        ignore version / revision / cycle. (default=False)
     content : str
-        Custom text to write to temporary files
-        (default=None)
+        Custom text to write to temporary files (default=None)
     timeout : float
         Time is seconds to lock the files being created.  If None, no timeout is
         used.  (default=None)
