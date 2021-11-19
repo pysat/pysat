@@ -415,13 +415,9 @@ class Meta(object):
                             if itype == bytes:
                                 itype = str
 
-                            # Update the MetaLabels object
-                            setattr(self.labels, iattr, ikey)
-                            self.labels.label_type[iattr] = itype
-                            self.labels.label_attrs[ikey] = iattr
-
-                            # Update the existing metadata to include this
-                            # new label
+                            # Update the MetaLabels object and the existing
+                            # metadata to ensure all data have all labels
+                            self.labels.update(iattr, ikey, itype)
                             self._label_setter(ikey, ikey, type(to_be_set))
 
                         # Set the data
@@ -1473,9 +1469,8 @@ class MetaLabels(object):
 
     Attributes
     ----------
-    data : pandas.DataFrame
-        index is variable standard name, 'units', 'long_name', and other
-        defaults are also stored along with additional user provided labels.
+    meta : pandas.DataFrame or NoneType
+        Coupled MetaData data object or NoneType
     units : str
         String used to label units in storage. (default='units')
     name : str
@@ -1494,6 +1489,15 @@ class MetaLabels(object):
     fill_val : str
         String used to label fill value in storage. The default follows the
         netCDF4 standards (default='fill')
+    label_type : dict
+        Dict with attribute names as keys and expected data types as values
+    label_attrs : dict
+        Dict with attribute names as values and attributes values as keys
+
+    Raises
+    ------
+    TypeError
+        If meta data type is invalid
 
     Note
     ----
@@ -1526,32 +1530,8 @@ class MetaLabels(object):
                  desc=('desc', str), min_val=('value_min', float),
                  max_val=('value_max', float), fill_val=('fill', float),
                  **kwargs):
-        """Initialize the MetaLabels class.
+        """Initialize the MetaLabels class."""
 
-        Parameters
-        ----------
-        units : tuple
-            Units label name and value type (default=('units', str))
-        name : tuple
-            Name label name and value type (default=('long_name', str))
-        notes : tuple
-            Notes label name and value type (default=('notes', str))
-        desc : tuple
-            Description label name and value type (default=('desc', str))
-        min_val : tuple
-            Minimum value label name and value type
-            (default=('value_min', float))
-        max_val : tuple
-            Maximum value label name and value type
-            (default=('value_max', float))
-        fill_val : tuple
-            Fill value label name and value type (default=('fill', float))
-        kwargs : dict
-            Dictionary containing optional label attributes, where the keys
-            are the attribute names and the values are tuples containing the
-            label name and value type
-
-        """
         # Initialize the coupled metadata
         self.meta = metadata
 
@@ -1566,14 +1546,20 @@ class MetaLabels(object):
                             min_val[0]: 'min_val', max_val[0]: 'max_val',
                             fill_val[0]: 'fill_val'}
 
-        # Set the custom labels and label types
-        for custom_label in kwargs.keys():
-            self.label_type[custom_label] = kwargs[custom_label][1]
-            self.label_attrs[kwargs[custom_label][0]] = custom_label
+        # Ensure all standard label types are valid
+        for label in self.label_type.keys():
+            if not self._eval_label_type(self.label_type[label]):
+                raise TypeError(''.join([
+                    'iterable types like ', repr(self.label_type[label]),
+                    ' (set for ', repr(label), ') are not allowed']))
 
-        # Set the label attributes
+        # Set the standard label attributes
         for label_val in self.label_attrs.keys():
             setattr(self, self.label_attrs[label_val], label_val)
+
+        # Set and evaluate the custom labels and label types
+        for custom_label in kwargs.keys():
+            self.update(custom_label, *kwargs[custom_label])
 
         return
 
@@ -1642,6 +1628,37 @@ class MetaLabels(object):
 
         return out_str
 
+    def _eval_label_type(self, val_type):
+        """Evaluate the label type for validity.
+
+        Parameters
+        ----------
+        val_type : type
+            Variable type for the value to be assigned to a MetaLabel
+
+        Returns
+        -------
+        valid : bool
+            True if this is a valid type, False if not valid
+
+        """
+
+        default_val = self.default_values_from_type(val_type)
+        valid = True
+        
+        if default_val is None and val_type not in [type(None), bool, bytes]:
+            # Ensure the type is not iterable
+            try:
+                val_type([])
+                valid = False
+            except (TypeError, ValueError) as err:
+                # If a list can't be cast, the type is not iterable and is
+                # likely valid.  There may be some objects that prove
+                # problematic, but they haven't been encountered yet.
+                pass
+
+        return valid
+
     def default_values_from_type(self, val_type):
         """Retrieve the default values for each label based on their type.
 
@@ -1654,8 +1671,7 @@ class MetaLabels(object):
         -------
         default_val : str, float, int, NoneType
             Sets NaN for all float values, -1 for all int values, and '' for
-            all str values except for 'scale', which defaults to 'linear', and
-            None for any other data type
+            all str values, and None for any other data type
 
         """
 
@@ -1744,3 +1760,34 @@ class MetaLabels(object):
                 pysat.logger.info(mstr)
 
         return default_val
+
+    def update(self, lattr, lname, ltype):
+        """Update MetaLabels with a new label.
+
+        Parameters
+        ----------
+        lattr : str
+            Attribute for this new label
+        lname : str
+            MetaData name for this label
+        ltype : type
+            Expected data type for this label
+
+        Raises
+        ------
+        TypeError
+            If meta data type is invalid
+
+        """
+
+        if self._eval_label_type(ltype):
+            # This is a valid meta data type, update the class attributes
+            setattr(self, lattr, lname)
+            self.label_type[lattr] = ltype
+            self.label_attrs[lname] = lattr
+        else:
+            # This is an invalid meta data type, raise a TypeError
+            raise TypeError(''.join(['iterable types like ', repr(ltype),
+                                     ' (set for ', repr(lattr),
+                                     ') are not allowed']))
+        return
