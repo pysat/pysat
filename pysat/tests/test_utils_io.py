@@ -661,7 +661,7 @@ class TestNetCDF4Integration(object):
 
             assert 'Depend_1' not in init_meta[var]
             if init_meta[var].children is None:
-                assert np.isnan(self.testInst.meta[var, 'Depend_1'])
+                assert self.testInst.meta[var, 'Depend_1'] == ''
             else:
                 assert self.testInst.meta[
                     var, 'Depend_1'] in self.testInst.variables
