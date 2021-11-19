@@ -170,7 +170,7 @@ class TestMetaLabels(object):
         assert self.meta_labels.new_label == 'new_name'
         assert self.meta_labels.label_type['new_label'] == int
         return
-        
+
     # ----------------------------------------
     # Test the integration with the Meta class
 

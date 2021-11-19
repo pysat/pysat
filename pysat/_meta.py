@@ -1645,13 +1645,13 @@ class MetaLabels(object):
 
         default_val = self.default_values_from_type(val_type)
         valid = True
-        
+
         if default_val is None and val_type not in [type(None), bool, bytes]:
             # Ensure the type is not iterable
             try:
                 val_type([])
                 valid = False
-            except (TypeError, ValueError) as err:
+            except (TypeError, ValueError):
                 # If a list can't be cast, the type is not iterable and is
                 # likely valid.  There may be some objects that prove
                 # problematic, but they haven't been encountered yet.
