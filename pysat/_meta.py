@@ -400,12 +400,36 @@ class Meta(object):
                                    and self.labels.label_type[iattr] == str):
                                     to_be_set = to_be_set.decode("utf-8")
                                 else:
-                                    warnings.warn(''.join((
-                                        'Metadata does not have expected type ',
-                                        repr(self.labels.label_type[iattr]),
-                                        '. Dropping input for  ', var,
-                                        ' with key ', ikey)))
-                                    good_set = False
+                                    # This type is incorrect, try casting it
+                                    wmsg = ''.join(['Metadata does not have ',
+                                                    'expected type ',
+                                                    repr(self.labels.label_type[
+                                                        iattr])])
+                                    try:
+                                        if hasattr(to_be_set, '__iter__'):
+                                            if self.labels.label_type[
+                                                    iattr] == str:
+                                                to_be_set = '\n\n'.join(
+                                                    [str(tval) for tval in
+                                                     to_be_set])
+                                            else:
+                                                raise TypeError("can't recast")
+                                        else:
+                                            to_be_set = self.labels.label_type[
+                                                iattr](to_be_set)
+
+                                        # Inform user data was recast
+                                        pysat.logger.warning(''.join((
+                                            wmsg, '. Recasting input for ',
+                                            repr(var), ' with key ',
+                                            repr(ikey))))
+                                    except (TypeError, ValueError):
+                                        # Warn user data was dropped
+                                        warnings.warn(''.join((
+                                            wmsg, '. Dropping input for ',
+                                            repr(var), ' with key ',
+                                            repr(ikey))))
+                                        good_set = False
                         else:
                             # Extend the meta labels. Ensure the attribute
                             # name has no spaces and that bytes are used instead
@@ -450,7 +474,7 @@ class Meta(object):
         elif isinstance(input_data, Meta):
             # Dealing with a higher order data set.
             # data_vars is only a single name here (by choice for support)
-            if (data_vars in self._ho_data) and (input_data.empty):
+            if (data_vars in self._ho_data) and input_data.empty:
                 # No actual metadata provided and there is already some
                 # higher order metadata in self.
                 return
@@ -964,13 +988,22 @@ class Meta(object):
 
         """
         # Update labels in metadata
-        for key in other_meta.labels.label_type:
+        for key in other_meta.labels.label_type.keys():
             new_name = getattr(other_meta.labels, key)
-            old_name = getattr(self.labels, key)
-            if old_name != new_name:
-                self._label_setter(new_name, old_name,
-                                   other_meta.labels.label_type[key],
-                                   use_names_default=True)
+
+            if hasattr(self.labels, key):
+                # This label exists, but the name may need updating
+                old_name = getattr(self.labels, key)
+                if old_name != new_name:
+                    self._label_setter(new_name, old_name,
+                                       other_meta.labels.label_type[key],
+                                       use_names_default=True)
+            else:
+                # This label doesn't exist, add it.
+                self.labels.update(key, new_name,
+                                   other_meta.labels.label_type[key])
+                self._label_setter(new_name, new_name,
+                                   other_meta.labels.label_type[key])
 
         self.labels = other_meta.labels
 
