@@ -349,25 +349,59 @@ class TestMeta(object):
         self.eval_meta_settings()
         return
 
-    def test_set_meta_with_array(self):
-        """Test that setting meta as an array raises appropriate warning."""
+    @pytest.mark.parametrize('bad_val', [[1, 2], None])
+    def test_set_meta_with_wrong_type_drop(self, bad_val):
+        """Test that setting meta as not-recastable type raises warning.
+
+        Parameters
+        ----------
+        bad_val : not str
+            Any value of a type that is not str
+
+        """
 
         with warnings.catch_warnings(record=True) as war:
-            self.meta['fake_var'] = {'units': [1, 2]}
+            self.meta['fake_var'] = {'value_max': bad_val}
 
         # Test the warning
-        default_str = ' '.join(['Array elements are not allowed in meta.',
-                                'Dropping input for fake_var with key units'])
         assert len(war) >= 1
         assert war[0].category == UserWarning
-        assert default_str in str(war[0].message)
+        assert 'Metadata does not have expected type' in str(war[0].message)
+        assert 'Dropping input' in str(war[0].message)
 
         # Check that meta is blank
-        assert self.meta['fake_var']['units'] == ''
+        assert np.isnan(self.meta['fake_var']['value_max'])
         return
 
     # -------------------------
     # Test the logging messages
+
+    @pytest.mark.parametrize('bad_val', [[1, 2], 1, 2.0, True, None])
+    def test_set_meta_with_wrong_type_cast(self, bad_val, caplog):
+        """Test that setting meta as recastable type raises appropriate warning.
+
+        Parameters
+        ----------
+        bad_val : not str
+            Any value of a type that is not str
+
+        """
+
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.meta['fake_var'] = {'units': bad_val}
+
+        # Test the warning
+        captured = caplog.text
+        assert captured.find('Metadata does not have expected type') >= 0
+        assert captured.find('Recasting input') >= 0
+
+        # Check that meta is set
+        if hasattr(bad_val, "__iter__"):
+            exp_val = "\n\n".join([str(bval) for bval in bad_val])
+        else:
+            exp_val = str(bad_val)
+        assert self.meta['fake_var']['units'] == exp_val
+        return
 
     @pytest.mark.parametrize("in_val", [1., 1, {}, None, []])
     def test_info_message_incorrect_input_meta_labels(self, in_val, caplog):
@@ -612,7 +646,7 @@ class TestMeta(object):
         self.dval = 'test_meta_dict_assignment'
         self.default_val = {
             getattr(self.meta.labels, mattr): ' '.join(['test', mattr])
-            if isinstance(self.meta.labels.label_type[mattr], str) else -47
+            if self.meta.labels.label_type[mattr] == str else -47
             for mattr in self.meta.labels.label_type.keys()}
         self.default_name = []
         self.default_nan = []
@@ -646,7 +680,7 @@ class TestMeta(object):
         default_vals = {
             getattr(self.meta.labels, mattr): [
                 ' '.join(['test', mattr, self.dval])
-                if isinstance(self.meta.labels.label_type[mattr], str) else -47
+                if self.meta.labels.label_type[mattr] == str else -47
                 for self.dval in dvals]
             for mattr in self.meta.labels.label_type.keys()}
         self.default_name = []
@@ -812,11 +846,8 @@ class TestMeta(object):
         for mlabel in meta_dict.keys():
             for dval in ['yes_custom', 'no_custom']:
                 if mlabel == 'custom_label' and dval == 'no_custom':
-                    # Because no type was specified for this label,
-                    # it defaults to float with a fill value of NaN
-                    # regardless of the values it is set to.
-                    assert np.isnan(self.meta[dval, mlabel]), \
-                        "Custom label set after init didn't default to NaN"
+                    assert self.meta[dval, mlabel] == '', \
+                        "Custom label set after init didn't default correctly"
                 else:
                     assert self.meta[dval, mlabel] == meta_dict[mlabel], \
                         "{:} label has unexpected value ({:} != {:})".format(
