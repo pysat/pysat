@@ -366,7 +366,7 @@ class TestMeta(object):
         # Test the warning
         assert len(war) >= 1
         assert war[0].category == UserWarning
-        assert 'Metadata does not have expected type' in str(war[0].message)
+        assert 'Metadata with type' in str(war[0].message)
         assert 'Dropping input' in str(war[0].message)
 
         # Check that meta is blank
@@ -392,7 +392,7 @@ class TestMeta(object):
 
         # Test the warning
         captured = caplog.text
-        assert captured.find('Metadata does not have expected type') >= 0
+        assert captured.find('Metadata with type') >= 0
         assert captured.find('Recasting input') >= 0
 
         # Check that meta is set
