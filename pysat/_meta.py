@@ -398,11 +398,13 @@ class Meta(object):
                                 # and an expected str, resolve it here
                                 if(isinstance(to_be_set, bytes)
                                    and self.labels.label_type[iattr] == str):
-                                    to_be_set = to_be_set.decode("utf-8")
+                                    to_be_set = core_utils.stringify(to_be_set)
                                 else:
                                     # This type is incorrect, try casting it
-                                    wmsg = ''.join(['Metadata does not have ',
-                                                    'expected type ',
+                                    wmsg = ''.join(['Metadata with type ',
+                                                    repr(type(to_be_set)),
+                                                    'does not match expected ',
+                                                    'type ',
                                                     repr(self.labels.label_type[
                                                         iattr])])
                                     try:
@@ -419,7 +421,7 @@ class Meta(object):
                                                 iattr](to_be_set)
 
                                         # Inform user data was recast
-                                        pysat.logger.warning(''.join((
+                                        pysat.logger.info(''.join((
                                             wmsg, '. Recasting input for ',
                                             repr(var), ' with key ',
                                             repr(ikey))))
