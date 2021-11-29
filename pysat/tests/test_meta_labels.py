@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------
 """Tests the pysat MetaLabels object."""
 
+import datetime as dt
 import logging
 import numpy as np
 import pytest
@@ -41,6 +42,40 @@ class TestMetaLabels(object):
         assert verr.match("unknown label attribute")
         return
 
+    @pytest.mark.parametrize("iter_type", [list, dict, set, tuple, np.ndarray])
+    def test_set_bad_type(self, iter_type):
+        """Test MetaLabels type evaluations does not allow iterables.
+
+        Parameters
+        ----------
+        iter_type : type
+            Different iterable types
+
+        """
+
+        with pytest.raises(TypeError) as terr:
+            pysat.MetaLabels(value_range=('val_range', iter_type))
+
+        assert str(terr).find("iterable types like") >= 0
+        return
+
+    @pytest.mark.parametrize("iter_type", [list, dict, set, tuple, np.ndarray])
+    def test_update_bad_type(self, iter_type):
+        """Test MetaLabels type evaluations does not allow iterables.
+
+        Parameters
+        ----------
+        iter_type : type
+            Different iterable types
+
+        """
+
+        with pytest.raises(TypeError) as terr:
+            self.meta_labels.update("value_range", 'val_range', iter_type)
+
+        assert str(terr).find("iterable types like") >= 0
+        return
+
     # -------------------------
     # Test the logging messages
 
@@ -70,6 +105,40 @@ class TestMetaLabels(object):
         return
 
     # -----------------------------
+    # Test the class hidden methods
+
+    @pytest.mark.parametrize("val_type", [int, float, type(None), str, bytes,
+                                          bool, np.float32, np.float64,
+                                          np.int32, np.int64, np.datetime64,
+                                          dt.datetime, dt.timedelta])
+    def test_eval_label_type_true(self, val_type):
+        """Test successful ID of an allowable meta data type.
+
+        Parameters
+        ----------
+        val_type : type
+            Scalar data type
+
+        """
+
+        assert self.meta_labels._eval_label_type(val_type)
+        return
+
+    @pytest.mark.parametrize("val_type", [list, dict, set, tuple, np.ndarray])
+    def test_eval_label_type_false(self, val_type):
+        """Test successful ID of an allowable meta data type.
+
+        Parameters
+        ----------
+        val_type : type
+            Iterable data type
+
+        """
+
+        assert not self.meta_labels._eval_label_type(val_type)
+        return
+
+    # -----------------------------
     # Test the class public methods
 
     @pytest.mark.parametrize("in_val",
@@ -91,6 +160,15 @@ class TestMetaLabels(object):
         out = self.meta.labels.default_values_from_type(in_val)
         assert out == comp_val
 
+        return
+
+    def test_update(self):
+        """Test successful update of MetaLabels."""
+        self.meta_labels.update('new_label', 'new_name', int)
+
+        assert hasattr(self.meta_labels, 'new_label')
+        assert self.meta_labels.new_label == 'new_name'
+        assert self.meta_labels.label_type['new_label'] == int
         return
 
     # ----------------------------------------

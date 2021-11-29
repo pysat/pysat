@@ -386,26 +386,68 @@ class Meta(object):
                 if ikey not in ['children', 'meta']:
                     for i, var in enumerate(data_vars):
                         to_be_set = input_data[ikey][i]
-                        if hasattr(to_be_set, '__iter__') \
-                           and not isinstance(to_be_set, str):
-                            # We have some list-like object that can only
-                            # store a single element
-                            if len(to_be_set) == 0:
-                                # Empty list, ensure there is something to set
-                                to_be_set = ['']
-                            if isinstance(to_be_set[0], str) \
-                                    or isinstance(to_be_set, bytes):
-                                if isinstance(to_be_set, bytes):
-                                    to_be_set = to_be_set.decode("utf-8")
+                        good_set = True
 
-                                self._data.loc[var, ikey] = '\n\n'.join(
-                                    to_be_set)
-                            else:
-                                warnings.warn(' '.join(('Array elements are',
-                                                        'not allowed in meta.',
-                                                        'Dropping input for',
-                                                        var, 'with key', ikey)))
+                        # See if this meta data key has already been defined
+                        # in MetaLabels
+                        if ikey in self.labels.label_attrs.keys():
+                            iattr = self.labels.label_attrs[ikey]
+                            if not isinstance(
+                                    to_be_set, self.labels.label_type[iattr]):
+                                # If this is a disagreement between byte data
+                                # and an expected str, resolve it here
+                                if(isinstance(to_be_set, bytes)
+                                   and self.labels.label_type[iattr] == str):
+                                    to_be_set = core_utils.stringify(to_be_set)
+                                else:
+                                    # This type is incorrect, try casting it
+                                    wmsg = ''.join(['Metadata with type ',
+                                                    repr(type(to_be_set)),
+                                                    'does not match expected ',
+                                                    'type ',
+                                                    repr(self.labels.label_type[
+                                                        iattr])])
+                                    try:
+                                        if hasattr(to_be_set, '__iter__'):
+                                            if self.labels.label_type[
+                                                    iattr] == str:
+                                                to_be_set = '\n\n'.join(
+                                                    [str(tval) for tval in
+                                                     to_be_set])
+                                            else:
+                                                raise TypeError("can't recast")
+                                        else:
+                                            to_be_set = self.labels.label_type[
+                                                iattr](to_be_set)
+
+                                        # Inform user data was recast
+                                        pysat.logger.info(''.join((
+                                            wmsg, '. Recasting input for ',
+                                            repr(var), ' with key ',
+                                            repr(ikey))))
+                                    except (TypeError, ValueError):
+                                        # Warn user data was dropped
+                                        warnings.warn(''.join((
+                                            wmsg, '. Dropping input for ',
+                                            repr(var), ' with key ',
+                                            repr(ikey))))
+                                        good_set = False
                         else:
+                            # Extend the meta labels. Ensure the attribute
+                            # name has no spaces and that bytes are used instead
+                            # of strings
+                            iattr = ikey.replace(" ", "_")
+                            itype = type(to_be_set)
+                            if itype == bytes:
+                                itype = str
+
+                            # Update the MetaLabels object and the existing
+                            # metadata to ensure all data have all labels
+                            self.labels.update(iattr, ikey, itype)
+                            self._label_setter(ikey, ikey, type(to_be_set))
+
+                        # Set the data
+                        if good_set:
                             self._data.loc[var, ikey] = to_be_set
                 else:
                     # Key is 'meta' or 'children', providing higher order
@@ -434,7 +476,7 @@ class Meta(object):
         elif isinstance(input_data, Meta):
             # Dealing with a higher order data set.
             # data_vars is only a single name here (by choice for support)
-            if (data_vars in self._ho_data) and (input_data.empty):
+            if (data_vars in self._ho_data) and input_data.empty:
                 # No actual metadata provided and there is already some
                 # higher order metadata in self.
                 return
@@ -948,13 +990,22 @@ class Meta(object):
 
         """
         # Update labels in metadata
-        for key in other_meta.labels.label_type:
+        for key in other_meta.labels.label_type.keys():
             new_name = getattr(other_meta.labels, key)
-            old_name = getattr(self.labels, key)
-            if old_name != new_name:
-                self._label_setter(new_name, old_name,
-                                   other_meta.labels.label_type[key],
-                                   use_names_default=True)
+
+            if hasattr(self.labels, key):
+                # This label exists, but the name may need updating
+                old_name = getattr(self.labels, key)
+                if old_name != new_name:
+                    self._label_setter(new_name, old_name,
+                                       other_meta.labels.label_type[key],
+                                       use_names_default=True)
+            else:
+                # This label doesn't exist, add it.
+                self.labels.update(key, new_name,
+                                   other_meta.labels.label_type[key])
+                self._label_setter(new_name, new_name,
+                                   other_meta.labels.label_type[key])
 
         self.labels = other_meta.labels
 
@@ -1453,9 +1504,8 @@ class MetaLabels(object):
 
     Attributes
     ----------
-    data : pandas.DataFrame
-        index is variable standard name, 'units', 'long_name', and other
-        defaults are also stored along with additional user provided labels.
+    meta : pandas.DataFrame or NoneType
+        Coupled MetaData data object or NoneType
     units : str
         String used to label units in storage. (default='units')
     name : str
@@ -1474,6 +1524,15 @@ class MetaLabels(object):
     fill_val : str
         String used to label fill value in storage. The default follows the
         netCDF4 standards (default='fill')
+    label_type : dict
+        Dict with attribute names as keys and expected data types as values
+    label_attrs : dict
+        Dict with attribute names as values and attributes values as keys
+
+    Raises
+    ------
+    TypeError
+        If meta data type is invalid
 
     Note
     ----
@@ -1506,32 +1565,8 @@ class MetaLabels(object):
                  desc=('desc', str), min_val=('value_min', float),
                  max_val=('value_max', float), fill_val=('fill', float),
                  **kwargs):
-        """Initialize the MetaLabels class.
+        """Initialize the MetaLabels class."""
 
-        Parameters
-        ----------
-        units : tuple
-            Units label name and value type (default=('units', str))
-        name : tuple
-            Name label name and value type (default=('long_name', str))
-        notes : tuple
-            Notes label name and value type (default=('notes', str))
-        desc : tuple
-            Description label name and value type (default=('desc', str))
-        min_val : tuple
-            Minimum value label name and value type
-            (default=('value_min', float))
-        max_val : tuple
-            Maximum value label name and value type
-            (default=('value_max', float))
-        fill_val : tuple
-            Fill value label name and value type (default=('fill', float))
-        kwargs : dict
-            Dictionary containing optional label attributes, where the keys
-            are the attribute names and the values are tuples containing the
-            label name and value type
-
-        """
         # Initialize the coupled metadata
         self.meta = metadata
 
@@ -1541,20 +1576,25 @@ class MetaLabels(object):
                            'notes': notes[1], 'desc': desc[1],
                            'min_val': min_val[1], 'max_val': max_val[1],
                            'fill_val': fill_val[1]}
+        self.label_attrs = {units[0]: 'units', name[0]: 'name',
+                            notes[0]: 'notes', desc[0]: 'desc',
+                            min_val[0]: 'min_val', max_val[0]: 'max_val',
+                            fill_val[0]: 'fill_val'}
 
-        # Set the default labels and types
-        self.units = units[0]
-        self.name = name[0]
-        self.notes = notes[0]
-        self.desc = desc[0]
-        self.min_val = min_val[0]
-        self.max_val = max_val[0]
-        self.fill_val = fill_val[0]
+        # Ensure all standard label types are valid
+        for label in self.label_type.keys():
+            if not self._eval_label_type(self.label_type[label]):
+                raise TypeError(''.join([
+                    'iterable types like ', repr(self.label_type[label]),
+                    ' (set for ', repr(label), ') are not allowed']))
 
-        # Set the custom labels and label types
+        # Set the standard label attributes
+        for label_val in self.label_attrs.keys():
+            setattr(self, self.label_attrs[label_val], label_val)
+
+        # Set and evaluate the custom labels and label types
         for custom_label in kwargs.keys():
-            setattr(self, custom_label, kwargs[custom_label][0])
-            self.label_type[custom_label] = kwargs[custom_label][1]
+            self.update(custom_label, *kwargs[custom_label])
 
         return
 
@@ -1623,6 +1663,37 @@ class MetaLabels(object):
 
         return out_str
 
+    def _eval_label_type(self, val_type):
+        """Evaluate the label type for validity.
+
+        Parameters
+        ----------
+        val_type : type
+            Variable type for the value to be assigned to a MetaLabel
+
+        Returns
+        -------
+        valid : bool
+            True if this is a valid type, False if not valid
+
+        """
+
+        default_val = self.default_values_from_type(val_type)
+        valid = True
+
+        if default_val is None and val_type not in [type(None), bool, bytes]:
+            # Ensure the type is not iterable
+            try:
+                val_type([])
+                valid = False
+            except (TypeError, ValueError):
+                # If a list can't be cast, the type is not iterable and is
+                # likely valid.  There may be some objects that prove
+                # problematic, but they haven't been encountered yet.
+                pass
+
+        return valid
+
     def default_values_from_type(self, val_type):
         """Retrieve the default values for each label based on their type.
 
@@ -1635,8 +1706,7 @@ class MetaLabels(object):
         -------
         default_val : str, float, int, NoneType
             Sets NaN for all float values, -1 for all int values, and '' for
-            all str values except for 'scale', which defaults to 'linear', and
-            None for any other data type
+            all str values, and None for any other data type
 
         """
 
@@ -1725,3 +1795,34 @@ class MetaLabels(object):
                 pysat.logger.info(mstr)
 
         return default_val
+
+    def update(self, lattr, lname, ltype):
+        """Update MetaLabels with a new label.
+
+        Parameters
+        ----------
+        lattr : str
+            Attribute for this new label
+        lname : str
+            MetaData name for this label
+        ltype : type
+            Expected data type for this label
+
+        Raises
+        ------
+        TypeError
+            If meta data type is invalid
+
+        """
+
+        if self._eval_label_type(ltype):
+            # This is a valid meta data type, update the class attributes
+            setattr(self, lattr, lname)
+            self.label_type[lattr] = ltype
+            self.label_attrs[lname] = lattr
+        else:
+            # This is an invalid meta data type, raise a TypeError
+            raise TypeError(''.join(['iterable types like ', repr(ltype),
+                                     ' (set for ', repr(lattr),
+                                     ') are not allowed']))
+        return
