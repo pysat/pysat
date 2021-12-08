@@ -80,7 +80,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     # Define range of simulated model as well as data, depending upon tag.
     if tag == '':
         latitude = np.linspace(-50, 50, 21)
-        longitude = np.linspace(0, 360, 73)
+        longitude = np.linspace(0, 360, 72, endpoint=False)
         altitude = np.linspace(300, 500, 41)
         data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
                           coords={'time': index, 'latitude': latitude,
