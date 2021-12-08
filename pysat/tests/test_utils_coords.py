@@ -62,7 +62,8 @@ class TestUpdateLon(object):
         del self.py_inst, self.inst_time
         return
 
-    @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
+    @pytest.mark.parametrize("name", ["testing", "testing_xarray",
+                                      "testing2d_xarray", "testmodel"])
     def test_update_longitude(self, name):
         """Test update_longitude successful run."""
 
