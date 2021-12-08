@@ -87,6 +87,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed a bug where empty check for xarray instruments fail when time not
      present. (#922)
    * Improved feedback when users try to set meta with an array.
+   * Fixed a bug that expected special treatment by `Instrument.data` type in
+     `utils.coords.update_longitude`
+   * Fixed pysat_testmodel Instrument longitude range
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
