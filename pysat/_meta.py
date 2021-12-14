@@ -25,6 +25,10 @@ class Meta(object):
         DataFrame should be indexed by variable name that contains at minimum
         the standard_name (name), units, and long_name for the data stored in
         the associated pysat Instrument object.
+    header_data : dict or NoneType
+        Global meta data to be assigned to the header attribute.  Keys denote
+        the desired attribute names and values the metadata for that attribute.
+        (default=None)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -45,6 +49,8 @@ class Meta(object):
         defaults are also stored along with additional user provided labels.
     labels : MetaLabels
         Labels for MetaData attributes
+    header : MetaHeader
+        Class containing global metadata
 
     Note
     ----
@@ -152,7 +158,7 @@ class Meta(object):
     # -----------------------------------------------------------------------
     # Define the magic methods
 
-    def __init__(self, metadata=None,
+    def __init__(self, metadata=None, header_data=None,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'min_val': ('value_min', float),
@@ -162,6 +168,9 @@ class Meta(object):
         # Set mutability of Meta attributes.  This flag must be set before
         # anything else, or `__setattr__` breaks.
         self.mutable = True
+
+        # Set the global meta data
+        self.header = MetaHeader(header_data)
 
         # Set the NaN export list
         self._export_nan = [] if export_nan is None else export_nan
@@ -206,9 +215,10 @@ class Meta(object):
 
         """
         nvar = len([kk for kk in self.keys()])
-        out_str = ''.join(['pysat.Meta(metadata=', self._data.__repr__(),
-                           ', labels=', self.labels.__repr__(),
-                           'export_nan=', self._export_nan.__repr__(),
+        out_str = ''.join(['pysat.Meta(metadata=', repr(self._data),
+                           ', header_data=', repr(self.header), ', labels=',
+                           repr(self.labels), ', export_nan=',
+                           repr(self._export_nan),
                            ') -> {:d} Variables'.format(nvar)])
         return out_str
 
@@ -247,6 +257,10 @@ class Meta(object):
         out_str += "Metadata for {:d} standard variables\n".format(nvdim)
         out_str += "Metadata for {:d} ND variables\n".format(nndim)
 
+        # Print the global meta data
+        max_num = 6 if long_str else 0  # Should be divible by 2 and ncol
+        out_str += self.header.__str__(max_num_display=max_num)
+
         # Print the longer output
         if long_str:
             # Print all the metadata labels
@@ -254,7 +268,6 @@ class Meta(object):
 
             # Print a subset of the metadata variables, divided by order
             ncol = 3
-            max_num = 6  # Should be divible by 2 and ncol
             if nvdim > 0:
                 out_str += "\nStandard Metadata variables:\n"
                 out_str += core_utils.fmt_output_in_cols(vdim, ncols=ncol,
@@ -1826,3 +1839,123 @@ class MetaLabels(object):
                                      ' (set for ', repr(lattr),
                                      ') are not allowed']))
         return
+
+
+class MetaHeader(object):
+    """Stores global metadata.
+
+    Parameters
+    ----------
+    header_data : dict or NoneType
+        Meta data to be assigned to the class.  Keys denote the desired
+        attribute names and values the metadata for that attribute.
+        (default=None)
+
+    Attributes
+    ----------
+    global_attrs : list
+        List of global attribute names
+    <attrs> :
+        Attributes with names corresponding to the values of `global_attrs`,
+        may have any type.
+
+    Methods
+    -------
+    to_dict()
+        Convert global attributes to a dictionary.
+
+    """
+
+    def __init__(self, header_data=None):
+        """Initialize the MetaHeader class."""
+
+        if header_data is None:
+            header_data = {}
+
+        # Initialize the list of attributes
+        self.global_attrs = list(header_data.keys())
+
+        # Set the global attributes
+        for attr_name in self.global_attrs:
+            setattr(self, attr_name, header_data[attr_name])
+
+        return
+
+    def __setattr__(self, name, value):
+        """Wet attributes based on their type and update `global_attrs`.
+
+        Parameters
+        ----------
+        name : str
+            Attribute name to be assigned to MetaLabels
+        value
+            Value (any type) to be assigned to attribute specified by name
+
+        """
+        # If this is a new attribute, update the `global_attrs` list
+        if not hasattr(self, name) and name != 'global_attrs':
+            if hasattr(self, 'global_attrs'):
+                self.global_attrs.append(name)
+            else:
+                super(MetaHeader, self).__setattr__('global_attrs', [name])
+
+        # Use Object to avoid recursion
+        super(MetaHeader, self).__setattr__(name, value)
+        return
+
+    def __repr__(self):
+        """Print MetaHeader instantiation parameters.
+
+        Returns
+        -------
+        out_str : str
+            Simply formatted output string
+
+        """
+        out_str = ''.join(['pysat.MetaLabels(header_data=',
+                           repr(self.to_dict()), ")"])
+        return out_str
+
+    def __str__(self, max_num_display=3):
+        """Print MetaHeader instance, variables, and attributes.
+
+        Parameters
+        ----------
+        max_num_display : int
+            Maximum number of attribute names to display
+
+        Returns
+        -------
+        out_str : str
+            Nicely formatted output string
+
+        """
+        # Set the printing limits and get the label attributes
+        ncol = 3
+        nattrs = len(self.global_attrs)
+        lab_attrs = [repr(gattr) for gattr in self.global_attrs]
+
+        # Print the MetaHeader data
+        out_str = "Metadata for {:d} global attributes\n".format(nattrs)
+        if nattrs > 0 and max_num_display > 0:
+            out_str += "-----------------------------------\n"
+            out_str += core_utils.fmt_output_in_cols(lab_attrs, ncols=ncol,
+                                                     max_num=max_num_display)
+
+        return out_str
+
+    def to_dict(self):
+        """Convert the header data to a dictionary.
+
+        Returns
+        -------
+        header_data : dict
+            Global meta data where the keys are the attribute names and values
+            the metadata for that attribute.
+
+        """
+
+        header_data = {hattr: getattr(self, hattr)
+                       for hattr in self.global_attrs}
+
+        return header_data
