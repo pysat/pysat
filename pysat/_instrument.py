@@ -339,8 +339,8 @@ class Instrument(object):
                                           'supplied string must be iterable ',
                                           '[{:}]'.format(self.file_format)]))
 
-        # set up empty data and metadata
-        # check if pandas or xarray format
+        # Set up empty data and metadata. Check if it should use the pandas or
+        # xarray format.
         if self.pandas_format:
             self._null_data = pds.DataFrame(None)
             self._data_library = pds.DataFrame
@@ -348,7 +348,7 @@ class Instrument(object):
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
 
-        # assign null data for user selected data type
+        # Assign null data for user selected data type
         self.data = self._null_data.copy()
 
         # Create Meta instance with appropriate labels.  Meta class methods will
@@ -1399,7 +1399,7 @@ class Instrument(object):
                                              inst_id=self.inst_id,
                                              **load_kwargs)
 
-                # ensure units and name are named consistently in new Meta
+                # Ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
                 mdata.accept_default_labels(self.meta)
                 bad_datetime = False
@@ -1464,9 +1464,9 @@ class Instrument(object):
 
         Returns
         -------
-        data : (pds.DataFrame or xr.Dataset)
+        data : pds.DataFrame or xr.Dataset
             pysat data
-        meta : (pysat.Meta)
+        meta : pysat.Meta
             pysat meta data
 
         Note
@@ -1490,9 +1490,9 @@ class Instrument(object):
 
         Returns
         -------
-        data : (pds.DataFrame or xr.Dataset)
+        data : pds.DataFrame or xr.Dataset
             pysat data
-        meta : (pysat.Meta)
+        meta : pysat.Meta
             pysat meta data
 
         Note
@@ -2614,7 +2614,7 @@ class Instrument(object):
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
-             **kwargs):
+             use_header=False, **kwargs):
         """Load the instrument data and metadata.
 
         Parameters
@@ -2650,6 +2650,9 @@ class Instrument(object):
         verifyPad : bool
             If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
+        use_header : bool
+            If True, moves custom Meta attributes to MetaHeader instead of
+            Instrument (default=False)
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments.
 
@@ -3052,7 +3055,17 @@ class Instrument(object):
                     self.data = self[:-1]
 
         # Transfer any extra attributes in meta to the Instrument object
-        self.meta.transfer_attributes_to_instrument(self)
+        if use_header:
+            self.meta.transfer_attributes_to_header()
+        else:
+            warnings.warn(''.join(['Meta now contains a class for global ',
+                                   'metadata (MetaHeader). Default attachment ',
+                                   'of global attributes to Instrument will ',
+                                   'be Deprecated in pysat 3.2.0+. Set ',
+                                   '`use_header=True` to remove this ',
+                                   'warning.']), DeprecationWarning,
+                          stacklevel=2)
+            self.meta.transfer_attributes_to_instrument(self)
         self.meta.mutable = False
         sys.stdout.flush()
         return
