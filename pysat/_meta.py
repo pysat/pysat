@@ -1325,6 +1325,43 @@ class Meta(object):
 
         return output
 
+    def transfer_attributes_to_header(self, strict_names=False):
+        """Transfer non-standard attributes in Meta to the MetaHeader object.
+
+        Parameters
+        ----------
+        strict_names : bool
+            If True, produces an error if the MetaHeader object already
+            has an attribute with the same name to be copied (default=False).
+
+        Raises
+        ------
+        AttributeError
+            If `strict_names` is True and a global attribute would be updated.
+
+        """
+
+        # Get base attribute set, and attributes attached to Meta
+        base_attrb = self._base_attr
+        this_attrb = dir(self)
+
+        # Update the MetaHeader
+        for key in this_attrb:
+            # Don't store any hidden or base attributes
+            if key not in base_attrb and key[0] != '_':
+                if strict_names and key in self.header.global_attrs:
+                    raise AttributeError(''.join([
+                        'Attribute ', repr(key), ' attached to the Meta cannot',
+                        ' be transferred as it already exists in MetaHeader']))
+
+                # Save the attribute name (key) and value
+                setattr(self.header, key, getattr(self, key))
+
+                # Remove key from meta
+                delattr(self, key)
+
+        return
+
     def transfer_attributes_to_instrument(self, inst, strict_names=False):
         """Transfer non-standard attributes in Meta to Instrument object.
 
@@ -1369,14 +1406,12 @@ class Meta(object):
         adict = {}
         transfer_key = []
         for key in this_attrb:
-            if key not in banned:
-                if key not in base_attrb:
-                    # Don't store any hidden attributes
-                    if key[0] != '_':
-                        adict[key] = getattr(self, key)
-                        transfer_key.append(key)
-                        # Remove key from meta
-                        delattr(self, key)
+            # Don't store any hidden, banned, or base attributes
+            if key not in banned and key not in base_attrb and key[0] != '_':
+                adict[key] = getattr(self, key)
+                transfer_key.append(key)
+                # Remove key from meta
+                delattr(self, key)
 
         # Store any non-standard attributes in Instrument get list of
         # instrument objects attributes first to check if a duplicate
@@ -1395,8 +1430,8 @@ class Meta(object):
                         # Use naming convention: new_name = 'pysat_attr_' + key
                         inst.__setattr__(key, adict[key])
                     else:
-                        aerr = ''.join(('Attribute ', key.__repr__(),
-                                        ' attached to the Meta object cannot be'
+                        aerr = ''.join(('Attribute ', repr(key),
+                                        ' attached to the Meta cannot be'
                                         ' transferred as it already exists in ',
                                         'the Instrument object.'))
                         raise AttributeError(aerr)
