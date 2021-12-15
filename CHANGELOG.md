@@ -37,6 +37,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Allow `Instrument.rename` to take a fuction or mapping dict as input,
      after adapting routine to use `Meta.rename`
    * Added an update method and type evaluation method to MetaLabels.
+   * Added a new MetaHeader class for holding global metadata.
+   * Added a pysat Instrument for loading pysat-written NetCDF4 files.
    * Allowed MetaLabels to be expanded through setting new Meta data values.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
