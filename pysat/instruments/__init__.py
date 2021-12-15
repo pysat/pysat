@@ -9,4 +9,3 @@ __all__ = ['pysat_netcdf', 'pysat_testing', 'pysat_testing_xarray',
 
 for inst in __all__:
     exec("from pysat.instruments import {x}".format(x=inst))
-    

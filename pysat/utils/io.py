@@ -728,7 +728,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
         if hasattr(meta, 'header'):
-            setattr(meta.header, ncattr, data.getncattr(ncattr))
+            setattr(meta.header, data_attr, data.getncattr(data_attr))
         else:
             warnings.warn(''.join(['Meta lacks MetaHeader, attributes',
                                    ' will be moved to Instrument']),
@@ -857,8 +857,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     inst_attrb = dir(inst)
 
     # Add the global meta data
-    if hasattr(self.meta, 'header') and len(self.meta.header.global_attrs) > 0:
-        attrb_dict = self.meta.header.to_dict()
+    if hasattr(inst.meta, 'header') and len(inst.meta.header.global_attrs) > 0:
+        attrb_dict = inst.meta.header.to_dict()
     else:
         attrb_dict = {}
 

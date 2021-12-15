@@ -241,4 +241,3 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                                            labels=labels)
 
     return data, mdata
-
