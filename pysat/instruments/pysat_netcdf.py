@@ -124,8 +124,8 @@ def list_files(tag='', inst_id='', data_path=None, format_str=None):
 
     if format_str is None:
         # User did not supply an alternative format template string
-        format_str = '_'.join(platform, name, '{year:04d}', '{month:02d}',
-                              '{day:02d}.nc')
+        format_str = '_'.join([platform, name, '{year:04d}', '{month:02d}',
+                               '{day:02d}.nc'])
 
     # Use the pysat provided function to grab list of files from the
     # local file system that match the format defined above
