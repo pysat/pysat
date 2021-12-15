@@ -1,4 +1,8 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """Template for a pysat.Instrument support file.
 
 Modify this file as needed when adding a new Instrument to pysat.
@@ -15,10 +19,10 @@ platform
     *List platform string here*
 name
     *List name string here*
-inst_id
-    *List supported inst_ids here*
 tag
     *List supported tag strings here*
+inst_id
+    *List supported inst_ids here*
 
 Note
 ----
@@ -35,11 +39,6 @@ Examples
 ::
 
     Example code can go here
-
-
-Authors
--------
-Author name and institution
 
 """
 
@@ -181,7 +180,7 @@ def preprocess(self):
 
 
 # Required function
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
+def list_files(tag='', inst_id='', data_path=None, format_str=None):
     """Produce a list of files corresponding to PLATFORM/NAME.
 
     This routine is invoked by pysat and is not intended for direct
@@ -189,17 +188,17 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : string
+    tag : str
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
-    inst_id : string
+    inst_id : str
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
-    data_path : string
+    data_path : str
         Full path to directory containing files to be loaded. This
         is provided by pysat. The user may specify their own data path
         at Instrument instantiation and it will appear here. (default=None)
-    format_str : string
+    format_str : str
         String template used to parse the datasets filenames. If a user
         supplies a template string at Instrument instantiation
         then it will appear here, otherwise defaults to None. (default=None)
@@ -231,9 +230,10 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """
 
     if format_str is None:
-        # user did not supply an alternative format template string
+        # User did not supply an alternative format template string
         format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
-    # we use a pysat provided function to grab list of files from the
+
+    # We use a pysat provided function to grab list of files from the
     # local file system that match the format defined above
     file_list = pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
@@ -253,21 +253,21 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string
+    tag : str
         Tag identifier used for particular dataset. This input is provided by
         pysat. (default='')
-    inst_id : string
+    inst_id : str
         Satellite ID string identifier used for particular dataset. This input
         is provided by pysat. (default='')
-    data_path : string
+    data_path : str or NoneType
         Path to directory to download data to. (default=None)
-    user : string (OPTIONAL)
+    user : str or NoneType (OPTIONAL)
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
         error if user not supplied. (default=None)
-    password : string (OPTIONAL)
+    password : str  or NoneType (OPTIONAL)
         Password for data download. (default=None)
-    custom_keywords : placeholder
+    custom_keywords : placeholder (OPTIONAL)
         Additional keywords supplied by user when invoking the download
         routine attached to a pysat.Instrument object are passed to this
         routine. Use of custom keywords here is discouraged.
@@ -278,7 +278,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
 
 
 # Required function
-def load(fnames, tag=None, inst_id=None, custom_keyword=None):
+def load(fnames, tag='', inst_id='', custom_keyword=None):
     """Load `platform_name` data and meta data.
 
     This routine is called as needed by pysat. It is not intended
@@ -289,12 +289,12 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string
+    tag : str
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. While
         tag defaults to None here, pysat provides '' as the default
         tag unless specified by user at Instrument instantiation. (default='')
-    inst_id : string
+    inst_id : str
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
     custom_keyword : type to be set
@@ -304,10 +304,10 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
 
     Returns
     -------
-    data, metadata
-        Data and Metadata are formatted for pysat. Data is a
-        pandas DataFrame or xarray DataSet while metadata is a pysat.Meta
-        instance.
+    data : pds.DataFrame or xr.Dataset
+        Data to be assigned to the pysat.Instrument.data object.
+    mdata : pysat.Meta
+        Pysat Meta data for each data variable.
 
     Note
     ----
@@ -370,16 +370,16 @@ def list_remote_files(tag, inst_id, user=None, password=None):
 
     Parameters
     -----------
-    tag : string or NoneType
+    tag : str or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    inst_id : string or NoneType
+    inst_id : str or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    user : string or NoneType
+    user : str or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
-    password : string or NoneType
+    password : str or NoneType
         User password to be passed along to resource with relevant data.
         (default=None)
 
