@@ -550,8 +550,21 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
-                        meta_dict[nc_key] = data.variables[key].getncattr(
-                            nc_key)
+                        # Meta cannot take array data, if present save it as
+                        # seperate meta data labels
+                        tst_array = np.asarray(data.variables[key].getncattr(
+                            nc_key))
+
+                        if tst_array.shape == ():
+                            meta_dict[nc_key] = data.variables[key].getncattr(
+                                nc_key)
+                        elif tst_array.shape == (1, ):
+                            meta_dict[nc_key] = tst_array[0]
+                        else:
+                            for i, val in enumerate(tst_array):
+                                nc_label = "{:}{:d}".format(nc_key, i)
+                                meta_dict[nc_label] = val
+                    
                     dim_meta_data[clean_key] = meta_dict
 
                 dim_meta_dict = {'meta': dim_meta_data}
@@ -719,7 +732,19 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     for key in data.variables.keys():
         meta_dict = {}
         for nc_key in data.variables[key].attrs.keys():
-            meta_dict[nc_key] = data.variables[key].attrs[nc_key]
+            # Meta cannot take array data, if present save it as
+            # seperate meta data labels
+            tst_array = np.asarray(data.variables[key].attrs[nc_key])
+
+            if tst_array.shape == ():
+                meta_dict[nc_key] = data.variables[key].attrs[nc_key]
+            elif tst_array.shape == (1, ):
+                meta_dict[nc_key] = tst_array[0]
+            else:
+                for i, val in enumerate(tst_array):
+                    nc_label = "{:}{:d}".format(nc_key, i)
+                    meta_dict[nc_label] = val
+
         meta[key] = meta_dict
 
         # Remove variable attributes from the data object
@@ -728,7 +753,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
         if hasattr(meta, 'header'):
-            setattr(meta.header, data_attr, data.getncattr(data_attr))
+            setattr(meta.header, data_attr, getattr(data, data_attr))
         else:
             warnings.warn(''.join(['Meta lacks MetaHeader, attributes',
                                    ' will be moved to Instrument']),
@@ -828,6 +853,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     'Text_Supplement' are given default values if not present.
 
     """
+    # Ensure there is data to write
+    if inst.empty:
+        pysat.logger.warning('empty Instrument, not writing {:}'.format(fname))
+        return
+
     # Check export NaNs first
     if export_nan is None:
         export_nan = inst.meta._export_nan
