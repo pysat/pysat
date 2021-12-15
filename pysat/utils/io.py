@@ -456,15 +456,19 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     for fname in fnames:
         with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
             # Build a dictionary with all global ncattrs and add those
-            # attributes to a pysat meta object. Any custom Meta attributes
-            # are automatically transferred to the holding pysat.Instrument
-            # object by pysat.
+            # attributes to a pysat.MetaHeader object.
             for ncattr in data.ncattrs():
-                if hasattr(meta, ncattr):
-                    mattr = '{:}_'.format(ncattr)
+                if hasattr(meta, "header"):
+                    setattr(meta.header, ncattr, data.getncattr(ncattr))
                 else:
-                    mattr = ncattr
-                meta.__setattr__(mattr, data.getncattr(ncattr))
+                    warnings.warn(''.join(['Meta lacks MetaHeader, attributes',
+                                           ' will be moved to Instrument']),
+                                  DeprecationWarning, stacklevel=2)
+                    if hasattr(meta, ncattr):
+                        mattr = '{:}_'.format(ncattr)
+                    else:
+                        mattr = ncattr
+                    meta.__setattr__(mattr, data.getncattr(ncattr))
 
             # Load the metadata.  From here group unique dimensions and
             # act accordingly, 1D, 2D, 3D
@@ -723,11 +727,17 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
-        if hasattr(meta, data_attr):
-            set_attr = "".join([data_attr, "_"])
+        if hasattr(meta, 'header'):
+            setattr(meta.header, ncattr, data.getncattr(ncattr))
         else:
-            set_attr = data_attr
-        meta.__setattr__(set_attr, data.attrs[data_attr])
+            warnings.warn(''.join(['Meta lacks MetaHeader, attributes',
+                                   ' will be moved to Instrument']),
+                          DeprecationWarning, stacklevel=2)
+            if hasattr(meta, data_attr):
+                set_attr = "".join([data_attr, "_"])
+            else:
+                set_attr = data_attr
+            meta.__setattr__(set_attr, data.attrs[data_attr])
 
     # Remove attributes from the data object
     data.attrs = {}
@@ -845,7 +855,13 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     # to the standard, filtering out any 'private' attributes (those that start
     # with a '_') and saving any custom public attributes
     inst_attrb = dir(inst)
-    attrb_dict = {}
+
+    # Add the global meta data
+    if hasattr(self.meta, 'header') and len(self.meta.header.global_attrs) > 0:
+        attrb_dict = self.meta.header.to_dict()
+    else:
+        attrb_dict = {}
+
     for ikey in inst_attrb:
         if ikey not in base_attrb:
             if ikey.find('_') != 0:
@@ -867,6 +883,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
             attrb_dict.pop(pitem)
 
     # Set the general file information
+    attrb_dict['platform'] = inst.platform
+    attrb_dict['name'] = inst.name
+    attrb_dict['tag'] = inst.tag
+    attrb_dict['inst_id'] = inst.inst_id
+    attrb_dict['acknowledgements'] = inst.acknowledgements
+    attrb_dict['references'] = inst.references
     attrb_dict['Date_End'] = dt.datetime.strftime(
         inst.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
     attrb_dict['Date_End'] = attrb_dict['Date_End'][:-3] + ' UTC'
@@ -934,6 +956,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         # 3) metadata must be filtered before writing to netCDF4, since
         #    string variables can't have a fill value
         with netCDF4.Dataset(fname, mode=mode, format='NETCDF4') as out_data:
+            # Attach the global attributes
+            out_data.setncatts(attrb_dict)
+
             # Specify the number of items, to reduce function calls
             num = len(inst.index)
 
@@ -1201,9 +1226,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                 temp_cdf_data[i, :] = inst[
                                     key].iloc[i].index.astype(str)
                             cdfkey[:, :] = temp_cdf_data
-
-            # Attach attributes
-            out_data.setncatts(attrb_dict)
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
         # the Instrument data object is unchanged.
