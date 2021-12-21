@@ -101,7 +101,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Update usage of caplog and capsys in unit tests
    * Reorganized tests for the `pysat.Instrument` class into multiple files
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
-   * Update minimum numpy in CI tests to 1.18 following NEP29
+   * Update minimum numpy in CI tests to 1.19 following NEP29
    * Made `InstLibTests` more portable to streamline user implementation of the
      standard end-to-end instrument tests.
    * Moved test classes to `pysat.tests.classes`
