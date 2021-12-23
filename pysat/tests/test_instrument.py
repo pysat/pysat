@@ -386,11 +386,6 @@ class TestDeprecation(object):
         self.warn_msgs = ["".join(["`pysat.Instrument.download` kwarg `freq` ",
                                    "has been deprecated and will be removed ",
                                    "in pysat 3.2.0+"])]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
         # Test the warning messages, ensuring each attribute is present
         testing.eval_warnings(war, self.warn_msgs)
         return
@@ -406,17 +401,12 @@ class TestDeprecation(object):
                                     "deprecated and will be replaced",
                                     "by `_test_download_ci` in",
                                     "3.2.0+"])]
-        self.warn_msgs = np.array(self.warn_msgs)
-
         # Catch the warnings.
         with warnings.catch_warnings(record=True) as war:
             tinst = pysat.Instrument(inst_module=inst_module)
 
         # Ensure attributes set properly.
         assert tinst._test_download_ci is False
-
-        # Ensure the minimum number of warnings were raised.
-        assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present.
         testing.eval_warnings(war, self.warn_msgs)
@@ -438,10 +428,6 @@ class TestDeprecation(object):
                                    "has been deprecated and will be removed ",
                                    "in pysat 3.2.0+. Use `pysat.utils.io.",
                                    "filter_netcdf4_metadata` instead."])]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
         testing.eval_warnings(war, self.warn_msgs)
@@ -460,10 +446,6 @@ class TestDeprecation(object):
 
         self.warn_msgs = ["".join(["`fname` as a kwarg has been deprecated, ",
                                    "must supply a filename 3.2.0+"])]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
         testing.eval_warnings(war, self.warn_msgs)
@@ -488,8 +470,6 @@ class TestDeprecation(object):
                                "has been deprecated and will be removed",
                                "in 3.2.0+. Please use '' instead of",
                                "None."])]
-        # Ensure the minimum number of warnings were raised.
-        assert len(war) >= len(warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present.
         testing.eval_warnings(war, warn_msgs)

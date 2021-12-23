@@ -599,8 +599,6 @@ class TestDeprecation(object):
                               "for same behavior."])]
 
         warn_msgs = [warn_msgs[ind] for ind in msg_inds]
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
         utils.testing.eval_warnings(war, warn_msgs)

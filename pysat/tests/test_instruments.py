@@ -147,10 +147,6 @@ class TestDeprecation(object):
 
         self.warn_msgs = ["`InstTestClass` has been deprecated",
                           "`test_load` now uses `@pytest.mark.load_options`"]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
         testing.eval_warnings(war, self.warn_msgs)
@@ -167,10 +163,6 @@ class TestDeprecation(object):
                 pass
 
         self.warn_msgs = ["`initialize_test_inst_and_date` has been moved to"]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
 
         # Test the warning messages, ensuring each attribute is present
         testing.eval_warnings(war, self.warn_msgs)

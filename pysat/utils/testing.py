@@ -137,6 +137,9 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
     # Initialize the output
     found_msgs = [False for msg in check_msgs]
 
+    # Ensure the minimum number of warnings were raised
+    assert len(warns) >= len(check_msgs)
+
     # Test the warning messages, ensuring each attribute is present
     for iwar in warns:
         for i, msg in enumerate(check_msgs):
