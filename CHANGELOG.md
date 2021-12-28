@@ -50,6 +50,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Deprecated `pysat.Instrument._filter_netcdf4_metadata` and replaced it
      with `pysat.utils.io.filter_netcdf4_metadata`.
    * Changed `fname` from a kwarg to an arg in `pysat.Instruments.to_netcdf4`
+   * Deprecated `pysat.instruments.methods.general.convert_timestamp_to_datetime`
+     which is replaced by new functionality in `load_netCDF4`.
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
