@@ -494,3 +494,25 @@ class TestDeprecation(object):
         # Test the warning messages, ensuring each attribute is present.
         testing.eval_warnings(war, warn_msgs)
         return
+
+    def test_set_2d_pandas_data(self):
+        """Check that setting 2d data for pandas raises a DeprecationWarning."""
+
+        test_inst = pysat.Instrument('pysat', 'testing2d')
+        test_inst.load(2009, 1)
+        with warnings.catch_warnings(record=True) as war:
+            test_inst['new_profiles'] = 2 * test_inst['profiles']
+
+        warn_msgs = [" ".join(["Support for 2D pandas instrument",
+                               "data has been deprecated and will",
+                               "be removed in 3.2.0+.  Please",
+                               "update to use an xarray instrument",
+                               "type by setting",
+                               "`pandas_format=False`."])]
+
+        # Ensure the minimum number of warnings were raised.
+        assert len(war) >= len(warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present.
+        testing.eval_warnings(war, warn_msgs)
+        return
