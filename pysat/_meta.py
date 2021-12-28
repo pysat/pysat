@@ -454,6 +454,7 @@ class Meta(object):
                     # metadata. Meta inputs could be part of a larger multiple
                     # parameter assignment, so not all names may actually have
                     # a 'meta' object to add.
+                    self.warn_meta_children()
                     for item, val in zip(data_vars, input_data['meta']):
                         if val is not None:
                             # Assign meta data, using a recursive call...
@@ -465,6 +466,7 @@ class Meta(object):
             # from a Meta object. Set data using standard assignment via a dict
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
+                self.warn_meta_children()
                 child = in_dict.pop('children')
                 if child is not None:
                     # If there is data in the child object, assign it here
@@ -475,6 +477,7 @@ class Meta(object):
 
         elif isinstance(input_data, Meta):
             # Dealing with a higher order data set.
+            self.warn_meta_children()
             # data_vars is only a single name here (by choice for support)
             if (data_vars in self._ho_data) and input_data.empty:
                 # No actual metadata provided and there is already some
@@ -1476,6 +1479,14 @@ class Meta(object):
         else:
             raise ValueError(''.join(['Unable to retrieve information from ',
                                       filename]))
+
+    def warn_meta_children(self):
+        """Warn the user that higher order metadata is deprecated."""
+
+        warnings.warn(" ".join(["Support for higher order metadata has been",
+                                "deprecated and will be removed in 3.2.0+."]),
+                      DeprecationWarning, stacklevel=2)
+        return
 
 
 class MetaLabels(object):
