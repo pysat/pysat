@@ -33,14 +33,23 @@ epoch_name = u'time'
 
 
 # Init method
-def init(self):
-    """Initialize the test instrument."""
+def init(self, test_init_kwarg=None):
+    """Initialize the test instrument.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+    test_init_kwarg : any or NoneType
+        Testing keyword (default=None)
+
+    """
 
     warnings.warn(" ".join(["The instrument module `pysat_testing_xarray` has",
                             "been deprecated and will be removed in 3.2.0+."]),
                   DeprecationWarning, stacklevel=2)
 
-    mm_test.init
+    mm_test.init(self, test_init_kwarg=test_init_kwarg)
     return
 
 

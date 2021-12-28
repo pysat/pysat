@@ -28,13 +28,22 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 # Init method
 def init(self):
-    """Initialize the test instrument."""
+    """Initialize the test instrument.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+    test_init_kwarg : any or NoneType
+        Testing keyword (default=None)
+
+    """
 
     warnings.warn(" ".join(["The instrument module `pysat_testing2d` has been",
                             "deprecated and will be removed in 3.2.0+."]),
                   DeprecationWarning, stacklevel=2)
 
-    mm_test.init
+    mm_test.init(self, test_init_kwarg=test_init_kwarg)
     return
 
 
