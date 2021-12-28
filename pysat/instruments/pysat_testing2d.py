@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Produces fake instrument data for testing."""
+"""Produces fake instrument data for testing.
+
+.. deprecated:: 3.1.0
+    Support for 2d pandas objects will be removed in 3.2.0+.  This instrument
+    module simulates an object that will no longer be supported.
+
+"""
 
 import datetime as dt
 import functools
 import numpy as np
+import warnings
 
 import pandas as pds
 
@@ -20,7 +27,15 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 # Init method
-init = mm_test.init
+def init(self):
+    """Initialize the test instrument."""
+
+    warnings.warn(" ".join(["The instrument module `pysat_testing2d` has been",
+                            "deprecated and will be removed in 3.2.0+."]),
+                  DeprecationWarning, stacklevel=2)
+
+    mm_test.init
+    return
 
 
 # Clean method
