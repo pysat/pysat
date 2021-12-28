@@ -27,7 +27,7 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 # Init method
-def init(self):
+def init(self, test_init_kwarg=None):
     """Initialize the test instrument.
 
     Parameters
