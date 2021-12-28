@@ -184,3 +184,20 @@ class TestDeprecation(object):
                       for j in range(0, n_args)]
 
         assert "download" in mark_names
+
+    def test_pysat_testing2d(self):
+        """Check that instantiating pysat_testing2d raises a DeprecationWarning."""
+
+        with warnings.catch_warnings(record=True) as war:
+            test_inst = pysat.Instrument('pysat', 'testing2d')
+
+        warn_msgs = [" ".join(["The instrument module `pysat_testing2d` has",
+                               "been deprecated and will be removed in",
+                               "3.2.0+."])]
+
+        # Ensure the minimum number of warnings were raised.
+        assert len(war) >= len(warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present.
+        testing.eval_warnings(war, warn_msgs)
+        return
