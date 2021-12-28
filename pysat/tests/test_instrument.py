@@ -499,7 +499,8 @@ class TestDeprecation(object):
         """Check that setting 2d data for pandas raises a DeprecationWarning."""
 
         test_inst = pysat.Instrument('pysat', 'testing2d')
-        test_inst.load(2009, 1)
+        test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
+        test_inst.load(date=test_date)
         with warnings.catch_warnings(record=True) as war:
             test_inst['new_profiles'] = 2 * test_inst['profiles']
 
