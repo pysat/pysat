@@ -198,10 +198,11 @@ class TestDeprecation(object):
         """
 
         with warnings.catch_warnings(record=True) as war:
-            test_inst = pysat.Instrument(
-                inst_module=getattr(pysat.instruments, inst_module))
+            pysat.Instrument(inst_module=getattr(pysat.instruments,
+                                                 inst_module))
 
-        warn_msgs = [" ".join(["The instrument module `{:}`".format(inst_module),
+        warn_msgs = [" ".join(["The instrument module"
+                               "`{:}`".format(inst_module),
                                "has been deprecated and will be removed",
                                "in 3.2.0+."])]
 

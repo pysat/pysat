@@ -929,8 +929,8 @@ class Instrument(object):
                     warnings.warn(" ".join(["Support for 2D pandas instrument",
                                             "data has been deprecated and will",
                                             "be removed in 3.2.0+.  Please",
-                                            "update to use an xarray instrument",
-                                            "type by setting",
+                                            "update to use an xarray",
+                                            "instrument type by setting",
                                             "`pandas_format=False`."]),
                                   DeprecationWarning, stacklevel=2)
 
