@@ -53,6 +53,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Deprecated support for 2D pandas datasets
    * Deprecated `pysat.instruments.pysat_testing2d`
    * Deprecated `pysat.instruments.pysat_testing_xarray`
+   * Deprecated usage of higher order metadata
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
