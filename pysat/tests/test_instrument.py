@@ -87,6 +87,7 @@ class TestBasicsInstModule(TestBasics):
         return
 
 
+# TODO(#908): remove below class when pysat_testing_xarray is removed.
 class TestBasicsXarray(TestBasics):
     """Basic tests for xarray `pysat.Instrument`."""
 
@@ -113,6 +114,7 @@ class TestBasicsXarray(TestBasics):
         return
 
 
+# TODO(#908): remove below class when pysat_testing2d is removed.
 class TestBasics2D(TestBasics):
     """Basic tests for 2D pandas `pysat.Instrument`."""
 
