@@ -1917,7 +1917,7 @@ class MetaHeader(object):
         return
 
     def __setattr__(self, name, value):
-        """Wet attributes based on their type and update `global_attrs`.
+        """Set attributes based on their type and update `global_attrs`.
 
         Parameters
         ----------
@@ -1930,7 +1930,10 @@ class MetaHeader(object):
         # If this is a new attribute, update the `global_attrs` list
         if not hasattr(self, name) and name != 'global_attrs':
             if hasattr(self, 'global_attrs'):
-                self.global_attrs.append(name)
+                # Only need to expand the global attributes if the new name
+                # is not present in the list
+                if name not in self.global_attrs:
+                    self.global_attrs.append(name)
             else:
                 super(MetaHeader, self).__setattr__('global_attrs', [name])
 
@@ -1947,7 +1950,7 @@ class MetaHeader(object):
             Simply formatted output string
 
         """
-        out_str = ''.join(['pysat.MetaLabels(header_data=',
+        out_str = ''.join(['pysat.MetaHeader(header_data=',
                            repr(self.to_dict()), ")"])
         return out_str
 
@@ -1978,6 +1981,48 @@ class MetaHeader(object):
                                                      max_num=max_num_display)
 
         return out_str
+
+    def __eq__(self, other):
+        """Determine class equality.
+        Parameters
+        ----------
+        other : any
+            Other object to compare for equality
+
+        Returns
+        -------
+        bool
+            True if objects are identical, False if they are not.
+
+        """
+
+        # Check if other is the same class or not
+        if not isinstance(other, self.__class__):
+            return False
+
+        # Ensure the expected attributes are present and equal
+        if not hasattr(other, "to_dict") or not hasattr(self, "to_dict"):
+            return False
+
+        if not hasattr(other,
+                       "global_attrs") or not hasattr(self, "global_attrs"):
+            return False
+        else:
+            try:
+                testing.assert_lists_equal(getattr(other, "global_attrs"),
+                                           getattr(self, "global_attrs"))
+            except AssertionError:
+                return False
+
+        # Ensure the global header data is the same
+        for attr in other.global_attrs:
+            if not hasattr(self, attr):
+                return False
+
+            if getattr(other, attr) != getattr(self, attr):
+                return False
+
+        return True
 
     def to_dict(self):
         """Convert the header data to a dictionary.
