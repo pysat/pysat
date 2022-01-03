@@ -564,7 +564,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                             for i, val in enumerate(tst_array):
                                 nc_label = "{:}{:d}".format(nc_key, i)
                                 meta_dict[nc_label] = val
-                    
+
                     dim_meta_data[clean_key] = meta_dict
 
                 dim_meta_dict = {'meta': dim_meta_data}
