@@ -1984,6 +1984,7 @@ class MetaHeader(object):
 
     def __eq__(self, other):
         """Determine class equality.
+
         Parameters
         ----------
         other : any
