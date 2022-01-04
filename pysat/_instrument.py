@@ -299,6 +299,57 @@ class Instrument(object):
             # attribute values
             self._assign_attrs()
 
+        # Store kwargs, passed to standard routines first
+        self.kwargs = {}
+        self.kwargs_supported = {}
+        self.kwargs_reserved = _reserved_keywords.copy()
+        saved_keys = []
+
+        # Expected function keywords
+        exp_keys = ['list_files', 'load', 'preprocess', 'download',
+                    'list_remote_files', 'clean', 'init']
+        for fkey in exp_keys:
+            func_name = _kwargs_keys_to_func_name(fkey)
+            func = getattr(self, func_name)
+
+            # Get dict of supported keywords and values
+            default_kwargs = _get_supported_keywords(func)
+
+            # Confirm there are no reserved keywords present
+            for kwarg in kwargs.keys():
+                if kwarg in self.kwargs_reserved:
+                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                                    'allowed at instantiation.'))
+                    raise ValueError(estr)
+
+            # Check if kwargs are in list
+            good_kwargs = [ckey for ckey in kwargs.keys()
+                           if ckey in default_kwargs]
+
+            # Store appropriate user supplied keywords for this function
+            self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
+
+            # Store all supported keywords for user edification
+            self.kwargs_supported[fkey] = default_kwargs
+
+            # Store keys to support check that all user supplied
+            # keys are used.
+            saved_keys.extend(default_kwargs.keys())
+
+        # Test for user supplied keys that are not used
+        missing_keys = []
+        for custom_key in kwargs:
+            if custom_key not in saved_keys and (custom_key not in exp_keys):
+                missing_keys.append(custom_key)
+
+        if len(missing_keys) > 0:
+            raise ValueError('unknown keyword{:s} supplied: {:}'.format(
+                '' if len(missing_keys) == 1 else 's', missing_keys))
+
+        # Run instrument init function, a basic pass function is used if the
+        # user doesn't supply the init function
+        self._init_rtn(**self.kwargs['init'])
+
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else pysat.params['clean_level'])
@@ -401,53 +452,6 @@ class Instrument(object):
                                        'datetime.timedelta, or',
                                        'pandas.DateOffset instance.']))
 
-        # Store kwargs, passed to standard routines first
-        self.kwargs = {}
-        self.kwargs_supported = {}
-        self.kwargs_reserved = _reserved_keywords.copy()
-        saved_keys = []
-
-        # Expected function keywords
-        exp_keys = ['list_files', 'load', 'preprocess', 'download',
-                    'list_remote_files', 'clean', 'init']
-        for fkey in exp_keys:
-            func_name = _kwargs_keys_to_func_name(fkey)
-            func = getattr(self, func_name)
-
-            # Get dict of supported keywords and values
-            default_kwargs = _get_supported_keywords(func)
-
-            # Confirm there are no reserved keywords present
-            for kwarg in kwargs.keys():
-                if kwarg in self.kwargs_reserved:
-                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
-                                    'allowed at instantiation.'))
-                    raise ValueError(estr)
-
-            # Check if kwargs are in list
-            good_kwargs = [ckey for ckey in kwargs.keys()
-                           if ckey in default_kwargs]
-
-            # Store appropriate user supplied keywords for this function
-            self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
-
-            # Store all supported keywords for user edification
-            self.kwargs_supported[fkey] = default_kwargs
-
-            # Store keys to support check that all user supplied
-            # keys are used.
-            saved_keys.extend(default_kwargs.keys())
-
-        # Test for user supplied keys that are not used
-        missing_keys = []
-        for custom_key in kwargs:
-            if custom_key not in saved_keys and (custom_key not in exp_keys):
-                missing_keys.append(custom_key)
-
-        if len(missing_keys) > 0:
-            raise ValueError('unknown keyword{:s} supplied: {:}'.format(
-                '' if len(missing_keys) == 1 else 's', missing_keys))
-
         # Instantiate the Files class
         temporary_file_list = not temporary_file_list
 
@@ -493,12 +497,10 @@ class Instrument(object):
         # Start with a daily increment for loading
         self.load_step = dt.timedelta(days=1)
 
-        # Run instrument init function, a basic pass function is used if the
-        # user doesn't supply the init function
-        self._init_rtn(**self.kwargs['init'])
-
         # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
+
+        return
 
     def __eq__(self, other):
         """Perform equality check.
