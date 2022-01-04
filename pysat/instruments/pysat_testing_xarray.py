@@ -3,7 +3,7 @@
 
 .. deprecated:: 3.1.0
     All data present in this instrument is duplicated in pysat_testing2d_xarray.
-    This instrument is removed to reduce redundancy.
+    This instrument will be removed in 3.2.0+ to reduce redundancy.
 
 """
 
