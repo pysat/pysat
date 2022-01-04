@@ -44,6 +44,7 @@ Examples
 
 import datetime as dt
 import numpy as np
+import warnings
 
 import pysat
 
@@ -155,6 +156,8 @@ def download(date_array, tag, inst_id, data_path=None):
 
     """
 
+    warnings.warn("".join(["Downloads are not currently supported for ",
+                           "pysat netCDF files"]))
     return
 
 

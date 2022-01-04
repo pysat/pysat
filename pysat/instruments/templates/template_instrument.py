@@ -43,6 +43,7 @@ Examples
 """
 
 import datetime as dt
+import warnings
 
 import pysat
 
@@ -274,6 +275,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
 
     """
 
+    warnings.warn("If downloads aren't supported, a warning must be raised")
     return
 
 
