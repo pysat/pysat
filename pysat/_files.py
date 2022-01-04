@@ -193,9 +193,11 @@ class Files(object):
 
         # Get list of potential data directory paths from pysat. Construct
         # possible locations for data. Ensure path always ends with directory
-        # separator.
+        # separator. The `directory_format` may or may not have fully specified
+        # the data path.
         self.data_paths = [os.path.join(pdir, self.sub_dir_path)
                            for pdir in pysat.params['data_dirs']]
+        self.data_paths.append(self.sub_dir_path)
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
 
@@ -679,8 +681,8 @@ class Files(object):
         info_str = " ".join(info_str.split())  # Remove duplicate whitespace
         logger.info(info_str)
 
-        # Check all potential directory locations for files.
-        # Stop as soon as we find some.
+        # Check all potential directory locations for files, stopping as soon
+        # as we find some.
         for path in self.data_paths:
             list_files_rtn = self.inst_info['inst']._list_files_rtn
             kwarg_inputs = self.inst_info['inst'].kwargs['list_files']
