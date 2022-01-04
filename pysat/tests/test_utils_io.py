@@ -279,7 +279,10 @@ class TestLoadNetCDF(object):
             outfile, pandas_format=self.testInst.pandas_format)
 
         # Custom attribute correctly read from file
-        assert meta.bespoke
+        if hasattr(meta, "header"):
+            assert meta.header.bespoke
+        else:
+            assert meta.bespoke
         return
 
 
