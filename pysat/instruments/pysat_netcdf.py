@@ -66,11 +66,13 @@ _test_download_ci = {'': {'': False}}
 
 # ----------------------------------------------------------------------------
 # Instrument methods
-def init(self):
+def init(self, pandas_format=True):
     """Initialize the Instrument object with instrument specific values."""
 
     self.acknowledgements = "Acknowledgements missing from file"
     self.references = "References missing from file"
+    self.pandas_format = pandas_format
+
     return
 
 
