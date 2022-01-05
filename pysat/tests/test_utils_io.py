@@ -42,7 +42,6 @@ class TestLoadNetCDF(object):
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=100, update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-        self.decode_timedelta = False
 
         # Create testing directory
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
@@ -55,7 +54,7 @@ class TestLoadNetCDF(object):
         """Clean up the test environment."""
 
         # Clear the attributes with data in them
-        del self.loaded_inst, self.testInst, self.stime, self.decode_timedelta
+        del self.loaded_inst, self.testInst, self.stime
 
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
@@ -89,7 +88,7 @@ class TestLoadNetCDF(object):
             lkey = dkey.lower()
             if lkey in ['profiles', 'alt_profiles', 'series_profiles']:
                 # Test the loaded higher-dimension data
-                for tframe, lframe in zip(self.testInst.data[dkey],
+                for tframe, lframe in zip(self.testInst[dkey],
                                           self.loaded_inst[dkey]):
                     assert np.all(tframe == lframe), "unequal {:s} data".format(
                         dkey)
@@ -170,6 +169,7 @@ class TestLoadNetCDF(object):
                         reason="missing pysat_netcdf instrument module")
     def test_inst_write_and_read_netcdf(self):
         """Test Instrument netCDF4 read/write."""
+
         # Set the output file information
         file_root = 'pysat_test_ncdf_{year:04}{day:03}.nc'
         file_path = self.testInst.files.data_path
@@ -178,14 +178,13 @@ class TestLoadNetCDF(object):
 
         # Load and write the test instrument data
         self.testInst.load(date=self.stime)
-        io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True)
+        self.testInst.to_netcdf4(fname=outfile)
 
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
             inst_module=pysat_netcdf, directory_format=file_path,
             file_format=file_root, pandas_format=self.testInst.pandas_format)
-        netcdf_inst.load(date=self.stime,
-                         decode_timedelta=self.decode_timedelta)
+        netcdf_inst.load(date=self.stime)
 
         # Test the loaded Instrument data
         self.loaded_inst = netcdf_inst.data
@@ -198,14 +197,20 @@ class TestLoadNetCDF(object):
                 "mismatched {:s} Instrument attribute".format(attr)
 
         # Test the metadata. The Instrument loaded from file will have
-        # metadata for every variable with (possibley) different metadata types
+        # metadata for every variable with (possibley) different metadata types.
+        # Do not test the attributes whose metadata are often changed by the
+        # writing routine.
+        updated_attrs = ["long_name", "notes"]
         cattrs = [var for var in self.testInst.meta.attrs()
-                  if var in netcdf_inst.meta.attrs()]
+                  if var in netcdf_inst.meta.attrs()
+                  and var not in updated_attrs]
 
         tvars = [var for var in self.testInst.meta.keys()
                  if var not in self.testInst.meta.keys_nD()
-                 and var.lower() != "epoch"]
-        fvars = [var for var in netcdf_inst.meta.keys()]
+                 and var.lower() not in ["epoch", "time"]]
+        fvars = [var for var in netcdf_inst.meta.keys()
+                 if var.lower() not in ["epoch", "time"]]
+
         testing.assert_list_contains(tvars, fvars)
 
         for var in tvars:
@@ -222,7 +227,8 @@ class TestLoadNetCDF(object):
                     except TypeError:
                         raise AssertionError(
                             "mismatched {:s} {:s} Meta data {:} != {:}".format(
-                                var, attr, ival, netcdf_inst.meta[var, attr]))
+                                var, attr, repr(ival),
+                                repr(netcdf_inst.meta[var, attr])))
 
         return
 
@@ -376,7 +382,6 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
                                          update_files=True, num_samples=100)
         self.stime = pysat.instruments.pysat_testing2d_xarray._test_dates[
             '']['']
-        self.decode_timedelta = False
 
         # Create testing directory
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
@@ -389,7 +394,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         """Clean up the test environment."""
 
         # Clear the attributes with data in them
-        del self.loaded_inst, self.testInst, self.stime, self.decode_timedelta
+        del self.loaded_inst, self.testInst, self.stime
 
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
@@ -462,7 +467,6 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
                                          update_files=True, num_samples=100)
         self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
-        self.decode_timedelta = False
 
         # Create testing directory
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
@@ -475,7 +479,7 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         """Clean up the test environment."""
 
         # Clear the attributes with data in them
-        del self.loaded_inst, self.testInst, self.stime, self.decode_timedelta
+        del self.loaded_inst, self.testInst, self.stime
 
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
