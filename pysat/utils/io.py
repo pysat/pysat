@@ -458,17 +458,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
             # Build a dictionary with all global ncattrs and add those
             # attributes to a pysat.MetaHeader object.
             for ncattr in data.ncattrs():
-                if hasattr(meta, "header"):
-                    setattr(meta.header, ncattr, data.getncattr(ncattr))
-                else:
-                    warnings.warn(''.join(['Meta lacks MetaHeader, attributes',
-                                           ' will be moved to Instrument']),
-                                  DeprecationWarning, stacklevel=2)
-                    if hasattr(meta, ncattr):
-                        mattr = '{:}_'.format(ncattr)
-                    else:
-                        mattr = ncattr
-                    meta.__setattr__(mattr, data.getncattr(ncattr))
+                setattr(meta.header, ncattr, data.getncattr(ncattr))
 
             # Load the metadata.  From here group unique dimensions and
             # act accordingly, 1D, 2D, 3D
@@ -752,17 +742,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
-        if hasattr(meta, 'header'):
-            setattr(meta.header, data_attr, getattr(data, data_attr))
-        else:
-            warnings.warn(''.join(['Meta lacks MetaHeader, attributes',
-                                   ' will be moved to Instrument']),
-                          DeprecationWarning, stacklevel=2)
-            if hasattr(meta, data_attr):
-                set_attr = "".join([data_attr, "_"])
-            else:
-                set_attr = data_attr
-            meta.__setattr__(set_attr, data.attrs[data_attr])
+        setattr(meta.header, data_attr, getattr(data, data_attr))
 
     # Remove attributes from the data object
     data.attrs = {}
