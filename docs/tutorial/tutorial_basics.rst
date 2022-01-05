@@ -511,3 +511,10 @@ if a particular :py:class:`Instrument` uses :py:data:`units` for the
 
 .. note:: While :py:class:`Meta` access is case-insensitive, :py:attr:`data`
 	  access is case-sensitive.
+
+Global metadata, which is consistent across all data variables for an instrument
+are stored in the :py:attr:`Meta.header` attribute.  This attribute is a
+:py:class:`pysat.MetaHeader` object that may store useful information such as
+the instrument PI, etc.  Previous versions of pysat stored this data as custom
+attributes attached to the :py:class:`pysat.Instrument`, instead of keeping all
+metadata in the :py:class:`pysat.Meta` object.
