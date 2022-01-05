@@ -96,7 +96,6 @@ class TestLoadNetCDF(object):
                 # Test the standard data structures
                 assert np.all(self.testInst[dkey] == self.loaded_inst[dkey])
 
-                
         # Check that names are lower case when written
         pysat.utils.testing.assert_lists_equal(keys, new_keys, test_case=False)
         return
