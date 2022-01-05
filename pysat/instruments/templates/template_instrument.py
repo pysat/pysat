@@ -372,12 +372,11 @@ def list_remote_files(tag, inst_id, user=None, password=None):
 
     Parameters
     -----------
-    tag : str or NoneType
+    tag : str
         Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
-    inst_id : str or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
+    inst_id : str
+        Specifies the satellite or instrument ID. Accepted types are
+        <inst_id strings>.
     user : str or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
