@@ -486,7 +486,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     meta[key] = meta_dict
 
                 if len(data.variables[key].dimensions) == 2:
-                    # Part of dataframe within dataframe
+                    # Part of a DataFrame to store within the main DataFrame
                     two_d_keys.append(key)
                     two_d_dims.append(data.variables[key].dimensions)
 
@@ -495,7 +495,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                                                'data in pandas. Please use',
                                                'xarray for this file.')))
 
-            # We now have a list of keys that need to go into a dataframe,
+            # We now have a list of keys that need to go into a DataFrame,
             # could be more than one, collect unique dimensions for 2D keys
             for dim in set(two_d_dims):
                 # First or second dimension could be epoch. Use other
@@ -546,14 +546,14 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 # Iterate over the variables and grab metadata
                 dim_meta_data = pysat.Meta(labels=labels)
 
-                # Store attributes in metadata, exept for dim name
+                # Store attributes in metadata, except for the dimension name
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
                         # Meta cannot take array data, if present save it as
                         # seperate meta data labels
-                        tst_array = np.asarray(data.variables[key].getncattr(
-                            nc_key))
+                        tst_array = np.asarray(
+                            data.variables[key].getncattr(nc_key))
 
                         if tst_array.shape == ():
                             meta_dict[nc_key] = data.variables[key].getncattr(
