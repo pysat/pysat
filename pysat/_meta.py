@@ -1929,13 +1929,10 @@ class MetaHeader(object):
         """
         # If this is a new attribute, update the `global_attrs` list
         if not hasattr(self, name) and name != 'global_attrs':
-            if hasattr(self, 'global_attrs'):
-                # Only need to expand the global attributes if the new name
-                # is not present in the list
-                if name not in self.global_attrs:
-                    self.global_attrs.append(name)
-            else:
-                super(MetaHeader, self).__setattr__('global_attrs', [name])
+            # Only need to expand the global attributes if the new name
+            # is not present in the list
+            if name not in self.global_attrs:
+                self.global_attrs.append(name)
 
         # Use Object to avoid recursion
         super(MetaHeader, self).__setattr__(name, value)
