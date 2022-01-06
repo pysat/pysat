@@ -105,7 +105,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
 
         # Modify data names in data
         if self.testInst.pandas_format:
@@ -144,7 +144,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
 
         # Modify data and metadata names in data
         self.testInst.meta.rename(str.upper)
@@ -176,14 +176,14 @@ class TestLoadNetCDF(object):
                                                    'pysat_test_ncdf_%Y%j.nc'))
 
         # Load and write the test instrument data
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         self.testInst.to_netcdf4(fname=outfile)
 
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
             inst_module=pysat_netcdf, directory_format=file_path,
             file_format=file_root, pandas_format=self.testInst.pandas_format)
-        netcdf_inst.load(date=self.stime)
+        netcdf_inst.load(date=self.stime, use_header=True)
 
         # Test the loaded Instrument data
         self.loaded_inst = netcdf_inst.data
@@ -229,6 +229,8 @@ class TestLoadNetCDF(object):
                                 var, attr, repr(ival),
                                 repr(netcdf_inst.meta[var, attr])))
 
+        # Remove the local instrument
+        del netcdf_inst
         return
 
     def test_write_netcdf4_duplicate_variable_names(self):
@@ -236,7 +238,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         self.testInst['MLT'] = 1
         with pytest.raises(ValueError) as verr:
             io.inst_to_netcdf(self.testInst, fname=outfile,
@@ -253,7 +255,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile, **wkwargs)
 
         # Load the data that was created
@@ -291,7 +293,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         # Load the data that was created
@@ -321,7 +323,7 @@ class TestLoadNetCDF(object):
 
     def test_netcdf_prevent_attribute_override(self):
         """Test that attributes will not be overridden by default."""
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
 
         # Test that `bespoke` attribute is initially missing
         assert not hasattr(self.testInst, 'bespoke')
@@ -339,7 +341,7 @@ class TestLoadNetCDF(object):
 
     def test_netcdf_attribute_override(self):
         """Test that attributes in the netCDF file may be overridden."""
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         self.testInst.meta.mutable = True
         self.testInst.meta.bespoke = True
 
@@ -415,7 +417,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Prepare output test data.
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         # Modify the variable attributes directly before writing to file.
         self.testInst.meta['uts'] = {'units': 'seconds'}
         self.testInst.meta['mlt'] = {'units': 'minutes'}
@@ -440,7 +442,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         with pytest.raises(ValueError) as verr:
@@ -517,7 +519,8 @@ class TestNetCDF4Integration(object):
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst = pysat.Instrument('pysat', 'testing')
-        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
 
         return
 
@@ -717,7 +720,8 @@ class TestNetCDF4Integration(object):
         # Reset the test instrument
         self.testInst = pysat.Instrument('pysat', 'testing2d')
         self.testInst.load(
-            date=pysat.instruments.pysat_testing2d._test_dates[''][''])
+            date=pysat.instruments.pysat_testing2d._test_dates[''][''],
+            use_header=True)
 
         # Save the un-updated metadata
         init_meta = self.testInst.meta.copy()
@@ -758,7 +762,8 @@ class TestXarrayIO(object):
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst = pysat.Instrument('pysat', 'testing_xarray')
-        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
 
         return
 
