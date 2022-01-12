@@ -174,7 +174,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_by_2d_indices_and_name(self, index):
         """Check that variables and be accessed by each supported index type."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         assert np.all(self.testInst[index, index, 'profiles']
                       == self.testInst.data['profiles'][index, index])
         return
@@ -182,7 +182,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_by_2d_tuple_indices_and_name(self):
         """Check that variables and be accessed by multi-dim tuple index."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         index = ([0, 1, 2, 3], [0, 1, 2, 3])
         assert np.all(self.testInst[index, 'profiles']
                       == self.testInst.data['profiles'][index[0], index[1]])
@@ -191,7 +191,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_bad_dimension_tuple(self):
         """Test raises ValueError for mismatched tuple index and data dims."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         index = ([0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3])
 
         with pytest.raises(ValueError) as verr:
@@ -204,7 +204,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_bad_dimension_for_multidim(self):
         """Test raises ValueError for mismatched index and data dimensions."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         index = [0, 1, 2, 3]
 
         with pytest.raises(ValueError) as verr:
@@ -222,7 +222,7 @@ class TestBasics2DXarray(TestBasics):
     def test_setting_partial_data_by_2d_indices_and_name(self, changed, fixed):
         """Check that data can be set using each supported index type."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
         self.testInst[changed, changed, 'doubleProfile'] = 0
         assert np.all(np.all(self.testInst[fixed, fixed, 'doubleProfile']
@@ -433,7 +433,7 @@ class TestDeprecation(object):
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
             tinst = pysat.Instrument(**self.in_kwargs)
-            tinst.load(date=self.ref_time)
+            tinst.load(date=self.ref_time, use_header=True)
             mdata_dict = tinst.meta._data.to_dict()
             tinst._filter_netcdf4_metadata(mdata_dict,
                                            coltype='str')
@@ -507,7 +507,7 @@ class TestDeprecation(object):
         # Capture the warnings
         with warnings.catch_warnings(record=True) as self.war:
             test_inst = pysat.Instrument(**self.in_kwargs)
-            test_inst.load(date=self.ref_time)
+            test_inst.load(date=self.ref_time, use_header=True)
 
         # Evaluate the warning output
         self.eval_warnings()
