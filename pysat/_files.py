@@ -30,16 +30,16 @@ class Files(object):
         Instrument object
     data_dir : str or NoneType
         Directory without sub-directory variables that allows one to
-        bypass the directories provided by pysat.params['data_dir'].  Only
+        bypass the directories provided by pysat.params['data_dirs'].  Only
         applied if the directory exists. (default=None)
     directory_format : str or NoneType
         Sub-directory naming structure, which is expected to exist within one
-        of the `python.params['data_dir']` directories. Variables such as
-        `platform`, `name`, and `tag` will be filled in as needed using python
+        of the `python.params['data_dirs']` directories. Variables such as
+        `platform`, `name`, `tag`, and `inst_id` will be filled in as needed using python
         string formatting, if a string is supplied. The default directory
         structure, which is used if None is specified, is provided by
         pysat.params['directory_format'] and is typically
-        '{platform}/{name}/{tag}'. (default=None)
+        '{platform}/{name}/{tag}/{inst_id}'. (default=None)
     update_files : boolean
         If True, immediately query filesystem for instrument files and
         store (default=False)

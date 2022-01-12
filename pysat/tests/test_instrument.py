@@ -507,7 +507,7 @@ class TestDeprecation(object):
         # Capture the warnings
         with warnings.catch_warnings(record=True) as self.war:
             test_inst = pysat.Instrument(**self.in_kwargs)
-            test_inst.load(date=self.ref_time, use_header=True)
+            test_inst.load(date=self.ref_time, use_header=False)
 
         # Evaluate the warning output
         self.eval_warnings()

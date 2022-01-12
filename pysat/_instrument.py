@@ -66,12 +66,12 @@ class Instrument(object):
         monotonically increasing. (default=True)
     data_dir : str
         Directory without sub-directory variables that allows one to
-        bypass the directories provided by pysat.params['data_dir'].  Only
+        bypass the directories provided by pysat.params['data_dirs'].  Only
         applied if the directory exists. (default='')
     directory_format : str, function, or NoneType
         Sub-directory naming structure, which is expected to exist within one
-        of the `python.params['data_dir']` directories. Variables such as
-        `platform`, `name`, and `tag` will be filled in as needed using python
+        of the `python.params['data_dirs']` directories. Variables such as
+        `platform`, `name`, `tag`, and `inst_id` will be filled in as needed using python
         string formatting, if a string is supplied. The default directory
         structure, which is used if None is specified, is provided by
         pysat.params['directory_format'] and is typically
