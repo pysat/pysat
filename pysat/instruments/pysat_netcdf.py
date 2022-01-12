@@ -236,13 +236,13 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
 
     # netCDF4 files, particularly those produced by pysat can be loaded using a
     # pysat provided function, load_netcdf4.
-    data, mdata = pysat.utils.load_netcdf4(fnames, strict_meta=strict_meta,
-                                           file_format=file_format,
-                                           epoch_name=epoch_name,
-                                           epoch_unit=epoch_unit,
-                                           epoch_origin=epoch_origin,
-                                           pandas_format=pandas_format,
-                                           decode_timedelta=decode_timedelta,
-                                           labels=labels)
+    data, mdata = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
+                                             file_format=file_format,
+                                             epoch_name=epoch_name,
+                                             epoch_unit=epoch_unit,
+                                             epoch_origin=epoch_origin,
+                                             pandas_format=pandas_format,
+                                             decode_timedelta=decode_timedelta,
+                                             labels=labels)
 
     return data, mdata
