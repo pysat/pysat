@@ -64,13 +64,20 @@ class Instrument(object):
     strict_time_flag : bool
         If true, pysat will check data to ensure times are unique and
         monotonically increasing. (default=True)
+    data_dir : str
+        Directory without sub-directory variables that allows one to
+        bypass the directories provided by pysat.params['data_dir'].  Only
+        applied if the directory exists. (default='')
     directory_format : str, function, or NoneType
-        Directory naming structure in string format. Variables such as platform,
-        name, and tag will be filled in as needed using python string
-        formatting. The default directory structure, which is used if None is
-        specified, is '{platform}/{name}/{tag}'. If a function is provided, it
-        must take `tag` and `inst_id` as arguments and return an appropriate
-        string. (default=None)
+        Sub-directory naming structure, which is expected to exist within one
+        of the `python.params['data_dir']` directories. Variables such as
+        `platform`, `name`, and `tag` will be filled in as needed using python
+        string formatting, if a string is supplied. The default directory
+        structure, which is used if None is specified, is provided by
+        pysat.params['directory_format'] and is typically
+        '{platform}/{name}/{tag}/{inst_id}'. If a function is provided, it must
+        take `tag` and `inst_id` as arguments and return an appropriate string.
+        (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -101,6 +108,7 @@ class Instrument(object):
     inst_module
     temporary_file_list
     strict_time_flag
+    data_dir
     directory_format
     file_format
     bounds : tuple
@@ -230,9 +238,10 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag='', inst_id='',
                  clean_level=None, update_files=None, pad=None,
-                 orbit_info=None, inst_module=None, directory_format=None,
-                 file_format=None, temporary_file_list=False,
-                 strict_time_flag=True, ignore_empty_files=False,
+                 orbit_info=None, inst_module=None, data_dir='',
+                 directory_format=None, file_format=None,
+                 temporary_file_list=False, strict_time_flag=True,
+                 ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'min_val': ('value_min', np.float64),
@@ -379,6 +388,10 @@ class Instrument(object):
         if file_format is not None:
             self.file_format = file_format
 
+        # Assign an absolute path for files that may not be part of the
+        # standard pysat directory structure
+        self.data_dir = data_dir if os.path.isdir(data_dir) else None
+
         # Check to make sure value is reasonable
         if self.file_format is not None:
             # Check if it is an iterable string.  If it isn't formatted
@@ -460,7 +473,8 @@ class Instrument(object):
         if update_files is None:
             update_files = pysat.params['update_files']
 
-        self.files = pysat.Files(self, directory_format=self.directory_format,
+        self.files = pysat.Files(self, data_dir=self.data_dir,
+                                 directory_format=self.directory_format,
                                  update_files=update_files,
                                  file_format=self.file_format,
                                  write_to_disk=temporary_file_list,
