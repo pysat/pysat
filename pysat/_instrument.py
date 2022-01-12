@@ -69,12 +69,12 @@ class Instrument(object):
         bypass the directories provided by pysat.params['data_dirs'].  Only
         applied if the directory exists. (default='')
     directory_format : str, function, or NoneType
-        Sub-directory naming structure, which is expected to exist within one
-        of the `python.params['data_dirs']` directories. Variables such as
-        `platform`, `name`, `tag`, and `inst_id` will be filled in as needed using python
-        string formatting, if a string is supplied. The default directory
-        structure, which is used if None is specified, is provided by
-        pysat.params['directory_format'] and is typically
+        Sub-directory naming structure, which is expected to exist or be
+        created within one of the `python.params['data_dirs']` directories.
+        Variables such as `platform`, `name`, `tag`, and `inst_id` will be filled
+        in as needed using python string formatting, if a string is supplied. The
+        default directory structure, which is used if None is specified, is provided
+        by pysat.params['directory_format'] and is typically
         '{platform}/{name}/{tag}/{inst_id}'. If a function is provided, it must
         take `tag` and `inst_id` as arguments and return an appropriate string.
         (default=None)
