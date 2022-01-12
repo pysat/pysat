@@ -390,7 +390,13 @@ class Instrument(object):
 
         # Assign an absolute path for files that may not be part of the
         # standard pysat directory structure
-        self.data_dir = data_dir if os.path.isdir(data_dir) else None
+        if os.path.isdir(data_dir):
+            self.data_dir = data_dir
+        else:
+            if len(data_dir) > 0:
+                logger.warning("data directory doesn't exist: {:}".format(
+                    data_dir))
+            self.data_dir = None
 
         # Check to make sure value is reasonable
         if self.file_format is not None:
