@@ -90,6 +90,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed a bug that expected special treatment by `Instrument.data` type in
      `utils.coords.update_longitude`
    * Fixed pysat_testmodel Instrument longitude range
+   * Corrected link to testing badge in README.md
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
