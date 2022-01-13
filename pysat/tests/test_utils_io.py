@@ -232,6 +232,7 @@ class TestLoadNetCDF(object):
         # Remove the local instrument
         if hasattr(netcdf_inst.data, "close"):
             netcdf_inst.data.close()
+            self.loaded_inst.close()
         del netcdf_inst
         return
 
