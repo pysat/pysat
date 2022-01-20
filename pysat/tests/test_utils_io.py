@@ -9,6 +9,7 @@ import datetime as dt
 import logging
 import numpy as np
 import os
+import sys
 import tempfile
 import warnings
 
@@ -378,7 +379,12 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         self.data_path = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
+        if sys.version_info.minor >= 10:
+            self.tempdir = tempfile.TemporaryDirectory(
+                ignore_cleanup_errors=True)
+        else:
+            self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat',
@@ -404,7 +410,11 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         pysat.params['data_dirs'] = self.data_path
 
         # Remove the temporary directory
-        self.tempdir.cleanup()
+        # TODO(#974): Remove try /except when support for Python 3.9 is dropped.
+        try:
+            self.tempdir.cleanup()
+        except:  # noqa E722
+            pass
 
         # Clear the directory attributes
         del self.data_path, self.tempdir
