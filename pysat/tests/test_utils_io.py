@@ -20,12 +20,6 @@ import pysat
 from pysat.utils import io
 from pysat.utils import testing
 
-try:
-    from pysat.instruments import pysat_netcdf
-    has_pysat_netcdf = True
-except ImportError:
-    has_pysat_netcdf = False
-
 
 class TestLoadNetCDF(object):
     """Unit tests for `utils.io.load_netcdf` and `utils.io.inst_to_netcdf`."""
@@ -165,8 +159,6 @@ class TestLoadNetCDF(object):
 
         return
 
-    @pytest.mark.skipif(not has_pysat_netcdf,
-                        reason="missing pysat_netcdf instrument module")
     def test_inst_write_and_read_netcdf(self):
         """Test Instrument netCDF4 read/write."""
 
@@ -182,7 +174,7 @@ class TestLoadNetCDF(object):
 
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
-            inst_module=pysat_netcdf, directory_format=file_path,
+            'pysat', 'netcdf', directory_format=file_path,
             file_format=file_root, pandas_format=self.testInst.pandas_format)
         netcdf_inst.load(date=self.stime, use_header=True)
 
