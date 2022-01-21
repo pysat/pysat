@@ -508,10 +508,7 @@ class TestDeprecation(object):
 
         warn_msgs = [" ".join(["Support for 2D pandas instrument",
                                "data has been deprecated and will",
-                               "be removed in 3.2.0+.  Please",
-                               "update to use an xarray instrument",
-                               "type by setting",
-                               "`pandas_format=False`."])]
+                               "be removed in 3.2.0+."])]
 
         # Ensure the minimum number of warnings were raised.
         assert len(war) >= len(warn_msgs)
