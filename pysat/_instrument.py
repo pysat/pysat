@@ -929,9 +929,10 @@ class Instrument(object):
                     warnings.warn(" ".join(["Support for 2D pandas instrument",
                                             "data has been deprecated and will",
                                             "be removed in 3.2.0+.  Please",
-                                            "update to use an xarray",
-                                            "instrument type by setting",
-                                            "`pandas_format=False`."]),
+                                            "either raise an issue with the",
+                                            "developers or modify the load",
+                                            "statement to use an",
+                                            "xarray.Dataset."]),
                                   DeprecationWarning, stacklevel=2)
 
                     if ('meta' not in new) and (key not in self.meta.keys_nD()):

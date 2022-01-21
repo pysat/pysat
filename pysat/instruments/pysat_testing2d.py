@@ -40,7 +40,9 @@ def init(self, test_init_kwarg=None):
     """
 
     warnings.warn(" ".join(["The instrument module `pysat_testing2d` has been",
-                            "deprecated and will be removed in 3.2.0+."]),
+                            "deprecated and will be removed in 3.2.0+. This",
+                            "module simulates an object that will no longer be",
+                            "supported."]),
                   DeprecationWarning, stacklevel=2)
 
     mm_test.init(self, test_init_kwarg=test_init_kwarg)
