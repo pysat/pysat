@@ -100,7 +100,10 @@ def preprocess(self):
 # Instrument functions
 format_str = '_'.join([platform, name, '{year:04d}', '{month:02d}',
                        '{day:02d}.nc'])
-list_files = functools.partial(general.list_files, format_str=format_str)
+supported_tags = {inst_id: {tag: format_str for tag in tags}
+                  for inst_ind in inst_ids}
+list_files = functools.partial(general.list_files, format_str=format_str,
+                               supported_tags=supported_tags)
 
 
 def download(date_array, tag, inst_id, data_path=None):
