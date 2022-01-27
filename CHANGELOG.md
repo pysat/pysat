@@ -112,6 +112,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Organized and reduced duplication in the Meta test class
    * Added CI reports for supported data products
    * Added a cap on coveralls to ensure success of continuous integration
+   * Updated tests in `test_meta` to search all warnings, not just the first
 
 [3.0.1] - 2021-07-28
 --------------------
