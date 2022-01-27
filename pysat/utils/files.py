@@ -116,7 +116,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
             return frame['files']
         else:
-            return pds.Series(files, index=index)
+            return pds.Series(files, index=index).sort_index()
     else:
         return pds.Series(None, dtype='object')
 
