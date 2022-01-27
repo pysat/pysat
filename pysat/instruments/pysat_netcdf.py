@@ -48,6 +48,7 @@ import numpy as np
 import warnings
 
 import pysat
+from pysat.instruments.methods import general
 
 logger = pysat.logger
 
@@ -99,8 +100,7 @@ def preprocess(self):
 # Instrument functions
 format_str = '_'.join([platform, name, '{year:04d}', '{month:02d}',
                        '{day:02d}.nc'])
-list_files = functools.partial(pysat.instruments.methods.general.list_files,
-                               format_str=format_str)
+list_files = functools.partial(general.list_files, format_str=format_str)
 
 
 def download(date_array, tag, inst_id, data_path=None):
