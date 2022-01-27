@@ -43,6 +43,7 @@ Examples
 """
 
 import datetime as dt
+import functools
 import numpy as np
 import warnings
 
@@ -96,45 +97,10 @@ def preprocess(self):
 
 # ----------------------------------------------------------------------------
 # Instrument functions
-def list_files(tag='', inst_id='', data_path=None, format_str=None):
-    """Produce a list of pysat-written NetCDF files.
-
-    Parameters
-    ----------
-    tag : str
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself. (default='')
-    inst_id : str
-        Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself. (default='')
-    data_path : str or NoneType
-        Full path to directory containing files to be loaded. This
-        is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here. (default=None)
-    format_str : str or NoneType
-        String template used to parse the datasets filenames. If a user
-        supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None. If None is
-        supplied, expects files with the format 'platform_name_YYYY_MM_DD.nc'
-        (default=None)
-
-    Returns
-    -------
-    pandas.Series
-        Series of filename strings, including the path, indexed by datetime.
-
-    """
-
-    if format_str is None:
-        # User did not supply an alternative format template string
-        format_str = '_'.join([platform, name, '{year:04d}', '{month:02d}',
-                               '{day:02d}.nc'])
-
-    # Use the pysat provided function to grab list of files from the
-    # local file system that match the format defined above
-    file_list = pysat.Files.from_os(data_path=data_path, format_str=format_str)
-
-    return file_list
+format_str = '_'.join([platform, name, '{year:04d}', '{month:02d}',
+                       '{day:02d}.nc'])
+list_files = functools.partial(pysat.instruments.methods.general.list_files,
+                               format_str=format_str)
 
 
 def download(date_array, tag, inst_id, data_path=None):
