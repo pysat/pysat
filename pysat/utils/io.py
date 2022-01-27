@@ -481,6 +481,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                             nc_key)
                     meta[key] = meta_dict
 
+                # TODO(#913): Remove 2D support
                 if len(data.variables[key].dimensions) == 2:
                     # Part of dataframe within dataframe
                     two_d_keys.append(key)
@@ -491,6 +492,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                                                'data in pandas. Please use',
                                                'xarray for this file.')))
 
+            # TODO(#913): Remove 2D support
             # We now have a list of keys that need to go into a dataframe,
             # could be more than one, collect unique dimensions for 2D keys
             for dim in set(two_d_dims):

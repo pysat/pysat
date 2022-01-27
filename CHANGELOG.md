@@ -50,6 +50,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Deprecated `pysat.Instrument._filter_netcdf4_metadata` and replaced it
      with `pysat.utils.io.filter_netcdf4_metadata`.
    * Changed `fname` from a kwarg to an arg in `pysat.Instruments.to_netcdf4`
+   * Deprecated support for 2D pandas datasets
+   * Deprecated `pysat.instruments.pysat_testing_xarray`
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation

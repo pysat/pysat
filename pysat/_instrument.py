@@ -918,12 +918,23 @@ class Instrument(object):
             # input dict must have data in 'data',
             # the rest of the keys are presumed to be metadata
             in_data = new.pop('data')
+
+            # TODO(#908): remove code below with removal of 2d pandas support.
             if hasattr(in_data, '__iter__'):
                 if isinstance(in_data, pds.DataFrame):
                     pass
                     # filter for elif
                 elif isinstance(next(iter(in_data), None), pds.DataFrame):
                     # Input is a list_like of frames, denoting higher order data
+                    warnings.warn(" ".join(["Support for 2D pandas instrument",
+                                            "data has been deprecated and will",
+                                            "be removed in 3.2.0+.  Please",
+                                            "either raise an issue with the",
+                                            "developers or modify the load",
+                                            "statement to use an",
+                                            "xarray.Dataset."]),
+                                  DeprecationWarning, stacklevel=2)
+
                     if ('meta' not in new) and (key not in self.meta.keys_nD()):
                         # Create an empty Meta instance but with variable names.
                         # This will ensure the correct defaults for all
