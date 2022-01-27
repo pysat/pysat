@@ -195,6 +195,7 @@ class TestMeta(object):
         assert str(ierr).find('expected tuple, list, or str') >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize("parent_child", [
         (['alt_profiles', 'profiles'], 'density'),
         (['alt_profiles', 'profiles'], ['density', 'dummy_str']),
@@ -237,6 +238,7 @@ class TestMeta(object):
             'Duplicated keys (variable names) in Meta.keys()') >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_concat_strict_w_ho_collision(self):
         """Test raises KeyError when higher-order variable nams overlap."""
 
@@ -302,6 +304,7 @@ class TestMeta(object):
         assert str(verr.value).find(err_msg) >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_meta_rename_bad_ho_input(self):
         """Test raises ValueError when treating normal data like HO data."""
 
@@ -432,6 +435,7 @@ class TestMeta(object):
         assert out.find('Meta(') >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize('long_str', [True, False])
     @pytest.mark.parametrize('inst_kwargs',
                              [None, {'platform': 'pysat', 'name': 'testing'},
@@ -498,6 +502,7 @@ class TestMeta(object):
         assert cmeta == self.meta, "identical meta objects differ"
         return
 
+    # TODO(#908): remove tests for deprecated instruments
     @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
                                            "testing2d_xarray", "testing_xarray",
                                            "testmodel"])
@@ -594,6 +599,7 @@ class TestMeta(object):
             "differences not detected in label {:s}".format(label_key)
         return
 
+    # TODO(#908): remove tests for deprecated instruments
     @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
                                            "testing2d_xarray", "testing_xarray",
                                            "testmodel"])
@@ -701,6 +707,7 @@ class TestMeta(object):
             self.eval_meta_settings()
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     @pytest.mark.parametrize('num_mvals', [0, 1, 3])
     @pytest.mark.parametrize('num_dvals', [0, 1, 3])
@@ -869,6 +876,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     def test_assign_nonstandard_metalabels(self, inst_name):
         """Test labels do not conform to the standard values if set that way.
@@ -1522,6 +1530,7 @@ class TestMeta(object):
         self.eval_ho_meta_settings(meta_dict)
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_inst_ho_data_assign_meta_different_labels(self):
         """Test the higher order assignment of custom metadata labels."""
 
@@ -1582,6 +1591,7 @@ class TestMeta(object):
         assert self.meta['new4'].children['new41'].units == 'hey4'
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_concat_not_strict_w_ho_collision(self):
         """Test non-strict concat with overlapping higher-order data."""
 
@@ -1671,6 +1681,7 @@ class TestMeta(object):
         assert self.meta[self.dval].children.hasattr_case_neutral(label)
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_ho_meta_rename_function(self):
         """Test `meta.rename` method with ho data using a function."""
 
@@ -1706,6 +1717,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_ho_meta_rename_dict(self):
         """Test `meta.rename` method with ho data using a dict."""
 

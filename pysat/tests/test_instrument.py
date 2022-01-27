@@ -87,6 +87,7 @@ class TestBasicsInstModule(TestBasics):
         return
 
 
+# TODO(#908): remove below class when pysat_testing_xarray is removed.
 class TestBasicsXarray(TestBasics):
     """Basic tests for xarray `pysat.Instrument`."""
 
@@ -113,6 +114,7 @@ class TestBasicsXarray(TestBasics):
         return
 
 
+# TODO(#908): remove below class when pysat_testing2d is removed.
 class TestBasics2D(TestBasics):
     """Basic tests for 2D pandas `pysat.Instrument`."""
 
@@ -511,4 +513,24 @@ class TestDeprecation(object):
 
         # Evaluate the warning output
         self.eval_warnings()
+        return
+
+    def test_set_2d_pandas_data(self):
+        """Check that setting 2d data for pandas raises a DeprecationWarning."""
+
+        test_inst = pysat.Instrument('pysat', 'testing2d')
+        test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
+        test_inst.load(date=test_date)
+        with warnings.catch_warnings(record=True) as war:
+            test_inst['new_profiles'] = 2 * test_inst['profiles']
+
+        warn_msgs = [" ".join(["Support for 2D pandas instrument",
+                               "data has been deprecated and will",
+                               "be removed in 3.2.0+."])]
+
+        # Ensure the minimum number of warnings were raised.
+        assert len(war) >= len(warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present.
+        testing.eval_warnings(war, warn_msgs)
         return

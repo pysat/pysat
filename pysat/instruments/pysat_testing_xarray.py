@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
-"""Produces fake instrument data for testing."""
+"""Produces fake instrument data for testing.
+
+.. deprecated:: 3.1.0
+    All data present in this instrument is duplicated in pysat_testing2d_xarray.
+    This instrument will be removed in 3.2.0+ to reduce redundancy.
+
+"""
 
 import datetime as dt
 import functools
 import numpy as np
+import warnings
 
 import xarray as xr
 
@@ -26,7 +33,24 @@ epoch_name = u'time'
 
 
 # Init method
-init = mm_test.init
+def init(self, test_init_kwarg=None):
+    """Initialize the test instrument.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+    test_init_kwarg : any or NoneType
+        Testing keyword (default=None)
+
+    """
+
+    warnings.warn(" ".join(["The instrument module `pysat_testing_xarray` has",
+                            "been deprecated and will be removed in 3.2.0+."]),
+                  DeprecationWarning, stacklevel=2)
+
+    mm_test.init(self, test_init_kwarg=test_init_kwarg)
+    return
 
 
 # Clean method
