@@ -26,8 +26,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     Parameters
     ----------
     stored : collections.orderedDict
-        Dict produced by parse_fixed_width_filenames or
-        parse_delimited_filenames
+        Dict produced by `parse_fixed_width_filenames` or
+        `parse_delimited_filenames`
     two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
@@ -122,7 +122,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
 
 def parse_fixed_width_filenames(files, format_str):
-    """Parse list of files, extracting data identified by format_str.
+    """Parse list of files, extracting data identified by `format_str`.
 
     Parameters
     ----------
@@ -131,17 +131,18 @@ def parse_fixed_width_filenames(files, format_str):
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports string formatting codes 'year', 'month', 'day', 'hour',
-        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
+        Supports all provided string formatting codes though only 'year',
+        'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
+        and 'cycle' will be used for time and sorting information. For example,
         `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
 
     Returns
     -------
     stored : collections.OrderedDict
-        Information parsed from filenames that inclues: 'year', 'month', 'day',
-        'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
-        includes 'files', an input list of files, and 'format_str', a formatted
-        string from input
+        Information parsed from filenames that includes: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
+        well as any other user provided template variables. Also
+        includes `files`, an input list of files, and `format_str`.
 
     """
 
@@ -162,14 +163,19 @@ def parse_fixed_width_filenames(files, format_str):
     lengths = search_dict['lengths']
     keys = search_dict['keys']
 
+    # Add non-standard keys
+    for key in keys:
+        if key not in stored:
+            stored[key] = []
+
     # Determine the locations the date/version information in a filename is
-    # stored use these indices to slice out date from filenames
+    # stored and use these indices to slice out date from filenames.
     idx = 0
     begin_key = []
     end_key = []
     for i, snip in enumerate(snips):
         idx += len(snip)
-        if i < (len(lengths)):
+        if i < len(lengths):
             begin_key.append(idx)
             idx += lengths[i]
             end_key.append(idx)
@@ -210,8 +216,9 @@ def parse_delimited_filenames(files, format_str, delimiter):
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports string formatting codes 'year', 'month', 'day', 'hour',
-        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
+        Supports all provided string formatting codes though only 'year',
+        'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
+        and 'cycle' will be used for time and sorting information. For example,
         `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
     delimiter : string
         Delimiter string upon which files will be split (e.g., '.')
@@ -243,6 +250,11 @@ def parse_delimited_filenames(files, format_str, delimiter):
     search_dict = construct_searchstring_from_format(format_str, wildcard=True)
     snips = search_dict['string_blocks']
     keys = search_dict['keys']
+
+    # Add non-standard keys
+    for key in keys:
+        if key not in stored:
+            stored[key] = None
 
     # Going to parse the string on the delimiter. It is possible that other
     # regions have the delimiter but aren't going to be parsed out. To apply
@@ -304,16 +316,18 @@ def parse_delimited_filenames(files, format_str, delimiter):
 def construct_searchstring_from_format(format_str, wildcard=False):
     """Parse format file string and returns string formatted for searching.
 
+    Each variable in the string template is replaced with an appropriate
+    number of '?' based upon the provided length of the data.
+
     Parameters
     ----------
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'. For example,
+        For example,
         `instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf`
     wildcard : bool
-        If True, replaces the ? sequence with a * . This option may be well
+        If True, replaces the '?' sequence with a '*'. This option may be well
         suited when dealing with delimited filenames.
 
     Returns
@@ -336,10 +350,9 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     part of the name that need not be extracted.
     `cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf`
 
-    A standards compliant filename can be constructed by starting with
-    string_blocks, adding keys in order, and replacing the '' locations
-    with data of length length.
-
+    A standards compliant filename can be constructed by adding the first
+    element from `string_blocks`, then the first item in `keys`, and iterating
+    until all items are used.
     """
 
     out_dict = {'search_string': '', 'keys': [], 'lengths': [],
