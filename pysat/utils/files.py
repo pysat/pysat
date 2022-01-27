@@ -360,7 +360,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     A standards compliant filename can be constructed by adding the first
     element from `string_blocks`, then the first item in `keys`, and iterating
-    until all items are used.
+    that alternating pattern until all items are used.
     """
 
     out_dict = {'search_string': '', 'keys': [], 'lengths': [],
