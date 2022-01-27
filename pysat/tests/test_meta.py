@@ -336,8 +336,10 @@ class TestMeta(object):
         default_str = ''.join(['Metadata set to defaults, as they were',
                                ' missing in the Instrument'])
         assert len(war) >= 1
+
         categories = [war[j].category for j in range(len(war))]
         assert UserWarning in categories
+
         ind = categories.index(UserWarning)
         assert default_str in str(war[ind].message)
 
