@@ -29,9 +29,9 @@ Example Function
 If a custom function is attached to an :py:class:`Instrument` or
 :py:class:`Constellation` object, the pysat object is passed to function in
 place when the data is loaded. There is no :py:class:`Instrument` or
-:py:class:`Constellation` copy made in memory. The function is expected to modify
-the supplied pysat object directly and the funtions are not allowed to return
-any information.  The example below is appropriate to be applied to an
+:py:class:`Constellation` copy made in memory. The function is expected to
+modify the supplied pysat object directly and the funtions are not allowed to
+return any information.  The example below is appropriate to be applied to an
 :py:class:`Instrument` or a :py:class:`Constellation` at the
 :py:class:`Instrument` level.
 
@@ -91,8 +91,8 @@ the desired :py:attr:`instruments` using the :py:attr:`platform`,
        """
        # Ensure there are enough Instruments in the constellation
        min_inst = 2 if dest_ind < 2 else dest_ind + 1
-       if len(const.instruments):
-	  raise ValueError('unexpected number of Instruments in Constellation')
+       if len(const.instruments) < min_inst:
+           raise ValueError('unexpected number of Instruments in Constellation')
 
        # Modify the data by adding new a new data variable to the destination
        # Instrument, calculatd with data from the first and second Instruments
@@ -245,16 +245,31 @@ Attaching custom functions to :py:class:`Constellation` objects is done in the
 same way as for :py:class:`Instrument` objects. The only difference is the
 additional keyword argument :py:var:`apply_inst`, which defaults to
 :py:value:`True` and applies the custom function to all of the
-:py:class:`Constellation` :py:class:`Instrument` objects.
+:py:class:`Constellation` :py:class:`Instrument` objects. This example assumes
+that the :py:mod:`pysatSpaceWeather` ACE Instruments have been registered.
 
 .. code:: python
 
 
-   import pysatNASA
+   import datetime as dt
 
    # Apply a Constellation-level custom function at initialization
-   const = pysat.Constellation(const_module=pysatNASA.constellations.icon,
-	                       custom={'function': modify_const,
-			               'apply_inst': False,
-				       'args': ['Ion_Density', 'Oplus'],
-				       'kwargs': {'dest_ind': 0}})
+   const = pysat.Constellation(platforms=['ace'], tags=['historic'],
+                               custom=[{'function': modify_const,
+                                        'apply_inst': False,
+                                        'args': ['eflux_38-53', 'bx_gsm'],
+                                        'kwargs': {'dest_ind': 2}}])
+
+   # Get and load data
+   stime = dt.datetime(2022, 1, 1)
+   const.download(start=stime)
+   const.load(date=stime)
+
+   # Check that the expected new variable is present
+   # Expected output:
+   # Index(['jd', 'sec', 'status_10', 'int_pflux_10MeV', 'status_30',
+   #       'int_pflux_30MeV', 'eflux_38-53 x bx_gsm'], dtype='object')
+   print(const.instruments[2].variables)
+
+
+   
