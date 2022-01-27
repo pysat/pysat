@@ -222,10 +222,6 @@ class TestLoadNetCDF(object):
                                 var, attr, repr(ival),
                                 repr(netcdf_inst.meta[var, attr])))
 
-        # Remove the local instrument
-        if hasattr(netcdf_inst.data, "close"):
-            netcdf_inst.data.close()
-            self.loaded_inst.close()
         del netcdf_inst
         return
 
@@ -401,8 +397,10 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
-        # Remove the temporary directory
-        # TODO(#974): Remove try /except when support for Python 3.9 is dropped.
+        # Remove the temporary directory. In Windows, this occasionally fails
+        # by raising a wide variety of different error messages. Python 3.10+
+        # can handle this, but lower Python versions cannot.
+        # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
         try:
             self.tempdir.cleanup()
         except:  # noqa E722
