@@ -226,16 +226,16 @@ def parse_delimited_filenames(files, format_str, delimiter):
         'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
         and 'cycle' will be used for time and sorting information. For example,
         `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
-    delimiter : string
+    delimiter : str
         Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
     stored : collections.OrderedDict
-        Information parsed from filenames that inclues: 'year', 'month', 'day',
-        'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
-        includes 'files', an input list of files, and 'format_str', a formatted
-        string from input
+        Information parsed from filenames that includes: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
+        well as any other user provided template variables. Also
+        includes `files`, an input list of files, and `format_str`.
 
     """
 
@@ -283,7 +283,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
         for i, (sname, rname) in enumerate(zip(split_name, split_recon)):
             loop_rname = rname
             loop_sname = sname
-            loop_len = 0
+
             while True:
                 sidx = loop_rname.find('{}')
                 if sidx < 0:
