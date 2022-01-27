@@ -591,7 +591,7 @@ class Files(object):
             if self.write_to_disk:
                 # Load data stored on the local drive.
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
-                                      squeeze=True, header=0)
+                                      header=0).squeeze("columns")
                 if update_path:
                     # Store the data_path from the .csv onto Files
                     self.data_path = loaded.name
