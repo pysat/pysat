@@ -360,7 +360,15 @@ class TestBasics(object):
                               [''.join(['pysat_1234567_junk_{year:04d}_gold_',
                                         '{day:03d}_stuff.pysat_testing_file']),
                                ''.join(['{code:5s}_{code2:7s}_*_{year:04d}',
-                                        '_*_{day:03d}_*.*'])]
+                                        '_*_{day:03d}_*.*'])],
+                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                        '{day:03d}stuff.pysat_testing_file']),
+                               ''.join(['{code:5s}_{code2:7s}_*_{year:04d}',
+                                        '_*_{day:03d}*.*'])],
+                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                        '{day:03d}stuff.pysat_testing_file']),
+                               ''.join(['*_*_*_{year:04d}',
+                                        '_*_{day:03d}*'])],
                               ])
     @pytest.mark.parametrize("delimiter", ['_'])
     def test_from_os_wilcards(self, delimiter, root_fname, root_pname):
