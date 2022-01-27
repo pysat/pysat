@@ -30,7 +30,7 @@ If a custom function is attached to an :py:class:`Instrument` or
 :py:class:`Constellation` object, the pysat object is passed to function in
 place when the data is loaded. There is no :py:class:`Instrument` or
 :py:class:`Constellation` copy made in memory. The function is expected to modify
-the supplied pysat object directly and the funtions are not allowed to return
+the supplied pysat object directly and the functions are not allowed to return
 any information.  The example below is appropriate to be applied to an
 :py:class:`Instrument` or a :py:class:`Constellation` at the
 :py:class:`Instrument` level.
