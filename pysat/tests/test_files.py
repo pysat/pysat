@@ -238,6 +238,12 @@ class TestBasics(object):
                              [[''.join(['pysat_testing_junk_{year:04d}_gold_',
                                        '{day:03d}_stuff.pysat_testing_file']),
                                '1D', True],
+                              [''.join(['{year:04d}_gold_pysat_testing_junk_',
+                                        '{day:03d}_stuff.pysat_testing_file']),
+                               '1D', True],
+                              [''.join(['{year:04d}{day:03d}.pysat_testing_',
+                                        'file']),
+                               '1D', True],
                               [''.join(['pysat_testing_junk_{year:04d}',
                                         '{day:03d}_stuff.pysat_testing_file']),
                                '1D', True],
@@ -282,6 +288,10 @@ class TestBasics(object):
         # Use `from_os` function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
                                     format_str=root_fname, delimiter=delimiter)
+
+        # Ensure sorted and increasing
+        assert files.index.is_monotonic_increasing
+
         # Check overall length
         assert len(files) == len(dates)
 
@@ -291,24 +301,6 @@ class TestBasics(object):
 
         return
 
-    @pytest.mark.parametrize("delimiter", [None, '_'])
-    def test_year_month_files_direct_call_to_from_os(self, delimiter):
-        """Test that `Files.from_os` generates file list for monthly files."""
-        # create a bunch of files by year and doy
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_stuff',
-                              '_{month:02d}.pysat_testing_file'))
-        create_files(self.testInst, self.start, self.stop, freq='1MS',
-                     root_fname=root_fname, version=self.version)
-        # use from_os function to get pandas Series of files and dates
-        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname, delimiter=delimiter)
-        # check overall length
-        assert len(files) == 24
-        # check specific dates
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[11]) == dt.datetime(2008, 12, 1)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 1)
-        return
 
     def test_instrument_has_no_files(self):
         """Test that instrument generates empty file list if no files."""
