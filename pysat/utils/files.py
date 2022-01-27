@@ -193,9 +193,15 @@ def parse_fixed_width_filenames(files, format_str):
 
     # Convert to numpy arrays
     for key in stored.keys():
-        stored[key] = np.array(stored[key]).astype(np.int64)
         if len(stored[key]) == 0:
             stored[key] = None
+        else:
+            try:
+                # Assume key value is numeric integer
+                stored[key] = np.array(stored[key]).astype(np.int64)
+            except ValueError:
+                # Store key value as string
+                stored[key] = np.array(stored[key])
 
     # Include files in output
     stored['files'] = files
@@ -250,6 +256,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     search_dict = construct_searchstring_from_format(format_str, wildcard=True)
     snips = search_dict['string_blocks']
     keys = search_dict['keys']
+    lengths = search_dict['lengths']
 
     # Add non-standard keys
     for key in keys:
@@ -257,41 +264,42 @@ def parse_delimited_filenames(files, format_str, delimiter):
             stored[key] = None
 
     # Going to parse the string on the delimiter. It is possible that other
-    # regions have the delimiter but aren't going to be parsed out. To apply
-    # the delimiter, breakdown to the string blocks as a guide.
-    pblock = []
-    parsed_block = [snip.split(delimiter) for snip in snips]
-    for block in parsed_block:
-        if block != ['', '']:
-            if block[0] == '':
-                block = block[1:]
-            if block[-1] == '':
-                block = block[:-1]
-            pblock.extend(block)
-        pblock.append('')
-    parsed_block = pblock[:-1]
+    # regions have the delimiter but aren't going to be parsed out.
+    # Reconstruct string from `snips` and use `{}` in place of `keys` and
+    # work from that.
+    recon = [''] * (len(snips) + len(keys))
+    for i, item in enumerate(snips):
+        recon[2 * i] = item
+    for i, item in enumerate(keys):
+        recon[2 * i + 1] = '{}'
+    recon = ''.join(recon)
+    split_recon = recon.split(delimiter)
 
-    # Need to parse out dates for datetime index
+    # Parse out template variable information from each filename.
     for temp in files:
         split_name = temp.split(delimiter)
 
-        # Ensure leading strings are removed
-        if parsed_block[0] != split_name[0] and parsed_block[0] != '':
-            split_name[0] = split_name[0].split(parsed_block[0])[-1]
-
-        # Ensure the extension is removed
-        if len(split_name) < len(parsed_block):
-            split_name[-1] = split_name[-1].split(parsed_block[-1])[0]
-
         idx = 0
-        for isname, sname in enumerate(split_name):
-            if parsed_block[isname] != sname:
-                # Areas with data to be parsed are not equal to their
-                # `parsed_block` value
-                if stored[keys[idx]] is None:
-                    stored[keys[idx]] = [sname]
+        for i, (sname, rname) in enumerate(zip(split_name, split_recon)):
+            loop_rname = rname
+            loop_sname = sname
+            loop_len = 0
+            while True:
+                sidx = loop_rname.find('{}')
+                if sidx < 0:
+                    # No template variables to parse
+                    break
                 else:
-                    stored[keys[idx]].append(sname)
+                    # Found template variable marker, pull out value
+                    # from filename.
+                    val = loop_sname[sidx:sidx + lengths[idx]]
+                    loop_rname = loop_rname[sidx+2:]
+                    loop_sname = loop_sname[sidx + lengths[idx]:]
+
+                if stored[keys[idx]] is None:
+                    stored[keys[idx]] = [val]
+                else:
+                    stored[keys[idx]].append(val)
                 idx += 1
 
     # Convert to numpy arrays
@@ -376,17 +384,17 @@ def construct_searchstring_from_format(format_str, wildcard=False):
             out_dict['keys'].append(snip[1])
 
             # Try and determine formatting width
-            temp = re.findall(r'\d+', snip[2])
+            fwidths = re.findall(r'\d+', snip[2])
 
-            if temp:
+            if fwidths:
                 # There are items, try and grab width
-                for i in temp:
+                for fwidth in fwidths:
                     # Make sure there is truly something there
-                    if i != 0:
+                    if fwidth != 0:
                         # Store length and add to the search string
-                        out_dict['lengths'].append(np.int64(i))
+                        out_dict['lengths'].append(np.int64(fwidth))
                         if not wildcard:
-                            out_dict['search_string'] += '?' * np.int64(i)
+                            out_dict['search_string'] += '?' * np.int64(fwidth)
                         else:
                             out_dict['search_string'] += '*'
                         break
