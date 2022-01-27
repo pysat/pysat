@@ -116,6 +116,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added CI reports for supported data products
    * Added a cap on coveralls to ensure success of continuous integration
    * Updated tests in `test_meta` to search all warnings, not just the first
+   * Updated pandas syntax to be compatible with pandas 2.0 (pandas 1.4
+     deprecations)
 
 [3.0.1] - 2021-07-28
 --------------------
