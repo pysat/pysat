@@ -187,7 +187,7 @@ class TestBasics(object):
     def test_equality_with_copy_with_data(self):
         """Test that copy is the same as original, loaded `inst.data`."""
         # Load data
-        self.testInst.load(date=self.start)
+        self.testInst.load(date=self.start, use_header=True)
 
         # Make copy
         self.out = self.testInst.files.copy()
@@ -501,7 +501,8 @@ class TestInstWithFiles(object):
         # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
-        # create testing directory
+
+        # Create the testing directory
         create_dir(temporary_file_list=self.temporary_file_list)
 
         # create a test instrument, make sure it is getting files from
@@ -543,8 +544,9 @@ class TestInstWithFiles(object):
         del self.testInst
         reload(pysat.instruments.pysat_testing)
         reload(pysat.instruments)
-        # make sure everything about instrument state is restored
-        # restore original file list, no files
+
+        # Make sure everything about instrument state is restored. In
+        # particular, restore the original file list (no files)
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                          clean_level='clean',
                          update_files=True,
@@ -556,7 +558,7 @@ class TestInstWithFiles(object):
 
     def test_refresh(self):
         """Check that refresh updates the files."""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         start = dt.datetime(2008, 1, 10)
         stop = dt.datetime(2008, 1, 12)
 
@@ -571,13 +573,13 @@ class TestInstWithFiles(object):
 
     def test_refresh_on_ignore_empty_files(self):
         """Check that refresh can ignore empty files."""
-        # setup created empty files - make sure such files can be ignored
+        # Setup created empty files - make sure such files can be ignored
         self.testInst.files.ignore_empty_files = True
         self.testInst.files.refresh()
         assert len(self.testInst.files.files) == 0
         return
 
-        # create new files with content and make sure they are captured
+        # Create new files with content and make sure they are captured
         create_files(self.testInst, self.start, self.stop, freq='100min',
                      use_doy=False,
                      root_fname=self.root_fname,
@@ -632,7 +634,7 @@ class TestInstWithFiles(object):
 
     def test_get_new_files_after_refresh(self):
         """Check that get_new locates new files after refresh."""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
@@ -646,7 +648,7 @@ class TestInstWithFiles(object):
 
     def test_get_new_files_after_multiple_refreshes(self):
         """Check that get_new locates new files after multiple refreshes."""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
@@ -661,7 +663,7 @@ class TestInstWithFiles(object):
 
     def test_get_new_files_after_adding_files_and_adding_file(self):
         """Check that get_new works after multiple rounds of added files."""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False,
                      root_fname=self.root_fname)
@@ -683,11 +685,11 @@ class TestInstWithFiles(object):
 
     def test_get_new_files_after_deleting_files_and_adding_files(self):
         """Check that get_new works after deleting and adding files."""
-        # create new files and make sure that new files are captured
+        # Create new files and make sure that new files are captured
         dates = pysat.utils.time.create_date_range(self.start2, self.stop2,
                                                    freq='100min')
 
-        # remove files, same number as will be added
+        # Remove files, same number as will be added
         to_be_removed = len(dates)
         for the_file in os.listdir(self.testInst.files.data_path):
             if (the_file[0:13] == 'pysat_testing') & \
@@ -697,14 +699,16 @@ class TestInstWithFiles(object):
                 if os.path.isfile(file_path) & (to_be_removed > 0):
                     to_be_removed -= 1
                     os.unlink(file_path)
-        # add new files
+
+        # Add new files
         create_files(self.testInst, self.start2, self.stop2, freq='100min',
                      use_doy=False, root_fname=self.root_fname,
                      version=self.version)
-        # get new files
+
+        # Get new files
         new_files = self.testInst.files.get_new()
 
-        assert (np.all(new_files.index == dates))
+        assert np.all(new_files.index == dates)
         return
 
 
@@ -724,9 +728,10 @@ class TestInstWithFilesNonStandard(object):
 
     def setup(self):
         """Set up the unit test environment for each method."""
-        # store current pysat directory
+        # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
-        # create temporary directory
+
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
 
@@ -752,8 +757,9 @@ class TestInstWithFilesNonStandard(object):
             del self.testInst
         reload(pysat.instruments.pysat_testing)
         reload(pysat.instruments)
-        # make sure everything about instrument state is restored
-        # restore original file list, no files
+
+        # Make sure everything about instrument state is restored. In
+        # particular, restore the original file list (no files)
         pysat.params['data_dirs'] = self.data_paths
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                          clean_level='clean',
@@ -792,6 +798,36 @@ class TestInstWithFilesNonStandard(object):
         assert np.all(new_files.index == dates)
         return
 
+    def test_files_non_standard_directory(self):
+        """Check that files work with a specific directory supplied."""
+        # Create new files and make sure that new files are captured
+        dates = pysat.utils.time.create_date_range(self.start, self.stop,
+                                                   freq='100min')
+
+        nonstandard_dir = os.path.join(self.tempdir.name, 'temp_dir')
+
+        self.testInst = pysat.Instrument()
+        self.testInst.files.data_path = nonstandard_dir
+
+        # Add new files
+        create_dir(self.testInst)
+        create_files(self.testInst, self.start, self.stop, freq='100min',
+                     use_doy=False, root_fname=self.root_fname,
+                     version=self.version)
+
+        # Create an instrument, specifying the desired path
+        self.testInst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing, clean_level='clean',
+            data_dir=nonstandard_dir, update_files=True,
+            file_format=self.root_fname,
+            temporary_file_list=self.temporary_file_list)
+
+        # Get new files
+        new_files = self.testInst.files.get_new()
+        assert np.all(self.testInst.files.files.index == dates)
+        assert np.all(new_files.index == dates)
+        return
+
     def test_files_non_standard_file_format_template(self):
         """Check that files work if format has a weird heirarchy."""
         # create new files and make sure that new files are captured
@@ -812,11 +848,12 @@ class TestInstWithFilesNonStandard(object):
             update_files=True,
             temporary_file_list=self.temporary_file_list)
 
-        # add new files
+        # Add new files
         create_dir(self.testInst)
         create_files(self.testInst, self.start, self.stop, freq='1D',
                      use_doy=False, root_fname=root_fname, version=self.version)
-        # refresh file list
+
+        # Refresh file list
         self.testInst.files.refresh()
 
         assert (np.all(self.testInst.files.files.index == dates))
@@ -1004,15 +1041,17 @@ class TestFilesRaceCondition(object):
         # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
-        # create testing directory
+
+        # Create testing directory
         create_dir(temporary_file_list=self.temporary_file_list)
 
-        # create a test instrument, make sure it is getting files from
+        # Create a test instrument, make sure it is getting files from
         # filesystem
         reload(pysat.instruments.pysat_testing)
         pysat.instruments.pysat_testing.list_files = functools.partial(
             list_files, version=True)
-        # create a bunch of files by year and doy
+
+        # Create a bunch of files by year and doy
         self.testInst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing,
             clean_level='clean',

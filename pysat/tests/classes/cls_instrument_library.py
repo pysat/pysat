@@ -349,13 +349,13 @@ class InstLibTests(object):
             target = 'Fake Data to be cleared'
             test_inst.data = [target]
             try:
-                test_inst.load(date=date)
+                test_inst.load(date=date, use_header=True)
             except ValueError as verr:
                 # Check if instrument is failing due to strict time flag
                 if str(verr).find('Loaded data') > 0:
                     test_inst.strict_time_flag = False
                     with warnings.catch_warnings(record=True) as war:
-                        test_inst.load(date=date)
+                        test_inst.load(date=date, use_header=True)
                     assert len(war) >= 1
                     categories = [war[j].category for j in range(0, len(war))]
                     assert UserWarning in categories

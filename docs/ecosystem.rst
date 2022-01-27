@@ -25,6 +25,7 @@ currently supports.
 .. toctree::
    :maxdepth: 2
 
+   instruments/general_instruments.rst
    instruments/testing_instruments.rst
    instruments/pysatCDAAC.rst
    instruments/pysatMadrigal.rst

@@ -339,8 +339,12 @@ class TestMeta(object):
         default_str = ''.join(['Metadata set to defaults, as they were',
                                ' missing in the Instrument'])
         assert len(war) >= 1
-        assert war[0].category == UserWarning
-        assert default_str in str(war[0].message)
+
+        categories = [war[j].category for j in range(len(war))]
+        assert UserWarning in categories
+
+        ind = categories.index(UserWarning)
+        assert default_str in str(war[ind].message)
 
         # Prepare to test the Metadata
         self.dval = 'int32_dummy'
@@ -453,6 +457,7 @@ class TestMeta(object):
         assert out.find('pysat Meta object') >= 0
         assert out.find('standard variables') > 0
         assert out.find('ND variables') > 0
+        assert out.find('global attributes') > 0
 
         # Evaluate the extra parts of the long output string
         if long_str:
@@ -1924,8 +1929,8 @@ class TestMetaMutable(object):
         del self.meta, self.testInst
         return
 
-    def test_transfer_attributes_overwrite_with_strict_names(self):
-        """Test raises AttributeError when overwriting with `strict_names`."""
+    def test_transfer_attr_inst_overwrite_with_strict_names(self):
+        """Test `strict_names` raises AttributeError with existing Inst attr."""
 
         # Update the Meta and Instrument objects
         self.meta.jojo_beans = 'yep!'
@@ -1939,8 +1944,24 @@ class TestMetaMutable(object):
         assert str(aerr).find("cannot be transferred as it already exists") > 0
         return
 
-    def test_transfer_attributes_to_instrument_strict_names_false(self):
-        """Test attr transfer with strict_names set to False."""
+    def test_transfer_attr_header_overwrite_with_strict_names(self):
+        """Test `strict_names` raises AttributeError with existing header attr.
+
+        """
+
+        # Update the Meta and Instrument objects
+        self.meta.jojo_beans = 'yep!'
+        setattr(self.meta.header, 'jojo_beans', 'nope!')
+
+        # Catch and evaluate error message
+        with pytest.raises(AttributeError) as aerr:
+            self.meta.transfer_attributes_to_header(strict_names=True)
+
+        assert str(aerr).find("cannot be transferred as it already exists") > 0
+        return
+
+    def test_transfer_attr_inst_to_instrument_strict_names_false(self):
+        """Test attr transfer to Instrument with strict_names set to False."""
 
         # Add the same attribute with different values to Meta and Instrument
         self.meta.overwrite_attribute = 'Meta Value'
@@ -1954,8 +1975,22 @@ class TestMetaMutable(object):
         assert self.testInst.overwrite_attribute == 'Meta Value'
         return
 
+    def test_transfer_attr_inst_to_header_strict_names_false(self):
+        """Test attr transfer to MetaHeader with strict_names set to False."""
+
+        # Add the same attribute with different values to Meta and Instrument
+        self.meta.overwrite_attribute = 'Meta Value'
+        setattr(self.meta.header, "overwrite_attribute", 'Head Value')
+
+        # Overwrite the Instrument attribute value with the meta vale
+        self.meta.transfer_attributes_to_header(strict_names=False)
+
+        # Test the result
+        assert self.meta.header.overwrite_attribute == 'Meta Value'
+        return
+
     def test_transfer_attributes_to_instrument(self):
-        """Test transfer of custom meta attributes."""
+        """Test transfer of custom meta attributes to Instrument."""
 
         # Set non-conflicting attribute
         self.meta.new_attribute = 'hello'
@@ -1965,6 +2000,24 @@ class TestMetaMutable(object):
         assert hasattr(self.testInst, "new_attribute"), \
             "custom Meta attribute not transferred to Instrument."
         assert self.testInst.new_attribute == 'hello'
+
+        # Ensure transferred attributes are removed from Meta
+        assert not hasattr(self.meta, "new_attribute"), \
+            "custom Meta attribute not removed during transfer to Instrument."
+        return
+
+    def test_transfer_attributes_to_header(self):
+        """Test transfer of custom meta attributes to MetaHeader."""
+
+        # Set non-conflicting attribute
+        self.meta.new_attribute = 'hello'
+        self.meta.transfer_attributes_to_header()
+
+        # Test to see if attribute was transferred successfully to Instrument
+        assert hasattr(self.meta.header, "new_attribute"), \
+            "custom Meta attribute not transferred to Instrument."
+        assert self.meta.header.new_attribute == 'hello'
+        assert "new_attribute" in self.meta.header.global_attrs
 
         # Ensure transferred attributes are removed from Meta
         assert not hasattr(self.meta, "new_attribute"), \
