@@ -293,7 +293,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     # Found template variable marker, pull out value
                     # from filename.
                     val = loop_sname[sidx:sidx + lengths[idx]]
-                    loop_rname = loop_rname[sidx+2:]
+                    loop_rname = loop_rname[sidx + 2:]
                     loop_sname = loop_sname[sidx + lengths[idx]:]
 
                 if stored[keys[idx]] is None:
