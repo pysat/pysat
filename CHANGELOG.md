@@ -38,6 +38,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      after adapting routine to use `Meta.rename`
    * Added an update method and type evaluation method to MetaLabels.
    * Allowed MetaLabels to be expanded through setting new Meta data values.
+   * Added support for user variables when parsing template filenames
+     in `pysat.utils.files`.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -93,6 +95,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `utils.coords.update_longitude`
    * Fixed pysat_testmodel Instrument longitude range
    * Corrected link to testing badge in README.md
+   * `from_os` now always returns a sorted Series.
+   * Improved robustness of parsing delimited files.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
