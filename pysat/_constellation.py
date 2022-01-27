@@ -268,7 +268,7 @@ class Constellation(object):
                                for ckey in cust_dict.keys() if ckey != req_key}
 
                 # Inputs have been checked, add to the Constellation object.
-                self.custom_attach(cust['function'], **cust_kwargs)
+                self.custom_attach(cust_dict['function'], **cust_kwargs)
 
         return
 
