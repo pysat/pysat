@@ -301,7 +301,6 @@ class TestBasics(object):
 
         return
 
-
     def test_instrument_has_no_files(self):
         """Test that instrument generates empty file list if no files."""
 
