@@ -340,7 +340,6 @@ class TestBasics(object):
         assert len(files) == len(dates)
 
         # Check specific date
-        fdates = [pds.to_datetime(item) for item in files.index]
         assert np.all(files.index == dates)
 
         return
