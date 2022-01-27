@@ -920,9 +920,9 @@ class Files(object):
         When parsing delimited filenames, the '*' wildcard is supported
         when leading, trailing, or wholly contained between delimiters, such as
         'data_name-{year:04d}-*-{day:02d}.txt',
-        or '*-{year:04d}-{day:02d}_something.txt', where '-' is the delimiter.
+        or '*-{year:04d}-{day:02d}*', where '-' is the delimiter.
         There can not be a mixture of a template variable and '*' without a
-        delimiter in between.
+        delimiter in between, unless the '*' occurs after the variable.
 
         The 'day' format keyword may be used to specify either day of month
         (if month is included) or day of year.

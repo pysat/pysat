@@ -124,6 +124,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 def parse_fixed_width_filenames(files, format_str):
     """Parse list of files, extracting data identified by `format_str`.
 
+    Uses the fixed-width format of the filename to find and parse
+    out variable information. The functions begins at the end of the filename,
+    parsing towards the begining.
+
     Parameters
     ----------
     files : list
@@ -134,7 +138,8 @@ def parse_fixed_width_filenames(files, format_str):
         Supports all provided string formatting codes though only 'year',
         'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
         and 'cycle' will be used for time and sorting information. For example,
-        `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
+        `instrument-{year:4d}_{month:02d}-{day:02d}_v{version:02d}.cdf`, or
+        `*-{year:4d}_{month:02d}hithere{day:02d}_v{version:02d}.cdf`
 
     Returns
     -------
@@ -143,6 +148,13 @@ def parse_fixed_width_filenames(files, format_str):
         'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
         well as any other user provided template variables. Also
         includes `files`, an input list of files, and `format_str`.
+
+    Note
+    ----
+    The function uses the lengths of the fixed characters within `format_str`,
+    as well as the supplied lengths for template variables, to determine
+    where to parse out information. Thus, support for the wildcard '*' is
+    limited to locations before the first template variable.
 
     """
 
@@ -215,6 +227,12 @@ def parse_fixed_width_filenames(files, format_str):
 def parse_delimited_filenames(files, format_str, delimiter):
     """Parse list of files, extracting data identified by format_str.
 
+    Will parse file using `delimiter` though the function does not require
+    every delimited item to be a variable, and more than one variable
+    may be within a delimited section. Thus, the main practical
+    difference with `parse_fixed_width_filenames` is more support for
+    the use of the wildcard '*' within `format_str`.
+
     Parameters
     ----------
     files : list
@@ -225,7 +243,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
         Supports all provided string formatting codes though only 'year',
         'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
         and 'cycle' will be used for time and sorting information. For example,
-        `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
+        `*_{year:4d}_{month:02d}_{day:02d}_*_v{version:02d}_*.cdf`
     delimiter : str
         Delimiter string upon which files will be split (e.g., '.')
 
@@ -236,6 +254,15 @@ def parse_delimited_filenames(files, format_str, delimiter):
         'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
         well as any other user provided template variables. Also
         includes `files`, an input list of files, and `format_str`.
+
+    Note
+    ----
+    The '*' wildcard is supported when leading, trailing, or wholly contained
+    between delimiters, such as 'data_name-{year:04d}-*-{day:02d}.txt',
+    or '*-{year:04d}*-*-{day:02d}*', where '-' is the delimiter.
+    There can not be a mixture of a template variable and '*' without a
+    delimiter in between, unless the '*' occurs after the variables. The
+    '*' should not be used to replace the delimited character in the filename.
 
     """
 
