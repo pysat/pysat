@@ -368,10 +368,10 @@ class TestConstellationBasics(object):
                    'kwargs': {'dkey': 'mlt'}, 'apply_inst': False},
                   {'function': mult_data, 'args': self.custom_args,
                    'apply_inst': False}]
-        testConst2 = pysat.Constellation(instruments=[
-            pysat.Instrument('pysat', 'testing', num_samples=10,
-                             clean_level='clean') for i in range(5)],
-                                         custom=custom)
+        testConst2 = pysat.Constellation(
+            instruments=[pysat.Instrument('pysat', 'testing', num_samples=10,
+                                          clean_level='clean')
+                         for i in range(5)], custom=custom)
 
         # Ensure both constellations have the same custom_* attributes
         assert self.testConst.custom_functions == testConst2.custom_functions

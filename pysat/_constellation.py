@@ -251,7 +251,7 @@ class Constellation(object):
         self.custom_functions = []
         self.custom_args = []
         self.custom_kwargs = []
-        
+
         # Process provided user input for custom methods, if provided.
         if custom is not None:
             req_key = 'function'  # Set the equired key
