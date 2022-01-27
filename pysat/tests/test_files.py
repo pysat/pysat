@@ -319,7 +319,7 @@ class TestBasics(object):
                               ])
     @pytest.mark.parametrize("delimiter", [None, '_'])
     def test_from_os_user_vars(self, delimiter, root_fname, root_pname):
-        """Check that Files.from_os generates file list with user vars."""
+        """Check that Files.from_os works with user vars."""
 
         # Truth dates
         dates = pysat.utils.time.create_date_range(self.start, self.stop, '1D')
@@ -366,7 +366,7 @@ class TestBasics(object):
                               ])
     @pytest.mark.parametrize("delimiter", ['_'])
     def test_from_os_wilcards(self, delimiter, root_fname, root_pname):
-        """Check that Files.from_os generates file list wildcards."""
+        """Check that Files.from_os works with delimited names and wildcards."""
 
         # Truth dates
         dates = pysat.utils.time.create_date_range(self.start, self.stop, '1D')
