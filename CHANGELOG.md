@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
+   * Added the option to apply custom functions at the Constellation or
+     Instrument level within the Constellation class
    * Added option to load Constellation for registered Instruments using lists
      of platforms, names, tags, and/or inst_ids, which are new attributes
    * Added hidden Constellation methods to determine unique attribute elements
