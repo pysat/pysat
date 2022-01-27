@@ -739,11 +739,13 @@ class Constellation(object):
         # Load the data for each instrument
         self._call_inst_method('load', *args, **kwargs)
 
-        # Set the year and doy attributes for the constellation and instruments
-        self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
-
-        # Apply the Constellation-level custom functions
+        # If any data has been loaded, set time data and continue processing
         if not self.empty:
+            # Set the year and doy attributes for the constellation and
+            # instruments
+            self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
+
+            # Apply the Constellation-level custom functions
             pysat.Instrument.custom_apply_all(self)
 
         return
