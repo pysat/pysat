@@ -234,125 +234,65 @@ class TestBasics(object):
         assert str(verr).find('Must supply instrument') > 0
         return
 
-    def test_year_doy_files_directly_call_from_os(self):
+    @pytest.mark.parametrize("root_fname,freq,use_doy",
+                             [[''.join(['pysat_testing_junk_{year:04d}_gold_',
+                                       '{day:03d}_stuff.pysat_testing_file']),
+                               '1D', True],
+                              [''.join(['pysat_testing_junk_{year:04d}',
+                                        '{day:03d}_stuff.pysat_testing_file']),
+                               '1D', True],
+                              [''.join(['pysat_testing_junk_{year:04d}_gold_',
+                                        '{day:03d}_stuff_{month:02d}.pysat_',
+                                        'testing_file']),
+                               '1D', False],
+                              [''.join(['pysat_testing_junk_{year:04d}_gold_',
+                                        '{day:03d}_stuff_{month:02d}_',
+                                        '{hour:02d}.pysat_testing_file']),
+                               '6h', False],
+                              [''.join(['pysat_testing_fromos_{year:04d}_gold_',
+                                        '{day:03d}_stuff_{month:02d}_',
+                                        '{hour:02d}{minute:02d}.',
+                                        'pysat_testing_file']),
+                               '30min', False],
+                              [''.join(['pysat_testing_hms_{year:04d}_gold_',
+                                        '{day:03d}_stuff_{month:02d}_',
+                                        '{hour:02d}_{minute:02d}_{second:02d}',
+                                        '.pysat_testing_file']),
+                               '30s', False],
+                              [''.join(['pysat_testing_junk_{year:04d}_gold_',
+                                        'stuff_{month:02d}.pysat_testing_file'
+                                        ]),
+                               '1MS', False]])
+    @pytest.mark.parametrize("delimiter", [None, '_'])
+    def test_from_os(self, delimiter, root_fname, freq, use_doy):
         """Check that Files.from_os generates file list."""
-        # create a bunch of files by year and doy
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_',
-                              '{day:03d}_stuff.pysat_testing_file'))
-        create_files(self.testInst, self.start, self.stop, freq='1D',
-                     root_fname=root_fname, version=self.version)
-        # use from_os function to get pandas Series of files and dates
+
+        # Truth dates
+        dates = pysat.utils.time.create_date_range(self.start, self.stop, freq)
+        if len(dates) > 100000:
+            self.stop = self.start + dt.timedelta(days=1)
+            dates = pysat.utils.time.create_date_range(self.start, self.stop,
+                                                       freq)
+
+        # Create a bunch of files by year and doy
+        create_files(self.testInst, self.start, self.stop, freq=freq,
+                     root_fname=root_fname, version=self.version,
+                     use_doy=use_doy)
+
+        # Use `from_os` function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname)
-        # check overall length
-        assert len(files) == (365 + 366)
-        # check specific dates
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+                                    format_str=root_fname, delimiter=delimiter)
+        # Check overall length
+        assert len(files) == len(dates)
+
+        # Check specific date
+        fdates = [pds.to_datetime(item) for item in files.index]
+        assert np.all(files.index == dates)
+
         return
 
-    def test_year_doy_files_no_gap_in_name_directly_call_from_os(self):
-        """Test that `Files.from_os` makes file list for date w/o delimiter."""
-
-        # create a bunch of files by year and doy
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}{day:03d}_stuff.',
-                              'pysat_testing_file'))
-        create_files(self.testInst, self.start, self.stop, freq='1D',
-                     root_fname=root_fname, version=self.version)
-        # use from_os function to get pandas Series of files and dates
-        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname)
-        # check overall length
-        assert len(files) == (365 + 366)
-        # check specific dates
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
-        return
-
-    def test_year_month_day_files_directly_call_from_os(self):
-        """Test that `Files.from_os` generates file list for date w/ month."""
-        # create a bunch of files by year and doy
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}',
-                              '_stuff_{month:02d}.pysat_testing_file'))
-        create_files(self.testInst, self.start, self.stop, freq='1D',
-                     use_doy=False, root_fname=root_fname, version=self.version)
-        # use from_os function to get pandas Series of files and dates
-        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname)
-        # check overall length
-        assert len(files) == (365 + 366)
-        # check specific dates
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
-        return
-
-    def test_year_month_day_hour_files_directly_call_from_os(self):
-        """Test that `Files.from_os` generates file list for date w hours."""
-        # create a bunch of files by year and doy
-        root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}',
-                              '_stuff_{month:02d}_{hour:02d}.pysat_testing',
-                              '_file'))
-        create_files(self.testInst, self.start, self.stop, freq='6h',
-                     use_doy=False, root_fname=root_fname, version=self.version)
-        # use from_os function to get pandas Series of files and dates
-        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname)
-        # check overall length
-        assert len(files) == (365 + 366) * 4 - 3
-        # check specific dates
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[1460]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
-        return
-
-    def test_year_month_day_hour_minute_files_directly_call_from_os(self):
-        """Test `Files.from_os` generates file list w/ hours and minutes."""
-        root_fname = ''.join(('pysat_testing_fromos_{year:04d}_gold_{day:03d}_',
-                              'stuff_{month:02d}_{hour:02d}{minute:02d}.',
-                              'pysat_testing_file'))
-        # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2008, 1, 4)
-        create_files(self.testInst, start, stop, freq='30min',
-                     use_doy=False, root_fname=root_fname, version=self.version)
-        # use from_os function to get pandas Series of files and dates
-        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname)
-        # check overall length
-        assert len(files) == 145
-        # check specific dates
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[1]) == dt.datetime(2008, 1, 1, 0, 30)
-        assert pds.to_datetime(files.index[10]) == dt.datetime(2008, 1, 1, 5, 0)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 4)
-        return
-
-    def test_year_month_day_hms_files_directly_call_from_os(self):
-        """Test `Files.from_os` generates file list for date w/ hour/min/sec."""
-        root_fname = ''.join(('pysat_testing_hms_{year:04d}_gold_{day:03d}_',
-                              'stuff_{month:02d}_{hour:02d}_{minute:02d}_',
-                              '{second:02d}.pysat_testing_file'))
-        # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2008, 1, 3)
-        create_files(self.testInst, start, stop, freq='30s',
-                     use_doy=False, root_fname=root_fname, version=self.version)
-        # use from_os function to get pandas Series of files and dates
-        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname)
-        # check overall length
-        assert len(files) == 5761
-        # check specific dates
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert (pds.to_datetime(files.index[1])
-                == dt.datetime(2008, 1, 1, 0, 0, 30))
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 3)
-        return
-
-    def test_year_month_files_direct_call_to_from_os(self):
+    @pytest.mark.parametrize("delimiter", [None, '_'])
+    def test_year_month_files_direct_call_to_from_os(self, delimiter):
         """Test that `Files.from_os` generates file list for monthly files."""
         # create a bunch of files by year and doy
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_stuff',
@@ -361,7 +301,7 @@ class TestBasics(object):
                      root_fname=root_fname, version=self.version)
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-                                    format_str=root_fname)
+                                    format_str=root_fname, delimiter=delimiter)
         # check overall length
         assert len(files) == 24
         # check specific dates
