@@ -345,6 +345,53 @@ class TestBasics(object):
 
         return
 
+    @pytest.mark.parametrize("root_fname,root_pname",
+                             [[''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                       '{day:03d}_stuff.pysat_testing_file']),
+                               ''.join(['pysat_*_junk_{year:04d}_gold_',
+                                        '{day:03d}_stuff.pysat_testing_file'])],
+                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                        '{day:03d}_stuff.pysat_testing_file']),
+                               ''.join(['pysat_123*_junk_{year:04d}_',
+                                        'gold_{day:03d}_stuff.pysat_testing',
+                                        '_file'])],
+                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                        '{day:03d}_stuff.pysat_testing_file']),
+                               ''.join(['{code:5s}_{code2:7s}_*_{year:04d}',
+                                        '_*_{day:03d}_*.*_*_*'])],
+                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                        '{day:03d}_stuff.pysat_testing_file']),
+                               ''.join(['{code:5s}_{code2:7s}_*_{year:04d}',
+                                        '_*_{day:03d}_*.*'])]
+                              ])
+    @pytest.mark.parametrize("delimiter", ['_'])
+    def test_from_os_wilcards(self, delimiter, root_fname, root_pname):
+        """Check that Files.from_os generates file list wildcards."""
+
+        # Truth dates
+        dates = pysat.utils.time.create_date_range(self.start, self.stop, '1D')
+
+        # Create a bunch of files by year and doy
+        create_files(self.testInst, self.start, self.stop, freq='1D',
+                     root_fname=root_fname, version=self.version,
+                     use_doy=True)
+
+        # Use `from_os` function to get pandas Series of files and dates
+        files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
+                                    format_str=root_pname, delimiter=delimiter)
+
+        # Ensure sorted and increasing
+        assert files.index.is_monotonic_increasing
+
+        # Check overall length
+        assert len(files) == len(dates)
+
+        # Check specific date
+        fdates = [pds.to_datetime(item) for item in files.index]
+        assert np.all(files.index == dates)
+
+        return
+
     def test_instrument_has_no_files(self):
         """Test that instrument generates empty file list if no files."""
 
