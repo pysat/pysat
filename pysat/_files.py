@@ -918,9 +918,11 @@ class Files(object):
         '*{year:4d}{month:02d}{day:02d}_v*.cdf' will not work.
 
         When parsing delimited filenames, the '*' wildcard is supported
-        when wholly contained between delimiters, such as
+        when leading, trailing, or wholly contained between delimiters, such as
         'data_name-{year:04d}-*-{day:02d}.txt',
         or '*-{year:04d}-{day:02d}_something.txt', where '-' is the delimiter.
+        There can not be a mixture of a template variable and '*' without a
+        delimiter in between.
 
         The 'day' format keyword may be used to specify either day of month
         (if month is included) or day of year.
