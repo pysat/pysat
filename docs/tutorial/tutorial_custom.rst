@@ -65,8 +65,10 @@ return any information.  The example below is appropriate to be applied to an
 Custom functions can also be applied at the :py:class:`Constellation` level,
 which allows data from multiple :py:class:`Instrument` objects to be used by
 a single function.  :py:class:`Constellation` level custom functions are applied
-after :py:class:`Instrument` level functions.  Note that the Instrument loading
-order for this function is important.  An alternate method would be to identify
+after :py:class:`Instrument` level functions.  Note that the the way this
+function identifies which Instrument to use means that the Instrument order
+in :py:attr:`Constellation.instruments` is important.  An alternate method to
+selected the desired :py:class:`Instrument` would be to identify
 the desired :py:attr:`instruments` using the :py:attr:`platform`,
 :py:attr:`name`, :py:attr:`tag`, and :py:attr:`inst_id` values.
 
