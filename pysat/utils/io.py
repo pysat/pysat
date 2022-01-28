@@ -870,7 +870,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                    mode='w', zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, check_type=None, export_nan=None,
-                   unlimited_time=True):
+                   unlimited_time=True, meta_translation=None):
     """Store pysat data in a netCDF4 file.
 
     Parameters
@@ -921,6 +921,13 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     unlimited_time : bool
         Flag specifying whether or not the epoch/time dimension should be
         unlimited; it is when the flag is True. (default=True)
+    meta_translation : dict or NoneType
+        if not None, then the keys in the dict are used to map
+        metadata labels for `inst` to one or more values used when writing
+        the file. eg. {meta.labels.fill: ['FillVal', '_FillValue']} would
+        result in both 'FillVal' and '_FillValue' being used to store
+        variable fill values in the netCDF file. Overrides the deprecated
+        use of `inst._meta_translation_table`.
 
     Note
     ----
@@ -1035,7 +1042,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
             attrb_dict[akey] = int(attrb_dict[akey])
 
     # Check if there are multiple variables with same characters
-    # but with different case
+    # but with different case.
     lower_variables = [var.lower() for var in inst.variables]
     unique_lower_variables = np.unique(lower_variables)
     if len(unique_lower_variables) != len(lower_variables):
@@ -1048,19 +1055,45 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     # user supplied a list of export keys corresponding to internally
     # tracked pysat metadata
     export_meta = inst.generic_meta_translator(inst.meta)
-    if inst._meta_translation_table is None:
-        # Didn't find a translation table, using the strings
-        # attached to the supplied pysat.Instrument object
-        meta_trans = {'name': inst.meta.labels.name,
-                      'units': inst.meta.labels.units,
-                      'desc': inst.meta.labels.desc,
-                      'notes': inst.meta.labels.notes}
+
+    if meta_translation is None:
+        if inst._meta_translation_table is not None:
+            # TODO: Deprecation Warning
+            # User supplied labels in translation table
+            meta_trans = {mkey: inst._meta_translation_table[mkey]
+                          for mkey in inst.meta.labels.label_attrs.values()}
+            pysat.logger.info(' '.join(('Using Metadata Translation Table:',
+                                        str(inst._meta_translation_table))))
+        else:
+            # Didn't find a translation table, using the strings
+            # attached to the supplied pysat.Instrument object. Inst
+            # information has opposite key/value ordering for our needs, so
+            # we swap.
+            meta_trans = {}
+            for key, val in zip(inst.meta.labels.label_attrs.values(),
+                                inst.meta.labels.label_attrs.keys()):
+                meta_trans[key] = val
     else:
-        # User supplied labels in translation table
-        meta_trans = {mkey: inst._meta_translation_table[mkey]
-                      for mkey in ['name', 'units', 'desc', 'notes']}
-        pysat.logger.info(' '.join(('Using Metadata Translation Table:',
-                                    str(inst._meta_translation_table))))
+        # Take user assigned translation
+        meta_trans = meta_translation
+
+    # if inst._meta_translation_table is None:
+    #     # Didn't find a translation table, using the strings
+    #     # attached to the supplied pysat.Instrument object
+    #     meta_trans = {}
+    #     for key, val in zip(inst.meta.labels.label_attrs.values(),
+    #                    inst.meta.labels.label_attrs.keys()):
+    #         meta_trans[key] = val
+    #     # meta_trans = {'name': inst.meta.labels.name,
+    #     #               'units': inst.meta.labels.units,
+    #     #               'desc': inst.meta.labels.desc,
+    #     #               'notes': inst.meta.labels.notes}
+    # else:
+    #     # User supplied labels in translation table
+    #     meta_trans = {mkey: inst._meta_translation_table[mkey]
+    #                   for mkey in inst.meta.labels.label_attrs.values()}
+    #     pysat.logger.info(' '.join(('Using Metadata Translation Table:',
+    #                                 str(inst._meta_translation_table))))
 
     # Apply instrument specific post-processing to the export_meta
     if hasattr(inst._export_meta_post_processing, '__call__'):
