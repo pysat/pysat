@@ -421,7 +421,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                         # Store length and add to the search string
                         out_dict['lengths'].append(np.int64(fwidth))
                         if not wildcard:
-                            out_dict['search_string'] += '?' * np.int64(fwidth)
+                            out_dict['search_string'] += '?' * out_dict['lengths'][-1]
                         else:
                             out_dict['search_string'] += '*'
                         break
