@@ -224,8 +224,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
     """Parse list of files, extracting data identified by format_str.
 
     Will parse file using `delimiter` though the function does not require
-    every delimited item to be a variable, and more than one variable
-    may be within a delimited section. Thus, the main practical
+    every parsed item to be a variable, and more than one variable
+    may be within a parsed section. Thus, the main practical
     difference with `parse_fixed_width_filenames` is more support for
     the use of the wildcard '*' within `format_str`.
 
