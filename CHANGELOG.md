@@ -44,6 +44,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.utils.io.load_netcdf`.
    * Added support for user developed functions to filter metadata as it
      loaded from disk but before assignment to a `pysat.Meta` instance.
+   * Added `meta.default_netcdf_translation_table` to support creating
+     more compliant files by default.
+   * Added `meta.to_translated_dict` to support creating more compliant
+     netCDF files. 
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -99,6 +103,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `utils.coords.update_longitude`
    * Fixed pysat_testmodel Instrument longitude range
    * Corrected link to testing badge in README.md
+   * Refactored `pysat.Instrument.generic_meta_translator` to use 
+     `pysat.Meta.to_translated_dict` and the latest metadata label standards.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
