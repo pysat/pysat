@@ -283,12 +283,12 @@ class TestConstellationBasics(object):
 
         """
 
+        inst = pysat.Instrument('pysat', 'testing', num_samples=10,
+                                clean_level='clean')
+
         with pytest.raises(ValueError) as verr:
-            pysat.Constellation(
-                instruments=[pysat.Instrument(
-                    'pysat', 'testing', num_samples=10, clean_level='clean')
-                             for i in range(5)],
-                custom=[{'apply_inst': apply_inst}])
+            pysat.Constellation(custom=[{'apply_inst': apply_inst}],
+                                instruments=[inst for i in range(5)])
 
         assert str(verr).find("Input dict to custom is missing the") >= 0
         return
