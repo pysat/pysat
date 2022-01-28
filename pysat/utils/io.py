@@ -277,6 +277,53 @@ def add_netcdf4_standards_to_meta(inst, epoch_name):
     return
 
 
+def remove_netcdf4_standards_from_meta(mdict, epoch_name):
+    """Remove redundant metadata variables in SPDF ISTP/IACG NetCDF standards.
+
+    Parameters
+    ----------
+    mdict : dict
+        Contains all of the loaded file's metadata.
+    epoch_name : str
+        Name for epoch or time-index variable. Use '' if no epoch variable.
+
+    Note
+    ----
+    Does not perform filtering to remove variables not supported by the
+    SPDF ISTP/IACG NetCDF standards.  For this, see
+    pysat.utils.io.filter_netcdf4_metadata.
+
+    """
+
+    # Metadata added by `add_netcdf4_standards_to_meta` or similar
+    # method to maintain basic compliance with SPDF ISTP/IACG NetCDF standards
+    vals = ['Depend_0', 'Depend_1', 'Depend_2', 'Depend_3', 'Depend_4',
+            'Display_Type', 'Var_Type', 'Format']
+
+    for key in mdict.keys():
+        sub_keys = mdict[key].keys()
+
+        if 'meta' in sub_keys and (len(sub_keys) == 1):
+            # Higher dimensional data, recursive treatment.
+            mdict[key]['meta'] = remove_netcdf4_standards_from_meta(mdict[key]
+                                                                    ['meta'],
+                                                                    '')
+        else:
+            # Remove any entries with label in `vals`
+            for val in vals:
+                if val in sub_keys:
+                    mdict[key].pop(val)
+
+    # Remove epoch metadata
+    epoch_vals = ['Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
+    if epoch_name != '':
+        for val in epoch_vals:
+            if val in mdict[epoch_name]:
+                mdict[epoch_name].pop(val)
+
+    return mdict
+
+
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
                 pandas_format=True, decode_timedelta=False,
@@ -286,7 +333,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                         'scale': ('scale', str),
                         'min_val': ('value_min', np.float64),
                         'max_val': ('value_max', np.float64),
-                        'fill_val': ('fill', np.float64)}):
+                        'fill_val': ('fill', np.float64)},
+                meta_processor=None):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -332,6 +380,11 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+    meta_processor : function or NoneType
+        If not None, a dict containing all of the loaded metadata will be
+        passed to `meta_processor` which should return a filtered version
+        of the input dict. The returned dict is loaded into a pysat.Meta
+        instance.
 
     Returns
     -------
@@ -360,13 +413,15 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_name=epoch_name,
                                         epoch_unit=epoch_unit,
                                         epoch_origin=epoch_origin,
-                                        labels=labels)
+                                        labels=labels,
+                                        meta_processor=meta_processor)
     else:
         data, meta = load_netcdf_xarray(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
                                         epoch_name=epoch_name,
                                         decode_timedelta=decode_timedelta,
-                                        labels=labels)
+                                        labels=labels,
+                                        meta_processor=meta_processor)
 
     return data, meta
 
@@ -380,7 +435,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                                'axis': ('axis', str), 'scale': ('scale', str),
                                'min_val': ('value_min', np.float64),
                                'max_val': ('value_max', np.float64),
-                               'fill_val': ('fill', np.float64)}):
+                               'fill_val': ('fill', np.float64)},
+                       meta_processor=None):
     """Load netCDF-3/4 file produced by pysat in a pandas format.
 
     Parameters
@@ -419,6 +475,11 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+    meta_processor : function or NoneType
+        If not None, a dict containing all of the loaded metadata will be
+        passed to `meta_processor` which should return a filtered version
+        of the input dict. The returned dict is loaded into a pysat.Meta
+        instance.
 
     Returns
     -------
@@ -452,6 +513,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     two_d_dims = []
     meta = pysat.Meta(labels=labels)
 
+    # Store all metadata in a dict that may be filtered before
+    # assignment to `meta`
+    full_mdict = {}
+
     # Load data for each file
     for fname in fnames:
         with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
@@ -473,7 +538,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     for nc_key in data.variables[key].ncattrs():
                         meta_dict[nc_key] = data.variables[key].getncattr(
                             nc_key)
-                    meta[key] = meta_dict
+                    full_mdict[key] = meta_dict
 
                 # TODO(#913): Remove 2D support
                 if len(data.variables[key].dimensions) == 2:
@@ -536,7 +601,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     index_key_name = None
 
                 # Iterate over the variables and grab metadata
-                dim_meta_data = pysat.Meta(labels=labels)
+                # dim_meta_data = pysat.Meta(labels=labels)
+                dim_meta_data = {}
 
                 # Store attributes in metadata, except for the dimension name
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
@@ -566,7 +632,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     for nc_key in data.variables[obj_key].ncattrs():
                         dim_meta_dict[nc_key] = data.variables[
                             obj_key].getncattr(nc_key)
-                    meta[obj_key] = dim_meta_dict
+                    full_mdict[obj_key] = dim_meta_dict
 
                 # Iterate over all variables with this dimension
                 # data storage, whole shebang
@@ -639,8 +705,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
             if strict_meta:
                 if saved_meta is None:
-                    saved_meta = meta.copy()
-                elif (meta != saved_meta):
+                    saved_meta = full_mdict.copy()
+                elif (full_mdict != saved_meta):
                     raise ValueError(' '.join(('Metadata across filenames',
                                                'is not the same.')))
 
@@ -649,6 +715,28 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     for item in running_store:
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
     data = pds.concat(out, axis=0)
+
+    # Process the metadata. First, deal with the potentially redundant metadata
+    # due to optional items. Second, allow processing by developers
+    # so they can deal with issues with specific files.
+    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
+
+    # Developer processing.
+    if meta_processor is not None:
+        filt_mdict = meta_processor(filt_mdict)
+
+    # Assign filtered metadata to pysat.Meta instance.
+    for key in filt_mdict:
+        if 'meta' in filt_mdict[key].keys() and (len(filt_mdict[key].keys())
+                                                 == 1):
+            # Higher order metadata
+            dim_meta = pysat.Meta(labels=labels)
+            for skey in filt_mdict[key]['meta'].keys():
+                dim_meta[skey] = filt_mdict[key]['meta'][skey]
+            meta[key] = {'meta': dim_meta}
+        else:
+            # Standard metadata
+            meta[key] = filt_mdict[key]
 
     return data, meta
 
@@ -663,7 +751,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                'scale': ('scale', str),
                                'min_val': ('value_min', np.float64),
                                'max_val': ('value_max', np.float64),
-                               'fill_val': ('fill', np.float64)}):
+                               'fill_val': ('fill', np.float64)},
+                       meta_processor=None):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -689,6 +778,11 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+    meta_processor : function or NoneType
+        If not None, a dict containing all of the loaded metadata will be
+        passed to `meta_processor` which should return a filtered version
+        of the input dict. The returned dict is loaded into a pysat.Meta
+        instance.
 
     Returns
     -------
@@ -708,6 +802,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Initialize local variables
     meta = pysat.Meta(labels=labels)
+
+    # Store all metadata in a dict that may be filtered before
+    # assignment to `meta`
+    full_mdict = {}
 
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
@@ -737,7 +835,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                     nc_label = "{:}{:d}".format(nc_key, i)
                     meta_dict[nc_label] = val
 
-        meta[key] = meta_dict
+        full_mdict[key] = meta_dict
+        # meta[key] = meta_dict
 
         # Remove variable attributes from the data object
         data.variables[key].attrs = {}
@@ -745,6 +844,19 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
         setattr(meta.header, data_attr, getattr(data, data_attr))
+
+    # Process the metadata. First, deal with the potentially redundant metadata
+    # due to optional items. Second, allow processing by developers
+    # so they can deal with issues with specific files.
+    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
+
+    # Developer processing.
+    if meta_processor is not None:
+        filt_mdict = meta_processor(filt_mdict)
+
+    # Assign filtered metadata to pysat.Meta instance.
+    for key in filt_mdict:
+        meta[key] = filt_mdict[key]
 
     # Remove attributes from the data object
     data.attrs = {}
