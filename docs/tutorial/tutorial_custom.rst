@@ -95,7 +95,7 @@ the desired :py:attr:`instruments` using the :py:attr:`platform`,
            raise ValueError('unexpected number of Instruments in Constellation')
 
        # Modify the data by adding new a new data variable to the destination
-       # Instrument, calculatd with data from the first and second Instruments
+       # Instrument, calculated with data from the first and second Instruments
        new_data = const.instruments[0][inst1_param_name] * \
            const.instruments[1][inst2_param_name]
        new_var = " x ".join([inst1_param_name, inst2_param_name])
