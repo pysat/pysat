@@ -272,6 +272,28 @@ class TestConstellationBasics(object):
         return
 
     @pytest.mark.parametrize("apply_inst", [False, True])
+    def test_bad_set_custom(self, apply_inst):
+        """Test ValueError raised when not setting custom functions correctly.
+
+        Parameters
+        ----------
+        apply_inst : bool
+            Apply custom function at Instrument level (True) or Constellation
+            level (False)
+
+        """
+
+        with pytest.raises(ValueError) as verr:
+            pysat.Constellation(
+                instruments=[pysat.Instrument(
+                    'pysat', 'testing', num_samples=10, clean_level='clean')
+                             for i in range(5)],
+                custom=[{'apply_inst': apply_inst}])
+
+        assert str(verr).find("Input dict to custom is missing the") >= 0
+        return
+
+    @pytest.mark.parametrize("apply_inst", [False, True])
     def test_repr(self, apply_inst):
         """Test `__repr__` with custom method.
 
@@ -305,12 +327,17 @@ class TestConstellationBasics(object):
         """
 
         self.testConst.custom_attach(mult_data, apply_inst=apply_inst,
-                                     args=self.custom_args)
+                                     args=self.custom_args,
+                                     kwargs={'dkey': 'mlt'})
         self.out = self.testConst.__str__()
         assert isinstance(self.out, str)
         assert self.out.find("Constellation-level Data Processing") >= 0
         assert self.out.find(
             "Custom Functions: {:d} applied".format(num_func)) >= 0
+
+        if num_func > 0:
+            assert self.out.find("Args=") >= 0
+            assert self.out.find("Kwargs=") >= 0
         return
 
     def test_single_custom_function_error(self):
