@@ -30,7 +30,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.utils.testing`.
    * Added the ability to only download new files if remote file listing
      capabilities are not available for the Instrument.
-   * Added kwargs for epoch units and origin in `pysat.utils.io.load_netCDF`.
+   * Added kwargs for epoch units and origin in `pysat.utils.io.load_netcdf`.
    * Vectorized `Meta.var_case_name` and `Meta.attr_case_name` to support
      list of str as input as well as str.
    * Added a time function to calculate decimal year from datetime.
@@ -40,6 +40,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added a new MetaHeader class for holding global metadata.
    * Added a pysat Instrument for loading pysat-written NetCDF4 files.
    * Allowed MetaLabels to be expanded through setting new Meta data values.
+   * Added support for filtering basic netCDF4 metadata when loading via 
+     `pysat.utils.io.load_netcdf`.
+   * Added support for user developed functions to filter metadata as it
+     loaded from disk but before assignment to a `pysat.Meta` instance.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
