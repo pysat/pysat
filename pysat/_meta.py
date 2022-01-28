@@ -1465,6 +1465,30 @@ class Meta(object):
 
         return
 
+    def default_netcdf_translation_table(self):
+        """Return metadata translation table with minimal netcdf requirements.
+
+        Returns
+        -------
+        dict
+            Keyed by self.labels with a list of strings to be used
+            when writing netcdf files.
+
+        """
+
+        # Define a default translation
+        trans_table = {}
+
+        # Start with pysat defaults
+        for key, val in zip(self.labels.label_attrs.values(),
+                            self.labels.label_attrs.keys()):
+            trans_table[key] = [val]
+
+        # Update labels required by netCDF4
+        # trans_table[self.labels.fill_val] = ['_FillValue', 'FillVal']
+
+        return trans_table
+
     def to_translated_dict(self, trans_table=None):
         """Convert self into a dictionary with translated metadata labels.
 
@@ -1487,16 +1511,7 @@ class Meta(object):
         export_dict = {}
 
         if trans_table is None:
-            # Define a default translation
-            trans_table = {}
-
-            # Start with pysat defaults
-            for key, val in zip(self.labels.label_attrs.values(),
-                                self.labels.label_attrs.keys()):
-                trans_table[key] = [val]
-
-            # Update labels required by netCDF4
-            trans_table[self.labels.fill_val] = ['_FillValue', 'FillVal']
+            trans_table = self.default_netcdf_translation_table()
 
         # First Order Data
         for key in self.data.index:
