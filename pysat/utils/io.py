@@ -926,8 +926,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         metadata labels for `inst` to one or more values used when writing
         the file. eg. {meta.labels.fill: ['FillVal', '_FillValue']} would
         result in both 'FillVal' and '_FillValue' being used to store
-        variable fill values in the netCDF file. Overrides the deprecated
-        use of `inst._meta_translation_table`.
+        variable fill values in the netCDF file. Overrides
+        use of `inst._meta_translation_table` if not None.
 
     Note
     ----
@@ -1051,31 +1051,46 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                    'results in a loss of metadata. Please',
                                    'make the names unique.')))
 
-    # Begin processing metadata for writing to the file. Look to see if the
-    # user supplied a list of export keys corresponding to internally
-    # tracked pysat metadata
-    export_meta = inst.generic_meta_translator(inst.meta)
-
+    # Begin processing metadata for writing to the file. Translate metadata
+    # to standards needed by file as passed by user in `meta_translation`.
     if meta_translation is None:
         if inst._meta_translation_table is not None:
-            # TODO: Deprecation Warning
-            # User supplied labels in translation table
-            meta_trans = {mkey: inst._meta_translation_table[mkey]
-                          for mkey in inst.meta.labels.label_attrs.values()}
+            meta_translation = inst._meta_translation_table
             pysat.logger.info(' '.join(('Using Metadata Translation Table:',
                                         str(inst._meta_translation_table))))
-        else:
-            # Didn't find a translation table, using the strings
-            # attached to the supplied pysat.Instrument object. Inst
-            # information has opposite key/value ordering for our needs, so
-            # we swap.
-            meta_trans = {}
-            for key, val in zip(inst.meta.labels.label_attrs.values(),
-                                inst.meta.labels.label_attrs.keys()):
-                meta_trans[key] = val
-    else:
-        # Take user assigned translation
-        meta_trans = meta_translation
+
+    # Perform actual translation and store in dict
+    export_meta = inst.meta.to_translated_dict(meta_translation)
+
+    # This dict helps assign some higher order metadata
+    meta_trans = {mkey: meta_translation[mkey]
+                  for mkey in ['units', 'name']}
+
+    # # Look to see if the
+    # # user supplied a list of export keys corresponding to internally
+    # # tracked pysat metadata. First, convert metadata to a dict and
+    # # apply the translation table, as far as I can see.
+    # export_meta = inst.generic_meta_translator(inst.meta)
+    #
+    # if meta_translation is None:
+    #     if inst._meta_translation_table is not None:
+    #         # User supplied labels in translation table
+    #         meta_trans = {mkey: inst._meta_translation_table[mkey]
+    #                       for mkey in inst.meta.labels.label_attrs.values()}
+    #         pysat.logger.info(' '.join(('Using Metadata Translation Table:',
+    #                                     str(inst._meta_translation_table))))
+    #     else:
+    #         # Didn't find a translation table, using the strings
+    #         # attached to the supplied pysat.Instrument object. Inst
+    #         # information has opposite key/value ordering for our needs, so
+    #         # we swap.
+    #         meta_trans = {}
+    #         for key, val in zip(inst.meta.labels.label_attrs.values(),
+    #                             inst.meta.labels.label_attrs.keys()):
+    #             meta_trans[key] = val
+    # else:
+    #     # Take user assigned translation
+    #     meta_trans = meta_translation
 
     # if inst._meta_translation_table is None:
     #     # Didn't find a translation table, using the strings

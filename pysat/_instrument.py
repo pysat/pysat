@@ -2581,7 +2581,7 @@ class Instrument(object):
         return
 
     def generic_meta_translator(self, input_meta):
-        """Convert the metadata contained in an object into a dictionary.
+        """Convert the `input_meta` metadata into a dictionary.
 
         Parameters
         ----------
@@ -2593,57 +2593,17 @@ class Instrument(object):
         export_dict : dict
             A dictionary of the metadata for each variable of an output file
 
+        Note
+        ----
+        Uses the translation dict, if present, at `self._meta_translation_table`
+        to map existing metadata labels to a list of labels used in the
+        returned dict.
+
         """
-        export_dict = {}
-        if self._meta_translation_table is not None:
-            # Create a translation table for the actual values of the meta
-            # labels. The instrument specific translation table only stores the
-            # names of the attributes that hold the various meta labels
-            translation_table = {}
-            for key in self._meta_translation_table:
-                translation_table[
-                    getattr(self, key)] = self._meta_translation_table[key]
-        else:
-            translation_table = None
 
-        # First Order Data
-        for key in input_meta.data.index:
-            if translation_table is None:
-                export_dict[key] = input_meta.data.loc[key].to_dict()
-            else:
-                # Translate each key if a translation is provided
-                export_dict[key] = {}
-                meta_dict = input_meta.data.loc[key].to_dict()
-                for orig_key in meta_dict:
-                    if orig_key in translation_table:
-                        for translated_key in translation_table[orig_key]:
-                            export_dict[
-                                key][translated_key] = meta_dict[orig_key]
-                    else:
-                        export_dict[key][orig_key] = meta_dict[orig_key]
+        exp_dict = input_meta.to_translated_dict(self._meta_translation_table)
 
-        # Higher Order Data
-        for key in input_meta.ho_data:
-            if key not in export_dict:
-                export_dict[key] = {}
-            for ho_key in input_meta.ho_data[key].data.index:
-                new_key = '_'.join((key, ho_key))
-                if translation_table is None:
-                    export_dict[new_key] = \
-                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
-                else:
-                    # Translate each key if a translation is provided
-                    export_dict[new_key] = {}
-                    meta_dict = \
-                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
-                    for orig_key in meta_dict:
-                        if orig_key in translation_table:
-                            for translated_key in translation_table[orig_key]:
-                                export_dict[new_key][
-                                    translated_key] = meta_dict[orig_key]
-                        else:
-                            export_dict[new_key][orig_key] = meta_dict[orig_key]
-        return export_dict
+        return exp_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
