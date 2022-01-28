@@ -218,7 +218,7 @@ class TestBasics(object):
     def test_inequality_different_data(self):
         """Test that equality is false if different data."""
         self.out = self.testInst.files.copy()
-        self.out.files = pds.Series([], dtype='str')
+        self.out.files = pds.Series([], dtype='object')
         assert self.out != self.testInst.files
         return
 
