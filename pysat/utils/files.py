@@ -124,10 +124,6 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 def parse_fixed_width_filenames(files, format_str):
     """Parse list of files, extracting data identified by `format_str`.
 
-    Uses the fixed-width format of the filename to find and parse
-    out variable information. The functions begins at the end of the filename,
-    parsing towards the begining.
-
     Parameters
     ----------
     files : list
