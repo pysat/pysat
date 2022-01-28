@@ -95,6 +95,9 @@ class Instrument(object):
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', float),
         'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+    custom : list or NoneType
+        Input list containing dicts of inputs for `custom_attach` method inputs
+        that may be applied or None (default=None)
 
     Attributes
     ----------

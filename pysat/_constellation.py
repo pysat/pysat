@@ -55,6 +55,10 @@ class Constellation(object):
     common_index : bool
         True to include times where all instruments have data, False to
         use the maximum time range from the Constellation (default=True)
+    custom : list or NoneType
+        Input dict containing dicts of inputs for `custom_attach` method inputs
+        that may be applied to all instruments or at the Constellation-level or
+        None (default=None)
 
     Attributes
     ----------
@@ -70,6 +74,14 @@ class Constellation(object):
         data, or a tuple of NoneType objects. Users may provide as a tuple or
         tuple of lists (useful for bounds with gaps). The attribute is always
         stored as a tuple of lists for consistency.
+    custom_functions : list
+        List of functions to be applied at the Constellation-level upon load
+    custom_args : list
+        List of lists containing arguments to be passed to particular
+        Constellation-level custom function
+    custom_kwargs : list
+        List of dictionaries with keywords and values to be passed
+        to a Constellation-level custom function
     date : dt.datetime or NoneType
         Date and time for loaded data, None if no data is loaded
     yr : int or NoneType
@@ -112,7 +124,7 @@ class Constellation(object):
 
     def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
                  const_module=None, instruments=None, index_res=None,
-                 common_index=True):
+                 common_index=True, custom=None):
         """Initialize the Constellation object."""
 
         # Initalize the `instruments` attribute to be an empty list before
@@ -235,6 +247,29 @@ class Constellation(object):
         self.index_res = index_res
         self.common_index = common_index
 
+        # Set the constellation-level custom attributes.
+        self.custom_functions = []
+        self.custom_args = []
+        self.custom_kwargs = []
+
+        # Process provided user input for custom methods, if provided.
+        if custom is not None:
+            req_key = 'function'  # Set the equired key
+
+            for cust_dict in custom:
+                # Check if required keys present in input.
+                if req_key not in cust_dict.keys():
+                    estr = ''.join(('Input dict to custom is missing the ',
+                                    'required key: ', req_key))
+                    raise ValueError(estr)
+
+                # Set the custom kwargs
+                cust_kwargs = {ckey: cust_dict[ckey]
+                               for ckey in cust_dict.keys() if ckey != req_key}
+
+                # Inputs have been checked, add to the Constellation object.
+                self.custom_attach(cust_dict['function'], **cust_kwargs)
+
         return
 
     def __getitem__(self, *args, **kwargs):
@@ -245,10 +280,22 @@ class Constellation(object):
     def __repr__(self):
         """Print the basic Constellation properties."""
 
+        # Create string for custom attached methods
+        cstr = '['
+        for func, arg, kwarg in zip(self.custom_functions, self.custom_args,
+                                    self.custom_kwargs):
+            tstr = "".join(("'function': {sfunc}, 'apply_inst': False, ",
+                            "'args': {sargs}, 'kwargs': {kargs}"))
+            tstr = tstr.format(sfunc=repr(func), sargs=repr(arg),
+                               kargs=repr(kwarg))
+            cstr = "".join((cstr, '{', tstr, '}, '))
+        cstr += ']'
+
+        # Create string for other parts of the Constellation instantiation
         out_str = "".join(["pysat.Constellation(instruments=",
                            "{:}, index_res=".format(self.instruments),
-                           self.index_res.__repr__(), ", common_index=",
-                           self.common_index.__repr__(), ")"])
+                           repr(self.index_res), ", common_index=",
+                           repr(self.common_index), ", custom=", cstr, ")"])
         return out_str
 
     def __str__(self):
@@ -283,6 +330,23 @@ class Constellation(object):
                     i, inst.platform, inst.name, inst.tag, inst.inst_id)
         else:
             output_str += "No assigned Instruments\n"
+
+        # Display the Constellation-level processing information
+        output_str += '\nConstellation-level Data Processing\n'
+        output_str += '----------------------------------\n'
+
+        num_funcs = len(self.custom_functions)
+        output_str += "Custom Functions: {:d} applied\n".format(num_funcs)
+        if num_funcs > 0:
+            for i, func in enumerate(self.custom_functions):
+                output_str += "    {:d}: {:}\n".format(i, func.__repr__())
+                if len(self.custom_args[i]) > 0:
+                    ostr = "     : Args={:}\n".format(self.custom_args[i])
+                    output_str += ostr
+                if len(self.custom_kwargs[i]) > 0:
+                    ostr = "     : Kwargs={:}\n".format(self.custom_kwargs[i])
+                    output_str += ostr
+        output_str += '\n'
 
         # Display loaded data
         output_str += '\n\nLoaded Data Statistics\n'
@@ -588,15 +652,40 @@ class Constellation(object):
                                 if data_vars[dvar] > 1 else dvar)
         return var_list
 
-    def custom_attach(self, *args, **kwargs):
+    def custom_attach(self, function, apply_inst=True, at_pos='end',
+                      args=None, kwargs=None):
         """Register a function to modify data of member Instruments.
 
         Parameters
         ----------
-        *args : list reference
-            References a list of input arguments
-        **kwargs : dict reference
-            References a dict of input keyword arguments
+        function : str or function object
+            Name of function or function object to be added to queue
+        apply_inst : bool
+            Apply the custom function to all Instruments if True, or at the
+            Constellation level if False. (default=True)
+        at_pos : str or int
+            Accepts string 'end' or a number that will be used to determine
+            the insertion order if multiple custom functions are attached
+            to an Instrument object. (default='end').
+        args : list, tuple, or NoneType
+            Ordered arguments following the instrument object input that are
+            required by the custom function (default=None)
+        kwargs : dict or NoneType
+            Dictionary of keyword arguments required by the custom function
+            (default=None)
+
+        Note
+        ----
+        Functions applied using `custom_attach_cost` may add, modify, or use
+        the data within any Instrument inside of the function, and so should not
+        return anything.
+
+        Constellation-level custom functions are applied after Instrument-level
+        custom functions whenever the `load` method is called.
+
+        Unlike Instrument-level custom functions, Constellation-level custom
+        functions should take a Constellation object as their first input
+        argument.
 
         See Also
         ---------
@@ -604,7 +693,13 @@ class Constellation(object):
 
         """
 
-        self._call_inst_method('custom_attach', *args, **kwargs)
+        if apply_inst:
+            self._call_inst_method('custom_attach', function, at_pos=at_pos,
+                                   args=args, kwargs=kwargs)
+        else:
+            pysat.Instrument.custom_attach(self, function, at_pos=at_pos,
+                                           args=args, kwargs=kwargs)
+
         return
 
     def custom_clear(self):
@@ -616,7 +711,13 @@ class Constellation(object):
 
         """
 
+        # Clear the Instrument-level custom methods
         self._call_inst_method('custom_clear')
+
+        # Clear the Constellation-level custom methods
+        self.custom_functions = []
+        self.custom_args = []
+        self.custom_kwargs = []
         return
 
     def load(self, *args, **kwargs):
@@ -638,8 +739,14 @@ class Constellation(object):
         # Load the data for each instrument
         self._call_inst_method('load', *args, **kwargs)
 
-        # Set the year and doy attributes for the constellation and instruments
-        self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
+        # If any data has been loaded, set time data and continue processing
+        if not self.empty:
+            # Set the year and doy attributes for the constellation and
+            # instruments
+            self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
+
+            # Apply the Constellation-level custom functions
+            pysat.Instrument.custom_apply_all(self)
 
         return
 
