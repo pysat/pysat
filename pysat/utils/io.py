@@ -303,7 +303,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
     for key in mdict.keys():
         sub_keys = mdict[key].keys()
 
-        if 'meta' in sub_keys and (len(sub_keys) == 1):
+        if 'meta' in sub_keys:
             # Higher dimensional data, recursive treatment.
             mdict[key]['meta'] = remove_netcdf4_standards_from_meta(mdict[key]
                                                                     ['meta'],
@@ -317,9 +317,10 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
     # Remove epoch metadata
     epoch_vals = ['Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
     if epoch_name != '':
-        for val in epoch_vals:
-            if val in mdict[epoch_name]:
-                mdict[epoch_name].pop(val)
+        if epoch_name in mdict:
+            for val in epoch_vals:
+                if val in mdict[epoch_name]:
+                    mdict[epoch_name].pop(val)
 
     return mdict
 
@@ -727,8 +728,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Assign filtered metadata to pysat.Meta instance.
     for key in filt_mdict:
-        if 'meta' in filt_mdict[key].keys() and (len(filt_mdict[key].keys())
-                                                 == 1):
+        if 'meta' in filt_mdict[key].keys():
             # Higher order metadata
             dim_meta = pysat.Meta(labels=labels)
             for skey in filt_mdict[key]['meta'].keys():
@@ -1058,12 +1058,14 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
             meta_translation = inst._meta_translation_table
             pysat.logger.info(' '.join(('Using Metadata Translation Table:',
                                         str(inst._meta_translation_table))))
+        else:
+            meta_translation = inst.meta.default_netcdf_translation_table()
 
     # Perform actual translation and store in dict
     export_meta = inst.meta.to_translated_dict(meta_translation)
 
     # This dict helps assign some higher order metadata
-    meta_trans = {mkey: meta_translation[mkey]
+    meta_trans = {mkey: meta_translation[mkey][0]
                   for mkey in ['units', 'name']}
 
     # Apply instrument specific post-processing to the export_meta
