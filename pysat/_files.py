@@ -912,17 +912,17 @@ class Files(object):
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
 
-        Leading wilcards are supported when parsing fixed width filenames,
+        Leading '*' wilcards are supported when parsing fixed width filenames,
         '*{year:4d}{month:02d}{day:02d}_v??.cdf', though the '*' is not
-        supported after the first template variable. The '?' wildcard stands in place
-        of a single character and may be used anywhere in the template string.
+        supported after the first template variable. The '?' wildcard
+        may be used anywhere in the template string.
 
         When parsing delimited filenames, the '*' wildcard is supported
         when leading, trailing, or wholly contained between delimiters, such as
-        'data_name-{year:04d}-*-{day:02d}.txt',
-        or '*-{year:04d}-{day:02d}*', where '-' is the delimiter.
-        There can not be a mixture of a template variable and '*' without a
-        delimiter in between, unless the '*' occurs after the variable.
+        'data_name-{year:04d}-*-{day:02d}.txt', or '*-{year:04d}-{day:02d}*',
+        where '-' is the delimiter. There can not be a mixture of a template
+        variable and '*' without a delimiter in between, unless the '*'
+        occurs after the variable.
 
         The 'day' format keyword may be used to specify either day of month
         (if month is included) or day of year.
