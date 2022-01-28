@@ -914,8 +914,8 @@ class Files(object):
 
         Leading wilcards are supported when parsing fixed width filenames,
         '*{year:4d}{month:02d}{day:02d}_v??.cdf', though the '*' is not
-        supported after the first template variable, thus
-        '*{year:4d}{month:02d}{day:02d}_v*.cdf' will not work.
+        supported after the first template variable. The '?' wildcard stands in place
+        of a single character and may be used anywhere in the template string.
 
         When parsing delimited filenames, the '*' wildcard is supported
         when leading, trailing, or wholly contained between delimiters, such as
