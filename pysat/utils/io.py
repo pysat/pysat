@@ -325,6 +325,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
 
     return mdict
 
+
 def default_from_netcdf_translation_table(meta):
     """Return metadata translation table with minimal netcdf requirements.
 
@@ -353,6 +354,7 @@ def default_from_netcdf_translation_table(meta):
 
     return trans_table
 
+
 def apply_table_translation(trans_table, meta_dict):
     """Return `metadict` after applying `trans_table` to metadata keys.
 
@@ -376,7 +378,7 @@ def apply_table_translation(trans_table, meta_dict):
     the file.
 
     """
-    
+
     filt_dict = {}
     # Assign filtered metadata to pysat.Meta instance.
     for var_key in meta_dict:
@@ -389,7 +391,7 @@ def apply_table_translation(trans_table, meta_dict):
 
             if new_key not in filt_dict[var_key]:
                 filt_dict[var_key][new_key] = meta_dict[var_key][file_key]
-        
+
         if 'meta' in meta_dict[var_key].keys():
             ldict = meta_dict[var_key]['meta']
             for file_key in ldict.keys():
