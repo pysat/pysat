@@ -298,6 +298,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
     # Metadata added by `add_netcdf4_standards_to_meta` or similar
     # method to maintain basic compliance with SPDF ISTP/IACG NetCDF standards
     vals = ['Depend_0', 'Depend_1', 'Depend_2', 'Depend_3', 'Depend_4',
+            'Depend_5', 'Depend_6', 'Depend_7', 'Depend_8', 'Depend_9',
             'Display_Type', 'Var_Type', 'Format']
 
     for key in mdict.keys():
@@ -324,6 +325,84 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
 
     return mdict
 
+def default_from_netcdf_translation_table(meta):
+    """Return metadata translation table with minimal netcdf requirements.
+
+    Returns
+    -------
+    dict
+        Keyed by self.labels with a list of strings to be used
+        when writing netcdf files.
+
+    Note
+    ----
+    The purpose of this function is to maintain default compatibility
+    with `meta.labels` and existing code that writes and reads netcdf
+    files via pysat while also changing the labels for metadata within
+    the file.
+
+    """
+
+    # Define a default translation
+    trans_table = {}
+
+    # Update labels required by netCDF4
+    trans_table['_FillValue'] = meta.labels.fill_val
+    trans_table['FillVal'] = meta.labels.fill_val
+    trans_table['fill'] = meta.labels.fill_val
+
+    return trans_table
+
+def apply_table_translation(trans_table, meta_dict):
+    """Return `metadict` after applying `trans_table` to metadata keys.
+
+    Parameters
+    ----------
+    trans_table : dict
+       Mapping of metadata label used in a file to new value.
+    meta_dict : dict
+       Dictionary with metadata information from a loaded file.
+
+    Returns
+    -------
+    dict
+       `meta_dict` after the mapping in `trans_table` applied.
+
+    Note
+    ----
+    The purpose of this function is to maintain default compatibility
+    with `meta.labels` and existing code that writes and reads netcdf
+    files via pysat while also changing the labels for metadata within
+    the file.
+
+    """
+    
+    filt_dict = {}
+    # Assign filtered metadata to pysat.Meta instance.
+    for var_key in meta_dict:
+        filt_dict[var_key] = {}
+        for file_key in meta_dict[var_key].keys():
+            if file_key in trans_table:
+                new_key = trans_table[file_key]
+            else:
+                new_key = file_key
+
+            if new_key not in filt_dict[var_key]:
+                filt_dict[var_key][new_key] = meta_dict[var_key][file_key]
+        
+        if 'meta' in meta_dict[var_key].keys():
+            ldict = meta_dict[var_key]['meta']
+            for file_key in ldict.keys():
+                if file_key in trans_table:
+                    new_key = trans_table[file_key]
+                else:
+                    new_key = file_key
+
+                if new_key not in filt_dict[var_key]['meta']:
+                    filt_dict[var_key]['meta'][new_key] = ldict[file_key]
+
+    return filt_dict
+
 
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
@@ -335,7 +414,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                         'min_val': ('value_min', np.float64),
                         'max_val': ('value_max', np.float64),
                         'fill_val': ('fill', np.float64)},
-                meta_processor=None):
+                meta_processor=None, meta_translation=None,
+                drop_meta_labels=None):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -385,7 +465,18 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
         of the input dict. The returned dict is loaded into a pysat.Meta
-        instance.
+        instance and returned as `meta`. (default=None)
+    meta_translation : dict or NoneType
+        Translation table used to map metadata labels in the file to
+        those used by the returned `meta`. Keys are labels from file
+        and values are labels in `meta`. Redundant file labels may be
+        mapped to a single pysat label. If None, will use
+        `default_from_netcdf_translation_table`. This feature
+        is maintained for file compatibility. To disable all translation,
+        input an empty dict. (default=None)
+    drop_meta_labels : list or NoneType
+        List of variable metadata labels that should be dropped. Applied
+        to metadata as loaded from the file. (default=None)
 
     Returns
     -------
@@ -415,14 +506,18 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_unit=epoch_unit,
                                         epoch_origin=epoch_origin,
                                         labels=labels,
-                                        meta_processor=meta_processor)
+                                        meta_processor=meta_processor,
+                                        meta_translation=meta_translation,
+                                        drop_meta_labels=drop_meta_labels)
     else:
         data, meta = load_netcdf_xarray(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
                                         epoch_name=epoch_name,
                                         decode_timedelta=decode_timedelta,
                                         labels=labels,
-                                        meta_processor=meta_processor)
+                                        meta_processor=meta_processor,
+                                        meta_translation=meta_translation,
+                                        drop_meta_labels=drop_meta_labels)
 
     return data, meta
 
@@ -437,7 +532,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                                'min_val': ('value_min', np.float64),
                                'max_val': ('value_max', np.float64),
                                'fill_val': ('fill', np.float64)},
-                       meta_processor=None):
+                       meta_processor=None, meta_translation=None,
+                       drop_meta_labels=None):
     """Load netCDF-3/4 file produced by pysat in a pandas format.
 
     Parameters
@@ -480,7 +576,18 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
         of the input dict. The returned dict is loaded into a pysat.Meta
-        instance.
+        instance and returned as `meta`. (default=None)
+    meta_translation : dict or NoneType
+        Translation table used to map metadata labels in the file to
+        those used by the returned `meta`. Keys are labels from file
+        and values are labels in `meta`. Redundant file labels may be
+        mapped to a single pysat label. If None, will use
+        `default_from_netcdf_translation_table`. This feature
+        is maintained for file compatibility. To disable all translation,
+        input an empty dict. (default=None)
+    drop_meta_labels : list or NoneType
+        List of variable metadata labels that should be dropped. Applied
+        to metadata as loaded from the file. (default=None)
 
     Returns
     -------
@@ -517,6 +624,16 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     # Store all metadata in a dict that may be filtered before
     # assignment to `meta`
     full_mdict = {}
+
+    if meta_translation is None:
+        # Assign default translation using `meta`
+        meta_translation = default_from_netcdf_translation_table(meta)
+
+    # Drop metadata labels initialization.
+    if drop_meta_labels is None:
+        drop_meta_labels = []
+    else:
+        drop_meta_labels = pysat.utils.listify(drop_meta_labels)
 
     # Load data for each file
     for fname in fnames:
@@ -717,12 +834,24 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
     data = pds.concat(out, axis=0)
 
-    # Process the metadata. First, deal with the potentially redundant metadata
-    # due to optional items. Second, allow processing by developers
-    # so they can deal with issues with specific files.
+    # Process the metadata. First, drop labels as requested.
+    for var in full_mdict:
+        for label in drop_meta_labels:
+            if label in full_mdict[var]:
+                full_mdict[var].pop(label)
+            if 'meta' in full_mdict[var]:
+                if label in full_mdict[var]['meta']:
+                    full_mdict[var]['meta'].pop(label)
+
+    # Second, remove some items pysat added for netcdf compatibility.
     filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
 
-    # Developer processing.
+    # Translate labels from file to pysat compatible labels using
+    # `meta_translation`
+    filt_mdict = apply_table_translation(meta_translation, filt_mdict)
+
+    # Next, allow processing by developers so they can deal with
+    # issues with specific files.
     if meta_processor is not None:
         filt_mdict = meta_processor(filt_mdict)
 
@@ -752,7 +881,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                'min_val': ('value_min', np.float64),
                                'max_val': ('value_max', np.float64),
                                'fill_val': ('fill', np.float64)},
-                       meta_processor=None):
+                       meta_processor=None, meta_translation=None,
+                       drop_meta_labels=None):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -782,7 +912,18 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
         of the input dict. The returned dict is loaded into a pysat.Meta
-        instance.
+        instance and returned as `meta`. (default=None)
+    meta_translation : dict or NoneType
+        Translation table used to map metadata labels in the file to
+        those used by the returned `meta`. Keys are labels from file
+        and values are labels in `meta`. Redundant file labels may be
+        mapped to a single pysat label. If None, will use
+        `default_from_netcdf_translation_table`. This feature
+        is maintained for compatibility. To disable all translation,
+        input an empty dict. (default=None)
+    drop_meta_labels : list or NoneType
+        List of variable metadata labels that should be dropped. Applied
+        to metadata as loaded from the file. (default=None)
 
     Returns
     -------
@@ -845,12 +986,21 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     for data_attr in data.attrs.keys():
         setattr(meta.header, data_attr, getattr(data, data_attr))
 
-    # Process the metadata. First, deal with the potentially redundant metadata
-    # due to optional items. Second, allow processing by developers
-    # so they can deal with issues with specific files.
+    # Process the metadata. First, drop labels as requested.
+    for var in full_mdict:
+        for label in drop_meta_labels:
+            if label in full_mdict[var]:
+                full_mdict[var].pop(label)
+
+    # Second, remove some items pysat added for netcdf compatibility.
     filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
 
-    # Developer processing.
+    # Translate labels from file to pysat compatible labels using
+    # `meta_translation`
+    filt_mdict = apply_table_translation(meta_translation, filt_mdict)
+
+    # Next, allow processing by developers so they can deal with
+    # issues with specific files.
     if meta_processor is not None:
         filt_mdict = meta_processor(filt_mdict)
 
@@ -1059,7 +1209,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
             pysat.logger.info(' '.join(('Using Metadata Translation Table:',
                                         str(inst._meta_translation_table))))
         else:
-            meta_translation = inst.meta.default_netcdf_translation_table()
+            meta_translation = inst.meta.default_to_netcdf_translation_table()
 
     # Perform actual translation and store in dict
     export_meta = inst.meta.to_translated_dict(meta_translation)

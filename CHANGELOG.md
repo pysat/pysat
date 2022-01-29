@@ -44,10 +44,19 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.utils.io.load_netcdf`.
    * Added support for user developed functions to filter metadata as it
      loaded from disk but before assignment to a `pysat.Meta` instance.
-   * Added `meta.default_netcdf_translation_table` to support creating
+   * Added `meta.default_to_netcdf_translation_table` to support creating
      more compliant files by default.
    * Added `meta.to_translated_dict` to support creating more compliant
      netCDF files. 
+   * Added `default_from_netcdf_translation_table` and 
+     `apply_table_translation` to `pysat.utils.io` to support 
+     improved compatability of pysat netcdf files without user code
+     changes.
+   * Added `drop_meta_labels` kwarg to `pysat.utils.io.load_netcdf` to
+     support easy removal of unwanted metadata during loading.
+   * Added support for `meta_processor` in `pysat.utils.io.load_netcdf`
+     enabling developers to easily modify loaded metadata before it is 
+     assigned to `pysat.Meta`.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for

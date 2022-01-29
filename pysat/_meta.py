@@ -1465,7 +1465,7 @@ class Meta(object):
 
         return
 
-    def default_netcdf_translation_table(self):
+    def default_to_netcdf_translation_table(self):
         """Return metadata translation table with minimal netcdf requirements.
 
         Returns
@@ -1485,7 +1485,7 @@ class Meta(object):
             trans_table[key] = [val]
 
         # Update labels required by netCDF4
-        # trans_table[self.labels.fill_val] = ['_FillValue', 'FillVal']
+        trans_table[self.labels.fill_val] = ['_FillValue', 'FillVal', 'fill']
 
         return trans_table
 
@@ -1511,7 +1511,7 @@ class Meta(object):
         export_dict = {}
 
         if trans_table is None:
-            trans_table = self.default_netcdf_translation_table()
+            trans_table = self.default_to_netcdf_translation_table()
 
         # First Order Data
         for key in self.data.index:
