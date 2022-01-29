@@ -948,6 +948,16 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # assignment to `meta`
     full_mdict = {}
 
+    if meta_translation is None:
+        # Assign default translation using `meta`
+        meta_translation = default_from_netcdf_translation_table(meta)
+
+    # Drop metadata labels initialization.
+    if drop_meta_labels is None:
+        drop_meta_labels = []
+    else:
+        drop_meta_labels = pysat.utils.listify(drop_meta_labels)
+
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
         data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta)
