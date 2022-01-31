@@ -235,14 +235,16 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     # local file system that match the format defined above. This example
     # is set to parse filenames from the local system using the delimiter '_'.
     # Alternately, leaving the `delimiter` to the default of `None` will
-    # engage the fixed width filename parser. Given the range of standards
-    # compliance across the decades of space science both parsers have
-    # been expanded to improve robustness. In practice then, either parser
-    # may be used for most filenames. Both are still included to account for
-    # currently unknown edge cases users may encounter. The delimited parser
-    # has better support for using the '*' wildcard with the caveat that
-    # the '*' can potentially produce false positives if a directory has
-    # multiple instrument files that satisfy the same format string pattern.
+    # engage the fixed width filename parser. If there is not a common
+    # delimiter then the fixed width parser is suggested though not always
+    # required. Given the range of standards compliance across the decades of
+    # space science both parsers have been expanded to improve robustness.
+    # In practice then, either parser may be used for most filenames.
+    # Both are still included to account for currently unknown edge cases
+    # users may encounter. The delimited parser has better support for
+    # using the '*' wildcard with the caveat that the '*' can potentially
+    # produce false positives if a directory has multiple instrument files
+    # that satisfy the same format string pattern.
     file_list = pysat.Files.from_os(data_path=data_path, format_str=format_str,
                                     delimiter='_')
 
