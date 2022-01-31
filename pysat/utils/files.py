@@ -227,7 +227,9 @@ def parse_delimited_filenames(files, format_str, delimiter):
     every parsed item to be a variable, and more than one variable
     may be within a parsed section. Thus, the main practical
     difference with `parse_fixed_width_filenames` is more support for
-    the use of the wildcard '*' within `format_str`.
+    the use of the wildcard '*' within `format_str`. Overuse
+    of the '*' wildcard increases the probability of false positive matches
+    if there are multiple instrument files in the directory.
 
     Parameters
     ----------
@@ -276,7 +278,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
         return stored
 
     # Parse format string to get information needed to parse filenames
-    search_dict = construct_searchstring_from_format(format_str, wildcard=True)
+    search_dict = construct_searchstring_from_format(format_str, wildcard=False)
     snips = search_dict['string_blocks']
     keys = search_dict['keys']
     lengths = search_dict['lengths']
