@@ -28,12 +28,18 @@ class Files(object):
     ----------
     inst : pysat.Instrument
         Instrument object
+    data_dir : str or NoneType
+        Directory without sub-directory variables that allows one to
+        bypass the directories provided by pysat.params['data_dirs'].  Only
+        applied if the directory exists. (default=None)
     directory_format : str or NoneType
-        Directory naming structure in string format. Variables such as
-        platform, name, tag, and inst_id will be filled in as needed using
-        python string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{tag}/{inst_id}'. If None, the default
-        directory structure is used (default=None)
+        Sub-directory naming structure, which is expected to exist or be
+        created within one of the `python.params['data_dirs']` directories.
+        Variables such as `platform`, `name`, `tag`, and `inst_id` will be
+        filled in as needed using python string formatting, if a string is
+        supplied. The default directory structure, which is used if None is
+        specified, is provided by pysat.params['directory_format'] and is
+        typically '{platform}/{name}/{tag}/{inst_id}'. (default=None)
     update_files : boolean
         If True, immediately query filesystem for instrument files and
         store (default=False)
@@ -135,8 +141,8 @@ class Files(object):
     # -----------------------------------------------------------------------
     # Define the magic methods
 
-    def __init__(self, inst, directory_format=None, update_files=False,
-                 file_format=None, write_to_disk=True,
+    def __init__(self, inst, data_dir=None, directory_format=None,
+                 update_files=False, file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
         """Initialize `pysat.Files` object."""
 
@@ -192,10 +198,17 @@ class Files(object):
                                       "`pysat.params['data_dirs'] = path`")))
 
         # Get list of potential data directory paths from pysat. Construct
-        # possible locations for data. Ensure path always ends with directory
-        # separator.
+        # possible locations for data.
         self.data_paths = [os.path.join(pdir, self.sub_dir_path)
                            for pdir in pysat.params['data_dirs']]
+
+        # If a one-use directory was provided, insert it to the start of the
+        # list of potential data paths
+        if data_dir is not None:
+            self.data_paths.insert(0, data_dir)
+            self.data_paths.insert(0, os.path.join(data_dir, self.sub_dir_path))
+
+        # Ensure path always ends with directory separator
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
 
@@ -578,7 +591,7 @@ class Files(object):
             if self.write_to_disk:
                 # Load data stored on the local drive.
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
-                                      squeeze=True, header=0)
+                                      header=0).squeeze("columns")
                 if update_path:
                     # Store the data_path from the .csv onto Files
                     self.data_path = loaded.name
@@ -679,8 +692,8 @@ class Files(object):
         info_str = " ".join(info_str.split())  # Remove duplicate whitespace
         logger.info(info_str)
 
-        # Check all potential directory locations for files.
-        # Stop as soon as we find some.
+        # Check all potential directory locations for files, stopping as soon
+        # as we find some.
         for path in self.data_paths:
             list_files_rtn = self.inst_info['inst']._list_files_rtn
             kwarg_inputs = self.inst_info['inst'].kwargs['list_files']

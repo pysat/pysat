@@ -64,13 +64,20 @@ class Instrument(object):
     strict_time_flag : bool
         If true, pysat will check data to ensure times are unique and
         monotonically increasing. (default=True)
+    data_dir : str
+        Directory without sub-directory variables that allows one to
+        bypass the directories provided by pysat.params['data_dirs'].  Only
+        applied if the directory exists. (default='')
     directory_format : str, function, or NoneType
-        Directory naming structure in string format. Variables such as platform,
-        name, and tag will be filled in as needed using python string
-        formatting. The default directory structure, which is used if None is
-        specified, is '{platform}/{name}/{tag}'. If a function is provided, it
-        must take `tag` and `inst_id` as arguments and return an appropriate
-        string. (default=None)
+        Sub-directory naming structure, which is expected to exist or be
+        created within one of the `python.params['data_dirs']` directories.
+        Variables such as `platform`, `name`, `tag`, and `inst_id` will be
+        filled in as needed using python string formatting, if a string is
+        supplied. The default directory structure, which is used if None is
+        specified, is provided by pysat.params['directory_format'] and is
+        typically '{platform}/{name}/{tag}/{inst_id}'. If a function is
+        provided, it must take `tag` and `inst_id` as arguments and return an
+        appropriate string. (default=None)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
@@ -88,6 +95,9 @@ class Instrument(object):
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', float),
         'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+    custom : list or NoneType
+        Input list containing dicts of inputs for `custom_attach` method inputs
+        that may be applied or None (default=None)
 
     Attributes
     ----------
@@ -101,6 +111,7 @@ class Instrument(object):
     inst_module
     temporary_file_list
     strict_time_flag
+    data_dir
     directory_format
     file_format
     bounds : tuple
@@ -230,9 +241,10 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag='', inst_id='',
                  clean_level=None, update_files=None, pad=None,
-                 orbit_info=None, inst_module=None, directory_format=None,
-                 file_format=None, temporary_file_list=False,
-                 strict_time_flag=True, ignore_empty_files=False,
+                 orbit_info=None, inst_module=None, data_dir='',
+                 directory_format=None, file_format=None,
+                 temporary_file_list=False, strict_time_flag=True,
+                 ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
                          'min_val': ('value_min', np.float64),
@@ -299,6 +311,57 @@ class Instrument(object):
             # attribute values
             self._assign_attrs()
 
+        # Store kwargs, passed to standard routines first
+        self.kwargs = {}
+        self.kwargs_supported = {}
+        self.kwargs_reserved = _reserved_keywords.copy()
+        saved_keys = []
+
+        # Expected function keywords
+        exp_keys = ['list_files', 'load', 'preprocess', 'download',
+                    'list_remote_files', 'clean', 'init']
+        for fkey in exp_keys:
+            func_name = _kwargs_keys_to_func_name(fkey)
+            func = getattr(self, func_name)
+
+            # Get dict of supported keywords and values
+            default_kwargs = _get_supported_keywords(func)
+
+            # Confirm there are no reserved keywords present
+            for kwarg in kwargs.keys():
+                if kwarg in self.kwargs_reserved:
+                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
+                                    'allowed at instantiation.'))
+                    raise ValueError(estr)
+
+            # Check if kwargs are in list
+            good_kwargs = [ckey for ckey in kwargs.keys()
+                           if ckey in default_kwargs]
+
+            # Store appropriate user supplied keywords for this function
+            self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
+
+            # Store all supported keywords for user edification
+            self.kwargs_supported[fkey] = default_kwargs
+
+            # Store keys to support check that all user supplied
+            # keys are used.
+            saved_keys.extend(default_kwargs.keys())
+
+        # Test for user supplied keys that are not used
+        missing_keys = []
+        for custom_key in kwargs:
+            if custom_key not in saved_keys and (custom_key not in exp_keys):
+                missing_keys.append(custom_key)
+
+        if len(missing_keys) > 0:
+            raise ValueError('unknown keyword{:s} supplied: {:}'.format(
+                '' if len(missing_keys) == 1 else 's', missing_keys))
+
+        # Run instrument init function, a basic pass function is used if the
+        # user doesn't supply the init function
+        self._init_rtn(**self.kwargs['init'])
+
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else pysat.params['clean_level'])
@@ -328,6 +391,16 @@ class Instrument(object):
         if file_format is not None:
             self.file_format = file_format
 
+        # Assign an absolute path for files that may not be part of the
+        # standard pysat directory structure
+        if os.path.isdir(data_dir):
+            self.data_dir = data_dir
+        else:
+            if len(data_dir) > 0:
+                logger.warning("data directory doesn't exist: {:}".format(
+                    data_dir))
+            self.data_dir = None
+
         # Check to make sure value is reasonable
         if self.file_format is not None:
             # Check if it is an iterable string.  If it isn't formatted
@@ -339,8 +412,8 @@ class Instrument(object):
                                           'supplied string must be iterable ',
                                           '[{:}]'.format(self.file_format)]))
 
-        # set up empty data and metadata
-        # check if pandas or xarray format
+        # Set up empty data and metadata. Check if it should use the pandas or
+        # xarray format.
         if self.pandas_format:
             self._null_data = pds.DataFrame(None)
             self._data_library = pds.DataFrame
@@ -348,7 +421,7 @@ class Instrument(object):
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
 
-        # assign null data for user selected data type
+        # Assign null data for user selected data type
         self.data = self._null_data.copy()
 
         # Create Meta instance with appropriate labels.  Meta class methods will
@@ -401,53 +474,6 @@ class Instrument(object):
                                        'datetime.timedelta, or',
                                        'pandas.DateOffset instance.']))
 
-        # Store kwargs, passed to standard routines first
-        self.kwargs = {}
-        self.kwargs_supported = {}
-        self.kwargs_reserved = _reserved_keywords.copy()
-        saved_keys = []
-
-        # Expected function keywords
-        exp_keys = ['list_files', 'load', 'preprocess', 'download',
-                    'list_remote_files', 'clean', 'init']
-        for fkey in exp_keys:
-            func_name = _kwargs_keys_to_func_name(fkey)
-            func = getattr(self, func_name)
-
-            # Get dict of supported keywords and values
-            default_kwargs = _get_supported_keywords(func)
-
-            # Confirm there are no reserved keywords present
-            for kwarg in kwargs.keys():
-                if kwarg in self.kwargs_reserved:
-                    estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
-                                    'allowed at instantiation.'))
-                    raise ValueError(estr)
-
-            # Check if kwargs are in list
-            good_kwargs = [ckey for ckey in kwargs.keys()
-                           if ckey in default_kwargs]
-
-            # Store appropriate user supplied keywords for this function
-            self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
-
-            # Store all supported keywords for user edification
-            self.kwargs_supported[fkey] = default_kwargs
-
-            # Store keys to support check that all user supplied
-            # keys are used.
-            saved_keys.extend(default_kwargs.keys())
-
-        # Test for user supplied keys that are not used
-        missing_keys = []
-        for custom_key in kwargs:
-            if custom_key not in saved_keys and (custom_key not in exp_keys):
-                missing_keys.append(custom_key)
-
-        if len(missing_keys) > 0:
-            raise ValueError('unknown keyword{:s} supplied: {:}'.format(
-                '' if len(missing_keys) == 1 else 's', missing_keys))
-
         # Instantiate the Files class
         temporary_file_list = not temporary_file_list
 
@@ -456,7 +482,8 @@ class Instrument(object):
         if update_files is None:
             update_files = pysat.params['update_files']
 
-        self.files = pysat.Files(self, directory_format=self.directory_format,
+        self.files = pysat.Files(self, data_dir=self.data_dir,
+                                 directory_format=self.directory_format,
                                  update_files=update_files,
                                  file_format=self.file_format,
                                  write_to_disk=temporary_file_list,
@@ -493,12 +520,10 @@ class Instrument(object):
         # Start with a daily increment for loading
         self.load_step = dt.timedelta(days=1)
 
-        # Run instrument init function, a basic pass function is used if the
-        # user doesn't supply the init function
-        self._init_rtn(**self.kwargs['init'])
-
         # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
+
+        return
 
     def __eq__(self, other):
         """Perform equality check.
@@ -1410,7 +1435,7 @@ class Instrument(object):
                                              inst_id=self.inst_id,
                                              **load_kwargs)
 
-                # ensure units and name are named consistently in new Meta
+                # Ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
                 mdata.accept_default_labels(self.meta)
                 bad_datetime = False
@@ -1475,9 +1500,9 @@ class Instrument(object):
 
         Returns
         -------
-        data : (pds.DataFrame or xr.Dataset)
+        data : pds.DataFrame or xr.Dataset
             pysat data
-        meta : (pysat.Meta)
+        meta : pysat.Meta
             pysat meta data
 
         Note
@@ -1501,9 +1526,9 @@ class Instrument(object):
 
         Returns
         -------
-        data : (pds.DataFrame or xr.Dataset)
+        data : pds.DataFrame or xr.Dataset
             pysat data
-        meta : (pysat.Meta)
+        meta : pysat.Meta
             pysat meta data
 
         Note
@@ -2625,7 +2650,7 @@ class Instrument(object):
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
-             **kwargs):
+             use_header=False, **kwargs):
         """Load the instrument data and metadata.
 
         Parameters
@@ -2661,6 +2686,9 @@ class Instrument(object):
         verifyPad : bool
             If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
+        use_header : bool
+            If True, moves custom Meta attributes to MetaHeader instead of
+            Instrument (default=False)
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments.
 
@@ -3063,7 +3091,17 @@ class Instrument(object):
                     self.data = self[:-1]
 
         # Transfer any extra attributes in meta to the Instrument object
-        self.meta.transfer_attributes_to_instrument(self)
+        if use_header:
+            self.meta.transfer_attributes_to_header()
+        else:
+            warnings.warn(''.join(['Meta now contains a class for global ',
+                                   'metadata (MetaHeader). Default attachment ',
+                                   'of global attributes to Instrument will ',
+                                   'be Deprecated in pysat 3.2.0+. Set ',
+                                   '`use_header=True` to remove this ',
+                                   'warning.']), DeprecationWarning,
+                          stacklevel=2)
+            self.meta.transfer_attributes_to_instrument(self)
         self.meta.mutable = False
         sys.stdout.flush()
         return

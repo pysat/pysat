@@ -271,13 +271,73 @@ class TestConstellationBasics(object):
         del self.testConst, self.load_date, self.custom_args
         return
 
-    def test_basic_repr(self):
-        """Test `__repr__` with a custom method."""
+    @pytest.mark.parametrize("apply_inst", [False, True])
+    def test_bad_set_custom(self, apply_inst):
+        """Test ValueError raised when not setting custom functions correctly.
 
-        self.testConst.custom_attach(mult_data, args=self.custom_args)
-        self.out = self.testConst.__repr__()
+        Parameters
+        ----------
+        apply_inst : bool
+            Apply custom function at Instrument level (True) or Constellation
+            level (False)
+
+        """
+
+        inst = pysat.Instrument('pysat', 'testing', num_samples=10,
+                                clean_level='clean')
+
+        with pytest.raises(ValueError) as verr:
+            pysat.Constellation(custom=[{'apply_inst': apply_inst}],
+                                instruments=[inst for i in range(5)])
+
+        assert str(verr).find("Input dict to custom is missing the") >= 0
+        return
+
+    @pytest.mark.parametrize("apply_inst", [False, True])
+    def test_repr(self, apply_inst):
+        """Test `__repr__` with custom method.
+
+        Parameters
+        ----------
+        apply_inst : bool
+            Apply custom function at Instrument level (True) or Constellation
+            level (False)
+
+        """
+
+        self.testConst.custom_attach(mult_data, apply_inst=apply_inst,
+                                     args=self.custom_args)
+        self.out = repr(self.testConst)
         assert isinstance(self.out, str)
-        assert self.out.find("'function'") >= 0
+        assert self.out.find("custom=[{'function'") >= 0
+        return
+
+    @pytest.mark.parametrize("apply_inst, num_func", [(False, 1), (True, 0)])
+    def test_str(self, apply_inst, num_func):
+        """Test `__str__` with Constellation-level custom methods.
+
+        Parameters
+        ----------
+        apply_inst : bool
+            Apply custom function at Instrument level (True) or Constellation
+            level (False)
+        num_func : int
+            Number of constellation-level functions applied
+
+        """
+
+        self.testConst.custom_attach(mult_data, apply_inst=apply_inst,
+                                     args=self.custom_args,
+                                     kwargs={'dkey': 'mlt'})
+        self.out = self.testConst.__str__()
+        assert isinstance(self.out, str)
+        assert self.out.find("Constellation-level Data Processing") >= 0
+        assert self.out.find(
+            "Custom Functions: {:d} applied".format(num_func)) >= 0
+
+        if num_func > 0:
+            assert self.out.find("Args=") >= 0
+            assert self.out.find("Kwargs=") >= 0
         return
 
     def test_single_custom_function_error(self):
@@ -295,8 +355,8 @@ class TestConstellationBasics(object):
         assert str(verr).find(estr) >= 0
         return
 
-    def test_custom_keyword_instantiation(self):
-        """Test adding custom methods at Instrument instantiation."""
+    def test_custom_inst_keyword_instantiation(self):
+        """Test adding Instrument-level custom methods at instantiation."""
 
         self.testConst.custom_attach(mult_data, args=self.custom_args,
                                      kwargs={'dkey': 'mlt'})
@@ -321,23 +381,69 @@ class TestConstellationBasics(object):
             assert inst.custom_kwargs == inst2.custom_kwargs
         return
 
-    def test_clear_functions(self):
-        """Test successful clearance of custom functions."""
+    def test_custom_const_keyword_instantiation(self):
+        """Test adding Constallation-level custom methods at instantiation."""
+
+        self.testConst.custom_attach(mult_data, args=self.custom_args,
+                                     kwargs={'dkey': 'mlt'}, apply_inst=False)
+        self.testConst.custom_attach(mult_data, args=self.custom_args,
+                                     apply_inst=False)
+
+        # Create another instance of pysat.Instrument and add custom
+        # via the input keyword
+        custom = [{'function': mult_data, 'args': self.custom_args,
+                   'kwargs': {'dkey': 'mlt'}, 'apply_inst': False},
+                  {'function': mult_data, 'args': self.custom_args,
+                   'apply_inst': False}]
+        testConst2 = pysat.Constellation(
+            instruments=[pysat.Instrument('pysat', 'testing', num_samples=10,
+                                          clean_level='clean')
+                         for i in range(5)], custom=custom)
+
+        # Ensure both constellations have the same custom_* attributes
+        assert self.testConst.custom_functions == testConst2.custom_functions
+        assert self.testConst.custom_args == testConst2.custom_args
+        assert self.testConst.custom_kwargs == testConst2.custom_kwargs
+        return
+
+    @pytest.mark.parametrize("apply_inst", [False, True])
+    def test_clear_functions(self, apply_inst):
+        """Test successful clearance of custom functions.
+
+        Parameters
+        ----------
+        apply_inst : bool
+            Apply custom function at Instrument level (True) or Constellation
+            level (False)
+
+        """
 
         self.testConst.custom_attach(lambda inst, imult, out_units='h':
                                      {'data': (inst.data.mlt * imult).values,
                                       'long_name': 'doubleMLTlong',
                                       'units': out_units, 'name': 'doubleMLT'},
-                                     args=[2], kwargs={"out_units": "hours1"})
+                                     args=[2], kwargs={"out_units": "hours1"},
+                                     apply_inst=apply_inst)
 
-        # Test to see that the custom function was attached
+        inst_num = 1 if apply_inst else 0
+        const_num = 0 if apply_inst else 1
+
+        # Test to see that the custom function was attached to each Instrument
+        assert len(self.testConst.custom_functions) == const_num
+        assert len(self.testConst.custom_args) == const_num
+        assert len(self.testConst.custom_kwargs) == const_num
+
         for inst in self.testConst.instruments:
-            assert len(inst.custom_functions) == 1
-            assert len(inst.custom_args) == 1
-            assert len(inst.custom_kwargs) == 1
+            assert len(inst.custom_functions) == inst_num
+            assert len(inst.custom_args) == inst_num
+            assert len(inst.custom_kwargs) == inst_num
 
         # Test to see that the custom function was cleared
         self.testConst.custom_clear()
+        assert self.testConst.custom_functions == []
+        assert self.testConst.custom_args == []
+        assert self.testConst.custom_kwargs == []
+
         for inst in self.testConst.instruments:
             assert inst.custom_functions == []
             assert inst.custom_args == []

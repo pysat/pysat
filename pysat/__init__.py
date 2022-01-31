@@ -103,6 +103,7 @@ with Lock(version_filename, 'r', params['file_timeout']) as version_file:
 from pysat._files import Files
 from pysat._instrument import Instrument
 from pysat._meta import Meta
+from pysat._meta import MetaHeader
 from pysat._meta import MetaLabels
 from pysat._orbits import Orbits
 from pysat import instruments

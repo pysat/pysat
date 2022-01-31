@@ -456,15 +456,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     for fname in fnames:
         with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
             # Build a dictionary with all global ncattrs and add those
-            # attributes to a pysat meta object. Any custom Meta attributes
-            # are automatically transferred to the holding pysat.Instrument
-            # object by pysat.
+            # attributes to a pysat.MetaHeader object.
             for ncattr in data.ncattrs():
-                if hasattr(meta, ncattr):
-                    mattr = '{:}_'.format(ncattr)
-                else:
-                    mattr = ncattr
-                meta.__setattr__(mattr, data.getncattr(ncattr))
+                setattr(meta.header, ncattr, data.getncattr(ncattr))
 
             # Load the metadata.  From here group unique dimensions and
             # act accordingly, 1D, 2D, 3D
@@ -483,7 +477,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
                 # TODO(#913): Remove 2D support
                 if len(data.variables[key].dimensions) == 2:
-                    # Part of dataframe within dataframe
+                    # Part of a DataFrame to store within the main DataFrame
                     two_d_keys.append(key)
                     two_d_dims.append(data.variables[key].dimensions)
 
@@ -544,12 +538,25 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 # Iterate over the variables and grab metadata
                 dim_meta_data = pysat.Meta(labels=labels)
 
-                # Store attributes in metadata, exept for dim name
+                # Store attributes in metadata, except for the dimension name
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
-                        meta_dict[nc_key] = data.variables[key].getncattr(
-                            nc_key)
+                        # Meta cannot take array data, if present save it as
+                        # seperate meta data labels
+                        tst_array = np.asarray(
+                            data.variables[key].getncattr(nc_key))
+
+                        if tst_array.shape == ():
+                            meta_dict[nc_key] = data.variables[key].getncattr(
+                                nc_key)
+                        elif tst_array.shape == (1, ):
+                            meta_dict[nc_key] = tst_array[0]
+                        else:
+                            for i, val in enumerate(tst_array):
+                                nc_label = "{:}{:d}".format(nc_key, i)
+                                meta_dict[nc_label] = val
+
                     dim_meta_data[clean_key] = meta_dict
 
                 dim_meta_dict = {'meta': dim_meta_data}
@@ -717,7 +724,19 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     for key in data.variables.keys():
         meta_dict = {}
         for nc_key in data.variables[key].attrs.keys():
-            meta_dict[nc_key] = data.variables[key].attrs[nc_key]
+            # Meta cannot take array data, if present save it as
+            # seperate meta data labels
+            tst_array = np.asarray(data.variables[key].attrs[nc_key])
+
+            if tst_array.shape == ():
+                meta_dict[nc_key] = data.variables[key].attrs[nc_key]
+            elif tst_array.shape == (1, ):
+                meta_dict[nc_key] = tst_array[0]
+            else:
+                for i, val in enumerate(tst_array):
+                    nc_label = "{:}{:d}".format(nc_key, i)
+                    meta_dict[nc_label] = val
+
         meta[key] = meta_dict
 
         # Remove variable attributes from the data object
@@ -725,11 +744,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
-        if hasattr(meta, data_attr):
-            set_attr = "".join([data_attr, "_"])
-        else:
-            set_attr = data_attr
-        meta.__setattr__(set_attr, data.attrs[data_attr])
+        setattr(meta.header, data_attr, getattr(data, data_attr))
 
     # Remove attributes from the data object
     data.attrs = {}
@@ -820,6 +835,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     'Text_Supplement' are given default values if not present.
 
     """
+    # Ensure there is data to write
+    if inst.empty:
+        pysat.logger.warning('empty Instrument, not writing {:}'.format(fname))
+        return
+
     # Check export NaNs first
     if export_nan is None:
         export_nan = inst.meta._export_nan
@@ -847,7 +867,13 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     # to the standard, filtering out any 'private' attributes (those that start
     # with a '_') and saving any custom public attributes
     inst_attrb = dir(inst)
-    attrb_dict = {}
+
+    # Add the global meta data
+    if hasattr(inst.meta, 'header') and len(inst.meta.header.global_attrs) > 0:
+        attrb_dict = inst.meta.header.to_dict()
+    else:
+        attrb_dict = {}
+
     for ikey in inst_attrb:
         if ikey not in base_attrb:
             if ikey.find('_') != 0:
@@ -869,6 +895,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
             attrb_dict.pop(pitem)
 
     # Set the general file information
+    attrb_dict['platform'] = inst.platform
+    attrb_dict['name'] = inst.name
+    attrb_dict['tag'] = inst.tag
+    attrb_dict['inst_id'] = inst.inst_id
+    attrb_dict['acknowledgements'] = inst.acknowledgements
+    attrb_dict['references'] = inst.references
     attrb_dict['Date_End'] = dt.datetime.strftime(
         inst.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
     attrb_dict['Date_End'] = attrb_dict['Date_End'][:-3] + ' UTC'
@@ -936,6 +968,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         # 3) metadata must be filtered before writing to netCDF4, since
         #    string variables can't have a fill value
         with netCDF4.Dataset(fname, mode=mode, format='NETCDF4') as out_data:
+            # Attach the global attributes
+            out_data.setncatts(attrb_dict)
+
             # Specify the number of items, to reduce function calls
             num = len(inst.index)
 
@@ -1203,9 +1238,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                 temp_cdf_data[i, :] = inst[
                                     key].iloc[i].index.astype(str)
                             cdfkey[:, :] = temp_cdf_data
-
-            # Attach attributes
-            out_data.setncatts(attrb_dict)
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
         # the Instrument data object is unchanged.

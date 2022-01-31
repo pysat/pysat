@@ -1,4 +1,8 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
 """Template for a pysat.Instrument support file.
 
 Modify this file as needed when adding a new Instrument to pysat.
@@ -15,10 +19,10 @@ platform
     *List platform string here*
 name
     *List name string here*
-inst_id
-    *List supported inst_ids here*
 tag
     *List supported tag strings here*
+inst_id
+    *List supported inst_ids here*
 
 Note
 ----
@@ -36,14 +40,10 @@ Examples
 
     Example code can go here
 
-
-Authors
--------
-Author name and institution
-
 """
 
 import datetime as dt
+import warnings
 
 import pysat
 
@@ -178,7 +178,7 @@ def preprocess(self):
 
 
 # Required function
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
+def list_files(tag='', inst_id='', data_path=None, format_str=None):
     """Produce a list of files corresponding to PLATFORM/NAME.
 
     This routine is invoked by pysat and is not intended for direct
@@ -270,26 +270,27 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
     inst_id : str
         Satellite ID string identifier used for particular dataset. This input
         is provided by pysat. (default='')
-    data_path : str
+    data_path : str or NoneType
         Path to directory to download data to. (default=None)
-    user : str (OPTIONAL)
+    user : str or NoneType (OPTIONAL)
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
         error if user not supplied. (default=None)
-    password : str (OPTIONAL)
+    password : str  or NoneType (OPTIONAL)
         Password for data download. (default=None)
-    custom_keywords : placeholder
+    custom_keywords : placeholder (OPTIONAL)
         Additional keywords supplied by user when invoking the download
         routine attached to a pysat.Instrument object are passed to this
         routine. Use of custom keywords here is discouraged.
 
     """
 
+    warnings.warn("If downloads aren't supported, a warning must be raised")
     return
 
 
 # Required function
-def load(fnames, tag=None, inst_id=None, custom_keyword=None):
+def load(fnames, tag='', inst_id='', custom_keyword=None):
     """Load `platform_name` data and meta data.
 
     This routine is called as needed by pysat. It is not intended
@@ -315,10 +316,10 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
 
     Returns
     -------
-    data, metadata
-        Data and Metadata are formatted for pysat. Data is a
-        pandas DataFrame or xarray DataSet while metadata is a pysat.Meta
-        instance.
+    data : pds.DataFrame or xr.Dataset
+        Data to be assigned to the pysat.Instrument.data object.
+    mdata : pysat.Meta
+        Pysat Meta data for each data variable.
 
     Note
     ----
@@ -381,12 +382,11 @@ def list_remote_files(tag, inst_id, user=None, password=None):
 
     Parameters
     -----------
-    tag : str or NoneType
+    tag : str
         Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
-    inst_id : str or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
+    inst_id : str
+        Specifies the satellite or instrument ID. Accepted types are
+        <inst_id strings>.
     user : str or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
