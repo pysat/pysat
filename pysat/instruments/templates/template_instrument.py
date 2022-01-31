@@ -48,10 +48,7 @@ import datetime as dt
 import pysat
 
 # Assign the pysat logger to the local log commands, as these functions will
-# all be executed within pysat.  If this is the only instance pysat is used,
-# consider omitting the pysat import and logger assignment and replacing it
-# with:
-# from pysat import logger
+# all be executed within pysat.
 logger = pysat.logger
 
 # ----------------------------------------------------------------------------
