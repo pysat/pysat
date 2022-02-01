@@ -948,11 +948,8 @@ class Files(object):
                                        "(dir_path)")))
 
         # Parse format string to figure out which search string should be used
-        # to identify files in the filesystem. Different option required if
-        # filename is delimited
-        wildcard = False if delimiter is None else True
-        search_dict = futils.construct_searchstring_from_format(
-            format_str, wildcard=wildcard)
+        # to identify files in the filesystem.
+        search_dict = futils.construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
 
         # Perform the local file search
