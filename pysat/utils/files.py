@@ -127,7 +127,8 @@ def parse_fixed_width_filenames(files, format_str):
     Parameters
     ----------
     files : list
-        List of files
+        List of files, typically provided by
+        `files.search_local_system_formatted_filename`.
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
@@ -238,7 +239,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
     Parameters
     ----------
     files : list
-        List of files
+        List of files, typically provided by
+        `files.search_local_system_formatted_filename`.
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
@@ -390,6 +392,9 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     A standards compliant filename can be constructed by adding the first
     element from `string_blocks`, then the first item in `keys`, and iterating
     that alternating pattern until all items are used.
+
+    This is the first function employed by `pysat.Files.from_os`.
+
     """
 
     out_dict = {'search_string': '', 'keys': [], 'lengths': [],
@@ -446,6 +451,8 @@ def search_local_system_formatted_filename(data_path, search_str):
     search_str : str
         String used to search for local files. For example,
         `cnofs_cindi_ivm_500ms_????????_v??.cdf` or `inst-name-*-v??.cdf`
+        Typically this input is provided by
+        `files.construct_searchstring_from_format`.
 
     Returns
     -------
