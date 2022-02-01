@@ -161,7 +161,7 @@ def parse_fixed_width_filenames(files, format_str):
 
     if len(files) == 0:
         stored['files'] = []
-        # include format string as convenience for later functions
+        # Include format string as convenience for later functions
         stored['format_str'] = format_str
         return stored
 
