@@ -360,8 +360,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         For example,
         `instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf`
     wildcard : bool
-        If True, replaces the '?' sequence with a '*'. This option may be well
-        suited when dealing with delimited filenames.
+        If True, replaces each '?' sequence with a single '*'.
 
     Returns
     -------
