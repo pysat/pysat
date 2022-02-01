@@ -430,11 +430,6 @@ def construct_searchstring_from_format(format_str, wildcard=False):
             else:
                 raise ValueError("Couldn't determine formatting width")
 
-    # Last block could potentially end upon a variable that needs to be parsed,
-    # rather than a string. Check for this condition.
-    if snip[1] is not None:
-        out_dict['string_blocks'].append('')
-
     return out_dict
 
 
