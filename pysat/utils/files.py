@@ -196,7 +196,11 @@ def parse_fixed_width_filenames(files, format_str):
     # Need to parse out dates for datetime index
     for i, temp in enumerate(files):
         for j, key in enumerate(keys):
-            val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
+            if key_str_idx[1][j] == 0:
+                # Last element is a variable to be parsed out
+                val = temp[key_str_idx[0][j]:]
+            else:
+                val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
             stored[key].append(val)
 
     # Convert to numpy arrays
@@ -425,6 +429,11 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                         break
             else:
                 raise ValueError("Couldn't determine formatting width")
+
+    # Last block could potentially end upon a variable that needs to be parsed,
+    # rather than a string. Check for this condition.
+    if snip[1] is not None:
+        out_dict['string_blocks'].append('')
 
     return out_dict
 

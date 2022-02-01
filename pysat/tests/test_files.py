@@ -16,7 +16,7 @@ import pysat
 from pysat.instruments.methods.testing import create_files
 import pysat.instruments.pysat_testing
 from pysat.tests.classes.cls_ci import CICleanSetup
-
+from pysat.utils import files as futils
 
 def create_dir(inst=None, temporary_file_list=False):
     """Create a temporary datset directory for a test instrument."""
@@ -394,6 +394,61 @@ class TestBasics(object):
 
         # Check specific date
         assert np.all(files.index == dates)
+
+        return
+
+    @pytest.mark.parametrize("root_fname,root_pname,user_vars,truth_vals",
+                             [[''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                       '{day:03d}_stuff.pysat-testing-file']),
+                               ''.join(['pysat_{code:7d}_junk_{year:04d}_{d:4}_',
+                                        '{day:03d}_stuff.pysat-testing-file']),
+                               ['code', 'd'], [1234567, 'gold']],
+                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                        '{day:03d}_55555.pysat-testing-file']),
+                               ''.join(['{lead_code:5}_{code:7d}_{year2:4}_{year:04d}',
+                                        '_{d:4}_{day:03d}_{code2:5d}.',
+                                        '{final_code:18}']),
+                               ['lead_code', 'code', 'year2', 'd', 'code2',
+                                'final_code'],
+                               ['pysat', 1234567, 'junk', 'gold', 55555,
+                                'pysat-testing-file']]
+                              ])
+    @pytest.mark.parametrize("delimiter", ['_', None])
+    def test_user_vars_parsing(self, delimiter, root_fname, root_pname,
+                               user_vars, truth_vals):
+        """Check that user vars are parsed from filenames."""
+
+        # Truth dates
+        dates = pysat.utils.time.create_date_range(self.start, self.stop, '10D')
+
+        # Create a bunch of files by year and doy
+        create_files(self.testInst, self.start, self.stop, freq='10D',
+                     root_fname=root_fname, version=self.version,
+                     use_doy=True)
+
+        # Create equivlanet of `from_os` but with transparency to user vars.
+
+        # Parse format string to figure out which search string should be used
+        # to identify files in the filesystem.
+        search_dict = futils.construct_searchstring_from_format(root_pname)
+        search_str = search_dict['search_string']
+
+        # Perform the local file search
+        data_path = self.testInst.files.data_path
+        files = futils.search_local_system_formatted_filename(data_path,
+                                                              search_str)
+
+        # Use the file list to extract the information. Pull data from the
+        # areas identified by format_str
+        if delimiter is None:
+            stored = futils.parse_fixed_width_filenames(files, root_pname)
+        else:
+            stored = futils.parse_delimited_filenames(files, root_pname,
+                                                      delimiter)
+        # Check for user variables
+        for var, truth in zip(user_vars, truth_vals):
+            assert var in stored
+            assert np.all(stored[var] == [truth] * len(stored[var]))
 
         return
 
