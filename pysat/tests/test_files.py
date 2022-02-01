@@ -400,14 +400,15 @@ class TestBasics(object):
     @pytest.mark.parametrize("root_fname,root_pname,user_vars,truth_vals",
                              [[''.join(['pysat_1234567_junk_{year:04d}_gold_',
                                        '{day:03d}_stuff.pysat-testing-file']),
-                               ''.join(['pysat_{code:7d}_junk_{year:04d}_{d:4}_',
-                                        '{day:03d}_stuff.pysat-testing-file']),
+                               ''.join(['pysat_{code:7d}_junk_{year:04d}',
+                                        '_{d:4}_{day:03d}_stuff.pysat-testing-',
+                                        'file']),
                                ['code', 'd'], [1234567, 'gold']],
                               [''.join(['pysat_1234567_junk_{year:04d}_gold_',
                                         '{day:03d}_55555.pysat-testing-file']),
-                               ''.join(['{lead_code:5}_{code:7d}_{year2:4}_{year:04d}',
-                                        '_{d:4}_{day:03d}_{code2:5d}.',
-                                        '{final_code:18}']),
+                               ''.join(['{lead_code:5}_{code:7d}_{year2:4}',
+                                        '_{year:04d}_{d:4}_{day:03d}_',
+                                        '{code2:5d}.{final_code:18}']),
                                ['lead_code', 'code', 'year2', 'd', 'code2',
                                 'final_code'],
                                ['pysat', 1234567, 'junk', 'gold', 55555,
@@ -449,6 +450,56 @@ class TestBasics(object):
         for var, truth in zip(user_vars, truth_vals):
             assert var in stored
             assert np.all(stored[var] == [truth] * len(stored[var]))
+
+        return
+
+    @pytest.mark.parametrize("root_fname,root_pname",
+                             [[''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                       '{day:03d}_stuff.pysat-testing-file']),
+                               ''.join(['pysat_{code:7d}_junk_{year:04d}',
+                                        '_{d:4}_{day:03d}_stuff.pysat-testing-',
+                                        'file'])],
+                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
+                                        '{day:03d}_55555.pysat-testing-file']),
+                               ''.join(['{lead_code:5}_{code:7d}_{year2:4}_',
+                                        '{year:04d}_{d:4}_{day:03d}_{code2:5d}',
+                                       '.{final_code:18}'])]])
+    def test_wilcard_searching(self, root_fname, root_pname):
+        """Check that searching with wildcard=True works."""
+
+        # Truth dates
+        dates = pysat.utils.time.create_date_range(self.start, self.stop, '10D')
+
+        # Create a bunch of files by year and doy
+        create_files(self.testInst, self.start, self.stop, freq='10D',
+                     root_fname=root_fname, version=self.version,
+                     use_doy=True)
+
+        # Create equivlanet of `from_os` but with transparency to user vars.
+
+        # Parse format string to figure out which search string should be used
+        # to identify files in the filesystem.
+        search_dict = futils.construct_searchstring_from_format(root_pname)
+        search_str = search_dict['search_string']
+
+        # Same but with wildcard.
+        wsearch_dict = futils.construct_searchstring_from_format(root_pname,
+                                                                 wildcard=True)
+        wsearch_str = wsearch_dict['search_string']
+
+        # Confirm presence of '*'
+        assert wsearch_str.find('*') > -1
+
+        # Perform the local file search for both cases.
+        data_path = self.testInst.files.data_path
+        files = futils.search_local_system_formatted_filename(data_path,
+                                                              search_str)
+
+        files2 = futils.search_local_system_formatted_filename(data_path,
+                                                               wsearch_str)
+
+        # Compare
+        assert np.all(files == files2)
 
         return
 
