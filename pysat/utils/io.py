@@ -299,21 +299,26 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
     # method to maintain basic compliance with SPDF ISTP/IACG NetCDF standards
     vals = ['Depend_0', 'Depend_1', 'Depend_2', 'Depend_3', 'Depend_4',
             'Depend_5', 'Depend_6', 'Depend_7', 'Depend_8', 'Depend_9',
-            'Display_Type', 'Var_Type', 'Format']
+            'Display_Type', 'Var_Type', 'Format',
+            'Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
+    lower_vals = [val.lower() for val in vals]
 
     for key in mdict.keys():
-        sub_keys = mdict[key].keys()
+        lower_sub_keys = [ckey.lower() for ckey in mdict[key].keys()]
+        sub_keys = list(mdict[key].keys())
 
-        if 'meta' in sub_keys:
+        if 'meta' in lower_sub_keys:
             # Higher dimensional data, recursive treatment.
             mdict[key]['meta'] = remove_netcdf4_standards_from_meta(mdict[key]
                                                                     ['meta'],
                                                                     '')
         else:
             # Remove any entries with label in `vals`
-            for val in vals:
-                if val in sub_keys:
-                    mdict[key].pop(val)
+            for val, lval in zip(vals, lower_vals):
+                if lval in lower_sub_keys:
+                    for i, check_val in enumerate(lower_sub_keys):
+                        if check_val == lval:
+                            mdict[key].pop(sub_keys[i])
 
     # Remove epoch metadata
     epoch_vals = ['Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
