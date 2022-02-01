@@ -406,6 +406,55 @@ def apply_table_translation(trans_table, meta_dict):
     return filt_dict
 
 
+def meta_array_expander(meta_dict):
+    """Expand meta arrays by storing each element with new incremented label.
+
+    if meta_dict[variable]['label'] = [ item1, item2, ..., itemn] then
+    the returned dict will contain, meta_dict[variable]['label1'] = item1,
+    meta_dict[variable]['label2'] = item2, meta_dict[variable]['labeln'] = itemn
+    
+    Parameters
+    ----------
+    meta_dict : dict
+        Keyed by variable name with a dict as a value. Each variable
+        dict is keyed by metadata name and the value is the metadata.
+
+    Returns
+    -------
+    meta_dict : dict
+        Input dict with expanded array elements
+
+    Note
+    ----
+    pysat.Meta can not take array data.
+
+    """
+    # Meta cannot take array data, if present save it as seperate meta data
+    # labels.
+    for key in meta_dict.keys():
+        loop_dict = {}
+        for meta_key in meta_dict[key].keys():
+            # Check for higher order data from 2D pandas support
+            if meta_key == 'meta':
+                meta_dict[key][meta_key] = meta_array_expander(
+                    meta_dict[key][meta_key])
+                continue
+
+            tst_array = np.asarray(meta_dict[key][meta_key])
+            if tst_array.shape == ():
+                loop_dict[meta_key] = meta_dict[key][meta_key]
+            elif tst_array.shape == (1, ):
+                loop_dict[meta_key] = tst_array[0]
+            else:
+                for i, val in enumerate(tst_array):
+                    nc_label = "{:}{:d}".format(meta_key, i)
+                    loop_dict[nc_label] = val
+
+        meta_dict[key] = loop_dict
+
+    return meta_dict
+
+
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
                 pandas_format=True, decode_timedelta=False,
@@ -721,27 +770,14 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     index_key_name = None
 
                 # Iterate over the variables and grab metadata
-                # dim_meta_data = pysat.Meta(labels=labels)
                 dim_meta_data = {}
 
                 # Store attributes in metadata, except for the dimension name
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
-                        # Meta cannot take array data, if present save it as
-                        # seperate meta data labels
-                        tst_array = np.asarray(
-                            data.variables[key].getncattr(nc_key))
-
-                        if tst_array.shape == ():
-                            meta_dict[nc_key] = data.variables[key].getncattr(
-                                nc_key)
-                        elif tst_array.shape == (1, ):
-                            meta_dict[nc_key] = tst_array[0]
-                        else:
-                            for i, val in enumerate(tst_array):
-                                nc_label = "{:}{:d}".format(nc_key, i)
-                                meta_dict[nc_label] = val
+                        meta_dict[nc_key] = data.variables[key].getncattr(
+                            nc_key)
 
                     dim_meta_data[clean_key] = meta_dict
 
@@ -856,6 +892,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     # issues with specific files.
     if meta_processor is not None:
         filt_mdict = meta_processor(filt_mdict)
+
+    # Meta cannot take array data, if present save it as seperate meta data
+    # labels.
+    filt_mdict = meta_array_expander(filt_mdict)
 
     # Assign filtered metadata to pysat.Meta instance.
     for key in filt_mdict:
@@ -975,21 +1015,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     for key in data.variables.keys():
         meta_dict = {}
         for nc_key in data.variables[key].attrs.keys():
-            # Meta cannot take array data, if present save it as
-            # seperate meta data labels
-            tst_array = np.asarray(data.variables[key].attrs[nc_key])
-
-            if tst_array.shape == ():
-                meta_dict[nc_key] = data.variables[key].attrs[nc_key]
-            elif tst_array.shape == (1, ):
-                meta_dict[nc_key] = tst_array[0]
-            else:
-                for i, val in enumerate(tst_array):
-                    nc_label = "{:}{:d}".format(nc_key, i)
-                    meta_dict[nc_label] = val
+            meta_dict[nc_key] = data.variables[key].attrs[nc_key]
 
         full_mdict[key] = meta_dict
-        # meta[key] = meta_dict
 
         # Remove variable attributes from the data object
         data.variables[key].attrs = {}
@@ -1015,6 +1043,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # issues with specific files.
     if meta_processor is not None:
         filt_mdict = meta_processor(filt_mdict)
+
+    # Meta cannot take array data, if present save it as seperate meta data
+    # labels.
+    filt_mdict = meta_array_expander(filt_mdict)
 
     # Assign filtered metadata to pysat.Meta instance.
     for key in filt_mdict:
