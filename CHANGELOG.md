@@ -59,6 +59,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      assigned to `pysat.Meta`.
    * Condensed code present in both pandas and xarray into
      `pysat.utils.io.meta_array_expander`.
+   * Non-default Meta.labels are now retained by Instrument if defined by 
+     underlying support module.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for

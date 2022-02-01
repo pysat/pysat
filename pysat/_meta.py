@@ -1020,6 +1020,16 @@ class Meta(object):
                 self._label_setter(new_name, new_name,
                                    other_meta.labels.label_type[key])
 
+        # Need to deal with case where self has labels that other doesn't
+        for key in self.labels.label_type.keys():
+            if not hasattr(other_meta.labels, key):
+                # This label doesn't exist, add it.
+                new_name = getattr(self.labels, key)
+                other_meta.labels.update(key, new_name,
+                                         self.labels.label_type[key])
+                other_meta._label_setter(new_name, new_name,
+                                         self.labels.label_type[key])
+
         self.labels = other_meta.labels
 
         return
