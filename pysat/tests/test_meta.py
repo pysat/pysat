@@ -547,6 +547,7 @@ class TestMeta(object):
         assert emeta != self.meta, "meta equality not detectinng differences"
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize('val_dict', [
         {'units': 'U', 'long_name': 'HO Val', 'radn': 'raiden'},
         {'units': 'MetaU', 'long_name': 'HO Val'}])
@@ -1415,6 +1416,7 @@ class TestMeta(object):
     # -------------------------------
     # Tests for higher order metadata
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize('meta_dict', [
         None, {'units': 'V', 'long_name': 'test name'},
         {'units': 'V', 'long_name': 'test name',
@@ -1460,6 +1462,7 @@ class TestMeta(object):
         self.eval_ho_meta_settings(meta_dict)
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("num_ho, num_lo", [(1, 1), (2, 2)])
     def test_assign_mult_higher_order_meta_from_dict(self, num_ho, num_lo):
         """Test assign higher order metadata from dict with multiple types.
@@ -1502,6 +1505,7 @@ class TestMeta(object):
                 self.eval_meta_settings()
         return
 
+    # TODO(#789): remove tests for higher order meta
     def test_inst_ho_data_assign_meta_then_data(self):
         """Test assignment of higher order metadata before assigning data."""
 
@@ -1579,6 +1583,7 @@ class TestMeta(object):
             assert self.meta['profiles']['children'][dvar, 'bananas'] == 2
         return
 
+    # TODO(#789): remove tests for higher order meta
     def test_concat_w_ho(self):
         """Test `meta.concat` adds new meta objects with higher order data."""
 
@@ -1630,6 +1635,7 @@ class TestMeta(object):
                     cvar, self.meta.labels.units].find('Updated') < 0
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
     def test_ho_attribute_name_case(self, label):
@@ -1657,6 +1663,7 @@ class TestMeta(object):
         assert self.meta.attr_case_name(label) == label
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
     def test_ho_hasattr_case_neutral(self, label):
@@ -1776,6 +1783,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
     def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
@@ -1811,6 +1819,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#789): remove tests for higher order meta
     def test_ho_data_retrieval_case_insensitive(self):
         """Test that higher order data variables are case insensitive."""
 
@@ -1866,6 +1875,7 @@ class TestMetaImmutable(TestMeta):
         del self.mutable
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("prop,set_val", [('data', pds.DataFrame()),
                                               ('ho_data', {})])
     def test_meta_mutable_properties(self, prop, set_val):
