@@ -1122,18 +1122,18 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         Flag specifying whether or not the epoch/time dimension should be
         unlimited; it is when the flag is True. (default=True)
     meta_translation : dict or NoneType
-        if not None, then the keys in the dict are used to map
+        The keys in the input dict are used to map
         metadata labels for `inst` to one or more values used when writing
         the file. eg. {meta.labels.fill: ['FillVal', '_FillValue']} would
         result in both 'FillVal' and '_FillValue' being used to store
         variable fill values in the netCDF file. Overrides
-        use of `inst._meta_translation_table` if not None.
+        use of `inst._meta_translation_table`.
     meta_processor : function or NoneType
         If not None, a dict containing all of the metadata will be
         passed to `meta_processor` which should return a processed version
         of the input dict. If None and `inst` has a valid
         `inst._export_meta_post_processing` function then that
-        function is used instead. (default=None)
+        function is used for `meta_processor`. (default=None)
 
     Note
     ----
