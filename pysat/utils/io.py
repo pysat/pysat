@@ -1069,7 +1069,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                    mode='w', zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, check_type=None, export_nan=None,
-                   unlimited_time=True, meta_translation=None):
+                   unlimited_time=True, meta_translation=None,
+                   meta_processor=None):
     """Store pysat data in a netCDF4 file.
 
     Parameters
@@ -1127,6 +1128,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         result in both 'FillVal' and '_FillValue' being used to store
         variable fill values in the netCDF file. Overrides
         use of `inst._meta_translation_table` if not None.
+    meta_processor : function or NoneType
+        If not None, a dict containing all of the metadata will be
+        passed to `meta_processor` which should return a processed version
+        of the input dict. If None and `inst` has a valid
+        `inst._export_meta_post_processing` function then that
+        function is used instead. (default=None)
 
     Note
     ----
@@ -1268,8 +1275,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                   for mkey in ['units', 'name']}
 
     # Apply instrument specific post-processing to the export_meta
-    if hasattr(inst._export_meta_post_processing, '__call__'):
-        export_meta = inst._export_meta_post_processing(export_meta)
+    if meta_processor is None:
+        if hasattr(inst._export_meta_post_processing, '__call__'):
+            meta_processor = inst._export_meta_post_processing
+
+    if meta_processor is not None:
+        export_meta = meta_processor(export_meta)
 
     # Handle output differently, depending on data format
     if inst.pandas_format:
