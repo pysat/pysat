@@ -57,6 +57,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added support for `meta_processor` in `pysat.utils.io.load_netcdf`
      enabling developers to easily modify loaded metadata before it is 
      assigned to `pysat.Meta`.
+   * Condensed code present in both pandas and xarray into
+     `pysat.utils.io.meta_array_expander`.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
