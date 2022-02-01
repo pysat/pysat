@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
+   * Added the option to apply custom functions at the Constellation or
+     Instrument level within the Constellation class
    * Added option to load Constellation for registered Instruments using lists
      of platforms, names, tags, and/or inst_ids, which are new attributes
    * Added hidden Constellation methods to determine unique attribute elements
@@ -37,6 +39,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Allow `Instrument.rename` to take a fuction or mapping dict as input,
      after adapting routine to use `Meta.rename`
    * Added an update method and type evaluation method to MetaLabels.
+   * Added a new MetaHeader class for holding global metadata.
+   * Added a pysat Instrument for loading pysat-written NetCDF4 files.
    * Allowed MetaLabels to be expanded through setting new Meta data values.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
@@ -51,7 +55,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      with `pysat.utils.io.filter_netcdf4_metadata`.
    * Changed `fname` from a kwarg to an arg in `pysat.Instruments.to_netcdf4`
    * Deprecated support for 2D pandas datasets
-   * Deprecated `pysat.instruments.pysat_testing2d`
    * Deprecated `pysat.instruments.pysat_testing_xarray`
    * Deprecated usage of higher order metadata
 * Documentation
@@ -94,6 +97,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed a bug that expected special treatment by `Instrument.data` type in
      `utils.coords.update_longitude`
    * Fixed pysat_testmodel Instrument longitude range
+   * Corrected link to testing badge in README.md
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
@@ -105,7 +109,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Update usage of caplog and capsys in unit tests
    * Reorganized tests for the `pysat.Instrument` class into multiple files
    * Updated unit tests for `pysat.Instrument` with pytest.mark.parametrize
-   * Update minimum numpy in CI tests to 1.18 following NEP29
+   * Update minimum numpy in CI tests to 1.19 following NEP29
    * Made `InstLibTests` more portable to streamline user implementation of the
      standard end-to-end instrument tests.
    * Moved test classes to `pysat.tests.classes`
@@ -114,6 +118,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Organized and reduced duplication in the Meta test class
    * Added CI reports for supported data products
    * Added a cap on coveralls to ensure success of continuous integration
+   * Updated tests in `test_meta` to search all warnings, not just the first
+   * Updated pandas syntax to be compatible with pandas 2.0 (pandas 1.4
+     deprecations)
 
 [3.0.1] - 2021-07-28
 --------------------

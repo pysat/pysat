@@ -50,6 +50,15 @@ MetaLabels
    :members:
 
 
+.. _api-metaheader:
+
+MetaHeader
+----------
+
+.. autoclass:: pysat.MetaHeader
+   :members:
+
+
 .. _api-orbits:
 
 Orbits
@@ -175,6 +184,23 @@ Instrument Template
 
 .. automodule:: pysat.instruments.templates.template_instrument
    :members: __doc__, init, clean, preprocess, list_files, download, load, list_remote_files
+
+
+.. _api-geninst:
+
+General Instruments
+-------------------
+
+The following Instrument modules support I/O and analysis in pysat.
+
+
+.. _api-pysat-netcdf:
+
+pysat_netcdf
+^^^^^^^^^^^^
+
+.. automodule:: pysat.instruments.pysat_netcdf
+   :members:
 
 
 .. _api-testinst:

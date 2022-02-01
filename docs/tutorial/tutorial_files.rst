@@ -3,6 +3,9 @@
 netCDF4 Files
 -------------
 
+
+.. _tutorial-files-write:
+
 Writing Files
 ^^^^^^^^^^^^^
 
@@ -18,22 +21,24 @@ may be created using default parameters as shown below.
 
 .. code:: python
 
+   import datetime as dt
    import pysat
 
    # Instantiate Instrument object
    inst = pysat.Instrument('pysat', 'testing')
+   stime = dt.datetime(2009, 1, 1)
 
    # Load data into Instrument
-   inst.load(2009, 1)
+   inst.load(date=stime)
 
    # Create netCDF4 file
-   fname = 'example/file/path/name/test.nc'
+   fname = stime.strftime('example/file/path/name/test_%Y%j.nc')
    inst.to_netcdf4(fname)
 
 This process writes all of the data within `inst.data` to a netCDF4 file,
-including the metadata stored at `inst.meta.data`, as well as adds a variety
-of supplemental attributes to the file indicating the file's conventions,
-creation date, etc.
+including the metadata stored at `inst.meta.data` and `inst.meta.header`. It
+also adds a variety of supplemental attributes to the file indicating the
+file's conventions, creation date, and more.
 
 pysat's default conventions are a simplified implemention of the standards
 developed as part of NASA's `Ionospheric Connections
@@ -137,23 +142,26 @@ writing the file. For xarray, pysat leverages xarray's built-in file writing
 capabilities. For pandas, pysat interfaces with netCDF4 directly to translate
 both 1D and higher dimensional data into netCDF4.
 
+
+.. _tutorial-files-meta:
+
 Translating Metadata
 ^^^^^^^^^^^^^^^^^^^^
 
-Compatible file formats, such as those used by ICON, may achieve that compatibility
-by simultaneously adopting multiple standards. As different file standards
-may attempt to cover the same functionality this can result in duplicated
-information. To minimize the impact of working with duplicted metadata
-pysat includes support for automatically translating the metadata labels used
-at the Instrument level with one or more different labels used when writing
-the file. Thus, simple metadata labels may be maintained throughout a users
-code, but, when writing files the metadata labels will be expanded to maintain
-standards compatibility.
+Compatible file formats, such as those used by ICON, may achieve that
+compatibility by simultaneously adopting multiple standards. As different file
+standards may attempt to cover the same functionality this can result in
+duplicated information. To minimize the impact of working with duplicted
+metadata pysat includes support for automatically translating the metadata
+labels used at the Instrument level with one or more different labels used when
+writing the file. Thus, simple metadata labels may be maintained throughout a
+users code, but, when writing files the metadata labels will be expanded to
+maintain standards compatibility.
 
 Consider the following example. The current metadata labels used by an
 Instrument are accessed programatically and used to define the range of
-keys for a meta label translation table. Thus, regardless of the label setting at
-runtime, the current metadata keys will be assigned appropriately.
+keys for a meta label translation table. Thus, regardless of the label setting
+at runtime, the current metadata keys will be assigned appropriately.
 The targets for the metadata labels at the file level are defined as the values
 for each key in the dictionary. Fill metadata values, `inst.meta.labels.fill`
 will be written to the file as both '_FillValue' and 'FillVal'. Similary, the
@@ -182,21 +190,25 @@ maximum and minimum supported variables values `inst.meta.labels.max_val` and
 
 
 
+.. _tutorial-files-load:
+
 Loading Files
 ^^^^^^^^^^^^^
 
 pysat includes support for loading netCDF4 files, particularly those produced
-by pysat, directly into compatible pandas and xarray formats,
-including metadata. Functions are provided under `pysat.utils.io` and includes
-a genereal data indepdent interface, `pysat.utils.load_netcdf4`, as well as
-pandas and xarray specific readers,
-`pysat.utils.io.load_netcdf_pandas` and `pysat.utils.io.load_netcdf_xarray`
-respctively. These functions are inteded to be used within an Instrument
-support module, particularly the `load` function.
+by pysat, directly into compatible pandas and xarray formats.  These routines
+will load the data and metadata into the appropriate structures.  pysat NetCDF
+files may also be directly loaded into a general :py:class:`pysat.Instrument`.
+Loading functions are provided under :py:mod:`pysat.utils.io` and includes a
+general data indepdent interface, :py:func:`pysat.utils.load_netcdf4`, as well
+as pandas and xarray specific readers
+(:py:func:`pysat.utils.io.load_netcdf_pandas` and
+:py:func:`pysat.utils.io.load_netcdf_xarray`). These functions are intended to
+be used within a :py:class:`pysat.Instrument` support module, particularly the
+:py:meth:`load` function.
 
-For example, consider the complete instrument load function
-needed (single dataset) when loading a pysat produced file into
-pandas. For more
+For example, consider the complete instrument load function needed (single
+dataset) when loading a pysat produced file into pandas. For more
 information on adding a new dataset to pysat, see :ref:`rst_new_inst`.
 
 .. code:: python
@@ -225,3 +237,23 @@ information on adding a new dataset to pysat, see :ref:`rst_new_inst`.
 
        return pysat.utils.io.load_netcdf4_pandas(fnames)
 
+
+Now consider loading the file written in the example show in
+Section :ref:`tutorial-files-write`.  Because this :py:class:`pysat.Instrument`
+module may support either pandas or xarray data, the expected type must be
+specified upon :py:class:`pysat.Instrument` instantiation.  pysat also expects
+all filenames to have some type of date format.  However, by using the
+:py:var:`directory_fmt` keyword argument, we can easily load files outside of
+the standard pysat data paths.
+
+
+.. code:: python
+
+   import datetime as dt
+   import pysat
+
+   stime = dt.datetime(2009, 1, 1)
+   test_inst = pysat.Instrument("pysat", "netcdf", pandas_format=True,
+                                directory_fmt='/example/file/path/name',
+				file_format='test_{year:04}{day:03}.nc')
+   test_inst.load(date=stime)
