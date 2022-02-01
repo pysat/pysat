@@ -18,6 +18,7 @@ import pysat.instruments.pysat_testing
 from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
 
+
 def create_dir(inst=None, temporary_file_list=False):
     """Create a temporary datset directory for a test instrument."""
     if inst is None:
@@ -451,6 +452,9 @@ class TestBasics(object):
             assert var in stored
             assert np.all(stored[var] == [truth] * len(stored[var]))
 
+        # Check specific dates
+        assert np.all(files.index == dates)
+
         return
 
     @pytest.mark.parametrize("root_fname,root_pname",
@@ -466,9 +470,6 @@ class TestBasics(object):
                                        '.{final_code:18}'])]])
     def test_wilcard_searching(self, root_fname, root_pname):
         """Check that searching with wildcard=True works."""
-
-        # Truth dates
-        dates = pysat.utils.time.create_date_range(self.start, self.stop, '10D')
 
         # Create a bunch of files by year and doy
         create_files(self.testInst, self.start, self.stop, freq='10D',
