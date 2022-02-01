@@ -304,9 +304,9 @@ decades of space science parsing filenames with and without a `delimiter`
 can typically generate the same results, even for filenames without a
 consistently applied delimiter. As such either parser will function for most
 situations however both remain within pysat to support currently unknown edge
-cases that users may encounter. More practically, Parsing with a delimiter
-offers more support for the '*' wildcard than the fixed width parser.
-It is generally advised to limit use of the '*' wildcard to prevent
+cases that users may encounter. More practically, parsing with a delimiter
+offers more support for the `*` wildcard than the fixed width parser.
+It is generally advised to limit use of the `*` wildcard to prevent
 potential false positives if a directory has more than one instrument within.
 
 If the constructor is not appropriate, then lower level methods within
