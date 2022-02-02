@@ -272,7 +272,21 @@ class TestBasics(object):
                                '1MS', False]])
     @pytest.mark.parametrize("delimiter", [None, '_'])
     def test_from_os(self, delimiter, root_fname, freq, use_doy):
-        """Check that Files.from_os generates file list."""
+        """Check that Files.from_os generates file list.
+
+        Parameters
+        ----------
+        delimiter : str
+            Delimiter to parse filename. None for fixed width parsing.
+        root_fname : str
+            Template string used to create filenames.
+        freq : str
+            File frequency string, `create_date_range`.
+        use_doy : bool
+            If True, during creation the day of year is used. If False,
+            the day in the month is used.
+
+        """
 
         # Truth dates
         dates = pysat.utils.time.create_date_range(self.start, self.stop, freq)
@@ -319,7 +333,18 @@ class TestBasics(object):
                               ])
     @pytest.mark.parametrize("delimiter", [None, '_'])
     def test_from_os_user_vars(self, delimiter, root_fname, root_pname):
-        """Check that Files.from_os works with user vars."""
+        """Check that Files.from_os works with user vars.
+
+        Parameters
+        ----------
+        delimiter : str
+            Delimiter to parse filename. None for fixed width parsing.
+        root_fname : str
+            Template string used to create filenames.
+        root_pname : str
+            Template string used when parsing filenames.
+
+        """
 
         # Truth dates
         dates = pysat.utils.time.create_date_range(self.start, self.stop, '1D')
@@ -373,7 +398,18 @@ class TestBasics(object):
                               ])
     @pytest.mark.parametrize("delimiter", ['_'])
     def test_from_os_wilcards(self, delimiter, root_fname, root_pname):
-        """Check that Files.from_os works with delimited names and wildcards."""
+        """Check that Files.from_os works with delimited names and wildcards.
+
+        Parameters
+        ----------
+        delimiter : str
+            Delimiter to parse filename. None for fixed width parsing.
+        root_fname : str
+            Template string used to create filenames.
+        root_pname : str
+            Template string used when parsing filenames.
+
+        """
 
         # Truth dates
         dates = pysat.utils.time.create_date_range(self.start, self.stop, '1D')
@@ -418,7 +454,22 @@ class TestBasics(object):
     @pytest.mark.parametrize("delimiter", ['_', None])
     def test_user_vars_parsing(self, delimiter, root_fname, root_pname,
                                user_vars, truth_vals):
-        """Check that user vars are parsed from filenames."""
+        """Check that user vars are parsed from filenames.
+
+        Parameters
+        ----------
+        delimiter : str
+            Delimiter to parse filename. None for fixed width parsing.
+        root_fname : str
+            Template string used to create filenames.
+        root_pname : str
+            Template string used when parsing filenames.
+        user_vars : list
+            List of user template variables in `root_pname`
+        truth_vals : list
+            List of values `user_vars` maps to in `root_fname`
+
+        """
 
         # Create a bunch of files by year and doy
         create_files(self.testInst, self.start, self.stop, freq='10D',
@@ -463,7 +514,16 @@ class TestBasics(object):
                                         '{year:04d}_{d:4}_{day:03d}_{code2:5d}',
                                        '.{final_code:18}'])]])
     def test_wilcard_searching(self, root_fname, root_pname):
-        """Check that searching with wildcard=True works."""
+        """Check that searching with wildcard=True works.
+
+        Parameters
+        ----------
+        root_fname : str
+            Template string used to create filenames.
+        root_pname : str
+            Template string used when parsing filenames.
+
+        """
 
         # Create a bunch of files by year and doy
         create_files(self.testInst, self.start, self.stop, freq='10D',
