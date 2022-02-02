@@ -467,7 +467,6 @@ class Meta(object):
                     # metadata. Meta inputs could be part of a larger multiple
                     # parameter assignment, so not all names may actually have
                     # a 'meta' object to add.
-                    self._warn_meta_children()
                     for item, val in zip(data_vars, input_data['meta']):
                         if val is not None:
                             # Assign meta data, using a recursive call...
