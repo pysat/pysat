@@ -306,32 +306,53 @@ def parse_delimited_filenames(files, format_str, delimiter):
     recon = ''.join(recon)
     split_recon = recon.split(delimiter)
 
-    # Parse out template variable information from each filename.
+    # Parse out template variable information from reconstructed name.
+    # Store a list of indexes for locations to start pulling out
+    # variable information. For performance reasons, only want to do this
+    # once for `split_recon`.
+    sidxs = []
+    for i, rname in enumerate(split_recon):
+        loop_rname = rname
+
+        while True:
+            sidx = loop_rname.find('{}')
+            if sidx < 0:
+                # No template variables to parse
+                sidxs.append(None)
+                break
+            else:
+                # Found template variable marker. Remove marker and store
+                # location.
+                loop_rname = loop_rname[sidx + 2:]
+                sidxs.append(sidx)
+
+    # Parse out template variable information from each filename. Use the
+    # indices calculated above. First, prep memory.
+    for key in keys:
+        if stored[key] is None:
+            stored[key] = []
+
     for temp in files:
         split_name = temp.split(delimiter)
-
         idx = 0
-        for i, (sname, rname) in enumerate(zip(split_name, split_recon)):
-            loop_rname = rname
+        lsidxs = sidxs
+        for i, sname in enumerate(split_name):
             loop_sname = sname
-
-            while True:
-                sidx = loop_rname.find('{}')
-                if sidx < 0:
-                    # No template variables to parse
-                    break
-                else:
-                    # Found template variable marker, pull out value
-                    # from filename.
+            for j, sidx in enumerate(lsidxs):
+                if sidx is not None:
+                    # Pull out value from filename and shorten str.
                     val = loop_sname[sidx:sidx + lengths[idx]]
-                    loop_rname = loop_rname[sidx + 2:]
                     loop_sname = loop_sname[sidx + lengths[idx]:]
 
-                if stored[keys[idx]] is None:
-                    stored[keys[idx]] = [val]
-                else:
+                    # Store parsed info and increment key index
                     stored[keys[idx]].append(val)
-                idx += 1
+                    idx += 1
+                else:
+                    # No variable to be parsed, remove indices from `lsidxs`
+                    # already used.
+                    lsidxs = lsidxs[j+1:]
+                    break
+
 
     # Convert to numpy arrays
     for key in stored.keys():
