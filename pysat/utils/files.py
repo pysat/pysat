@@ -350,9 +350,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
                 else:
                     # No variable to be parsed, remove indices from `lsidxs`
                     # already used.
-                    lsidxs = lsidxs[j+1:]
+                    lsidxs = lsidxs[j + 1:]
                     break
-
 
     # Convert to numpy arrays
     for key in stored.keys():
