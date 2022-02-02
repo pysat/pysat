@@ -755,6 +755,39 @@ class TestNetCDF4Integration(object):
 
         return
 
+    def test_meta_translation_to_netcdf4(self):
+        """Test impact of meta_translation on netCDF output."""
+
+        # Create a meta translation table
+        present = ['testingFillVal', 'testing_FillValue', 'testing_fill_value']
+        meta_trans = {self.testInst.meta.labels.fill_val: present}
+
+        # These are standard metalabels used when writing netCDF and should not
+        # be present given the table above.
+        missing = ['FillVal', '_FillValue']
+
+        # Write the file
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                      meta_translation=meta_trans)
+
+        # Load file back and test metadata is as expected
+        with netCDF4.Dataset(outfile) as open_f:
+            for var in open_f.variables.keys():
+                test_vars = open_f[var].ncattrs()
+
+                # Avoid time variables
+                if 'MonoTon' not in test_vars:
+                    testing.assert_list_contains(present, test_vars)
+
+        for mvar in missing:
+            assert mvar not in test_vars, \
+                '{:} was written to the netCDF file'.format(repr(mvar))
+
+        return
+
 
 class TestXarrayIO(object):
     """Unit tests for the Xarray I/O utilities."""
