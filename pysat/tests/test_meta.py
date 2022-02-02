@@ -2065,12 +2065,13 @@ class TestDeprecation(object):
 
         warnings.simplefilter("always", DeprecationWarning)
         self.meta = pysat.Meta()
+        self.warn_msgs = []
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
-        del self.meta
+        del self.meta, self.warn_msgs
         return
 
     def test_higher_order_meta_deprecation(self):
@@ -2084,6 +2085,31 @@ class TestDeprecation(object):
         with warnings.catch_warnings(record=True) as war:
             self.meta['series_profiles'] = {'meta': ho_meta,
                                             'long_name': 'series'}
+
+        # Evaluate warnings
+        self.warn_msgs = ["Support for higher order metadata has been"]
+        self.warn_msgs = np.array(self.warn_msgs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        testing.eval_warnings(war, self.warn_msgs)
+
+        return
+
+    def test_higher_order_meta_rename_deprecation(self):
+        """Test that renaming higher order meta raises DeprecationWarning."""
+
+        # Initialize higher-order metadata to add to the main meta object
+        ho_meta = pysat.Meta()
+        ho_meta['series_profiles'] = {'long_name': 'series'}
+        self.meta['series_profiles'] = {'meta': ho_meta,
+                                        'long_name': 'series'}
+
+        # Raise and catch warnings
+        with warnings.catch_warnings(record=True) as war:
+            self.meta.rename(str.upper)
 
         # Evaluate warnings
         self.warn_msgs = ["Support for higher order metadata has been"]
