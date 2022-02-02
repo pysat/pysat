@@ -2058,7 +2058,7 @@ class TestMetaMutable(object):
 
 
 class TestDeprecation(object):
-    """Unit tests for DeprecationWarning."""
+    """Unit tests for DeprecationWarnings in the Meta class."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -2076,12 +2076,16 @@ class TestDeprecation(object):
     def test_higher_order_meta_deprecation(self):
         """Test that setting higher order meta raises DeprecationWarning."""
 
+        # Initialize higher-order metadata to add to the main meta object
         ho_meta = pysat.Meta()
         ho_meta['series_profiles'] = {'long_name': 'series'}
+
+        # Raise and catch warnings
         with warnings.catch_warnings(record=True) as war:
             self.meta['series_profiles'] = {'meta': ho_meta,
                                             'long_name': 'series'}
 
+        # Evaluate warnings
         self.warn_msgs = ["Support for higher order metadata has been"]
         self.warn_msgs = np.array(self.warn_msgs)
 
