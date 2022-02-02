@@ -420,9 +420,6 @@ class TestBasics(object):
                                user_vars, truth_vals):
         """Check that user vars are parsed from filenames."""
 
-        # Truth dates
-        dates = pysat.utils.time.create_date_range(self.start, self.stop, '10D')
-
         # Create a bunch of files by year and doy
         create_files(self.testInst, self.start, self.stop, freq='10D',
                      root_fname=root_fname, version=self.version,
@@ -451,9 +448,6 @@ class TestBasics(object):
         for var, truth in zip(user_vars, truth_vals):
             assert var in stored
             assert np.all(stored[var] == [truth] * len(stored[var]))
-
-        # Check specific dates
-        assert np.all(files.index == dates)
 
         return
 
