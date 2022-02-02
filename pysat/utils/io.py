@@ -1124,7 +1124,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     meta_translation : dict or NoneType
         The keys in the input dict are used to map
         metadata labels for `inst` to one or more values used when writing
-        the file. eg. {meta.labels.fill: ['FillVal', '_FillValue']} would
+        the file. eg. {meta.labels.fill_val: ['FillVal', '_FillValue']} would
         result in both 'FillVal' and '_FillValue' being used to store
         variable fill values in the netCDF file. Overrides
         use of `inst._meta_translation_table`.
@@ -1266,6 +1266,13 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                         str(inst._meta_translation_table))))
         else:
             meta_translation = inst.meta.default_to_netcdf_translation_table()
+
+    # Ensure `meta_translation` has default values for items not assigned.
+    # This is needed for the higher order pandas support and may be removed.
+    def_meta_trans = inst.meta.default_to_netcdf_translation_table()
+    for key in def_meta_trans.keys():
+        if key not in meta_translation:
+            meta_translation[key] = def_meta_trans[key]
 
     # Perform actual translation and store in dict
     export_meta = inst.meta.to_translated_dict(meta_translation)
