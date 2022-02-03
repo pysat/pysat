@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.0] - 2021-XX-XX
+[3.1.0] - 2022-XX-XX
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
