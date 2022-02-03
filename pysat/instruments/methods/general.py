@@ -163,6 +163,11 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     epoch_name : str
         variable name for instrument index (default='Epoch')
 
+    Note
+    ----
+    If the variable represented by epoch_name is not a float64, data is passed
+    through unchanged.
+
     """
 
     warnings.warn(" ".join(["New kwargs added to `pysat.utils.io.load_netCDF4`",
@@ -170,9 +175,10 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
                             "function will be removed in pysat 3.2.0+"]),
                   DeprecationWarning, stacklevel=2)
 
-    inst.data[epoch_name] = pds.to_datetime(
-        [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
-         for epoch_time in inst.data[epoch_name]])
+    if inst.data[epoch_name].dtype == 'float64':
+        inst.data[epoch_name] = pds.to_datetime(
+            [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
+             for epoch_time in inst.data[epoch_name]])
 
     return
 
