@@ -735,9 +735,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
-    # TODO(#947) Add conversion for timestamps that may have been treated
-    # incorrectly, including origin and unit.  At the moment this is only done
-    # for Pandas data.
+    # Prepare xarray index for this netcdf file
+    data[epoch_name] = pds.to_datetime(data[epoch_name], unit=epoch_unit,
+                                       origin=epoch_origin)
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
