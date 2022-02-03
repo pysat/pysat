@@ -121,6 +121,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Updated tests in `test_meta` to search all warnings, not just the first
    * Updated pandas syntax to be compatible with pandas 2.0 (pandas 1.4
      deprecations)
+   * Cleaned up excess variables upon import
 
 [3.0.1] - 2021-07-28
 --------------------
