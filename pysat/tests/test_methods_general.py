@@ -262,6 +262,7 @@ class TestLoadCSVData(object):
         assert len(self.data.columns) == len(self.data_cols)
         return
 
+
 class TestDeprecation(object):
     """Unit tests for deprecated methods."""
 
