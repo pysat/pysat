@@ -246,7 +246,7 @@ class TestLoadCSVData(object):
         """Test the CVS data load with multiple files."""
 
         self.data = gen.load_csv_data([self.csv_file, self.csv_file])
-        assert isinstance(self.data.index, pds.Int64Index)
+        assert self.data.index.dtype == 'int64'
         self.eval_data_cols()
         assert len(self.data.columns) == len(self.data_cols) + 1
         return

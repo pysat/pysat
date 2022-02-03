@@ -9,6 +9,7 @@ import datetime as dt
 import logging
 import numpy as np
 import os
+import sys
 import tempfile
 import warnings
 
@@ -60,12 +61,19 @@ class TestLoadNetCDF(object):
         del self.data_path, self.tempdir
         return
 
-    def eval_loaded_data(self):
-        """Evaluate loaded test data."""
+    def eval_loaded_data(self, test_case=True):
+        """Evaluate loaded test data.
+
+        Parameters
+        ----------
+        test_case : bool
+            Test the case of the data variable names (default=True)
+
+        """
         # Test that the written and loaded data matches the initial data
         if self.testInst.pandas_format:
-            keys = self.testInst.data.columns
-            new_keys = self.loaded_inst.columns
+            keys = list(self.testInst.data.columns)
+            new_keys = list(self.loaded_inst.columns)
         else:
             keys = [key for key in self.testInst.data.variables]
             new_keys = [key for key in self.loaded_inst.variables]
@@ -75,21 +83,24 @@ class TestLoadNetCDF(object):
             lkey = dkey.lower()
             if lkey in ['profiles', 'alt_profiles', 'series_profiles']:
                 # Test the loaded higher-dimension data
-                for tframe, lframe in zip(self.testInst.data[dkey],
+                for tframe, lframe in zip(self.testInst[dkey],
                                           self.loaded_inst[dkey]):
                     assert np.all(tframe == lframe), "unequal {:s} data".format(
                         dkey)
             else:
                 # Test the standard data structures
                 assert np.all(self.testInst[dkey] == self.loaded_inst[dkey])
-        return keys, new_keys
+
+        # Check that names are lower case when written
+        pysat.utils.testing.assert_lists_equal(keys, new_keys, test_case=False)
+        return
 
     def test_basic_write_and_read_netcdf_mixed_case_data_format(self):
         """Test basic netCDF4 read/write with mixed case data variables."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
 
         # Modify data names in data
         if self.testInst.pandas_format:
@@ -119,10 +130,7 @@ class TestLoadNetCDF(object):
             self.testInst.data = self.testInst.data.rename(new_map_keys)
 
         # Test the loaded data
-        keys, new_keys = self.eval_loaded_data()
-
-        # Check that names are lower case when written
-        pysat.utils.testing.assert_lists_equal(keys, new_keys, test_case=False)
+        self.eval_loaded_data(test_case=False)
 
         return
 
@@ -131,7 +139,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
 
         # Modify data and metadata names in data
         self.testInst.meta.rename(str.upper)
@@ -147,11 +155,74 @@ class TestLoadNetCDF(object):
 
         self.loaded_inst, meta = io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format)
-        keys, new_keys = self.eval_loaded_data()
+        self.eval_loaded_data()
 
-        # Check that names are in the expected case
-        pysat.utils.testing.assert_lists_equal(keys, new_keys)
+        return
 
+    def test_inst_write_and_read_netcdf(self):
+        """Test Instrument netCDF4 read/write."""
+
+        # Set the output file information
+        file_root = 'pysat_test_ncdf_{year:04}{day:03}.nc'
+        file_path = self.testInst.files.data_path
+        outfile = self.stime.strftime(os.path.join(file_path,
+                                                   'pysat_test_ncdf_%Y%j.nc'))
+
+        # Load and write the test instrument data
+        self.testInst.load(date=self.stime, use_header=True)
+        self.testInst.to_netcdf4(fname=outfile)
+
+        # Load the written file directly into an Instrument
+        netcdf_inst = pysat.Instrument(
+            'pysat', 'netcdf', directory_format=file_path,
+            file_format=file_root, pandas_format=self.testInst.pandas_format)
+        netcdf_inst.load(date=self.stime, use_header=True)
+
+        # Test the loaded Instrument data
+        self.loaded_inst = netcdf_inst.data
+        self.eval_loaded_data()
+
+        # Test the Instrument self-description
+        for attr in ["platform", "name", "tag", "inst_id", "acknowledgements",
+                     "references"]:
+            assert getattr(self.testInst, attr) == getattr(netcdf_inst, attr), \
+                "mismatched {:s} Instrument attribute".format(attr)
+
+        # Test the metadata. The Instrument loaded from file will have
+        # metadata for every variable with (possibley) different metadata types.
+        # Do not test the attributes whose metadata are often changed by the
+        # writing routine.
+        updated_attrs = ["long_name", "notes"]
+        cattrs = [var for var in self.testInst.meta.attrs()
+                  if var in netcdf_inst.meta.attrs()
+                  and var not in updated_attrs]
+
+        tvars = [var for var in self.testInst.meta.keys()
+                 if var not in self.testInst.meta.keys_nD()
+                 and var.lower() not in ["epoch", "time"]]
+        fvars = [var for var in netcdf_inst.meta.keys()
+                 if var.lower() not in ["epoch", "time"]]
+
+        testing.assert_list_contains(tvars, fvars)
+
+        for var in tvars:
+            for attr in cattrs:
+                ival = self.testInst.meta[var, attr]
+                try:
+                    assert ival == netcdf_inst.meta[var, attr], \
+                        "mismatched {:s} {:s} Meta data".format(var, attr)
+                except AssertionError:
+                    try:
+                        assert np.isnan(ival) and np.isnan(
+                            netcdf_inst.meta[var, attr]), \
+                            "mismatched {:s} {:s} Meta data".format(var, attr)
+                    except TypeError:
+                        raise AssertionError(
+                            "mismatched {:s} {:s} Meta data {:} != {:}".format(
+                                var, attr, repr(ival),
+                                repr(netcdf_inst.meta[var, attr])))
+
+        del netcdf_inst
         return
 
     def test_write_netcdf4_duplicate_variable_names(self):
@@ -159,7 +230,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         self.testInst['MLT'] = 1
         with pytest.raises(ValueError) as verr:
             io.inst_to_netcdf(self.testInst, fname=outfile,
@@ -176,7 +247,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile, **wkwargs)
 
         # Load the data that was created
@@ -214,7 +285,7 @@ class TestLoadNetCDF(object):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         # Load the data that was created
@@ -244,7 +315,7 @@ class TestLoadNetCDF(object):
 
     def test_netcdf_prevent_attribute_override(self):
         """Test that attributes will not be overridden by default."""
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
 
         # Test that `bespoke` attribute is initially missing
         assert not hasattr(self.testInst, 'bespoke')
@@ -262,7 +333,7 @@ class TestLoadNetCDF(object):
 
     def test_netcdf_attribute_override(self):
         """Test that attributes in the netCDF file may be overridden."""
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         self.testInst.meta.mutable = True
         self.testInst.meta.bespoke = True
 
@@ -279,7 +350,10 @@ class TestLoadNetCDF(object):
             outfile, pandas_format=self.testInst.pandas_format)
 
         # Custom attribute correctly read from file
-        assert meta.bespoke
+        if hasattr(meta, "header"):
+            assert meta.header.bespoke
+        else:
+            assert meta.bespoke
         return
 
 
@@ -293,7 +367,12 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         self.data_path = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
+        if sys.version_info.minor >= 10:
+            self.tempdir = tempfile.TemporaryDirectory(
+                ignore_cleanup_errors=True)
+        else:
+            self.tempdir = tempfile.TemporaryDirectory()
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat',
@@ -318,8 +397,14 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Reset the pysat parameters
         pysat.params['data_dirs'] = self.data_path
 
-        # Remove the temporary directory
-        self.tempdir.cleanup()
+        # Remove the temporary directory. In Windows, this occasionally fails
+        # by raising a wide variety of different error messages. Python 3.10+
+        # can handle this, but lower Python versions cannot.
+        # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
+        try:
+            self.tempdir.cleanup()
+        except:  # noqa E722
+            pass
 
         # Clear the directory attributes
         del self.data_path, self.tempdir
@@ -335,7 +420,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Prepare output test data.
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         # Modify the variable attributes directly before writing to file.
         self.testInst.meta['uts'] = {'units': 'seconds'}
         self.testInst.meta['mlt'] = {'units': 'minutes'}
@@ -360,7 +445,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        self.testInst.load(date=self.stime)
+        self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         with pytest.raises(ValueError) as verr:
@@ -437,7 +522,8 @@ class TestNetCDF4Integration(object):
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst = pysat.Instrument('pysat', 'testing')
-        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
 
         return
 
@@ -637,7 +723,8 @@ class TestNetCDF4Integration(object):
         # Reset the test instrument
         self.testInst = pysat.Instrument('pysat', 'testing2d')
         self.testInst.load(
-            date=pysat.instruments.pysat_testing2d._test_dates[''][''])
+            date=pysat.instruments.pysat_testing2d._test_dates[''][''],
+            use_header=True)
 
         # Save the un-updated metadata
         init_meta = self.testInst.meta.copy()
@@ -678,7 +765,8 @@ class TestXarrayIO(object):
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
         self.testInst = pysat.Instrument('pysat', 'testing_xarray')
-        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
 
         return
 

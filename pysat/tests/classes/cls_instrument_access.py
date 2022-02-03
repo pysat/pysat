@@ -88,7 +88,8 @@ class InstAccessTests(object):
         """
 
         # Load data by year and day of year
-        self.testInst.load(self.ref_time.year, self.ref_doy, **kwargs)
+        self.testInst.load(self.ref_time.year, self.ref_doy, **kwargs,
+                           use_header=True)
 
         # Test that the loaded date range is correct
         self.eval_successful_load()
@@ -106,7 +107,7 @@ class InstAccessTests(object):
             # Test doesn't check against loading by filename since that produces
             # an error if there is no file. Loading by yr, doy no different
             # than date in this case.
-            self.testInst.load(date=no_data_d)
+            self.testInst.load(date=no_data_d, use_header=True)
 
         # Confirm by checking against caplog that metadata was
         # not assigned.
@@ -136,7 +137,7 @@ class InstAccessTests(object):
         end_date = self.ref_time + dt.timedelta(days=2)
         end_doy = int(end_date.strftime("%j"))
         self.testInst.load(self.ref_time.year, self.ref_doy, end_date.year,
-                           end_doy)
+                           end_doy, use_header=True)
 
         # Test that the loaded date range is correct
         self.eval_successful_load(end_date=end_date)
@@ -147,7 +148,8 @@ class InstAccessTests(object):
 
         # Test that the correct error is raised
         with pytest.raises(TypeError) as terr:
-            self.testInst.load(date=self.ref_time, unsupported_keyword=True)
+            self.testInst.load(date=self.ref_time, unsupported_keyword=True,
+                               use_header=True)
 
         # Evaluate error message
         assert str(terr).find("load() got an unexpected keyword") >= 0
@@ -158,7 +160,7 @@ class InstAccessTests(object):
 
         # Check that the correct error is raised
         with pytest.raises(TypeError) as err:
-            self.testInst.load(self.ref_time.year)
+            self.testInst.load(self.ref_time.year, use_header=True)
 
         # Check that the error message is correct
         estr = 'Unknown or incomplete input combination.'
@@ -177,7 +179,7 @@ class InstAccessTests(object):
         """
 
         with pytest.raises(ValueError) as err:
-            self.testInst.load(self.ref_time.year, doy)
+            self.testInst.load(self.ref_time.year, doy, use_header=True)
         estr = 'Day of year (doy) is only valid between and '
         assert str(err).find(estr) >= 0
 
@@ -196,7 +198,7 @@ class InstAccessTests(object):
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, 1, end_yr=self.ref_time.year,
-                               end_doy=end_doy)
+                               end_doy=end_doy, use_header=True)
         estr = 'Day of year (end_doy) is only valid between and '
         assert str(err).find(estr) >= 0
 
@@ -207,7 +209,7 @@ class InstAccessTests(object):
 
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, self.ref_doy,
-                               self.ref_time.year)
+                               self.ref_time.year, use_header=True)
         estr = 'Both end_yr and end_doy must be set'
         assert str(err).find(estr) >= 0
 
@@ -240,7 +242,7 @@ class InstAccessTests(object):
         """
 
         with pytest.raises(ValueError) as err:
-            self.testInst.load(**kwargs)
+            self.testInst.load(use_header=True, **kwargs)
         estr = 'An inconsistent set of inputs have been'
         assert str(err).find(estr) >= 0
         return
@@ -248,7 +250,7 @@ class InstAccessTests(object):
     def test_basic_instrument_load_no_input(self):
         """Test that `.load()` loads all data."""
 
-        self.testInst.load()
+        self.testInst.load(use_header=True)
         assert (self.testInst.index[0] == self.testInst.files.start_date)
         assert (self.testInst.index[-1] >= self.testInst.files.stop_date)
         assert (self.testInst.index[-1] <= self.testInst.files.stop_date
@@ -259,7 +261,7 @@ class InstAccessTests(object):
                              [('fname', 'have multi_file_day and load by file'),
                               (None, 'is not supported with multi_file_day')])
     def test_instrument_load_errors_with_multifile(self, load_in, verr):
-        """Ensure improper usage of load with `multi_file_day` raises ValueError.
+        """Ensure improper use of load with `multi_file_day` raises ValueError.
 
         Parameters
         ----------
@@ -279,7 +281,7 @@ class InstAccessTests(object):
             load_kwargs = dict()
 
         with pytest.raises(ValueError) as err:
-            self.testInst.load(**load_kwargs)
+            self.testInst.load(use_header=True, **load_kwargs)
 
         assert str(err).find(verr) >= 0
 
@@ -288,7 +290,7 @@ class InstAccessTests(object):
     def test_basic_instrument_load_by_date(self):
         """Test loading by date."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         self.eval_successful_load()
         return
 
@@ -296,7 +298,8 @@ class InstAccessTests(object):
         """Test date range loading, `date` and `end_date`."""
 
         end_date = self.ref_time + dt.timedelta(days=2)
-        self.testInst.load(date=self.ref_time, end_date=end_date)
+        self.testInst.load(date=self.ref_time, end_date=end_date,
+                           use_header=True)
         self.eval_successful_load(end_date=end_date)
         return
 
@@ -304,14 +307,15 @@ class InstAccessTests(object):
         """Ensure `.load(date=date)` only uses date portion of datetime."""
 
         # Put in a date that has more than year, month, day
-        self.testInst.load(date=(self.ref_time + dt.timedelta(minutes=71)))
+        self.testInst.load(date=(self.ref_time + dt.timedelta(minutes=71)),
+                           use_header=True)
         self.eval_successful_load()
         return
 
     def test_basic_instrument_load_data(self):
         """Test that correct day loads (checking down to the sec)."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.eval_successful_load()
         return
 
@@ -320,7 +324,7 @@ class InstAccessTests(object):
 
         self.ref_time = dt.datetime(2008, 12, 31)
         self.ref_doy = 366
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.eval_successful_load()
         return
 
@@ -357,7 +361,7 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(fname=self.testInst.files[12])
+        self.testInst.load(fname=self.testInst.files[12], use_header=True)
 
         # Set new bounds that do not include this date.
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
@@ -380,7 +384,7 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
 
         # Set new bounds that do not include this date.
         self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
@@ -400,7 +404,7 @@ class InstAccessTests(object):
         # If mangle_file_date is true, index will not match exactly.
         # Find the closest point instead.
         ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
-        self.testInst.load(fname=self.testInst.files[ind])
+        self.testInst.load(fname=self.testInst.files[ind], use_header=True)
         self.eval_successful_load()
         return
 
@@ -422,7 +426,7 @@ class InstAccessTests(object):
         # If mangle_file_date is true, index will not match exactly.
         # Find the closest point.
         ind = np.argmin(abs(self.testInst.files.files.index - self.ref_time))
-        self.testInst.load(fname=self.testInst.files[ind])
+        self.testInst.load(fname=self.testInst.files[ind], use_header=True)
         getattr(self.testInst, operator)()
 
         # Modify ref time since iterator changes load date.
@@ -433,7 +437,8 @@ class InstAccessTests(object):
     def test_filename_load(self):
         """Test if file is loadable by filename with no path."""
 
-        self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
+        self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
+                           use_header=True)
         self.eval_successful_load()
         return
 
@@ -443,7 +448,7 @@ class InstAccessTests(object):
         stop_fname = self.ref_time + dt.timedelta(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
-                           stop_fname=stop_fname)
+                           stop_fname=stop_fname, use_header=True)
         assert self.testInst.index[0] == self.ref_time
         assert self.testInst.index[-1] >= self.ref_time + dt.timedelta(days=1)
         assert self.testInst.index[-1] <= self.ref_time + dt.timedelta(days=2)
@@ -457,7 +462,7 @@ class InstAccessTests(object):
         with pytest.raises(ValueError) as err:
             check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
             self.testInst.load(fname=stop_fname,
-                               stop_fname=check_fname)
+                               stop_fname=check_fname, use_header=True)
         estr = '`stop_fname` must occur at a later date '
         assert str(err).find(estr) >= 0
         return
@@ -472,7 +477,7 @@ class InstAccessTests(object):
     def test_eq_both_with_data(self):
         """Test equality when the same object with loaded data."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         inst_copy = self.testInst.copy()
         assert inst_copy == self.testInst
         return
@@ -480,7 +485,7 @@ class InstAccessTests(object):
     def test_eq_one_with_data(self):
         """Test equality when the same objects but only one with loaded data."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         inst_copy = self.testInst.copy()
         inst_copy.data = self.testInst._null_data
         assert inst_copy != self.testInst
@@ -489,7 +494,7 @@ class InstAccessTests(object):
     def test_eq_different_data_type(self):
         """Test equality different data type."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         inst_copy = self.testInst.copy()
         if self.testInst.pandas_format:
             inst_copy.pandas_format = False
@@ -543,12 +548,13 @@ class InstAccessTests(object):
         """
 
         # Load a data set to concatonate
-        self.testInst.load(self.ref_time.year, self.ref_doy + 1)
+        self.testInst.load(self.ref_time.year, self.ref_doy + 1,
+                           use_header=True)
         data2 = self.testInst.data
         len2 = len(self.testInst.index)
 
         # Load a different data set into the instrument
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         len1 = len(self.testInst.index)
 
         # Set the keyword arguments
@@ -599,7 +605,7 @@ class InstAccessTests(object):
     def test_empty_flag_data_not_empty(self):
         """Test the status of the empty flag for loaded data."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         assert not self.testInst.empty
         return
 
@@ -610,7 +616,7 @@ class InstAccessTests(object):
         assert isinstance(self.testInst.index, pds.Index)
 
         # Test an index is present with data loaded in an Instrument
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         assert isinstance(self.testInst.index, pds.Index)
         return
 
@@ -618,7 +624,7 @@ class InstAccessTests(object):
         """Test that the index is returned in the proper format."""
 
         # Load data
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
 
         # Ensure we get the index back
         if self.testInst.pandas_format:
@@ -641,7 +647,7 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         assert np.all((self.testInst[labels]
                        == self.testInst.data[labels]).values)
         return
@@ -660,7 +666,7 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         assert np.all(self.testInst[index, 'mlt']
                       == self.testInst.data['mlt'][index])
         return
@@ -668,7 +674,7 @@ class InstAccessTests(object):
     def test_data_access_by_row_slicing_and_name_slicing(self):
         """Check that each variable is downsampled."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         result = self.testInst[0:10, :]
         for variable, array in result.items():
             assert len(array) == len(self.testInst.data[variable].values[0:10])
@@ -678,7 +684,7 @@ class InstAccessTests(object):
     def test_data_access_by_datetime_and_name(self):
         """Check that datetime can be used to access data."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.out = dt.datetime(2009, 1, 1, 0, 0, 0)
         assert np.all(self.testInst[self.out, 'uts']
                       == self.testInst.data['uts'].values[0])
@@ -687,7 +693,7 @@ class InstAccessTests(object):
     def test_data_access_by_datetime_slicing_and_name(self):
         """Check that a slice of datetimes can be used to access data."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         time_step = (self.testInst.index[1]
                      - self.testInst.index[0]).value / 1.E9
         offset = dt.timedelta(seconds=(10 * time_step))
@@ -700,7 +706,7 @@ class InstAccessTests(object):
     def test_setting_data_by_name(self):
         """Test setting data by name."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         return
@@ -708,7 +714,7 @@ class InstAccessTests(object):
     def test_setting_series_data_by_name(self):
         """Test setting series data by name."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = \
             2. * pds.Series(self.testInst['mlt'].values,
                             index=self.testInst.index)
@@ -721,7 +727,7 @@ class InstAccessTests(object):
     def test_setting_pandas_dataframe_by_names(self):
         """Test setting pandas dataframe by name."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst[['doubleMLT', 'tripleMLT']] = \
             pds.DataFrame({'doubleMLT': 2. * self.testInst['mlt'].values,
                            'tripleMLT': 3. * self.testInst['mlt'].values},
@@ -733,7 +739,7 @@ class InstAccessTests(object):
     def test_setting_data_by_name_single_element(self):
         """Test setting data by name for a single element."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = 2.
         assert np.all(self.testInst['doubleMLT'] == 2.)
 
@@ -744,7 +750,7 @@ class InstAccessTests(object):
     def test_setting_data_by_name_with_meta(self):
         """Test setting data by name with meta."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = {'data': 2. * self.testInst['mlt'],
                                       'units': 'hours',
                                       'long_name': 'double trouble'}
@@ -756,7 +762,7 @@ class InstAccessTests(object):
     def test_setting_partial_data(self):
         """Test setting partial data by index."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.out = self.testInst
         if self.testInst.pandas_format:
             self.testInst[0:3] = 0
@@ -789,7 +795,7 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[changed, 'doubleMLT'] = 0
         assert (self.testInst[fixed, 'doubleMLT']
@@ -800,7 +806,7 @@ class InstAccessTests(object):
     def test_modifying_data_inplace(self):
         """Test modification of data inplace."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
         assert (self.testInst['doubleMLT']
@@ -819,7 +825,7 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         inst_subset = self.testInst[index]
         if self.testInst.pandas_format:
             assert len(inst_subset) == len(index)
@@ -842,7 +848,7 @@ class InstAccessTests(object):
         """
 
         # Check for error for unknown variable name
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
 
         # Capture the ValueError and message
         with pytest.raises(ValueError) as verr:
@@ -876,7 +882,7 @@ class InstAccessTests(object):
             values = {var: mapper(var) for var in self.testInst.variables}
 
         # Test single variable
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst.rename(mapper, lowercase_data_labels=lowercase)
 
         for key in values:
@@ -915,7 +921,8 @@ class InstAccessTests(object):
         # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
-                self.testInst.load(self.ref_time.year, self.ref_doy)
+                self.testInst.load(self.ref_time.year, self.ref_doy,
+                                   use_header=True)
                 self.testInst.rename(mapper)
                 for key in values:
                     for ikey in values[key]:
@@ -969,7 +976,8 @@ class InstAccessTests(object):
         # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
-                self.testInst.load(self.ref_time.year, self.ref_doy)
+                self.testInst.load(self.ref_time.year, self.ref_doy,
+                                   use_header=True)
 
                 # Check for error for unknown column or HO variable name
                 with pytest.raises(ValueError) as verr:
@@ -998,7 +1006,8 @@ class InstAccessTests(object):
         # Check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2d':
-                self.testInst.load(self.ref_time.year, self.ref_doy)
+                self.testInst.load(self.ref_time.year, self.ref_doy,
+                                   use_header=True)
                 self.testInst.rename(values)
                 for key in values:
                     for ikey in values[key]:

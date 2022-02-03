@@ -87,6 +87,7 @@ class TestBasicsInstModule(TestBasics):
         return
 
 
+# TODO(#908): remove below class when pysat_testing_xarray is removed.
 class TestBasicsXarray(TestBasics):
     """Basic tests for xarray `pysat.Instrument`."""
 
@@ -113,6 +114,7 @@ class TestBasicsXarray(TestBasics):
         return
 
 
+# TODO(#908): remove below class when pysat_testing2d is removed.
 class TestBasics2D(TestBasics):
     """Basic tests for 2D pandas `pysat.Instrument`."""
 
@@ -174,7 +176,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_by_2d_indices_and_name(self, index):
         """Check that variables and be accessed by each supported index type."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         assert np.all(self.testInst[index, index, 'profiles']
                       == self.testInst.data['profiles'][index, index])
         return
@@ -182,7 +184,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_by_2d_tuple_indices_and_name(self):
         """Check that variables and be accessed by multi-dim tuple index."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         index = ([0, 1, 2, 3], [0, 1, 2, 3])
         assert np.all(self.testInst[index, 'profiles']
                       == self.testInst.data['profiles'][index[0], index[1]])
@@ -191,7 +193,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_bad_dimension_tuple(self):
         """Test raises ValueError for mismatched tuple index and data dims."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         index = ([0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3])
 
         with pytest.raises(ValueError) as verr:
@@ -204,7 +206,7 @@ class TestBasics2DXarray(TestBasics):
     def test_data_access_bad_dimension_for_multidim(self):
         """Test raises ValueError for mismatched index and data dimensions."""
 
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         index = [0, 1, 2, 3]
 
         with pytest.raises(ValueError) as verr:
@@ -222,7 +224,7 @@ class TestBasics2DXarray(TestBasics):
     def test_setting_partial_data_by_2d_indices_and_name(self, changed, fixed):
         """Check that data can be set using each supported index type."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
         self.testInst[changed, changed, 'doubleProfile'] = 0
         assert np.all(np.all(self.testInst[fixed, fixed, 'doubleProfile']
@@ -366,33 +368,42 @@ class TestDeprecation(object):
         self.in_kwargs = {"platform": 'pysat', "name": 'testing',
                           "clean_level": 'clean'}
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.warn_msgs = []
+        self.war = ""
         return
 
     def teardown(self):
         """Clean up the unit test environment after each method."""
 
         reload(pysat.instruments.pysat_testing)
-        del self.in_kwargs, self.ref_time
+        del self.in_kwargs, self.ref_time, self.warn_msgs, self.war
+        return
+
+    def eval_warnings(self):
+        """Evaluate the number and message of the raised warnings."""
+
+        # Ensure the minimum number of warnings were raised.
+        assert len(self.war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present.
+        testing.eval_warnings(self.war, self.warn_msgs)
         return
 
     def test_download_freq_kwarg(self):
         """Test deprecation of download kwarg `freq`."""
 
         # Catch the warnings
-        with warnings.catch_warnings(record=True) as war:
+        with warnings.catch_warnings(record=True) as self.war:
             tinst = pysat.Instrument(**self.in_kwargs)
             tinst.download(start=self.ref_time, freq='D')
 
-        self.warn_msgs = ["".join(["`pysat.Instrument.download` kwarg `freq` ",
-                                   "has been deprecated and will be removed ",
-                                   "in pysat 3.2.0+"])]
-        self.warn_msgs = np.array(self.warn_msgs)
+        self.warn_msgs = np.array(["".join(["`pysat.Instrument.download` kwarg",
+                                            " `freq` has been deprecated and ",
+                                            "will be removed in pysat ",
+                                            "3.2.0+"])])
 
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, self.warn_msgs)
+        # Evaluate the warning output
+        self.eval_warnings()
         return
 
     def test_download_travis_attr(self):
@@ -402,71 +413,61 @@ class TestDeprecation(object):
         # Add deprecated attribute.
         inst_module._test_download_travis = {'': {'': False}}
 
-        self.warn_msgs = [" ".join(["`_test_download_travis` has been",
-                                    "deprecated and will be replaced",
-                                    "by `_test_download_ci` in",
-                                    "3.2.0+"])]
-        self.warn_msgs = np.array(self.warn_msgs)
+        self.warn_msgs = np.array([" ".join(["`_test_download_travis` has been",
+                                             "deprecated and will be replaced",
+                                             "by `_test_download_ci` in",
+                                             "3.2.0+"])])
 
         # Catch the warnings.
-        with warnings.catch_warnings(record=True) as war:
+        with warnings.catch_warnings(record=True) as self.war:
             tinst = pysat.Instrument(inst_module=inst_module)
 
         # Ensure attributes set properly.
         assert tinst._test_download_ci is False
 
-        # Ensure the minimum number of warnings were raised.
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present.
-        testing.eval_warnings(war, self.warn_msgs)
+        # Evaluate the warning output
+        self.eval_warnings()
         return
 
     def test_filter_netcdf4_metadata(self):
         """Test deprecation warning generated by `_filter_netcdf4_metadata`."""
 
         # Catch the warnings
-        with warnings.catch_warnings(record=True) as war:
+        with warnings.catch_warnings(record=True) as self.war:
             tinst = pysat.Instrument(**self.in_kwargs)
-            tinst.load(date=self.ref_time)
+            tinst.load(date=self.ref_time, use_header=True)
             mdata_dict = tinst.meta._data.to_dict()
             tinst._filter_netcdf4_metadata(mdata_dict,
                                            coltype='str')
 
-        self.warn_msgs = ["".join(["`pysat.Instrument.",
-                                   "_filter_netcdf4_metadata` ",
-                                   "has been deprecated and will be removed ",
-                                   "in pysat 3.2.0+. Use `pysat.utils.io.",
-                                   "filter_netcdf4_metadata` instead."])]
-        self.warn_msgs = np.array(self.warn_msgs)
+        self.warn_msgs = np.array(["".join(["`pysat.Instrument.",
+                                            "_filter_netcdf4_metadata` ",
+                                            "has been deprecated and will be ",
+                                            "removed in pysat 3.2.0+. Use ",
+                                            "`pysat.utils.io.filter_netcdf4_",
+                                            "metadata` instead."])])
 
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, self.warn_msgs)
+        # Evaluate the warning output
+        self.eval_warnings()
         return
 
     def test_to_netcdf4(self):
         """Test deprecation warning generated by `to_netcdf4`."""
 
         # Catch the warnings
-        with warnings.catch_warnings(record=True) as war:
+        with warnings.catch_warnings(record=True) as self.war:
             tinst = pysat.Instrument(**self.in_kwargs)
             try:
                 tinst.to_netcdf4()
             except ValueError:
                 pass
 
-        self.warn_msgs = ["".join(["`fname` as a kwarg has been deprecated, ",
-                                   "must supply a filename 3.2.0+"])]
-        self.warn_msgs = np.array(self.warn_msgs)
+        self.warn_msgs = np.array(["".join(["`fname` as a kwarg has been ",
+                                            "deprecated, must supply a ",
+                                            "filename 3.2.0+"])])
 
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, self.warn_msgs)
+        # Evaluate the warning output
+        self.eval_warnings()
         return
 
     @pytest.mark.parametrize("kwargs", [{'inst_id': None}, {'tag': None}])
@@ -481,13 +482,52 @@ class TestDeprecation(object):
 
         """
 
-        with warnings.catch_warnings(record=True) as war:
+        with warnings.catch_warnings(record=True) as self.war:
             pysat.Instrument('pysat', 'testing', **kwargs)
 
-        warn_msgs = [" ".join(["The usage of None in `tag` and `inst_id`",
-                               "has been deprecated and will be removed",
-                               "in 3.2.0+. Please use '' instead of",
-                               "None."])]
+        self.warn_msgs = np.array(["".join(["The usage of None in `tag` and ",
+                                            "`inst_id` has been deprecated ",
+                                            "and will be removed in 3.2.0+. ",
+                                            "Please use '' instead of None."])])
+
+        # Evaluate the warning output
+        self.eval_warnings()
+        return
+
+    def test_load_use_header(self):
+        """Test that user is informed of MetaHeader on load."""
+
+        # Determine the expected warnings
+        self.warn_msgs = np.array(["".join(['Meta now contains a class for ',
+                                            'global metadata (MetaHeader). ',
+                                            'Default attachment of global ',
+                                            'attributes to Instrument will be',
+                                            ' Deprecated in pysat 3.2.0+. Set ',
+                                            '`use_header=True` to remove this ',
+                                            'warning.'])])
+
+        # Capture the warnings
+        with warnings.catch_warnings(record=True) as self.war:
+            test_inst = pysat.Instrument(**self.in_kwargs)
+            test_inst.load(date=self.ref_time, use_header=False)
+
+        # Evaluate the warning output
+        self.eval_warnings()
+        return
+
+    def test_set_2d_pandas_data(self):
+        """Check that setting 2d data for pandas raises a DeprecationWarning."""
+
+        test_inst = pysat.Instrument('pysat', 'testing2d')
+        test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
+        test_inst.load(date=test_date)
+        with warnings.catch_warnings(record=True) as war:
+            test_inst['new_profiles'] = 2 * test_inst['profiles']
+
+        warn_msgs = [" ".join(["Support for 2D pandas instrument",
+                               "data has been deprecated and will",
+                               "be removed in 3.2.0+."])]
+
         # Ensure the minimum number of warnings were raised.
         assert len(war) >= len(warn_msgs)
 

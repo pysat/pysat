@@ -344,7 +344,7 @@ class InstPropertyTests(object):
 
         greeting = '... listen!'
         self.testInst.hei = greeting
-        self.testInst.load(date=self.ref_time)
+        self.testInst.load(date=self.ref_time, use_header=True)
         assert self.testInst.hei == greeting
         return
 
@@ -395,7 +395,7 @@ class InstPropertyTests(object):
         assert self.out.find('Loaded Orbit Number: 0') > 0
 
         # Activate orbits, check that message has changed
-        testInst.load(self.ref_time.year, self.ref_doy)
+        testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         testInst.orbits.next()
         self.out = testInst.__str__()
         assert self.out.find('Loaded Orbit Number: 1') > 0
@@ -422,7 +422,7 @@ class InstPropertyTests(object):
     def test_str_w_load_lots_data(self):
         """Test string output with loaded data with many variables."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.out = self.testInst.__str__()
         assert self.out.find('Number of variables:') > 0
         assert self.out.find('...') > 0
@@ -432,7 +432,7 @@ class InstPropertyTests(object):
         """Test string output with loaded data with few (4) variables."""
 
         # Load the test data
-        self.testInst.load(self.ref_time.year, self.ref_doy)
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
 
         # Ensure the desired data variable is present and delete all others
         # 4-6 variables are needed to test all lines; choose the lesser limit
@@ -509,7 +509,7 @@ class InstPropertyTests(object):
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             # Trigger load functions
-            self.testInst.load(date=self.ref_time)
+            self.testInst.load(date=self.ref_time, use_header=True)
 
             # Refresh files to trigger other functions
             self.testInst.files.refresh()
@@ -568,7 +568,7 @@ class InstPropertyTests(object):
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             # Trigger load functions
-            self.testInst.load(date=self.ref_time)
+            self.testInst.load(date=self.ref_time, use_header=True)
 
             # Refresh files to trigger other functions
             self.testInst.files.refresh()
@@ -603,7 +603,7 @@ class InstPropertyTests(object):
 
         with pytest.raises(ValueError) as err:
             # Instantiate instrument with new undefined keyword involved
-            eval(self.testInst.__repr__())
+            eval(repr(self.testInst))
 
         estr = "".join(("unknown keywords supplied: ['undefined_keyword1',",
                         " 'undefined_keyword2']"))
@@ -627,6 +627,23 @@ class InstPropertyTests(object):
             for kwarg in self.testInst.kwargs[func]:
                 assert kwarg in self.testInst.kwargs_supported[func]
 
+        return
+
+    def test_optional_unknown_data_dir(self, caplog):
+        """Test log warning raised when supplying an optional bad data path."""
+
+        inst_module = getattr(pysat.instruments,
+                              '_'.join((self.testInst.platform,
+                                        self.testInst.name)))
+
+        # Update settings for this test
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            self.testInst = pysat.Instrument(inst_module=inst_module,
+                                             data_dir="not_a_directory")
+
+        captured = caplog.text
+        assert captured.find("data directory doesn't exist") >= 0
+        assert self.testInst.data_dir is None
         return
 
     @pytest.mark.parametrize(

@@ -195,6 +195,7 @@ class TestMeta(object):
         assert str(ierr).find('expected tuple, list, or str') >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize("parent_child", [
         (['alt_profiles', 'profiles'], 'density'),
         (['alt_profiles', 'profiles'], ['density', 'dummy_str']),
@@ -237,6 +238,7 @@ class TestMeta(object):
             'Duplicated keys (variable names) in Meta.keys()') >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_concat_strict_w_ho_collision(self):
         """Test raises KeyError when higher-order variable nams overlap."""
 
@@ -302,6 +304,7 @@ class TestMeta(object):
         assert str(verr.value).find(err_msg) >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_meta_rename_bad_ho_input(self):
         """Test raises ValueError when treating normal data like HO data."""
 
@@ -336,8 +339,12 @@ class TestMeta(object):
         default_str = ''.join(['Metadata set to defaults, as they were',
                                ' missing in the Instrument'])
         assert len(war) >= 1
-        assert war[0].category == UserWarning
-        assert default_str in str(war[0].message)
+
+        categories = [war[j].category for j in range(len(war))]
+        assert UserWarning in categories
+
+        ind = categories.index(UserWarning)
+        assert default_str in str(war[ind].message)
 
         # Prepare to test the Metadata
         self.dval = 'int32_dummy'
@@ -432,6 +439,7 @@ class TestMeta(object):
         assert out.find('Meta(') >= 0
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize('long_str', [True, False])
     @pytest.mark.parametrize('inst_kwargs',
                              [None, {'platform': 'pysat', 'name': 'testing'},
@@ -449,6 +457,7 @@ class TestMeta(object):
         assert out.find('pysat Meta object') >= 0
         assert out.find('standard variables') > 0
         assert out.find('ND variables') > 0
+        assert out.find('global attributes') > 0
 
         # Evaluate the extra parts of the long output string
         if long_str:
@@ -497,6 +506,7 @@ class TestMeta(object):
         assert cmeta == self.meta, "identical meta objects differ"
         return
 
+    # TODO(#908): remove tests for deprecated instruments
     @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
                                            "testing2d_xarray", "testing_xarray",
                                            "testmodel"])
@@ -537,6 +547,7 @@ class TestMeta(object):
         assert emeta != self.meta, "meta equality not detectinng differences"
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize('val_dict', [
         {'units': 'U', 'long_name': 'HO Val', 'radn': 'raiden'},
         {'units': 'MetaU', 'long_name': 'HO Val'}])
@@ -593,6 +604,7 @@ class TestMeta(object):
             "differences not detected in label {:s}".format(label_key)
         return
 
+    # TODO(#908): remove tests for deprecated instruments
     @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
                                            "testing2d_xarray", "testing_xarray",
                                            "testmodel"])
@@ -700,6 +712,7 @@ class TestMeta(object):
             self.eval_meta_settings()
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     @pytest.mark.parametrize('num_mvals', [0, 1, 3])
     @pytest.mark.parametrize('num_dvals', [0, 1, 3])
@@ -868,6 +881,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     def test_assign_nonstandard_metalabels(self, inst_name):
         """Test labels do not conform to the standard values if set that way.
@@ -1402,6 +1416,7 @@ class TestMeta(object):
     # -------------------------------
     # Tests for higher order metadata
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize('meta_dict', [
         None, {'units': 'V', 'long_name': 'test name'},
         {'units': 'V', 'long_name': 'test name',
@@ -1447,6 +1462,7 @@ class TestMeta(object):
         self.eval_ho_meta_settings(meta_dict)
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("num_ho, num_lo", [(1, 1), (2, 2)])
     def test_assign_mult_higher_order_meta_from_dict(self, num_ho, num_lo):
         """Test assign higher order metadata from dict with multiple types.
@@ -1489,6 +1505,7 @@ class TestMeta(object):
                 self.eval_meta_settings()
         return
 
+    # TODO(#789): remove tests for higher order meta
     def test_inst_ho_data_assign_meta_then_data(self):
         """Test assignment of higher order metadata before assigning data."""
 
@@ -1521,6 +1538,7 @@ class TestMeta(object):
         self.eval_ho_meta_settings(meta_dict)
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_inst_ho_data_assign_meta_different_labels(self):
         """Test the higher order assignment of custom metadata labels."""
 
@@ -1565,6 +1583,7 @@ class TestMeta(object):
             assert self.meta['profiles']['children'][dvar, 'bananas'] == 2
         return
 
+    # TODO(#789): remove tests for higher order meta
     def test_concat_w_ho(self):
         """Test `meta.concat` adds new meta objects with higher order data."""
 
@@ -1581,6 +1600,7 @@ class TestMeta(object):
         assert self.meta['new4'].children['new41'].units == 'hey4'
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_concat_not_strict_w_ho_collision(self):
         """Test non-strict concat with overlapping higher-order data."""
 
@@ -1615,6 +1635,7 @@ class TestMeta(object):
                     cvar, self.meta.labels.units].find('Updated') < 0
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
     def test_ho_attribute_name_case(self, label):
@@ -1642,6 +1663,7 @@ class TestMeta(object):
         assert self.meta.attr_case_name(label) == label
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
     def test_ho_hasattr_case_neutral(self, label):
@@ -1670,6 +1692,7 @@ class TestMeta(object):
         assert self.meta[self.dval].children.hasattr_case_neutral(label)
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_ho_meta_rename_function(self):
         """Test `meta.rename` method with ho data using a function."""
 
@@ -1705,6 +1728,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#913): remove tests for 2d metadata
     def test_ho_meta_rename_dict(self):
         """Test `meta.rename` method with ho data using a dict."""
 
@@ -1759,6 +1783,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
                                        'MeTa_lAbEl'])
     def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
@@ -1794,6 +1819,7 @@ class TestMeta(object):
 
         return
 
+    # TODO(#789): remove tests for higher order meta
     def test_ho_data_retrieval_case_insensitive(self):
         """Test that higher order data variables are case insensitive."""
 
@@ -1849,6 +1875,7 @@ class TestMetaImmutable(TestMeta):
         del self.mutable
         return
 
+    # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize("prop,set_val", [('data', pds.DataFrame()),
                                               ('ho_data', {})])
     def test_meta_mutable_properties(self, prop, set_val):
@@ -1912,8 +1939,8 @@ class TestMetaMutable(object):
         del self.meta, self.testInst
         return
 
-    def test_transfer_attributes_overwrite_with_strict_names(self):
-        """Test raises AttributeError when overwriting with `strict_names`."""
+    def test_transfer_attr_inst_overwrite_with_strict_names(self):
+        """Test `strict_names` raises AttributeError with existing Inst attr."""
 
         # Update the Meta and Instrument objects
         self.meta.jojo_beans = 'yep!'
@@ -1927,8 +1954,24 @@ class TestMetaMutable(object):
         assert str(aerr).find("cannot be transferred as it already exists") > 0
         return
 
-    def test_transfer_attributes_to_instrument_strict_names_false(self):
-        """Test attr transfer with strict_names set to False."""
+    def test_transfer_attr_header_overwrite_with_strict_names(self):
+        """Test `strict_names` raises AttributeError with existing header attr.
+
+        """
+
+        # Update the Meta and Instrument objects
+        self.meta.jojo_beans = 'yep!'
+        setattr(self.meta.header, 'jojo_beans', 'nope!')
+
+        # Catch and evaluate error message
+        with pytest.raises(AttributeError) as aerr:
+            self.meta.transfer_attributes_to_header(strict_names=True)
+
+        assert str(aerr).find("cannot be transferred as it already exists") > 0
+        return
+
+    def test_transfer_attr_inst_to_instrument_strict_names_false(self):
+        """Test attr transfer to Instrument with strict_names set to False."""
 
         # Add the same attribute with different values to Meta and Instrument
         self.meta.overwrite_attribute = 'Meta Value'
@@ -1942,8 +1985,22 @@ class TestMetaMutable(object):
         assert self.testInst.overwrite_attribute == 'Meta Value'
         return
 
+    def test_transfer_attr_inst_to_header_strict_names_false(self):
+        """Test attr transfer to MetaHeader with strict_names set to False."""
+
+        # Add the same attribute with different values to Meta and Instrument
+        self.meta.overwrite_attribute = 'Meta Value'
+        setattr(self.meta.header, "overwrite_attribute", 'Head Value')
+
+        # Overwrite the Instrument attribute value with the meta vale
+        self.meta.transfer_attributes_to_header(strict_names=False)
+
+        # Test the result
+        assert self.meta.header.overwrite_attribute == 'Meta Value'
+        return
+
     def test_transfer_attributes_to_instrument(self):
-        """Test transfer of custom meta attributes."""
+        """Test transfer of custom meta attributes to Instrument."""
 
         # Set non-conflicting attribute
         self.meta.new_attribute = 'hello'
@@ -1953,6 +2010,24 @@ class TestMetaMutable(object):
         assert hasattr(self.testInst, "new_attribute"), \
             "custom Meta attribute not transferred to Instrument."
         assert self.testInst.new_attribute == 'hello'
+
+        # Ensure transferred attributes are removed from Meta
+        assert not hasattr(self.meta, "new_attribute"), \
+            "custom Meta attribute not removed during transfer to Instrument."
+        return
+
+    def test_transfer_attributes_to_header(self):
+        """Test transfer of custom meta attributes to MetaHeader."""
+
+        # Set non-conflicting attribute
+        self.meta.new_attribute = 'hello'
+        self.meta.transfer_attributes_to_header()
+
+        # Test to see if attribute was transferred successfully to Instrument
+        assert hasattr(self.meta.header, "new_attribute"), \
+            "custom Meta attribute not transferred to Instrument."
+        assert self.meta.header.new_attribute == 'hello'
+        assert "new_attribute" in self.meta.header.global_attrs
 
         # Ensure transferred attributes are removed from Meta
         assert not hasattr(self.meta, "new_attribute"), \
@@ -1979,4 +2054,71 @@ class TestMetaMutable(object):
         assert not hasattr(self.meta, "standard_attribute")
         assert self.meta._hidden_attribute == 'is it me'
         assert self.meta.__private_attribute == "you're looking for"
+        return
+
+
+class TestDeprecation(object):
+    """Unit tests for DeprecationWarnings in the Meta class."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        warnings.simplefilter("always", DeprecationWarning)
+        self.meta = pysat.Meta()
+        self.warn_msgs = []
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.meta, self.warn_msgs
+        return
+
+    def test_higher_order_meta_deprecation(self):
+        """Test that setting higher order meta raises DeprecationWarning."""
+
+        # Initialize higher-order metadata to add to the main meta object
+        ho_meta = pysat.Meta()
+        ho_meta['series_profiles'] = {'long_name': 'series'}
+
+        # Raise and catch warnings
+        with warnings.catch_warnings(record=True) as war:
+            self.meta['series_profiles'] = {'meta': ho_meta,
+                                            'long_name': 'series'}
+
+        # Evaluate warnings
+        self.warn_msgs = ["Support for higher order metadata has been"]
+        self.warn_msgs = np.array(self.warn_msgs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        testing.eval_warnings(war, self.warn_msgs)
+
+        return
+
+    def test_higher_order_meta_rename_deprecation(self):
+        """Test that renaming higher order meta raises DeprecationWarning."""
+
+        # Initialize higher-order metadata to add to the main meta object
+        ho_meta = pysat.Meta()
+        ho_meta['series_profiles'] = {'long_name': 'series'}
+        self.meta['series_profiles'] = {'meta': ho_meta,
+                                        'long_name': 'series'}
+
+        # Raise and catch warnings
+        with warnings.catch_warnings(record=True) as war:
+            self.meta.rename(str.upper)
+
+        # Evaluate warnings
+        self.warn_msgs = ["Support for higher order metadata has been"]
+        self.warn_msgs = np.array(self.warn_msgs)
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(self.warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        testing.eval_warnings(war, self.warn_msgs)
+
         return
