@@ -478,6 +478,7 @@ class Meta(object):
             # from a Meta object. Set data using standard assignment via a dict
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
+                self._warn_meta_children()
                 child = in_dict.pop('children')
                 if child is not None:
                     # If there is data in the child object, assign it here
@@ -488,6 +489,7 @@ class Meta(object):
 
         elif isinstance(input_data, Meta):
             # Dealing with a higher order data set.
+            self._warn_meta_children()
             # data_vars is only a single name here (by choice for support)
             if (data_vars in self._ho_data) and input_data.empty:
                 # No actual metadata provided and there is already some
@@ -1524,6 +1526,15 @@ class Meta(object):
         else:
             raise ValueError(''.join(['Unable to retrieve information from ',
                                       filename]))
+
+    # TODO(#789): remove in pysat 3.2.0
+    def _warn_meta_children(self):
+        """Warn the user that higher order metadata is deprecated."""
+
+        warnings.warn(" ".join(["Support for higher order metadata has been",
+                                "deprecated and will be removed in 3.2.0+."]),
+                      DeprecationWarning, stacklevel=2)
+        return
 
 
 class MetaLabels(object):
