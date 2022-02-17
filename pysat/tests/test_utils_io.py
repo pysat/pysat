@@ -278,10 +278,6 @@ class TestLoadNetCDF(object):
 
         """
 
-        # TODO(#947) Expand to xarray objects once functionality is updated
-        if not self.testInst.pandas_format:
-            pytest.skip('Not yet implemented for xarray')
-
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
