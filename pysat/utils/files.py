@@ -287,7 +287,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     search_dict = construct_searchstring_from_format(format_str, wildcard=False)
 
     # Add non-standard keys
-    for key in keys:
+    for key in search_dict['keys']:
         if key not in stored:
             stored[key] = None
 
@@ -339,8 +339,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
             for j, sidx in enumerate(loop_split_idx):
                 if sidx is not None:
                     # Pull out value from filename and shorten str.
-                    val = loop_sname[sidx:sidx + lengths[idx]]
-                    loop_sname = loop_sname[sidx + lengths[idx]:]
+                    val = loop_sname[sidx:sidx + search_dict['lengths'][idx]]
+                    loop_sname = loop_sname[sidx + search_dict['lengths'][idx]:]
 
                     # Store parsed info and increment key index
                     stored[search_dict['keys'][idx]].append(val)
