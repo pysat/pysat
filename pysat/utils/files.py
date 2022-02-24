@@ -285,9 +285,6 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     # Parse format string to get information needed to parse filenames
     search_dict = construct_searchstring_from_format(format_str, wildcard=False)
-    snips = search_dict['string_blocks']
-    keys = search_dict['keys']
-    lengths = search_dict['lengths']
 
     # Add non-standard keys
     for key in keys:
@@ -298,10 +295,11 @@ def parse_delimited_filenames(files, format_str, delimiter):
     # regions have the delimiter but aren't going to be parsed out.
     # Reconstruct string from `snips` and use `{}` in place of `keys` and
     # work from that.
-    recon = [''] * (len(snips) + len(keys))
-    for i, item in enumerate(snips):
+    recon = [''] * (len(search_dict['string_blocks'])
+                    + len(search_dict['keys']))
+    for i, item in enumerate(search_dict['string_blocks']):
         recon[2 * i] = item
-    for i, item in enumerate(keys):
+    for i, item in enumerate(search_dict['keys']):
         recon[2 * i + 1] = '{}'
     recon = ''.join(recon)
     split_recon = recon.split(delimiter)
@@ -310,7 +308,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     # Store a list of indexes for locations to start pulling out
     # variable information. For performance reasons, only want to do this
     # once for `split_recon`.
-    sidxs = []
+    split_idx = []
     for i, rname in enumerate(split_recon):
         loop_rname = rname
 
@@ -318,27 +316,27 @@ def parse_delimited_filenames(files, format_str, delimiter):
             sidx = loop_rname.find('{}')
             if sidx < 0:
                 # No template variables to parse
-                sidxs.append(None)
+                split_idx.append(None)
                 break
             else:
                 # Found template variable marker. Remove marker and store
                 # location.
                 loop_rname = loop_rname[sidx + 2:]
-                sidxs.append(sidx)
+                split_idx.append(sidx)
 
     # Parse out template variable information from each filename. Use the
     # indices calculated above. First, prep memory.
-    for key in keys:
+    for key in search_dict['keys']:
         if stored[key] is None:
             stored[key] = []
 
     for temp in files:
         split_name = temp.split(delimiter)
         idx = 0
-        lsidxs = sidxs
+        loop_split_idx = split_idx
         for i, sname in enumerate(split_name):
             loop_sname = sname
-            for j, sidx in enumerate(lsidxs):
+            for j, sidx in enumerate(loop_split_idx):
                 if sidx is not None:
                     # Pull out value from filename and shorten str.
                     val = loop_sname[sidx:sidx + lengths[idx]]
@@ -348,9 +346,9 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     stored[keys[idx]].append(val)
                     idx += 1
                 else:
-                    # No variable to be parsed, remove indices from `lsidxs`
-                    # already used.
-                    lsidxs = lsidxs[j + 1:]
+                    # No variable to be parsed, remove indices from
+                    # `loop_split_idx` already used.
+                    loop_split_idx = loop_split_idx[j + 1:]
                     break
 
     # Convert to numpy arrays
