@@ -423,7 +423,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     form = string.Formatter()
     for snip in form.parse(format_str):
         # Collect all of the format keywords. Replace them in the string with
-        # the '?' wildcard. The numnber of '?'s corresponds to the length of
+        # the '?' wildcard. The number of '?'s corresponds to the length of
         # data to be parsed. The length is obtained from format keywords so
         # that we know later on where to parse information out from.
         out_dict['search_string'] += snip[0]
@@ -449,7 +449,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                             out_dict['search_string'] += '*'
                         break
             else:
-                raise ValueError("Couldn't determine formatting width")
+                estr = ''.join(["Couldn't determine formatting width. ",
+                                "This may be due to the use of unsupported ",
+                                "wildcard characters."])
+                raise ValueError(estr)
 
     return out_dict
 
