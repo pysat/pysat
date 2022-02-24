@@ -343,7 +343,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     loop_sname = loop_sname[sidx + lengths[idx]:]
 
                     # Store parsed info and increment key index
-                    stored[keys[idx]].append(val)
+                    stored[search_dict['keys'][idx]].append(val)
                     idx += 1
                 else:
                     # No variable to be parsed, remove indices from
