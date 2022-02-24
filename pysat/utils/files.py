@@ -168,12 +168,9 @@ def parse_fixed_width_filenames(files, format_str):
 
     # Parse format string to get information needed to parse filenames
     search_dict = construct_searchstring_from_format(format_str)
-    snips = search_dict['string_blocks']
-    lengths = search_dict['lengths']
-    keys = search_dict['keys']
 
     # Add non-standard keys
-    for key in keys:
+    for key in search_dict['keys']:
         if key not in stored:
             stored[key] = []
 
@@ -182,11 +179,11 @@ def parse_fixed_width_filenames(files, format_str):
     idx = 0
     begin_key = []
     end_key = []
-    for i, snip in enumerate(snips):
+    for i, snip in enumerate(search_dict['string_blocks']):
         idx += len(snip)
-        if i < len(lengths):
+        if i < len(search_dict['lengths']):
             begin_key.append(idx)
-            idx += lengths[i]
+            idx += search_dict['lengths'][i]
             end_key.append(idx)
     max_len = idx
 
@@ -196,7 +193,7 @@ def parse_fixed_width_filenames(files, format_str):
 
     # Need to parse out dates for datetime index
     for i, temp in enumerate(files):
-        for j, key in enumerate(keys):
+        for j, key in enumerate(search_dict['keys']):
             if key_str_idx[1][j] == 0:
                 # Last element is a variable to be parsed out
                 val = temp[key_str_idx[0][j]:]
