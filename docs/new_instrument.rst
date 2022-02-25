@@ -269,11 +269,13 @@ A complete method is available in
 :py:meth:`pysat.Files.from_os` is a convenience constructor provided for
 filenames that include time information in the filename and utilize a constant
 field width or a consistent delimiter. The location and format of the time
-information is specified using standard python formatting and keywords year,
-month, day of month, day of year, hour, minute, second. Additionally, version,
-revision, and cycle keywords are supported. When present, the
+information is specified using standard python formatting and keywords `year`,
+`month`, `day` of month (year), `hour`, `minute`, `second`. Additionally,
+`version`, `revision`, and `cycle` keywords are supported. When present, the
 :py:meth:`pysat.Files.from_os` constructor will filter down the file list to
-the latest version/revision/cycle combination.
+the latest version/revision/cycle combination. Additional
+user specified template variables are supported though they will not be used
+to extract date information.
 
 A complete list_files routine could be as simple as
 
@@ -281,10 +283,10 @@ A complete list_files routine could be as simple as
 
    def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
        if format_str is None:
-           # set default string template consistent with files from
+           # Set default string template consistent with files from
            # the data provider that will be supported by the instrument
-           # module download method
-           # template string below works for CINDI IVM data that looks like
+           # module download method.
+           # Template string below works for CINDI IVM data that looks like
            # 'cindi-2009310-ivm-v02.hdf'
            # format_str supported keywords: year, month, day,
            # hour, minute, second, version, revision, and cycle
@@ -294,17 +296,31 @@ A complete list_files routine could be as simple as
 The constructor presumes the template string is for a fixed width format
 unless a delimiter string is supplied. This constructor supports conversion
 of years with only 2 digits and expands them to 4 using the
-two_digit_year_break keyword. Note the support for format_str.
+`two_digit_year_break` keyword. Note the support for a user provided
+`format_str` at runtime.
+
+Given the range of compliance of filenames to a strict standard across the
+decades of space science parsing filenames with and without a `delimiter`
+can typically generate the same results, even for filenames without a
+consistently applied delimiter. As such either parser will function for most
+situations however both remain within pysat to support currently unknown edge
+cases that users may encounter. More practically, parsing with a delimiter
+offers more support for the `*` wildcard than the fixed width parser.
+It is generally advised to limit use of the `*` wildcard to prevent
+potential false positives if a directory has more than one instrument within.
 
 If the constructor is not appropriate, then lower level methods within
 :py:class:`pysat.Files` may also be used to reduce the workload in adding a new
-instrument.
+instrument. Access to the values of user provided template variables is not
+available via :py:meth:`pysat.Files.from_os` and thus requires use of the
+same lower level methods in :py:class:`pysat.Files`.
 
 See :py:func:`pysat.utils.time.create_datetime_index` for creating a datetime
 index for an array of irregularly sampled times.
 
 pysat will invoke the list_files method the first time a particular instrument
-is instantiated. After the first instantiation, by default, pysat will not
+is instantiated. After the first instantiation, by default :ref:`tutorial-params`,
+pysat will not
 search for instrument files as some missions can produce a large number of
 files, which may take time to identify. The list of files associated
 with an Instrument may be updated by adding ``update_files=True`` to the kwargs.

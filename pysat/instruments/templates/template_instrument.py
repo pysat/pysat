@@ -48,10 +48,7 @@ import warnings
 import pysat
 
 # Assign the pysat logger to the local log commands, as these functions will
-# all be executed within pysat.  If this is the only instance pysat is used,
-# consider omitting the pysat import and logger assignment and replacing it
-# with:
-# from pysat import logger
+# all be executed within pysat.
 logger = pysat.logger
 
 # ----------------------------------------------------------------------------
@@ -222,21 +219,34 @@ def list_files(tag='', inst_id='', data_path=None, format_str=None):
     ----
     The returned Series should not have any duplicate datetimes. If there are
     multiple versions of a file the most recent version should be kept and the
-    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
-    the returned files are up to pysat specifications.
+    rest discarded. This routine uses the `pysat.Files.from_os` constructor,
+    thus the returned files are up to pysat specifications.
 
     Multiple data levels may be supported via the 'tag' input string.
-    Multiple instruments via the inst_id string.
+    Multiple instruments via the `inst_id` string.
 
     """
 
     if format_str is None:
         # User did not supply an alternative format template string
-        format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
+        format_str = 'example-name_{year:04d}_{month:02d}_{day:02d}.nc'
 
     # We use a pysat provided function to grab list of files from the
-    # local file system that match the format defined above
-    file_list = pysat.Files.from_os(data_path=data_path, format_str=format_str)
+    # local file system that match the format defined above. This example
+    # is set to parse filenames from the local system using the delimiter '_'.
+    # Alternately, leaving the `delimiter` to the default of `None` in the
+    # `from_os` function call below will engage the fixed width filename parser.
+    # If there is not a common delimiter then the fixed width parser is
+    # suggested though not always required. Given the range of standards
+    # compliance across the decades of space science both parsers have been
+    # expanded to improve robustness. In practice then, either parser may be
+    # used for most filenames. Both are still included to account for currently
+    # unknown edge cases users may encounter. The delimited parser has better
+    # support for using the '*' wildcard with the caveat that the '*' can
+    # potentially produce false positives if a directory has multiple instrument
+    # files that satisfy the same format string pattern.
+    file_list = pysat.Files.from_os(data_path=data_path, format_str=format_str,
+                                    delimiter='_')
 
     return file_list
 
