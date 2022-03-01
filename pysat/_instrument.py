@@ -1457,7 +1457,9 @@ class Instrument(object):
         # Check that data and metadata are the data types we expect
         if not isinstance(data, self._data_library):
             raise TypeError(' '.join(('Data returned by instrument load',
-                            'routine must be a', repr(self._data_library))))
+                                      'routine must be a',
+                                      repr(self._data_library),
+                                      'and not', repr(type(data)))))
         if not isinstance(mdata, pysat.Meta):
             raise TypeError('Metadata returned must be a pysat.Meta object')
 
