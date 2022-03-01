@@ -102,6 +102,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed pysat_testmodel Instrument longitude range
    * Corrected link to testing badge in README.md
    * `from_os` now always returns a sorted Series.
+   * Moved function call for Instrument modules init function to end of
+     pysat.Instrument instantiation.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
