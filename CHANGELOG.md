@@ -42,6 +42,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added a new MetaHeader class for holding global metadata.
    * Added a pysat Instrument for loading pysat-written NetCDF4 files.
    * Allowed MetaLabels to be expanded through setting new Meta data values.
+   * Added support for user variables when parsing template filenames
+     in `pysat.utils.files`.
+   * Improved robustness of parsing delimited files.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -100,6 +103,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `utils.coords.update_longitude`
    * Fixed pysat_testmodel Instrument longitude range
    * Corrected link to testing badge in README.md
+   * `from_os` now always returns a sorted Series.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
@@ -123,6 +127,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Updated tests in `test_meta` to search all warnings, not just the first
    * Updated pandas syntax to be compatible with pandas 2.0 (pandas 1.4
      deprecations)
+   * Cleaned up excess variables upon import
 
 [3.0.1] - 2021-07-28
 --------------------
