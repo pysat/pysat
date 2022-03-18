@@ -499,7 +499,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 elif dim[1] == epoch_name:
                     obj_key = dim[0]
                 else:
-                    raise KeyError('Epoch not found!')
+                    estr = ''.join(['"', epoch_name, '"', ' not found in [',
+                                    ', '.join(dim), ']'])
+                    raise KeyError(estr)
 
                 # Collect variable names associated with dimension
                 idx_bool = [dim == i for i in two_d_dims]
