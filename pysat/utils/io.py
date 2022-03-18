@@ -499,7 +499,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 elif dim[1] == epoch_name:
                     obj_key = dim[0]
                 else:
-                    estr = ''.join(['"', epoch_name, '"', ' not found in [',
+                    estr = ''.join(['Epoch label: "', epoch_name, '"',
+                                    ' was not found in loaded dimensions [',
                                     ', '.join(dim), ']'])
                     raise KeyError(estr)
 
