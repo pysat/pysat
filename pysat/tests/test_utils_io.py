@@ -282,6 +282,9 @@ class TestLoadNetCDF(object):
             # Xarray testing requires conversion to integer with ms default
             self.testInst.data[test_epoch] = \
                 self.testInst[self.epoch_name].astype('int64') / 1.e6
+        else:
+            if 'epoch_name' in kwargs:
+                kwargs.pop('epoch_name')
 
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
