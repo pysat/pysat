@@ -735,9 +735,15 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
-    # Prepare xarray index for this netcdf file
-    data[epoch_name] = pds.to_datetime(data[epoch_name], unit=epoch_unit,
-                                       origin=epoch_origin)
+    # If epoch can be converted to a datetime, convert
+    try:
+        data[epoch_name] = xr.DataArray(pds.to_datetime(data[epoch_name],
+                                                        unit=epoch_unit,
+                                                        origin=epoch_origin),
+                                        coords=data[epoch_name].coords)
+    except (KeyError, ValueError):
+        # Value does not exist or cannot be converted to datetime
+        pass
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
