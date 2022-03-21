@@ -13,6 +13,7 @@ import numpy as np
 import warnings
 
 import pandas as pds
+import xarray as xr
 import pytest
 
 import pysat
@@ -706,3 +707,71 @@ class InstPropertyTests(object):
 
         # Make sure isntrument loaded as inst_module
         assert tinst.inst_module == self.testInst.inst_module
+
+    def test_change_inst_pandas_format(self):
+        """Test changing `pandas_format` attribute works."""
+        new_format = not self.testInst.pandas_format
+
+        # Current data format hidden attributes
+        current_null = self.testInst._null_data
+        current_library = self.testInst._data_library
+
+        # Assign inverted `pandas_format` setting
+        self.testInst.pandas_format = new_format
+
+        # Confirm assignment
+        assert self.testInst.pandas_format == new_format
+
+        # Confirm that internal properties have changed
+        assert type(current_null) != type(self.testInst._null_data)
+        assert current_library != self.testInst._data_library
+
+        # Confirm internal consistency
+        assert isinstance(self.testInst._null_data, self.testInst._data_library)
+
+        if new_format:
+            assert isinstance(self.testInst._null_data, pds.DataFrame)
+        else:
+            assert isinstance(self.testInst._null_data, xr.Dataset)
+
+        return
+
+    @pytest.mark.parametrize("format", ['pandas', 'xarray'])
+    def test_set_data_format(self, format):
+        """Test setting `data_format` attribute works."""
+
+        # Assign `data_format` setting
+        self.testInst.data_format = format
+
+        # Confirm assignment
+        assert self.testInst.data_format == format
+
+        # Confirm internal consistency
+        assert isinstance(self.testInst._null_data, self.testInst._data_library)
+
+        if format == 'pandas':
+            assert isinstance(self.testInst._null_data, pds.DataFrame)
+        elif format == 'xarray':
+            assert isinstance(self.testInst._null_data, xr.Dataset)
+
+        return
+
+    @pytest.mark.parametrize("value,estr", [('bad_value',
+                                             'Must provide one of the'),
+                                            (['hi there.'],
+                                             'Can only assign a string.')])
+    def test_set_bad_data_format_value(self, value, estr):
+        """Test bad `data_format` assignment raises error."""
+
+        current = self.testInst.data_format
+
+        # Assign bad `data_format` setting
+        with pytest.raises(ValueError) as err:
+            self.testInst.data_format = value
+
+        assert str(err).find(estr) >= 0
+
+        # Confirm no changes
+        assert self.testInst.data_format == current
+
+        return
