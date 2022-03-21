@@ -408,16 +408,9 @@ class Instrument(object):
                                           'supplied string must be iterable ',
                                           '[{:}]'.format(self.file_format)]))
 
-        # Set up empty data and metadata. Check if it should use the pandas or
-        # xarray format.
-        if self.pandas_format:
-            self._null_data = pds.DataFrame(None)
-            self._data_library = pds.DataFrame
-        else:
-            self._null_data = xr.Dataset(None)
-            self._data_library = xr.Dataset
-
-        # Assign null data for user selected data type
+        # Set up empty data and metadata.
+        # Assign null data for user selected data type, `_null_data` assigned
+        # when `self.pandas_format` is set in `_assign_attrs`.
         self.data = self._null_data.copy()
 
         # Create Meta instance with appropriate labels.  Meta class methods will
@@ -510,7 +503,7 @@ class Instrument(object):
 
         # Create a placeholder for a post-processing function to be applied
         # to the metadata dictionary before export. If None, no post-processing
-        # will occur
+        # will occur.
         self._export_meta_post_processing = None
 
         # Start with a daily increment for loading
@@ -1961,9 +1954,32 @@ class Instrument(object):
         return
 
     @property
-    def empty(self):
-        """Boolean flag reflecting lack of data, True if there is no data."""
-        return self._empty()
+    def data_format(self):
+        """String indicating data type support, either 'pandas' or 'xarray'."""
+        return self._data_format
+
+    @data_format.setter
+    def data_format(self, new_value):
+        # Set data_format attribute, see property docstring for details.
+        # Note that pandas_format is assigned by default by `_assign_attrs()`.
+        try:
+            new_value = new_value.lower()
+        except:
+            raise ValueError('Can only assign a string.')
+
+        if new_value == 'pandas':
+            self._null_data = pds.DataFrame(None)
+            self._data_library = pds.DataFrame
+            self._data_format = 'pandas'
+        elif new_value == 'xarray':
+            self._null_data = xr.Dataset(None)
+            self._data_library = xr.Dataset
+            self._data_format = 'xarray'
+        else:
+            estr = 'Must provide one of the following: [pandas, xarray]'
+            raise ValueError(estr)
+
+        return
 
     @property
     def date(self):
@@ -1976,9 +1992,30 @@ class Instrument(object):
         self._date = utils.time.filter_datetime_input(new_date)
 
     @property
+    def empty(self):
+        """Boolean flag reflecting lack of data, True if there is no data."""
+        return self._empty()
+
+    @property
     def index(self):
         """Time index of the loaded data."""
         return self._index()
+
+    @property
+    def pandas_format(self):
+        """Boolean flag for pandas data support."""
+        return self._data_format == 'pandas'
+
+    @pandas_format.setter
+    def pandas_format(self, new_value):
+        # Set pandas_format attribute, see property docstring for details.
+        # Note that pandas_format is assigned by default by `_assign_attrs()`.
+        if new_value:
+            self.data_format = 'pandas'
+        else:
+            self.data_format = 'xarray'
+
+        return
 
     @property
     def variables(self):
