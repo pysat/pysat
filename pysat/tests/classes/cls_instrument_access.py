@@ -67,8 +67,9 @@ class InstAccessTests(object):
         # Assign new init to test module
         inst_mod.init = temp_init
 
-        # Instantiate instrument with test module
-        new_inst = pysat.Instrument(inst_module=inst_mod)
+        # Instantiate instrument with test module which invokes needed test
+        # code in the background
+        pysat.Instrument(inst_module=inst_mod)
 
         # Restore nominal init function
         inst_mod.init = inst_mod_init
