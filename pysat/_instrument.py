@@ -1954,34 +1954,6 @@ class Instrument(object):
         return
 
     @property
-    def data_format(self):
-        """Return Instrument data type as a str, either 'pandas' or 'xarray'."""
-        return self._data_format
-
-    @data_format.setter
-    def data_format(self, new_value):
-        # Set data_format attribute, see property docstring for details.
-        # Note that pandas_format is assigned by default by `_assign_attrs()`.
-        try:
-            new_value = new_value.lower()
-        except AttributeError:
-            raise ValueError('Can only assign a string.')
-
-        if new_value == 'pandas':
-            self._null_data = pds.DataFrame(None)
-            self._data_library = pds.DataFrame
-            self._data_format = 'pandas'
-        elif new_value == 'xarray':
-            self._null_data = xr.Dataset(None)
-            self._data_library = xr.Dataset
-            self._data_format = 'xarray'
-        else:
-            estr = 'Must provide one of the following: [pandas, xarray]'
-            raise ValueError(estr)
-
-        return
-
-    @property
     def date(self):
         """Date for loaded data."""
         return self._date
@@ -2004,16 +1976,20 @@ class Instrument(object):
     @property
     def pandas_format(self):
         """Boolean flag for pandas data support."""
-        return self._data_format == 'pandas'
+        return self._pandas_format
 
     @pandas_format.setter
     def pandas_format(self, new_value):
         # Set pandas_format attribute, see property docstring for details.
         # Note that pandas_format is assigned by default by `_assign_attrs()`.
         if new_value:
-            self.data_format = 'pandas'
+            self._null_data = pds.DataFrame(None)
+            self._data_library = pds.DataFrame
         else:
-            self.data_format = 'xarray'
+            self._null_data = xr.Dataset(None)
+            self._data_library = xr.Dataset
+
+        self._pandas_format = new_value
 
         return
 
