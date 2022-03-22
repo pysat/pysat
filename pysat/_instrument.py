@@ -1955,7 +1955,7 @@ class Instrument(object):
 
     @property
     def data_format(self):
-        """String indicating data type support, either 'pandas' or 'xarray'."""
+        """Return Instrument data type as a str, either 'pandas' or 'xarray'."""
         return self._data_format
 
     @data_format.setter
@@ -1964,7 +1964,7 @@ class Instrument(object):
         # Note that pandas_format is assigned by default by `_assign_attrs()`.
         try:
             new_value = new_value.lower()
-        except:
+        except AttributeError:
             raise ValueError('Can only assign a string.')
 
         if new_value == 'pandas':
