@@ -47,8 +47,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Improved robustness of parsing delimited files.
    * Updated `pysat.Instrument.pandas_format` so that changes to setting
      are immediately reflected by changes to Instrument object.
-   * Added `pysat.Instrument.data_format` attribute that returns a string
-     for the current data format setting.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
