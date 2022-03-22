@@ -154,7 +154,7 @@ class Instrument(object):
     meta : pysat.Meta
         Class holding the instrument metadata
     orbits : pysat.Orbits
-        interface to extracting data orbit-by-orbit
+        Interface to extracting data orbit-by-orbit
     variables : list
         List of loaded data variables
     pandas_format : bool
