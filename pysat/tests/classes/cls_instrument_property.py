@@ -13,8 +13,8 @@ import numpy as np
 import warnings
 
 import pandas as pds
-import xarray as xr
 import pytest
+import xarray as xr
 
 import pysat
 from pysat.utils.time import filter_datetime_input
@@ -723,7 +723,7 @@ class InstPropertyTests(object):
         assert self.testInst.pandas_format == new_format
 
         # Confirm that internal properties have changed
-        assert type(current_null) != type(self.testInst._null_data)
+        assert isinstance(self.testInst._null_data, type(current_null))
         assert current_library != self.testInst._data_library
 
         # Confirm internal consistency
