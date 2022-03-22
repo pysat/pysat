@@ -723,7 +723,7 @@ class InstPropertyTests(object):
         assert self.testInst.pandas_format == new_format
 
         # Confirm that internal properties have changed
-        assert isinstance(self.testInst._null_data, type(current_null))
+        assert not isinstance(self.testInst._null_data, type(current_null))
         assert current_library != self.testInst._data_library
 
         # Confirm internal consistency
