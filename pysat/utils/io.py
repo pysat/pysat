@@ -417,7 +417,7 @@ def meta_array_expander(meta_dict):
     if meta_dict[variable]['label'] = [ item1, item2, ..., itemn] then
     the returned dict will contain, meta_dict[variable]['label1'] = item1,
     meta_dict[variable]['label2'] = item2, meta_dict[variable]['labeln'] = itemn
-    
+
     Parameters
     ----------
     meta_dict : dict
