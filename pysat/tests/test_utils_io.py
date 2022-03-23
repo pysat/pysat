@@ -755,8 +755,19 @@ class TestNetCDF4Integration(object):
 
         return
 
-    def test_meta_translation_to_netcdf4(self):
-        """Test impact of meta_translation on netCDF output."""
+    @pytest.mark.parametrize('assign_flag', [True, False])
+    def test_meta_translation_to_netcdf4(self, assign_flag):
+        """Test impact of meta_translation on netCDF output.
+
+        Parameters
+        ----------
+        assign_flag : bool
+            If True, assigns meta translation table as
+            ._meta_translation_table. Otherwise, uses
+            meta_translation keyword argument.
+
+        """
+
 
         # Create a meta translation table
         present = ['testingFillVal', 'testing_FillValue', 'testing_fill_value']
@@ -770,8 +781,12 @@ class TestNetCDF4Integration(object):
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
-                                      meta_translation=meta_trans)
+        if assign_flag:
+            self.testInst._meta_translation_table = meta_trans
+            pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
+        else:
+            pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                          meta_translation=meta_trans)
 
         # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
