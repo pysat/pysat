@@ -26,8 +26,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     Parameters
     ----------
     stored : collections.orderedDict
-        Dict produced by parse_fixed_width_filenames or
-        parse_delimited_filenames
+        Dict produced by `parse_fixed_width_filenames` or
+        `parse_delimited_filenames`
     two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
@@ -116,32 +116,42 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
             return frame['files']
         else:
-            return pds.Series(files, index=index)
+            return pds.Series(files, index=index).sort_index()
     else:
         return pds.Series(None, dtype='object')
 
 
 def parse_fixed_width_filenames(files, format_str):
-    """Parse list of files, extracting data identified by format_str.
+    """Parse list of files, extracting data identified by `format_str`.
 
     Parameters
     ----------
     files : list
-        List of files
+        List of files, typically provided by
+        `files.search_local_system_formatted_filename`.
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports string formatting codes 'year', 'month', 'day', 'hour',
-        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
-        `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
+        Supports all provided string formatting codes though only 'year',
+        'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
+        and 'cycle' will be used for time and sorting information. For example,
+        `instrument-{year:4d}_{month:02d}-{day:02d}_v{version:02d}.cdf`, or
+        `*-{year:4d}_{month:02d}hithere{day:02d}_v{version:02d}.cdf`
 
     Returns
     -------
     stored : collections.OrderedDict
-        Information parsed from filenames that inclues: 'year', 'month', 'day',
-        'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
-        includes 'files', an input list of files, and 'format_str', a formatted
-        string from input
+        Information parsed from filenames that includes: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
+        well as any other user provided template variables. Also
+        includes `files`, an input list of files, and `format_str`.
+
+    Note
+    ----
+    The function uses the lengths of the fixed characters within `format_str`,
+    as well as the supplied lengths for template variables, to determine
+    where to parse out information. Thus, support for the wildcard '*' is
+    limited to locations before the first template variable.
 
     """
 
@@ -152,26 +162,28 @@ def parse_fixed_width_filenames(files, format_str):
 
     if len(files) == 0:
         stored['files'] = []
-        # include format string as convenience for later functions
+        # Include format string as convenience for later functions
         stored['format_str'] = format_str
         return stored
 
     # Parse format string to get information needed to parse filenames
     search_dict = construct_searchstring_from_format(format_str)
-    snips = search_dict['string_blocks']
-    lengths = search_dict['lengths']
-    keys = search_dict['keys']
+
+    # Add non-standard keys
+    for key in search_dict['keys']:
+        if key not in stored:
+            stored[key] = []
 
     # Determine the locations the date/version information in a filename is
-    # stored use these indices to slice out date from filenames
+    # stored and use these indices to slice out date from filenames.
     idx = 0
     begin_key = []
     end_key = []
-    for i, snip in enumerate(snips):
+    for i, snip in enumerate(search_dict['string_blocks']):
         idx += len(snip)
-        if i < (len(lengths)):
+        if i < len(search_dict['lengths']):
             begin_key.append(idx)
-            idx += lengths[i]
+            idx += search_dict['lengths'][i]
             end_key.append(idx)
     max_len = idx
 
@@ -181,15 +193,25 @@ def parse_fixed_width_filenames(files, format_str):
 
     # Need to parse out dates for datetime index
     for i, temp in enumerate(files):
-        for j, key in enumerate(keys):
-            val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
+        for j, key in enumerate(search_dict['keys']):
+            if key_str_idx[1][j] == 0:
+                # Last element is a variable to be parsed out
+                val = temp[key_str_idx[0][j]:]
+            else:
+                val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
             stored[key].append(val)
 
     # Convert to numpy arrays
     for key in stored.keys():
-        stored[key] = np.array(stored[key]).astype(np.int64)
         if len(stored[key]) == 0:
             stored[key] = None
+        else:
+            try:
+                # Assume key value is numeric integer
+                stored[key] = np.array(stored[key]).astype(np.int64)
+            except ValueError:
+                # Store key value as string
+                stored[key] = np.array(stored[key])
 
     # Include files in output
     stored['files'] = files
@@ -203,26 +225,45 @@ def parse_fixed_width_filenames(files, format_str):
 def parse_delimited_filenames(files, format_str, delimiter):
     """Parse list of files, extracting data identified by format_str.
 
+    Will parse file using `delimiter` though the function does not require
+    every parsed item to be a variable, and more than one variable
+    may be within a parsed section. Thus, the main practical
+    difference with `parse_fixed_width_filenames` is more support for
+    the use of the wildcard '*' within `format_str`. Overuse
+    of the '*' wildcard increases the probability of false positive matches
+    if there are multiple instrument files in the directory.
+
     Parameters
     ----------
     files : list
-        List of files
+        List of files, typically provided by
+        `files.search_local_system_formatted_filename`.
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports string formatting codes 'year', 'month', 'day', 'hour',
-        'minute', 'second', 'version', 'revision', and 'cycle'. For example,
-        `instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf`
-    delimiter : string
+        Supports all provided string formatting codes though only 'year',
+        'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
+        and 'cycle' will be used for time and sorting information. For example,
+        `*_{year:4d}_{month:02d}_{day:02d}_*_v{version:02d}_*.cdf`
+    delimiter : str
         Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
     stored : collections.OrderedDict
-        Information parsed from filenames that inclues: 'year', 'month', 'day',
-        'hour', 'minute', 'second', 'version', 'revision', and 'cycle'.  Also
-        includes 'files', an input list of files, and 'format_str', a formatted
-        string from input
+        Information parsed from filenames that includes: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
+        well as any other user provided template variables. Also
+        includes `files`, an input list of files, and `format_str`.
+
+    Note
+    ----
+    The '*' wildcard is supported when leading, trailing, or wholly contained
+    between delimiters, such as 'data_name-{year:04d}-*-{day:02d}.txt',
+    or '*-{year:04d}*-*-{day:02d}*', where '-' is the delimiter.
+    There can not be a mixture of a template variable and '*' without a
+    delimiter in between, unless the '*' occurs after the variables. The
+    '*' should not be used to replace the delimited character in the filename.
 
     """
 
@@ -240,47 +281,72 @@ def parse_delimited_filenames(files, format_str, delimiter):
         return stored
 
     # Parse format string to get information needed to parse filenames
-    search_dict = construct_searchstring_from_format(format_str, wildcard=True)
-    snips = search_dict['string_blocks']
-    keys = search_dict['keys']
+    search_dict = construct_searchstring_from_format(format_str, wildcard=False)
+
+    # Add non-standard keys
+    for key in search_dict['keys']:
+        if key not in stored:
+            stored[key] = None
 
     # Going to parse the string on the delimiter. It is possible that other
-    # regions have the delimiter but aren't going to be parsed out. To apply
-    # the delimiter, breakdown to the string blocks as a guide.
-    pblock = []
-    parsed_block = [snip.split(delimiter) for snip in snips]
-    for block in parsed_block:
-        if block != ['', '']:
-            if block[0] == '':
-                block = block[1:]
-            if block[-1] == '':
-                block = block[:-1]
-            pblock.extend(block)
-        pblock.append('')
-    parsed_block = pblock[:-1]
+    # regions have the delimiter but aren't going to be parsed out.
+    # Reconstruct string from `snips` and use `{}` in place of `keys` and
+    # work from that.
+    recon = [''] * (len(search_dict['string_blocks'])
+                    + len(search_dict['keys']))
+    for i, item in enumerate(search_dict['string_blocks']):
+        recon[2 * i] = item
+    for i, item in enumerate(search_dict['keys']):
+        recon[2 * i + 1] = '{}'
+    recon = ''.join(recon)
+    split_recon = recon.split(delimiter)
 
-    # Need to parse out dates for datetime index
+    # Parse out template variable information from reconstructed name.
+    # Store a list of indexes for locations to start pulling out
+    # variable information. For performance reasons, only want to do this
+    # once for `split_recon`.
+    split_idx = []
+    for i, rname in enumerate(split_recon):
+        loop_rname = rname
+
+        while True:
+            sidx = loop_rname.find('{}')
+            if sidx < 0:
+                # No template variables to parse
+                split_idx.append(None)
+                break
+            else:
+                # Found template variable marker. Remove marker and store
+                # location.
+                loop_rname = loop_rname[sidx + 2:]
+                split_idx.append(sidx)
+
+    # Parse out template variable information from each filename. Use the
+    # indices calculated above. First, prep memory.
+    for key in search_dict['keys']:
+        if stored[key] is None:
+            stored[key] = []
+
     for temp in files:
         split_name = temp.split(delimiter)
-
-        # Ensure leading strings are removed
-        if parsed_block[0] != split_name[0] and parsed_block[0] != '':
-            split_name[0] = split_name[0].split(parsed_block[0])[-1]
-
-        # Ensure the extension is removed
-        if len(split_name) < len(parsed_block):
-            split_name[-1] = split_name[-1].split(parsed_block[-1])[0]
-
         idx = 0
-        for isname, sname in enumerate(split_name):
-            if parsed_block[isname] != sname:
-                # Areas with data to be parsed are not equal to their
-                # `parsed_block` value
-                if stored[keys[idx]] is None:
-                    stored[keys[idx]] = [sname]
+        loop_split_idx = split_idx
+        for i, sname in enumerate(split_name):
+            loop_sname = sname
+            for j, sidx in enumerate(loop_split_idx):
+                if sidx is not None:
+                    # Pull out value from filename and shorten str.
+                    val = loop_sname[sidx:sidx + search_dict['lengths'][idx]]
+                    loop_sname = loop_sname[sidx + search_dict['lengths'][idx]:]
+
+                    # Store parsed info and increment key index
+                    stored[search_dict['keys'][idx]].append(val)
+                    idx += 1
                 else:
-                    stored[keys[idx]].append(sname)
-                idx += 1
+                    # No variable to be parsed, remove indices from
+                    # `loop_split_idx` already used.
+                    loop_split_idx = loop_split_idx[j + 1:]
+                    break
 
     # Convert to numpy arrays
     for key in stored.keys():
@@ -304,17 +370,19 @@ def parse_delimited_filenames(files, format_str, delimiter):
 def construct_searchstring_from_format(format_str, wildcard=False):
     """Parse format file string and returns string formatted for searching.
 
+    Each variable in the string template is replaced with an appropriate
+    number of '?' based upon the provided length of the data.
+
     Parameters
     ----------
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision', and 'cycle'. For example,
+        For example,
         `instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf`
     wildcard : bool
-        If True, replaces the ? sequence with a * . This option may be well
-        suited when dealing with delimited filenames.
+        If True, replaces each '?' sequence that would normally
+        be returned with a single '*'.
 
     Returns
     -------
@@ -336,9 +404,11 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     part of the name that need not be extracted.
     `cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf`
 
-    A standards compliant filename can be constructed by starting with
-    string_blocks, adding keys in order, and replacing the '' locations
-    with data of length length.
+    A standards compliant filename can be constructed by adding the first
+    element from `string_blocks`, then the first item in `keys`, and iterating
+    that alternating pattern until all items are used.
+
+    This is the first function employed by `pysat.Files.from_os`.
 
     """
 
@@ -353,7 +423,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     form = string.Formatter()
     for snip in form.parse(format_str):
         # Collect all of the format keywords. Replace them in the string with
-        # the '?' wildcard. The numnber of '?'s corresponds to the length of
+        # the '?' wildcard. The number of '?'s corresponds to the length of
         # data to be parsed. The length is obtained from format keywords so
         # that we know later on where to parse information out from.
         out_dict['search_string'] += snip[0]
@@ -363,22 +433,26 @@ def construct_searchstring_from_format(format_str, wildcard=False):
             out_dict['keys'].append(snip[1])
 
             # Try and determine formatting width
-            temp = re.findall(r'\d+', snip[2])
+            fwidths = re.findall(r'\d+', snip[2])
 
-            if temp:
+            if fwidths:
                 # There are items, try and grab width
-                for i in temp:
+                for fwidth in fwidths:
                     # Make sure there is truly something there
-                    if i != 0:
+                    if fwidth != 0:
                         # Store length and add to the search string
-                        out_dict['lengths'].append(np.int64(i))
+                        out_dict['lengths'].append(np.int64(fwidth))
                         if not wildcard:
-                            out_dict['search_string'] += '?' * np.int64(i)
+                            val = '?' * out_dict['lengths'][-1]
+                            out_dict['search_string'] += val
                         else:
                             out_dict['search_string'] += '*'
                         break
             else:
-                raise ValueError("Couldn't determine formatting width")
+                estr = ''.join(["Couldn't determine formatting width. ",
+                                "This may be due to the use of unsupported ",
+                                "wildcard characters."])
+                raise ValueError(estr)
 
     return out_dict
 
@@ -395,6 +469,8 @@ def search_local_system_formatted_filename(data_path, search_str):
     search_str : str
         String used to search for local files. For example,
         `cnofs_cindi_ivm_500ms_????????_v??.cdf` or `inst-name-*-v??.cdf`
+        Typically this input is provided by
+        `files.construct_searchstring_from_format`.
 
     Returns
     -------

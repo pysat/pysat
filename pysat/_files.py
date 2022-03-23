@@ -591,7 +591,7 @@ class Files(object):
             if self.write_to_disk:
                 # Load data stored on the local drive.
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
-                                      squeeze=True, header=0)
+                                      header=0).squeeze("columns")
                 if update_path:
                     # Store the data_path from the .csv onto Files
                     self.data_path = loaded.name
@@ -925,6 +925,19 @@ class Files(object):
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
 
+        When parsing using fixed width filenames (`delimiter=None`), leading
+        '*' wilcards are supported, '*{year:4d}{month:02d}{day:02d}_v??.cdf',
+        though the '*' is not supported after the first template variable. The
+        '?' wildcard may be used anywhere in the template string.
+
+        When parsing using a delimiter, the '*' wildcard is supported
+        when leading, trailing, or wholly contained between delimiters, such as
+        'data_name-{year:04d}-*-{day:02d}.txt', or '*-{year:04d}-{day:02d}*',
+        where '-' is the delimiter. There can not be a mixture of a template
+        variable and '*' without a delimiter in between, unless the '*'
+        occurs after the variable. The '?' wildcard may be used anywhere in
+        the template string.
+
         The 'day' format keyword may be used to specify either day of month
         (if month is included) or day of year.
 
@@ -935,11 +948,8 @@ class Files(object):
                                        "(dir_path)")))
 
         # Parse format string to figure out which search string should be used
-        # to identify files in the filesystem. Different option required if
-        # filename is delimited
-        wildcard = False if delimiter is None else True
-        search_dict = futils.construct_searchstring_from_format(
-            format_str, wildcard=wildcard)
+        # to identify files in the filesystem.
+        search_dict = futils.construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
 
         # Perform the local file search

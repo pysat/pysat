@@ -95,6 +95,9 @@ class Instrument(object):
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', float),
         'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+    custom : list or NoneType
+        Input list containing dicts of inputs for `custom_attach` method inputs
+        that may be applied or None (default=None)
 
     Attributes
     ----------
@@ -355,10 +358,6 @@ class Instrument(object):
             raise ValueError('unknown keyword{:s} supplied: {:}'.format(
                 '' if len(missing_keys) == 1 else 's', missing_keys))
 
-        # Run instrument init function, a basic pass function is used if the
-        # user doesn't supply the init function
-        self._init_rtn(**self.kwargs['init'])
-
         # More reasonable defaults for optional parameters
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else pysat.params['clean_level'])
@@ -519,6 +518,10 @@ class Instrument(object):
 
         # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
+
+        # Run instrument init function, a basic pass function is used if the
+        # user doesn't supply the init function
+        self._init_rtn(**self.kwargs['init'])
 
         return
 

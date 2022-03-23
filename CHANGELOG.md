@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
+   * Added the option to apply custom functions at the Constellation or
+     Instrument level within the Constellation class
    * Added option to load Constellation for registered Instruments using lists
      of platforms, names, tags, and/or inst_ids, which are new attributes
    * Added hidden Constellation methods to determine unique attribute elements
@@ -40,6 +42,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added a new MetaHeader class for holding global metadata.
    * Added a pysat Instrument for loading pysat-written NetCDF4 files.
    * Allowed MetaLabels to be expanded through setting new Meta data values.
+   * Added support for user variables when parsing template filenames
+     in `pysat.utils.files`.
+   * Improved robustness of parsing delimited files.
    * Added support for filtering basic netCDF4 metadata when loading via 
      `pysat.utils.io.load_netcdf`.
    * Added support for user developed functions to filter metadata as it
@@ -75,6 +80,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Changed `fname` from a kwarg to an arg in `pysat.Instruments.to_netcdf4`
    * Deprecated support for 2D pandas datasets
    * Deprecated `pysat.instruments.pysat_testing_xarray`
+   * Deprecated usage of higher order metadata
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -116,6 +122,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `utils.coords.update_longitude`
    * Fixed pysat_testmodel Instrument longitude range
    * Corrected link to testing badge in README.md
+   * `from_os` now always returns a sorted Series.
+   * Moved function call for Instrument modules init function to end of
+     pysat.Instrument instantiation.
    * Refactored `pysat.Instrument.generic_meta_translator` to use 
      `pysat.Meta.to_translated_dict` and the latest metadata label standards.
 * Maintenance
@@ -139,6 +148,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added CI reports for supported data products
    * Added a cap on coveralls to ensure success of continuous integration
    * Updated tests in `test_meta` to search all warnings, not just the first
+   * Updated pandas syntax to be compatible with pandas 2.0 (pandas 1.4
+     deprecations)
+   * Cleaned up excess variables upon import
 
 [3.0.1] - 2021-07-28
 --------------------
