@@ -42,6 +42,40 @@ class InstAccessTests(object):
 
     """
 
+    def test_instrument_complete_by_init(self):
+        """Test Instrument object fully complete by self._init_rtn()."""
+
+        # Create a base instrument to compare against
+        inst_copy = pysat.Instrument(inst_module=self.testInst.inst_module)
+
+        # Get instrument module and init funtcion
+        inst_mod = self.testInst.inst_module
+        inst_mod_init = inst_mod.init
+
+        def temp_init(self, test_init_kwarg=None):
+            """Test the passed Instrument is complete."""
+
+            # Apply normal init rtn to ensure both Instruments have same code
+            # history.
+            inst_mod_init(self, test_init_kwarg=inst_copy.test_init_kwarg)
+
+            # Equality checks against all routines, including init.
+            self._init_rtn = inst_copy._init_rtn
+
+            assert self == inst_copy
+
+        # Assign new init to test module
+        inst_mod.init = temp_init
+
+        # Instantiate instrument with test module which invokes needed test
+        # code in the background
+        pysat.Instrument(inst_module=inst_mod)
+
+        # Restore nominal init function
+        inst_mod.init = inst_mod_init
+
+        return
+
     def eval_successful_load(self, end_date=None):
         """Evaluate successful loading of `self.testInst`.
 

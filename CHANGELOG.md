@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.0] - 2021-XX-XX
+[3.1.0] - 2022-04-15
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
@@ -45,6 +45,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added support for user variables when parsing template filenames
      in `pysat.utils.files`.
    * Improved robustness of parsing delimited files.
+   * Updated `pysat.Instrument.pandas_format` so that changes to setting
+     are immediately reflected by changes to Instrument object.
    * Added support for filtering basic netCDF4 metadata when loading via 
      `pysat.utils.io.load_netcdf`.
    * Added support for user developed functions to filter metadata as it
@@ -124,7 +126,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Corrected link to testing badge in README.md
    * `from_os` now always returns a sorted Series.
    * Moved function call for Instrument modules init function to end of
-     pysat.Instrument instantiation.
+     pysat.Instrument instantiation to ensure Instrument is complete when passed
+     to init.
    * Refactored `pysat.Instrument.generic_meta_translator` to use 
      `pysat.Meta.to_translated_dict` and the latest metadata label standards.
 * Maintenance

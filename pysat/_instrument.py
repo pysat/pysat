@@ -154,7 +154,7 @@ class Instrument(object):
     meta : pysat.Meta
         Class holding the instrument metadata
     orbits : pysat.Orbits
-        interface to extracting data orbit-by-orbit
+        Interface to extracting data orbit-by-orbit
     variables : list
         List of loaded data variables
     pandas_format : bool
@@ -408,16 +408,9 @@ class Instrument(object):
                                           'supplied string must be iterable ',
                                           '[{:}]'.format(self.file_format)]))
 
-        # Set up empty data and metadata. Check if it should use the pandas or
-        # xarray format.
-        if self.pandas_format:
-            self._null_data = pds.DataFrame(None)
-            self._data_library = pds.DataFrame
-        else:
-            self._null_data = xr.Dataset(None)
-            self._data_library = xr.Dataset
-
-        # Assign null data for user selected data type
+        # Set up empty data and metadata.
+        # Assign null data for user selected data type, `_null_data` assigned
+        # when `self.pandas_format` is set in `_assign_attrs`.
         self.data = self._null_data.copy()
 
         # Create Meta instance with appropriate labels.  Meta class methods will
@@ -510,7 +503,7 @@ class Instrument(object):
 
         # Create a placeholder for a post-processing function to be applied
         # to the metadata dictionary before export. If None, no post-processing
-        # will occur
+        # will occur.
         self._export_meta_post_processing = None
 
         # Start with a daily increment for loading
@@ -1457,7 +1450,9 @@ class Instrument(object):
         # Check that data and metadata are the data types we expect
         if not isinstance(data, self._data_library):
             raise TypeError(' '.join(('Data returned by instrument load',
-                            'routine must be a', self._data_library)))
+                                      'routine must be a',
+                                      repr(self._data_library),
+                                      'and not', repr(type(data)))))
         if not isinstance(mdata, pysat.Meta):
             raise TypeError('Metadata returned must be a pysat.Meta object')
 
@@ -1959,11 +1954,6 @@ class Instrument(object):
         return
 
     @property
-    def empty(self):
-        """Boolean flag reflecting lack of data, True if there is no data."""
-        return self._empty()
-
-    @property
     def date(self):
         """Date for loaded data."""
         return self._date
@@ -1974,9 +1964,34 @@ class Instrument(object):
         self._date = utils.time.filter_datetime_input(new_date)
 
     @property
+    def empty(self):
+        """Boolean flag reflecting lack of data, True if there is no data."""
+        return self._empty()
+
+    @property
     def index(self):
         """Time index of the loaded data."""
         return self._index()
+
+    @property
+    def pandas_format(self):
+        """Boolean flag for pandas data support."""
+        return self._pandas_format
+
+    @pandas_format.setter
+    def pandas_format(self, new_value):
+        # Set pandas_format attribute, see property docstring for details.
+        # Note that pandas_format is assigned by default by `_assign_attrs()`.
+        if new_value:
+            self._null_data = pds.DataFrame(None)
+            self._data_library = pds.DataFrame
+        else:
+            self._null_data = xr.Dataset(None)
+            self._data_library = xr.Dataset
+
+        self._pandas_format = new_value
+
+        return
 
     @property
     def variables(self):

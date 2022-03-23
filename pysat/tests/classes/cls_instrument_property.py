@@ -14,6 +14,7 @@ import warnings
 
 import pandas as pds
 import pytest
+import xarray as xr
 
 import pysat
 from pysat.utils.time import filter_datetime_input
@@ -706,3 +707,31 @@ class InstPropertyTests(object):
 
         # Make sure isntrument loaded as inst_module
         assert tinst.inst_module == self.testInst.inst_module
+
+    def test_change_inst_pandas_format(self):
+        """Test changing `pandas_format` attribute works."""
+        new_format = not self.testInst.pandas_format
+
+        # Current data format hidden attributes
+        current_null = self.testInst._null_data
+        current_library = self.testInst._data_library
+
+        # Assign inverted `pandas_format` setting
+        self.testInst.pandas_format = new_format
+
+        # Confirm assignment
+        assert self.testInst.pandas_format == new_format
+
+        # Confirm that internal properties have changed
+        assert not isinstance(self.testInst._null_data, type(current_null))
+        assert current_library != self.testInst._data_library
+
+        # Confirm internal consistency
+        assert isinstance(self.testInst._null_data, self.testInst._data_library)
+
+        if new_format:
+            assert isinstance(self.testInst._null_data, pds.DataFrame)
+        else:
+            assert isinstance(self.testInst._null_data, xr.Dataset)
+
+        return
