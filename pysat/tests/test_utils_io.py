@@ -788,8 +788,18 @@ class TestNetCDF4Integration(object):
 
         return
 
-    def test_meta_processor_to_netcdf4(self):
-        """Test impact of meta_processor on netCDF output."""
+    @pytest.mark.parametrize('assign_flag', [True, False])
+    def test_meta_processor_to_netcdf4(self, assign_flag):
+        """Test impact of meta_processor on netCDF output.
+
+        Parameters
+        ----------
+        assign_flag : bool
+            If True, assigns meta processor func as
+            ._export_meta_post_processing. Otherwise, uses
+            meta_processor keyword argument.
+
+        """
 
         # Create a meta processor function
         def meta_proc(meta_dict):
@@ -829,8 +839,12 @@ class TestNetCDF4Integration(object):
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
-        pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
-                                      meta_processor=meta_proc)
+        if assign_flag:
+            self.testInst._export_meta_post_processor = meta_proc
+            pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
+        else:
+            pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                          meta_processor=meta_proc)
 
         # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
