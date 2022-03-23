@@ -782,9 +782,65 @@ class TestNetCDF4Integration(object):
                 if 'MonoTon' not in test_vars:
                     testing.assert_list_contains(present, test_vars)
 
-        for mvar in missing:
-            assert mvar not in test_vars, \
-                '{:} was written to the netCDF file'.format(repr(mvar))
+                for mvar in missing:
+                    assert mvar not in test_vars, \
+                        '{:} was written to the netCDF file'.format(repr(mvar))
+
+        return
+
+    def test_meta_processor_to_netcdf4(self):
+        """Test impact of meta_processor on netCDF output."""
+
+        # Create a meta processor function
+        def meta_proc(meta_dict):
+            """Test meta processor function.
+
+            Parameters
+            ----------
+            meta_dict : dict
+                Dictionary keyed by variable name, mapping to another
+                dictionary with all variable metadata.
+
+            Returns
+            -------
+            proc_dict : dict
+                Dictionary processed for the file.
+
+            """
+
+            assert isinstance(meta_dict, dict)
+
+            # Add metadata info
+            dstr = 'simulation running'
+            present = ['testing_metadata_pysat_answer',
+                       'testing_metadata_pysat_question']
+            for var in meta_dict.keys():
+                meta_dict[var][present[0]] = 42
+                meta_dict[var][present[1]] = dstr
+
+            # Remove normally present info
+            for var in meta_dict.keys():
+                if 'units' in meta_dict[var].keys():
+                    meta_dict[var].pop('units')
+
+            return meta_dict
+
+        # Write the file
+        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                      meta_processor=meta_proc)
+
+        # Load file back and test metadata is as expected
+        with netCDF4.Dataset(outfile) as open_f:
+            for var in open_f.variables.keys():
+                test_vars = open_f[var].ncattrs()
+
+                # Avoid time variables
+                if 'MonoTon' not in test_vars:
+                    testing.assert_list_contains(present, test_vars)
+                    assert 'units' not in test_vars, "'units' found!"
 
         return
 
