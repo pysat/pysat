@@ -52,17 +52,17 @@ class InstAccessTests(object):
         inst_mod = self.testInst.inst_module
         inst_mod_init = inst_mod.init
 
-        def temp_init(self, test_init_kwarg=None):
+        def temp_init(inst, test_init_kwarg=None):
             """Test the passed Instrument is complete."""
 
             # Apply normal init rtn to ensure both Instruments have same code
             # history.
-            inst_mod_init(self, test_init_kwarg=inst_copy.test_init_kwarg)
+            inst_mod_init(inst, test_init_kwarg=inst_copy.test_init_kwarg)
 
             # Equality checks against all routines, including init.
-            self._init_rtn = inst_copy._init_rtn
+            inst._init_rtn = inst_copy._init_rtn
 
-            assert self == inst_copy
+            assert inst == inst_copy
 
         # Assign new init to test module
         inst_mod.init = temp_init
