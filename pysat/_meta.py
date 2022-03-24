@@ -1477,41 +1477,89 @@ class Meta(object):
 
         return
 
-    def default_to_netcdf_translation_table(self):
-        """Return metadata translation table with minimal netcdf requirements.
+    # def default_to_netcdf_translation_table(self):
+    #     """Return metadata translation table with minimal netcdf requirements.
+    #
+    #     Returns
+    #     -------
+    #     dict
+    #         Keyed by self.labels with a list of strings to be used
+    #         when writing netcdf files.
+    #
+    #     """
+    #
+    #     # Define a default translation
+    #     trans_table = {}
+    #
+    #     # Start with pysat defaults
+    #     for key, val in zip(self.labels.label_attrs.values(),
+    #                         self.labels.label_attrs.keys()):
+    #         trans_table[key] = [val]
+    #
+    #     # Update labels required by netCDF4
+    #     trans_table[self.labels.fill_val] = ['_FillValue', 'FillVal', 'fill']
+    #
+    #     return trans_table
+    #
+    # def to_translated_dict(self, trans_table=None):
+    #     """Convert self into a dictionary with translated metadata labels.
+    #
+    #     Parameters
+    #     ----------
+    #     trans_dict : dict or NoneType
+    #         Keyed by current metalabels containing a list of
+    #         metadata labels to use within the returned dict. If None,
+    #         a default translation using `self.labels` will be used except
+    #         `self.labels.fill_val` will be mapped to `['_FillValue', 'FillVal']`
+    #         as required by netCDF files.
+    #
+    #     Returns
+    #     -------
+    #     export_dict : dict
+    #         A dictionary of the metadata for each variable of an output file
+    #
+    #     """
+    #
+    #     export_dict = {}
+    #
+    #     if trans_table is None:
+    #         trans_table = self.default_to_netcdf_translation_table()
+    #
+    #     # First Order Data
+    #     for key in self.data.index:
+    #         # Translate each key if a translation is provided
+    #         export_dict[key] = {}
+    #         meta_dict = self.data.loc[key].to_dict()
+    #         for orig_key in meta_dict:
+    #             if orig_key in trans_table:
+    #                 for translated_key in trans_table[orig_key]:
+    #                     export_dict[key][translated_key] = meta_dict[orig_key]
+    #             else:
+    #                 export_dict[key][orig_key] = meta_dict[orig_key]
+    #
+    #     # Higher Order Data
+    #     for key in self.ho_data:
+    #         if key not in export_dict:
+    #             export_dict[key] = {}
+    #         for ho_key in self.ho_data[key].data.index:
+    #             new_key = '_'.join((key, ho_key))
+    #             if trans_table is None:
+    #                 export_dict[new_key] = \
+    #                     self.ho_data[key].data.loc[ho_key].to_dict()
+    #             else:
+    #                 # Translate each key if a translation is provided
+    #                 export_dict[new_key] = {}
+    #                 meta_dict = self.ho_data[key].data.loc[ho_key].to_dict()
+    #                 for orig_key in meta_dict:
+    #                     if orig_key in trans_table:
+    #                         for tkey in trans_table[orig_key]:
+    #                             export_dict[new_key][tkey] = meta_dict[orig_key]
+    #                     else:
+    #                         export_dict[new_key][orig_key] = meta_dict[orig_key]
+    #     return export_dict
 
-        Returns
-        -------
-        dict
-            Keyed by self.labels with a list of strings to be used
-            when writing netcdf files.
-
-        """
-
-        # Define a default translation
-        trans_table = {}
-
-        # Start with pysat defaults
-        for key, val in zip(self.labels.label_attrs.values(),
-                            self.labels.label_attrs.keys()):
-            trans_table[key] = [val]
-
-        # Update labels required by netCDF4
-        trans_table[self.labels.fill_val] = ['_FillValue', 'FillVal', 'fill']
-
-        return trans_table
-
-    def to_translated_dict(self, trans_table=None):
-        """Convert self into a dictionary with translated metadata labels.
-
-        Parameters
-        ----------
-        trans_dict : dict or NoneType
-            Keyed by current metalabels containing a list of
-            metadata labels to use within the returned dict. If None,
-            a default translation using `self.labels` will be used except
-            `self.labels.fill_val` will be mapped to `['_FillValue', 'FillVal']`
-            as required by netCDF files.
+    def to_dict(self, preserve_case=False):
+        """Convert self into a dictionary.
 
         Returns
         -------
@@ -1522,40 +1570,38 @@ class Meta(object):
 
         export_dict = {}
 
-        if trans_table is None:
-            trans_table = self.default_to_netcdf_translation_table()
-
         # First Order Data
         for key in self.data.index:
+            if preserve_case:
+                case_key = self.var_case_name(key)
+            else:
+                case_key = key.lower()
+
             # Translate each key if a translation is provided
-            export_dict[key] = {}
+            export_dict[case_key] = {}
             meta_dict = self.data.loc[key].to_dict()
             for orig_key in meta_dict:
-                if orig_key in trans_table:
-                    for translated_key in trans_table[orig_key]:
-                        export_dict[key][translated_key] = meta_dict[orig_key]
-                else:
-                    export_dict[key][orig_key] = meta_dict[orig_key]
+                export_dict[case_key][orig_key] = meta_dict[orig_key]
 
         # Higher Order Data
         for key in self.ho_data:
-            if key not in export_dict:
-                export_dict[key] = {}
+            if preserve_case:
+                case_key = self.var_case_name(key)
+            else:
+                case_key = key.lower()
+
+            if case_key not in export_dict:
+                export_dict[case_key] = {}
             for ho_key in self.ho_data[key].data.index:
-                new_key = '_'.join((key, ho_key))
-                if trans_table is None:
-                    export_dict[new_key] = \
-                        self.ho_data[key].data.loc[ho_key].to_dict()
+                if preserve_case:
+                    case_ho_key = self.var_case_name(ho_key)
                 else:
-                    # Translate each key if a translation is provided
-                    export_dict[new_key] = {}
-                    meta_dict = self.ho_data[key].data.loc[ho_key].to_dict()
-                    for orig_key in meta_dict:
-                        if orig_key in trans_table:
-                            for tkey in trans_table[orig_key]:
-                                export_dict[new_key][tkey] = meta_dict[orig_key]
-                        else:
-                            export_dict[new_key][orig_key] = meta_dict[orig_key]
+                    case_ho_key = ho_key.lower()
+
+                new_key = '_'.join((case_key, case_ho_key))
+                export_dict[new_key] = \
+                    self.ho_data[key].data.loc[ho_key].to_dict()
+
         return export_dict
 
     @classmethod

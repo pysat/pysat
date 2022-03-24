@@ -175,7 +175,8 @@ class TestLoadNetCDF(object):
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
             'pysat', 'netcdf', directory_format=file_path,
-            file_format=file_root, pandas_format=self.testInst.pandas_format)
+            file_format=file_root, pandas_format=self.testInst.pandas_format,
+            update_files=True)
         netcdf_inst.load(date=self.stime, use_header=True)
 
         # Test the loaded Instrument data
@@ -756,7 +757,7 @@ class TestNetCDF4Integration(object):
         return
 
     @pytest.mark.parametrize('assign_flag', [True, False])
-    def test_meta_translation_to_netcdf4(self, assign_flag):
+    def test_meta_translation_to_from_netcdf4(self, assign_flag):
         """Test impact of meta_translation on netCDF output.
 
         Parameters
@@ -771,11 +772,11 @@ class TestNetCDF4Integration(object):
 
         # Create a meta translation table
         present = ['testingFillVal', 'testing_FillValue', 'testing_fill_value']
-        meta_trans = {self.testInst.meta.labels.fill_val: present}
+        meta_trans = {self.testInst.meta.labels.units: present}
 
         # These are standard metalabels used when writing netCDF and should not
         # be present given the table above.
-        missing = ['FillVal', '_FillValue']
+        missing = ['units'] #['FillVal', '_FillValue']
 
         # Write the file
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
@@ -792,7 +793,7 @@ class TestNetCDF4Integration(object):
         with netCDF4.Dataset(outfile) as open_f:
             for var in open_f.variables.keys():
                 test_vars = open_f[var].ncattrs()
-
+                # print('Checking ', var, ' against ', test_vars)
                 # Avoid time variables
                 if 'MonoTon' not in test_vars:
                     testing.assert_list_contains(present, test_vars)
@@ -800,6 +801,24 @@ class TestNetCDF4Integration(object):
                 for mvar in missing:
                     assert mvar not in test_vars, \
                         '{:} was written to the netCDF file'.format(repr(mvar))
+
+        # Load file using pysat utilities and test translation of multiple
+        # parameters to a single parameter.
+        inv_trans = {}
+        for val in present:
+            inv_trans[val] = self.testInst.meta.labels.units
+
+        # Load the file
+        data, meta = pysat.utils.io.load_netcdf(outfile,
+                                                meta_translation=inv_trans)
+
+        # Confirm none of `present` are in the metadata information
+        attrs = list(meta.attrs())
+        for var in present:
+            assert var not in attrs
+
+        # Confirm that the desired fill_val label is present
+        assert self.testInst.meta.labels.fill_val in attrs
 
         return
 
@@ -817,6 +836,8 @@ class TestNetCDF4Integration(object):
         """
 
         # Create a meta processor function
+        present = ['testing_metadata_pysat_answer',
+                   'testing_metadata_pysat_question']
         def meta_proc(meta_dict):
             """Test meta processor function.
 
@@ -837,8 +858,6 @@ class TestNetCDF4Integration(object):
 
             # Add metadata info
             dstr = 'simulation running'
-            present = ['testing_metadata_pysat_answer',
-                       'testing_metadata_pysat_question']
             for var in meta_dict.keys():
                 meta_dict[var][present[0]] = 42
                 meta_dict[var][present[1]] = dstr
@@ -855,7 +874,7 @@ class TestNetCDF4Integration(object):
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         if assign_flag:
-            self.testInst._export_meta_post_processor = meta_proc
+            self.testInst._export_meta_post_processing = meta_proc
             pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
         else:
             pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
