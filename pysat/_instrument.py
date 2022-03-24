@@ -1129,7 +1129,11 @@ class Instrument(object):
         """
 
         if data is None:
-            data = self.data
+            if hasattr(self, 'data'):
+                data = self.data
+            else:
+                return True
+
         if self.pandas_format:
             return data.empty
         else:
