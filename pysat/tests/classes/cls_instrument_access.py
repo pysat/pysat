@@ -530,13 +530,19 @@ class InstAccessTests(object):
 
         self.testInst.load(date=self.ref_time, use_header=True)
         inst_copy = self.testInst.copy()
+
+        # Can only change data types if Instrument empty
+        inst_copy.data = inst_copy._null_data
+
         if self.testInst.pandas_format:
             inst_copy.pandas_format = False
             inst_copy.data = xr.Dataset()
         else:
             inst_copy.pandas_format = True
             inst_copy.data = pds.DataFrame()
+
         assert inst_copy != self.testInst
+
         return
 
     def test_eq_different_type(self):
