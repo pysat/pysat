@@ -1982,14 +1982,19 @@ class Instrument(object):
     def pandas_format(self, new_value):
         # Set pandas_format attribute, see property docstring for details.
         # Note that pandas_format is assigned by default by `_assign_attrs()`.
-        if new_value:
-            self._null_data = pds.DataFrame(None)
-            self._data_library = pds.DataFrame
-        else:
-            self._null_data = xr.Dataset(None)
-            self._data_library = xr.Dataset
+        if self.empty:
+            if new_value:
+                self._null_data = pds.DataFrame(None)
+                self._data_library = pds.DataFrame
+            else:
+                self._null_data = xr.Dataset(None)
+                self._data_library = xr.Dataset
 
-        self._pandas_format = new_value
+            self._pandas_format = new_value
+        else:
+            estr = ''.join(["Can't change data type setting while data is ",
+                            'assigned to Instrument object.'])
+            raise ValueError(estr)
 
         return
 
