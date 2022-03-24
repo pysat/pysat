@@ -735,3 +735,21 @@ class InstPropertyTests(object):
             assert isinstance(self.testInst._null_data, xr.Dataset)
 
         return
+
+    def test_change_inst_pandas_format_loaded_data(self):
+        """Test changing `pandas_format` attribute when data loaded."""
+
+        # Load data
+        self.testInst.load(date=self.ref_time)
+
+        # Get inverted pandas_format setting
+        new_format = not self.testInst.pandas_format
+
+        # Assign inverted `pandas_format` setting
+        with pytest.raises(ValueError) as err:
+            self.testInst.pandas_format = new_format
+
+        estr = "Can't change data type setting while data is "
+        assert str(err).find(estr) > 0
+
+        return
