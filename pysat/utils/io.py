@@ -458,6 +458,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
     return in_meta_dict
 
+
 def remove_netcdf4_standards_from_meta(mdict, epoch_name):
     """Remove redundant metadata variables in SPDF ISTP/IACG NetCDF standards.
 
@@ -511,6 +512,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
 
     return mdict
 
+
 def default_from_netcdf_translation_table(meta):
     """Return metadata translation table with minimal netcdf requirements.
 
@@ -538,6 +540,7 @@ def default_from_netcdf_translation_table(meta):
     trans_table['fill'] = meta.labels.fill_val
 
     return trans_table
+
 
 def default_to_netcdf_translation_table(inst):
     """Return metadata translation table with minimal netcdf requirements.
@@ -567,6 +570,7 @@ def default_to_netcdf_translation_table(inst):
     trans_table[inst.meta.labels.fill_val] = ['_FillValue', 'FillVal', 'fill']
 
     return trans_table
+
 
 def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     """Translate labels in meta_dict using trans_table.
@@ -605,6 +609,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
                 export_dict[key][orig_key] = loop_meta_dict[orig_key]
 
     return export_dict
+
 
 def apply_table_translation_from_file(trans_table, meta_dict):
     """Return `meta_dict` after applying `trans_table` to metadata keys.
@@ -1346,6 +1351,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     return data, meta
 
+
 def return_epoch_metadata(inst, epoch_name):
     """Return epoch or time-index metadata.
 
@@ -1363,7 +1369,6 @@ def return_epoch_metadata(inst, epoch_name):
         metadata label.
 
     """
-    
     # Get existing meta data
     if epoch_name in inst.meta:
         new_dict = inst.meta[inst.meta.var_case_name(epoch_name)].to_dict()
@@ -1393,6 +1398,7 @@ def return_epoch_metadata(inst, epoch_name):
     new_dict.update(time_dict)
 
     return new_dict
+
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                    mode='w', zlib=False, complevel=4, shuffle=True,
@@ -1775,7 +1781,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                         good_data_loc = 0
                         for idat in np.arange(len(inst.data)):
                             if len(inst.data[key].iloc[0]) > 0:
-                                data_loc = idat
+                                good_data_loc = idat
                                 break
 
                         # Found a place with data, if there is one

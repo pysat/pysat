@@ -1510,7 +1510,8 @@ class Meta(object):
     #         Keyed by current metalabels containing a list of
     #         metadata labels to use within the returned dict. If None,
     #         a default translation using `self.labels` will be used except
-    #         `self.labels.fill_val` will be mapped to `['_FillValue', 'FillVal']`
+    #         `self.labels.fill_val` will be mapped to `['_FillValue',
+    #         'FillVal']`
     #         as required by netCDF files.
     #
     #     Returns
@@ -1553,9 +1554,11 @@ class Meta(object):
     #                 for orig_key in meta_dict:
     #                     if orig_key in trans_table:
     #                         for tkey in trans_table[orig_key]:
-    #                             export_dict[new_key][tkey] = meta_dict[orig_key]
+    #                             export_dict[new_key][tkey] = meta_dict[
+    #                             orig_key]
     #                     else:
-    #                         export_dict[new_key][orig_key] = meta_dict[orig_key]
+    #                         export_dict[new_key][orig_key] = meta_dict[
+    #                         orig_key]
     #     return export_dict
 
     def to_dict(self, preserve_case=False):

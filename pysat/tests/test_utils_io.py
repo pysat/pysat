@@ -769,14 +769,13 @@ class TestNetCDF4Integration(object):
 
         """
 
-
         # Create a meta translation table
         present = ['testingFillVal', 'testing_FillValue', 'testing_fill_value']
         meta_trans = {self.testInst.meta.labels.units: present}
 
         # These are standard metalabels used when writing netCDF and should not
         # be present given the table above.
-        missing = ['units'] #['FillVal', '_FillValue']
+        missing = ['units']  # ['FillVal', '_FillValue']
 
         # Write the file
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
@@ -835,9 +834,9 @@ class TestNetCDF4Integration(object):
 
         """
 
-        # Create a meta processor function
         present = ['testing_metadata_pysat_answer',
                    'testing_metadata_pysat_question']
+
         def meta_proc(meta_dict):
             """Test meta processor function.
 
