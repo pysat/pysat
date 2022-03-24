@@ -356,9 +356,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                     # it covers number of columns (if a DataFrame)
                     obj_dim_names.append(var)
 
-                # # TODO: This may need to be removed
-                # # Set the base-level meta data.
-                # meta_dict['Depend_1'] = obj_dim_names[-1]
+                # Set the base-level meta data.
+                meta_dict['Depend_1'] = obj_dim_names[-1]
 
                 # Cycle through each of the sub-variable, updating metadata
                 for svar in subvars:
@@ -411,12 +410,24 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                 if index_flag:
                     time_dict = return_epoch_metadata(inst, epoch_name)
                     time_dict.pop('MonoTon')
+                    time_dict.update(meta_dict)
                     # time_dict = {inst.meta.labels.name: epoch_name,
                     #              inst.meta.labels.units: epoch_label}
                     if lower_var in in_meta_dict:
                         in_meta_dict[lower_var].update(time_dict)
                     else:
                         in_meta_dict[lower_var] = time_dict
+                else:
+                    if inst[good_data_loc, var].index.name is not None:
+                        name = inst[good_data_loc, var].index.name
+                    else:
+                        name = var
+                    index_dict = {inst.meta.labels.name: name}
+                    index_dict.update(meta_dict)
+                    if lower_var in in_meta_dict:
+                        in_meta_dict[lower_var].update(index_dict)
+                    else:
+                        in_meta_dict[lower_var] = index_dict
 
                 # Filter metdata for other netCDF4 requirements
                 remove = True if index_type == str else False
@@ -1615,10 +1626,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     # print(export_meta)
     # print()
 
-    # # This dict helps assign some higher order metadata
-    # meta_trans = {mkey: meta_translation[mkey][0]
-    #               for mkey in ['units', 'name']}
-
     # Apply instrument specific post-processing to the export_meta
     if meta_processor is None:
         if hasattr(inst._export_meta_post_processing, '__call__'):
@@ -1850,11 +1857,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                                          complevel=complevel,
                                                          shuffle=shuffle)
                         if lower_key in export_meta.keys():
-                            # remove = True if coltype == str else False
-                            # new_dict = filter_netcdf4_metadata(
-                            #     inst, export_meta[case_key], coltype,
-                            #     remove=remove, export_nan=export_nan,
-                            #     check_type=check_type)
                             new_dict = export_meta[lower_key]
                         else:
                             pysat.logger.warning(
@@ -1865,13 +1867,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                         # Treat time and non-time data differently
                         if datetime_flag:
                             # Further update metadata
-                            # # RS Note, this is handled,
-                            # # in add_netcdf4_standards_to_metadict.
-                            #
-                            # new_dict[meta_trans['name']] = epoch_name
-                            # new_dict[meta_trans['units']] = inst.meta[
-                            #     epoch_name, inst.meta.labels.units]
-
                             # Set metadata dict
                             print('Setting datetime info ', new_dict)
                             cdfkey.setncatts(new_dict)
@@ -1885,12 +1880,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                 coltype)
 
                         else:
-                            # if inst[key].iloc[data_loc].index.name is not None:
-                            #     new_dict[meta_trans['name']] = inst[
-                            #         key].iloc[data_loc].index.name
-                            # else:
-                            #     new_dict[meta_trans['name']] = key
-
                             # Assign metadata dict
                             cdfkey.setncatts(new_dict)
 
