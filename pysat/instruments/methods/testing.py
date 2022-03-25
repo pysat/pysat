@@ -134,6 +134,10 @@ def initialize_test_meta(epoch_name, data_keys):
                                            '5820 second periods since the ',
                                            'start, 2008-01-01.'])}
 
+    meta['dummy1'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy2'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy3'] = {'value_min': 0., 'value_max': 24024.}
+
     # Standard metadata required for xarray.
     meta['profiles'] = {'long_name': 'profiles', 'value_min': 0,
                         'value_max': 4294967295, 'fill': -1,
@@ -177,22 +181,27 @@ def initialize_test_meta(epoch_name, data_keys):
     # Standard metadata required for xarray.
     meta['variable_profiles'] = {'meta': 'variable_profiles',
                                  'long_name': 'series'}
-    meta['profile_height'] = {}
+    meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1}
     meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     # Standard metadata required for xarray.
     meta['images'] = {'desc': 'pixel value of image',
                       'notes': 'function of image_lat and image_lon'}
     meta['x'] = {'desc': 'x-value of image pixel',
-                 'notes': 'Dummy Variable'}
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 17, 'fill': -1}
     meta['y'] = {'desc': 'y-value of image pixel',
-                 'notes': 'Dummy Variable'}
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 17, 'fill': -1}
     meta['z'] = {'desc': 'z-value of profile height',
-                 'notes': 'Dummy Variable'}
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 15, 'fill': -1}
     meta['image_lat'] = {'desc': 'Latitude of image pixel',
-                         'notes': 'Dummy Variable'}
+                         'notes': 'Dummy Variable',
+                         'value_min': -90., 'value_max': 90.}
     meta['image_lon'] = {'desc': 'Longitude of image pixel',
-                         'notes': 'Dummy Variable'}
+                         'notes': 'Dummy Variable',
+                         'value_min': 0., 'value_max': 360.}
 
     # Set any dummy variable metadata present in instrument keys
     for var in data_keys:

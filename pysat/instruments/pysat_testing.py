@@ -182,10 +182,6 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     for var in var_list:
         meta[var] = meta_dict
 
-    meta['dummy1'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
-    meta['dummy2'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
-    meta['dummy3'] = {'value_min': 0, 'value_max': 24024, 'fill': -1}
-
     if tag == 'default_meta':
         return data, pysat.Meta()
     else:
