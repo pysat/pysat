@@ -1839,7 +1839,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                                     complevel=complevel, shuffle=shuffle)
 
                                 if lower_key in export_meta.keys():
-                                    cdfkey.setncatts(export_meta[lower_key])
+                                    tempk = '_'.join([lower_key, lower_key])
+                                    cdfkey.setncatts(export_meta[tempk])
                                 else:
                                     pysat.logger.warning(
                                         ''.join(('Unable to find MetaData for ',
