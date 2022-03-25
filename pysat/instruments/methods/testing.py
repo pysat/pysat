@@ -152,7 +152,7 @@ def initialize_test_meta(epoch_name, data_keys):
                                               'value_max': np.inf,
                                               'units': 'm/s'}
     meta['series_profiles'] = {'meta': series_profile_meta,
-                               'value_min': 0., 'value_max': 25.,
+                               'value_min': 0., 'value_max': 25., 'units': 'km',
                                'fill': np.nan,
                                'desc': ''.join(['Testing series profiles ',
                                                 'indexed by float.'])}
@@ -171,6 +171,7 @@ def initialize_test_meta(epoch_name, data_keys):
     meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
                             'desc': ''.join(['Testing profile multi-dimensiona',
                                              'l data indexed by float.']),
+                            'units': 'km',
                             'meta': alt_profile_meta}
 
     # Standard metadata required for xarray.
