@@ -395,7 +395,12 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
                     # Construct name, variable_subvariable, and store
                     sname = '_'.join([lower_var, svar.lower()])
-                    in_meta_dict[sname] = smeta_dict
+                    if sname in in_meta_dict:
+                        in_meta_dict[sname].update(smeta_dict)
+                    else:
+                        pysat.logger.warning(''.join(['Unable to find MetaData',
+                                                      ' for ', var]))
+                        in_meta_dict[sname] = smeta_dict
 
                     # Filter metadata
                     remove = True if sctype == str else False
@@ -412,26 +417,23 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
                 # Update metadata when a datetime index found
                 if index_flag:
-                    time_dict = return_epoch_metadata(inst, epoch_name)
-                    time_dict.pop('MonoTon')
-                    time_dict.update(meta_dict)
-                    # time_dict = {inst.meta.labels.name: epoch_name,
-                    #              inst.meta.labels.units: epoch_label}
-                    if lower_var in in_meta_dict:
-                        in_meta_dict[lower_var].update(time_dict)
-                    else:
-                        in_meta_dict[lower_var] = time_dict
+                    update_dict = return_epoch_metadata(inst, epoch_name)
+                    update_dict.pop('MonoTon')
+                    update_dict.update(meta_dict)
                 else:
                     if inst[good_data_loc, var].index.name is not None:
                         name = inst[good_data_loc, var].index.name
                     else:
                         name = var
-                    index_dict = {inst.meta.labels.name: name}
-                    index_dict.update(meta_dict)
-                    if lower_var in in_meta_dict:
-                        in_meta_dict[lower_var].update(index_dict)
-                    else:
-                        in_meta_dict[lower_var] = index_dict
+                    update_dict = {inst.meta.labels.name: name}
+                    update_dict.update(meta_dict)
+
+                if lower_var in in_meta_dict:
+                    in_meta_dict[lower_var].update(update_dict)
+                else:
+                    pysat.logger.warning(''.join(['Unable to find MetaData ',
+                                                  'for ', var]))
+                    in_meta_dict[lower_var] = update_dict
 
                 # Filter metdata for other netCDF4 requirements
                 remove = True if index_type == str else False
@@ -1383,8 +1385,8 @@ def return_epoch_metadata(inst, epoch_name):
 
     # Update basic labels, if they are missing
     epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
-    basic_labels = [inst.meta.labels.units, inst.meta.labels.desc,
-                    inst.meta.labels.notes]
+    basic_labels = [inst.meta.labels.units]
+
     for label in basic_labels:
         if label not in new_dict or len(new_dict[label]) == 0:
             new_dict[label] = epoch_label
