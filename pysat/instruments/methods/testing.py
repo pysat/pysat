@@ -1,6 +1,8 @@
 """Standard functions for the test instruments."""
 
 import datetime as dt
+import sys
+
 import numpy as np
 import os
 import pandas as pds
@@ -133,42 +135,62 @@ def initialize_test_meta(epoch_name, data_keys):
                                            'start, 2008-01-01.'])}
 
     # Standard metadata required for xarray.
-    meta['profiles'] = {'long_name': 'profiles'}
+    meta['profiles'] = {'long_name': 'profiles', 'value_min': 0,
+                        'value_max': 4294967295, 'fill': -1,
+                        'desc': ''.join(['Testing profile multi-dimensional ',
+                                         'data indexed by time.']),
+                        'notes': ''.join(['Note the value_max is largest ',
+                                          'netCDF4 supports, but is ',
+                                          'lower than actual 64-bit int limit.',
+                                          ])}
 
     # Children metadata required for 2D pandas.
     # TODO(#789): Delete after removal of Meta children.
     series_profile_meta = pysat.Meta()
-    series_profile_meta['series_profiles'] = {'long_name': 'series'}
+    series_profile_meta['series_profiles'] = {'desc': 'Testing series data.',
+                                              'value_min': 0,
+                                              'value_max': np.inf,
+                                              'units': 'm/s'}
     meta['series_profiles'] = {'meta': series_profile_meta,
-                               'long_name': 'series'}
+                               'value_min': 0., 'value_max': 25.,
+                               'fill': np.nan,
+                               'desc': ''.join(['Testing series profiles ',
+                                                'indexed by float.'])}
 
     # Children metadata required for 2D pandas.
     # TODO(#789): Delete after removal of Meta children.
     alt_profile_meta = pysat.Meta()
-    alt_profile_meta['density'] = {'long_name': 'profiles'}
-    alt_profile_meta['fraction'] = {'long_name': 'profiles'}
-    alt_profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    alt_profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
+    alt_profile_meta['density'] = {'desc': 'Simulated density values.',
+                                   'units': 'Log N/cc',
+                                   'value_min': 0, 'value_max': np.inf}
+    alt_profile_meta['fraction'] = {'value_min': 0., 'value_max': 1.,
+                                    'desc': ''.join(['Simulated fractional O+ ',
+                                                     'composition.'])}
+    alt_profile_meta['dummy_str'] = {'desc': 'Testing string values.'}
+    alt_profile_meta['dummy_ustr'] = {'desc': 'Testing unicode string values.'}
+    meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
+                            'desc': ''.join(['Testing profile multi-dimensiona',
+                                             'l data indexed by float.']),
+                            'meta': alt_profile_meta}
 
     # Standard metadata required for xarray.
     meta['variable_profiles'] = {'meta': 'variable_profiles',
                                  'long_name': 'series'}
-    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['profile_height'] = {}
     meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     # Standard metadata required for xarray.
-    meta['images'] = {'long_name': 'pixel value of image',
+    meta['images'] = {'desc': 'pixel value of image',
                       'notes': 'function of image_lat and image_lon'}
-    meta['x'] = {'long_name': 'x-value of image pixel',
+    meta['x'] = {'desc': 'x-value of image pixel',
                  'notes': 'Dummy Variable'}
-    meta['y'] = {'long_name': 'y-value of image pixel',
+    meta['y'] = {'desc': 'y-value of image pixel',
                  'notes': 'Dummy Variable'}
-    meta['z'] = {'long_name': 'z-value of profile height',
+    meta['z'] = {'desc': 'z-value of profile height',
                  'notes': 'Dummy Variable'}
-    meta['image_lat'] = {'long_name': 'Latitude of image pixel',
+    meta['image_lat'] = {'desc': 'Latitude of image pixel',
                          'notes': 'Dummy Variable'}
-    meta['image_lon'] = {'long_name': 'Longitude of image pixel',
+    meta['image_lon'] = {'desc': 'Longitude of image pixel',
                          'notes': 'Dummy Variable'}
 
     # Set any dummy variable metadata present in instrument keys
