@@ -331,8 +331,9 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
             # Update metadata based on data type
             if datetime_flag:
                 print('Found another Epoch! ', var, epoch_name)
-                meta_dict[inst.meta.labels.name] = epoch_name
-                meta_dict[inst.meta.labels.units] = epoch_label
+                meta_dict.update(return_epoch_metadata(inst, epoch_name))
+                # meta_dict[inst.meta.labels.name] = epoch_name
+                # meta_dict[inst.meta.labels.units] = epoch_label
 
             if inst[var].dtype == np.dtype('O') and coltype != str:
                 # This is a Series or DataFrame, possibly with more dimensions.
@@ -380,18 +381,19 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                     else:
                         idx = inst[good_data_loc, var]
 
-                    # Attach the metadata
+                    # Get subvariable information
                     _, sctype, sdflag = inst._get_data_info(idx)
 
                     if not sdflag:
+                        # Not a datetime index.
                         smeta_dict = {'Depend_0': epoch_name,
                                       'Depend_1': obj_dim_names[-1],
                                       'Display_Type': 'Spectrogram',
                                       'Format': inst._get_var_type_code(sctype),
                                       'Var_Type': 'data'}
                     else:
-                        smeta_dict = {inst.meta.labels.name: epoch_name,
-                                      inst.meta.labels.units: epoch_label}
+                        # Attach datetime index metadata.
+                        smeta_dict = return_epoch_metadata(inst, epoch_name)
 
                     # Construct name, variable_subvariable, and store
                     sname = '_'.join([lower_var, svar.lower()])
@@ -446,6 +448,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             varname=lower_var)
 
             else:
+                # Not dealing with higher order data.
+
                 meta_dict['Format'] = inst._get_var_type_code(coltype)
 
                 # Update the meta data
@@ -545,6 +549,9 @@ def default_from_netcdf_translation_table(meta):
     # Update labels required by netCDF4
     trans_table['_FillValue'] = meta.labels.fill_val
     trans_table['FillVal'] = meta.labels.fill_val
+
+    # We *may* need to keep this for backwards compatibility. Unintended use
+    # of 'fill' in pysat generated files.
     trans_table['fill'] = meta.labels.fill_val
 
     return trans_table
@@ -675,8 +682,6 @@ def apply_table_translation_from_file(trans_table, meta_dict):
                                            meta_dict[var_key][file_key],
                                            filt_dict[var_key][new_key])
                         pysat.logger.warning(wstr)
-
-            # print('Translation check ', var_key, file_key, new_key)
 
         # Check translation table against available metadata
         for trans_key in trans_table.keys():
@@ -1881,9 +1886,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
 
                         # Treat time and non-time data differently
                         if datetime_flag:
-                            # Further update metadata
+                            # Further update file
                             # Set metadata dict
-                            print('Setting datetime info ', new_dict)
                             cdfkey.setncatts(new_dict)
 
                             # Set data
