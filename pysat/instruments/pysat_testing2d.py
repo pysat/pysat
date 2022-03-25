@@ -159,9 +159,9 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     profiles = []
     # DataFrame at each time with numeric variables only
     alt_profiles = []
-    # Serie at each time, numeric data only
+    # Series at each time, numeric data only
     series_profiles = []
-    # frame indexed by date times
+    # Frame indexed by date times
     frame = pds.DataFrame({'density': data.loc[data.index[0:num_profiles],
                                                'mlt'].values.copy(),
                            'dummy_str': ['test'] * num_profiles,
@@ -193,10 +193,17 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
 
     # Reset profiles as children meta
     profile_meta = pysat.Meta()
-    profile_meta['density'] = {'long_name': 'profiles'}
-    profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+    profile_meta['density'] = {'long_name': 'density', 'units': 'N/cc',
+                               'desc': 'Fake "density" signal for testing.',
+                               'value_min': 0., 'value_max': 25.,
+                               'fill': np.nan}
+    profile_meta['dummy_str'] = {'long_name': 'dummy_str',
+                                 'desc': 'String data for testing.'}
+    profile_meta['dummy_ustr'] = {'long_name': 'dummy_ustr',
+                                  'desc': 'Unicode string data for testing.'}
+
+    # Update profiles metadata with sub-variable information.
+    meta['profiles'] = {'meta': profile_meta}
 
     return data, meta
 
