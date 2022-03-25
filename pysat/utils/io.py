@@ -79,7 +79,7 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, export_nan=None):
 
 
 def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
-                            check_type=None, export_nan=None):
+                            check_type=None, export_nan=None, varname=''):
     """Filter metadata properties to be consistent with netCDF4.
 
     Parameters
@@ -102,6 +102,8 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     export_nan : list or NoneType
         Metadata parameters allowed to be NaN. If None, assumes no Metadata
         parameters are allowed to be Nan. (default=None)
+    varname : str
+        Variable name to be processed. Used for error feedback. (default='')
 
     Returns
     -------
@@ -163,7 +165,8 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
                 except (TypeError, ValueError):
                     warnings.warn(''.join(['Unable to cast ', key, ' data, ',
                                            repr(filtered_dict[key]), ', as ',
-                                           repr(coltype), '; removing']))
+                                           repr(coltype), '; removing from ',
+                                           'variable ', varname]))
                     remove_keys.append(key)
 
     for key in remove_keys:
@@ -400,7 +403,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         filter_netcdf4_metadata(inst, in_meta_dict[sname],
                                                 sctype, remove=remove,
                                                 check_type=check_type,
-                                                export_nan=export_nan)
+                                                export_nan=export_nan,
+                                                varname=sname)
 
                 # Deal with index information for holding variable.
                 _, index_type, index_flag = inst._get_data_info(
@@ -436,7 +440,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             index_type,
                                             remove=remove,
                                             check_type=check_type,
-                                            export_nan=export_nan)
+                                            export_nan=export_nan,
+                                            varname=lower_var)
 
             else:
                 meta_dict['Format'] = inst._get_var_type_code(coltype)
@@ -451,7 +456,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             coltype,
                                             remove=remove,
                                             check_type=check_type,
-                                            export_nan=export_nan)
+                                            export_nan=export_nan,
+                                            varname=lower_var)
 
         else:
             pysat.logger.warning(''.join(('Unable to find MetaData for ', var)))
