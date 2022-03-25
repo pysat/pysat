@@ -120,7 +120,9 @@ def initialize_test_meta(epoch_name, data_keys):
                          'value_min': 0.0, 'value_max': 360.0}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude',
                         'value_min': -90.0, 'value_max': 90.0}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude',
+                        'value_min': 0.0, 'value_max': np.inf,
+                        'desc': 'Height above mean Earth.'}
     meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
                          'desc': 'Orbit Number', 'value_min': 0,
                          'value_max': 25000, 'fill': -1,
