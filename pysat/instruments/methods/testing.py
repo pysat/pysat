@@ -122,8 +122,8 @@ def initialize_test_meta(epoch_name, data_keys):
                         'value_min': -90.0, 'value_max': 90.0}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
     meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
-                         'desc': 'Orbit Number', 'value_min': 0.0,
-                         'value_max': 25000.0,
+                         'desc': 'Orbit Number', 'value_min': 0,
+                         'value_max': 25000, 'fill': -1,
                          'notes': ''.join(['Number of orbits since the start ',
                                            'of the mission. For this ',
                                            'simulation we use the number of ',

@@ -165,9 +165,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # Activate for testing malformed_index, and for instrument_test_class
     if malformed_index or tag == 'non_strict':
         index = index.tolist()
-        # nonmonotonic
+        # non-monotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
-        # non unique
+        # non-unique
         index[6:9] = [index[6]] * 3
 
     data.index = index
@@ -175,6 +175,16 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     # Set the meta data.
     meta = mm_test.initialize_test_meta('Epoch', data.keys())
+
+    # Add metadata for variables not covered above.
+    meta_dict = {'value_min': 0, 'value_max': 2, 'fill': -1}
+    var_list = ['int8_dummy', 'int16_dummy', 'int32_dummy', 'int64_dummy']
+    for var in var_list:
+        meta[var] = meta_dict
+
+    meta['dummy1'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy2'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy3'] = {'value_min': 0, 'value_max': 24024, 'fill': -1}
 
     if tag == 'default_meta':
         return data, pysat.Meta()
