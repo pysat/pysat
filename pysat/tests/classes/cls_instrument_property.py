@@ -711,28 +711,23 @@ class InstPropertyTests(object):
     def test_change_inst_pandas_format(self):
         """Test changing `pandas_format` attribute works."""
         new_format = not self.testInst.pandas_format
+        new_type = pds.DataFrame if new_format else xr.Dataset
 
-        # Current data format hidden attributes
+        # Save current data format hidden attributes
         current_null = self.testInst._null_data
         current_library = self.testInst._data_library
 
         # Assign inverted `pandas_format` setting
         self.testInst.pandas_format = new_format
 
-        # Confirm assignment
+        # Confirm assignment of visible and hidden attributes
         assert self.testInst.pandas_format == new_format
-
-        # Confirm that internal properties have changed
         assert not isinstance(self.testInst._null_data, type(current_null))
         assert current_library != self.testInst._data_library
 
         # Confirm internal consistency
         assert isinstance(self.testInst._null_data, self.testInst._data_library)
-
-        if new_format:
-            assert isinstance(self.testInst._null_data, pds.DataFrame)
-        else:
-            assert isinstance(self.testInst._null_data, xr.Dataset)
+        assert isinstance(self.testInst._null_data, new_type)
 
         return
 
