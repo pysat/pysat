@@ -166,7 +166,7 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
                     warnings.warn(''.join(['Unable to cast ', key, ' data, ',
                                            repr(filtered_dict[key]), ', as ',
                                            repr(coltype), '; removing from ',
-                                           'variable ', varname]))
+                                           'variable "', varname, '."']))
                     remove_keys.append(key)
 
     for key in remove_keys:
