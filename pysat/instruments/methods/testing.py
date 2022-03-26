@@ -111,8 +111,8 @@ def initialize_test_meta(epoch_name, data_keys):
     # Create standard metadata for all parameters
     meta = pysat.Meta()
     # TODO
-    # Not having line below causes loaed errors for xarray.
-    meta[epoch_name] = {'long_name': 'Datetime Index'}
+    # Not having line below causes loaed errors for xarray. No more errors.
+    # meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'desc': 'Number of seconds since mindight UT',
                    'value_min': 0.0, 'value_max': 86400.0}
