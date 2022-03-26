@@ -17,15 +17,16 @@ import xarray as xr
 import pysat
 
 
-def pysat_meta_to_xarray_attr(xr_data, pysat_meta, export_nan=None):
+def pysat_meta_to_xarray_attr(xr_data, pysat_meta, #export_nan=None,
+                              epoch_name):
     """Attach pysat metadata to xarray Dataset as attributes.
 
     Parameters
     ----------
     xr_data : xarray.Dataset
         Xarray Dataset whose attributes will be updated
-    pysat_meta : pysat.MetaData
-        pysat MetaData class object supplying attribute data
+    pysat_meta : dict
+        Output starting from Instrument.meta.to_dict() supplying attribute data.
     export_nan : list or NoneType
         Metadata parameters allowed to be NaN. If None, assumes no Metadata
         parameters are allowed to be Nan. (default=None)
@@ -58,22 +59,35 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, export_nan=None):
                     return False
         return True
 
-    # Initialize the export_nan list
-    if export_nan is None:
-        export_nan = []
+    # # Initialize the export_nan list
+    # if export_nan is None:
+    #     export_nan = []
+
+    # pysat meta -> dict export has lowercase names.
+    xarr_lvars = [var.lower() for var in xr_data.data_vars.keys()]
+    xarr_vars = [var for var in xr_data.data_vars.keys()]
 
     # Cycle through all the pysat MetaData measurements
     for data_key in pysat_meta.keys():
         # Select the measurements that are also in the xarray data
-        if data_key in xr_data.data_vars.keys():
+        if data_key in xarr_lvars:
+            for i in range(len(xarr_lvars)):
+                if data_key == xarr_lvars[i]:
+                    break
             # Cycle through all the pysat MetaData labels
             for meta_key in pysat_meta[data_key].keys():
                 # Assign attributes if the MetaData is not set to a fill value,
                 # unless the value is NaN and this is expected
-                if not is_fill(pysat_meta[data_key][meta_key],
-                               meta_key in export_nan):
-                    xr_data.data_vars[data_key].attrs[meta_key] = pysat_meta[
-                        data_key][meta_key]
+                # if not is_fill(pysat_meta[data_key][meta_key],
+                #                meta_key in export_nan):
+                xr_data.data_vars[xarr_vars[i]].attrs[meta_key] = pysat_meta[
+                    data_key][meta_key]
+
+        # if data_key == epoch_name:
+        #     # Cycle through all the pysat MetaData labels
+        #     for meta_key in pysat_meta[data_key].keys():
+        #         xr_data[data_key].attrs[meta_key] = pysat_meta[data_key][
+        #             meta_key]
 
     return
 
@@ -299,7 +313,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
     pysat.utils.io.filter_netcdf4_metadata.
 
     """
-    epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
+    # epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
     #
     # # # Ensure basic time-index metadata is set.
     # # inst.meta.add_epoch_metadata(epoch_name)
@@ -317,7 +331,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
     # Update the non-time variable meta data standards
     for var in inst.variables:
-        if var in inst.meta and var != epoch_name:
+        if var in inst.meta and var not in [epoch_name, 'time']:
 
             lower_var = var.lower()
 
@@ -329,9 +343,10 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                          'Var_Type': 'data'}
 
             # Update metadata based on data type
-            if datetime_flag:
+            if datetime_flag and inst.pandas_format:
                 print('Found another Epoch! ', var, epoch_name)
                 meta_dict.update(return_epoch_metadata(inst, epoch_name))
+                meta_dict.pop('MonoTon')
                 # meta_dict[inst.meta.labels.name] = epoch_name
                 # meta_dict[inst.meta.labels.units] = epoch_label
 
@@ -388,12 +403,13 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         # Not a datetime index.
                         smeta_dict = {'Depend_0': epoch_name,
                                       'Depend_1': obj_dim_names[-1],
-                                      'Display_Type': 'Spectrogram',
+                                      'Display_Type': 'Multidimensional',
                                       'Format': inst._get_var_type_code(sctype),
                                       'Var_Type': 'data'}
                     else:
                         # Attach datetime index metadata.
                         smeta_dict = return_epoch_metadata(inst, epoch_name)
+                        smeta_dict.pop('MonoTon')
 
                     # Construct name, variable_subvariable, and store
                     sname = '_'.join([lower_var, svar.lower()])
@@ -452,6 +468,13 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
                 meta_dict['Format'] = inst._get_var_type_code(coltype)
 
+                if not inst.pandas_format:
+                    for i, dim in enumerate(list(inst[var].dims)):
+                        meta_dict['Depend_{:1d}'.format(i)] = dim
+                    num_dims = len(inst[var].dims)
+                    if num_dims >= 2:
+                        meta_dict['Display_Type'] = 'Multidimensional'
+
                 # Update the meta data
                 in_meta_dict[lower_var].update(meta_dict)
 
@@ -466,7 +489,9 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             varname=lower_var)
 
         else:
-            pysat.logger.warning(''.join(('Unable to find MetaData for ', var)))
+            if var not in [epoch_name, 'time']:
+                pysat.logger.warning(''.join(('Unable to find MetaData for ',
+                                              var)))
 
     return in_meta_dict
 
@@ -1326,6 +1351,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         # Remove variable attributes from the data object
         data.variables[key].attrs = {}
 
+    # Rename the timeindex `epoch_name`
+    data = data.rename({list(data.dims)[0]: 'time'})
+
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
         setattr(meta.header, data_attr, getattr(data, data_attr))
@@ -1640,11 +1668,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     export_meta = apply_table_translation_to_file(inst, export_meta,
                                                   meta_translation)
 
-    # print()
-    # print('EXPORT META!!!! ')
-    # print(export_meta)
-    # print()
-
     # Apply instrument specific post-processing to the export_meta
     if meta_processor is None:
         if hasattr(inst._export_meta_post_processing, '__call__'):
@@ -1913,7 +1936,13 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         # Attach the metadata to a separate xarray.Dataset object, ensuring
         # the Instrument data object is unchanged.
         xr_data = xr.Dataset(inst.data)
-        pysat_meta_to_xarray_attr(xr_data, inst.meta, export_nan)
+
+        # Update 'time' dimension to `epoch_name`.
+        time_dim = list(inst.data.dims)[0]
+        xr_data = xr_data.rename({time_dim: epoch_name})
+
+        # Transfer metadata.
+        pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
@@ -1923,8 +1952,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                 case_var = inst.meta.var_case_name(var)
 
                 if case_var != var:
-                    xr_data[case_var] = xr_data[var]
-                    del_vars.append(var)
+                    xr_data = xr_data.rename({var: case_var})
 
             for var in del_vars:
                 del xr_data[var]

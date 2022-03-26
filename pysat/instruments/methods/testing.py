@@ -110,6 +110,8 @@ def initialize_test_meta(epoch_name, data_keys):
     """
     # Create standard metadata for all parameters
     meta = pysat.Meta()
+    # TODO
+    # Not having line below causes loaed errors for xarray.
     meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'desc': 'Number of seconds since mindight UT',
@@ -179,9 +181,9 @@ def initialize_test_meta(epoch_name, data_keys):
                             'meta': alt_profile_meta}
 
     # Standard metadata required for xarray.
-    meta['variable_profiles'] = {'meta': 'variable_profiles',
-                                 'long_name': 'series'}
-    meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1}
+    meta['variable_profiles'] = {'desc': 'Profiles with variable altitude.'}
+    meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1,
+                              'desc': 'Altitude of profile data.'}
     meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     # Standard metadata required for xarray.
@@ -204,6 +206,7 @@ def initialize_test_meta(epoch_name, data_keys):
                          'value_min': 0., 'value_max': 360.}
 
     # Set any dummy variable metadata present in instrument keys
+    # TODO, this interefers with dummy1, 2, 3 settings above
     for var in data_keys:
         if var.find('dummy') >= 0:
             meta[var] = {'units': 'none', 'long_name': var,
