@@ -1995,12 +1995,18 @@ class Instrument(object):
 
     @property
     def variables(self):
-        """List of variables for the loaded data."""
+        """List of variables for the loaded data, excluding time index."""
 
         if self.pandas_format:
             return self.data.columns
         else:
-            return list(self.data.variables.keys())
+            vars = list(self.data.variables.keys())
+            for i, var in enumerate(vars):
+                if var == list(self.data.dims.keys())[0]:
+                    break
+            if len(vars) > 0:
+                vars.pop(i)
+            return vars
 
     def copy(self):
         """Create a deep copy of the entire Instrument object.
