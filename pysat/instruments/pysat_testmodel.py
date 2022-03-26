@@ -151,10 +151,10 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     meta = mm_test.initialize_test_meta('time', data.keys())
 
     # Adjust metadata from overall defaults
-    meta['dummy1'] = {'value_min': -2**32 + 2, 'value_max':2**32,
-                      'fill': 2**32 + 1}
-    meta['dummy2'] = {'value_min': -2**32 + 2, 'value_max':2**32,
-                      'fill': 2**32 + 1}
+    meta['dummy1'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
+                      'fill': -2**32 + 1}
+    meta['dummy2'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
+                      'fill': -2**32 + 1}
 
     if tag == 'pressure_levels':
         # Assigning new metadata for altitude since it differs from default info

@@ -17,8 +17,7 @@ import xarray as xr
 import pysat
 
 
-def pysat_meta_to_xarray_attr(xr_data, pysat_meta, #export_nan=None,
-                              epoch_name):
+def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
     """Attach pysat metadata to xarray Dataset as attributes.
 
     Parameters
@@ -63,6 +62,7 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, #export_nan=None,
     # if export_nan is None:
     #     export_nan = []
 
+    # Get a list of all data, expect for the time dimension.
     xarr_vars = [var for var in xr_data.data_vars.keys()]
     xarr_vars.extend([var for var in xr_data.coords.keys()])
     xarr_vars.extend([var for var in list(xr_data.dims.keys())[1:]])
@@ -1951,8 +1951,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
-            del_vars = []
-            for var in inst.variables:
+            for var in inst.variables[1:]:
                 # Use the variable case stored in the MetaData object
                 case_var = inst.meta.var_case_name(var)
 

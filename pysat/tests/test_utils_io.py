@@ -107,8 +107,9 @@ class TestLoadNetCDF(object):
             self.testInst.data = self.testInst.data.rename(str.upper,
                                                            axis='columns')
         else:
+            # Don't apply to 'time'
             map_keys = {dkey: dkey.upper()
-                        for dkey in self.testInst.variables}
+                        for dkey in self.testInst.variables[1:]}
             self.testInst.data = self.testInst.data.rename(map_keys)
 
         # Meta case is preserved and has not been altered
@@ -149,7 +150,7 @@ class TestLoadNetCDF(object):
         else:
             self.testInst.data = self.testInst.data.rename(
                 {dkey: dkey.upper()
-                 for dkey in self.testInst.variables})
+                 for dkey in self.testInst.variables[1:]})
 
         io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True)
 
@@ -684,7 +685,7 @@ class TestNetCDF4Integration(object):
 
         # Update the test metadata
         if missing:
-            drop_var = self.testInst.variables[0]
+            drop_var = self.testInst.variables[-1]
             self.testInst.meta.drop(drop_var)
 
         # Save the un-updated metadata
@@ -930,7 +931,7 @@ class TestXarrayIO(object):
 
         # Run the update routine
         meta = self.testInst.meta
-        io.pysat_meta_to_xarray_attr(self.testInst.data, meta, 'time') #, export_nan)
+        io.pysat_meta_to_xarray_attr(self.testInst.data, meta, 'time')
 
         # Test that the metadata was added
         # if export_nan is None:

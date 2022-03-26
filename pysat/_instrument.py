@@ -2000,12 +2000,19 @@ class Instrument(object):
         if self.pandas_format:
             return self.data.columns
         else:
-            vars = list(self.data.variables.keys())
-            for i, var in enumerate(vars):
-                if var == list(self.data.dims.keys())[0]:
-                    break
-            if len(vars) > 0:
-                vars.pop(i)
+            # Keep dimensions first so that 'time' may be located easily.
+            vars = [var for var in self.data.dims.keys()]
+            # vars.extend([var for var in self.data.coords.keys()])
+            vars.extend([var for var in self.data.data_vars.keys()])
+
+            # vars = list(self.data.dims).extend(
+            #     list(self.data.coords)).extend(self.data.data_vars)
+            # vars = vars.extend(self.data.data_vars)
+            # for i, var in enumerate(vars):
+            #     if var == list(self.data.dims.keys())[0]:
+            #         break
+            # if len(vars) > 0:
+            #     vars.pop(i)
             return vars
 
     def copy(self):
