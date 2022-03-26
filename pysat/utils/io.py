@@ -63,9 +63,12 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, #export_nan=None,
     # if export_nan is None:
     #     export_nan = []
 
-    # pysat meta -> dict export has lowercase names.
-    xarr_lvars = [var.lower() for var in xr_data.data_vars.keys()]
     xarr_vars = [var for var in xr_data.data_vars.keys()]
+    xarr_vars.extend([var for var in xr_data.coords.keys()])
+    xarr_vars.extend([var for var in list(xr_data.dims.keys())[1:]])
+
+    # pysat meta -> dict export has lowercase names.
+    xarr_lvars = [var.lower() for var in xarr_vars]
 
     # Cycle through all the pysat MetaData measurements
     for data_key in pysat_meta.keys():
@@ -74,13 +77,15 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, #export_nan=None,
             for i in range(len(xarr_lvars)):
                 if data_key == xarr_lvars[i]:
                     break
+            else:
+                wstr = ''.join(['Did not find data for metadata variable ',
+                                data_key, '.'])
+                pysat.logger.warning(wstr)
+
             # Cycle through all the pysat MetaData labels
             for meta_key in pysat_meta[data_key].keys():
-                # Assign attributes if the MetaData is not set to a fill value,
-                # unless the value is NaN and this is expected
-                # if not is_fill(pysat_meta[data_key][meta_key],
-                #                meta_key in export_nan):
-                xr_data.data_vars[xarr_vars[i]].attrs[meta_key] = pysat_meta[
+                # Assign attributes
+                xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
                     data_key][meta_key]
 
         # if data_key == epoch_name:
@@ -1947,15 +1952,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
             del_vars = []
-            for var in xr_data.keys():
+            for var in inst.variables:
                 # Use the variable case stored in the MetaData object
                 case_var = inst.meta.var_case_name(var)
 
                 if case_var != var:
                     xr_data = xr_data.rename({var: case_var})
-
-            for var in del_vars:
-                del xr_data[var]
 
         # Set the standard encoding values
         encoding = {var: {'zlib': zlib, 'complevel': complevel,
