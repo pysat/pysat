@@ -108,7 +108,7 @@ class TestLoadNetCDF(object):
                                                            axis='columns')
         else:
             map_keys = {dkey: dkey.upper()
-                        for dkey in self.testInst.data.data_vars.keys()}
+                        for dkey in self.testInst.variables}
             self.testInst.data = self.testInst.data.rename(map_keys)
 
         # Meta case is preserved and has not been altered
@@ -149,7 +149,7 @@ class TestLoadNetCDF(object):
         else:
             self.testInst.data = self.testInst.data.rename(
                 {dkey: dkey.upper()
-                 for dkey in self.testInst.data.data_vars.keys()})
+                 for dkey in self.testInst.variables})
 
         io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True)
 
