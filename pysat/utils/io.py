@@ -738,15 +738,14 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
-    # If epoch can be converted to a datetime, convert
-    try:
+    # If epoch exists, convert to datetime object.
+    # TODO(#991): epoch does not necessarily exist.  May need to update if
+    # assumptions about time change.
+    if epoch_name in data.variables:
         data[epoch_name] = xr.DataArray(pds.to_datetime(data[epoch_name],
                                                         unit=epoch_unit,
                                                         origin=epoch_origin),
                                         coords=data[epoch_name].coords)
-    except (KeyError, ValueError):
-        # Value does not exist or cannot be converted to datetime
-        pass
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
@@ -1271,6 +1270,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         # the Instrument data object is unchanged.
         xr_data = xr.Dataset(inst.data)
         pysat_meta_to_xarray_attr(xr_data, inst.meta, export_nan)
+
+        # TODO(#991): custom epoch_name should be implemented if it exists.
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
