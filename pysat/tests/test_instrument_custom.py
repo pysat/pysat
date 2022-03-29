@@ -5,6 +5,7 @@ import logging
 import pytest
 
 import pysat
+from pysat.utils import testing
 
 
 def mult_data(inst, mult, dkey="mlt"):
@@ -133,12 +134,11 @@ class TestBasics(object):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
             return 5.0 * inst.data['mlt']
 
-        self.testInst.custom_attach(custom_with_return_data)
-        with pytest.raises(ValueError) as verr:
-            self.testInst.load(date=self.load_date)
-
         estr = 'Custom functions should not return any information via return'
-        assert str(verr).find(estr) >= 0
+        self.testInst.custom_attach(custom_with_return_data)
+
+        testing.eval_bad_input(self.testInst.load, ValueError, estr,
+                               input_kwargs={'date': self.load_date})
         return
 
     def test_custom_keyword_instantiation(self):
@@ -286,11 +286,11 @@ class TestConstellationBasics(object):
         inst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                 clean_level='clean')
 
-        with pytest.raises(ValueError) as verr:
-            pysat.Constellation(custom=[{'apply_inst': apply_inst}],
-                                instruments=[inst for i in range(5)])
-
-        assert str(verr).find("Input dict to custom is missing the") >= 0
+        testing.eval_bad_input(pysat.Constellation, ValueError,
+                               "Input dict to custom is missing the",
+                               input_kwargs={
+                                   'custom': [{'apply_inst': apply_inst}],
+                                   'instruments': [inst for i in range(5)]})
         return
 
     @pytest.mark.parametrize("apply_inst", [False, True])
@@ -348,11 +348,11 @@ class TestConstellationBasics(object):
             return 5.0 * inst.data['mlt']
 
         self.testConst.custom_attach(custom_with_return_data)
-        with pytest.raises(ValueError) as verr:
-            self.testConst.load(date=self.load_date)
 
+        # Evaluate the error raised and its message
         estr = 'Custom functions should not return any information via return'
-        assert str(verr).find(estr) >= 0
+        testing.eval_bad_input(self.testConst.load, ValueError, estr,
+                               input_kwargs={'date': self.load_date})
         return
 
     def test_custom_inst_keyword_instantiation(self):
