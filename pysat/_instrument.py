@@ -3016,9 +3016,9 @@ class Instrument(object):
                 warn_default = False
                 for var in self.variables:
                     if var not in self.meta:
-                        default_warn = "".join(["Metadata set to defaults, as",
-                                                " they were missing in the ",
-                                                "Instrument"])
+                        default_warn = "".join(["Metadata for '{:s}' set to ",
+                                                "defaults, as they were ",
+                                                "missing in the Instrument"])
                         warn_default = True
                         self.meta[var] = {self.meta.labels.name: var,
                                           self.meta.labels.notes: default_warn}
