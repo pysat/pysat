@@ -3007,6 +3007,7 @@ class Instrument(object):
             self.meta = meta
 
             # If only some metadata included, define the remaining variables
+            warn_missing_vars = []
             for var in self.vars_no_time:
                 if var not in self.meta:
                     warn_missing_vars.append(var)
