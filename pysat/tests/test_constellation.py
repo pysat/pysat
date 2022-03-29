@@ -13,6 +13,7 @@ import pytest
 import pysat
 from pysat import constellations
 from pysat.tests.classes.cls_registration import TestWithRegistration
+from pysat.utils import testing
 
 
 class TestConstellationInitReg(TestWithRegistration):
@@ -43,11 +44,10 @@ class TestConstellationInitReg(TestWithRegistration):
         # Register fake Instrument modules
         pysat.utils.registry.register(self.module_names)
 
-        # Raise ValueError
-        with pytest.raises(ValueError) as verr:
-            pysat.Constellation(platforms=['Executor'])
-
-        assert str(verr).find("no registered packages match input") >= 0
+        # Evaluate raised error
+        testing.eval_bad_input(pysat.Constellation, ValueError,
+                               "no registered packages match input",
+                               input_kwargs={'platforms': ['Executor']})
         return
 
     def test_some_bad_construct_constellation(self, caplog):
@@ -106,29 +106,27 @@ class TestConstellationInit(object):
     def test_init_constellation_bad_inst_module(self):
         """Test Constellation raises AttributeError with bad inst_module."""
 
-        with pytest.raises(AttributeError) as aerr:
-            pysat.Constellation(const_module=self.instruments)
-
-        assert str(aerr).find("missing required attribute 'instruments'") >= 0
+        testing.eval_bad_input(pysat.Constellation, AttributeError,
+                               "missing required attribute 'instruments'", 
+                               input_kwargs={'const_module': self.instruments})
         return
 
     def test_construct_raises_noniterable_error(self):
         """Test error raised when Constellation non iterable."""
 
-        with pytest.raises(ValueError) as verr:
-            self.const = pysat.Constellation(instruments=self.instruments[0])
-
-        assert str(verr).find("instruments argument must be list-like") >= 0
+        testing.eval_bad_input(pysat.Constellation, ValueError,
+                               "instruments argument must be list-like",
+                               input_kwargs={
+                                   'instruments': self.instruments[0]})
         return
 
     def test_construct_non_inst_list(self):
         """Test error raised when Constellation inputs aren't instruments."""
 
-        with pytest.raises(ValueError) as verr:
-            self.const = pysat.Constellation(instruments=[self.instruments[0],
-                                                          'not an inst'])
-
-        assert str(verr).find("Constellation input is not an Instrument") >= 0
+        testing.eval_bad_input(pysat.Constellation, ValueError,
+                               "Constellation input is not an Instrument",
+                               input_kwargs={'instruments': [
+                                   self.instruments[0], 'not an inst']})
         return
 
     def test_construct_null(self):
@@ -375,26 +373,20 @@ class TestConstellationFunc(object):
     def test_get_unique_attr_vals_bad_attr(self):
         """Test raises AttributeError for bad input value."""
 
-        with pytest.raises(AttributeError) as aerr:
-            self.const._get_unique_attr_vals('not_an_attr')
-
-        assert str(aerr).find("does not have attribute") >= 0
+        testing.eval_bad_input(self.const._get_unique_attr_vals, AttributeError,
+                               "does not have attribute", ['not_an_attr'])
         return
 
     def test_get_unique_attr_vals_bad_type(self):
         """Test raises TypeError for bad input attribute type."""
 
-        with pytest.raises(TypeError) as terr:
-            self.const._get_unique_attr_vals('empty')
-
-        assert str(terr).find("attribute is not list-like") >= 0
+        testing.eval_bad_input(self.const._get_unique_attr_vals, TypeError,
+                               "attribute is not list-like", ['empty'])
         return
 
     def test_bad_call_inst_method(self):
         """Test raises AttributeError for missing Instrument method."""
 
-        with pytest.raises(AttributeError) as aerr:
-            self.const._call_inst_method('not a method')
-
-        assert str(aerr).find("unknown method") >= 0
+        testing.eval_bad_input(self.const._call_inst_method, AttributeError,
+                               "unknown method", ['not a method'])
         return
