@@ -537,21 +537,21 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
             mdict[key]['meta'] = remove_netcdf4_standards_from_meta(mdict[key]
                                                                     ['meta'],
                                                                     '')
-        else:
-            # Remove any entries with label in `vals`
-            for val, lval in zip(vals, lower_vals):
-                if lval in lower_sub_keys:
-                    for i, check_val in enumerate(lower_sub_keys):
-                        if check_val == lval:
-                            mdict[key].pop(sub_keys[i])
+        # Remove any entries with label in `vals`
+        for val, lval in zip(vals, lower_vals):
+            if lval in lower_sub_keys:
+                for i, check_val in enumerate(lower_sub_keys):
+                    if check_val == lval:
+                        mdict[key].pop(sub_keys[i])
 
     # Remove epoch metadata
     epoch_vals = ['Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
     if epoch_name != '':
         if epoch_name in mdict:
-            for val in epoch_vals:
-                if val in mdict[epoch_name]:
-                    mdict[epoch_name].pop(val)
+            mdict.pop(epoch_name)
+            # for val in epoch_vals:
+            #     if val in mdict[epoch_name]:
+            #         mdict[epoch_name].pop(val)
 
     return mdict
 
@@ -1357,8 +1357,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         # Remove variable attributes from the data object
         data.variables[key].attrs = {}
 
-    # Rename the timeindex `epoch_name`
-    data = data.rename({list(data.dims)[0]: 'time'})
+    # Rename the timeindex to 'time'.
+    orig_time_dim = list(data.dims)[0]
+    data = data.rename({orig_time_dim: 'time'})
 
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
@@ -1371,7 +1372,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                 full_mdict[var].pop(label)
 
     # Second, remove some items pysat added for netcdf compatibility.
-    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
+    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, orig_time_dim)
 
     # Translate labels from file to pysat compatible labels using
     # `meta_translation`
