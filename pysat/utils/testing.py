@@ -7,6 +7,7 @@
 
 import numpy as np
 
+
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
     """Assert all elements of one list exist within the other list.
 
