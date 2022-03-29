@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 import pysat
+from pysat.utils import testing
 
 
 class TestMetaLabels(object):
@@ -36,10 +37,9 @@ class TestMetaLabels(object):
     def test_default_label_value_raises_error(self):
         """Test `MetaLabels.default_values_from_attr` errors with bad attr."""
 
-        with pytest.raises(ValueError) as verr:
-            self.meta_labels.default_values_from_attr('not_an_attr')
-
-        assert verr.match("unknown label attribute")
+        testing.eval_bad_input(self.meta_labels.default_values_from_attr,
+                               ValueError, "unknown label attribute",
+                               ['not_an_attr'])
         return
 
     @pytest.mark.parametrize("iter_type", [list, dict, set, tuple, np.ndarray])
@@ -53,10 +53,11 @@ class TestMetaLabels(object):
 
         """
 
-        with pytest.raises(TypeError) as terr:
-            pysat.MetaLabels(value_range=('val_range', iter_type))
+        testing.eval_bad_input(pysat.MetaLabels, TypeError,
+                               "iterable types like",
+                               input_kwargs={'value_range':
+                                             ('val_range', iter_type)})
 
-        assert str(terr).find("iterable types like") >= 0
         return
 
     @pytest.mark.parametrize("iter_type", [list, dict, set, tuple, np.ndarray])
@@ -70,10 +71,9 @@ class TestMetaLabels(object):
 
         """
 
-        with pytest.raises(TypeError) as terr:
-            self.meta_labels.update("value_range", 'val_range', iter_type)
-
-        assert str(terr).find("iterable types like") >= 0
+        testing.eval_bad_input(self.meta_labels.update, TypeError,
+                               "iterable types like", input_args=[
+                                   "value_range", 'val_range', iter_type])
         return
 
     # -------------------------
