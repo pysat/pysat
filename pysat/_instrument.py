@@ -3007,11 +3007,16 @@ class Instrument(object):
                                               inc=self.load_step,
                                               load_kwargs=kwargs)
 
-        if not self.empty:
-            # Data was returned. Assigned returned metadata information as well.
-            self.meta = meta
+            if not self.empty:
+                # Data was returned. Assigned returned metadata information as well.
+                self.meta = meta
+            else:
+                estr = ''.join(('Metadata was not assigned as there was ',
+                                'no data returned.'))
+                pysat.logger.info(estr)
 
-            # If only some metadata included, define the remaining variables
+        if not self.empty:
+            # Check for partial metadata, define the remaining variables.
             warn_missing_vars = []
             for var in self.vars_no_time:
                 if var not in self.meta:
@@ -3028,19 +3033,15 @@ class Instrument(object):
                                         "missing in the Instrument."])
                 default_warn = default_warn.format(', '.join(var))
                 warnings.warn(default_warn, stacklevel=2)
-        else:
-            estr = ''.join(('Metadata was not assigned as there was ',
-                            'no data returned.'))
-            pysat.logger.info(estr)
 
-        # Check if load routine actually returned information meta
-        if self.meta.data.empty:
-            vars = self.vars_no_time
-            if len(vars) > 0:
-                estr = ''.join(['No information found within returned Meta ',
-                                'instance. Assigning defaults.'])
-                warnings.warn(estr, stacklevel=2)
-                self.meta[vars] = {self.meta.labels.name: vars}
+        # # Check if load routine actually returned information meta
+        # if self.meta.data.empty:
+        #     vars = self.vars_no_time
+        #     if len(vars) > 0:
+        #         estr = ''.join(['No information found within returned Meta ',
+        #                         'instance. Assigning defaults.'])
+        #         warnings.warn(estr, stacklevel=2)
+        #         self.meta[vars] = {self.meta.labels.name: vars}
 
         # If loading by file and there is data, set the yr, doy, and date
         if not self._load_by_date and not self.empty:
