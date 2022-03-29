@@ -121,7 +121,7 @@ def initialize_test_meta(epoch_name, data_keys):
                    'desc': 'Local time at magnetic field line at equator.'}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
                    'value_min': 0.0, 'value_max': 24.0,
-                   'desc': 'Mean solar time.' ,
+                   'desc': 'Mean solar time.',
                    'notes': 'Example of notes.'}
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude',
                          'value_min': 0.0, 'value_max': 360.0,
