@@ -107,7 +107,7 @@ class TestConstellationInit(object):
         """Test Constellation raises AttributeError with bad inst_module."""
 
         testing.eval_bad_input(pysat.Constellation, AttributeError,
-                               "missing required attribute 'instruments'", 
+                               "missing required attribute 'instruments'",
                                input_kwargs={'const_module': self.instruments})
         return
 

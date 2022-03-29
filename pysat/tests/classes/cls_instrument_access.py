@@ -195,7 +195,7 @@ class InstAccessTests(object):
         testing.eval_bad_input(self.testInst.load, ValueError, estr,
                                [self.ref_time.year, 1],
                                {'end_yr': self.ref_time.year,
-                               'end_doy': end_doy, 'use_header': True})
+                                'end_doy': end_doy, 'use_header': True})
         return
 
     def test_basic_instrument_load_yr_no_end_doy(self):

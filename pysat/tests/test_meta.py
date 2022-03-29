@@ -1969,7 +1969,7 @@ class TestMetaMutable(object):
         # Catch and evaluate error message
         testing.eval_bad_input(self.meta.transfer_attributes_to_header,
                                AttributeError,
-                               "cannot be transferred as it already exists", 
+                               "cannot be transferred as it already exists",
                                input_kwargs={'strict_names': True})
         return
 

@@ -87,7 +87,7 @@ class TestNoDataDir(object):
     def test_no_data_dir(self):
         """Test that error is raised if no data directory is specified."""
         testing.eval_bad_input(pysat.Instrument, NameError,
-                               "Please set a top-level directory path") 
+                               "Please set a top-level directory path")
         return
 
 
@@ -1047,7 +1047,7 @@ class TestInstWithFilesNonStandard(object):
 
     @pytest.mark.parametrize('file_format', [
         'pysat_testing_unique_junk_stuff.pysat_testing_file', 15])
-    def test_files_non_standard_file_format_template(self, file_format):
+    def test_files_non_standard_file_format_template_fail(self, file_format):
         """Test instrument raises error if format template has no variables.
 
         Parameters
