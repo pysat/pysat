@@ -12,6 +12,7 @@ import pytest
 
 import pysat
 from pysat.utils import coords
+from pysat.utils import testing
 
 
 class TestCyclicData(object):
@@ -87,10 +88,10 @@ class TestUpdateLon(object):
         self.py_inst = pysat.Instrument(platform='pysat', name="testing")
         self.py_inst.load(date=self.inst_time)
 
-        with pytest.raises(ValueError) as verr:
-            coords.update_longitude(self.py_inst, lon_name="not longitude")
+        testing.eval_bad_input(coords.update_longitude, ValueError,
+                               "unknown longitude variable name",
+                               [self.py_inst], {'lon_name': "not longitude"})
 
-        assert str(verr).find("unknown longitude variable name") >= 0
         return
 
 
@@ -187,12 +188,11 @@ class TestCalcSLT(object):
         self.py_inst.load(date=self.inst_time)
 
         # Test that the correct Exception and error message are raised
-        with pytest.raises(ValueError) as verr:
-            coords.calc_solar_local_time(self.py_inst,
-                                         lon_name="not longitude",
-                                         slt_name='slt')
+        testing.eval_bad_input(coords.calc_solar_local_time, ValueError,
+                               "unknown longitude variable name",
+                               [self.py_inst], {"lon_name": "not longitude",
+                                                "slt_name": 'slt'})
 
-        assert str(verr).find("unknown longitude variable name") >= 0
         return
 
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
