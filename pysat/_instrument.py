@@ -2001,21 +2001,6 @@ class Instrument(object):
             return self.data.columns
         else:
             return pysat.utils.io.xarray_vars_no_time(self.data)
-            # return list(self.data.variables.keys())
-            # # Keep dimensions first so that 'time' may be located easily.
-            # vars = [var for var in self.data.dims.keys()]
-            # # vars.extend([var for var in self.data.coords.keys()])
-            # vars.extend([var for var in self.data.data_vars.keys()])
-            #
-            # # vars = list(self.data.dims).extend(
-            # #     list(self.data.coords)).extend(self.data.data_vars)
-            # # vars = vars.extend(self.data.data_vars)
-            # # for i, var in enumerate(vars):
-            # #     if var == list(self.data.dims.keys())[0]:
-            # #         break
-            # # if len(vars) > 0:
-            # #     vars.pop(i)
-            # return vars
 
     def copy(self):
         """Create a deep copy of the entire Instrument object.
