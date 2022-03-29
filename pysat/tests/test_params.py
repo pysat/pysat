@@ -12,9 +12,10 @@ import pytest
 import shutil
 import tempfile
 
-import pysat  # required for reimporting pysat
-from pysat._params import Parameters  # required for eval statements
+import pysat  # Required for reimporting pysat
+from pysat._params import Parameters  # Required for eval statements
 from pysat.tests.classes.cls_ci import CICleanSetup
+from pysat.utils import testing
 
 
 class TestBasics(object):
@@ -65,14 +66,20 @@ class TestBasics(object):
         assert pysat.params['data_dirs'] == check
         return
 
-    @pytest.mark.parametrize("path",
-                             ['no_path',
-                              'not_a_directory'])
+    @pytest.mark.parametrize("path", ['no_path', 'not_a_directory'])
     def test_set_data_dir_bad_directory(self, path):
-        """Ensure you can't set data_dirs to a bad path."""
-        with pytest.raises(ValueError) as excinfo:
+        """Ensure you can't set data_dirs to a bad path.
+
+        Parameters
+        ----------
+        path : str
+            Bad path to a directory
+
+        """
+        with pytest.raises(ValueError) as verr:
             pysat.params['data_dirs'] = path
-        assert str(excinfo.value).find("Invalid path") >= 0
+
+        assert str(verr).find("Invalid path") >= 0
         return
 
     def test_repr(self):
@@ -175,9 +182,10 @@ class TestBasics(object):
 
     def test_bad_path_instantiation(self):
         """Ensure you can't use bad path when loading Parameters."""
-        with pytest.raises(OSError) as excinfo:
-            Parameters(path='./made_up_name')
-        assert str(excinfo.value).find("Supplied path does not exist") >= 0
+        testing.eval_bad_input(Parameters, OSError,
+                               "Supplied path does not exist",
+                               input_kwargs={"path": './made_up_name'})
+
         return
 
 
@@ -204,9 +212,8 @@ class TestCIonly(CICleanSetup):
                     os.path.join(self.root, 'pysat_settings_moved.json'))
 
         # Ensure we can't create a parameters file without valid .json
-        with pytest.raises(OSError) as err:
-            Parameters()
-        assert str(err).find('pysat is unable to locate a user settings') >= 0
+        testing.eval_bad_input(Parameters, OSError,
+                               'pysat is unable to locate a user settings')
 
         shutil.move(os.path.join(self.root, 'pysat_settings_moved.json'),
                     os.path.join(self.root, 'pysat_settings.json'))
