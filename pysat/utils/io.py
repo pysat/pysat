@@ -1210,12 +1210,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
     # Translate labels from file to pysat compatible labels using
     # `meta_translation`
-    print('LOADED META PRE-TRANSLATION')
-    print(full_mdict, '\n')
-    print()
     filt_mdict = apply_table_translation_from_file(meta_translation, filt_mdict)
-    print('LOADED META POST-TRANSLATION')
-    print(full_mdict, '\n')
 
     # Next, allow processing by developers so they can deal with
     # issues with specific files.
