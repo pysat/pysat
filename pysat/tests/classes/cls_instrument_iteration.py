@@ -13,8 +13,8 @@ import pandas as pds
 import pytest
 
 import pysat
-from pysat.utils.time import filter_datetime_input
 from pysat.utils import testing
+from pysat.utils.time import filter_datetime_input
 
 
 class InstIterationTests(object):

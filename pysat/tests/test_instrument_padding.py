@@ -12,8 +12,8 @@ import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing2d
 import pysat.instruments.pysat_testing2d_xarray
 import pysat.instruments.pysat_testing_xarray
-from pysat.utils.time import filter_datetime_input
 from pysat.utils import testing
+from pysat.utils.time import filter_datetime_input
 
 
 class TestDataPaddingbyFile(object):
