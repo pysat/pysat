@@ -45,6 +45,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added support for user variables when parsing template filenames
      in `pysat.utils.files`.
    * Improved robustness of parsing delimited files.
+   * Added a test function for bad class/function/method input to reduce
+     duplicate code and improve message test combliance
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
