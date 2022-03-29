@@ -338,7 +338,7 @@ class TestInstGeneral(object):
 
         testing.eval_bad_input(pysat.Instrument, AttributeError,
                                'Supplied module ',
-                               input_kwarg={'inst_module': Dummy})
+                               input_kwargs={'inst_module': Dummy})
         return
 
     def test_eq_different_object(self):
