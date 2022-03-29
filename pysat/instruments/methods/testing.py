@@ -122,7 +122,7 @@ def initialize_test_meta(epoch_name, data_keys):
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
                    'value_min': 0.0, 'value_max': 24.0,
                    'desc': 'Mean solar time.' ,
-                   'notes': 'Not a real calculation.'}
+                   'notes': 'Example of notes.'}
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude',
                          'value_min': 0.0, 'value_max': 360.0,
                          'desc': 'Geographic Longitude'}
