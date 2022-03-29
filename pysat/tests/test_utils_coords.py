@@ -65,7 +65,7 @@ class TestUpdateLon(object):
     @pytest.mark.parametrize("name", ["testing", "testing_xarray",
                                       "testing2d_xarray", "testmodel"])
     def test_update_longitude(self, name):
-        """Test update_longitude successful run."""
+        """Test `update_longitude` successful run."""
 
         self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time)
