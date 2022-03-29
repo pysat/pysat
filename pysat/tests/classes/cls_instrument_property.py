@@ -602,7 +602,11 @@ class InstPropertyTests(object):
 
         estr = "".join(("unknown keywords supplied: ['undefined_keyword1',",
                         " 'undefined_keyword2']"))
-        testing.eval_bad_input(eval, ValueError, estr, [repr(self.testInst)])
+        with pytest.raises(ValueError) as verr:
+            eval(repr(self.testInst))
+
+        assert str(verr).find(estr) >= 0, "{:s} not found in {:}".format(
+            estr, str(verr))
         return
 
     def test_supported_input_keywords(self):
