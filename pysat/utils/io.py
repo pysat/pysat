@@ -1446,6 +1446,7 @@ def return_epoch_metadata(inst, epoch_name):
 
     return new_dict
 
+
 def xarray_vars_no_time(data):
     """Return all DataSet variables except the first dimension.
 
