@@ -3003,7 +3003,9 @@ class Instrument(object):
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
                                               inc=self.load_step,
                                               load_kwargs=kwargs)
+            
         if not self.empty:
+            # Data was returned. Assigned returned metadata information as well.
             self.meta = meta
 
             # If only some metadata included, define the remaining variables
@@ -3028,13 +3030,14 @@ class Instrument(object):
                             'no data returned.'))
             pysat.logger.info(estr)
 
-        # Check if load routine actually returns meta
+        # Check if load routine actually returned information meta
         if self.meta.data.empty:
-            estr = ''.join(['No information found within returned Meta ',
-                            'instance. Assigning defaults.'])
-            pysat.logger.warning(estr)
-            self.meta[self.vars_no_time] = {self.meta.labels.name:
-                                                self.vars_no_time}
+            vars = self.vars_no_time
+            if len(vars) > 0:
+                estr = ''.join(['No information found within returned Meta ',
+                                'instance. Assigning defaults.'])
+                warnings.warn(estr, stacklevel=2)
+                self.meta[vars] = {self.meta.labels.name: vars}
 
         # If loading by file and there is data, set the yr, doy, and date
         if not self._load_by_date and not self.empty:
