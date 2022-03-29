@@ -3031,7 +3031,7 @@ class Instrument(object):
                 default_warn = "".join(["Metadata for variables [{:s}] set to ",
                                         "defaults, as they were ",
                                         "missing in the Instrument."])
-                default_warn = default_warn.format(', '.join(var))
+                default_warn = default_warn.format(', '.join(warn_missing_vars))
                 warnings.warn(default_warn, stacklevel=2)
 
         # # Check if load routine actually returned information meta
