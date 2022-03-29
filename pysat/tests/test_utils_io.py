@@ -915,16 +915,8 @@ class TestXarrayIO(object):
         del self.testInst
         return
 
-    @pytest.mark.parametrize('export_nan', [None, ['fill']])
-    def test_pysat_meta_to_xarray_attr(self, export_nan):
-        """Test the successful transfer of Meta data to an xarray Dataset.
-
-        Parameters
-        ----------
-        export_nan : list or NoneType
-            Possible values for the `export_nan` kwarg.
-
-        """
+    def test_pysat_meta_to_xarray_attr(self):
+        """Test the successful transfer of Meta data to an xarray Dataset."""
 
         # Ensure there is no meta data attached to the Dataset at this point
         for var in self.testInst.variables:
@@ -933,13 +925,10 @@ class TestXarrayIO(object):
 
         # Run the update routine
         meta = self.testInst.meta
-        io.pysat_meta_to_xarray_attr(self.testInst.data, meta, 'time')
+        io.pysat_meta_to_xarray_attr(self.testInst.data, meta,
+                                     list(self.testInst.data.dims)[0])
 
         # Test that the metadata was added
-        # if export_nan is None:
-        #     export_nan = []
-        export_nan = []
-
         for var in self.testInst.data.data_vars.keys():
             for label in meta.attrs():
                 mval = meta[var, label]
@@ -951,8 +940,6 @@ class TestXarrayIO(object):
                             & np.isnan(mval), \
                             "unequal meta data for {:}, {:}".format(repr(var),
                                                                     repr(label))
-                        # assert label in export_nan, \
-                        #     "should not attach a label with a fill value"
                 else:
                     assert label not in export_nan, "did not attach {:}".format(
                         repr(label))

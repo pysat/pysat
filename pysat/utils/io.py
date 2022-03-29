@@ -294,7 +294,7 @@ def add_netcdf4_standards_to_meta(inst, epoch_name):
 
             # Update the meta data
             inst.meta[var] = meta_dict
-            inst.meta[var] = meta_dict
+
         else:
             pysat.logger.info(''.join(('Unable to find MetaData for ', var)))
 
@@ -319,25 +319,10 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
     pysat.utils.io.filter_netcdf4_metadata.
 
     """
-    # epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
-    #
-    # # # Ensure basic time-index metadata is set.
-    # # inst.meta.add_epoch_metadata(epoch_name)
-    #
-    # # Update the time standards
-    # time_dict = {'calendar': 'standard', 'Format': 'i8', 'Var_Type': 'data',
-    #              'Time_Base': epoch_label, 'Time_Scale': 'UTC'}
-    #
-    # if inst.index.is_monotonic_increasing:
-    #     time_dict['MonoTon'] = 'increase'
-    # elif inst.index.is_monotonic_decreasing:
-    #     time_dict['MonoTon'] = 'decrease'
-    #
-    # in_meta_dict[epoch_name].update(time_dict)
 
     # Update the non-time variable meta data standards
-    for var in inst.variables:
-        if var in inst.meta and var not in [epoch_name, 'time']:
+    for var in inst.vars_no_time:
+        if var in inst.meta:
 
             lower_var = var.lower()
 
@@ -350,11 +335,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
             # Update metadata based on data type
             if datetime_flag and inst.pandas_format:
-                print('Found another Epoch! ', var, epoch_name)
                 meta_dict.update(return_epoch_metadata(inst, epoch_name))
                 meta_dict.pop('MonoTon')
-                # meta_dict[inst.meta.labels.name] = epoch_name
-                # meta_dict[inst.meta.labels.units] = epoch_label
 
             if inst[var].dtype == np.dtype('O') and coltype != str:
                 # This is a Series or DataFrame, possibly with more dimensions.
@@ -470,7 +452,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             varname=lower_var)
 
             else:
-                # Not dealing with higher order data.
+                # Dealing with 1D data or xarray format.
 
                 meta_dict['Format'] = inst._get_var_type_code(coltype)
 
@@ -495,9 +477,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             varname=lower_var)
 
         else:
-            if var not in [epoch_name, 'time']:
-                pysat.logger.warning(''.join(('Unable to find MetaData for ',
-                                              var)))
+            warnings.warn(''.join(('Unable to find MetaData for ', var)),
+                          stacklevel=2)
 
     return in_meta_dict
 

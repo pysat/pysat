@@ -221,13 +221,6 @@ def initialize_test_meta(epoch_name, data_keys):
                          'notes': 'Dummy Variable',
                          'value_min': 0., 'value_max': 360.}
 
-    # # Set any dummy variable metadata present in instrument keys
-    # # TODO(RAS) this interefers with dummy1, 2, 3 settings above
-    # for var in data_keys:
-    #     if var.find('dummy') >= 0:
-    #         meta[var] = {'units': 'none', 'long_name': var,
-    #                      'notes': 'Dummy variable'}
-
     # Drop unused meta data for desired instrument.
     for var in meta.keys():
         if var not in data_keys:
