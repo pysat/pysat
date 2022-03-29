@@ -537,6 +537,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
             mdict[key]['meta'] = remove_netcdf4_standards_from_meta(mdict[key]
                                                                     ['meta'],
                                                                     '')
+
         # Remove any entries with label in `vals`
         for val, lval in zip(vals, lower_vals):
             if lval in lower_sub_keys:
@@ -545,7 +546,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
                         mdict[key].pop(sub_keys[i])
 
     # Remove epoch metadata
-    epoch_vals = ['Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
+    # epoch_vals = ['Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
     if epoch_name != '':
         if epoch_name in mdict:
             mdict.pop(epoch_name)
@@ -765,7 +766,7 @@ def meta_array_expander(meta_dict):
         for meta_key in meta_dict[key].keys():
             # Check for higher order data from 2D pandas support
             if meta_key == 'meta':
-                meta_dict[key][meta_key] = meta_array_expander(
+                loop_dict[meta_key] = meta_array_expander(
                     meta_dict[key][meta_key])
                 continue
 
@@ -1201,9 +1202,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
     data = pds.concat(out, axis=0)
 
-    # print('LOADED META')
-    # print(full_mdict)
-
     # Process the metadata. First, drop labels as requested.
     for var in full_mdict:
         for label in drop_meta_labels:
@@ -1215,7 +1213,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Second, remove some items pysat added for netcdf compatibility.
     filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
-
     # Translate labels from file to pysat compatible labels using
     # `meta_translation`
     # print('LOADED META PRE-TRANSLATION')
@@ -1239,6 +1236,14 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
             dim_meta = pysat.Meta(labels=labels)
             for skey in filt_mdict[key]['meta'].keys():
                 dim_meta[skey] = filt_mdict[key]['meta'][skey]
+
+            # Remove HO metdata that was just transfered elsewhere
+            filt_mdict[key].pop('meta')
+
+            # Assign standard metdata
+            meta[key] = filt_mdict[key]
+
+            # Assign HO metadata
             meta[key] = {'meta': dim_meta}
         else:
             # Standard metadata
