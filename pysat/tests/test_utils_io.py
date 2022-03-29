@@ -929,7 +929,7 @@ class TestXarrayIO(object):
                                      list(self.testInst.data.dims)[0])
 
         # Test that the metadata was added
-        for var in self.testInst.data.data_vars.keys():
+        for var in self.testInst.vars_no_time:
             for label in meta.attrs():
                 mval = meta[var, label]
                 if label in self.testInst.data[var].attrs.keys():
@@ -941,8 +941,6 @@ class TestXarrayIO(object):
                             "unequal meta data for {:}, {:}".format(repr(var),
                                                                     repr(label))
                 else:
-                    assert label not in export_nan, "did not attach {:}".format(
-                        repr(label))
 
                     try:
                         dval = meta.labels.default_values_from_type(type(mval))
