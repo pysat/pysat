@@ -108,8 +108,9 @@ class TestLoadNetCDF(object):
                                                            axis='columns')
         else:
             # Don't apply to 'time'
+            xarr_vars = io.xarray_vars_no_time(self.testInst.data)
             map_keys = {dkey: dkey.upper()
-                        for dkey in self.testInst.variables[1:]}
+                        for dkey in xarr_vars}
             self.testInst.data = self.testInst.data.rename(map_keys)
 
         # Meta case is preserved and has not been altered
@@ -148,9 +149,10 @@ class TestLoadNetCDF(object):
             self.testInst.data = self.testInst.data.rename(str.upper,
                                                            axis='columns')
         else:
+            xarr_vars = io.xarray_vars_no_time(self.testInst.data)
             self.testInst.data = self.testInst.data.rename(
                 {dkey: dkey.upper()
-                 for dkey in self.testInst.variables[1:]})
+                 for dkey in xarr_vars})
 
         io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True)
 

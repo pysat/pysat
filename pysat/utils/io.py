@@ -63,9 +63,10 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
     #     export_nan = []
 
     # Get a list of all data, expect for the time dimension.
-    xarr_vars = [var for var in xr_data.data_vars.keys()]
-    xarr_vars.extend([var for var in xr_data.coords.keys()])
-    xarr_vars.extend([var for var in list(xr_data.dims.keys())[1:]])
+    xarr_vars = xarray_vars_no_time(xr_data)
+    # xarr_vars = [var for var in xr_data.data_vars.keys()]
+    # xarr_vars.extend([var for var in xr_data.coords.keys()])
+    # xarr_vars.extend([var for var in list(xr_data.dims.keys())[1:]])
 
     # pysat meta -> dict export has lowercase names.
     xarr_lvars = [var.lower() for var in xarr_vars]
@@ -1445,6 +1446,32 @@ def return_epoch_metadata(inst, epoch_name):
 
     return new_dict
 
+def xarray_vars_no_time(data):
+    """Return all DataSet variables except the first dimension.
+
+    Parameters
+    ----------
+    data : xarray.Dataset
+
+    Returns
+    -------
+    variables :
+        All variables, dimensions, and coordinates, except the first
+        dimension.
+
+    """
+    vars = list(data.variables.keys())
+
+    # Remove first dimension
+    first_dim = list(data.dims)[0]
+
+    if first_dim in vars:
+        for i, var in enumerate(vars):
+            if var == first_dim:
+                vars.pop(i)
+
+    return vars
+
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
                    mode='w', zlib=False, complevel=4, shuffle=True,
@@ -1951,7 +1978,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
-            for var in inst.variables[1:]:
+            for var in xarray_vars_no_time(xr_data):
                 # Use the variable case stored in the MetaData object
                 case_var = inst.meta.var_case_name(var)
 
