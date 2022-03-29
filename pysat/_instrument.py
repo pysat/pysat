@@ -3003,27 +3003,29 @@ class Instrument(object):
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
                                               inc=self.load_step,
                                               load_kwargs=kwargs)
-            if not self.empty:
-                self.meta = meta
+        if not self.empty:
+            self.meta = meta
 
-                # If only some metadata included, define the remaining variables
-                warn_default = False
-                for var in self.vars_no_time:
-                    if var not in self.meta:
-                        default_warn = "".join(["Metadata for '{:s}' set to ",
-                                                "defaults, as they were ",
-                                                "missing in the Instrument"])
-                        default_warn = default_warn.format(var)
-                        warn_default = True
-                        self.meta[var] = {self.meta.labels.name: var,
-                                          self.meta.labels.notes: default_warn}
+            # If only some metadata included, define the remaining variables
+            for var in self.vars_no_time:
+                if var not in self.meta:
+                    warn_missing_vars.append(var)
+                    default_warn = "".join(["Metadata set to ",
+                                            "defaults, as they were ",
+                                            "missing in the Instrument."])
+                    self.meta[var] = {self.meta.labels.name: var,
+                                      self.meta.labels.notes: default_warn}
 
-                if warn_default:
-                    warnings.warn(default_warn, stacklevel=2)
-            else:
-                estr = ''.join(('Metadata was not assigned as there was ',
-                                'no data returned.'))
-                pysat.logger.info(estr)
+            if len(warn_missing_vars) > 0:
+                default_warn = "".join(["Metadata for variables [{:s}] set to ",
+                                        "defaults, as they were ",
+                                        "missing in the Instrument."])
+                default_warn = default_warn.format(', '.join(var))
+                warnings.warn(default_warn, stacklevel=2)
+        else:
+            estr = ''.join(('Metadata was not assigned as there was ',
+                            'no data returned.'))
+            pysat.logger.info(estr)
 
         # Check if load routine actually returns meta
         if self.meta.data.empty:
