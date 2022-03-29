@@ -298,8 +298,10 @@ class TestLoadNetCDF(object):
             loaded_delta = np.diff(self.loaded_inst.index[:2])
         else:
             default_delta = np.diff(self.testInst[self.epoch_name][:2])
+
             # Average over 4 deltas to prevent rounding errors
             loaded_delta = np.diff(self.loaded_inst[test_epoch][:5]).mean()
+
         # Ratio of step_sizes should equal ratio of interpreted units
         assert ((default_delta / loaded_delta)
                 == (dt.timedelta(seconds=1) / target))
@@ -320,6 +322,7 @@ class TestLoadNetCDF(object):
             load_uts = pds.to_datetime(self.loaded_inst[test_epoch][0].values)
             default_start = (def_uts - unix_origin)
             loaded_start = (load_uts - file_origin)
+
         # Ratio of distances should equal ratio of interpreted units
         assert (default_start.total_seconds() / loaded_start.total_seconds()
                 == (dt.timedelta(seconds=1) / target))
