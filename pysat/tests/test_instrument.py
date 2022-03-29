@@ -324,11 +324,9 @@ class TestInstGeneral(object):
 
         """
 
-        with pytest.raises(ValueError) as err:
-            # Both name and platform should be empty
-            pysat.Instrument(**kwargs)
-        estr = 'Inputs platform and name must both'
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(pysat.Instrument, ValueError,
+                               'Inputs platform and name must both',
+                               input_kwargs=kwargs)
         return
 
     def test_supplying_instrument_module_requires_name_and_platform(self):
@@ -338,10 +336,9 @@ class TestInstGeneral(object):
             pass
         Dummy.name = 'help'
 
-        with pytest.raises(AttributeError) as err:
-            pysat.Instrument(inst_module=Dummy)
-        estr = 'Supplied module '
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(pysat.Instrument, AttributeError,
+                               'Supplied module ',
+                               input_kwarg={'inst_module': Dummy})
         return
 
     def test_eq_different_object(self):
