@@ -275,7 +275,8 @@ class TestLoadNetCDF(object):
         outfile = os.path.join(self.tempdir.name,
                                'pysat_{:}_ncdf.nc'.format(self.testInst.name))
         self.testInst.load(date=self.stime, use_header=True)
-        # TODO(#991): remove once custom epochs are integrated into `io.inst_to_netcdf for xarray
+        # TODO(#991): remove once custom epochs are integrated into 
+        # `io.inst_to_netcdf` for xarray instruments.
         if not self.testInst.pandas_format:
             # A distinct epoch name must be used for the saved xarray dataset.
             test_epoch = 'test_epoch'
