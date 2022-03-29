@@ -13,6 +13,7 @@ import pysat.instruments.pysat_testing2d
 import pysat.instruments.pysat_testing2d_xarray
 import pysat.instruments.pysat_testing_xarray
 from pysat.utils.time import filter_datetime_input
+from pysat.utils import testing
 
 
 class TestDataPaddingbyFile(object):
@@ -296,27 +297,24 @@ class TestDataPadding(object):
     def test_data_padding_bad_instantiation(self):
         """Ensure error when padding input type incorrect."""
 
-        with pytest.raises(ValueError) as err:
-            pysat.Instrument(platform='pysat', name='testing',
-                             clean_level='clean',
-                             pad=2,
-                             update_files=True)
         estr = ' '.join(('pad must be a dict, NoneType, datetime.timedelta,',
                          'or pandas.DateOffset instance.'))
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(pysat.Instrument, ValueError, estr,
+                               input_kwargs={'platform': 'pysat',
+                                             'name': 'testing',
+                                             'clean_level': 'clean', 'pad': 2,
+                                             'update_files': True})
         return
 
     def test_data_padding_bad_load(self):
         """Test that data padding when loading all data is not allowed."""
 
-        with pytest.raises(ValueError) as err:
-            self.testInst.load()
-
         if self.testInst.multi_file_day:
             estr = '`load()` is not supported with multi_file_day'
         else:
             estr = '`load()` is not supported with data padding'
-        assert str(err).find(estr) >= 0
+
+        testing.eval_bad_input(self.testInst.load, ValueError, estr)
         return
 
     def test_padding_exceeds_load_window(self):
@@ -326,10 +324,10 @@ class TestDataPadding(object):
                                          clean_level='clean',
                                          pad={'days': 2},
                                          update_files=True)
-        with pytest.raises(ValueError) as err:
-            self.testInst.load(date=self.ref_time)
-        estr = 'Data padding window must be shorter than '
-        assert str(err).find(estr) >= 0
+
+        testing.eval_bad_input(self.testInst.load, ValueError,
+                               'Data padding window must be shorter than ',
+                               input_kwargs={'date': self.ref_time})
         return
 
     def test_yrdoy_data_padding_missing_earlier_days(self):
