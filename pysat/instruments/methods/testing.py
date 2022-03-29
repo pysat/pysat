@@ -117,13 +117,18 @@ def initialize_test_meta(epoch_name, data_keys):
                    'desc': 'Number of seconds since mindight UT',
                    'value_min': 0.0, 'value_max': 86400.0}
     meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
-                   'value_min': 0.0, 'value_max': 24.0}
+                   'value_min': 0.0, 'value_max': 24.0,
+                   'desc': 'Local time at magnetic field line at equator.'}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'value_min': 0.0, 'value_max': 24.0}
+                   'value_min': 0.0, 'value_max': 24.0,
+                   'desc': 'Mean solar time.' ,
+                   'notes': 'Not a real calculation.'}
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude',
-                         'value_min': 0.0, 'value_max': 360.0}
+                         'value_min': 0.0, 'value_max': 360.0,
+                         'desc': 'Geographic Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude',
-                        'value_min': -90.0, 'value_max': 90.0}
+                        'value_min': -90.0, 'value_max': 90.0,
+                        'desc': 'Geographic Latituce'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude',
                         'value_min': 0.0, 'value_max': np.inf,
                         'desc': 'Height above mean Earth.'}
