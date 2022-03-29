@@ -139,6 +139,8 @@ def initialize_test_meta(epoch_name, data_keys):
     meta['dummy1'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
     meta['dummy2'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
     meta['dummy3'] = {'value_min': 0., 'value_max': 24024.}
+    meta['dummy4'] = {'desc': 'Dummy variable - UTS like', 'value_min': 0.,
+                      'value_max': 86400., 'fill': np.nan}
 
     # Standard metadata required for xarray.
     meta['profiles'] = {'long_name': 'profiles', 'value_min': 0,
