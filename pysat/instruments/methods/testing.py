@@ -142,6 +142,15 @@ def initialize_test_meta(epoch_name, data_keys):
     meta['dummy4'] = {'desc': 'Dummy variable - UTS like', 'value_min': 0.,
                       'value_max': 86400., 'fill': np.nan}
 
+    meta['unicode_dummy'] = {'desc': 'Dummy unicode variable.', 'units': ''}
+    meta['string_dummy'] = {'desc': 'Dummy string variable.', 'units': ''}
+
+    # Add metadata for integer dummy variables.
+    meta_dict = {'value_min': 0, 'value_max': 2, 'fill': -1}
+    var_list = ['int8_dummy', 'int16_dummy', 'int32_dummy', 'int64_dummy']
+    for var in var_list:
+        meta[var] = meta_dict
+
     # Standard metadata required for xarray.
     meta['profiles'] = {'long_name': 'profiles', 'value_min': 0,
                         'value_max': 4294967295, 'fill': -1,

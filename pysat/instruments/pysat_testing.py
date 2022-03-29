@@ -176,12 +176,6 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # Set the meta data.
     meta = mm_test.initialize_test_meta('Epoch', data.keys())
 
-    # Add metadata for variables not covered above.
-    meta_dict = {'value_min': 0, 'value_max': 2, 'fill': -1}
-    var_list = ['int8_dummy', 'int16_dummy', 'int32_dummy', 'int64_dummy']
-    for var in var_list:
-        meta[var] = meta_dict
-
     if tag == 'default_meta':
         return data, pysat.Meta()
     else:
