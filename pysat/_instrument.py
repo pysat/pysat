@@ -2865,7 +2865,7 @@ class Instrument(object):
             if self._empty(self._next_data) and self._empty(self._prev_data):
                 # Data has not already been loaded for previous and next days
                 # load data for all three
-                logger.info('Initializing three day/file window')
+                logger.debug('Initializing data cache.')
 
                 # Using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
@@ -2875,6 +2875,7 @@ class Instrument(object):
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
+                    logger.debug('Using data cache. Loading next.')
                     # Moving forward in time
                     del self._prev_data
                     self._prev_data = self._curr_data
@@ -2883,6 +2884,7 @@ class Instrument(object):
                     self._curr_meta = self._next_meta
                     self._next_data, self._next_meta = self._load_next()
                 elif self._prev_data_track == curr:
+                    logger.debug('Using data cache. Loading previous.')
                     # Moving backward in time
                     del self._next_data
                     self._next_data = self._curr_data
@@ -2893,6 +2895,7 @@ class Instrument(object):
                 else:
                     # Jumped in time/or switched from filebased to date based
                     # access
+                    logger.debug('Resetting data cache.')
                     del self._prev_data
                     del self._curr_data
                     del self._next_data
