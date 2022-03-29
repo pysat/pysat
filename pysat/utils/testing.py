@@ -157,7 +157,7 @@ def eval_bad_input(func, error, err_msg, input_args=None, input_kwargs=None):
     Parameters
     ----------
     func : function, method, or class
-        Function or method to be evaluated
+        Function, class, or method to be evaluated
     error : class
         Expected error or exception
     err_msg : str
