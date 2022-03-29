@@ -3007,7 +3007,7 @@ class Instrument(object):
                                               inc=self.load_step,
                                               load_kwargs=kwargs)
             if not self.empty:
-                # Data was returned. Assigned returned metadata information.
+                # Data was returned. Assign returned metadata information.
                 self.meta = meta
             else:
                 estr = ''.join(('Metadata was not assigned as there was ',
