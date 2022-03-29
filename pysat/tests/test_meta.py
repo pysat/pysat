@@ -337,14 +337,14 @@ class TestMeta(object):
 
         # Test the warning
         default_str = ''.join(['Metadata set to defaults, as they were',
-                               ' missing in the Instrument'])
+                               ' missing in the Instrument.'])
         assert len(war) >= 1
 
         categories = [war[j].category for j in range(len(war))]
         assert UserWarning in categories
 
         ind = categories.index(UserWarning)
-        assert default_str in str(war[ind].message)
+        assert default_str[8:] in str(war[ind].message)
 
         # Prepare to test the Metadata
         self.dval = 'int32_dummy'
@@ -463,7 +463,7 @@ class TestMeta(object):
         if long_str:
             if inst_kwargs is not None:
                 ndvar = 0
-                for dvar in self.testInst.variables:
+                for dvar in self.testInst.vars_no_time:
                     if out.find(dvar) > 0:
                         ndvar += 1
                 assert ndvar > 0, "Represented data variable names missing"
@@ -615,7 +615,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
 
         # Pop each of the data variables
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             mcomp = self.meta[dvar]
             mpop = self.meta.pop(dvar)
 
@@ -734,7 +734,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
 
         # Get the selection criteria
-        dvals = list(self.testInst.variables[:num_dvals])
+        dvals = list(self.testInst.vars_no_time[:num_dvals])
         mvals = [getattr(self.meta.labels, mattr)
                  for mattr in list(self.meta_labels.keys())[:num_mvals]]
 
@@ -784,7 +784,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': "testing"})
 
         # Change the meta and update the evaluation data
-        self.dval = self.testInst.variables[0]
+        self.dval = self.testInst.vars_no_time[0]
 
         for val in self.default_val.keys():
             # These values will be unaltered, use what was set
@@ -828,7 +828,7 @@ class TestMeta(object):
 
         # Update the meta data
         dvals = [self.dval.upper() if use_upper else self.dval
-                 for self.dval in self.testInst.variables[:num_dvars]]
+                 for self.dval in self.testInst.vars_no_time[:num_dvars]]
 
         for label in self.default_nan:
             self.default_val[label] = -47
@@ -900,7 +900,7 @@ class TestMeta(object):
         # Test that standard attributes are missing and non-standard
         # attributes are present
         standard_labels = pysat.MetaLabels()
-        for dval in self.testInst.variables:
+        for dval in self.testInst.vars_no_time:
             for label in self.meta_labels.keys():
                 slabel = getattr(standard_labels, label)
                 assert not hasattr(self.meta[dval], slabel), \
@@ -1104,7 +1104,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Get the data variables to drop
-        self.dval = self.testInst.variables[:num_drop]
+        self.dval = self.testInst.vars_no_time[:num_drop]
         testing.assert_list_contains(self.dval,
                                      [val for val in self.meta.keys()])
 
@@ -1114,7 +1114,7 @@ class TestMeta(object):
         # Test the successful deletion
         meta_vals = [val for val in self.meta.keys()]
 
-        assert len(meta_vals) == len(self.testInst.variables) - num_drop
+        assert len(meta_vals) == len(self.testInst.vars_no_time) - num_drop
         for val in self.dval:
             assert val not in meta_vals, \
                 "{:} not dropped from Meta".format(val.__repr__())
@@ -1135,7 +1135,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Get the data variables to drop
-        self.dval = self.testInst.variables[:num_keep]
+        self.dval = self.testInst.vars_no_time[:num_keep]
         testing.assert_list_contains(self.dval,
                                      [val for val in self.meta.keys()])
 
@@ -1189,7 +1189,7 @@ class TestMeta(object):
                                    'labels': self.meta_labels})
 
         # Set data using lower case labels
-        dvals = self.testInst.variables[:num_dvals]
+        dvals = self.testInst.vars_no_time[:num_dvals]
 
         for label in ['fill_val', 'max_val', 'min_val']:
             self.meta[dvals] = {self.meta_labels[label][0].lower():
@@ -1330,7 +1330,7 @@ class TestMeta(object):
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(str.upper)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             assert dvar not in self.meta.keys(), \
                 "variable not renamed: {:}".format(repr(dvar))
             assert dvar.upper() in self.meta.keys(), \
@@ -1347,14 +1347,14 @@ class TestMeta(object):
         # Create a renaming dictionary, which only changes three of the
         # variable names
         rename_dict = {dvar: dvar.upper()
-                       for i, dvar in enumerate(self.testInst.variables)
+                       for i, dvar in enumerate(self.testInst.vars_no_time)
                        if i < 3}
 
         # Rename the meta variables to be all upper case, this will differ
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(rename_dict)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             if dvar in rename_dict.keys():
                 assert dvar not in self.meta.keys(), \
                     "variable not renamed: {:}".format(repr(dvar))
@@ -1703,7 +1703,7 @@ class TestMeta(object):
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(str.upper)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             mvar = dvar.upper()
 
             # Test the lower order variables
@@ -1738,7 +1738,7 @@ class TestMeta(object):
         # Create a renaming dictionary, which only changes up to four of the
         # variable names
         rename_dict = {dvar: dvar.upper()
-                       for i, dvar in enumerate(self.testInst.variables)
+                       for i, dvar in enumerate(self.testInst.vars_no_time)
                        if i < 3 or dvar == 'profiles'}
         rename_dict['profiles'] = {'density': 'DeNsItY'}
 
@@ -1746,7 +1746,7 @@ class TestMeta(object):
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(rename_dict)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             # Test the lower order variables
             if dvar in rename_dict.keys():
                 mvar = rename_dict[dvar]
