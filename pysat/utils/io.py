@@ -1462,12 +1462,13 @@ def xarray_vars_no_time(data):
     vars = list(data.variables.keys())
 
     # Remove first dimension
-    first_dim = list(data.dims)[0]
-
-    if first_dim in vars:
-        for i, var in enumerate(vars):
-            if var == first_dim:
-                vars.pop(i)
+    first_dim = list(data.dims)
+    if len(first_dim) > 0:
+        first_dim = first_dim[0]
+        if first_dim in vars:
+            for i, var in enumerate(vars):
+                if var == first_dim:
+                    vars.pop(i)
 
     return vars
 
