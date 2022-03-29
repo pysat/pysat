@@ -17,6 +17,7 @@ from pysat.instruments.methods.testing import create_files
 import pysat.instruments.pysat_testing
 from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
+from pysat.utils import testing
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -85,9 +86,8 @@ class TestNoDataDir(object):
 
     def test_no_data_dir(self):
         """Test that error is raised if no data directory is specified."""
-        with pytest.raises(NameError) as nerr:
-            pysat.Instrument()
-        assert str(nerr).find("Please set a top-level directory path") >= 0
+        testing.eval_bad_input(pysat.Instrument, NameError,
+                               "Please set a top-level directory path") 
         return
 
 
@@ -230,9 +230,8 @@ class TestBasics(object):
 
     def test_from_os_requires_data_path(self):
         """Check that path required for from_os."""
-        with pytest.raises(ValueError) as verr:
-            self.testInst.files.from_os()
-        assert str(verr).find('Must supply instrument') > 0
+        testing.eval_bad_input(self.testInst.files.from_os, ValueError,
+                               'Must supply instrument')
         return
 
     @pytest.mark.parametrize("root_fname,freq,use_doy",
@@ -640,9 +639,8 @@ class TestBasics(object):
         in_idxs = [0, 10, 100]
         for in_idx in in_idxs:
             test_str = ''.join(('_', self.testInst.files[in_idx]))
-            with pytest.raises(ValueError) as verr:
-                self.testInst.files.get_index(test_str)
-            assert str(verr).find('in available file list') > 0
+            testing.eval_bad_input(self.testInst.files.get_index, ValueError,
+                                   'in available file list', [test_str])
         return
 
     def test_default_directory_format(self):
@@ -1047,31 +1045,26 @@ class TestInstWithFilesNonStandard(object):
         assert (np.all(self.testInst.files.files.index == dates))
         return
 
-    def test_files_non_standard_file_format_template_no_variables(self):
-        """Test instrument raises error if format template has no variables."""
+    @pytest.mark.parametrize('file_format', [
+        'pysat_testing_unique_junk_stuff.pysat_testing_file', 15])
+    def test_files_non_standard_file_format_template(self, file_format):
+        """Test instrument raises error if format template has no variables.
 
-        with pytest.raises(ValueError) as verr:
-            self.testInst = pysat.Instrument(
-                inst_module=pysat.instruments.pysat_testing,
-                clean_level='clean',
-                file_format=''.join(('pysat_testing_unique_junk_stuff.',
-                                     'pysat_testing_file')),
-                update_files=True,
-                temporary_file_list=self.temporary_file_list)
-        assert str(verr).find('file format set to default') > 0
-        return
+        Parameters
+        ----------
+        file_format : any type
+            Bad file format input
 
-    def test_files_non_standard_file_format_template_wrong_type(self):
-        """Test instrument raises error if format template is not a string."""
+        """
 
-        with pytest.raises(ValueError) as verr:
-            self.testInst = pysat.Instrument(
-                inst_module=pysat.instruments.pysat_testing,
-                clean_level='clean',
-                file_format=15,
-                update_files=True,
-                temporary_file_list=self.temporary_file_list)
-        assert str(verr).find('file format set to default') >= 0
+        in_kwargs = {'inst_module': pysat.instruments.pysat_testing,
+                     'clean_level': 'clean', 'file_format': file_format,
+                     'update_files': True,
+                     'temporary_file_list': self.temporary_file_list}
+
+        testing.eval_bad_input(pysat.Instrument, ValueError,
+                               'file format set to default',
+                               input_kwargs=in_kwargs)
         return
 
 
@@ -1312,10 +1305,8 @@ class TestCIonly(CICleanSetup):
         # local systems and CI.
         pysat.params.data['data_dirs'] = []
 
-        # Try to instantiate Instrument
-        with pytest.raises(NameError) as nerr:
-            pysat.Instrument('pysat', 'testing')
-
-        # Confirm we have the correct error
-        assert str(nerr).find("pysat's `data_dirs` hasn't been set.") >= 0
+        # Evaluate Instrument instantiation failure
+        testing.eval_bad_input(pysat.Instrument, NameError,
+                               "pysat's `data_dirs` hasn't been set.",
+                               input_args=['pysat', 'testing'])
         return
