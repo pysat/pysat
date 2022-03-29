@@ -14,6 +14,7 @@ import pytest
 
 import pysat
 from pysat.utils.time import filter_datetime_input
+from pysat.utils import testing
 
 
 class InstIterationTests(object):
@@ -254,10 +255,8 @@ class InstIterationTests(object):
 
         self.testInst.bounds = (None, None, '10000D',
                                 dt.timedelta(days=10000))
-        with pytest.raises(StopIteration) as err:
-            getattr(self.testInst, operator)()
-        estr = 'File list is empty. '
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(getattr(self.testInst, operator), StopIteration,
+                               'File list is empty. ')
 
         return
 
@@ -277,10 +276,8 @@ class InstIterationTests(object):
 
         # Load first data
         getattr(self.testInst, first)()
-        with pytest.raises(StopIteration) as err:
-            # Iterate to a day outside the bounds.
-            getattr(self.testInst, second)()
-        assert str(err).find("Outside the set date boundaries") >= 0
+        testing.eval_bad_input(getattr(self.testInst, second), StopIteration,
+                               "Outside the set date boundaries")
         return
 
     def test_set_bounds_with_frequency(self):
