@@ -72,7 +72,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     if inst.pandas_format:
         inst[lon_name] = new_lon
     else:
-        inst.data = inst.data.update({lon_name: new_lon})
+        inst.data = inst.data.update({lon_name: (inst[lon_name].dims, new_lon)})
 
     return
 
