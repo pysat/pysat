@@ -1297,7 +1297,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         wstr = ''.join(['The `epoch_name` setting is ignored when loading ',
                         'into xarray objects as xarray locates the time index',
                         'via its own means.'])
-        warnings.warn(epoch_name)
+        warnings.warn(wstr)
 
     # Ensure inputs are in the correct format
     fnames = pysat.utils.listify(fnames)
