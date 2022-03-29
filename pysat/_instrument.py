@@ -2000,8 +2000,8 @@ class Instrument(object):
         if self.pandas_format:
             return self.data.columns
         else:
-
-            return list(self.data.variables.keys())
+            return pysat.utils.io.xarray_vars_no_time(self.data)
+            # return list(self.data.variables.keys())
             # # Keep dimensions first so that 'time' may be located easily.
             # vars = [var for var in self.data.dims.keys()]
             # # vars.extend([var for var in self.data.coords.keys()])
@@ -3019,6 +3019,7 @@ class Instrument(object):
                         default_warn = "".join(["Metadata for '{:s}' set to ",
                                                 "defaults, as they were ",
                                                 "missing in the Instrument"])
+                        default_warn = default_warn.format(var)
                         warn_default = True
                         self.meta[var] = {self.meta.labels.name: var,
                                           self.meta.labels.notes: default_warn}
