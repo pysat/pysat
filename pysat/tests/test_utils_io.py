@@ -687,7 +687,7 @@ class TestNetCDF4Integration(object):
 
         # Update the test metadata
         if missing:
-            drop_var = self.testInst.variables[-1]
+            drop_var = self.testInst.vars_no_time[0]
             self.testInst.meta.drop(drop_var)
 
         # Save the un-updated metadata
