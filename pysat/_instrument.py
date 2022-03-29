@@ -1995,6 +1995,15 @@ class Instrument(object):
 
     @property
     def variables(self):
+        """List of variables for the loaded data."""
+
+        if self.pandas_format:
+            return self.data.columns
+        else:
+            return list(self.data.variables.keys())
+
+    @property
+    def vars_no_time(self):
         """List of variables for the loaded data, excluding time index."""
 
         if self.pandas_format:
@@ -2999,7 +3008,7 @@ class Instrument(object):
 
                 # If only some metadata included, define the remaining variables
                 warn_default = False
-                for var in self.variables:
+                for var in self.vars_no_time:
                     if var not in self.meta:
                         default_warn = "".join(["Metadata for '{:s}' set to ",
                                                 "defaults, as they were ",
@@ -3018,7 +3027,11 @@ class Instrument(object):
 
         # Check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.variables] = {self.meta.labels.name: self.variables}
+            estr = ''.join(['No information found within returned Meta ',
+                            'instance. Assigning defaults.'])
+            pysat.logger.warning(estr)
+            self.meta[self.vars_no_time] = {self.meta.labels.name:
+                                                self.vars_no_time}
 
         # If loading by file and there is data, set the yr, doy, and date
         if not self._load_by_date and not self.empty:
