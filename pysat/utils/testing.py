@@ -189,7 +189,7 @@ def eval_bad_input(func, error, err_msg, input_args=None, input_kwargs=None):
     except error as err:
         # Evaluate the error message
         assert str(err).find(err_msg) >= 0, \
-            "unexpected error message ({:} not in {:})".format(err_msg,
+            "unexpected error message ('{:}' not in '{:}')".format(err_msg,
                                                                str(err))
 
     return
