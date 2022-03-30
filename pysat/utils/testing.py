@@ -149,3 +149,47 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
         len(found_msgs) - np.sum(found_msgs), repr(warn_type))
 
     return
+
+
+def eval_bad_input(func, error, err_msg, input_args=None, input_kwargs=None):
+    """Evaluate bad function or method input.
+
+    Parameters
+    ----------
+    func : function, method, or class
+        Function, class, or method to be evaluated
+    error : class
+        Expected error or exception
+    err_msg : str
+        Expected error message
+    input_args : list or NoneType
+        Input arguments or None for no input arguments (default=None)
+    input_kwargs : dict or NoneType
+        Input keyword arguments or None for no input kwargs (default=None)
+
+    Raises
+    ------
+    AssertionError
+        If unexpected error message is returned
+    Exception
+        If error or exception of unexpected type is returned, it is raised
+
+    """
+
+    # Ensure there are appropriate input lists and dicts
+    if input_args is None:
+        input_args = []
+
+    if input_kwargs is None:
+        input_kwargs = {}
+
+    # Call the function, catching only the expected error type
+    try:
+        func(*input_args, **input_kwargs)
+    except error as err:
+        # Evaluate the error message
+        assert str(err).find(err_msg) >= 0, \
+            "unexpected error message ('{:}' not in '{:}')".format(err_msg,
+                                                                   str(err))
+
+    return

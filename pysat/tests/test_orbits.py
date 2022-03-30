@@ -17,6 +17,7 @@ from pandas import Timedelta  # noqa: F401
 import pytest
 
 import pysat
+from pysat.utils import testing
 
 
 def filter_data(inst, times):
@@ -112,10 +113,10 @@ class TestOrbitsUserInterface(object):
         """Test orbit failure with bad 'kind' input."""
 
         self.in_kwargs['orbit_info'] = {'index': 'mlt', 'kind': 'cats'}
-        with pytest.raises(ValueError) as verr:
-            self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
-        errmsg = "Unknown kind of orbit requested"
-        assert str(verr).find(errmsg) >= 0
+
+        testing.eval_bad_input(pysat.Instrument, ValueError,
+                               "Unknown kind of orbit requested", self.in_args,
+                               self.in_kwargs)
         return
 
     @pytest.mark.parametrize("info", [({'index': 'magnetic local time',
@@ -133,10 +134,8 @@ class TestOrbitsUserInterface(object):
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         self.testInst.load(date=self.stime)
 
-        with pytest.raises(ValueError) as verr:
-            self.testInst.orbits.next()
-        errmsg = "Provided orbit index does not exist"
-        assert str(verr).find(errmsg) >= 0
+        testing.eval_bad_input(self.testInst.orbits.next, ValueError,
+                               "Provided orbit index does not exist")
         return
 
     @pytest.mark.parametrize("info", [(None),
@@ -149,7 +148,14 @@ class TestOrbitsUserInterface(object):
                                       ({'index': 'magnetic local time',
                                         'kind': 'lt'})])
     def test_orbit_polar_w_missing_orbit_index(self, info):
-        """Test orbit failure on iteration with missing orbit index."""
+        """Test orbit failure on iteration with missing orbit index.
+
+        Parameters
+        ----------
+        info : dict
+            Updated value information for Instrument kwarg 'orbit_info'
+
+        """
 
         self.in_kwargs['orbit_info'] = info
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
@@ -157,10 +163,8 @@ class TestOrbitsUserInterface(object):
         # Force index to None beforee loading and iterating
         self.testInst.orbits.orbit_index = None
         self.testInst.load(date=self.stime)
-        with pytest.raises(ValueError) as verr:
-            self.testInst.orbits.next()
-        errmsg = "Orbit properties must be defined"
-        assert str(verr).find(errmsg) >= 0
+        testing.eval_bad_input(self.testInst.orbits.next, ValueError,
+                               "Orbit properties must be defined")
         return
 
     def test_orbit_repr(self):
@@ -229,14 +233,18 @@ class TestSpecificUTOrbits(object):
         assert (self.testInst.index[-1] == self.etime)
         return
 
-    @pytest.mark.parametrize("orbit_ind,raise_err", [(17, Exception),
-                                                     (None, TypeError)])
-    def test_single_orbit_call_bad_index(self, orbit_ind, raise_err):
+    @pytest.mark.parametrize("orbit_ind,raise_err,err_msg", [
+        (17, ValueError, 'Requested an orbit past total'),
+        (None, TypeError, 'not supported between instances of')])
+    def test_single_orbit_call_bad_index(self, orbit_ind, raise_err, err_msg):
         """Test orbit failure with bad index."""
 
         self.testInst.load(date=self.stime)
-        with pytest.raises(raise_err):
+        with pytest.raises(raise_err) as err:
             self.testInst.orbits[orbit_ind]
+
+        assert str(err).find(err_msg) >= 0, '{:s} not found in {:s}'.format(
+            err_msg, str(err))
         return
 
     def test_orbit_number_via_current_multiple_orbit_calls_in_day(self):
@@ -447,11 +455,14 @@ class TestGeneralOrbitsMLT(object):
     def test_load_orbits_w_empty_data(self):
         """Test orbit loading outside of the instrument data range."""
 
+        # Set up tine instrument
         self.stime -= dt.timedelta(days=365 * 100)
         self.testInst.load(date=self.stime)
         self.testInst.orbits[0]
-        with pytest.raises(StopIteration):
-            self.testInst.orbits.next()
+
+        # Trigger the StopIteration exception
+        testing.eval_bad_input(self.testInst.orbits.next, StopIteration,
+                               'Unable to find loaded date')
         return
 
     def test_less_than_one_orbit_of_data(self):
@@ -592,8 +603,9 @@ class TestGeneralOrbitsNonStandardIteration(object):
     def test_no_orbit_overlap_with_overlapping_iteration(self):
         """Ensure error when overlap in iteration data."""
 
-        with pytest.raises(ValueError):
-            self.testInst.orbits.next()
+        testing.eval_bad_input(self.testInst.orbits.next, ValueError,
+                               'Orbit iteration is not currently supported ')
+
         return
 
     @pytest.mark.parametrize("bounds_type", ['by_date', 'by_file'])

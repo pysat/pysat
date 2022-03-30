@@ -16,6 +16,7 @@ import pandas as pds
 import pytest
 
 import pysat
+from pysat.utils import testing
 from pysat.utils.time import filter_datetime_input
 
 
@@ -37,14 +38,13 @@ class InstPropertyTests(object):
         """Check for error when instantiating with bad load keywords on init."""
 
         # Test that the correct error is raised
-        with pytest.raises(ValueError) as verr:
-            pysat.Instrument(platform=self.testInst.platform,
-                             name=self.testInst.name, num_samples=10,
-                             clean_level='clean',
-                             unsupported_keyword_yeah=True)
-
-        # Evaluate error message
-        assert str(verr).find("unknown keyword supplied") > 0
+        testing.eval_bad_input(pysat.Instrument, ValueError,
+                               "unknown keyword supplied",
+                               input_kwargs={'platform': self.testInst.platform,
+                                             'name': self.testInst.name,
+                                             'num_samples': 10,
+                                             'clean_level': 'clean',
+                                             'unsupported_keyword_yeah': True})
         return
 
     @pytest.mark.parametrize('kwarg', ['supported_tags', 'start', 'stop',
@@ -58,18 +58,17 @@ class InstPropertyTests(object):
             Name of reserved keyword.
 
         """
+        # Set the input
+        in_kwargs = {'platform': self.testInst.platform,
+                     'name': self.testInst.name, 'num_samples': 10,
+                     'clean_level': 'clean', kwarg: '1s'}
 
         # Check that the correct error is raised
-        with pytest.raises(ValueError) as err:
-            pysat.Instrument(platform=self.testInst.platform,
-                             name=self.testInst.name, num_samples=10,
-                             clean_level='clean',
-                             **{kwarg: '1s'})
-
-        # Check that the error message is correct
         estr = ''.join(('Reserved keyword "', kwarg, '" is not ',
                         'allowed at instantiation.'))
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(pysat.Instrument, ValueError, estr,
+                               input_kwargs=in_kwargs)
+
         return
 
     @pytest.mark.parametrize('attr', ['_test_download', '_test_download_ci',
@@ -329,6 +328,7 @@ class InstPropertyTests(object):
 
         with pytest.raises(AttributeError) as aerr:
             self.testInst.bad_attr
+
         assert str(aerr).find("object has no attribute") >= 0
         return
 
@@ -467,11 +467,10 @@ class InstPropertyTests(object):
         import pysat.instruments.pysat_testing as test
         delattr(test, del_routine)
 
-        with pytest.raises(AttributeError) as aerr:
-            pysat.Instrument(inst_module=test, tag='',
-                             clean_level='clean')
         estr = 'A `{:}` function is required'.format(del_routine)
-        assert str(aerr).find(estr) >= 0
+        testing.eval_bad_input(pysat.Instrument, AttributeError, estr,
+                               input_kwargs={'inst_module': test, 'tag': '',
+                                             'clean_level': 'clean'})
         return
 
     @pytest.mark.parametrize("func, kwarg, val", [('init', 'test_init_kwarg',
@@ -601,13 +600,13 @@ class InstPropertyTests(object):
         self.testInst.kwargs['load']['undefined_keyword1'] = True
         self.testInst.kwargs['load']['undefined_keyword2'] = False
 
-        with pytest.raises(ValueError) as err:
-            # Instantiate instrument with new undefined keyword involved
-            eval(repr(self.testInst))
-
         estr = "".join(("unknown keywords supplied: ['undefined_keyword1',",
                         " 'undefined_keyword2']"))
-        assert str(err).find(estr) >= 0
+        with pytest.raises(ValueError) as verr:
+            eval(repr(self.testInst))
+
+        assert str(verr).find(estr) >= 0, "{:s} not found in {:}".format(
+            estr, str(verr))
         return
 
     def test_supported_input_keywords(self):
@@ -664,21 +663,18 @@ class InstPropertyTests(object):
             Text that should be contained in the error message.
 
         """
+        kwargs['platform'] = self.testInst.platform
+        kwargs['name'] = self.testInst.name
 
-        with pytest.raises(ValueError) as err:
-            pysat.Instrument(platform=self.testInst.platform,
-                             name=self.testInst.name,
-                             **kwargs)
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(pysat.Instrument, ValueError, estr,
+                               input_kwargs=kwargs)
         return
 
     def test_get_var_type_code_unknown_type(self):
         """Ensure that Error is thrown if unknown type is supplied."""
 
-        with pytest.raises(TypeError) as err:
-            self.testInst._get_var_type_code(type(None))
-        estr = 'Unknown Variable'
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(self.testInst._get_var_type_code, TypeError,
+                               'Unknown Variable', [type(None)])
         return
 
     @pytest.mark.parametrize("kwargs", [{'platform': 'doctor'},

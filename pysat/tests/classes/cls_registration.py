@@ -16,6 +16,7 @@ import pytest
 import sys
 
 import pysat
+from pysat.utils import testing
 
 
 class TestWithRegistration(object):
@@ -74,10 +75,11 @@ class TestWithRegistration(object):
             if self.platform in saved_modules:
                 assert self.module_name not in saved_modules[self.platform]
             else:
-                # platform not present, so not registered
+                # Platform not present, so not registered
                 assert True
-            with pytest.raises(KeyError):
-                pysat.Instrument(self.platform, self.name)
+
+            testing.eval_bad_input(pysat.Instrument, KeyError, 'unknown',
+                                   [self.platform, self.name])
 
         return
 
