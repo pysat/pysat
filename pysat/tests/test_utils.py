@@ -176,22 +176,38 @@ class TestScaleUnits(object):
         (['m', 'm/s'], 'Cannot scale m and m/s'),
         (['happy', 'sad'], 'unknown units')])
     def test_scale_units_bad_input(self, in_args, err_msg):
-        """Test raises ValueError for bad input combinations."""
+        """Test raises ValueError for bad input combinations.
 
-        with pytest.raises(ValueError) as verr:
-            utils.scale_units(*in_args)
+        Parameters
+        ----------
+        in_args : list
+            Input arguments
+        err_msg : str
+            Expected error message
 
-        assert str(verr).find(err_msg) > 0
+        """
+
+        utils.testing.eval_bad_input(utils.scale_units, ValueError, err_msg,
+                                     in_args)
         return
 
     @pytest.mark.parametrize("unit1,unit2", [("m", "m/s"),
                                              ("m", "deg"),
                                              ("h", "km/s")])
     def test_scale_units_bad_match_pairs(self, unit1, unit2):
-        """Test raises ValueError for all mismatched input pairings."""
+        """Test raises ValueError for all mismatched input pairings.
 
-        with pytest.raises(ValueError):
-            utils.scale_units(unit1, unit2)
+        Parameters
+        ----------
+        unit1 : str
+            First input unit
+        unit2 : str
+            Second input unit
+
+        """
+
+        utils.testing.eval_bad_input(utils.scale_units, ValueError,
+                                     "Cannot scale", [unit1, unit2])
 
         return
 
@@ -343,14 +359,31 @@ class TestFmtCols(object):
         assert len(self.out_str) == 0
         return
 
-    @pytest.mark.parametrize("key,val,raise_type",
-                             [("ncols", 0, ZeroDivisionError),
-                              ("max_num", -10, ValueError)])
-    def test_fmt_raises(self, key, val, raise_type):
-        """Test raises appropriate Errors for bad input values."""
+    @pytest.mark.parametrize("key,val,raise_type,err_msg",
+                             [("ncols", 0, ZeroDivisionError,
+                               "integer division or modulo by zero"),
+                              ("max_num", -10, ValueError,
+                               "max() arg is an empty sequence")])
+    def test_fmt_raises(self, key, val, raise_type, err_msg):
+        """Test raises appropriate Errors for bad input values.
+
+        Parameters
+        ----------
+        key : str
+            Input kwarg dict key to update
+        val : any type
+            Value to update in the kwarg input
+        raise_type : class
+            Expected exception or error
+        err_msg : str
+            Expected error message
+
+        """
         self.in_kwargs[key] = val
-        with pytest.raises(raise_type):
-            utils._core.fmt_output_in_cols(self.in_str, **self.in_kwargs)
+
+        utils.testing.eval_bad_input(utils._core.fmt_output_in_cols,
+                                     raise_type, err_msg, [self.in_str],
+                                     self.in_kwargs)
         return
 
     @pytest.mark.parametrize("ncol", [(3), (5), (10)])

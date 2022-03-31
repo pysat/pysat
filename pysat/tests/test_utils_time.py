@@ -40,10 +40,8 @@ class TestGetTimes(object):
     def test_getdyrdoy_bad_input(self):
         """Test getdyrdoy raises AttributeError for bad input object."""
 
-        with pytest.raises(AttributeError) as aerr:
-            pytime.getyrdoy(2009.1)
-
-        assert str(aerr).find("Must supply a datetime object") >= 0
+        testing.eval_bad_input(pytime.getyrdoy, AttributeError,
+                               "Must supply a datetime object", [2009.1])
         return
 
     @pytest.mark.parametrize("in_dtime,out_year",
@@ -92,12 +90,18 @@ class TestParseDate(object):
         (['10', '12', '15', '3', '1', '68'], "second must be in 0..59"),
         (['10', '12', '15', '3', '1', '55', -30], "year -20 is out of range")])
     def test_parse_date_bad_input(self, in_args, vmsg):
-        """Test raises ValueError for unrealistic date input."""
+        """Test raises ValueError for unrealistic date input.
 
-        with pytest.raises(ValueError) as verr:
-            pytime.parse_date(*in_args)
+        Parameters
+        ----------
+        in_args : list
+            List of input arguments
+        vmsg : str
+            Expected output error message
 
-        assert str(verr).find(vmsg) >= 0
+        """
+
+        testing.eval_bad_input(pytime.parse_date, ValueError, vmsg, in_args)
         return
 
 
@@ -153,25 +157,26 @@ class TestCalcFreqRes(object):
         return
 
     @pytest.mark.parametrize('func_name', ['calc_freq', 'calc_res'])
-    def test_calc_input_len_fail(self, func_name):
-        """Test calc freq/res raises ValueError with an empty list."""
-        test_func = getattr(pytime, func_name)
+    @pytest.mark.parametrize('in_args, error, err_msg', [
+        ([[]], ValueError, "insufficient data to calculate resolution"),
+        ([[1, 2, 3, 4]], AttributeError, "Input should be times")])
+    def test_calc_input_failure(self, func_name, in_args, error, err_msg):
+        """Test calc freq/res raises apppropriate errors with bad inputs.
 
-        with pytest.raises(ValueError) as verr:
-            test_func(list())
+        Parameters
+        ----------
+        func_name : str
+            Function name
+        in_args : list
+            Input arguments as a list
+        error : exception
+            Expected error type
+        err_msg : str
+            Expected error message
 
-        assert str(verr).find("insufficient data to calculate resolution") >= 0
-        return
-
-    @pytest.mark.parametrize('func_name', ['calc_freq', 'calc_res'])
-    def test_calc_input_type_fail(self, func_name):
-        """Test calc freq/res raises ValueError with non-datetime list."""
-        test_func = getattr(pytime, func_name)
-
-        with pytest.raises(AttributeError) as aerr:
-            test_func([1, 2, 3, 4])
-
-        assert str(aerr).find("Input should be times") >= 0
+        """
+        func = getattr(pytime, func_name)
+        testing.eval_bad_input(func, error, err_msg, input_args=in_args)
         return
 
 
@@ -183,7 +188,18 @@ class TestCreateDateRange(object):
         ([dt.datetime(2012, 2, 28), dt.datetime(2013, 2, 28)],
          [dt.datetime(2012, 3, 1), dt.datetime(2013, 3, 1)], 5)])
     def test_create_date_range(self, start, stop, tst_len):
-        """Test ability to generate season list."""
+        """Test ability to generate season list.
+
+        Parameters
+        ----------
+        start : dt.datetime
+            Start time
+        stop : dt.datetime
+            End time
+        tst_len : int
+            Expected number of times in output
+
+        """
         # Get the seasonal output
         season = pytime.create_date_range(start, stop, freq='D')
 
@@ -229,7 +245,16 @@ class TestCreateDatetimeIndex(object):
                                [dt.datetime(2012, 1, 1),
                                 dt.datetime(2012, 1, 1)])])
     def test_create_datetime_index(self, kwargs, target):
-        """Test create an array of datetime objects from arrays of inputs."""
+        """Test create an array of datetime objects from arrays of inputs.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Input kwargs
+        target : list
+            Expected output
+
+        """
 
         dates = pytime.create_datetime_index(**kwargs)
 
@@ -240,12 +265,19 @@ class TestCreateDatetimeIndex(object):
         ([[]], "Length of array must be larger than 0."),
         ([2009], "Must provide an iterable for all inputs.")])
     def test_create_datetime_index_bad_input(self, in_args, err_msg):
-        """Test raises ValueError with inappropriate input parameters."""
+        """Test raises ValueError with inappropriate input parameters.
 
-        with pytest.raises(ValueError) as verr:
-            pytime.create_datetime_index(*in_args)
+        Parameters
+        ----------
+        in_args : list
+            List of input arguments
+        err_msg : str
+            Expected error message
 
-        assert str(verr).find(err_msg) >= 0
+        """
+
+        testing.eval_bad_input(pytime.create_datetime_index, ValueError,
+                               err_msg, in_args)
         return
 
 

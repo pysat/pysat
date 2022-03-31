@@ -66,7 +66,13 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     if lon_name not in inst.variables:
         raise ValueError('unknown longitude variable name')
 
-    inst[lon_name] = adjust_cyclic_data(inst[lon_name], high=high, low=low)
+    new_lon = adjust_cyclic_data(inst[lon_name], high=high, low=low)
+
+    # TODO(#988): Remove pandas/xarray logic after fixing issue in Instrument
+    if inst.pandas_format:
+        inst[lon_name] = new_lon
+    else:
+        inst.data = inst.data.update({lon_name: (inst[lon_name].dims, new_lon)})
 
     return
 

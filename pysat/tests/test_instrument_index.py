@@ -6,6 +6,7 @@ from importlib import reload
 import pytest
 
 import pysat
+from pysat.utils import testing
 
 
 class TestMalformedIndex(object):
@@ -34,10 +35,9 @@ class TestMalformedIndex(object):
     def test_ensure_unique_index(self):
         """Ensure that if Instrument index not-unique error is raised."""
 
-        with pytest.raises(ValueError) as err:
-            self.testInst.load(self.ref_time.year, self.ref_doy)
-        estr = 'Loaded data is not unique.'
-        assert str(err).find(estr) > 0
+        testing.eval_bad_input(self.testInst.load, ValueError,
+                               'Loaded data is not unique.',
+                               input_args=[self.ref_time.year, self.ref_doy])
         return
 
 

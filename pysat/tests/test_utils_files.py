@@ -436,10 +436,17 @@ class TestFileUtils(CICleanSetup):
     @pytest.mark.parametrize("path", ['no_starting_path_info',
                                       os.path.join('no', ' way ', ' brah ')])
     def test_check_and_make_path_error(self, path):
-        """Test ValueError raised for invalid paths."""
+        """Test ValueError raised for invalid paths.
 
-        with pytest.raises(ValueError) as verr:
-            pysat.utils.files.check_and_make_path(path)
-        assert str(verr).find('Invalid path specification.') >= 0
+        Parameters
+        ----------
+        path : str
+            String providing path
+
+        """
+
+        testing.eval_bad_input(pysat.utils.files.check_and_make_path,
+                               ValueError, 'Invalid path specification.',
+                               input_args=[path])
 
         return

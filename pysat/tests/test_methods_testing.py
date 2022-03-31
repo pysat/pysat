@@ -7,6 +7,7 @@ import pytest
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
+from pysat.utils import testing
 
 
 class TestBasics(object):
@@ -16,7 +17,8 @@ class TestBasics(object):
         """Set up the unit test environment for each method."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing')
-        # get list of filenames.
+
+        # Get list of filenames.
         self.fnames = [self.test_inst.files.files.values[0]]
         return
 
@@ -29,11 +31,18 @@ class TestBasics(object):
     @pytest.mark.parametrize("kwarg", [0.0, 7, 'badval', {'hours': 'bad'},
                                        dt.datetime(2009, 1, 1)])
     def test_inst_start_time_badval(self, kwarg):
-        """Test operation of cadence keyword, including default behavior."""
+        """Test operation of cadence keyword, including default behavior.
 
-        with pytest.raises(ValueError) as verr:
-            mm_test.generate_times(self.fnames, 10, start_time=kwarg)
-        assert str(verr).find("start_time must be a dt.timedelta object") >= 0
+        Parameters
+        ----------
+        kwarg : any type
+            Bad data value to assign to 'start_time'
+
+        """
+        testing.eval_bad_input(mm_test.generate_times, ValueError,
+                               "start_time must be a dt.timedelta object",
+                               input_args=[self.fnames, 10],
+                               input_kwargs={"start_time": kwarg})
         return
 
     @pytest.mark.parametrize("num,kwargs,output",

@@ -13,6 +13,7 @@ import sys
 import pysat
 from pysat.tests.classes.cls_registration import TestWithRegistration
 from pysat.utils import registry
+from pysat.utils import testing
 
 
 def ensure_updated_stored_modules(modules):
@@ -79,9 +80,11 @@ class TestRegistration(TestWithRegistration):
         mod_name = self.module_names[0]
         sys.modules['pysat_error.test_faux_module'] = sys.modules[mod_name]
 
-        # register packages again, this should error
-        with pytest.raises(ValueError):
-            registry.register(['pysat_error.test_faux_module'])
+        # Register packages again, this should error
+        testing.eval_bad_input(
+            registry.register, ValueError,
+            'An instrument has already been  registered for platform',
+            input_args=[['pysat_error.test_faux_module']])
 
         return
 
@@ -253,8 +256,10 @@ class TestRegistration(TestWithRegistration):
         registry.register(self.module_names)
 
         # Raise error when removing non-existent Instruments
-        with pytest.raises(ValueError):
-            registry.remove(par_plat, par_name)
+        testing.eval_bad_input(
+            registry.remove, ValueError,
+            "The number of 'platforms' and 'names' must be the same",
+            [par_plat, par_name])
 
         return
 
@@ -279,9 +284,8 @@ class TestRegistration(TestWithRegistration):
     def test_module_registration_non_importable(self):
         """Test registering a non-existent module."""
 
-        with pytest.raises(Exception):
-            registry.register(['made.up.module'])
-
+        testing.eval_bad_input(registry.register, ImportError,
+                               'No module named', [['made.up.module']])
         return
 
 
