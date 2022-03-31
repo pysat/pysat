@@ -3017,12 +3017,11 @@ class Instrument(object):
         if not self.empty:
             # Check for partial metadata, define the remaining variables.
             warn_missing_vars = []
+            default_warn = "".join(["Metadata set to defaults, as they were ",
+                                    "missing in the Instrument."])
             for var in self.vars_no_time:
                 if var not in self.meta:
                     warn_missing_vars.append(var)
-                    default_warn = "".join(["Metadata set to ",
-                                            "defaults, as they were ",
-                                            "missing in the Instrument."])
                     self.meta[var] = {self.meta.labels.name: var,
                                       self.meta.labels.notes: default_warn}
 
