@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.0] - 2021-XX-XX
+[3.1.0] - 2022-04-15
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
@@ -45,6 +45,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added support for user variables when parsing template filenames
      in `pysat.utils.files`.
    * Improved robustness of parsing delimited files.
+   * Updated `pysat.Instrument.pandas_format` so that changes to setting
+     are immediately reflected by changes to Instrument object.
    * Added a test function for bad class/function/method input to reduce
      duplicate code and improve message test combliance
 * Deprecations
@@ -104,6 +106,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Fixed pysat_testmodel Instrument longitude range
    * Corrected link to testing badge in README.md
    * `from_os` now always returns a sorted Series.
+   * Moved function call for Instrument modules init function to end of
+     pysat.Instrument instantiation to ensure Instrument is complete when passed
+     to init.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`

@@ -14,6 +14,7 @@ import warnings
 
 import pandas as pds
 import pytest
+import xarray as xr
 
 import pysat
 from pysat.utils import testing
@@ -702,3 +703,44 @@ class InstPropertyTests(object):
 
         # Make sure isntrument loaded as inst_module
         assert tinst.inst_module == self.testInst.inst_module
+
+    def test_change_inst_pandas_format(self):
+        """Test changing `pandas_format` attribute works."""
+        new_format = not self.testInst.pandas_format
+        new_type = pds.DataFrame if new_format else xr.Dataset
+
+        # Save current data format hidden attributes
+        current_null = self.testInst._null_data
+        current_library = self.testInst._data_library
+
+        # Assign inverted `pandas_format` setting
+        self.testInst.pandas_format = new_format
+
+        # Confirm assignment of visible and hidden attributes
+        assert self.testInst.pandas_format == new_format
+        assert not isinstance(self.testInst._null_data, type(current_null))
+        assert current_library != self.testInst._data_library
+
+        # Confirm internal consistency
+        assert isinstance(self.testInst._null_data, self.testInst._data_library)
+        assert isinstance(self.testInst._null_data, new_type)
+
+        return
+
+    def test_change_inst_pandas_format_loaded_data(self):
+        """Test changing `pandas_format` attribute when data loaded."""
+
+        # Load data
+        self.testInst.load(date=self.ref_time)
+
+        # Get inverted pandas_format setting
+        new_format = not self.testInst.pandas_format
+
+        # Assign inverted `pandas_format` setting
+        with pytest.raises(ValueError) as err:
+            self.testInst.pandas_format = new_format
+
+        estr = "Can't change data type setting while data is "
+        assert str(err).find(estr) > 0
+
+        return
