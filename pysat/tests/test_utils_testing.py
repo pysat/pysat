@@ -172,3 +172,64 @@ class TestTestingUtils(object):
 
         assert str(aerr).find('did not find') >= 0
         return
+
+    @pytest.mark.parametrize("error", [
+        Exception, AssertionError, AttributeError, EOFError, FloatingPointError,
+        GeneratorExit, ImportError, IndexError, KeyError, KeyboardInterrupt,
+        MemoryError, NameError, NotImplementedError, OSError, OverflowError,
+        RecursionError, ReferenceError, RuntimeError, StopIteration,
+        SyntaxError, SystemError, SystemExit, TypeError, UnboundLocalError,
+        ZeroDivisionError, EnvironmentError])
+    def test_eval_bad_input_success(self, error):
+        """Test error evaluation function success for test function.
+
+        Parameters
+        ----------
+        error : class
+            Expected error or exception
+
+        """
+
+        def test_func():
+            raise error("test func")
+
+        testing.eval_bad_input(test_func, error, "test func")
+        return
+
+    @pytest.mark.parametrize("error", [
+        AssertionError, AttributeError, EOFError, FloatingPointError,
+        GeneratorExit, ImportError, IndexError, KeyError, KeyboardInterrupt,
+        MemoryError, NameError, NotImplementedError, OSError, OverflowError,
+        RecursionError, ReferenceError, RuntimeError, StopIteration,
+        SyntaxError, SystemError, SystemExit, TypeError, UnboundLocalError,
+        ZeroDivisionError, EnvironmentError])
+    def test_eval_bad_input_type_failure(self, error):
+        """Test error evaluation function type failure for test function.
+
+        Parameters
+        ----------
+        error : class
+            Not the expected error or exception
+
+        """
+
+        def test_func():
+            raise ValueError("test func")
+
+        with pytest.raises(ValueError) as verr:
+            testing.eval_bad_input(test_func, error, "test func")
+
+        assert str(verr).find("test func") >= 0
+        return
+
+    def test_eval_bad_input_msg_failure(self):
+        """Test error evaluation function message failure for test function."""
+
+        def test_func():
+            raise ValueError("test func")
+
+        with pytest.raises(AssertionError) as aerr:
+            testing.eval_bad_input(test_func, ValueError, "testing function")
+
+        assert str(aerr).find("unexpected error message") >= 0
+        return

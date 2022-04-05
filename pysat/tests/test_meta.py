@@ -162,19 +162,17 @@ class TestMeta(object):
     def test_setting_nonpandas_metadata(self):
         """Test meta initialization with bad metadata."""
 
-        with pytest.raises(ValueError) as verr:
-            pysat.Meta(metadata='Not a Panda')
-
-        assert str(verr).find("Input must be a pandas DataFrame type") >= 0
+        testing.eval_bad_input(pysat.Meta, ValueError,
+                               "Input must be a pandas DataFrame type",
+                               input_kwargs={'metadata': 'Not a Panda'})
         return
 
     def test_pop_w_bad_key(self):
         """Test that a bad key will raise a KeyError for `meta.pop`."""
 
-        with pytest.raises(KeyError) as kerr:
-            self.meta.pop('not_a_key')
-
-        assert str(kerr).find('Key not present in metadata variables') >= 0
+        testing.eval_bad_input(self.meta.pop, KeyError,
+                               'Key not present in metadata variables',
+                               input_args=['not_a_key'])
         return
 
     def test_getitem_w_bad_key(self):
@@ -231,11 +229,11 @@ class TestMeta(object):
         concat_meta = self.meta.copy()
 
         # Test the error message
-        with pytest.raises(KeyError) as kerr:
-            self.meta.concat(concat_meta, strict=True)
+        testing.eval_bad_input(
+            self.meta.concat, KeyError,
+            'Duplicated keys (variable names) in Meta.keys()',
+            input_args=[concat_meta], input_kwargs={'strict': True})
 
-        assert str(kerr).find(
-            'Duplicated keys (variable names) in Meta.keys()') >= 0
         return
 
     # TODO(#913): remove tests for 2d metadata
@@ -251,11 +249,10 @@ class TestMeta(object):
             concat_meta[dvar] = self.meta[dvar]
 
         # Test the error message
-        with pytest.raises(KeyError) as kerr:
-            self.meta.concat(concat_meta, strict=True)
-
-        assert str(kerr).find(
-            'Duplicated keys (variable names) in Meta.keys()') >= 0
+        testing.eval_bad_input(
+            self.meta.concat, KeyError,
+            'Duplicated keys (variable names) in Meta.keys()', [concat_meta],
+            {'strict': True})
         return
 
     def test_multiple_meta_assignment_error(self):
@@ -276,10 +273,10 @@ class TestMeta(object):
         self.meta.new_attribute = 'hello'
 
         # Catch and test error message
-        with pytest.raises(ValueError) as verr:
-            self.meta.transfer_attributes_to_instrument(self.testInst)
-
-        assert str(verr).find("Can't transfer Meta attributes to non-") >= 0
+        testing.eval_bad_input(self.meta.transfer_attributes_to_instrument,
+                               ValueError,
+                               "Can't transfer Meta attributes to non-",
+                               [self.testInst])
         return
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
@@ -289,7 +286,18 @@ class TestMeta(object):
                               ("filename", 'fake_inst',
                                "Unable to create valid file path")])
     def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
-        """Test error handling when loading metadata from a CSV file."""
+        """Test raises ValueError when using bad input for loading a CSV file.
+
+        Parameters
+        ----------
+        bad_key : str
+            Kwarg to update with bad data
+        bad_val : any type
+            Bad input value assinged to `bad_key`
+        err_msg : str
+            Expected error message
+
+        """
 
         # Initialize the bad reading inputs
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
@@ -298,10 +306,8 @@ class TestMeta(object):
         kwargs[bad_key] = bad_val
 
         # Raise the expected error and test the message
-        with pytest.raises(ValueError) as verr:
-            self.meta.from_csv(**kwargs)
-
-        assert str(verr.value).find(err_msg) >= 0
+        testing.eval_bad_input(self.meta.from_csv, ValueError, err_msg,
+                               input_kwargs=kwargs)
         return
 
     # TODO(#913): remove tests for 2d metadata
@@ -314,10 +320,8 @@ class TestMeta(object):
         # Set a bad mapping dictionary
         mapper = {'mlt': {'mlt_profile': 'mlt_density_is_not_real'}}
 
-        with pytest.raises(ValueError) as verr:
-            self.meta.rename(mapper)
-
-        assert str(verr).find("unknown mapped value at 'mlt'") >= 0
+        testing.eval_bad_input(self.meta.rename, ValueError,
+                               "unknown mapped value at 'mlt'", [mapper])
         return
 
     # -------------------------
@@ -1947,11 +1951,10 @@ class TestMetaMutable(object):
         self.testInst.jojo_beans = 'nope!'
 
         # Catch and evaluate error message
-        with pytest.raises(AttributeError) as aerr:
-            self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                        strict_names=True)
-
-        assert str(aerr).find("cannot be transferred as it already exists") > 0
+        testing.eval_bad_input(self.meta.transfer_attributes_to_instrument,
+                               AttributeError,
+                               "cannot be transferred as it already exists",
+                               [self.testInst], {'strict_names': True})
         return
 
     def test_transfer_attr_header_overwrite_with_strict_names(self):
@@ -1964,10 +1967,10 @@ class TestMetaMutable(object):
         setattr(self.meta.header, 'jojo_beans', 'nope!')
 
         # Catch and evaluate error message
-        with pytest.raises(AttributeError) as aerr:
-            self.meta.transfer_attributes_to_header(strict_names=True)
-
-        assert str(aerr).find("cannot be transferred as it already exists") > 0
+        testing.eval_bad_input(self.meta.transfer_attributes_to_header,
+                               AttributeError,
+                               "cannot be transferred as it already exists",
+                               input_kwargs={'strict_names': True})
         return
 
     def test_transfer_attr_inst_to_instrument_strict_names_false(self):

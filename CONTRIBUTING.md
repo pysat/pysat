@@ -6,13 +6,15 @@ appreciated!  pysat is a community-driven project and welcomes both feedback and
 contributions.
 
 Come join us on Slack! An invitation to the pysat workspace is available 
-in the 'About' section of the [pysat GitHub Repository.](https://github.com/pysat/pysat)
-Development meetings are generally held fortnightly.
+in the 'About' section of the
+[pysat GitHub Repository.](https://github.com/pysat/pysat) Development meetings
+are generally held fortnightly.
 
 Short version
 -------------
 
-* Submit bug reports and feature requests at `GitHub <https://github.com/pysat/pysat/issues>`_
+* Submit bug reports and feature requests at
+  `GitHub <https://github.com/pysat/pysat/issues>`_
 * Make pull requests to the ``develop`` branch
 
 Bug reports

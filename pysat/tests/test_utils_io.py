@@ -236,11 +236,12 @@ class TestLoadNetCDF(object):
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         self.testInst['MLT'] = 1
-        with pytest.raises(ValueError) as verr:
-            io.inst_to_netcdf(self.testInst, fname=outfile,
-                              preserve_meta_case=True)
 
-        assert str(verr).find("multiple variables") >= 0
+        # Evaluate the expected error and message
+        testing.eval_bad_input(
+            io.inst_to_netcdf, ValueError, "multiple variables",
+            input_args=[self.testInst],
+            input_kwargs={'fname': outfile, 'preserve_meta_case': True})
         return
 
     @pytest.mark.parametrize("wkwargs, lkwargs", [
@@ -452,10 +453,12 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
-        with pytest.raises(ValueError) as verr:
-            io.load_netcdf(outfile, epoch_name='time', pandas_format=True)
+        # Evaluate the error raised and the expected message
+        testing.eval_bad_input(
+            io.load_netcdf, ValueError,
+            "only supports 1D and 2D data in pandas", input_args=[outfile],
+            input_kwargs={"epoch_name": 'time', "pandas_format": True})
 
-        assert str(verr).find("only supports 1D and 2D data in pandas") >= 0
         return
 
 

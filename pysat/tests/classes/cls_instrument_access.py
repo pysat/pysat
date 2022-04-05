@@ -24,6 +24,7 @@ import pytest
 import xarray as xr
 
 import pysat
+from pysat.utils import testing
 
 logger = pysat.logger
 
@@ -52,17 +53,17 @@ class InstAccessTests(object):
         inst_mod = self.testInst.inst_module
         inst_mod_init = inst_mod.init
 
-        def temp_init(self, test_init_kwarg=None):
+        def temp_init(inst, test_init_kwarg=None):
             """Test the passed Instrument is complete."""
 
             # Apply normal init rtn to ensure both Instruments have same code
             # history.
-            inst_mod_init(self, test_init_kwarg=inst_copy.test_init_kwarg)
+            inst_mod_init(inst, test_init_kwarg=inst_copy.test_init_kwarg)
 
             # Equality checks against all routines, including init.
-            self._init_rtn = inst_copy._init_rtn
+            inst._init_rtn = inst_copy._init_rtn
 
-            assert self == inst_copy
+            assert inst == inst_copy
 
         # Assign new init to test module
         inst_mod.init = temp_init
@@ -181,24 +182,20 @@ class InstAccessTests(object):
         """Check for error when calling load with bad keywords."""
 
         # Test that the correct error is raised
-        with pytest.raises(TypeError) as terr:
-            self.testInst.load(date=self.ref_time, unsupported_keyword=True,
-                               use_header=True)
-
-        # Evaluate error message
-        assert str(terr).find("load() got an unexpected keyword") >= 0
+        testing.eval_bad_input(self.testInst.load, TypeError,
+                               "load() got an unexpected keyword",
+                               input_kwargs={'date': self.ref_time,
+                                             'unsupported_keyword': True,
+                                             'use_header': True})
         return
 
     def test_basic_instrument_load_yr_no_doy(self):
         """Ensure day of year required if year is present."""
 
         # Check that the correct error is raised
-        with pytest.raises(TypeError) as err:
-            self.testInst.load(self.ref_time.year, use_header=True)
-
-        # Check that the error message is correct
         estr = 'Unknown or incomplete input combination.'
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(self.testInst.load, TypeError, estr,
+                               [self.ref_time.year], {'use_header': True})
         return
 
     @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
@@ -212,11 +209,9 @@ class InstAccessTests(object):
 
         """
 
-        with pytest.raises(ValueError) as err:
-            self.testInst.load(self.ref_time.year, doy, use_header=True)
         estr = 'Day of year (doy) is only valid between and '
-        assert str(err).find(estr) >= 0
-
+        testing.eval_bad_input(self.testInst.load, ValueError, estr,
+                               [self.ref_time.year, doy], {'use_header': True})
         return
 
     @pytest.mark.parametrize('end_doy', [0, 367, 1000, -1, -10000])
@@ -230,23 +225,20 @@ class InstAccessTests(object):
 
         """
 
-        with pytest.raises(ValueError) as err:
-            self.testInst.load(self.ref_time.year, 1, end_yr=self.ref_time.year,
-                               end_doy=end_doy, use_header=True)
         estr = 'Day of year (end_doy) is only valid between and '
-        assert str(err).find(estr) >= 0
-
+        testing.eval_bad_input(self.testInst.load, ValueError, estr,
+                               [self.ref_time.year, 1],
+                               {'end_yr': self.ref_time.year,
+                                'end_doy': end_doy, 'use_header': True})
         return
 
     def test_basic_instrument_load_yr_no_end_doy(self):
         """Ensure `end_doy` required if `end_yr` present."""
 
-        with pytest.raises(ValueError) as err:
-            self.testInst.load(self.ref_time.year, self.ref_doy,
-                               self.ref_time.year, use_header=True)
         estr = 'Both end_yr and end_doy must be set'
-        assert str(err).find(estr) >= 0
-
+        testing.eval_bad_input(self.testInst.load, ValueError, estr,
+                               [self.ref_time.year, self.ref_doy,
+                                self.ref_time.year], {'use_header': True})
         return
 
     @pytest.mark.parametrize("kwargs", [{'yr': 2009, 'doy': 1,
@@ -275,10 +267,10 @@ class InstAccessTests(object):
 
         """
 
-        with pytest.raises(ValueError) as err:
-            self.testInst.load(use_header=True, **kwargs)
+        kwargs['use_header'] = True
         estr = 'An inconsistent set of inputs have been'
-        assert str(err).find(estr) >= 0
+        testing.eval_bad_input(self.testInst.load, ValueError, estr,
+                               input_kwargs=kwargs)
         return
 
     def test_basic_instrument_load_no_input(self):
@@ -314,11 +306,9 @@ class InstAccessTests(object):
         else:
             load_kwargs = dict()
 
-        with pytest.raises(ValueError) as err:
-            self.testInst.load(use_header=True, **load_kwargs)
-
-        assert str(err).find(verr) >= 0
-
+        load_kwargs['use_header'] = True
+        testing.eval_bad_input(self.testInst.load, ValueError, verr,
+                               input_kwargs=load_kwargs)
         return
 
     def test_basic_instrument_load_by_date(self):
@@ -400,11 +390,8 @@ class InstAccessTests(object):
         # Set new bounds that do not include this date.
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
                                 2, 1)
-        with pytest.raises(StopIteration) as err:
-            getattr(self.testInst, operator)()
-        estr = 'Unable to find loaded filename '
-        assert str(err).find(estr) >= 0
-
+        testing.eval_bad_input(getattr(self.testInst, operator), StopIteration,
+                               'Unable to find loaded filename ')
         return
 
     @pytest.mark.parametrize("operator", [('next'), ('prev')])
@@ -425,11 +412,8 @@ class InstAccessTests(object):
                                 self.ref_time + dt.timedelta(days=10),
                                 '2D', dt.timedelta(days=1))
 
-        with pytest.raises(StopIteration) as err:
-            getattr(self.testInst, operator)()
-        estr = 'Unable to find loaded date '
-        assert str(err).find(estr) >= 0
-
+        testing.eval_bad_input(getattr(self.testInst, operator), StopIteration,
+                               'Unable to find loaded date ')
         return
 
     def test_basic_fname_instrument_load(self):
@@ -493,12 +477,13 @@ class InstAccessTests(object):
 
         stop_fname = self.ref_time + dt.timedelta(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
-        with pytest.raises(ValueError) as err:
-            check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
-            self.testInst.load(fname=stop_fname,
-                               stop_fname=check_fname, use_header=True)
+        check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
         estr = '`stop_fname` must occur at a later date '
-        assert str(err).find(estr) >= 0
+
+        testing.eval_bad_input(self.testInst.load, ValueError, estr,
+                               input_kwargs={'fname': stop_fname,
+                                             'stop_fname': check_fname,
+                                             'use_header': True})
         return
 
     def test_eq_no_data(self):
@@ -530,13 +515,19 @@ class InstAccessTests(object):
 
         self.testInst.load(date=self.ref_time, use_header=True)
         inst_copy = self.testInst.copy()
+
+        # Can only change data types if Instrument empty
+        inst_copy.data = inst_copy._null_data
+
         if self.testInst.pandas_format:
             inst_copy.pandas_format = False
             inst_copy.data = xr.Dataset()
         else:
             inst_copy.pandas_format = True
             inst_copy.data = pds.DataFrame()
+
         assert inst_copy != self.testInst
+
         return
 
     def test_eq_different_type(self):
@@ -885,11 +876,8 @@ class InstAccessTests(object):
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
 
         # Capture the ValueError and message
-        with pytest.raises(ValueError) as verr:
-            self.testInst.rename(values)
-
-        # Evaluate the error message text
-        assert str(verr).find("cannot rename") >= 0
+        testing.eval_bad_input(self.testInst.rename, ValueError,
+                               "cannot rename", [values])
         return
 
     @pytest.mark.parametrize("lowercase", [True, False])
@@ -1014,9 +1002,8 @@ class InstAccessTests(object):
                                    use_header=True)
 
                 # Check for error for unknown column or HO variable name
-                with pytest.raises(ValueError) as verr:
-                    self.testInst.rename(values)
-                assert str(verr).find("cannot rename") >= 0
+                testing.eval_bad_input(self.testInst.rename, ValueError,
+                                       "cannot rename", [values])
             else:
                 pytest.skip("Not implemented for this instrument")
         return

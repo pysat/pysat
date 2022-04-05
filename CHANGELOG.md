@@ -47,6 +47,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Improved robustness of parsing delimited files.
    * Updated `pysat.Instrument.pandas_format` so that changes to setting
      are immediately reflected by changes to Instrument object.
+   * Added a test function for bad class/function/method input to reduce
+     duplicate code and improve message test combliance
    * Added support for filtering basic netCDF4 metadata when loading via 
      `pysat.utils.io.load_netcdf`.
    * Added support for user developed functions to filter metadata as it
