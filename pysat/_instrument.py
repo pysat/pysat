@@ -3425,7 +3425,7 @@ class Instrument(object):
 
         return
 
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name=None,
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
                    unlimited_time=True, modify=False):
@@ -3443,9 +3443,9 @@ class Instrument(object):
             Class used as a comparison, only attributes that are present with
             self and not on base_instrument are written to netCDF. Using None
             assigns an unmodified pysat.Instrument object. (default=None)
-        epoch_name : str
+        epoch_name : str or NoneType
             Label in file for datetime index of Instrument object
-            (default='Epoch')
+            (default=None)
         zlib : bool
             Flag for engaging zlib compression (True - compression on)
         complevel : int
