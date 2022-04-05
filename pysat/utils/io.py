@@ -762,7 +762,7 @@ def meta_array_expander(meta_dict):
 
 
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
-                epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
+                epoch_name=None, epoch_unit='ms', epoch_origin='unix',
                 pandas_format=True, decode_timedelta=False,
                 labels={'units': ('units', str), 'name': ('long_name', str),
                         'notes': ('notes', str), 'desc': ('desc', str),
@@ -786,12 +786,14 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         (default='NETCDF4')
-    epoch_name : str
+    epoch_name : str or NoneType
         Data key for epoch variable.  The epoch variable is expected to be an
         array of integer or float values denoting time elapsed from an origin
         specified by `epoch_origin` with units specified by `epoch_unit`. This
         epoch variable will be converted to a `DatetimeIndex` for consistency
-        across pysat instruments.  (default='Epoch')
+        across pysat instruments. If None, then `epoch_name` set by
+        the `load_netcdf_pandas` or `load_netcdf_xarray` as appropriate.
+        (default=None)
     epoch_unit : str
         The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
         'ns'). (default='ms')
@@ -904,7 +906,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         (default='NETCDF4')
-    epoch_name : str
+    epoch_name : str or NoneType
         Data key for epoch variable.  The epoch variable is expected to be an
         array of integer or float values denoting time elapsed from an origin
         specified by `epoch_origin` with units specified by `epoch_unit`. This
@@ -966,6 +968,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     load_netcdf
 
     """
+    if epoch_name is None:
+        pysat.logger.info('Assigning "Epoch" for time index.')
+        epoch_name = 'Epoch'
+
     # Ensure inputs are in the correct format
     fnames = pysat.utils.listify(fnames)
     file_format = file_format.upper()
@@ -1226,7 +1232,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
 
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
-                       epoch_name='Epoch', decode_timedelta=False,
+                       epoch_name='time', decode_timedelta=False,
                        labels={'units': ('units', str),
                                'name': ('long_name', str),
                                'notes': ('notes', str), 'desc': ('desc', str),
@@ -1251,8 +1257,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         (default='NETCDF4')
-    epoch_name : str
-        Data key for time variable (default='Epoch')
+    epoch_name : str or NoneType
+        Data key for time variable (default='time')
     decode_timedelta : bool
         If True, variables with unit attributes that are 'timelike' ('hours',
         'minutes', etc) are converted to `np.timedelta64`. (default=False)
@@ -1292,12 +1298,15 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     load_netcdf
 
     """
+    if epoch_name is None:
+        pysat.logger.info('Assigning "time" for time index.')
+        epoch_name = 'time'
 
-    if epoch_name != 'Epoch':
-        wstr = ''.join(['The `epoch_name` setting is ignored when loading ',
-                        'into xarray objects as xarray locates the time index',
-                        'via its own means.'])
-        warnings.warn(wstr)
+    # if epoch_name != 'Epoch':
+    #     wstr = ''.join(['The `epoch_name` setting is ignored when loading ',
+    #                     'into xarray objects as xarray locates the time index',
+    #                     'via its own means.'])
+    #     warnings.warn(wstr)
 
     # Ensure inputs are in the correct format
     fnames = pysat.utils.listify(fnames)
@@ -1343,8 +1352,14 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data.variables[key].attrs = {}
 
     # Rename the timeindex to 'time'.
-    orig_time_dim = list(data.dims)[0]
-    data = data.rename({orig_time_dim: 'time'})
+    if epoch_name != 'time':
+        if epoch_name in data.dims:
+            data = data.rename({epoch_name: 'time'})
+        else:
+            estr = ''.join(['User provided time information variable ',
+                            epoch_name, ' not found in loaded data ',
+                            'dimensions.'])
+            raise ValueError(estr)
 
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
@@ -1357,7 +1372,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                 full_mdict[var].pop(label)
 
     # Second, remove some items pysat added for netcdf compatibility.
-    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, orig_time_dim)
+    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, 'time')
 
     # Translate labels from file to pysat compatible labels using
     # `meta_translation`
@@ -1433,8 +1448,10 @@ def return_epoch_metadata(inst, epoch_name):
     return new_dict
 
 
-def xarray_vars_no_time(data):
-    """Return all DataSet variables except the first dimension.
+def xarray_vars_no_time(data, time_label='time'):
+    """Return all DataSet variables except the `time_label` dimension.
+
+    If `time_label` not found, removes first 1D dimension with datetime data.
 
     Parameters
     ----------
@@ -1449,19 +1466,28 @@ def xarray_vars_no_time(data):
     """
     vars = list(data.variables.keys())
 
-    # Remove first dimension
-    first_dim = list(data.dims)
-    if len(first_dim) > 0:
-        first_dim = first_dim[0]
-        if first_dim in vars:
-            for i, var in enumerate(vars):
-                if var == first_dim:
-                    vars.pop(i)
+    # Remove `time_label` dimension
+    dims = list(data.dims)
+    if time_label in vars:
+        for i, var in enumerate(vars):
+            if var == time_label:
+                vars.pop(i)
+                return vars
 
-    return vars
+    # If `time_label` not labeled as such, let's look for datetime data in 1D
+    if len(dims) > 0:
+        for dim in dims:
+            if str(data[dim].data.dtype).find('datetime') > 0:
+                if len(data[dim].data.shape) == 1:
+                    for i, var in enumerate(vars):
+                        if var == time_label:
+                            vars.pop(i)
+                            return vars
+
+    return []
 
 
-def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
+def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                    mode='w', zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, check_type=None, export_nan=None,
                    unlimited_time=True, meta_translation=None,
@@ -1478,8 +1504,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         Class used as a comparison, only attributes that are present with
         `inst` and not on `base_instrument` are written to netCDF. Using None
         assigns an unmodified pysat.Instrument object. (default=None)
-    epoch_name : str
-        Label in file for datetime index of `inst`
+    epoch_name : str or NoneType
+        Label in file for datetime index of `inst`. If None, uses
+        'Epoch' for pandas data formats, and uses 'time' for xarray formats.
     mode : str
         Write (‘w’) or append (‘a’) mode. If mode=’w’, any existing file at
         this location will be overwritten. If mode=’a’, existing variables will
@@ -1556,6 +1583,15 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
     'Text_Supplement' are given default values if not present.
 
     """
+    # Check epoch name information
+    if epoch_name is None:
+        if inst.pandas_format:
+            pysat.logger.info('Assigning "Epoch" for time index.')
+            epoch_name = 'Epoch'
+        else:
+            pysat.logger.info('Assigning "time" for time index.')
+            epoch_name = 'time'
+
     # Ensure there is data to write
     if inst.empty:
         pysat.logger.warning('empty Instrument, not writing {:}'.format(fname))
@@ -1958,15 +1994,14 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name='Epoch',
         xr_data = xr.Dataset(inst.data)
 
         # Update 'time' dimension to `epoch_name`.
-        time_dim = list(inst.data.dims)[0]
-        xr_data = xr_data.rename({time_dim: epoch_name})
+        xr_data = xr_data.rename({'time': epoch_name})
 
         # Transfer metadata.
         pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
-            for var in xarray_vars_no_time(xr_data):
+            for var in xarray_vars_no_time(xr_data, time_label=epoch_name):
                 # Use the variable case stored in the MetaData object
                 case_var = inst.meta.var_case_name(var)
 
