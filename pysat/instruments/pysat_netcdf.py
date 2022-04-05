@@ -75,6 +75,7 @@ def init(self, pandas_format=True):
     self.acknowledgements = "Acknowledgements missing from file"
     self.references = "References missing from file"
     self.pandas_format = pandas_format
+    self.kwargs['load']['pandas_format'] = pandas_format
 
     return
 
@@ -131,7 +132,7 @@ def download(date_array, tag, inst_id, data_path=None):
 
 
 def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
-         epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
+         epoch_name=None, epoch_unit='ms', epoch_origin='unix',
          pandas_format=True, decode_timedelta=False,
          labels={'units': ('units', str), 'name': ('long_name', str),
                  'notes': ('notes', str), 'desc': ('desc', str),
@@ -161,12 +162,12 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         (default='NETCDF4')
-    epoch_name : str
+    epoch_name : str or NoneType
         Data key for epoch variable.  The epoch variable is expected to be an
         array of integer or float values denoting time elapsed from an origin
         specified by `epoch_origin` with units specified by `epoch_unit`. This
         epoch variable will be converted to a `DatetimeIndex` for consistency
-        across pysat instruments.  (default='Epoch')
+        across pysat instruments.  (default=None)
     epoch_unit : str
         The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
         'ns'). (default='ms')
@@ -202,7 +203,7 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         Pysat Meta data for each data variable.
 
     """
-
+    print('Got pandas of ', pandas_format, epoch_name)
     # netCDF4 files, particularly those produced by pysat can be loaded using a
     # pysat provided function, load_netcdf4.
     data, mdata = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
