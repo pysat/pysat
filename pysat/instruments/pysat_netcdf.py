@@ -203,7 +203,6 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         Pysat Meta data for each data variable.
 
     """
-    print('Got pandas of ', pandas_format, epoch_name)
     # netCDF4 files, particularly those produced by pysat can be loaded using a
     # pysat provided function, load_netcdf4.
     data, mdata = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
