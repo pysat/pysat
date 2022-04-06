@@ -75,7 +75,6 @@ def init(self, pandas_format=True):
     self.acknowledgements = "Acknowledgements missing from file"
     self.references = "References missing from file"
     self.pandas_format = pandas_format
-    self.kwargs['load']['pandas_format'] = pandas_format
 
     return
 
