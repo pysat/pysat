@@ -3039,7 +3039,7 @@ class Instrument(object):
                                         "defaults, as they were ",
                                         "missing in the Instrument."])
                 default_warn = default_warn.format(', '.join(warn_missing_vars))
-                warnings.warn(default_warn, stacklevel=2)
+                warnings.warn(default_warn, RuntimeWarning, stacklevel=2)
 
         # # Check if load routine actually returned information meta
         # if self.meta.data.empty:
@@ -3074,7 +3074,7 @@ class Instrument(object):
                                            'set inst.strict_time_flag=False',
                                            'before loading data')))
             else:
-                warnings.warn(message, stacklevel=2)
+                warnings.warn(message, RuntimeWarning, stacklevel=2)
 
         # Apply the instrument preprocess routine, if data present
         if not self.empty:
