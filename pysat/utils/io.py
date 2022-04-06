@@ -1302,12 +1302,6 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         pysat.logger.info('Assigning "time" for time index.')
         epoch_name = 'time'
 
-    # if epoch_name != 'Epoch':
-    #     wstr = ''.join(['The `epoch_name` setting is ignored when loading ',
-    #                     'into xarray objects as xarray locates the time index',
-    #                     'via its own means.'])
-    #     warnings.warn(wstr)
-
     # Ensure inputs are in the correct format
     fnames = pysat.utils.listify(fnames)
     file_format = file_format.upper()
@@ -1358,7 +1352,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         else:
             estr = ''.join(['User provided time information variable ',
                             epoch_name, ' not found in loaded data ',
-                            'dimensions.'])
+                            'dimensions ', repr(data.dims)])
             raise ValueError(estr)
 
     # Copy the file attributes from the data object to the metadata
