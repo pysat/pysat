@@ -32,41 +32,8 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
 
     """
 
-    def is_fill(meta_value, nan_valid):
-        """Determine if this value is a fill value or not.
-
-        Parameters
-        ----------
-        meta_value : int, float, str
-            Value to evaluate.  Expected fill values are '' or NaN.
-        nan_valid : bool
-            If True, this value may legitimately be set to NaN.
-
-        Returns
-        -------
-        bool
-            True if `meta_value` is a fill value, False if it is not.
-
-        """
-
-        if meta_value is not None:
-            try:
-                if len(meta_value) > 0:
-                    return False
-            except TypeError:
-                if nan_valid or not np.isnan(meta_value):
-                    return False
-        return True
-
-    # # Initialize the export_nan list
-    # if export_nan is None:
-    #     export_nan = []
-
     # Get a list of all data, expect for the time dimension.
     xarr_vars = xarray_vars_no_time(xr_data)
-    # xarr_vars = [var for var in xr_data.data_vars.keys()]
-    # xarr_vars.extend([var for var in xr_data.coords.keys()])
-    # xarr_vars.extend([var for var in list(xr_data.dims.keys())[1:]])
 
     # pysat meta -> dict export has lowercase names.
     xarr_lvars = [var.lower() for var in xarr_vars]
@@ -88,12 +55,6 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
                 # Assign attributes
                 xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
                     data_key][meta_key]
-
-        # if data_key == epoch_name:
-        #     # Cycle through all the pysat MetaData labels
-        #     for meta_key in pysat_meta[data_key].keys():
-        #         xr_data[data_key].attrs[meta_key] = pysat_meta[data_key][
-        #             meta_key]
 
     return
 
