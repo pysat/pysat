@@ -527,13 +527,9 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
                         mdict[key].pop(sub_keys[i])
 
     # Remove epoch metadata
-    # epoch_vals = ['Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
     if epoch_name != '':
         if epoch_name in mdict:
             mdict.pop(epoch_name)
-            # for val in epoch_vals:
-            #     if val in mdict[epoch_name]:
-            #         mdict[epoch_name].pop(val)
 
     return mdict
 
