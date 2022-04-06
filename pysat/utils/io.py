@@ -4,8 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 """Input/Output utilities for pysat data."""
-
-
+import copy
 import datetime as dt
 import netCDF4
 import numpy as np
@@ -1650,6 +1649,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                         str(inst._meta_translation_table))))
         else:
             meta_translation = default_to_netcdf_translation_table(inst)
+
+    # Ensure input dictionary unaffected by processing
+    meta_translation = copy.deepcopy(meta_translation)
 
     # Ensure `meta_translation` has default values for items not assigned.
     # This is needed for the higher order pandas support and may be removed.
