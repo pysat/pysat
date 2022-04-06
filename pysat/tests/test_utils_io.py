@@ -762,8 +762,16 @@ class TestNetCDF4Integration(object):
 
         return
 
+    @pytest.mark.parametrize('meta_trans', [{'units': ['testingFillVal',
+                                                      'testing_FillValue',
+                                                      'testing_fill_value']},
+                                            {'desc': ['tdub','test_FillValue']},
+                                            {'desc': ['tdub', 'test_FillValue'],
+                                             'notes': ['test_notes'],
+                                             'fill': ['fill_test']}
+                                            ])
     @pytest.mark.parametrize('assign_flag', [True, False])
-    def test_meta_translation_to_from_netcdf4(self, assign_flag):
+    def test_meta_translation_to_from_netcdf4(self, assign_flag, meta_trans):
         """Test impact of meta_translation on netCDF output.
 
         Parameters
@@ -775,18 +783,11 @@ class TestNetCDF4Integration(object):
 
         """
 
-        # Create a meta translation table
-        present = ['testingFillVal', 'testing_FillValue', 'testing_fill_value']
-        meta_trans = {self.testInst.meta.labels.units: present}
-
-        # These are standard metalabels used when writing netCDF and should not
-        # be present given the table above.
-        missing = ['units']  # ['FillVal', '_FillValue']
-
         # Write the file
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
+
         if assign_flag:
             self.testInst._meta_translation_table = meta_trans
             pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
@@ -798,32 +799,42 @@ class TestNetCDF4Integration(object):
         with netCDF4.Dataset(outfile) as open_f:
             for var in open_f.variables.keys():
                 test_vars = open_f[var].ncattrs()
-                # print('Checking ', var, ' against ', test_vars)
+                # Confirm translated labels are in the file
                 # Avoid time variables
                 if 'MonoTon' not in test_vars:
-                    testing.assert_list_contains(present, test_vars)
+                    form = open_f[var].getncattr('Format')
+                    for key in meta_trans.keys():
+                        # String data doesn't have fill
+                        if key != 'fill' and (form != 'S1'):
+                            testing.assert_list_contains(meta_trans[key],
+                                                         test_vars)
 
-                for mvar in missing:
+                # Confirm pre-translation form of label not in file.
+                for mvar in meta_trans.keys():
                     assert mvar not in test_vars, \
                         '{:} was written to the netCDF file'.format(repr(mvar))
 
         # Load file using pysat utilities and test translation of multiple
         # parameters to a single parameter.
         inv_trans = {}
-        for val in present:
-            inv_trans[val] = self.testInst.meta.labels.units
+        for key in meta_trans.keys():
+            for var in meta_trans[key]:
+                inv_trans[var] = key
 
         # Load the file
         data, meta = pysat.utils.io.load_netcdf(outfile,
                                                 meta_translation=inv_trans)
 
-        # Confirm none of `present` are in the metadata information
+        # Confirm inverse translation worked.
         attrs = list(meta.attrs())
-        for var in present:
-            assert var not in attrs
+        for key in meta_trans.keys():
+            # Confirm inverse-translated label in metadata
+            assert key in attrs
 
-        # Confirm that the desired fill_val label is present
-        assert self.testInst.meta.labels.fill_val in attrs
+            # Confirm labels used in file that should have been translated
+            # are not present.
+            for var in meta_trans[key]:
+                assert var not in attrs
 
         return
 
