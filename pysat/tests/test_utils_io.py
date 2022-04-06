@@ -768,7 +768,16 @@ class TestNetCDF4Integration(object):
                                             {'desc': ['tdub','test_FillValue']},
                                             {'desc': ['tdub', 'test_FillValue'],
                                              'notes': ['test_notes'],
-                                             'fill': ['fill_test']}
+                                             'fill': ['fill_test']},
+                                            {'desc': ['tdub', 'test_FillValue'],
+                                             'notes': ['test_notes'],
+                                             'fill': ['fill_test'],
+                                             'value_min': ['ValueMin',
+                                                           'Value_Min'],
+                                             'value_max': ['ValueMax',
+                                                           'Value_Max'],
+                                             'units': ['takeout'],
+                                             'long_name': ['longer_name']}
                                             ])
     @pytest.mark.parametrize('assign_flag', [True, False])
     def test_meta_translation_to_from_netcdf4(self, assign_flag, meta_trans):
