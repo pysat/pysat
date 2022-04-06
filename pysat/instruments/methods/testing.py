@@ -150,6 +150,8 @@ def initialize_test_meta(epoch_name, data_keys):
     meta['unicode_dummy'] = {'desc': 'Dummy unicode variable.', 'units': ''}
     meta['string_dummy'] = {'desc': 'Dummy string variable.', 'units': ''}
 
+    meta['dummy_drifts'] = {'desc': 'Dummy drift values.', 'value_min': -1000.,
+                            'value_max': 1000., 'fill': np.nan}
     # Add metadata for integer dummy variables.
     meta_dict = {'value_min': 0, 'value_max': 2, 'fill': -1}
     var_list = ['int8_dummy', 'int16_dummy', 'int32_dummy', 'int64_dummy']
