@@ -610,7 +610,6 @@ class Files(object):
                                          'Ignoring:', loaded.name])
                         logger.debug(dstr)
 
-
                 # Ensure the name of returned Series is None for consistency
                 loaded.name = None
 
