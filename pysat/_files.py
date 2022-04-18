@@ -237,7 +237,10 @@ class Files(object):
                 # Refresh filenames as directed by user
                 self.refresh()
             else:
-                # Load stored file info
+                # Load stored file info. Note if there is a stored `data_path`
+                # that is still in `self.data_paths` then stored value will
+                # be used to replace current `self.data_path`. This is done
+                # to provide support for multiple directories.
                 file_info = self._load()
                 if file_info.empty:
                     # Didn't find stored information. Search local system.
@@ -594,7 +597,19 @@ class Files(object):
                                       header=0).squeeze("columns")
                 if update_path:
                     # Store the data_path from the .csv onto Files
-                    self.data_path = loaded.name
+                    if loaded.name in self.data_paths:
+                        dstr = ' '.join(['Assigning `data_path` found',
+                                         'in stored file list:',
+                                         loaded.name])
+                        logger.debug(dstr)
+                        self.data_path = loaded.name
+                    else:
+                        dstr = ' '.join(['`data_path` found',
+                                         'in stored file list is not in',
+                                         'current supported `self.data_paths`.',
+                                         'Ignoring:', loaded.name])
+                        logger.debug(dstr)
+
 
                 # Ensure the name of returned Series is None for consistency
                 loaded.name = None
