@@ -663,10 +663,11 @@ def apply_table_translation_from_file(trans_table, meta_dict):
                     except TypeError:
                         check = True
                     if check:
-                        wstr = ''.join(['Inconsistent values between file and ',
-                                        'translated metadata parameters "{}"',
-                                        ' and "{}" with values {} and {}'])
-                        wstr = wstr.format(file_key, new_key,
+                        wstr = ''.join(['Inconsistent values between multiple ',
+                                        'file parameters and single ',
+                                        'translated metadata parameter "{}"',
+                                        ' with values {} and {}.'])
+                        wstr = wstr.format(new_key,
                                            meta_dict[var_key][file_key],
                                            filt_dict[var_key][new_key])
                         pysat.logger.warning(wstr)
