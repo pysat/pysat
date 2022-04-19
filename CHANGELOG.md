@@ -132,6 +132,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      to init.
    * Refactored `pysat.Instrument.generic_meta_translator` to use 
      `pysat.Meta.to_translated_dict` and the latest metadata label standards.
+   * Prevent stale data paths stored by pysat from being reassigned if
+     path is no longer in `pysat.params['data_dirs']`.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
