@@ -8,6 +8,7 @@ import warnings
 
 import pysat
 from pysat.instruments.methods import general as gen
+from pysat.utils import testing
 
 
 class TestListFiles(object):
@@ -34,12 +35,23 @@ class TestListFiles(object):
                               ("tag", "badval", "Unknown inst_id or tag"),
                               ("inst_id", "badval", "Unknown inst_id or tag")])
     def test_bad_kwarg_list_files(self, bad_key, bad_val, err_msg):
-        """Test that bad kwargs raise an appropriate error."""
+        """Test that bad kwargs raise a ValueError with an expected message.
+
+        Parameters
+        ----------
+        bad_key : str
+            Keyword arg to update
+        badval : any type
+            Bad value to use with `bad_key`
+        err_msg : str
+            Expected error message
+
+        """
 
         self.kwargs[bad_key] = bad_val
-        with pytest.raises(ValueError) as excinfo:
-            gen.list_files(**self.kwargs)
-        assert str(excinfo.value).find(err_msg) >= 0
+
+        testing.eval_bad_input(gen.list_files, ValueError, err_msg,
+                               input_kwargs=self.kwargs)
         return
 
 
@@ -97,9 +109,11 @@ class TestRemoveLeadText(object):
         """Test that a bad target in `remove_leading_text` raises an error."""
 
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
-        with pytest.raises(ValueError) as verr:
-            gen.remove_leading_text(self.testInst, target=17.5)
-        assert str(verr).find('target must be a string or list of strings') >= 0
+
+        testing.eval_bad_input(gen.remove_leading_text, ValueError,
+                               'target must be a string or list of strings',
+                               input_args=[self.testInst],
+                               input_kwargs={'target': 17.5})
         return
 
     def test_remove_names_wo_target(self):
