@@ -191,7 +191,8 @@ def initialize_test_meta(epoch_name, data_keys):
                                     'desc': ''.join(['Simulated fractional O+ ',
                                                      'composition.'])}
     # alt_profile_meta['dummy_str'] = {'desc': 'Testing string values.'}
-    # alt_profile_meta['dummy_ustr'] = {'desc': 'Testing unicode string values.'}
+    # alt_profile_meta['dummy_ustr'] = {'desc':
+    # 'Testing unicode string values.'}
     meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
                             'desc': ''.join(['Testing profile multi-dimensiona',
                                              'l data indexed by float.']),

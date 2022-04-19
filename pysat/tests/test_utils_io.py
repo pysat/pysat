@@ -987,6 +987,7 @@ class TestXarrayIO(object):
                                     repr(var), repr(label)))
         return
 
+
 class TestMetaTranslation(object):
     """Unit tests for meta translation when writing/loading files."""
 
@@ -1201,6 +1202,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
 
         return
 
+
 class TestMetaTranslation2DPandas(TestMetaTranslation):
     """Unit tests for meta translation when writing/loading files."""
 
@@ -1220,6 +1222,7 @@ class TestMetaTranslation2DPandas(TestMetaTranslation):
         del self.test_inst, self.test_date, self.out
 
         return
+
 
 class TestMetaTranslationModel(TestMetaTranslation):
     """Unit tests for meta translation when writing/loading files."""
