@@ -168,7 +168,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
     Note
     ----
-    Does perform filtering to remove variables not supported by the
+    Does perform filtering to remove variable metadata not supported by the
     SPDF ISTP/IACG NetCDF standards using
     pysat.utils.io.filter_netcdf4_metadata.
 
