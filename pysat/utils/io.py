@@ -274,13 +274,14 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
     Note
     ----
-    Does not perform filtering to remove variables not supported by the
-    SPDF ISTP/IACG NetCDF standards.  For this, see
+    Does perform filtering to remove variables not supported by the
+    SPDF ISTP/IACG NetCDF standards using
     pysat.utils.io.filter_netcdf4_metadata.
 
     """
 
     # Update the non-time variable meta data standards
+    in_meta_dict = copy.deepcopy(in_meta_dict)
     for var in inst.vars_no_time:
         if var in inst.meta:
 
@@ -340,12 +341,12 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                     # Get the correct location of the sub-variable based on
                     # the object type
                     if is_frame:
-                        idx = inst[good_data_loc, var][svar]
+                        good_data = inst[good_data_loc, var][svar]
                     else:
-                        idx = inst[good_data_loc, var]
+                        good_data = inst[good_data_loc, var]
 
                     # Get subvariable information
-                    _, sctype, sdflag = inst._get_data_info(idx)
+                    _, sctype, sdflag = inst._get_data_info(good_data)
 
                     if not sdflag:
                         # Not a datetime index.
@@ -376,6 +377,12 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                                 check_type=check_type,
                                                 export_nan=export_nan,
                                                 varname=sname)
+
+                    # Get information on the subvar index. This information
+                    # stored under primary variable name.
+                    sub_index = inst[good_data_loc, var].index
+                    _, coltype, datetime_flag = inst._get_data_info(sub_index)
+                    meta_dict['Format'] = inst._get_var_type_code(coltype)
 
                 # Deal with index information for holding variable.
                 _, index_type, index_flag = inst._get_data_info(
@@ -411,6 +418,22 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             export_nan=export_nan,
                                             varname=lower_var)
 
+            elif inst[var].dtype == np.dtype('O') and coltype == str:
+
+                meta_dict['Format'] = inst._get_var_type_code(coltype)
+
+                in_meta_dict[lower_var].update(meta_dict)
+
+                # Filter metdata for other netCDF4 requirements
+                remove = True
+                in_meta_dict[lower_var] = \
+                    filter_netcdf4_metadata(inst, in_meta_dict[lower_var],
+                                            coltype,
+                                            remove=remove,
+                                            check_type=check_type,
+                                            export_nan=export_nan,
+                                            varname=lower_var)
+
             else:
                 # Dealing with 1D data or xarray format.
 
@@ -437,8 +460,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             varname=lower_var)
 
         else:
-            warnings.warn(''.join(('Unable to find MetaData for ', var)),
-                          stacklevel=2)
+            pysat.logger.warning(''.join(('Unable to find MetaData for ', var)))
 
     return in_meta_dict
 
@@ -1450,7 +1472,7 @@ def xarray_vars_no_time(data, time_label='time'):
             if str(data[dim].data.dtype).find('datetime') > 0:
                 if len(data[dim].data.shape) == 1:
                     for i, var in enumerate(vars):
-                        if var == time_label:
+                        if var == dim:
                             vars.pop(i)
                             return vars
 
@@ -1769,7 +1791,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                                      complevel=complevel,
                                                      shuffle=shuffle)
                     if lower_key in export_meta.keys():
-                        # print('Setting : ', case_key, export_meta[case_key])
                         cdfkey.setncatts(export_meta[lower_key])
                     else:
                         pysat.logger.warning(
