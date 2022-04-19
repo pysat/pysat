@@ -991,13 +991,14 @@ class TestMetaTranslation(object):
         self.test_inst = pysat.Instrument('pysat', 'testing')
         self.test_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.test_inst.load(date=self.test_date)
+        self.out = None
 
         return
 
     def teardown(self):
         """Cleanup test environment."""
 
-        del self.test_inst, self.test_date
+        del self.test_inst, self.test_date, self.out
 
         return
 
@@ -1039,6 +1040,7 @@ class TestMetaTranslation(object):
                                                       meta_trans)
 
         if meta_trans is None:
+            # Default translation table that should be used by `apply_...`
             meta_trans = io.default_to_netcdf_translation_table(self.test_inst)
 
         # Confirm all variables from `meta_dict` still present.
@@ -1084,10 +1086,146 @@ class TestMetaTranslation(object):
         meta_dict = self.test_inst.meta.to_dict()
 
         # Apply translation
-        pysat.utils.testing.eval_bad_input(io.apply_table_translation_to_file,
-                                           ValueError, 'There is a duplicated',
-                                           input_args=(self.test_inst,
-                                                       meta_dict,
-                                                       meta_trans))
+        testing.eval_bad_input(io.apply_table_translation_to_file,
+                               ValueError, 'There is a duplicated',
+                               input_args=(self.test_inst, meta_dict,
+                                           meta_trans))
+
+        return
+
+    def test_from_file_table_translation_default(self):
+        """Test `apply_table_translation_from_file` standard."""
+
+        # Get metadata as a dict
+        meta_dict = self.test_inst.meta.to_dict()
+
+        # Apply default translation
+        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict)
+
+        # Get default inverse translation
+        from_trans = io.default_from_netcdf_translation_table(
+            self.test_inst.meta)
+
+        # Apply inverse
+        self.out = io.apply_table_translation_from_file(from_trans, self.out)
+
+        # Ensure original information recovered
+        assert np.all(self.out == meta_dict)
+
+    def test_from_file_table_translation_inconsistent(self, caplog):
+        """Test `apply_table_translation_from_file` inconsistency message."""
+
+        # Get metadata as a dict
+        meta_dict = self.test_inst.meta.to_dict()
+
+        # Apply default translation
+        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict)
+
+        # Shift values of _FillValue but not FillVal
+        for key in self.out.keys():
+            if '_FillValue' in self.out[key].keys():
+                self.out[key]['_FillValue'] += 1
+
+        # Get default inverse translation
+        from_trans = io.default_from_netcdf_translation_table(
+            self.test_inst.meta)
+
+        # Apply inverse
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            io.apply_table_translation_from_file(from_trans, self.out)
+
+        self.out = caplog.text
+        assert self.out.find('Inconsistent values between file and translated')
+
+        return
+
+    def test_from_file_table_translation_missing(self, caplog):
+        """Test `apply_table_translation_from_file` label not found message."""
+
+        # Get metadata as a dict
+        meta_dict = self.test_inst.meta.to_dict()
+
+        # Apply default translation
+        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict)
+
+        # Get default inverse translation
+        from_trans = io.default_from_netcdf_translation_table(
+            self.test_inst.meta)
+
+        # Add a new label that is not present
+        from_trans['missing'] = ['not_found']
+
+        # Apply inverse
+        with caplog.at_level(logging.DEBUG, logger='pysat'):
+            io.apply_table_translation_from_file(from_trans, self.out)
+
+        self.out = caplog.text
+
+        for key in meta_dict.keys():
+            estr = ''.join(['Translation label "missing" not found for ',
+                            'variable "', key, '".'])
+            assert self.out.find(estr) >= 0
+
+        return
+
+
+class TestMetaTranslationXarray(TestMetaTranslation):
+    """Unit tests for meta translation when writing/loading files."""
+
+    def setup(self):
+        """Create test environment."""
+
+        self.test_inst = pysat.Instrument('pysat', 'testing_xarray')
+        self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
+        self.test_date = self.test_date['']['']
+        self.test_inst.load(date=self.test_date)
+        self.out = None
+
+        return
+
+    def teardown(self):
+        """Cleanup test environment."""
+
+        del self.test_inst, self.test_date, self.out
+
+        return
+
+class TestMetaTranslation2DPandas(TestMetaTranslation):
+    """Unit tests for meta translation when writing/loading files."""
+
+    def setup(self):
+        """Create test environment."""
+
+        self.test_inst = pysat.Instrument('pysat', 'testing2d')
+        self.test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
+        self.test_inst.load(date=self.test_date)
+        self.out = None
+
+        return
+
+    def teardown(self):
+        """Cleanup test environment."""
+
+        del self.test_inst, self.test_date, self.out
+
+        return
+
+class TestMetaTranslationModel(TestMetaTranslation):
+    """Unit tests for meta translation when writing/loading files."""
+
+    def setup(self):
+        """Create test environment."""
+
+        self.test_inst = pysat.Instrument('pysat', 'testmodel')
+        self.test_date = pysat.instruments.pysat_testmodel._test_dates['']['']
+        self.test_inst.load(date=self.test_date)
+        self.out = None
+
+        return
+
+    def teardown(self):
+        """Cleanup test environment."""
+
+        del self.test_inst, self.test_date, self.out
 
         return
