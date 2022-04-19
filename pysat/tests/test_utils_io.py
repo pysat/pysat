@@ -1048,13 +1048,19 @@ class TestMetaTranslation(object):
             assert key in self.out
 
         # Confirm translation applied and old labels no longer present.
+        checked_labels = []
         for key in meta_dict.keys():
             for label in meta_dict[key].keys():
                 if label in meta_trans:
+                    checked_labels.append(label)
                     for tlabel in meta_trans[label]:
                         assert tlabel in self.out[key]
                         if label not in meta_trans[label]:
                             assert label not in self.out[key].keys()
+
+        # Confirm all labels in meta_trans are checked.
+        for key in meta_trans.keys():
+            assert key in checked_labels
 
         return
 
