@@ -694,15 +694,17 @@ class TestNetCDF4Integration(object):
             self.testInst.meta.drop(drop_var)
 
         # Save the un-updated metadata
-        init_meta = self.testInst.meta.copy()
+        init_meta = self.testInst.meta.to_dict()
 
         # Test the initial meta data for missing Epoch time
         assert self.testInst.index.name not in init_meta
 
         # Update the metadata
-        with caplog.at_level(logging.INFO, logger='pysat'):
-            io.add_netcdf4_standards_to_meta(self.testInst,
-                                             self.testInst.index.name)
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            epoch_name = self.testInst.index.name
+            new_meta = io.add_netcdf4_standards_to_metadict(self.testInst,
+                                                            init_meta,
+                                                            epoch_name)
 
         # Test the logging message
         captured = caplog.text
@@ -713,14 +715,13 @@ class TestNetCDF4Integration(object):
             assert len(captured) == 0
 
         # Test the metadata update
-        new_labels = ['Format', 'Var_Type', 'Time_Base', 'Time_Scale',
-                      'MonoTon', 'Depend_0', 'Display_Type']
-        assert init_meta != self.testInst.meta
-        assert self.testInst.index.name in self.testInst.meta
+        new_labels = ['Format', 'Var_Type', 'Depend_0', 'Display_Type']
+        assert new_meta != init_meta
+
         for var in init_meta.keys():
             for label in new_labels:
                 assert label not in init_meta[var]
-                assert label in self.testInst.meta[var]
+                assert label in new_meta[var]
 
         return
 
@@ -734,31 +735,35 @@ class TestNetCDF4Integration(object):
             use_header=True)
 
         # Save the un-updated metadata
-        init_meta = self.testInst.meta.copy()
+        init_meta = self.testInst.meta.to_dict()
 
         # Test the initial meta data for missing Epoch time
         assert self.testInst.index.name not in init_meta
 
         # Update the metadata
-        io.add_netcdf4_standards_to_meta(self.testInst,
-                                         self.testInst.index.name)
+        meta_dict = self.testInst.meta.to_dict()
+        epoch_name = self.testInst.index.name
+        new_meta = io.add_netcdf4_standards_to_metadict(self.testInst,
+                                                        init_meta,
+                                                        epoch_name)
 
         # Test the metadata update
-        new_labels = ['Format', 'Var_Type', 'Time_Base', 'Time_Scale',
-                      'MonoTon', 'Depend_0', 'Depend_1', 'Display_Type']
-        assert init_meta != self.testInst.meta
-        assert self.testInst.index.name in self.testInst.meta
+        new_labels = ['Format', 'Var_Type', 'Depend_0', 'Display_Type']
+        assert new_meta != init_meta
+
         for var in init_meta.keys():
             for label in new_labels:
                 assert label not in init_meta[var]
-                assert label in self.testInst.meta[var]
+                assert label in new_meta[var]
 
             assert 'Depend_1' not in init_meta[var]
-            if init_meta[var].children is None:
-                assert self.testInst.meta[var, 'Depend_1'] == ''
+
+        # Check for higher dimensional data properties
+        for var in self.testInst.vars_no_time:
+            if self.testInst.meta[var].children is not None:
+                assert 'Depend_1' in new_meta[var]
             else:
-                assert self.testInst.meta[
-                    var, 'Depend_1'] in self.testInst.variables
+                assert 'Depend_1' not in new_meta[var]
 
         return
 
