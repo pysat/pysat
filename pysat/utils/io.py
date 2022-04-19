@@ -365,7 +365,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         in_meta_dict[sname].update(smeta_dict)
                     else:
                         pysat.logger.warning(''.join(['Unable to find MetaData',
-                                                      ' for ', var]))
+                                                      ' for ', sname]))
                         in_meta_dict[sname] = smeta_dict
 
                     # Filter metadata
@@ -398,7 +398,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                     in_meta_dict[lower_var].update(update_dict)
                 else:
                     pysat.logger.warning(''.join(['Unable to find MetaData ',
-                                                  'for ', var]))
+                                                  'for ', lower_var]))
                     in_meta_dict[lower_var] = update_dict
 
                 # Filter metdata for other netCDF4 requirements
@@ -497,6 +497,11 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
 def default_from_netcdf_translation_table(meta):
     """Return metadata translation table with minimal netcdf requirements.
 
+    Parameters
+    ----------
+    meta : pysat.Meta
+        Meta instance to get appropriate default values for.
+
     Returns
     -------
     dict
@@ -546,19 +551,11 @@ def default_to_netcdf_translation_table(inst):
     trans_table = {}
 
     # Start with pysat defaults
-    for key, val in zip(inst.meta.labels.label_attrs.values(),
-                        inst.meta.labels.label_attrs.keys()):
-        trans_table[key] = [val]
-
-    trans_labels = []
-    for key in trans_table.keys():
-        trans_labels.extend(trans_table[key])
+    for val in inst.meta.labels.label_attrs.keys():
+        trans_table[val] = [val]
 
     # Update labels required by netCDF4
-    trans_table['fill_val'] = ['_FillValue', 'FillVal', 'fill']
-    trans_labels = []
-    for key in trans_table.keys():
-        trans_labels.extend(trans_table[key])
+    trans_table['fill'] = ['_FillValue', 'FillVal', 'fill']
 
     return trans_table
 
@@ -667,8 +664,8 @@ def apply_table_translation_from_file(trans_table, meta_dict):
                         check = True
                     if check:
                         wstr = ''.join(['Inconsistent values between file and ',
-                                        'translated metadata parameters "{:s}"',
-                                        ' and "{:s}" with values {} and {}'])
+                                        'translated metadata parameters "{}"',
+                                        ' and "{}" with values {} and {}'])
                         wstr = wstr.format(file_key, new_key,
                                            meta_dict[var_key][file_key],
                                            filt_dict[var_key][new_key])
@@ -677,7 +674,7 @@ def apply_table_translation_from_file(trans_table, meta_dict):
         # Check translation table against available metadata
         for trans_key in trans_table.keys():
             if trans_key not in meta_dict[var_key].keys():
-                wstr = 'Translation label "{:s}" not found for variable "{:s}".'
+                wstr = 'Translation label "{}" not found for variable "{}".'
                 pysat.logger.debug(wstr.format(trans_key, var_key))
 
         # Check for higher order metadata
