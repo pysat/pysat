@@ -981,3 +981,113 @@ class TestXarrayIO(object):
                                 'unequal meta data for {:}, {:}'.format(
                                     repr(var), repr(label)))
         return
+
+class TestMetaTranslation(object):
+    """Unit tests for meta translation when writing/loading files."""
+
+    def setup(self):
+        """Create test environment."""
+
+        self.test_inst = pysat.Instrument('pysat', 'testing')
+        self.test_date = pysat.instruments.pysat_testing._test_dates['']['']
+        self.test_inst.load(date=self.test_date)
+
+        return
+
+    def teardown(self):
+        """Cleanup test environment."""
+
+        del self.test_inst, self.test_date
+
+        return
+
+    @pytest.mark.parametrize('meta_trans', [{'units': ['testingFillVal',
+                                                       'testing_FillValue',
+                                                       'testing_fill_value']},
+                                            {'desc': ['tdub',
+                                                      'test_FillValue']},
+                                            {'desc': ['tdub', 'test_FillValue'],
+                                             'notes': ['test_notes'],
+                                             'fill': ['fill_test']},
+                                            {'desc': ['tdub', 'test_FillValue'],
+                                             'notes': ['test_notes'],
+                                             'fill': ['fill_test'],
+                                             'value_min': ['ValueMin',
+                                                           'Value_Min'],
+                                             'value_max': ['ValueMax',
+                                                           'Value_Max'],
+                                             'units': ['takeout'],
+                                             'long_name': ['longer_name']},
+                                            {},
+                                            None])
+    def test_apply_table_translation(self, meta_trans):
+        """Test success for meta table translation.
+
+        Parameters
+        ----------
+        meta_trans : dict
+            Used by `apply_table_translation_to_file` to translate metadata from
+            keys into values
+
+        """
+
+        # Get metadata as a dict
+        meta_dict = self.test_inst.meta.to_dict()
+
+        # Apply translation
+        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict,
+                                                      meta_trans)
+
+        if meta_trans is None:
+            meta_trans = io.default_to_netcdf_translation_table(self.test_inst)
+
+        # Confirm all variables from `meta_dict` still present.
+        for key in meta_dict.keys():
+            assert key in self.out
+
+        # Confirm translation applied and old labels no longer present.
+        for key in meta_dict.keys():
+            for label in meta_dict[key].keys():
+                if label in meta_trans:
+                    for tlabel in meta_trans[label]:
+                        assert tlabel in self.out[key]
+                        if label not in meta_trans[label]:
+                            assert label not in self.out[key].keys()
+
+        return
+
+    @pytest.mark.parametrize('meta_trans', [{'desc': ['tdub', 'test_FillValue'],
+                                             'notes': ['tdub'],
+                                             'fill': ['fill_test']},
+                                            {'desc': ['tdub', 'test_FillValue'],
+                                             'notes': ['test_notes'],
+                                             'fill': ['tdub'],
+                                             'value_min': ['ValueMin',
+                                                           'Value_Min'],
+                                             'value_max': ['ValueMax',
+                                                           'Value_Max'],
+                                             'units': ['takeout'],
+                                             'long_name': ['longer_name']}
+                                            ])
+    def test_error_duplicated_trans_labels(self, meta_trans):
+        """Test error when labels duplicated.
+
+        Parameters
+        ----------
+        meta_trans : dict
+            Used by `apply_table_translation_to_file` to translate metadata from
+            keys into values
+
+        """
+
+        # Get metadata as a dict
+        meta_dict = self.test_inst.meta.to_dict()
+
+        # Apply translation
+        pysat.utils.testing.eval_bad_input(io.apply_table_translation_to_file,
+                                           ValueError, 'There is a duplicated',
+                                           input_args=(self.test_inst,
+                                                       meta_dict,
+                                                       meta_trans))
+
+        return
