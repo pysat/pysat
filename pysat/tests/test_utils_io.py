@@ -741,7 +741,6 @@ class TestNetCDF4Integration(object):
         assert self.testInst.index.name not in init_meta
 
         # Update the metadata
-        meta_dict = self.testInst.meta.to_dict()
         epoch_name = self.testInst.index.name
         new_meta = io.add_netcdf4_standards_to_metadict(self.testInst,
                                                         init_meta,
