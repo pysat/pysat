@@ -416,7 +416,7 @@ class Meta(object):
                                     # This type is incorrect, try casting it
                                     wmsg = ''.join(['Metadata with type ',
                                                     repr(type(to_be_set)),
-                                                    'does not match expected ',
+                                                    ' does not match expected ',
                                                     'type ',
                                                     repr(self.labels.label_type[
                                                         iattr])])
