@@ -607,8 +607,10 @@ class Files(object):
                         dstr = ' '.join(['`data_path` found',
                                          'in stored file list is not in',
                                          'current supported `self.data_paths`.',
-                                         'Ignoring:', loaded.name])
+                                         'Ignoring stored path:', loaded.name,
+                                         'Clearing out stored files as well.'])
                         logger.debug(dstr)
+                        loaded = pds.Series([], dtype='a')
 
                 # Ensure the name of returned Series is None for consistency
                 loaded.name = None
