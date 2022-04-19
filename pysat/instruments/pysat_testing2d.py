@@ -197,10 +197,6 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
                                'desc': 'Fake "density" signal for testing.',
                                'value_min': 0., 'value_max': 25.,
                                'fill': np.nan}
-    profile_meta['dummy_str'] = {'long_name': 'dummy_str',
-                                 'desc': 'String data for testing.'}
-    profile_meta['dummy_ustr'] = {'long_name': 'dummy_ustr',
-                                  'desc': 'Unicode string data for testing.'}
 
     # Update profiles metadata with sub-variable information.
     meta['profiles'] = {'meta': profile_meta}
