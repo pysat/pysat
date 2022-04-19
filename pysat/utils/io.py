@@ -550,18 +550,29 @@ def default_to_netcdf_translation_table(inst):
                         inst.meta.labels.label_attrs.keys()):
         trans_table[key] = [val]
 
+    trans_labels = []
+    for key in trans_table.keys():
+        trans_labels.extend(trans_table[key])
+
     # Update labels required by netCDF4
-    trans_table[inst.meta.labels.fill_val] = ['_FillValue', 'FillVal', 'fill']
+    trans_table['fill_val'] = ['_FillValue', 'FillVal', 'fill']
+    trans_labels = []
+    for key in trans_table.keys():
+        trans_labels.extend(trans_table[key])
 
     return trans_table
 
 
 def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
-    """Translate labels in meta_dict using trans_table.
+    """Translate labels in `meta_dict` using `trans_table`.
 
     Parameters
     ----------
-    trans_dict : dict or NoneType
+    inst : pysat.Instrument
+        Instrument object with data to be written to file.
+    meta_dict : dict
+        Output starting from Instrument.meta.to_dict() supplying attribute data.
+    trans_table : dict or NoneType
         Keyed by current metalabels containing a list of
         metadata labels to use within the returned dict. If None,
         a default translation using `self.labels` will be used except
@@ -580,9 +591,20 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     if trans_table is None:
         trans_table = default_to_netcdf_translation_table(inst)
 
-    # First Order Data
+    # Confirm there are no duplicated translation labels
+    trans_labels = []
+    for key in trans_table.keys():
+        trans_labels.extend(trans_table[key])
+
+    for i in np.arange(len(trans_labels)):
+        item = trans_labels.pop(0)
+        if item in trans_labels:
+            estr = ''.join(['There is a duplicated variable label value in ',
+                            '`trans_table`: ', item])
+            raise ValueError(estr)
+
+    # Translate each metadata label if a translation is provided
     for key in meta_dict.keys():
-        # Translate each key if a translation is provided
         export_dict[key] = {}
         loop_meta_dict = meta_dict[key]
         for orig_key in loop_meta_dict:
