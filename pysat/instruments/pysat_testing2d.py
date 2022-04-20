@@ -146,7 +146,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
         index[6:9] = [index[6]] * 3
 
     data.index = index
-    data.index.name = 'epoch'
+    data.index.name = 'Epoch'
     # higher rate time signal (for scalar >= 2)
     # this time signal used for 2D profiles associated with each time in main
     # DataFrame

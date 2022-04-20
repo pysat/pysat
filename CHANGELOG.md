@@ -85,6 +85,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Deprecated support for 2D pandas datasets
    * Deprecated `pysat.instruments.pysat_testing_xarray`
    * Deprecated usage of higher order metadata
+   * Deprecated `pysat.instruments.methods.general.convert_timestamp_to_datetime`
+     which is replaced by new functionality in `load_netCDF4`.
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation

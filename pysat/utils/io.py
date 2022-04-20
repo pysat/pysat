@@ -810,6 +810,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         data, meta = load_netcdf_xarray(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
                                         epoch_name=epoch_name,
+                                        epoch_unit=epoch_unit,
+                                        epoch_origin=epoch_origin,
                                         decode_timedelta=decode_timedelta,
                                         labels=labels,
                                         meta_processor=meta_processor,
@@ -981,7 +983,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 elif dim[1] == epoch_name:
                     obj_key = dim[0]
                 else:
-                    raise KeyError('Epoch not found!')
+                    estr = ''.join(['Epoch label: "', epoch_name, '"',
+                                    ' was not found in loaded dimensions [',
+                                    ', '.join(dim), ']'])
+                    raise KeyError(estr)
 
                 # Collect variable names associated with dimension
                 idx_bool = [dim == i for i in two_d_dims]
@@ -1171,7 +1176,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
 
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
-                       epoch_name='time', decode_timedelta=False,
+                       epoch_name='time', epoch_unit='ms', epoch_origin='unix',
+                       decode_timedelta=False,
                        labels={'units': ('units', str),
                                'name': ('long_name', str),
                                'notes': ('notes', str), 'desc': ('desc', str),
@@ -1197,7 +1203,23 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         (default='NETCDF4')
     epoch_name : str or NoneType
-        Data key for time variable (default='time')
+        Data key for epoch variable.  The epoch variable is expected to be an
+        array of integer or float values denoting time elapsed from an origin
+        specified by `epoch_origin` with units specified by `epoch_unit`. This
+        epoch variable will be converted to a `DatetimeIndex` for consistency
+        across pysat instruments.  (default='time')
+    epoch_unit : str
+        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
+        'ns'). (default='ms')
+    epoch_origin : str or timestamp-convertable
+        Origin of epoch calculation, following convention for
+        `pandas.to_datetime`.  Accepts timestamp-convertable objects, as well as
+        two specific strings for commonly used calendars.  These conversions are
+        handled by `pandas.to_datetime`.
+        If ‘unix’ (or POSIX) time; origin is set to 1970-01-01.
+        If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
+        Julian Calendar. Julian day number 0 is assigned to the day starting at
+        noon on January 1, 4713 BC. (default='unix')
     decode_timedelta : bool
         If True, variables with unit attributes that are 'timelike' ('hours',
         'minutes', etc) are converted to `np.timedelta64`. (default=False)
@@ -1269,9 +1291,14 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords')
 
-    # TODO(#947) Add conversion for timestamps that may have been treated
-    # incorrectly, including origin and unit.  At the moment this is only done
-    # for Pandas data.
+    # If epoch exists, convert to datetime object.
+    # TODO(#991): epoch does not necessarily exist.  May need to update if
+    # assumptions about time change.
+    if epoch_name in data.variables:
+        data[epoch_name] = xr.DataArray(pds.to_datetime(data[epoch_name],
+                                                        unit=epoch_unit,
+                                                        origin=epoch_origin),
+                                        coords=data[epoch_name].coords)
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
@@ -1934,6 +1961,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
 
         # Transfer metadata.
         pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)
+
+        # TODO(#991): custom epoch_name should be implemented if it exists.
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:

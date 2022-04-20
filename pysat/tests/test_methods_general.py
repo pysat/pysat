@@ -4,6 +4,7 @@ import datetime as dt
 from os import path
 import pandas as pds
 import pytest
+import warnings
 
 import pysat
 from pysat.instruments.methods import general as gen
@@ -273,4 +274,39 @@ class TestLoadCSVData(object):
         assert isinstance(self.data.index, pds.DatetimeIndex)
         self.eval_data_cols()
         assert len(self.data.columns) == len(self.data_cols)
+        return
+
+
+class TestDeprecation(object):
+    """Unit tests for deprecated methods."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        warnings.simplefilter("always", DeprecationWarning)
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+
+        return
+
+    def test_convert_timestamp_to_datetime(self):
+        """Test that convert_timestamp_to_datetime is deprecated."""
+
+        warn_msgs = [" ".join(
+            ["New kwargs added to `pysat.utils.io.load_netCDF4`",
+             "for generalized handling, deprecated",
+             "function will be removed in pysat 3.2.0+"])]
+
+        test = pysat.Instrument('pysat', 'testing')
+        test.load(2009, 1)
+        with warnings.catch_warnings(record=True) as war:
+            gen.convert_timestamp_to_datetime(test, epoch_name='uts')
+
+        # Ensure the minimum number of warnings were raised
+        assert len(war) >= len(warn_msgs)
+
+        # Test the warning messages, ensuring each attribute is present
+        pysat.utils.testing.eval_warnings(war, warn_msgs)
         return
