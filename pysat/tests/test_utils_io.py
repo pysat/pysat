@@ -90,8 +90,7 @@ class TestLoadNetCDF(object):
     def test_basic_write_and_read_netcdf_mixed_case_data_format(self):
         """Test basic netCDF4 read/write with mixed case data variables."""
         # Create a bunch of files by year and doy
-        outfile = os.path.join(self.tempdir.name,
-                               'pysat_test_ncdf.nc')
+        outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
 
         # Modify data names in data
@@ -131,8 +130,7 @@ class TestLoadNetCDF(object):
     def test_basic_write_and_read_netcdf_mixed_case_meta_format(self):
         """Test basic netCDF4 read/write with mixed case metadata variables."""
         # Create a bunch of files by year and doy
-        outfile = os.path.join(self.tempdir.name,
-                               'pysat_test_ncdf.nc')
+        outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
 
         # Modify data and metadata names in data
@@ -793,8 +791,8 @@ class TestNetCDF4Integration(object):
         """
 
         # Write the file
-        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
-        outfile = os.path.join(self.testInst.files.data_path,
+        pysat.utils.files.check_and_make_path(self.tempdir.name)
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
 
         if assign_flag:
@@ -895,9 +893,7 @@ class TestNetCDF4Integration(object):
             return meta_dict
 
         # Write the file
-        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
+        outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
         if assign_flag:
             self.testInst._export_meta_post_processing = meta_proc
             pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
