@@ -163,14 +163,28 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
     ----------
     inst : pysat.Instrument
         Object containing data and meta data
+    in_meta_dict : dict
+        Metadata dictionary, can be obtained from `inst.meta.to_dict()`.
     epoch_name : str
-        Name for epoch or time-index variable
+        Name for epoch or time-index variable.
+    check_type : NoneType or list
+        List of keys associated with `meta_dict` that should have the same
+        data type as `coltype`. Passed to
+        `pysat.utils.io.filter_netcdf4_metadata`. (default=None)
+    export_nan : NoneType or list
+        Metadata parameters allowed to be NaN. Passed along to
+        `pysat.utils.io.filter_netcdf4_metadata`. (default=None)
+
+    Returns
+    -------
+    in_meta_dict : dict
+        Input dictionary with additional information for standards.
 
     Note
     ----
     Does perform filtering to remove variable metadata not supported by the
     SPDF ISTP/IACG NetCDF standards using
-    pysat.utils.io.filter_netcdf4_metadata.
+    `pysat.utils.io.filter_netcdf4_metadata`.
 
     """
 
@@ -361,7 +375,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
 
 def remove_netcdf4_standards_from_meta(mdict, epoch_name):
-    """Remove redundant metadata variables in SPDF ISTP/IACG NetCDF standards.
+    """Remove metadata variables in SPDF ISTP/IACG NetCDF standards.
 
     Parameters
     ----------
@@ -372,13 +386,17 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
 
     Note
     ----
+    Removes metadata for `epoch_name`. Also removes metadata such as 'Depend_*',
+    'Display_Type', 'Var_Type', 'Format', 'Time_Scale', 'MonoTon',
+    'calendar', and 'Time_Base'.
+
     Does not perform filtering to remove variables not supported by the
     SPDF ISTP/IACG NetCDF standards.  For this, see
     pysat.utils.io.filter_netcdf4_metadata.
 
     """
 
-    # Metadata added by `add_netcdf4_standards_to_meta` or similar
+    # Metadata added by `add_netcdf4_standards_to_metadict` or similar
     # method to maintain basic compliance with SPDF ISTP/IACG NetCDF standards
     vals = ['Depend_0', 'Depend_1', 'Depend_2', 'Depend_3', 'Depend_4',
             'Depend_5', 'Depend_6', 'Depend_7', 'Depend_8', 'Depend_9',
@@ -1417,9 +1435,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     check_type : list or NoneType
         List of keys associated with `meta_dict` that should have the same
         data type as `coltype`.  These will be removed from the filtered
-        output if they differ.  If None, this check will not be performed.
-        (default=None) # RAS Note, this docstring not correct.
-        The check will be performed on fill, max, and min.
+        output if they differ.  If None, this check will default to
+        include fill, min, and max values. (default=None)
     export_nan : list or NoneType
         By default, the metadata variables where a value of NaN is allowed
         and written to the netCDF4 file is maintained by the Meta object
@@ -1450,7 +1467,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     Depending on which kwargs are specified, the input class, `inst`, will
     be modified.
 
-    Stores 1-D data along dimension 'epoch' - the date time index.
+    Stores 1-D data along dimension 'Epoch' - the date time index.
 
     Stores higher order data (e.g. dataframes within series) separately
 
@@ -1473,15 +1490,15 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     # Check epoch name information
     if epoch_name is None:
         if inst.pandas_format:
-            pysat.logger.info('Assigning "Epoch" for time index.')
+            pysat.logger.debug('Assigning "Epoch" for time index.')
             epoch_name = 'Epoch'
         else:
-            pysat.logger.info('Assigning "time" for time index.')
+            pysat.logger.debug('Assigning "time" for time index.')
             epoch_name = 'time'
 
     # Ensure there is data to write
     if inst.empty:
-        pysat.logger.warning('empty Instrument, not writing {:}'.format(fname))
+        pysat.logger.warning('Empty Instrument, not writing {:}'.format(fname))
         return
 
     # Check export NaNs first
@@ -1580,8 +1597,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     if meta_translation is None:
         if inst._meta_translation_table is not None:
             meta_translation = inst._meta_translation_table
-            pysat.logger.info(' '.join(('Using Metadata Translation Table:',
-                                        str(inst._meta_translation_table))))
+            pysat.logger.debug(' '.join(('Using Metadata Translation Table:',
+                                         str(inst._meta_translation_table))))
         else:
             meta_translation = default_to_netcdf_translation_table(inst)
 
