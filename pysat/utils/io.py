@@ -188,7 +188,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
             meta_dict = {'Depend_0': epoch_name, 'Display_Type': 'Time Series',
                          'Var_Type': 'data'}
 
-            # Update metadata based on data type
+            # Update metadata based on data type. xarray has strong feelings
+            # about what epoch metadata needs to be.
             if datetime_flag and inst.pandas_format:
                 meta_dict.update(return_epoch_metadata(inst, epoch_name))
                 meta_dict.pop('MonoTon')
@@ -1490,8 +1491,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         export_nan = inst.meta._export_nan
 
     # Add standard fill, value_max, and value_min values to `check_type`
-    # RAS Note, the check_type may not be working with the translation table
-    # functionality in there.
     if check_type is None:
         check_type = [inst.meta.labels.fill_val, inst.meta.labels.max_val,
                       inst.meta.labels.min_val]
