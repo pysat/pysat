@@ -1050,22 +1050,27 @@ class TestMetaTranslation(object):
 
         # Confirm all variables from `meta_dict` still present.
         for key in meta_dict.keys():
-            assert key in self.out
+            estr = ''.join(['Not all variables were output. Missing ',
+                            key])
+            assert key in self.out, estr
 
         # Confirm translation applied and old labels no longer present.
         checked_labels = []
+        estr = 'Translated label {} missing.'
+        estr2 = 'Label {} to be translated still present.'
         for key in meta_dict.keys():
             for label in meta_dict[key].keys():
                 if label in meta_trans:
                     checked_labels.append(label)
                     for tlabel in meta_trans[label]:
-                        assert tlabel in self.out[key]
+                        assert tlabel in self.out[key], estr.format(tlabel)
                         if label not in meta_trans[label]:
-                            assert label not in self.out[key].keys()
+                            assert label not in self.out[key].keys(), \
+                                estr2.format(label)
 
         # Confirm all labels in meta_trans are checked.
         for key in meta_trans.keys():
-            assert key in checked_labels
+            assert key in checked_labels, "Lost label {}".format(key)
 
         return
 
