@@ -327,21 +327,21 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             export_nan=export_nan,
                                             varname=lower_var)
 
-            elif inst[var].dtype == np.dtype('O') and coltype == str:
-
-                meta_dict['Format'] = inst._get_var_type_code(coltype)
-
-                in_meta_dict[lower_var].update(meta_dict)
-
-                # Filter metdata for other netCDF4 requirements
-                remove = True
-                in_meta_dict[lower_var] = \
-                    filter_netcdf4_metadata(inst, in_meta_dict[lower_var],
-                                            coltype,
-                                            remove=remove,
-                                            check_type=check_type,
-                                            export_nan=export_nan,
-                                            varname=lower_var)
+            # elif inst[var].dtype == np.dtype('O') and coltype == str:
+            #
+            #     meta_dict['Format'] = inst._get_var_type_code(coltype)
+            #
+            #     in_meta_dict[lower_var].update(meta_dict)
+            #
+            #     # Filter metdata for other netCDF4 requirements
+            #     remove = True
+            #     in_meta_dict[lower_var] = \
+            #         filter_netcdf4_metadata(inst, in_meta_dict[lower_var],
+            #                                 coltype,
+            #                                 remove=remove,
+            #                                 check_type=check_type,
+            #                                 export_nan=export_nan,
+            #                                 varname=lower_var)
 
             else:
                 # Dealing with 1D data or xarray format.
