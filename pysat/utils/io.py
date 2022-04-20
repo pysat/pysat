@@ -31,29 +31,31 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
     """
 
     # Get a list of all data, expect for the time dimension.
-    xarr_vars = xarray_vars_no_time(xr_data)
+    xarr_vars = xarray_vars_no_time(xr_data, epoch_name)
 
     # pysat meta -> dict export has lowercase names.
     xarr_lvars = [var.lower() for var in xarr_vars]
 
     # Cycle through all the pysat MetaData measurements
     for data_key in pysat_meta.keys():
-        # Select the measurements that are also in the xarray data
-        if data_key in xarr_lvars:
-            for i in range(len(xarr_lvars)):
-                if data_key == xarr_lvars[i]:
-                    break
+        if data_key != epoch_name:
+            # Select the measurements that are also in the xarray data
+            data_key = data_key.lower()
+            if data_key in xarr_lvars:
+                for i in range(len(xarr_lvars)):
+                    if data_key == xarr_lvars[i]:
+                        break
 
-            # Cycle through all the pysat MetaData labels and transfer.
-            for meta_key in pysat_meta[data_key].keys():
-                # Assign attributes
-                xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
-                    data_key][meta_key]
+                # Cycle through all the pysat MetaData labels and transfer.
+                for meta_key in pysat_meta[data_key].keys():
+                    # Assign attributes
+                    xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
+                        data_key][meta_key]
 
-        else:
-            wstr = ''.join(['Did not find data for metadata variable ',
-                            data_key, '.'])
-            warnings.warn(wstr)
+            else:
+                wstr = ''.join(['Did not find data for metadata variable ',
+                                data_key, '.'])
+                warnings.warn(wstr)
 
     return
 
