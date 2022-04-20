@@ -1175,13 +1175,44 @@ class TestMetaTranslation(object):
         return
 
     def test_meta_array_expander(self):
-        """Test `meta_array_expander`."""
+        """Test `meta_array_expander` no array elements."""
 
         self.out = io.meta_array_expander(self.meta_dict)
+
+        # Ensure items unchanged
         assert np.all(self.out == self.meta_dict)
 
         return
 
+    def test_meta_array_expander_with_array_elements(self):
+        """Test `meta_array_expander` with array elements."""
+
+        # Add array elements
+        for var in self.meta_dict.keys():
+            self.meta_dict[var]['array_test'] = [1, 2, 3, 4]
+
+        # Apply test function
+        self.out = io.meta_array_expander(self.meta_dict)
+
+        # Confirm there is a change.
+        assert np.all(self.out != self.meta_dict), 'Return dict same as input.'
+
+        # Confirm array expansion
+        estr = 'Missing expansion of array labels'
+        estr2 = 'Missing values in expanded labels'
+        for var in self.out.keys():
+            for tvar in np.arange(4):
+                tstr = 'array_test{:1d}'.format(tvar)
+                assert tstr in self.out[var], estr
+                assert self.out[var][tstr] == tvar + 1, estr2
+
+                # Remove expanded elements to enable different test, later
+                self.out[var].pop(tstr)
+            self.meta_dict[var].pop('array_test')
+
+        assert np.all(self.out == self.meta_dict)
+
+        return
 
 class TestMetaTranslationXarray(TestMetaTranslation):
     """Unit tests for meta translation when writing/loading files."""
