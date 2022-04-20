@@ -996,6 +996,7 @@ class TestMetaTranslation(object):
         self.test_inst = pysat.Instrument('pysat', 'testing')
         self.test_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.test_inst.load(date=self.test_date)
+        self.meta_dict = self.test_inst.meta.to_dict()
         self.out = None
 
         return
@@ -1003,7 +1004,7 @@ class TestMetaTranslation(object):
     def teardown(self):
         """Cleanup test environment."""
 
-        del self.test_inst, self.test_date, self.out
+        del self.test_inst, self.test_date, self.out, self.meta_dict
 
         return
 
@@ -1037,11 +1038,9 @@ class TestMetaTranslation(object):
 
         """
 
-        # Get metadata as a dict
-        meta_dict = self.test_inst.meta.to_dict()
-
         # Apply translation
-        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict,
+        self.out = io.apply_table_translation_to_file(self.test_inst,
+                                                      self.meta_dict,
                                                       meta_trans)
 
         if meta_trans is None:
@@ -1049,7 +1048,7 @@ class TestMetaTranslation(object):
             meta_trans = io.default_to_netcdf_translation_table(self.test_inst)
 
         # Confirm all variables from `meta_dict` still present.
-        for key in meta_dict.keys():
+        for key in self.meta_dict.keys():
             estr = ''.join(['Not all variables were output. Missing ',
                             key])
             assert key in self.out, estr
@@ -1058,8 +1057,8 @@ class TestMetaTranslation(object):
         checked_labels = []
         estr = 'Translated label {} missing.'
         estr2 = 'Label {} to be translated still present.'
-        for key in meta_dict.keys():
-            for label in meta_dict[key].keys():
+        for key in self.meta_dict.keys():
+            for label in self.meta_dict[key].keys():
                 if label in meta_trans:
                     checked_labels.append(label)
                     for tlabel in meta_trans[label]:
@@ -1098,13 +1097,10 @@ class TestMetaTranslation(object):
 
         """
 
-        # Get metadata as a dict
-        meta_dict = self.test_inst.meta.to_dict()
-
         # Apply translation
         testing.eval_bad_input(io.apply_table_translation_to_file,
                                ValueError, 'There is a duplicated',
-                               input_args=(self.test_inst, meta_dict,
+                               input_args=(self.test_inst, self.meta_dict,
                                            meta_trans))
 
         return
@@ -1112,11 +1108,9 @@ class TestMetaTranslation(object):
     def test_from_file_table_translation_default(self):
         """Test `apply_table_translation_from_file` standard."""
 
-        # Get metadata as a dict
-        meta_dict = self.test_inst.meta.to_dict()
-
         # Apply default translation
-        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict)
+        self.out = io.apply_table_translation_to_file(self.test_inst,
+                                                      self.meta_dict)
 
         # Get default inverse translation
         from_trans = io.default_from_netcdf_translation_table(
@@ -1126,16 +1120,14 @@ class TestMetaTranslation(object):
         self.out = io.apply_table_translation_from_file(from_trans, self.out)
 
         # Ensure original information recovered
-        assert np.all(self.out == meta_dict)
+        assert np.all(self.out == self.meta_dict)
 
     def test_from_file_table_translation_inconsistent(self, caplog):
         """Test `apply_table_translation_from_file` inconsistency message."""
 
-        # Get metadata as a dict
-        meta_dict = self.test_inst.meta.to_dict()
-
         # Apply default translation
-        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict)
+        self.out = io.apply_table_translation_to_file(self.test_inst,
+                                                      self.meta_dict)
 
         # Shift values of _FillValue but not FillVal
         for key in self.out.keys():
@@ -1158,11 +1150,9 @@ class TestMetaTranslation(object):
     def test_from_file_table_translation_missing(self, caplog):
         """Test `apply_table_translation_from_file` label not found message."""
 
-        # Get metadata as a dict
-        meta_dict = self.test_inst.meta.to_dict()
-
         # Apply default translation
-        self.out = io.apply_table_translation_to_file(self.test_inst, meta_dict)
+        self.out = io.apply_table_translation_to_file(self.test_inst,
+                                                      self.meta_dict)
 
         # Get default inverse translation
         from_trans = io.default_from_netcdf_translation_table(
@@ -1177,10 +1167,18 @@ class TestMetaTranslation(object):
 
         self.out = caplog.text
 
-        for key in meta_dict.keys():
+        for key in self.meta_dict.keys():
             estr = ''.join(['Translation label "missing" not found for ',
                             'variable "', key, '".'])
             assert self.out.find(estr) >= 0
+
+        return
+
+    def test_meta_array_expander(self):
+        """Test `meta_array_expander`."""
+
+        self.out = io.meta_array_expander(self.meta_dict)
+        assert np.all(self.out == self.meta_dict)
 
         return
 
@@ -1195,6 +1193,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
         self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
         self.test_date = self.test_date['']['']
         self.test_inst.load(date=self.test_date)
+        self.meta_dict = self.test_inst.meta.to_dict()
         self.out = None
 
         return
@@ -1202,7 +1201,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
     def teardown(self):
         """Cleanup test environment."""
 
-        del self.test_inst, self.test_date, self.out
+        del self.test_inst, self.test_date, self.out, self.meta_dict
 
         return
 
@@ -1216,6 +1215,7 @@ class TestMetaTranslation2DPandas(TestMetaTranslation):
         self.test_inst = pysat.Instrument('pysat', 'testing2d')
         self.test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.test_inst.load(date=self.test_date)
+        self.meta_dict = self.test_inst.meta.to_dict()
         self.out = None
 
         return
@@ -1223,7 +1223,7 @@ class TestMetaTranslation2DPandas(TestMetaTranslation):
     def teardown(self):
         """Cleanup test environment."""
 
-        del self.test_inst, self.test_date, self.out
+        del self.test_inst, self.test_date, self.out, self.meta_dict
 
         return
 
@@ -1237,6 +1237,7 @@ class TestMetaTranslationModel(TestMetaTranslation):
         self.test_inst = pysat.Instrument('pysat', 'testmodel')
         self.test_date = pysat.instruments.pysat_testmodel._test_dates['']['']
         self.test_inst.load(date=self.test_date)
+        self.meta_dict = self.test_inst.meta.to_dict()
         self.out = None
 
         return
@@ -1244,6 +1245,6 @@ class TestMetaTranslationModel(TestMetaTranslation):
     def teardown(self):
         """Cleanup test environment."""
 
-        del self.test_inst, self.test_date, self.out
+        del self.test_inst, self.test_date, self.out, self.meta_dict
 
         return
