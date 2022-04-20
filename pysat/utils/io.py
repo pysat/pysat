@@ -205,8 +205,10 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
             # Update metadata based on data type. xarray has strong feelings
             # about what epoch metadata needs to be.
             if datetime_flag and inst.pandas_format:
-                meta_dict.update(return_epoch_metadata(inst, epoch_name))
-                meta_dict.pop('MonoTon')
+                time_meta = return_epoch_metadata(inst, epoch_name)
+                time_meta.pop('MonoTon')
+                # time_meta.pop(inst.meta.labels.name)
+                meta_dict.update(time_meta)
 
             if inst[var].dtype == np.dtype('O') and coltype != str:
                 # This is a Series or DataFrame, possibly with more dimensions.
@@ -268,6 +270,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         # Attach datetime index metadata.
                         smeta_dict = return_epoch_metadata(inst, epoch_name)
                         smeta_dict.pop('MonoTon')
+                        # smeta_dict.pop(inst.meta.labels.name)
 
                     # Construct name, variable_subvariable, and store
                     sname = '_'.join([lower_var, svar.lower()])
@@ -301,6 +304,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                 if index_flag:
                     update_dict = return_epoch_metadata(inst, epoch_name)
                     update_dict.pop('MonoTon')
+                    # update_dict.pop(inst.meta.labels.name)
                     update_dict.update(meta_dict)
                 else:
                     if inst[good_data_loc, var].index.name is not None:
@@ -374,7 +378,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
     return in_meta_dict
 
 
-def remove_netcdf4_standards_from_meta(mdict, epoch_name):
+def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
     """Remove metadata variables in SPDF ISTP/IACG NetCDF standards.
 
     Parameters
@@ -383,6 +387,8 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
         Contains all of the loaded file's metadata.
     epoch_name : str
         Name for epoch or time-index variable. Use '' if no epoch variable.
+    labels : Meta.labels
+        Meta.labels instance
 
     Note
     ----
@@ -401,8 +407,10 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
     vals = ['Depend_0', 'Depend_1', 'Depend_2', 'Depend_3', 'Depend_4',
             'Depend_5', 'Depend_6', 'Depend_7', 'Depend_8', 'Depend_9',
             'Display_Type', 'Var_Type', 'Format',
-            'Time_Scale', 'MonoTon', 'calendar', 'Time_Base']
+            'MonoTon']
     lower_vals = [val.lower() for val in vals]
+    time_vals = ['Time_Scale', 'calendar', 'Time_Base']
+    lower_time_vals = [val.lower() for val in time_vals]
 
     for key in mdict.keys():
         lower_sub_keys = [ckey.lower() for ckey in mdict[key].keys()]
@@ -412,7 +420,20 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name):
             # Higher dimensional data, recursive treatment.
             mdict[key]['meta'] = remove_netcdf4_standards_from_meta(mdict[key]
                                                                     ['meta'],
-                                                                    '')
+                                                                    '',
+                                                                    labels)
+
+        # Check for presence of time information.
+        for lval in lower_sub_keys:
+            if lval in lower_time_vals:
+                # Remove time related information, as well as units
+                for val in time_vals:
+                    mdict[key].pop(val)
+
+                if labels.units in mdict[key]:
+                    mdict[key][labels.units] = ''
+
+                break
 
         # Remove any entries with label in `vals`
         for val, lval in zip(vals, lower_vals):
@@ -1109,7 +1130,8 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     full_mdict[var]['meta'].pop(label)
 
     # Second, remove some items pysat added for netcdf compatibility.
-    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name)
+    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name,
+                                                    meta.labels)
     # Translate labels from file to pysat compatible labels using
     # `meta_translation`
     filt_mdict = apply_table_translation_from_file(meta_translation, filt_mdict)
@@ -1281,7 +1303,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                 full_mdict[var].pop(label)
 
     # Second, remove some items pysat added for netcdf compatibility.
-    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, 'time')
+    filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name,
+                                                    meta.labels)
 
     # Translate labels from file to pysat compatible labels using
     # `meta_translation`
