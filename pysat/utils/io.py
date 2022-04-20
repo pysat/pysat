@@ -25,9 +25,8 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
         Xarray Dataset whose attributes will be updated
     pysat_meta : dict
         Output starting from Instrument.meta.to_dict() supplying attribute data.
-    export_nan : list or NoneType
-        Metadata parameters allowed to be NaN. If None, assumes no Metadata
-        parameters are allowed to be Nan. (default=None)
+    epoch_name : str
+        Label for datetime index information
 
     """
 
@@ -44,16 +43,17 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
             for i in range(len(xarr_lvars)):
                 if data_key == xarr_lvars[i]:
                     break
-            else:
-                wstr = ''.join(['Did not find data for metadata variable ',
-                                data_key, '.'])
-                pysat.logger.warning(wstr)
 
-            # Cycle through all the pysat MetaData labels
+            # Cycle through all the pysat MetaData labels and transfer.
             for meta_key in pysat_meta[data_key].keys():
                 # Assign attributes
                 xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
                     data_key][meta_key]
+
+        else:
+            wstr = ''.join(['Did not find data for metadata variable ',
+                            data_key, '.'])
+            warnings.warn(wstr)
 
     return
 
