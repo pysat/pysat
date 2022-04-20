@@ -1226,8 +1226,10 @@ class TestMetaTranslation(object):
             new_meta = io.add_netcdf4_standards_to_metadict(self.test_inst,
                                                             self.meta_dict,
                                                             epoch_name)
+            labels = self.test_inst.meta.labels
             filt_meta = io.remove_netcdf4_standards_from_meta(new_meta,
-                                                              epoch_name)
+                                                              epoch_name,
+                                                              labels)
 
         # Test the logging message
         captured = caplog.text
@@ -1239,6 +1241,10 @@ class TestMetaTranslation(object):
         # else.
         for var in self.meta_dict.keys():
             assert var in filt_meta, 'Lost metadata variable {}'.format(var)
+            # Creating exception for time-index of higher order data. The
+            # long_name comes out differently.
+            if var == 'profiles':
+                continue
             for key in self.meta_dict[var].keys():
                 if key not in ['fill', 'value_min', 'value_max']:
                     assert key in filt_meta[var], \
