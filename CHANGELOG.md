@@ -64,8 +64,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `drop_meta_labels` kwarg to `pysat.utils.io.load_netcdf` to
      support easy removal of unwanted metadata during loading.
    * Added support for `meta_processor` in `pysat.utils.io.load_netcdf`
-     enabling developers to easily modify loaded metadata before it is 
-     assigned to `pysat.Meta`.
+     and `pysat.utils.io.inst_to_netcdf` enabling developers to easily modify 
+     metadata before it is loaded from/written to storage.
    * Condensed code present in both pandas and xarray into
      `pysat.utils.io.meta_array_expander`.
    * Non-default Meta.labels are now retained by Instrument if defined by 
