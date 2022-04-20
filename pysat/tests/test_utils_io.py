@@ -373,12 +373,12 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
 
         # Create temporary directory
         # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
-        # if sys.version_info.minor >= 10:
-        #     self.tempdir = tempfile.TemporaryDirectory(
-        #         ignore_cleanup_errors=True)
-        # else:
-        self.tempdir = tempfile.TemporaryDirectory()
-        pysat.params['data_dirs'] = [self.tempdir.name]
+        if sys.version_info.minor >= 10:
+            self.tempdir = tempfile.TemporaryDirectory(
+                ignore_cleanup_errors=True)
+        else:
+            self.tempdir = tempfile.TemporaryDirectory()
+            pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
@@ -406,10 +406,10 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # by raising a wide variety of different error messages. Python 3.10+
         # can handle this, but lower Python versions cannot.
         # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
-        # try:
-        self.tempdir.cleanup()
-        # except:  # noqa E722
-        #     pass
+        try:
+            self.tempdir.cleanup()
+        except:  # noqa E722
+            pass
 
         # Clear the directory attributes
         del self.data_path, self.tempdir
@@ -1241,11 +1241,12 @@ class TestMetaTranslation(object):
         # else.
         for var in self.meta_dict.keys():
             assert var in filt_meta, 'Lost metadata variable {}'.format(var)
-            # Creating exception for time-index of higher order data. The
-            # long_name comes out differently.
-            if var == 'profiles':
-                continue
+
             for key in self.meta_dict[var].keys():
+                # Creating exception for time-index of higher order data. The
+                # long_name comes out differently.
+                if var == 'profiles' and (key == 'long_name'):
+                    continue
                 if key not in ['fill', 'value_min', 'value_max']:
                     assert key in filt_meta[var], \
                         'Lost metadata label {} for {}'.format(key, var)
