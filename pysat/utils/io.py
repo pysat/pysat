@@ -1505,7 +1505,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     - A netCDF4 dimension is created for each main variable column
       with higher order data; first dimension Epoch
     - The index organizing the data stored as a dimension variable
-    - from_netcdf4 uses the variable dimensions to reconstruct data
+      and `long_name` will be set to 'Epoch'.
+    - `from_netcdf` uses the variable dimensions to reconstruct data
       structure
 
     All attributes attached to instrument meta are written to netCDF attrs
@@ -1581,6 +1582,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                    'Generation_Date', 'Logical_File_ID']
     for pitem in pysat_items:
         if pitem in attrb_dict:
+            pysat.logger.debug('Removing {} attribute and replacing.'.format(
+                pitem))
             attrb_dict.pop(pitem)
 
     # Set the general file information
