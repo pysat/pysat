@@ -1214,6 +1214,45 @@ class TestMetaTranslation(object):
 
         return
 
+    def test_remove_netcdf4_standards(self, caplog):
+        """Test for removing simplified SPDF ISTP/IACG NetCDF standards."""
+
+        # Test the initial meta data for missing Epoch time
+        assert self.test_inst.index.name not in self.meta_dict
+
+        # Update the metadata
+        with caplog.at_level(logging.WARNING, logger='pysat'):
+            epoch_name = self.test_inst.index.name
+            new_meta = io.add_netcdf4_standards_to_metadict(self.test_inst,
+                                                            self.meta_dict,
+                                                            epoch_name)
+            filt_meta = io.remove_netcdf4_standards_from_meta(new_meta,
+                                                              epoch_name)
+
+        # Test the logging message
+        captured = caplog.text
+        assert len(captured) == 0
+
+        # Enforcing netcdf4 standards removes 'fill' information for string
+        # variables. This is no re-added by the `remove_` function call since,
+        # strictly speaking, we don't know what to add back in. Check everything
+        # else.
+        for var in self.meta_dict.keys():
+            assert var in filt_meta, 'Lost metadata variable {}'.format(var)
+            for key in self.meta_dict[var].keys():
+                if key not in ['fill', 'value_min', 'value_max']:
+                    assert key in filt_meta[var], \
+                        'Lost metadata label {} for {}'.format(key, var)
+                    assert self.meta_dict[var][key] == filt_meta[var][key],\
+                        'Value changed for {}, {}'.format(var, key)
+                else:
+                    if key in filt_meta:
+                        assert self.meta_dict[var][key] == filt_meta[var][key],\
+                            'Value changed for {}, {}'.format(var, key)
+
+        return
+
+
 class TestMetaTranslationXarray(TestMetaTranslation):
     """Unit tests for meta translation when writing/loading files."""
 
