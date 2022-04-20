@@ -9,6 +9,7 @@ import datetime as dt
 import logging
 import numpy as np
 import os
+import pandas as pds
 import sys
 import tempfile
 import warnings
@@ -27,19 +28,13 @@ class TestLoadNetCDF(object):
     def setup(self):
         """Set up the test environment."""
 
-        # Store current pysat directory
-        self.data_path = pysat.params['data_dirs']
-
         # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
-        pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=100, update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
-
-        # Create testing directory
-        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
+        self.epoch_name = 'time'
 
         # Initalize the loaded data
         self.loaded_inst = None
@@ -49,16 +44,13 @@ class TestLoadNetCDF(object):
         """Clean up the test environment."""
 
         # Clear the attributes with data in them
-        del self.loaded_inst, self.testInst, self.stime
-
-        # Reset the pysat parameters
-        pysat.params['data_dirs'] = self.data_path
+        del self.loaded_inst, self.testInst, self.stime, self.epoch_name
 
         # Remove the temporary directory
         self.tempdir.cleanup()
 
         # Clear the directory attributes
-        del self.data_path, self.tempdir
+        del self.tempdir
         return
 
     def eval_loaded_data(self, test_case=True):
@@ -98,7 +90,7 @@ class TestLoadNetCDF(object):
     def test_basic_write_and_read_netcdf_mixed_case_data_format(self):
         """Test basic netCDF4 read/write with mixed case data variables."""
         # Create a bunch of files by year and doy
-        outfile = os.path.join(self.testInst.files.data_path,
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
 
@@ -137,7 +129,7 @@ class TestLoadNetCDF(object):
     def test_basic_write_and_read_netcdf_mixed_case_meta_format(self):
         """Test basic netCDF4 read/write with mixed case metadata variables."""
         # Create a bunch of files by year and doy
-        outfile = os.path.join(self.testInst.files.data_path,
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
 
@@ -164,7 +156,7 @@ class TestLoadNetCDF(object):
 
         # Set the output file information
         file_root = 'pysat_test_ncdf_{year:04}{day:03}.nc'
-        file_path = self.testInst.files.data_path
+        file_path = self.tempdir.name
         outfile = self.stime.strftime(os.path.join(file_path,
                                                    'pysat_test_ncdf_%Y%j.nc'))
 
@@ -228,7 +220,7 @@ class TestLoadNetCDF(object):
     def test_write_netcdf4_duplicate_variable_names(self):
         """Test netCDF4 writing with duplicate variable names."""
         # Create a bunch of files by year and doy
-        outfile = os.path.join(self.testInst.files.data_path,
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         self.testInst['MLT'] = 1
@@ -245,8 +237,9 @@ class TestLoadNetCDF(object):
         ({"epoch_name": "Santa"}, {"epoch_name": "Santa"})])
     def test_write_and_read_netcdf4_w_kwargs(self, wkwargs, lkwargs):
         """Test success of writing and reading a netCDF4 file."""
-        # Create a bunch of files by year and doy
-        outfile = os.path.join(self.testInst.files.data_path,
+
+        # Create a new file based on loaded test data
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile, **wkwargs)
@@ -279,14 +272,23 @@ class TestLoadNetCDF(object):
 
         """
 
-        # TODO(#947) Expand to xarray objects once functionality is updated
-        if not self.testInst.pandas_format:
-            pytest.skip('Not yet implemented for xarray')
-
         # Create a bunch of files by year and doy
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
+        outfile = os.path.join(self.tempdir.name,
+                               'pysat_{:}_ncdf.nc'.format(self.testInst.name))
         self.testInst.load(date=self.stime, use_header=True)
+        # TODO(#991): remove once custom epochs are integrated into
+        # `io.inst_to_netcdf` for xarray instruments.
+        if not self.testInst.pandas_format:
+            # A distinct epoch name must be used for the saved xarray dataset.
+            test_epoch = 'test_epoch'
+            kwargs['epoch_name'] = test_epoch
+            # Xarray testing requires conversion to integer with ms default
+            self.testInst.data[test_epoch] = \
+                self.testInst[self.epoch_name].astype('int64') / 1.e6
+        else:
+            if 'epoch_name' in kwargs:
+                kwargs.pop('epoch_name')
+
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         # Load the data that was created
@@ -294,8 +296,15 @@ class TestLoadNetCDF(object):
         self.loaded_inst, meta = io.load_netcdf(outfile, **kwargs)
 
         # Check that the step size is expected
-        default_delta = (self.testInst.index[1] - self.testInst.index[0])
-        loaded_delta = (self.loaded_inst.index[1] - self.loaded_inst.index[0])
+        if self.testInst.pandas_format:
+            default_delta = np.diff(self.testInst.index[:2])
+            loaded_delta = np.diff(self.loaded_inst.index[:2])
+        else:
+            default_delta = np.diff(self.testInst[self.epoch_name][:2])
+
+            # Average over 4 deltas to prevent rounding errors
+            loaded_delta = np.diff(self.loaded_inst[test_epoch][:5]).mean()
+
         # Ratio of step_sizes should equal ratio of interpreted units
         assert ((default_delta / loaded_delta)
                 == (dt.timedelta(seconds=1) / target))
@@ -308,10 +317,18 @@ class TestLoadNetCDF(object):
             file_origin = unix_origin
 
         # Find distance from origin
-        default_uts = (self.testInst.index[0] - unix_origin).total_seconds()
-        loaded_uts = (self.loaded_inst.index[0] - file_origin).total_seconds()
+        if self.testInst.pandas_format:
+            default_start = (self.testInst.index[0] - unix_origin)
+            loaded_start = (self.loaded_inst.index[0] - file_origin)
+        else:
+            def_uts = pds.to_datetime(self.testInst[self.epoch_name][0].values)
+            load_uts = pds.to_datetime(self.loaded_inst[test_epoch][0].values)
+            default_start = (def_uts - unix_origin)
+            loaded_start = (load_uts - file_origin)
+
         # Ratio of distances should equal ratio of interpreted units
-        assert (default_uts / loaded_uts) == (dt.timedelta(seconds=1) / target)
+        assert (default_start.total_seconds() / loaded_start.total_seconds()
+                == (dt.timedelta(seconds=1) / target))
         return
 
     def test_netcdf_prevent_attribute_override(self):
@@ -344,7 +361,7 @@ class TestLoadNetCDF(object):
         assert self.testInst.bespoke
 
         fname = 'output.nc'
-        outfile = os.path.join(self.testInst.files.data_path, fname)
+        outfile = os.path.join(self.tempdir.name, fname)
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         _, meta = io.load_netcdf(
@@ -364,9 +381,6 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
     def setup(self):
         """Set up the test environment."""
 
-        # Store current pysat directory
-        self.data_path = pysat.params['data_dirs']
-
         # Create temporary directory
         # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
         if sys.version_info.minor >= 10:
@@ -374,16 +388,13 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
                 ignore_cleanup_errors=True)
         else:
             self.tempdir = tempfile.TemporaryDirectory()
-        pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
                                          update_files=True, num_samples=100)
         self.stime = pysat.instruments.pysat_testing2d_xarray._test_dates[
             '']['']
-
-        # Create testing directory
-        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
+        self.epoch_name = 'time'
 
         # Initalize the loaded data
         self.loaded_inst = None
@@ -393,10 +404,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         """Clean up the test environment."""
 
         # Clear the attributes with data in them
-        del self.loaded_inst, self.testInst, self.stime
-
-        # Reset the pysat parameters
-        pysat.params['data_dirs'] = self.data_path
+        del self.loaded_inst, self.testInst, self.stime, self.epoch_name
 
         # Remove the temporary directory. In Windows, this occasionally fails
         # by raising a wide variety of different error messages. Python 3.10+
@@ -408,7 +416,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
             pass
 
         # Clear the directory attributes
-        del self.data_path, self.tempdir
+        del self.tempdir
         return
 
     @pytest.mark.parametrize("kwargs,target", [({}, False),
@@ -419,7 +427,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
     def test_read_netcdf4_with_time_meta_labels(self, kwargs, target):
         """Test that read_netcdf correctly interprets time labels in meta."""
         # Prepare output test data.
-        outfile = os.path.join(self.testInst.files.data_path,
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         # Modify the variable attributes directly before writing to file.
@@ -444,7 +452,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
     def test_load_netcdf_pandas_3d_error(self):
         """Test load_netcdf error with a pandas 3D file."""
         # Create a bunch of files by year and doy
-        outfile = os.path.join(self.testInst.files.data_path,
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile)
@@ -464,19 +472,12 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
     def setup(self):
         """Set up the test environment."""
 
-        # Store current pysat directory
-        self.data_path = pysat.params['data_dirs']
-
         # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
-        pysat.params['data_dirs'] = [self.tempdir.name]
-
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
                                          update_files=True, num_samples=100)
         self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
-
-        # Create testing directory
-        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
+        self.epoch_name = 'time'
 
         # Initialize the loaded data object
         self.loaded_inst = None
@@ -486,16 +487,13 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         """Clean up the test environment."""
 
         # Clear the attributes with data in them
-        del self.loaded_inst, self.testInst, self.stime
-
-        # Reset the pysat parameters
-        pysat.params['data_dirs'] = self.data_path
+        del self.loaded_inst, self.testInst, self.stime, self.epoch_name
 
         # Remove the temporary directory
         self.tempdir.cleanup()
 
         # Clear the directory attributes
-        del self.data_path, self.tempdir
+        del self.tempdir
         return
 
 
@@ -507,16 +505,13 @@ class TestNetCDF4Integration(object):
 
         # Use a temporary directory so that the user's setup is not altered.
         self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
-        pysat.params['data_dirs'] = self.tempdir.name
         return
 
     def teardown_class(self):
         """Clean up downloaded files and parameters from tests."""
 
-        pysat.params['data_dirs'] = self.saved_path
         self.tempdir.cleanup()
-        del self.saved_path, self.tempdir
+        del self.tempdir
         return
 
     def setup(self):
@@ -568,8 +563,7 @@ class TestNetCDF4Integration(object):
             missing = ['test_nan_export']
 
         # Write the file
-        pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
-        outfile = os.path.join(self.testInst.files.data_path,
+        outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.to_netcdf4(outfile, export_nan=export_nan)
 

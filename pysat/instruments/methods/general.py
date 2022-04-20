@@ -4,6 +4,7 @@
 import datetime as dt
 import numpy as np
 import pandas as pds
+import warnings
 
 import pysat
 
@@ -148,6 +149,11 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     """Use datetime instead of timestamp for Epoch.
 
+    .. deprecated:: 3.1.0
+        This routine has been deprecated with the addition of the kwargs
+        `epoch_unit` and `epoch_origin` to `pysat.utils.io.load_netcdf4`.
+        This routing will be removed in 3.2.0.
+
     Parameters
     ----------
     inst : pysat.Instrument
@@ -157,11 +163,22 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     epoch_name : str
         variable name for instrument index (default='Epoch')
 
+    Note
+    ----
+    If the variable represented by epoch_name is not a float64, data is passed
+    through unchanged.
+
     """
 
-    inst.data[epoch_name] = pds.to_datetime(
-        [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
-         for epoch_time in inst.data[epoch_name]])
+    warnings.warn(" ".join(["New kwargs added to `pysat.utils.io.load_netCDF4`",
+                            "for generalized handling, deprecated",
+                            "function will be removed in pysat 3.2.0+"]),
+                  DeprecationWarning, stacklevel=2)
+
+    if inst.data[epoch_name].dtype == 'float64':
+        inst.data[epoch_name] = pds.to_datetime(
+            [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
+             for epoch_time in inst.data[epoch_name]])
 
     return
 
