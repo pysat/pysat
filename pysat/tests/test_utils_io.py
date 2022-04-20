@@ -1235,9 +1235,15 @@ class TestMetaTranslation(object):
         captured = caplog.text
         assert len(captured) == 0
 
-        # Enforcing netcdf4 standards removes 'fill' information for string
-        # variables. This is no re-added by the `remove_` function call since,
-        # strictly speaking, we don't know what to add back in. Check everything
+        # Enforcing netcdf4 standards removes 'fill', min, and max information
+        # for string variables. This is no re-added by the `remove_` function
+        # call since, trictly speaking, we don't know what to add back in.
+        # Also exepmting a check on long_name for higher order data with a time
+        # index. When loading files, pysat specifically checks for 'Epoch' as
+        # the long_name. So, ensuring long_name for such variables is written
+        # could break loading for existent files. I could fake it, and assign
+        # the standard name as long_name when loading, and while that would
+        # pass the tests here as written, it would be brittle. Check everything
         # else.
         for var in self.meta_dict.keys():
             assert var in filt_meta, 'Lost metadata variable {}'.format(var)
@@ -1247,6 +1253,9 @@ class TestMetaTranslation(object):
                 # long_name comes out differently.
                 if var == 'profiles' and (key == 'long_name'):
                     continue
+
+                # Test remaining variables accounting for possible exceptions
+                # for string variables.
                 if key not in ['fill', 'value_min', 'value_max']:
                     assert key in filt_meta[var], \
                         'Lost metadata label {} for {}'.format(key, var)
