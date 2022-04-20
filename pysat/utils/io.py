@@ -627,8 +627,9 @@ def meta_array_expander(meta_dict):
     """Expand meta arrays by storing each element with new incremented label.
 
     if meta_dict[variable]['label'] = [ item1, item2, ..., itemn] then
-    the returned dict will contain, meta_dict[variable]['label1'] = item1,
-    meta_dict[variable]['label2'] = item2, meta_dict[variable]['labeln'] = itemn
+    the returned dict will contain, meta_dict[variable]['label0'] = item1,
+    meta_dict[variable]['label1'] = item2,
+    meta_dict[variable]['labeln-1'] = itemn
 
     Parameters
     ----------
@@ -646,6 +647,9 @@ def meta_array_expander(meta_dict):
     pysat.Meta can not take array data.
 
     """
+
+    meta_dict = copy.deepcopy(meta_dict)
+
     # Meta cannot take array data, if present save it as seperate meta data
     # labels.
     for key in meta_dict.keys():
