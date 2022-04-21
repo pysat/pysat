@@ -1148,8 +1148,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
             if label in full_mdict[var]:
                 full_mdict[var].pop(label)
             if 'meta' in full_mdict[var]:
-                if label in full_mdict[var]['meta']:
-                    full_mdict[var]['meta'].pop(label)
+                for var2 in full_mdict[var]['meta'].keys():
+                    if label in full_mdict[var]['meta'][var2]:
+                        full_mdict[var]['meta'][var2].pop(label)
 
     # Second, remove some items pysat added for netcdf compatibility.
     filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name,

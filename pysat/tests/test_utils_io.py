@@ -367,7 +367,14 @@ class TestLoadNetCDF(object):
 
     @pytest.mark.parametrize("decode_times", [False, True])
     def test_decode_times(self, decode_times):
-        """Test `decode_times` keyword in `load_netcdf_xarray`."""
+        """Test `decode_times` keyword in `load_netcdf_xarray`.
+
+        Parameters
+        ----------
+        decode_times : bool
+            Passed along to `io.load_netcdf`
+
+        """
         # Create a file
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
@@ -397,8 +404,58 @@ class TestLoadNetCDF(object):
             assert np.all(self.testInst[self.epoch_name]
                           == self.loaded_inst[self.epoch_name])
         else:
+            # Later epoch means loaded data in relative future.
             assert np.all(self.testInst[self.epoch_name]
                           <= self.loaded_inst[self.epoch_name])
+
+        return
+
+    @pytest.mark.parametrize("drop_labels", [False, True])
+    def test_drop_labels(self, drop_labels):
+        """Test `drop_labels` keyword when loading data from file.
+
+        Parameters
+        ----------
+        drop_labels : bool
+            If True, 'test_new_label' is dropped.
+
+        """
+
+        drop_label = 'test_new_label'
+
+        # Create a file with additional metadata
+        outfile = os.path.join(self.tempdir.name,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime, use_header=True)
+
+        # Add additional metadata
+        self.testInst.meta['mlt'] = {drop_label: 1.}
+
+        # Ensure additional data written to file despite NaNs
+        export_nan = [self.testInst.meta.labels.fill_val,
+                      self.testInst.meta.labels.max_val,
+                      self.testInst.meta.labels.min_val,
+                      drop_label]
+
+        # Write file.
+        io.inst_to_netcdf(self.testInst, fname=outfile, export_nan=export_nan)
+
+        if drop_labels:
+            drop_list = [drop_label]
+        else:
+            drop_list = []
+
+        # Load file
+        pformat = self.testInst.pandas_format
+        self.loaded_inst, meta = io.load_netcdf(outfile,
+                                                drop_meta_labels=drop_list,
+                                                pandas_format=pformat)
+
+        # Test for `drop_label` if it should or should not be present.
+        if drop_labels:
+            assert drop_label not in meta.data.columns
+        else:
+            assert drop_label in meta.data.columns
 
         return
 
