@@ -365,6 +365,43 @@ class TestLoadNetCDF(object):
             assert meta.bespoke
         return
 
+    @pytest.mark.parametrize("decode_times", [False, True])
+    def test_decode_times(self, decode_times):
+        """Test `decode_times` keyword in `load_netcdf_xarray`."""
+        # Create a file
+        outfile = os.path.join(self.tempdir.name,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime, use_header=True)
+        io.inst_to_netcdf(self.testInst, fname=outfile)
+
+        # Load the written data
+        input_kwargs = {"decode_times": decode_times,
+                        "pandas_format": self.testInst.pandas_format,
+                        "epoch_origin": dt.datetime(1980, 1, 1)}
+
+        # Not supported for pandas
+        if self.testInst.pandas_format:
+            testing.eval_bad_input(
+                io.load_netcdf, ValueError,
+                "`decode_times` not supported for pandas", input_args=[outfile],
+                input_kwargs=input_kwargs)
+
+            return
+
+        else:
+            # Apply to xarray instruments
+            self.loaded_inst, meta = io.load_netcdf(outfile, **input_kwargs)
+
+        if decode_times:
+            # Times will be as in self.testInst
+            assert np.all(self.testInst[self.epoch_name]
+                          == self.loaded_inst[self.epoch_name])
+        else:
+            assert np.all(self.testInst[self.epoch_name]
+                          <= self.loaded_inst[self.epoch_name])
+
+        return
+
 
 class TestLoadNetCDFXArray(TestLoadNetCDF):
     """Unit tests for `load_netcdf` using xarray data."""
@@ -456,6 +493,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
             input_kwargs={"epoch_name": 'time', "pandas_format": True})
 
         return
+
 
 
 class TestLoadNetCDF2DPandas(TestLoadNetCDF):
