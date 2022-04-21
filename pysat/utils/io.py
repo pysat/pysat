@@ -198,6 +198,9 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
     SPDF ISTP/IACG NetCDF standards using
     `pysat.utils.io.filter_netcdf4_metadata`.
 
+    For xarray inputs, converts datetimes to integers representing milliseconds
+    since 1970. This does not include the main index, 'time'.
+
     """
 
     # Update the non-time variable meta data standards
@@ -727,7 +730,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                         'max_val': ('value_max', np.float64),
                         'fill_val': ('fill', np.float64)},
                 meta_processor=None, meta_translation=None,
-                drop_meta_labels=None):
+                drop_meta_labels=None, decode_times=None):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -791,6 +794,12 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     drop_meta_labels : list or NoneType
         List of variable metadata labels that should be dropped. Applied
         to metadata as loaded from the file. (default=None)
+    decode_times : bool or NoneType
+        If True, variables with unit attributes that are 'timelike' ('hours',
+        'minutes', etc) are converted to `np.timedelta64` by xarray. If False,
+        then `epoch_name` will be converted to datetime using `epoch_unit`
+        and `epoch_origin`. If None, will be set to False for backwards
+        compatibility. For xarray only. (default=None)
 
     Returns
     -------
@@ -833,7 +842,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         labels=labels,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
-                                        drop_meta_labels=drop_meta_labels)
+                                        drop_meta_labels=drop_meta_labels,
+                                        decode_times=decode_times)
 
     return data, meta
 
@@ -1205,7 +1215,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                'max_val': ('value_max', np.float64),
                                'fill_val': ('fill', np.float64)},
                        meta_processor=None, meta_translation=None,
-                       drop_meta_labels=None):
+                       drop_meta_labels=None, decode_times=None):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -1263,6 +1273,12 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     drop_meta_labels : list or NoneType
         List of variable metadata labels that should be dropped. Applied
         to metadata as loaded from the file. (default=None)
+    decode_times : bool or NoneType
+        If True, variables with unit attributes that are 'timelike' ('hours',
+        'minutes', etc) are converted to `np.timedelta64` by xarray. If False,
+        then `epoch_name` will be converted to datetime using `epoch_unit`
+        and `epoch_origin`. If None, will be set to False for backwards
+        compatibility. (default=None)
 
     Returns
     -------
@@ -1277,8 +1293,14 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     """
     if epoch_name is None:
-        pysat.logger.info('Assigning "time" for time index.')
+        dstr = ''.join(['Assigning "time" for time index label when written ',
+                        'to file.'])
+        pysat.logger.debug(dstr)
         epoch_name = 'time'
+
+    if decode_times is None:
+        pysat.logger.debug('Defaulting to `decode_times=False`.')
+        decode_times = False
 
     # Ensure inputs are in the correct format
     fnames = pysat.utils.listify(fnames)
@@ -1303,23 +1325,24 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
-        data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta)
+        data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta,
+                               decode_times=decode_times)
     else:
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
-                                 combine='by_coords')
+                                 combine='by_coords', decode_times=decode_times)
 
-    # If epoch exists, convert to datetime object.
-    # TODO(#991): epoch does not necessarily exist.  May need to update if
-    # assumptions about time change.
+    # If epoch exists, convert to datetime object, depending upon settings.
     if epoch_name in data.variables:
-        _, _, dtime_flag = pysat.Instrument()._get_data_info(data[epoch_name])
-        if dtime_flag:
-            data[epoch_name] = (data[epoch_name].astype(np.int64)
-                                * 1.0E-6).astype(np.int64)
-        data[epoch_name] = xr.DataArray(pds.to_datetime(data[epoch_name],
-                                                        unit=epoch_unit,
-                                                        origin=epoch_origin),
-                                        coords=data[epoch_name].coords)
+        # If decode_times False, apply our own calculation.
+        if not decode_times:
+            edates = pds.to_datetime(data[epoch_name],unit=epoch_unit,
+                                     origin=epoch_origin)
+            data[epoch_name] = xr.DataArray(edates,
+                                            coords=data[epoch_name].coords)
+    else:
+        wstr = ''.join(['Unable to find `epoch_name` of ', epoch_name,
+                        ' when reading file.'])
+        warnings.warn(wstr)
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
