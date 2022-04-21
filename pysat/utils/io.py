@@ -1335,7 +1335,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     if epoch_name in data.variables:
         # If decode_times False, apply our own calculation.
         if not decode_times:
-            edates = pds.to_datetime(data[epoch_name],unit=epoch_unit,
+            edates = pds.to_datetime(data[epoch_name], unit=epoch_unit,
                                      origin=epoch_origin)
             data[epoch_name] = xr.DataArray(edates,
                                             coords=data[epoch_name].coords)
