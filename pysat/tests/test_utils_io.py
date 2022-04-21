@@ -914,6 +914,7 @@ class TestXarrayIO(object):
         self.testInst = pysat.Instrument('pysat', 'testing_xarray')
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
+        self.epoch_name = 'time'
 
         return
 
@@ -933,8 +934,7 @@ class TestXarrayIO(object):
 
         # Run the update routine
         meta = self.testInst.meta
-        io.pysat_meta_to_xarray_attr(self.testInst.data, meta,
-                                     list(self.testInst.data.dims)[0])
+        io.pysat_meta_to_xarray_attr(self.testInst.data, meta, self.epoch_name)
 
         # Test that the metadata was added
         for var in self.testInst.vars_no_time:
