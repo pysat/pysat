@@ -450,7 +450,8 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
             if lval in lower_time_vals:
                 # Remove time related information, as well as units
                 for val in time_vals:
-                    mdict[key].pop(val)
+                    if val in mdict[key]:
+                        mdict[key].pop(val)
 
                 if labels.units in mdict[key]:
                     mdict[key][labels.units] = ''
@@ -823,6 +824,9 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     """
     # Load data by type
     if pandas_format:
+        if decode_times is not None:
+            estr = ''.join(['`decode_times` not supported for pandas.'])
+            raise ValueError(estr)
         data, meta = load_netcdf_pandas(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
                                         epoch_name=epoch_name,
