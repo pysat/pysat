@@ -1347,7 +1347,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     if not decode_times:
         edates = pds.to_datetime(data['time'], unit=epoch_unit,
                                  origin=epoch_origin)
-        data[epoch_name] = xr.DataArray(edates, coords=data[epoch_name].coords)
+        data['time'] = xr.DataArray(edates, coords=data['time'].coords)
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
