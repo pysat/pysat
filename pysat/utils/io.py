@@ -38,6 +38,8 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
 
     # Cycle through all the pysat MetaData measurements
     for data_key in pysat_meta.keys():
+
+        # Information about epoch added to meta during to_netcdf
         if data_key != epoch_name:
             # Select the measurements that are also in the xarray data
             data_key = data_key.lower()
@@ -56,6 +58,14 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
                 wstr = ''.join(['Did not find data for metadata variable ',
                                 data_key, '.'])
                 warnings.warn(wstr)
+
+    # Transfer metadata for the main time index
+    # Cycle through all the pysat MetaData labels and transfer.
+    if epoch_name in pysat_meta.keys():
+        for meta_key in pysat_meta[epoch_name].keys():
+            # Assign attributes
+            xr_data[epoch_name].attrs[meta_key] = \
+                pysat_meta[epoch_name][meta_key]
 
     return
 
@@ -206,10 +216,17 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
             # Update metadata based on data type. xarray has strong feelings
             # about what epoch metadata needs to be.
-            if datetime_flag and inst.pandas_format:
+            if datetime_flag: # and inst.pandas_format:
                 time_meta = return_epoch_metadata(inst, epoch_name)
                 time_meta.pop('MonoTon')
-                # time_meta.pop(inst.meta.labels.name)
+                if inst.pandas_format:
+                    # Pandas file create will set long_name to 'Epoch'
+                    time_meta.pop(inst.meta.labels.name)
+                else:
+                    # Convert times to integers
+                    inst[var] = (inst[var].values.astype(np.int64)
+                                 * 1.0E-6).astype(np.int64)
+
                 meta_dict.update(time_meta)
 
             if inst[var].dtype == np.dtype('O') and coltype != str:
@@ -1295,6 +1312,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # TODO(#991): epoch does not necessarily exist.  May need to update if
     # assumptions about time change.
     if epoch_name in data.variables:
+        _, _, dtime_flag = pysat.Instrument()._get_data_info(data[epoch_name])
+        if dtime_flag:
+            data[epoch_name] = (data[epoch_name].astype(np.int64)
+                                * 1.0E-6).astype(np.int64)
         data[epoch_name] = xr.DataArray(pds.to_datetime(data[epoch_name],
                                                         unit=epoch_unit,
                                                         origin=epoch_origin),
