@@ -278,18 +278,6 @@ class TestLoadNetCDF(object):
         outfile = os.path.join(self.tempdir.name,
                                'pysat_{:}_ncdf.nc'.format(self.testInst.name))
         self.testInst.load(date=self.stime, use_header=True)
-        # TODO(#991): remove once custom epochs are integrated into
-        # `io.inst_to_netcdf` for xarray instruments.
-        if not self.testInst.pandas_format:
-            # A distinct epoch name must be used for the saved xarray dataset.
-            test_epoch = 'test_epoch'
-            kwargs['epoch_name'] = test_epoch
-            # Xarray testing requires conversion to integer with ms default
-            self.testInst.data[test_epoch] = \
-                self.testInst[self.epoch_name].astype('int64') / 1.e6
-        else:
-            if 'epoch_name' in kwargs:
-                kwargs.pop('epoch_name')
 
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
@@ -305,7 +293,7 @@ class TestLoadNetCDF(object):
             default_delta = np.diff(self.testInst[self.epoch_name][:2])
 
             # Average over 4 deltas to prevent rounding errors
-            loaded_delta = np.diff(self.loaded_inst[test_epoch][:5]).mean()
+            loaded_delta = np.diff(self.loaded_inst[self.epoch_name][:5]).mean()
 
         # Ratio of step_sizes should equal ratio of interpreted units
         assert ((default_delta / loaded_delta)
@@ -324,7 +312,8 @@ class TestLoadNetCDF(object):
             loaded_start = (self.loaded_inst.index[0] - file_origin)
         else:
             def_uts = pds.to_datetime(self.testInst[self.epoch_name][0].values)
-            load_uts = pds.to_datetime(self.loaded_inst[test_epoch][0].values)
+            load_uts = pds.to_datetime(
+                self.loaded_inst[self.epoch_name][0].values)
             default_start = (def_uts - unix_origin)
             loaded_start = (load_uts - file_origin)
 
