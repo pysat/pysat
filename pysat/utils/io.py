@@ -216,7 +216,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
             # Update metadata based on data type. xarray has strong feelings
             # about what epoch metadata needs to be.
-            if datetime_flag: # and inst.pandas_format:
+            if datetime_flag:
                 time_meta = return_epoch_metadata(inst, epoch_name)
                 time_meta.pop('MonoTon')
                 if inst.pandas_format:
@@ -1449,7 +1449,7 @@ def xarray_vars_no_time(data, time_label='time'):
     vars = list(data.variables.keys())
 
     # Remove `time_label` dimension
-    dims = list(data.dims)
+    # dims = list(data.dims)
     if time_label in vars:
         for i, var in enumerate(vars):
             if var == time_label:
