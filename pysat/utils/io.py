@@ -1410,7 +1410,7 @@ def return_epoch_metadata(inst, epoch_name):
 
 
 def xarray_vars_no_time(data, time_label='time'):
-    """Return all DataSet variables except the `time_label` dimension.
+    """Return all DataSet variables except `time_label` dimension.
 
     If `time_label` not found, removes first 1D dimension with datetime data.
 
@@ -1434,18 +1434,32 @@ def xarray_vars_no_time(data, time_label='time'):
             if var == time_label:
                 vars.pop(i)
                 return vars
+    else:
+        estr = ''.join(["Didn't find time dimension '", time_label,
+                        "' as provided by user. Falling back to guessing."])
+        warnings.warn(estr, stacklevel=2)
 
-    # If `time_label` not labeled as such, let's look for datetime data in 1D
-    if len(dims) > 0:
-        for dim in dims:
-            if str(data[dim].data.dtype).find('datetime') > 0:
-                if len(data[dim].data.shape) == 1:
-                    for i, var in enumerate(vars):
-                        if var == dim:
-                            vars.pop(i)
-                            return vars
+    # Remove things in the .indexes area.
+    return_vars = copy.deepcopy(vars)
+    indexes = list(data.indexes)
+    if len(indexes) > 0:
+        for i, var in enumerate(vars):
+            if var in indexes:
+                return_vars.pop(i)
 
-    return []
+    return return_vars
+
+    # # If `time_label` not labeled as such, let's look for datetime data in 1D
+    # if len(dims) > 0:
+    #     for dim in dims:
+    #         if str(data[dim].data.dtype).find('datetime') > 0:
+    #             if len(data[dim].data.shape) == 1:
+    #                 for i, var in enumerate(vars):
+    #                     if var == dim:
+    #                         vars.pop(i)
+    #                         return vars
+    #
+    # return []
 
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
