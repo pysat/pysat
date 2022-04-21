@@ -495,7 +495,6 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         return
 
 
-
 class TestLoadNetCDF2DPandas(TestLoadNetCDF):
     """Unit tests for `load_netcdf` using 2d pandas data."""
 
