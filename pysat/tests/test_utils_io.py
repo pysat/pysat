@@ -1272,6 +1272,29 @@ class TestMetaTranslationXarray(TestMetaTranslation):
         return
 
 
+class TestMetaTranslation2DXarray(TestMetaTranslation):
+    """Unit tests for meta translation when writing/loading files."""
+
+    def setup(self):
+        """Create test environment."""
+
+        self.test_inst = pysat.Instrument('pysat', 'testing2d_xarray')
+        self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
+        self.test_date = self.test_date['']['']
+        self.test_inst.load(date=self.test_date)
+        self.meta_dict = self.test_inst.meta.to_dict()
+        self.out = None
+
+        return
+
+    def teardown(self):
+        """Cleanup test environment."""
+
+        del self.test_inst, self.test_date, self.out, self.meta_dict
+
+        return
+
+
 class TestMetaTranslation2DPandas(TestMetaTranslation):
     """Unit tests for meta translation when writing/loading files."""
 
