@@ -1331,18 +1331,23 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords', decode_times=decode_times)
 
-    # If epoch exists, convert to datetime object, depending upon settings.
-    if epoch_name in data.variables:
-        # If decode_times False, apply our own calculation.
-        if not decode_times:
-            edates = pds.to_datetime(data[epoch_name], unit=epoch_unit,
-                                     origin=epoch_origin)
-            data[epoch_name] = xr.DataArray(edates,
-                                            coords=data[epoch_name].coords)
-    else:
-        wstr = ''.join(['Unable to find `epoch_name` of ', epoch_name,
-                        ' when reading file.'])
-        warnings.warn(wstr)
+    # Rename `epoch_name` to 'time'.
+    if epoch_name != 'time':
+        if epoch_name in data.dims:
+            data = data.rename({epoch_name: 'time'})
+        else:
+            estr = ''.join(['User provided time information variable ',
+                            epoch_name, ' not found in loaded data ',
+                            'dimensions ', repr(data.dims)])
+            raise ValueError(estr)
+
+    # Convert 'time' to datetime objects, depending upon settings.
+    # If decode_times False, apply our own calculation. If True,
+    # datetime objects were created by xarray.
+    if not decode_times:
+        edates = pds.to_datetime(data['time'], unit=epoch_unit,
+                                 origin=epoch_origin)
+        data[epoch_name] = xr.DataArray(edates, coords=data[epoch_name].coords)
 
     # Copy the variable attributes from the data object to the metadata
     for key in data.variables.keys():
@@ -1354,16 +1359,6 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
         # Remove variable attributes from the data object
         data.variables[key].attrs = {}
-
-    # Rename the timeindex to 'time'.
-    if epoch_name != 'time':
-        if epoch_name in data.dims:
-            data = data.rename({epoch_name: 'time'})
-        else:
-            estr = ''.join(['User provided time information variable ',
-                            epoch_name, ' not found in loaded data ',
-                            'dimensions ', repr(data.dims)])
-            raise ValueError(estr)
 
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
