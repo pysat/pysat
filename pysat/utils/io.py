@@ -1970,13 +1970,15 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         # the Instrument data object is unchanged.
         xr_data = xr.Dataset(inst.data)
 
+        # Convert datetime values into integers as done for pandas
+        xr_data['time'] = (inst['time'].values.astype(np.int64)
+                           * 1.0E-6).astype(np.int64)
+
         # Update 'time' dimension to `epoch_name`.
         xr_data = xr_data.rename({'time': epoch_name})
 
         # Transfer metadata.
         pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)
-
-        # TODO(#991): custom epoch_name should be implemented if it exists.
 
         # If the case needs to be preserved, update Dataset variables
         if preserve_meta_case:
