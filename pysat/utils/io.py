@@ -1830,11 +1830,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                                      zlib=zlib,
                                                      complevel=complevel,
                                                      shuffle=shuffle)
-                    # if lower_key in export_meta.keys():
+                    # Set metadata
                     cdfkey.setncatts(export_meta[lower_key])
-                    # else:
-                    #     pysat.logger.warning(
-                    #         ''.join(('Unable to find MetaData for ', key)))
 
                     # Assign data
                     if datetime_flag:
@@ -1855,11 +1852,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
-                        # if lower_key in export_meta.keys():
+
+                        # Set metadata
                         cdfkey.setncatts(export_meta[lower_key])
-                        # else:
-                        #     pysat.logger.warning(
-                        #         ''.join(('Unable to find MetaData for ', key)))
 
                         # Time to actually write the data now
                         cdfkey[:] = data.values
@@ -1926,13 +1921,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                     dimensions=var_dim, zlib=zlib,
                                     complevel=complevel, shuffle=shuffle)
 
+                                # Set metadata
                                 lkey = '_'.join((lower_key, col.lower()))
-                                # if lkey in export_meta.keys():
                                 cdfkey.setncatts(export_meta[lkey])
-                                # else:
-                                #     pysat.logger.warning(
-                                #         ''.join(('Unable to find MetaData for ',
-                                #                  lkey)))
 
                                 # Attach data.  It may be slow to repeatedly
                                 # call the store method as well astype method
@@ -1956,13 +1947,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                     dimensions=var_dim, zlib=zlib,
                                     complevel=complevel, shuffle=shuffle)
 
-                                # if lower_key in export_meta.keys():
+                                # Set metadata
                                 tempk = '_'.join([lower_key, lower_key])
                                 cdfkey.setncatts(export_meta[tempk])
-                                # else:
-                                #     pysat.logger.warning(
-                                #         ''.join(('Unable to find MetaData for ',
-                                #                  case_key)))
 
                                 # Attach data
                                 temp_cdf_data = np.zeros(
@@ -1989,13 +1976,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
-                        # if lower_key in export_meta.keys():
+                        # Get meta data
                         new_dict = export_meta[lower_key]
-                        # else:
-                        #     pysat.logger.warning(
-                        #         ''.join(('Unable to find MetaData for ',
-                        #                  case_key)))
-                        #     new_dict = {}
 
                         # Treat time and non-time data differently
                         if datetime_flag:
