@@ -142,6 +142,22 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data['dummy2'] = ((epoch_name), long_int)
     data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
     data['dummy4'] = ((epoch_name), uts)
+    data['string_dummy'] = ((epoch_name),
+                            ['test'] * len(data.indexes[epoch_name]))
+    data['unicode_dummy'] = ((epoch_name),
+                             [u'test'] * len(data.indexes[epoch_name]))
+    data['int8_dummy'] = ((epoch_name),
+                          np.array([1] * len(data.indexes[epoch_name]),
+                          dtype=np.int8))
+    data['int16_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
+                           dtype=np.int16))
+    data['int32_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
+                           dtype=np.int32))
+    data['int64_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
+                           dtype=np.int64))
 
     # Add dummy coords
     data.coords['x'] = (('x'), np.arange(17))
