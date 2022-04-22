@@ -1969,22 +1969,18 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         data, coltype, datetime_flag = inst._get_data_info(
                             inst[key].iloc[idx].index)
 
-                        # Create dimension variable for to store index in
+                        # Create dimension variable to store index in
                         # netCDF4
                         cdfkey = out_data.createVariable(case_key, coltype,
                                                          dimensions=var_dim,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
-                        # Get meta data
-                        new_dict = export_meta[lower_key]
+                        # Set meta data
+                        cdfkey.setncatts(export_meta[lower_key])
 
                         # Treat time and non-time data differently
                         if datetime_flag:
-                            # Further update file
-                            # Set metadata dict
-                            cdfkey.setncatts(new_dict)
-
                             # Set data
                             temp_cdf_data = np.zeros((num, dims[0]),
                                                      dtype=coltype)
@@ -1994,15 +1990,13 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                 coltype)
 
                         else:
-                            # Assign metadata dict
-                            cdfkey.setncatts(new_dict)
-
                             # Set data
                             temp_cdf_data = np.zeros((num, dims[0]),
                                                      dtype=coltype)
+
                             for i in range(num):
                                 temp_cdf_data[i, :] = inst[
-                                    key].iloc[i].index.astype(str)
+                                    key].iloc[i].index.astype(coltype)
                             cdfkey[:, :] = temp_cdf_data
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
