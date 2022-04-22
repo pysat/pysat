@@ -204,27 +204,26 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
     """
 
     # Update the non-time variable meta data standards
-    in_meta_dict = copy.deepcopy(in_meta_dict)
+    out_meta_dict = copy.deepcopy(in_meta_dict)
     for var in inst.vars_no_time:
+        # Get the data variable information
+        _, coltype, datetime_flag = inst._get_data_info(inst[var])
+
+        # Update the standard metadata values
+        meta_dict = {'Depend_0': epoch_name, 'Display_Type': 'Time Series',
+                     'Var_Type': 'data'}
+
+        lower_var = var.lower()
+
         if var in inst.meta:
-
-            lower_var = var.lower()
-
-            # Get the data variable information
-            _, coltype, datetime_flag = inst._get_data_info(inst[var])
-
-            # Update the standard metadata values
-            meta_dict = {'Depend_0': epoch_name, 'Display_Type': 'Time Series',
-                         'Var_Type': 'data'}
-
-            # Update metadata based on data type. xarray has strong feelings
-            # about what epoch metadata needs to be.
+            # Update metadata based on data type.
             if datetime_flag:
                 time_meta = return_epoch_metadata(inst, epoch_name)
                 time_meta.pop('MonoTon')
                 if inst.pandas_format:
                     # Pandas file create will set long_name to 'Epoch'
-                    time_meta.pop(inst.meta.labels.name)
+                    # time_meta.pop(inst.meta.labels.name)
+                    pass
                 else:
                     # Convert times to integers
                     inst[var] = (inst[var].values.astype(np.int64)
@@ -292,21 +291,20 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         # Attach datetime index metadata.
                         smeta_dict = return_epoch_metadata(inst, epoch_name)
                         smeta_dict.pop('MonoTon')
-                        # smeta_dict.pop(inst.meta.labels.name)
 
                     # Construct name, variable_subvariable, and store
                     sname = '_'.join([lower_var, svar.lower()])
-                    if sname in in_meta_dict:
-                        in_meta_dict[sname].update(smeta_dict)
+                    if sname in out_meta_dict:
+                        out_meta_dict[sname].update(smeta_dict)
                     else:
-                        pysat.logger.warning(''.join(['Unable to find MetaData',
-                                                      ' for ', sname]))
-                        in_meta_dict[sname] = smeta_dict
+                        warnings.warn(''.join(['Unable to find MetaData for ',
+                                               svar, var]))
+                        out_meta_dict[sname] = smeta_dict
 
                     # Filter metadata
                     remove = True if sctype == str else False
-                    in_meta_dict[sname] = \
-                        filter_netcdf4_metadata(inst, in_meta_dict[sname],
+                    out_meta_dict[sname] = \
+                        filter_netcdf4_metadata(inst, out_meta_dict[sname],
                                                 sctype, remove=remove,
                                                 check_type=check_type,
                                                 export_nan=export_nan,
@@ -326,7 +324,6 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                 if index_flag:
                     update_dict = return_epoch_metadata(inst, epoch_name)
                     update_dict.pop('MonoTon')
-                    # update_dict.pop(inst.meta.labels.name)
                     update_dict.update(meta_dict)
                 else:
                     if inst[good_data_loc, var].index.name is not None:
@@ -336,17 +333,17 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                     update_dict = {inst.meta.labels.name: name}
                     update_dict.update(meta_dict)
 
-                if lower_var in in_meta_dict:
-                    in_meta_dict[lower_var].update(update_dict)
+                if lower_var in out_meta_dict:
+                    out_meta_dict[lower_var].update(update_dict)
                 else:
-                    pysat.logger.warning(''.join(['Unable to find MetaData ',
-                                                  'for ', lower_var]))
-                    in_meta_dict[lower_var] = update_dict
+                    warnings.warn(''.join(['Unable to find MetaData for ',
+                                           var]))
+                    out_meta_dict[lower_var] = update_dict
 
                 # Filter metdata for other netCDF4 requirements
                 remove = True if index_type == str else False
-                in_meta_dict[lower_var] = \
-                    filter_netcdf4_metadata(inst, in_meta_dict[lower_var],
+                out_meta_dict[lower_var] = \
+                    filter_netcdf4_metadata(inst, out_meta_dict[lower_var],
                                             index_type,
                                             remove=remove,
                                             check_type=check_type,
@@ -366,12 +363,12 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         meta_dict['Display_Type'] = 'Multidimensional'
 
                 # Update the meta data
-                in_meta_dict[lower_var].update(meta_dict)
+                out_meta_dict[lower_var].update(meta_dict)
 
                 # Filter metdata for other netCDF4 requirements
                 remove = True if coltype == str else False
-                in_meta_dict[lower_var] = \
-                    filter_netcdf4_metadata(inst, in_meta_dict[lower_var],
+                out_meta_dict[lower_var] = \
+                    filter_netcdf4_metadata(inst, out_meta_dict[lower_var],
                                             coltype,
                                             remove=remove,
                                             check_type=check_type,
@@ -379,9 +376,12 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                             varname=lower_var)
 
         else:
-            pysat.logger.warning(''.join(('Unable to find MetaData for ', var)))
+            meta_dict['Format'] = inst._get_var_type_code(coltype)
+            out_meta_dict[lower_var] = meta_dict
+            warnings.warn(''.join(('Unable to find MetaData for ', var)),
+                          stacklevel=2)
 
-    return in_meta_dict
+    return out_meta_dict
 
 
 def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
@@ -808,6 +808,10 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     """
     # Load data by type
     if pandas_format:
+        if decode_times is not None:
+            estr = ''.join(['`decode_times` not supported for pandas.'])
+            raise ValueError(estr)
+
         data, meta = load_netcdf_pandas(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
                                         epoch_name=epoch_name,
@@ -920,10 +924,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     load_netcdf
 
     """
-
-    if decode_times is not None:
-        estr = ''.join(['`decode_times` not supported for pandas.'])
-        raise ValueError(estr)
 
     if epoch_name is None:
         # I'm not sure if we need to have DeprecationWarnings.
