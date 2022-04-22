@@ -298,7 +298,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         out_meta_dict[sname].update(smeta_dict)
                     else:
                         warnings.warn(''.join(['Unable to find MetaData for ',
-                                               svar, var]))
+                                               svar, ' subvariable of ', var]))
                         out_meta_dict[sname] = smeta_dict
 
                     # Filter metadata
