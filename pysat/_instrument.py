@@ -1640,10 +1640,12 @@ class Instrument(object):
         # Check for object type
         if data_type != np.dtype('O'):
             # Simple data, not an object
-
             if data_type == np.dtype('<M8[ns]'):
                 data_type = np.int64
                 datetime_flag = True
+            elif data_type == np.dtype('<U4'):
+                data_type = str
+                datetime_flag = False
             else:
                 datetime_flag = False
         else:
