@@ -776,7 +776,7 @@ class TestNetCDF4Integration(object):
         assert self.testInst.index.name not in init_meta
 
         # Update the metadata
-        with caplog.at_level(logging.WARNING, logger='pysat'):
+        with warnings.catch_warnings(record=True) as war:
             epoch_name = self.testInst.index.name
             new_meta = io.add_netcdf4_standards_to_metadict(self.testInst,
                                                             init_meta,
@@ -785,10 +785,11 @@ class TestNetCDF4Integration(object):
         # Test the logging message
         captured = caplog.text
         if missing:
-            assert captured.find('Unable to find MetaData for {:s}'.format(
-                drop_var)) >= 0
+            # Test the warning
+            wstr = ''.join(['Unable to find MetaData for ', drop_var])
+            testing.eval_warnings(war, [wstr], warn_type=UserWarning)
         else:
-            assert len(captured) == 0
+            assert len(war) == 0
 
         # Test the metadata update
         new_labels = ['Format', 'Var_Type', 'Depend_0', 'Display_Type']
