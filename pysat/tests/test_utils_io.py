@@ -1111,6 +1111,22 @@ class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
         return
 
 
+class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
+    """Integration tests for the netCDF4 I/O utils."""
+
+    def setup(self):
+        """Create a testing environment."""
+
+        # Create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray')
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
+        self.pformat = self.testInst.pandas_format
+
+        return
+
+
 class TestNetCDF4IntegrationXarrayModels(TestNetCDF4Integration):
     """Integration tests for the netCDF4 I/O utils."""
 
