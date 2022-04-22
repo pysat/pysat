@@ -808,9 +808,6 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     """
     # Load data by type
     if pandas_format:
-        if decode_times is not None:
-            estr = ''.join(['`decode_times` not supported for pandas.'])
-            raise ValueError(estr)
         data, meta = load_netcdf_pandas(fnames, strict_meta=strict_meta,
                                         file_format=file_format,
                                         epoch_name=epoch_name,
@@ -923,8 +920,18 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     load_netcdf
 
     """
+
+    if decode_times is not None:
+        estr = ''.join(['`decode_times` not supported for pandas.'])
+        raise ValueError(estr)
+
     if epoch_name is None:
-        pysat.logger.info('Assigning "Epoch" for time index.')
+        # I'm not sure if we need to have DeprecationWarnings.
+        # Starting at the most severe setting.
+        dstr = ''.join(['Assigning "Epoch" for time index. In the future, '
+                        'this will be updated to "time." Set a value ',
+                        'for `epoch_name` to silence this warning.'])
+        warnings.warn(dstr, DeprecationWarning, stacklevel=2)
         epoch_name = 'Epoch'
 
     # Ensure inputs are in the correct format
@@ -1204,7 +1211,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                'max_val': ('value_max', np.float64),
                                'fill_val': ('fill', np.float64)},
                        meta_processor=None, meta_translation=None,
-                       drop_meta_labels=None, decode_times=None):
+                       drop_meta_labels=None, decode_times=False):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -1281,15 +1288,16 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     load_netcdf
 
     """
-    if epoch_name is None:
-        dstr = ''.join(['Assigning "time" for time index label when written ',
-                        'to file.'])
-        pysat.logger.debug(dstr)
-        epoch_name = 'time'
 
     if decode_times is None:
-        pysat.logger.debug('Defaulting to `decode_times=False`.')
+        dstr = ''.join(['Defaulting to `decode_times=False`. In the future ',
+                        'the default will be updated to `True`. Set a value ',
+                        'for `decode_times` to silence this warning.'])
+        warnings.warn(dstr, DeprecationWarning, stacklevel=2)
         decode_times = False
+
+    if epoch_name is None:
+        epoch_name = 'time'
 
     # Ensure inputs are in the correct format
     fnames = pysat.utils.listify(fnames)
@@ -1589,7 +1597,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     # Check epoch name information
     if epoch_name is None:
         if inst.pandas_format:
-            pysat.logger.debug('Assigning "Epoch" for time index.')
+            dstr = ''.join(['Assigning "Epoch" for time label when written',
+                            ' to file. In the future, the default will ',
+                            'be updated to "time."'])
+            warnings.warn(dstr, DeprecationWarning, stacklevel=2)
             epoch_name = 'Epoch'
         else:
             pysat.logger.debug('Assigning "time" for time index.')
