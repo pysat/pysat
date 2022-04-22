@@ -930,7 +930,7 @@ class TestNetCDF4Integration(object):
         return
 
     @pytest.mark.parametrize('assign_flag', [True, False])
-    def test_meta_processor_to_netcdf4(self, assign_flag):
+    def test_meta_processor_to_from_netcdf4(self, assign_flag):
         """Test impact of meta_processor on netCDF output.
 
         Parameters
@@ -942,11 +942,13 @@ class TestNetCDF4Integration(object):
 
         """
 
+        # Target meta info
         present = ['testing_metadata_pysat_answer',
                    'testing_metadata_pysat_question']
+        qstr = 'simulation running'
 
-        def meta_proc(meta_dict):
-            """Test meta processor function.
+        def to_meta_proc(meta_dict):
+            """Test meta processor function when writing data.
 
             Parameters
             ----------
@@ -964,10 +966,9 @@ class TestNetCDF4Integration(object):
             assert isinstance(meta_dict, dict)
 
             # Add metadata info
-            dstr = 'simulation running'
             for var in meta_dict.keys():
                 meta_dict[var][present[0]] = 42
-                meta_dict[var][present[1]] = dstr
+                meta_dict[var][present[1]] = qstr
 
             # Remove normally present info
             for var in meta_dict.keys():
@@ -979,11 +980,11 @@ class TestNetCDF4Integration(object):
         # Write the file
         outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
         if assign_flag:
-            self.testInst._export_meta_post_processing = meta_proc
+            self.testInst._export_meta_post_processing = to_meta_proc
             pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
         else:
             pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
-                                          meta_processor=meta_proc)
+                                          meta_processor=to_meta_proc)
 
         # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
@@ -994,6 +995,44 @@ class TestNetCDF4Integration(object):
                 if 'MonoTon' not in test_vars:
                     testing.assert_list_contains(present, test_vars)
                     assert 'units' not in test_vars, "'units' found!"
+
+        # Test loading data via pysat
+        def from_meta_proc(meta_dict):
+            """Test meta processor function when loading data.
+
+            Parameters
+            ----------
+            meta_dict : dict
+                Dictionary keyed by variable name, mapping to another
+                dictionary with all variable metadata.
+
+            Returns
+            -------
+            proc_dict : dict
+                Dictionary to be passed to pysat.
+
+            """
+
+            assert isinstance(meta_dict, dict)
+
+            # Add metadata info
+            for var in meta_dict.keys():
+                meta_dict[var][present[0]] = 24
+                meta_dict[var][present[1]] = qstr[::-1]
+
+            return meta_dict
+
+        # Load the file
+        data, meta = pysat.utils.io.load_netcdf(outfile,
+                                                meta_processor=from_meta_proc)
+        for var in meta.keys():
+            # Confirm from_meta_... info
+            assert meta[var][present[0]] == 24
+            assert meta[var][present[1]] == qstr[::-1]
+
+            # Confirm system handles lack of 'units' in file since it
+            # is a default metadata label.
+            assert self.testInst.meta.labels.units in meta[var]
 
         return
 
