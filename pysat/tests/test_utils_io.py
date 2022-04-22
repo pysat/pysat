@@ -608,13 +608,14 @@ class TestNetCDF4Integration(object):
         self.testInst = pysat.Instrument('pysat', 'testing')
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
+        self.pformat = self.testInst.pandas_format
 
         return
 
     def teardown(self):
         """Clean up the test environment."""
 
-        del self.testInst
+        del self.testInst, self.pformat
         return
 
     @pytest.mark.parametrize('use_method', [True, False])
@@ -914,7 +915,8 @@ class TestNetCDF4Integration(object):
 
         # Load the file
         data, meta = pysat.utils.io.load_netcdf(outfile,
-                                                meta_translation=inv_trans)
+                                                meta_translation=inv_trans,
+                                                pandas_format=self.pformat)
 
         # Confirm inverse translation worked.
         attrs = list(meta.attrs())
@@ -1024,7 +1026,8 @@ class TestNetCDF4Integration(object):
 
         # Load the file
         data, meta = pysat.utils.io.load_netcdf(outfile,
-                                                meta_processor=from_meta_proc)
+                                                meta_processor=from_meta_proc,
+                                                pandas_format=self.pformat)
         for var in meta.keys():
             # Confirm from_meta_... info
             assert meta[var][present[0]] == 24
@@ -1033,6 +1036,93 @@ class TestNetCDF4Integration(object):
             # Confirm system handles lack of 'units' in file since it
             # is a default metadata label.
             assert self.testInst.meta.labels.units in meta[var]
+
+        return
+
+    def test_missing_metadata(self):
+        """Test writing file with no metadata."""
+
+        # Collect a list of higher order meta
+        ho_vars = []
+        for var in self.testInst.meta.keys():
+            if 'children' in self.testInst.meta[var]:
+                if self.testInst.meta[var]['children'] is not None:
+                    for subvar in self.testInst.meta[var]['children'].keys():
+                        ho_vars.append((subvar, var))
+
+        # Drop all metadata
+        self.testInst.meta.keep([])
+
+        # Write file
+        outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
+        with warnings.catch_warnings(record=True) as war:
+            io.inst_to_netcdf(self.testInst, outfile)
+
+        # Define warnings to be expected
+        exp_warns = []
+        for var in self.testInst.vars_no_time:
+            wstr = ''.join(['Unable to find MetaData for ', var])
+            exp_warns.append(wstr)
+
+        # Test the warning
+        testing.eval_warnings(war, exp_warns, warn_type=UserWarning)
+
+        # Test warning for higher order data as well (pandas)
+        for (svar, var) in ho_vars:
+            wstr = ''.join(['Unable to find MetaData for ',
+                            svar, ' subvariable of ', var])
+            exp_warns.append(wstr)
+
+        # Test the warning
+        testing.eval_warnings(war, exp_warns, warn_type=UserWarning)
+
+        return
+
+
+class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
+    """Integration tests for the netCDF4 I/O utils."""
+
+    def setup(self):
+        """Create a testing environment."""
+
+        # Create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray')
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
+        self.pformat = self.testInst.pandas_format
+
+        return
+
+
+class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
+    """Integration tests for the netCDF4 I/O utils."""
+
+    def setup(self):
+        """Create a testing environment."""
+
+        # Create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.testInst = pysat.Instrument('pysat', 'testing2D')
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
+        self.pformat = self.testInst.pandas_format
+
+        return
+
+
+class TestNetCDF4IntegrationXarrayModels(TestNetCDF4Integration):
+    """Integration tests for the netCDF4 I/O utils."""
+
+    def setup(self):
+        """Create a testing environment."""
+
+        # Create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.testInst = pysat.Instrument('pysat', 'testmodel')
+        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
+                           use_header=True)
+        self.pformat = self.testInst.pandas_format
 
         return
 
