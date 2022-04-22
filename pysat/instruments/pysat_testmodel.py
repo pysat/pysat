@@ -76,6 +76,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq=freq_str,
                                                start_time=start_time)
+    epoch_name = 'time'
 
     # Define range of simulated model as well as data, depending upon tag.
     if tag == '':
@@ -83,7 +84,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
         longitude = np.linspace(0, 360, 72, endpoint=False)
         altitude = np.linspace(300, 500, 41)
         data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
-                          coords={'time': index, 'latitude': latitude,
+                          coords={epoch_name: index, 'latitude': latitude,
                                   'longitude': longitude, 'altitude': altitude})
 
     else:
@@ -92,8 +93,8 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
         lev = np.linspace(-7, 7, 57)
         ilev = np.linspace(-6.875, 7.125, 57)
 
-        data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
-                          coords={'time': index, 'latitude': latitude,
+        data = xr.Dataset({'uts': ((epoch_name), np.mod(uts, 86400.))},
+                          coords={epoch_name: index, 'latitude': latitude,
                                   'longitude': longitude, 'lev': lev,
                                   'ilev': ilev})
 
@@ -112,7 +113,7 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = i * 10. + j + inc_arr
         dummy0.data *= 100000.
-        data['altitude'] = (('time', 'ilev', 'latitude', 'longitude'),
+        data['altitude'] = ((epoch_name, 'ilev', 'latitude', 'longitude'),
                             dummy0.data)
 
         # Create fake 4D ion drift data set
@@ -125,30 +126,46 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = 2. * i * (np.sin(2 * np.pi * j / 24.)
                                                + inc_arr)
-        data['dummy_drifts'] = (('time', 'ilev', 'latitude', 'longitude'),
+        data['dummy_drifts'] = ((epoch_name, 'ilev', 'latitude', 'longitude'),
                                 dummy0.data)
 
     slt = np.zeros([len(uts), len(longitude)])
     for i, ut in enumerate(uts):
         for j, long in enumerate(longitude):
             slt[i, j] = np.mod(ut / 3600.0 + long / 15.0, 24.0)
-    data['slt'] = (('time', 'longitude'), slt)
-    data['mlt'] = (('time', 'longitude'), np.mod(slt + 0.2, 24.0))
+    data['slt'] = ((epoch_name, 'longitude'), slt)
+    data['mlt'] = ((epoch_name, 'longitude'), np.mod(slt + 0.2, 24.0))
 
     # Fake 3D data consisting of non-physical values between 0 and 21 everywhere
     # Used for interpolation routines in pysatModels
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)
-    data['dummy1'] = (('time', 'latitude', 'longitude'), dummy1.data)
+    data['dummy1'] = ((epoch_name, 'latitude', 'longitude'), dummy1.data)
+    data['string_dummy'] = ((epoch_name),
+                            ['test'] * len(data.indexes[epoch_name]))
+    data['unicode_dummy'] = ((epoch_name),
+                             [u'test'] * len(data.indexes[epoch_name]))
+    data['int8_dummy'] = ((epoch_name),
+                          np.array([1] * len(data.indexes[epoch_name]),
+                          dtype=np.int8))
+    data['int16_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
+                           dtype=np.int16))
+    data['int32_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
+                           dtype=np.int32))
+    data['int64_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
+                           dtype=np.int64))
 
     if tag == '':
         # Fake 4D data consisting of non-physical values between 0 and 21
         # everywhere. Used for interpolation routines in pysatModels
         dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
-        data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'),
+        data['dummy2'] = ((epoch_name, 'latitude', 'longitude', 'altitude'),
                           dummy2.data)
 
     # Set the meta data.
-    meta = mm_test.initialize_test_meta('time', data.keys())
+    meta = mm_test.initialize_test_meta(epoch_name, data.keys())
 
     # Adjust metadata from overall defaults
     meta['dummy1'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,

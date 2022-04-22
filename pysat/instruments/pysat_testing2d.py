@@ -138,6 +138,13 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     alt0 = 400.0
     data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
+    data['string_dummy'] = ['test'] * len(data)
+    data['unicode_dummy'] = [u'test'] * len(data)
+    data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
+    data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
+    data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
+    data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
+
     if malformed_index:
         index = index.tolist()
         # nonmonotonic
