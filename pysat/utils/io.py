@@ -1464,7 +1464,6 @@ def xarray_vars_no_time(data, time_label='time'):
     vars = list(data.variables.keys())
 
     # Remove `time_label` dimension
-    # dims = list(data.dims)
     if time_label in vars:
         for i, var in enumerate(vars):
             if var == time_label:
@@ -1472,18 +1471,20 @@ def xarray_vars_no_time(data, time_label='time'):
                 return vars
     else:
         estr = ''.join(["Didn't find time dimension '", time_label,
-                        "' as provided by user. Falling back to guessing."])
-        warnings.warn(estr, stacklevel=2)
+                        "' as provided by user."])
+        raise ValueError(estr)
 
-    # Remove things in the .indexes area.
-    return_vars = copy.deepcopy(vars)
-    indexes = list(data.indexes)
-    if len(indexes) > 0:
-        for i, var in enumerate(vars):
-            if var in indexes:
-                return_vars.pop(i)
+    return
 
-    return return_vars
+    # # Remove things in the .indexes area.
+    # return_vars = copy.deepcopy(vars)
+    # indexes = list(data.indexes)
+    # if len(indexes) > 0:
+    #     for i, var in enumerate(vars):
+    #         if var in indexes:
+    #             return_vars.pop(i)
+    #
+    # return return_vars
 
     # # If `time_label` not labeled as such, let's look for datetime data in 1D
     # if len(dims) > 0:
