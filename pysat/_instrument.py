@@ -2621,6 +2621,9 @@ class Instrument(object):
     def generic_meta_translator(self, input_meta):
         """Convert the `input_meta` metadata into a dictionary.
 
+        .. deprecated:: 3.2.0
+           `generic_meta_translator` will be removed in the 3.2.0+ release.
+
         Parameters
         ----------
         input_meta : pysat.Meta
@@ -2639,12 +2642,16 @@ class Instrument(object):
 
         """
 
-        meta_dict = self.meta.to_dict()
+        dstr = ''.join(['This function has been deprecated. Please see ',
+                        '`pysat.utils.io.apply_table_translation_to_file` and ',
+                        '`self.meta.to_dict` to get equivalent functionality.'])
+        warnings.warn(dstr, DeprecationWarning, stacklevel=2)
+
+        meta_dict = input_meta.to_dict()
         trans_table = self._meta_translation_table
         exp_dict = pysat.utils.io.apply_table_translation_to_file(self,
                                                                   meta_dict,
                                                                   trans_table)
-        # exp_dict = input_meta.to_translated_dict(self._meta_translation_table)
 
         return exp_dict
 
