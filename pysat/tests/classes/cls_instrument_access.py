@@ -8,6 +8,7 @@ Includes:
 * concat
 * empty data flags
 * variable renaming
+* generic meta translation
 
 Note
 ----
