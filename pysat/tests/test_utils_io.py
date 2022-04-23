@@ -30,6 +30,8 @@ class TestLoadNetCDF(object):
 
         # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params['data_dirs'] = self.tempdir.name
 
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=100, update_files=True)
@@ -43,6 +45,8 @@ class TestLoadNetCDF(object):
     def teardown(self):
         """Clean up the test environment."""
 
+        pysat.params['data_dirs'] = self.saved_path
+
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime, self.epoch_name
 
@@ -50,7 +54,7 @@ class TestLoadNetCDF(object):
         self.tempdir.cleanup()
 
         # Clear the directory attributes
-        del self.tempdir
+        del self.tempdir, self.saved_path
         return
 
     def eval_loaded_data(self, test_case=True):
@@ -167,9 +171,11 @@ class TestLoadNetCDF(object):
 
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
-            'pysat', 'netcdf', directory_format=file_path,
+            'pysat', 'netcdf', data_dir=file_path,
             file_format=file_root, pandas_format=self.testInst.pandas_format,
             update_files=True)
+        print('Testing load. ', file_path, netcdf_inst.files.data_path,
+              self.tempdir.name)
         netcdf_inst.load(date=self.stime, use_header=True)
 
         # Test the loaded Instrument data
@@ -473,7 +479,8 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         #         ignore_cleanup_errors=True)
         # else:
         self.tempdir = tempfile.TemporaryDirectory()
-        pysat.params['data_dirs'] = [self.tempdir.name]
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params['data_dirs'] = self.tempdir.name
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
@@ -489,6 +496,8 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
     def teardown(self):
         """Clean up the test environment."""
 
+        pysat.params['data_dirs'] = self.saved_path
+
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime, self.epoch_name
 
@@ -502,7 +511,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         #     pass
 
         # Clear the directory attributes
-        del self.tempdir
+        del self.tempdir, self.saved_path
         return
 
     @pytest.mark.parametrize("kwargs,target", [({}, False),
@@ -560,6 +569,9 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
 
         # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params['data_dirs'] = self.tempdir.name
+
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
                                          update_files=True, num_samples=100)
         self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
@@ -572,6 +584,8 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
     def teardown(self):
         """Clean up the test environment."""
 
+        pysat.params['data_dirs'] = self.saved_path
+
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime, self.epoch_name
 
@@ -579,7 +593,7 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         self.tempdir.cleanup()
 
         # Clear the directory attributes
-        del self.tempdir
+        del self.tempdir, self.saved_path
         return
 
 
