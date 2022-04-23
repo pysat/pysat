@@ -468,12 +468,12 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
 
         # Create temporary directory
         # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
-        if sys.version_info.minor >= 10:
-            self.tempdir = tempfile.TemporaryDirectory(
-                ignore_cleanup_errors=True)
-        else:
-            self.tempdir = tempfile.TemporaryDirectory()
-            pysat.params['data_dirs'] = [self.tempdir.name]
+        # if sys.version_info.minor >= 10:
+        #     self.tempdir = tempfile.TemporaryDirectory(
+        #         ignore_cleanup_errors=True)
+        # else:
+        self.tempdir = tempfile.TemporaryDirectory()
+        pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
@@ -496,10 +496,10 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # by raising a wide variety of different error messages. Python 3.10+
         # can handle this, but lower Python versions cannot.
         # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
-        try:
-            self.tempdir.cleanup()
-        except:  # noqa E722
-            pass
+        # try:
+        self.tempdir.cleanup()
+        # except:  # noqa E722
+        #     pass
 
         # Clear the directory attributes
         del self.tempdir
