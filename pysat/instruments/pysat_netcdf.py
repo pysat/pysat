@@ -138,7 +138,7 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                  'plot': ('plot_label', str), 'axis': ('axis', str),
                  'scale': ('scale', str), 'min_val': ('value_min', np.float64),
                  'max_val': ('value_max', np.float64),
-                 'fill_val': ('fill', np.float64)}):
+                 'fill_val': ('fill', np.float64)}, decode_times=None):
     """Load pysat-created NetCDF data and meta data.
 
     Parameters
@@ -193,6 +193,12 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+    decode_times : bool or NoneType
+        If True, variables with unit attributes that are 'timelike' ('hours',
+        'minutes', etc) are converted to `np.timedelta64` by xarray. If False,
+        then `epoch_name` will be converted to datetime using `epoch_unit`
+        and `epoch_origin`. If None, will be set to False for backwards
+        compatibility. For xarray only. (default=None)
 
     Returns
     -------
@@ -211,6 +217,7 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                                              epoch_origin=epoch_origin,
                                              pandas_format=pandas_format,
                                              decode_timedelta=decode_timedelta,
-                                             labels=labels)
+                                             labels=labels,
+                                             decode_times=decode_times)
 
     return data, mdata
