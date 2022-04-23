@@ -783,10 +783,8 @@ class TestNetCDF4Integration(object):
                                                             init_meta,
                                                             epoch_name)
 
-        # Test the logging message
-        captured = caplog.text
+        # Test the warning message
         if missing:
-            # Test the warning
             wstr = ''.join(['Unable to find MetaData for ', drop_var])
             testing.eval_warnings(war, [wstr], warn_type=UserWarning)
         else:
