@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------
 """Tests the pysat Meta object."""
 
+import copy
 import logging
 import numpy as np
 import os
@@ -643,6 +644,37 @@ class TestMeta(object):
 
     # -------------------------------------
     # Test the class with standard metadata
+
+    def test_accept_default_labels(self):
+        """Test `Meta.accept_default_labels."""
+
+        # Start with default test labels
+        other_labels = copy.deepcopy(self.meta_labels)
+
+        # Remove 'units' label
+        other_labels.pop('units')
+
+        # Modify remaining labels
+        for label in other_labels.keys():
+            other_labels[label] = (self.meta_labels[label][0].upper(),
+                                   self.meta_labels[label][1])
+
+        # Define new label
+        other_labels['new_label_label'] = ('new_data_label', np.int)
+
+        # Run function
+        other_meta = pysat.Meta(labels=other_labels)
+        self.meta.accept_default_labels(other_meta)
+
+        # Confirm results at MetaLabels level
+        other_meta_labels = pysat.MetaLabels(metadata=pysat.Meta(),
+                                             **other_labels)
+
+        # Confirm underlying information correct
+        assert self.meta.labels.label_type == other_meta_labels.label_type
+        assert self.meta.labels.label_attrs == other_meta_labels.label_attrs
+
+        return
 
     @pytest.mark.parametrize("custom_attr", [None, 'custom_meta'])
     @pytest.mark.parametrize("assign_type", [dict, pds.Series])
