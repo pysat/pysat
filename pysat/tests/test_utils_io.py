@@ -178,12 +178,13 @@ class TestLoadNetCDF(object):
             update_files=True)
 
         # Confirm data path is correct
-        assert netcdf_inst.files.data_path == self.tempdir.name
+        assert os.path.normpath(netcdf_inst.files.data_path)\
+               == os.path.normpath(self.tempdir.name)
         print('Testing load. ', file_path, netcdf_inst.files.data_path,
               self.tempdir.name)
 
         # Delete the file
-        shutil.rmtree(outfile)
+        os.remove(outfile)
 
         # Load data
         netcdf_inst.load(date=self.stime, use_header=True)
