@@ -2125,3 +2125,153 @@ class TestDeprecation(object):
         testing.eval_warnings(war, self.warn_msgs)
 
         return
+
+
+class TestToDict(object):
+    """Test `.to_dict` functions using pysat test Instruments."""
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5)
+        self.stime = pysat.instruments.pysat_testing._test_dates[
+            '']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+        del self.testInst, self.stime, self.out
+
+        return
+
+    @pytest.mark.parametrize("preserve_case", [False, True])
+    def test_to_dict(self, preserve_case):
+        """Test `to_dict` function.
+
+        Parameters
+        ----------
+        preserve_case : bool
+            Flag passed along to `to_dict`
+
+        """
+
+        self.out = self.testInst.meta.to_dict(preserve_case=preserve_case)
+
+        # Confirm type
+        assert isinstance(self.out, dict)
+
+        # Check for higher order products
+        ho_vars = []
+        for var in self.testInst.meta.keys():
+            if 'children' in self.testInst.meta[var]:
+                if self.testInst.meta[var]['children'] is not None:
+                    for subvar in self.testInst.meta[var]['children'].keys():
+                        ho_vars.append('_'.join([var, subvar]))
+
+        # Confirm the contents of the output for variables
+        for var in self.out.keys():
+            if var not in ho_vars:
+                for label in self.out[var]:
+                    assert label in self.testInst.meta.data.columns
+                    assert testing.nan_equal(self.out[var][label],
+                                             self.testInst.meta[var][label]), \
+                        'Differing values.'
+
+        # Confirm case
+        if not preserve_case:
+            # Outputs should all be lower case
+            for key in self.out.keys():
+                assert key == key.lower(), 'Output not lower case.'
+            for key in ho_vars:
+                assert key == key.lower()
+                assert key.lower() in self.out
+        else:
+            # Case should be preserved
+            for key in self.out.keys():
+                assert key == self.testInst.meta.var_case_name(key), \
+                    'Output case different.'
+            for key in ho_vars:
+                assert key in self.out, 'Output case different, or missing.'
+
+        num_target_vars = len(ho_vars) + len(list(self.testInst.meta.keys()))
+        assert num_target_vars == len(self.out), \
+            'Different number of variables.'
+
+        return
+
+
+class TestToDictXarray(TestToDict):
+    """Test `.to_dict` functions using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testing_xarray._test_dates[
+            '']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+
+class TestToDictXarray2D(TestToDict):
+    """Test `.to_dict` functions using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testing_xarray._test_dates[
+            '']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+
+class TestToDictPandas2D(TestToDict):
+    """Test `.to_dict` functions using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing2d',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testing2d._test_dates[
+            '']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+
+class TestToDictXarrayModel(TestToDict):
+    """Test `.to_dict` functions using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testmodel',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testmodel._test_dates[
+            '']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
