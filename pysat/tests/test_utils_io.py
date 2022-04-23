@@ -180,11 +180,6 @@ class TestLoadNetCDF(object):
         # Confirm data path is correct
         assert os.path.normpath(netcdf_inst.files.data_path)\
                == os.path.normpath(self.tempdir.name)
-        print('Testing load. ', file_path, netcdf_inst.files.data_path,
-              self.tempdir.name)
-
-        # Delete the file
-        os.remove(outfile)
 
         # Load data
         netcdf_inst.load(date=self.stime, use_header=True)
@@ -233,7 +228,11 @@ class TestLoadNetCDF(object):
                                 var, attr, repr(ival),
                                 repr(netcdf_inst.meta[var, attr])))
 
-        del netcdf_inst
+        del netcdf_inst.data, netcdf_inst
+
+        # Delete the file
+        os.remove(outfile)
+
         return
 
     def test_write_netcdf4_duplicate_variable_names(self):
