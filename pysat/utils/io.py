@@ -1493,28 +1493,6 @@ def xarray_vars_no_time(data, time_label='time'):
 
     return
 
-    # # Remove things in the .indexes area.
-    # return_vars = copy.deepcopy(vars)
-    # indexes = list(data.indexes)
-    # if len(indexes) > 0:
-    #     for i, var in enumerate(vars):
-    #         if var in indexes:
-    #             return_vars.pop(i)
-    #
-    # return return_vars
-
-    # # If `time_label` not labeled as such, let's look for datetime data in 1D
-    # if len(dims) > 0:
-    #     for dim in dims:
-    #         if str(data[dim].data.dtype).find('datetime') > 0:
-    #             if len(data[dim].data.shape) == 1:
-    #                 for i, var in enumerate(vars):
-    #                     if var == dim:
-    #                         vars.pop(i)
-    #                         return vars
-    #
-    # return []
-
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                    mode='w', zlib=False, complevel=4, shuffle=True,
