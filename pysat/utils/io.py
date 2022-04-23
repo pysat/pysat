@@ -1487,8 +1487,7 @@ def xarray_vars_no_time(data, time_label='time'):
                 vars.pop(i)
                 return vars
     else:
-        estr = ''.join(["Didn't find time dimension '", time_label,
-                        "' as provided by user."])
+        estr = ''.join(["Didn't find time dimension '", time_label, "'"])
         raise ValueError(estr)
 
     return
