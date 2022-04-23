@@ -799,48 +799,59 @@ class TestNetCDF4Integration(object):
                 assert label not in init_meta[var]
                 assert label in new_meta[var]
 
-        return
-
-    def test_add_netcdf4_standards_to_ho_meta(self):
-        """Test for SPDF ISTP/IACG NetCDF standards with HO data."""
-
-        # Reset the test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing2d')
-        self.testInst.load(
-            date=pysat.instruments.pysat_testing2d._test_dates[''][''],
-            use_header=True)
-
-        # Save the un-updated metadata
-        init_meta = self.testInst.meta.to_dict()
-
-        # Test the initial meta data for missing Epoch time
-        assert self.testInst.index.name not in init_meta
-
-        # Update the metadata
-        epoch_name = self.testInst.index.name
-        new_meta = io.add_netcdf4_standards_to_metadict(self.testInst,
-                                                        init_meta,
-                                                        epoch_name)
-
-        # Test the metadata update
-        new_labels = ['Format', 'Var_Type', 'Depend_0', 'Display_Type']
-        assert new_meta != init_meta
-
-        for var in init_meta.keys():
-            for label in new_labels:
-                assert label not in init_meta[var]
-                assert label in new_meta[var]
-
-            assert 'Depend_1' not in init_meta[var]
+            if self.testInst.name == 'testing2D':
+                assert 'Depend_1' not in init_meta[var]
 
         # Check for higher dimensional data properties
-        for var in self.testInst.vars_no_time:
-            if self.testInst.meta[var].children is not None:
-                assert 'Depend_1' in new_meta[var]
-            else:
-                assert 'Depend_1' not in new_meta[var]
+        if self.testInst.name == 'testing2D':
+            for var in self.testInst.vars_no_time:
+                if self.testInst.meta[var].children is not None:
+                    assert 'Depend_1' in new_meta[var]
+                else:
+                    assert 'Depend_1' not in new_meta[var]
 
         return
+
+    # def test_add_netcdf4_standards_to_ho_meta(self):
+    #     """Test for SPDF ISTP/IACG NetCDF standards with HO data."""
+    #
+    #     # Reset the test instrument
+    #     self.testInst = pysat.Instrument('pysat', 'testing2d')
+    #     self.testInst.load(
+    #         date=pysat.instruments.pysat_testing2d._test_dates[''][''],
+    #         use_header=True)
+    #
+    #     # Save the un-updated metadata
+    #     init_meta = self.testInst.meta.to_dict()
+    #
+    #     # Test the initial meta data for missing Epoch time
+    #     assert self.testInst.index.name not in init_meta
+    #
+    #     # Update the metadata
+    #     epoch_name = self.testInst.index.name
+    #     new_meta = io.add_netcdf4_standards_to_metadict(self.testInst,
+    #                                                     init_meta,
+    #                                                     epoch_name)
+    #
+    #     # Test the metadata update
+    #     new_labels = ['Format', 'Var_Type', 'Depend_0', 'Display_Type']
+    #     assert new_meta != init_meta
+    #
+    #     for var in init_meta.keys():
+    #         for label in new_labels:
+    #             assert label not in init_meta[var]
+    #             assert label in new_meta[var]
+    #
+    #         assert 'Depend_1' not in init_meta[var]
+    #
+    #     # Check for higher dimensional data properties
+    #     for var in self.testInst.vars_no_time:
+    #         if self.testInst.meta[var].children is not None:
+    #             assert 'Depend_1' in new_meta[var]
+    #         else:
+    #             assert 'Depend_1' not in new_meta[var]
+    #
+    #     return
 
     @pytest.mark.parametrize('meta_trans', [{'units': ['testingFillVal',
                                                        'testing_FillValue',
