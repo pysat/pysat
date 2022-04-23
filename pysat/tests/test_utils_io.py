@@ -1243,7 +1243,6 @@ class TestXarrayIO(object):
                                     repr(var), repr(label)))
         return
 
-
     @pytest.mark.parametrize('time_label', ['time', 'wrong_time'])
     def test_xarray_vars_no_time(self, time_label):
         """Test `xarray_vars_no_time`."""
