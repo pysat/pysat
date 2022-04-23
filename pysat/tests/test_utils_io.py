@@ -7,6 +7,8 @@
 
 import datetime as dt
 import logging
+import shutil
+
 import numpy as np
 import os
 import pandas as pds
@@ -179,6 +181,9 @@ class TestLoadNetCDF(object):
         assert netcdf_inst.files.data_path == self.tempdir.name
         print('Testing load. ', file_path, netcdf_inst.files.data_path,
               self.tempdir.name)
+
+        # Delete the file
+        shutil.rmtree(outfile)
 
         # Load data
         netcdf_inst.load(date=self.stime, use_header=True)
