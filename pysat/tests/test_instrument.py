@@ -386,6 +386,21 @@ class TestDeprecation(object):
         testing.eval_warnings(self.war, self.warn_msgs)
         return
 
+    def test_generic_meta_translator(self):
+        """Test deprecation of `generic_meta_translator`."""
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as self.war:
+            tinst = pysat.Instrument(**self.in_kwargs)
+            tinst.generic_meta_translator(tinst.meta)
+
+        self.warn_msgs = np.array(["".join(["This function has been deprecated",
+                                            ". Please see ",])])
+
+        # Evaluate the warning output
+        self.eval_warnings()
+        return
+
     def test_download_freq_kwarg(self):
         """Test deprecation of download kwarg `freq`."""
 
