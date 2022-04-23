@@ -2129,6 +2129,7 @@ class TestDeprecation(object):
 
 class TestToDict(object):
     """Test `.to_dict` functions using pysat test Instruments."""
+
     def setup(self):
         """Set up the unit test environment for each method."""
 
@@ -2187,8 +2188,8 @@ class TestToDict(object):
             for key in self.out.keys():
                 assert key == key.lower(), 'Output not lower case.'
             for key in ho_vars:
-                assert key == key.lower()
-                assert key.lower() in self.out
+                assert key == key.lower(), 'Output not lower case.'
+                assert key.lower() in self.out, 'Missing output variable.'
         else:
             # Case should be preserved
             for key in self.out.keys():
@@ -2274,4 +2275,3 @@ class TestToDictXarrayModel(TestToDict):
         self.out = None
 
         return
-
