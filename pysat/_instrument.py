@@ -2639,7 +2639,12 @@ class Instrument(object):
 
         """
 
-        exp_dict = input_meta.to_translated_dict(self._meta_translation_table)
+        meta_dict = self.meta.to_dict()
+        trans_table = self._meta_translation_table
+        exp_dict = pysat.utils.io.apply_table_translation_to_file(self,
+                                                                  meta_dict,
+                                                                  trans_table)
+        # exp_dict = input_meta.to_translated_dict(self._meta_translation_table)
 
         return exp_dict
 
