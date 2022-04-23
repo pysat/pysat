@@ -174,8 +174,13 @@ class TestLoadNetCDF(object):
             'pysat', 'netcdf', data_dir=file_path,
             file_format=file_root, pandas_format=self.testInst.pandas_format,
             update_files=True)
+
+        # Confirm data path is correct
+        assert netcdf_inst.files.data_path == self.tempdir.name
         print('Testing load. ', file_path, netcdf_inst.files.data_path,
               self.tempdir.name)
+
+        # Load data
         netcdf_inst.load(date=self.stime, use_header=True)
 
         # Test the loaded Instrument data
@@ -1230,6 +1235,33 @@ class TestXarrayIO(object):
                             raise AssertionError(
                                 'unequal meta data for {:}, {:}'.format(
                                     repr(var), repr(label)))
+        return
+
+
+    @pytest.mark.parametrize('time_label', ['time', 'wrong_time'])
+    def test_xarray_vars_no_time(self, time_label):
+        """Test `xarray_vars_no_time`."""
+
+        if time_label == 'time':
+            vars = io.xarray_vars_no_time(self.testInst.data,
+                                          time_label=time_label)
+        else:
+            with pytest.raises(ValueError) as verr:
+                vars = io.xarray_vars_no_time(self.testInst.data,
+                                              time_label=time_label)
+            estr = ''.join(["Didn't find time dimension ", time_label])
+            assert str(verr).find(estr)
+            return
+
+        xarray_vars = self.testInst.data.variables
+        for var in vars:
+            assert var in xarray_vars
+
+        # Confirm 'time' not present
+        assert 'time' not in vars
+
+        assert len(xarray_vars) == len(vars) + 1
+
         return
 
 
