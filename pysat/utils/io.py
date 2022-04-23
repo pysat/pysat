@@ -2035,4 +2035,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         # Write the netCDF4 file
         xr_data.to_netcdf(fname, mode=mode, encoding=encoding)
 
+        # Close for safety.
+        xr_data.close()
+
     return
