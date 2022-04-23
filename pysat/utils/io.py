@@ -1340,7 +1340,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
         data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta,
-                               decode_times=decode_times)
+                               decode_times=decode_times, cache=False)
     else:
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords', decode_times=decode_times)
