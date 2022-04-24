@@ -1055,7 +1055,8 @@ class InstAccessTests(object):
         """Test `generic_meta_translator`."""
 
         # Get default meta translation table
-        trans_table = pysat.utils.io.default_to_netcdf_translation_table()
+        trans_table = pysat.utils.io.default_to_netcdf_translation_table(
+            self.testInst)
 
         # Load data
         self.testInst.load(date=self.ref_time)
