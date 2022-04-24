@@ -3055,15 +3055,6 @@ class Instrument(object):
                 default_warn = default_warn.format(', '.join(warn_missing_vars))
                 warnings.warn(default_warn, stacklevel=2)
 
-        # # Check if load routine actually returned information meta
-        # if self.meta.data.empty:
-        #     vars = self.vars_no_time
-        #     if len(vars) > 0:
-        #         estr = ''.join(['No information found within returned Meta ',
-        #                         'instance. Assigning defaults.'])
-        #         warnings.warn(estr, stacklevel=2)
-        #         self.meta[vars] = {self.meta.labels.name: vars}
-
         # If loading by file and there is data, set the yr, doy, and date
         if not self._load_by_date and not self.empty:
             if self.pad is not None:
