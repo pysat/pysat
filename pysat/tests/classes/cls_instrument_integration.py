@@ -39,8 +39,8 @@ class InstIntegrationTests(object):
 
     """
 
-    def test_a_no_stale_data_paths(self):
-        """Ensure stale data paths are retained by pysat.Instrument.files."""
+    def test_no_stale_data_paths(self, caplog):
+        """Ensure stale data paths aren't retained by pysat.Instrument.files."""
 
         inst_str = repr(self.testInst)
         inst_str = inst_str.replace('update_files=True', 'update_files=False')
@@ -49,17 +49,27 @@ class InstIntegrationTests(object):
         # There should still be a list of files
         assert len(self.testInst.files.files) > 0
 
-        # Change pysat directory to something else
+        # Change pysat directory to temporary directory
         tempdir = tempfile.TemporaryDirectory()
-
         saved_dir = pysat.params['data_dirs']
         pysat.params['data_dirs'] = tempdir.name
 
-        # Make another new instrument now that `data_dirs` changed.
-        self.testInst = eval(inst_str)
+        # Make another new instrument now that `data_dirs` changed. Normally,
+        # pysat will use whatever directory was stored with the list of
+        # files. However, since the sata directory has changed, pysat should
+        # notice the directory is stale and correct the situation.
+        with caplog.at_level(logging.DEBUG, logger='pysat'):
+            self.testInst = eval(inst_str)
 
-        # Restore pysat directory
+        # Restore pysat directory before any further assertions
         pysat.params['data_dirs'] = saved_dir
+
+        # Ensure debug message printed for observed change in data directories
+        dstr = ' '.join(['`data_path` found',
+                         'in stored file list is not in',
+                         'current supported `self.data_paths`.',
+                         'Ignoring stored path:'])
+        assert caplog.text.find(dstr)
 
         # Confirm the right data_path is present. `data_paths` is longer
         # than tempdir.name by instrument specific directories.
