@@ -230,8 +230,10 @@ class TestLoadNetCDF(object):
 
         del netcdf_inst.data, netcdf_inst
 
-        # Delete the file
-        os.remove(outfile)
+        # Delete the file. This doesn't work on Windows. It does work if
+        # executed before the netCDF is loaded. Despite our .close() statement
+        # in loading code, there are still open references.
+        # os.remove(outfile)
 
         return
 
