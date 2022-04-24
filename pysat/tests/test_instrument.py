@@ -14,12 +14,14 @@ import pysat.instruments.pysat_testing2d_xarray
 import pysat.instruments.pysat_testing_xarray
 
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
+from pysat.tests.classes.cls_instrument_integration import InstIntegrationTests
 from pysat.tests.classes.cls_instrument_iteration import InstIterationTests
 from pysat.tests.classes.cls_instrument_property import InstPropertyTests
 from pysat.utils import testing
 
 
-class TestBasics(InstAccessTests, InstIterationTests, InstPropertyTests):
+class TestBasics(InstIntegrationTests, InstAccessTests, InstIterationTests,
+                 InstPropertyTests):
     """Unit tests for pysat.Instrument object."""
 
     def setup_class(self):

@@ -626,6 +626,8 @@ class Files(object):
             # Storage file not present.
             return pds.Series([], dtype='a')
 
+        return
+
     def _remove_data_dir_path(self, file_series=None):
         """Remove the data directory path from filenames.
 
