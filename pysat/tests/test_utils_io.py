@@ -489,8 +489,8 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
                 ignore_cleanup_errors=True)
         else:
             self.tempdir = tempfile.TemporaryDirectory()
-            self.saved_path = pysat.params['data_dirs']
 
+        self.saved_path = pysat.params['data_dirs']
         pysat.params['data_dirs'] = self.tempdir.name
 
         self.testInst = pysat.Instrument(platform='pysat',
