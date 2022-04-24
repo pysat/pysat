@@ -780,7 +780,7 @@ class TestNetCDF4Integration(object):
         return
 
     @pytest.mark.parametrize('missing', [True, False])
-    def test_add_netcdf4_standards_to_meta(self, caplog, missing):
+    def test_add_netcdf4_standards_to_meta(self, missing):
         """Test for simplified SPDF ISTP/IACG NetCDF standards after update.
 
         Parameters
