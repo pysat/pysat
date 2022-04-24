@@ -397,7 +397,7 @@ class TestDeprecation(object):
             tinst.generic_meta_translator(tinst.meta)
 
         self.warn_msgs = np.array(["".join(["This function has been deprecated",
-                                            ". Please see ",])])
+                                            ". Please see "])])
 
         # Evaluate the warning output
         self.eval_warnings()
