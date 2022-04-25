@@ -181,6 +181,8 @@ class TestLoadNetCDF(object):
         assert os.path.normpath(netcdf_inst.files.data_path)\
                == os.path.normpath(self.tempdir.name)
 
+        # Deleting the test file here via os.remove(...) does work.
+
         # Load data
         netcdf_inst.load(date=self.stime, use_header=True)
 
