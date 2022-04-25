@@ -139,6 +139,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Prevent stale data paths stored by pysat from being reassigned if
      path is no longer in `pysat.params['data_dirs']`.
    * Added missing metadata in testing instruments.
+   * Corrected identification of string data for xarray in 
+     `pysat.Instrument._get_data_info`.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
