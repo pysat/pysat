@@ -867,6 +867,8 @@ class TestNetCDF4Integration(object):
             If True, assigns meta translation table as
             ._meta_translation_table. Otherwise, uses
             meta_translation keyword argument.
+        meta_trans : dict
+            Metadata label translation dict
 
         """
 

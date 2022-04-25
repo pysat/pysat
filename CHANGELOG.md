@@ -74,6 +74,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      excluding the main time index.
    * Added support for additional metdata and other file handling options 
      to general 'pysat', 'netcdf' instrument.
+   * Added keyword `decode_times` to flag using xarray or pysat processing
+     of times when loading a file via `pysat.utils.io.load_netcdf`.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
