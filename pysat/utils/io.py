@@ -1352,16 +1352,27 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                  origin=epoch_origin)
         data['time'] = xr.DataArray(edates, coords=data['time'].coords)
 
-    # Copy the variable attributes from the data object to the metadata
-    for key in data.variables.keys():
+    # Copy the variable attributes from the data object to the metadata.
+    # Need to get a list of all variables, dimensions, and coordinates.
+    all_vars = list(data.variables.keys())
+    dims = list(data.dims)
+    for dim in dims:
+        if dim not in all_vars:
+            all_vars.append(dim)
+    coords = list(data.coords)
+    for coord in coords:
+        if coord not in all_vars:
+            all_vars.append(dim)
+
+    for key in all_vars:
         meta_dict = {}
-        for nc_key in data.variables[key].attrs.keys():
-            meta_dict[nc_key] = data.variables[key].attrs[nc_key]
+        for nc_key in data[key].attrs.keys():
+            meta_dict[nc_key] = data[key].attrs[nc_key]
 
         full_mdict[key] = meta_dict
 
         # Remove variable attributes from the data object
-        data.variables[key].attrs = {}
+        data[key].attrs = {}
 
     # Copy the file attributes from the data object to the metadata
     for data_attr in data.attrs.keys():
