@@ -70,6 +70,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Non-default Meta.labels are now retained by Instrument if defined by 
      underlying support module.
    * Made test data more consistent across pysat testing instruments.
+   * Added `pysat.Instrument.vars_no_time` function to return data variables
+     excluding the main time index.
+   * Added support for additional metdata and other file handling options 
+     to general 'pysat', 'netcdf' instrument.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
