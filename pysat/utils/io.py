@@ -381,17 +381,6 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                                         export_nan=export_nan,
                                         varname=lower_var)
 
-        # else:
-        #     warnings.warn(''.join(('Unable to find MetaData for ', var)),
-        #                   stacklevel=2)
-        #     try:
-        #         meta_dict['Format'] = inst._get_var_type_code(coltype)
-        #     except TypeError:
-        #         warnings.warn(''.join(('Unable to simply determine type.')),
-        #                       stacklevel=2)
-        #
-        #     out_meta_dict[lower_var] = meta_dict
-
     return out_meta_dict
 
 
