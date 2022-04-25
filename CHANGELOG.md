@@ -53,11 +53,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.utils.io.load_netcdf`.
    * Added support for user developed functions to filter metadata as it
      loaded from disk but before assignment to a `pysat.Meta` instance.
-   * Added `meta.default_to_netcdf_translation_table` to support creating
-     more compliant files by default.
-   * Added `meta.to_translated_dict` to support creating more compliant
+   * Added `meta.to_dict` to support creating more compliant
      netCDF files. 
-   * Added `default_from_netcdf_translation_table` and 
+   * Added `meta.default_to_netcdf_translation_table`, 
+     `default_from_netcdf_translation_table` and 
      `apply_table_translation` to `pysat.utils.io` to support 
      improved compatability of pysat netcdf files without user code
      changes.
@@ -136,7 +135,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      pysat.Instrument instantiation to ensure Instrument is complete when passed
      to init.
    * Refactored `pysat.Instrument.generic_meta_translator` to use 
-     `pysat.Meta.to_translated_dict` and the latest metadata label standards.
+     `pysat.Meta.to_dict` and the latest metadata label standards.
    * Prevent stale data paths stored by pysat from being reassigned if
      path is no longer in `pysat.params['data_dirs']`.
    * Added missing metadata in testing instruments.
