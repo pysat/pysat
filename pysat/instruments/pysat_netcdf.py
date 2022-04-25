@@ -138,7 +138,8 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                  'plot': ('plot_label', str), 'axis': ('axis', str),
                  'scale': ('scale', str), 'min_val': ('value_min', np.float64),
                  'max_val': ('value_max', np.float64),
-                 'fill_val': ('fill', np.float64)}, decode_times=None):
+                 'fill_val': ('fill', np.float64)}, meta_processor=None,
+         meta_translation=None, drop_meta_labels=None, decode_times=None):
     """Load pysat-created NetCDF data and meta data.
 
     Parameters
@@ -193,6 +194,22 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+    meta_processor : function or NoneType
+        If not None, a dict containing all of the loaded metadata will be
+        passed to `meta_processor` which should return a filtered version
+        of the input dict. The returned dict is loaded into a pysat.Meta
+        instance and returned as `meta`. (default=None)
+    meta_translation : dict or NoneType
+        Translation table used to map metadata labels in the file to
+        those used by the returned `meta`. Keys are labels from file
+        and values are labels in `meta`. Redundant file labels may be
+        mapped to a single pysat label. If None, will use
+        `default_from_netcdf_translation_table`. This feature
+        is maintained for file compatibility. To disable all translation,
+        input an empty dict. (default=None)
+    drop_meta_labels : list or NoneType
+        List of variable metadata labels that should be dropped. Applied
+        to metadata as loaded from the file. (default=None)
     decode_times : bool or NoneType
         If True, variables with unit attributes that are 'timelike' ('hours',
         'minutes', etc) are converted to `np.timedelta64` by xarray. If False,
@@ -218,6 +235,9 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                                              pandas_format=pandas_format,
                                              decode_timedelta=decode_timedelta,
                                              labels=labels,
+                                             meta_processor=meta_processor,
+                                             meta_translation=meta_translation,
+                                             drop_meta_labels=drop_meta_labels,
                                              decode_times=decode_times)
 
     return data, mdata
