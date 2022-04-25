@@ -33,10 +33,10 @@ may be created using default parameters as shown below.
 
    # Create netCDF4 file
    fname = stime.strftime('example/file/path/name/test_%Y%j.nc')
-   inst.to_netcdf4(fname)
+   pysat.utils.io.inst_to_netcdf4(inst, fname)
 
-This process writes all of the data within `inst.data` to a netCDF4 file,
-including the metadata stored at `inst.meta.data` and `inst.meta.header`. It
+This process writes all of the data within ``inst.data`` to a netCDF4 file,
+including the metadata stored at ``inst.meta.data`` and ``inst.meta.header``. It
 also adds a variety of supplemental attributes to the file indicating the
 file's conventions, creation date, and more.
 
@@ -68,18 +68,18 @@ Date_Start           Timestamp of first data entry
 File                 Original filepath and filename
 File_Date            Timestamp of last data entry
 Generation_Date      YearMonthDay of file creation
-inst_id              pysat.Instrument `inst_id`
+inst_id              pysat.Instrument ``inst_id``
 Logical_File_ID      Filename without any path or type
-name                 pysat.Instrument `name`
+name                 pysat.Instrument ``name``
 pysat_version        pysat version information
-platform             pysat.Instrument `platform`
+platform             pysat.Instrument ``platform``
 references           Journal references from Instrument
-tag                  pysat.Instrument `tag`
+tag                  pysat.Instrument ``tag``
 Text_Supplement      Supplement string
 ================     ==================================
 
 Metadata is also provided for each variable. An example of the default
-metadata stored within a variable as directly loaded using `netCDF4` is
+metadata stored within a variable as directly loaded using :py:mod:`netCDF4` is
 included below. Note that pysat added the Format, Depend_0, Display_Type,
 and Var_Type metadata parameters, part of the SPDF standard.
 
@@ -174,13 +174,13 @@ Instrument are accessed programatically and used to define the range of
 keys for a meta label translation table. Thus, regardless of the label setting
 at runtime, the current metadata keys will be assigned appropriately.
 The targets for the metadata labels at the file level are defined as the values
-for each key in the dictionary. Fill metadata values, `inst.meta.labels.fill`
+for each key in the dictionary. Fill metadata values, ``inst.meta.labels.fill``
 will be written to the file as both '_FillValue' and 'FillVal'. Similary, the
-maximum and minimum supported variables values `inst.meta.labels.max_val` and
-`inst.meta.labels.min_val` will be written to the file as 'ValidMax',
+maximum and minimum supported variables values ``inst.meta.labels.max_val`` and
+``inst.meta.labels.min_val`` will be written to the file as 'ValidMax',
 'Valid_Max', and 'ValidMin', 'Valid_Min', respectively. If no translation table
 is provided then pysat will use a default translation that maps
-`inst.meta.labels.fill` to '_FillValue', 'FillVal', and 'fill'.
+``inst.meta.labels.fill`` to '_FillValue', 'FillVal', and 'fill'.
 
 .. code:: python
 
@@ -199,39 +199,44 @@ is provided then pysat will use a default translation that maps
                              inst.meta.labels.notes: ['Var_Notes']}
 
    # Write netCDF file
-   inst.to_netcdf4(fname, meta_translation=meta_translation)
+   pysat.utils.io.inst_to_netcdf4(inst, fname,
+                                  meta_translation=meta_translation)
 
 As noted above pysat will add some metadata for variables as part of pysat's
 file standard. To further ensure compatibility with netCDF formats, boolean
 values are translated to integers (0/1 for True/False), and fill and range
 metadata for string variables is removed.
 
-The `export_nan` keyword in
-`to_netcdf4` controls which of the metadata labels is allowed to transfer
-values of NaN to the file. By default, the `fill`, `min_val`, and `max_val`
-labels support NaN values.
+The ``export_nan`` keyword in
+:py:func:`pysat.utils.io.to_netcdf4` controls which of the metadata labels is
+allowed to transfer values of NaN to the file. By default, the
+``fill``, ``min_val``, and ``max_val`` labels support NaN values.
 
-Similarly, the `check_type` keyword accepts a list of metadata labels
+Similarly, the ``check_type`` keyword accepts a list of metadata labels
 where the type of the metadata value is compared against the data type of the
-variable. By default, the `fill`, `min_val`, and `max_val` labels are checked.
+variable. By default, the ``fill``, ``min_val``, and ``max_val`` labels are
+checked.
 
 Custom metadata labels, in addition to pysat's defaults, can be written to the
-file by adding the information to a pysat.Instrument. The simplest method is
-shown below. The case of the label is retained when writing to the file.
+file by adding the information to a :py:class:`pysat.Instrument`. The simplest
+method is shown below. The case of the label is retained when writing to the
+file.
 
 .. code:: python
 
    # Add additional metadata to cover default plot label, like used by ICON.
-   # Default metadata values are added for all remaining variables.
-   inst.meta[var] = {'FieldNam': plot_label}
+   # Default values of '' for 'FieldNam' are added for all remaining variables.
+   inst.meta['longitude'] = {'FieldNam': 'Geographic Longitude'}
 
    # Create netCDF4 file
    fname = stime.strftime('example/file/path/name/test_%Y%j.nc')
-   inst.to_netcdf4(fname)
+   pysat.utils.io.inst_to_netcdf4(inst, fname)
 
 For the most general method for adding additional metdata is recommended that
-pysat.Instruments are instantiated with the additional metadata labels,
-including the type.
+a :py:class:`pysat.Instrument` is instantiated with the additional
+metadata labels, including the type.
+
+.. code:: python
 
    # Define SPDF metadata labels
    labels={'units': ('units', str), 'name': ('long_name', str),
@@ -243,7 +248,7 @@ including the type.
            'fill_val': ('fill', np.float64)}
 
    # Instantiate instrument
-   pysat.Instrument('pysat', 'testing', labels=labels)
+   inst = pysat.Instrument('pysat', 'testing', labels=labels)
 
    # Define translation of pysat metadata labels to those in the netCDF file.
    meta_translation_table = {inst.meta.labels.fill_val: ['_FillValue',
@@ -261,14 +266,44 @@ including the type.
                              inst.meta.labels.axis: ['LablAxis']}
 
    # Write netCDF file
-   inst.to_netcdf4(fname, meta_translation=meta_translation)
+   pysat.utils.io.inst_to_netcdf(inst, fname, meta_translation=meta_translation)
 
 The final opportunity to modify metadata before it is written to a file is
-provided by the `meta_processor` keyword. This keyword accepts a function
+provided by the ``meta_processor`` keyword. This keyword accepts a function
 that will receive a dictionary with all metadata. The returned dictionary
 will then be written to the netCDF file. The function itself provides
-an opporunity for developers to add/modify/delete metadata in any manner.
+an opportunity for developers to add/modify/delete metadata in any manner.
 
+.. code:: python
+
+   def example_processor(meta_dict):
+   """Example meta processor function.
+
+   Parameters
+   ----------
+   meta_dict : dict
+       Dictionary with all metadata information, keyed by variable name.
+
+   Returns
+   -------
+   meta_dict : dict
+       Updated metadata information.
+
+   """
+
+   for variable in meta_dict.keys():
+       for label in meta_dict[variable].keys():
+           fstr = ''.join(['Information for variable: ', variable,
+                           ' and label: ', label, ' is easily accesbile.',
+                           ' Value is: ', meta_dict[variable][label]])
+           print(fstr)
+
+   return meta_dict
+
+   # Write netCDF file
+   pysat.utils.io.inst_to_netcdf4(inst, fname,
+                                  meta_translation=meta_translation,
+                                  meta_processor=example_processor)
 
 .. _tutorial-files-load:
 
@@ -323,7 +358,7 @@ Section :ref:`tutorial-files-write`.  Because this :py:class:`pysat.Instrument`
 module may support either pandas or xarray data, the expected type must be
 specified upon :py:class:`pysat.Instrument` instantiation.  pysat also expects
 all filenames to have some type of date format.  However, by using the
-:py:var:`directory_fmt` keyword argument, we can easily load files outside of
+``data_dir`` keyword argument, we can easily load files outside of
 the standard pysat data paths.
 
 
@@ -334,6 +369,6 @@ the standard pysat data paths.
 
    stime = dt.datetime(2009, 1, 1)
    test_inst = pysat.Instrument("pysat", "netcdf", pandas_format=True,
-                                directory_fmt='/example/file/path/name',
+                                data_dir='/example/file/path/name',
 				file_format='test_{year:04}{day:03}.nc')
    test_inst.load(date=stime)
