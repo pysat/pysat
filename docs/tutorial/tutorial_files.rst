@@ -226,6 +226,8 @@ file.
 
    # Add additional metadata to cover default plot label, like used by ICON.
    # Default values of '' for 'FieldNam' are added for all remaining variables.
+   # Remaining metadata labels for 'longitude' other than 'FieldNam' are left
+   # unchanged.
    inst.meta['longitude'] = {'FieldNam': 'Geographic Longitude'}
 
    # Create netCDF4 file
@@ -273,6 +275,9 @@ provided by the ``meta_processor`` keyword. This keyword accepts a function
 that will receive a dictionary with all metadata. The returned dictionary
 will then be written to the netCDF file. The function itself provides
 an opportunity for developers to add/modify/delete metadata in any manner.
+Note that the processor function is applied as the last step in the pysat
+metadata processing. Thus all translations, filtering, or other modifications
+to metadata are all applied before the meta_processor.
 
 .. code:: python
 
