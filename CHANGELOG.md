@@ -70,6 +70,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.utils.io.meta_array_expander`.
    * Non-default Meta.labels are now retained by Instrument if defined by 
      underlying support module.
+   * Made test data more consistent across pysat testing instruments.
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -87,6 +88,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Deprecated usage of higher order metadata
    * Deprecated `pysat.instruments.methods.general.convert_timestamp_to_datetime`
      which is replaced by new functionality in `load_netCDF4`.
+   * Deprecated `pysat.Instrument.generic_meta_translator` which is replaced
+     by `pysat.utils.io.apply_table_translation_to_file`.
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -136,6 +139,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      `pysat.Meta.to_translated_dict` and the latest metadata label standards.
    * Prevent stale data paths stored by pysat from being reassigned if
      path is no longer in `pysat.params['data_dirs']`.
+   * Added missing metadata in testing instruments.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
    * Added missing unit tests for `pysat.utils.time`
