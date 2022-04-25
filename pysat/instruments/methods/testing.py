@@ -110,9 +110,6 @@ def initialize_test_meta(epoch_name, data_keys):
     """
     # Create standard metadata for all parameters
     meta = pysat.Meta()
-    # TODO(RAS), this may be done now though. :)
-    # Not having line below causes loaed errors for xarray. No more errors.
-    # meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'desc': 'Number of seconds since mindight UT',
                    'value_min': 0.0, 'value_max': 86400.0}
@@ -190,9 +187,6 @@ def initialize_test_meta(epoch_name, data_keys):
     alt_profile_meta['fraction'] = {'value_min': 0., 'value_max': 1.,
                                     'desc': ''.join(['Simulated fractional O+ ',
                                                      'composition.'])}
-    # alt_profile_meta['dummy_str'] = {'desc': 'Testing string values.'}
-    # alt_profile_meta['dummy_ustr'] = {'desc':
-    # 'Testing unicode string values.'}
     meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
                             'desc': ''.join(['Testing profile multi-dimensiona',
                                              'l data indexed by float.']),
