@@ -44,7 +44,7 @@ def is_daily_file_cadence(file_cadence):
     return is_daily
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
+def list_files(tag='', inst_id=None, data_path=None, format_str=None,
                supported_tags=None, file_cadence=dt.timedelta(days=1),
                two_digit_year_break=None, delimiter=None):
     """Return a Pandas Series of every file for chosen Instrument data.
@@ -53,9 +53,9 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : string or NoneType
+    tag : str
         Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
+        (default='')
     inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)

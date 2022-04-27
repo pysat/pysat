@@ -82,7 +82,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added docstring linting via flake-docstrings and hacking to CI tests
    * Added clarification to the tutorials
    * Added limitations to the `listify` docstring
-   * Updated `tag` keyword docstrings and description for test instruments.
+   * Updated `tag` and 'inst_id' keyword docstrings for test instruments,
+     as well as for `pysat.instruments.templates.template_instrument` 
+     and `pysat.instruments.pysat_netcdf`.
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
