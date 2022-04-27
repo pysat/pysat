@@ -64,11 +64,11 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
         itself. (default='')
     format_str : string or NoneType
         User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
+        formats associated with the supplied tags are used. See `Files.from_os`
+        `format_str` kwarg for more details. (default=None)
     supported_tags : dict or NoneType
         Keys are `inst_id`, each containing a dict keyed by `tag`
-        where the values are file format template strings. See `Files.from_os`
-        `format_str` kwarg for more details. (default=None)
+        where the values are file format template strings. (default=None)
     file_cadence : dt.timedelta or pds.DateOffset
         pysat assumes a daily file cadence, but some instrument data file
         contain longer periods of time.  This parameter allows the specification
@@ -92,6 +92,10 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
     --------
     pysat.Files.from_os
 
+    Note
+    ----
+    This function is intended to be invoked by pysat and not the end user.
+
     Examples
     --------
     ::
@@ -105,6 +109,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
     """
 
     if format_str is None:
+        # pyast performs a check against `inst_id` and `tag` before calling
+        # `list_files` however supported_tags is a non-pysat input.
         try:
             format_str = supported_tags[inst_id][tag]
         except KeyError as kerr:
