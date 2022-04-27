@@ -185,7 +185,7 @@ def initialize_test_meta(epoch_name, data_keys):
     return meta
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
+def list_files(tag='', inst_id='', data_path='', format_str=None,
                file_date_range=None, test_dates=None, mangle_file_dates=False,
                test_list_files_kwarg=None):
     """Produce a fake list of files spanning three years.
@@ -196,8 +196,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         pysat instrument tag (default=None)
     inst_id : str or NoneType
         pysat satellite ID tag (default=None)
-    data_path : str or NoneType
-        pysat data path (default=None)
+    data_path : str
+        pysat data path (default='')
     format_str : str or NoneType
         file format string (default=None)
     file_date_range : pds.date_range
@@ -222,9 +222,6 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     # Support keyword testing
     logger.info(''.join(('test_list_files_kwarg = ',
                          str(test_list_files_kwarg))))
-
-    if data_path is None:
-        data_path = ''
 
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
