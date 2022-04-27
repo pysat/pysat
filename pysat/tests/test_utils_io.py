@@ -166,7 +166,7 @@ class TestLoadNetCDF(object):
 
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
-            'pysat', 'netcdf', directory_format=file_path,
+            'pysat', 'netcdf', data_dir=file_path,
             file_format=file_root, pandas_format=self.testInst.pandas_format)
         netcdf_inst.load(date=self.stime, use_header=True)
 
