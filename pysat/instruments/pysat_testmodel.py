@@ -34,7 +34,7 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
+def load(fnames, tag='', inst_id=None, start_time=None, num_samples=96,
          test_load_kwarg=None):
     """Load the test files.
 
@@ -42,8 +42,9 @@ def load(fnames, tag=None, inst_id=None, start_time=None, num_samples=96,
     ----------
     fnames : list
         List of filenames
-    tag : str or NoneType
-        Instrument tag (accepts '')
+    tag : str
+        Tag name used to identify particular data set to be loaded. This input
+        is nominally provided by pysat itself from user input. (default='')
     inst_id : str or NoneType
         Instrument satellite ID (accepts '')
     start_time : dt.timedelta or NoneType

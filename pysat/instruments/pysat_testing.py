@@ -43,7 +43,7 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
+def load(fnames, tag='', inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, malformed_index=False,
          start_time=None, num_samples=86400, test_load_kwarg=None,
          max_latitude=90.):
@@ -53,7 +53,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     ----------
     fnames : list
         List of filenames
-    tag : str or NoneType
+    tag : str
         Instrument tag (accepts '' or a string to change the behaviour of
         certain instrument aspects for testing)
     inst_id : str or NoneType
