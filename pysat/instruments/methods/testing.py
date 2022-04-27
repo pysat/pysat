@@ -192,14 +192,18 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
 
     Parameters
     ----------
-    tag : str or NoneType
-        pysat instrument tag (default=None)
-    inst_id : str or NoneType
-        pysat satellite ID tag (default=None)
+    tag : str
+        Tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
     data_path : str
-        pysat data path (default='')
+        Path to data directory. This input is nominally provided by pysat
+        itself. (default='')
     format_str : str or NoneType
-        file format string (default=None)
+        File format string. This is passed from the user at pysat.Instrument
+         instantiation, if provided. (default=None)
     file_date_range : pds.date_range
         File date range. The default mode generates a list of 3 years of daily
         files (1 year back, 2 years forward) based on the test_dates passed
