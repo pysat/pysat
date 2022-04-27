@@ -30,9 +30,7 @@ class TestListFiles(object):
         return
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
-                             [("data_path", None,
-                               "A directory must be passed"),
-                              ("tag", "badval", "Unknown inst_id or tag"),
+                             [("tag", "badval", "Unknown inst_id or tag"),
                               ("inst_id", "badval", "Unknown inst_id or tag")])
     def test_bad_kwarg_list_files(self, bad_key, bad_val, err_msg):
         """Test that bad kwargs raise a ValueError with an expected message.
