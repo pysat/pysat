@@ -150,6 +150,9 @@ The DMSP IVM (dmsp_ivm) instrument module in pysatMadrigal is a practical
 example of a pysat instrument that uses all levels of variable names.  An
 :ref:`api-instrument-template` is also provided within pysat.
 
+Note that during instantiation of a pysat.Instrument, pysat uses the tags
+and inst_ids above to determine if the values provided by a user are supported
+by the code.
 
 .. _rst_new_inst-reqattrs:
 
@@ -227,7 +230,7 @@ filenames indexed by time with a method signature of:
 
 .. code:: python
 
-   def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
+   def list_files(tag='', inst_id='', data_path='', format_str=None):
        return pandas.Series(files, index=datetime_index)
 
 :py:attr:`inst_id` and :py:attr:`tag` are passed in by pysat to select a
@@ -236,16 +239,16 @@ search for the files is passed in data_path. The list_files method must return
 a :py:class:`pandas.Series` of filenames indexed by datetime objects.
 
 A user must also supply a file template string suitable for locating files
-on their system at pysat.Instrument instantiation, passed via format_str,
+on their system at pysat.Instrument instantiation, passed via ``format_str``,
 that must be supported. Sometimes users obtain files from non-traditional
-sources and format_str makes it easier for those users to use an existing
+sources and ``format_str`` makes it easier for those users to use an existing
 instrument module to work with those files.
 
 pysat will by default store data in pysat_data_dir/platform/name/tag/inst_id,
 helpfully provided in data_path, where pysat_data_dir is specified by using
 ``pysat.params['data_dirs'] = pysat_data_dir``. Note that an alternative
-directory structure may be specified using the pysat.Instrument keyword
-directory_format at instantiation. The default is recreated using
+directory structure may be specified using the :py:class:`pysat.Instrument`
+keyword ``directory_format`` at instantiation. The default is recreated using
 
 .. code:: python
 
@@ -253,7 +256,7 @@ directory_format at instantiation. The default is recreated using
     inst=pysat.Instrument(platform, name, directory_format=dformat)
 
 Note that pysat handles the path information thus instrument module developers
-do not need to do anything to support the directory_format keyword.
+do not need to do anything to support the ``directory_format`` keyword.
 
 Pre-Built list_files Methods and Support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -269,11 +272,11 @@ A complete method is available in
 :py:meth:`pysat.Files.from_os` is a convenience constructor provided for
 filenames that include time information in the filename and utilize a constant
 field width or a consistent delimiter. The location and format of the time
-information is specified using standard python formatting and keywords `year`,
-`month`, `day` of month (year), `hour`, `minute`, `second`. Additionally,
-`version`, `revision`, and `cycle` keywords are supported. When present, the
-:py:meth:`pysat.Files.from_os` constructor will filter down the file list to
-the latest version/revision/cycle combination. Additional
+information is specified using standard python formatting and keywords ``year``,
+``month``, ``day`` of month (year), ``hour``, ``minute``, ``second``.
+Additionally, ``version``, ``revision``, and ``cycle`` keywords are supported.
+When present, the :py:meth:`pysat.Files.from_os` constructor will filter down
+the file list to the latest version/revision/cycle combination. Additional
 user specified template variables are supported though they will not be used
 to extract date information.
 
@@ -281,7 +284,7 @@ A complete list_files routine could be as simple as
 
 .. code:: python
 
-   def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
+   def list_files(tag='', inst_id='', data_path='', format_str=None):
        if format_str is None:
            # Set default string template consistent with files from
            # the data provider that will be supported by the instrument
@@ -290,23 +293,25 @@ A complete list_files routine could be as simple as
            # 'cindi-2009310-ivm-v02.hdf'
            # format_str supported keywords: year, month, day,
            # hour, minute, second, version, revision, and cycle
+           # Note that `day` is interpreted is day of month if `month` also
+           # present, otherwise `day` will be treated as day of year.
            format_str = 'cindi-{year:4d}{day:03d}-ivm-v{version:02d}.hdf'
        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 The constructor presumes the template string is for a fixed width format
 unless a delimiter string is supplied. This constructor supports conversion
 of years with only 2 digits and expands them to 4 using the
-`two_digit_year_break` keyword. Note the support for a user provided
-`format_str` at runtime.
+``two_digit_year_break`` keyword. Note the support for a user provided
+``format_str`` at runtime.
 
 Given the range of compliance of filenames to a strict standard across the
-decades of space science parsing filenames with and without a `delimiter`
+decades of space science parsing filenames with and without a ``delimiter``
 can typically generate the same results, even for filenames without a
 consistently applied delimiter. As such either parser will function for most
 situations however both remain within pysat to support currently unknown edge
 cases that users may encounter. More practically, parsing with a delimiter
-offers more support for the `*` wildcard than the fixed width parser.
-It is generally advised to limit use of the `*` wildcard to prevent
+offers more support for the ``*`` wildcard than the fixed width parser.
+It is generally advised to limit use of the ``*`` wildcard to prevent
 potential false positives if a directory has more than one instrument within.
 
 If the constructor is not appropriate, then lower level methods within
@@ -343,7 +348,7 @@ The load module method signature should appear as:
 
 .. code:: python
 
-   def load(fnames, tag=None, inst_id=None):
+   def load(fnames, tag='', inst_id=''):
        return data, meta
 
 - :py:data:`fnames` contains a list of filenames with the complete data path
@@ -407,7 +412,7 @@ To fetch data from the internet the download method should have the signature
 
 .. code:: python
 
-   def download(date_array, data_path=None, user=None, password=None):
+   def download(date_array, data_path='', user=None, password=None):
        return
 
 * :py:data:`date_array`, a list of dates for which data will be downloaded
@@ -492,7 +497,7 @@ arguments.
 
 .. code:: python
 
-   def load(fnames, tag=None, inst_id=None, custom1=default1, custom2=default2):
+   def load(fnames, tag='', inst_id='', custom1=default1, custom2=default2):
        return data, meta
 
 If a user provides :py:data:`custom1` or :py:data:`custom2` at instantiation,
@@ -585,7 +590,7 @@ when possible.
 
 .. code:: python
 
-    def list_remote_files(tag=None, inst_id=None, start=None, stop=None, ...):
+    def list_remote_files(tag='', inst_id='', start=None, stop=None, ...):
         return list_like
 
 This method is called by several internal pysat functions, and can be directly
