@@ -87,7 +87,7 @@ name
 ^^^^
 
 In general, this is the name of the instrument or high-level data product.
-When combined with the platform this forms a unique file in the `instruments`
+When combined with the platform this forms a unique file in the ``instruments``
 directory.  Examples include the EUV instrument on ICON (icon_euv) and the
 Incoherent Scatter Radar at JRO (jro_isr).
 
@@ -150,9 +150,9 @@ The DMSP IVM (dmsp_ivm) instrument module in pysatMadrigal is a practical
 example of a pysat instrument that uses all levels of variable names.  An
 :ref:`api-instrument-template` is also provided within pysat.
 
-Note that during instantiation of a pysat.Instrument, pysat uses the tags
-and inst_ids above to determine if the values provided by a user are supported
-by the code.
+Note that during instantiation of a :py:class:`pysat.Instrument`, pysat uses
+the :py:attr:`tags` and :py:attr:`inst_ids` above to determine if the values
+provided by a user are supported by the code.
 
 .. _rst_new_inst-reqattrs:
 
@@ -318,7 +318,7 @@ If the constructor is not appropriate, then lower level methods within
 :py:class:`pysat.Files` may also be used to reduce the workload in adding a new
 instrument. Access to the values of user provided template variables is not
 available via :py:meth:`pysat.Files.from_os` and thus requires use of the
-same lower level methods in :py:class:`pysat.Files`.
+same lower level methods in :py:method:`pysat.utils.files`.
 
 See :py:func:`pysat.utils.time.create_datetime_index` for creating a datetime
 index for an array of irregularly sampled times.
@@ -375,7 +375,8 @@ The load module method signature should appear as:
 
 - The :py:class:`pandas.DataFrame` or :py:class:`xarray.Dataset` needs to be
   indexed with :py:class:`datetime.datetime` objects. This index needs to be
-  named either :py:data:`Epoch` or :py:data:`time`.
+  named either :py:data:`Epoch` for :py:class:`pandas.DataFrame` and
+  :py:data:`time` for :py:class:`xarray.Dataset`.
 - :py:func:`pysat.utils.create_datetime_index` provides quick generation of an
   appropriate datetime index for irregularly sampled data sets with gaps
 - If your data is a CSV formatted file, you can incorporate the
@@ -456,8 +457,9 @@ multi_file_day
 ^^^^^^^^^^^^^^
 
 This defaults to ``False``, which means that the files for this data set have
-one or less.  If your data set consists of multiple files per day, and the
-files contain data across daybreaks, this attribute should be set to ``True``.
+one or less per day.  If your data set consists of multiple files per day, and
+the files contain data across daybreaks, this attribute should be set to
+``True``.
 
 orbit_info
 ^^^^^^^^^^
@@ -559,7 +561,7 @@ instrument preprocessing.
    def preprocess(self):
        return
 
-``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`preprocess` should
+``self`` is a :py:class:`pysat.Instrument` object. :py:func:`preprocess` should
 modify ``self`` in-place as needed; equivalent to a custom routine.
 
 clean
