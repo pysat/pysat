@@ -110,7 +110,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
 
     if format_str is None:
         # pyast performs a check against `inst_id` and `tag` before calling
-        # `list_files` however supported_tags is a non-pysat input.
+        # `list_files`. However, supported_tags is a non-pysat input.
         try:
             format_str = supported_tags[inst_id][tag]
         except KeyError as kerr:
