@@ -727,6 +727,11 @@ class Instrument(object):
             Data variable name, tuple with a slice, or dict used to locate
             desired data
 
+        Raises
+        ------
+        ValueError
+            When an underlying error for data access is raised.
+
         Note
         ----
         `inst['name']` is equivalent to `inst.data.name`
@@ -739,16 +744,22 @@ class Instrument(object):
 
             # By name
             inst['name']
+
             # By list of names
             inst[['name1', 'name2']]
+
             # By position
             inst[row_index, 'name']
+
             # Slicing by row
             inst[row1:row2, 'name']
+
             # By Date
             inst[datetime, 'name']
+
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
+
             # Slicing by name and row/date
             inst[datetime1:datetime2, 'name1':'name2']
 
@@ -798,6 +809,12 @@ class Instrument(object):
         xr.Dataset
             Dataset of with only the desired values
 
+        Raises
+        ------
+        ValueError
+            Data access issues, passed from underlying xarray library, or a
+            mismatch of indices and dimensions.
+
         Note
         ----
         inst['name'] is inst.data.name
@@ -810,14 +827,19 @@ class Instrument(object):
 
             # By name
             inst['name']
+
             # By position
             inst[row_index, 'name']
+
             # Slicing by row
             inst[row1:row2, 'name']
+
             # By Date
             inst[datetime, 'name']
+
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
+
             # Slicing by name and row/date
             inst[datetime1:datetime2, 'name1':'name2']
 
@@ -896,20 +918,28 @@ class Instrument(object):
             String label, or dict or tuple of indices for new data
         new_data : dict, pandas.DataFrame, or xarray.Dataset
             New data as a dict (assigned with key 'data'), DataFrame, or
-            Dataset
+            Dataset.
 
         Examples
         --------
         ::
 
-            # Simple Assignment, default metadata assigned
+            # Simple assignment, default metadata assigned
             # 'long_name' = 'name'
             # 'units' = ''
             inst['name'] = newData
+
             # Assignment with Metadata
             inst['name'] = {'data':new_data,
                             'long_name':long_name,
                             'units':units}
+
+        Raises
+        ------
+        ValueError
+            If underlying data's datetime index not stored as `Epoch` or `time`.
+            If tuple not used when assigning dimensions for new multidimensional
+            data.
 
         Note
         ----
@@ -921,36 +951,36 @@ class Instrument(object):
 
         new = copy.deepcopy(new_data)
 
-        # add data to main pandas.DataFrame, depending upon the input
-        # aka slice, and a name
+        # Add data to main pandas.DataFrame, depending upon the input
+        # aka slice, and a name.
         if self.pandas_format:
             if isinstance(key, tuple):
                 try:
-                    # Pass directly through to loc
-                    # This line raises a FutureWarning if key[0] is a slice
+                    # Pass directly through to loc.
+                    # This line raises a FutureWarning if key[0] is a slice.
                     # The future behavior is TypeError, which is already
-                    # handled correctly below
+                    # handled correctly below.
                     self.data.loc[key[0], key[1]] = new
                 except (KeyError, TypeError):
-                    # TypeError for single integer, slice (pandas 2.0)
-                    # KeyError for list, array
-                    # Assume key[0] is integer (including list or slice)
+                    # TypeError for single integer, slice (pandas 2.0).
+                    # KeyError for list, array.
+                    # Assume key[0] is integer (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
-                # make it a dict to simplify downstream processing
+                # Make it a dict to simplify downstream processing
                 new = {'data': new}
 
-            # input dict must have data in 'data',
-            # the rest of the keys are presumed to be metadata
+            # Input dict must have data in 'data',
+            # the rest of the keys are presumed to be metadata.
             in_data = new.pop('data')
 
             # TODO(#908): remove code below with removal of 2d pandas support.
             if hasattr(in_data, '__iter__'):
                 if isinstance(in_data, pds.DataFrame):
                     pass
-                    # filter for elif
+                    # Filter for elif
                 elif isinstance(next(iter(in_data), None), pds.DataFrame):
                     # Input is a list_like of frames, denoting higher order data
                     warnings.warn(" ".join(["Support for 2D pandas instrument",
@@ -967,12 +997,12 @@ class Instrument(object):
                         # This will ensure the correct defaults for all
                         # subvariables.  Meta can filter out empty metadata as
                         # needed, the check above reduces the need to create
-                        # Meta instances
+                        # Meta instances.
                         ho_meta = pysat.Meta(labels=self.meta_labels)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
 
-            # assign data and any extra metadata
+            # Assign data and any extra metadata
             self.data[key] = in_data
             self.meta[key] = new
 
@@ -991,12 +1021,12 @@ class Instrument(object):
                                            '"Epoch" or "time".')))
 
             if isinstance(key, tuple):
-                # user provided more than one thing in assignment location
-                # something like, index integers and a variable name
+                # User provided more than one thing in assignment location
+                # something like, index integers and a variable name,
                 # self[idx, 'variable'] = stuff
-                # or, self[idx1, idx2, idx3, 'variable'] = stuff
-                # construct dictionary of dimensions and locations for
-                # xarray standards
+                # or, self[idx1, idx2, idx3, 'variable'] = stuff.
+                # Construct dictionary of dimensions and locations for
+                # xarray standards.
                 indict = {}
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
@@ -1013,18 +1043,18 @@ class Instrument(object):
                 # Assigning basic variables
 
                 if isinstance(in_data, xr.DataArray):
-                    # If xarray input, take as is
+                    # If xarray input, take as is.
                     self.data[key] = in_data
                 elif len(np.shape(in_data)) == 1:
                     # If not an xarray input, but still iterable, then we
-                    # go through to process the 1D input
+                    # go through to process the 1D input.
                     if len(in_data) == len(self.index):
                         # 1D input has the correct length for storage along
-                        # 'Epoch'
+                        # 'Epoch'.
                         self.data[key] = (epoch_name, in_data)
                     elif len(in_data) == 1:
-                        # only provided a single number in iterable, make that
-                        # the input for all times
+                        # Only provided a single number in iterable, make that
+                        # the input for all times.
                         self.data[key] = (epoch_name,
                                           [in_data[0]] * len(self.index))
                     elif len(in_data) == 0:
@@ -1047,7 +1077,7 @@ class Instrument(object):
 
             elif hasattr(key, '__iter__'):
                 # Multiple input strings (keys) are provided, but not in tuple
-                # form.  Recurse back into this function, setting each input
+                # form. Recurse back into this function, setting each input
                 # individually
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
@@ -1060,12 +1090,12 @@ class Instrument(object):
     def __iter__(self):
         """Load data for subsequent days or files.
 
+        Default bounds are the first and last dates from files on local system.
+
         Note
         ----
-        Limits of iteration, and iteration type (date/file)
-        set by `bounds` attribute.
-
-        Default bounds are the first and last dates from files on local system.
+        Limits of iteration, and iteration type (date/file) set by `bounds`
+         attribute.
 
         Examples
         --------
@@ -1075,8 +1105,8 @@ class Instrument(object):
             start = dt.datetime(2009, 1, 1)
             stop = dt.datetime(2009, 1, 31)
             inst.bounds = (start, stop)
-            for inst in inst:
-                print('Another day loaded', inst.date)
+            for loop_inst in inst:
+                print('Another day loaded ', loop_inst.date)
 
         """
 
@@ -1089,8 +1119,9 @@ class Instrument(object):
                 # of an empty object is going to be faster than a full one.
                 self.data = self._null_data
                 local_inst = self.copy()
-                # load range of files
-                # get location for second file, width of 1 loads only one file
+
+                # Load range of files. Get location for second file,
+                # width of 1 loads only one file.
                 nfid = self.files.get_index(fname) + width - 1
                 local_inst.load(fname=fname, stop_fname=self.files[nfid])
                 yield local_inst
@@ -1099,14 +1130,14 @@ class Instrument(object):
             # Iterate over dates. A list of dates is generated whenever
             # bounds are set
             for date in self._iter_list:
-                # Use a copy trick, starting with null data in object
+                # Use a copy trick, starting with null data in object.
                 self.data = self._null_data
                 local_inst = self.copy()
 
-                # Set the user-specified range of dates
+                # Set the user-specified range of dates.
                 end_date = date + self._iter_width
 
-                # Load the range of dates
+                # Load the range of dates.
                 local_inst.load(date=date, end_date=end_date)
                 yield local_inst
 
