@@ -187,10 +187,10 @@ def list_files(tag='', inst_id='', data_path=None, format_str=None):
     Parameters
     ----------
     tag : str
-        tag name used to identify particular data set to be loaded.
+        Tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
     inst_id : str
-        Satellite ID used to identify particular data set to be loaded.
+        Instrument ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
     data_path : str
         Full path to directory containing files to be loaded. This

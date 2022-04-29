@@ -99,7 +99,8 @@ class TestInstruments(InstLibTests):
                                          dt.datetime(2021, 12, 31))
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
-                                          file_date_range=file_date_range)
+                                          file_date_range=file_date_range,
+                                          update_files=True)
         file_list = self.test_inst.files.files
 
         assert all(file_date_range == file_list.index)

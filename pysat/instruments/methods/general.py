@@ -44,7 +44,7 @@ def is_daily_file_cadence(file_cadence):
     return is_daily
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
+def list_files(tag='', inst_id='', data_path='', format_str=None,
                supported_tags=None, file_cadence=dt.timedelta(days=1),
                two_digit_year_break=None, delimiter=None):
     """Return a Pandas Series of every file for chosen Instrument data.
@@ -53,22 +53,22 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : string or NoneType
-        Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+    tag : str
+        Tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    data_path : str
+        Path to data directory. This input is nominally provided by pysat
+        itself. (default='')
     format_str : string or NoneType
         User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
-    supported_tags : dict or NoneType
-        Keys are inst_id, each containing a dict keyed by tag
-        where the values file format template strings. See `Files.from_os`
+        formats associated with the supplied tags are used. See `Files.from_os`
         `format_str` kwarg for more details. (default=None)
+    supported_tags : dict or NoneType
+        Keys are `inst_id`, each containing a dict keyed by `tag`
+        where the values are file format template strings. (default=None)
     file_cadence : dt.timedelta or pds.DateOffset
         pysat assumes a daily file cadence, but some instrument data file
         contain longer periods of time.  This parameter allows the specification
@@ -79,7 +79,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         added for years >= two_digit_year_break and '2000' will be added for
         years < two_digit_year_break. If None, then four-digit years are
         assumed. (default=None)
-    delimiter : string or NoneType
+    delimiter : str or NoneType
         Delimiter string upon which files will be split (e.g., '.'). If None,
         filenames will be parsed presuming a fixed width format. (default=None)
 
@@ -91,6 +91,10 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     See Also
     --------
     pysat.Files.from_os
+
+    Note
+    ----
+    This function is intended to be invoked by pysat and not the end user.
 
     Examples
     --------
@@ -104,13 +108,9 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     """
 
-    # Test the input
-    if data_path is None:
-        estr = ''.join(('A directory must be passed to the loading routine ',
-                        'for <Instrument Code>'))
-        raise ValueError(estr)
-
     if format_str is None:
+        # pyast performs a check against `inst_id` and `tag` before calling
+        # `list_files`. However, supported_tags is a non-pysat input.
         try:
             format_str = supported_tags[inst_id][tag]
         except KeyError as kerr:
