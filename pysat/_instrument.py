@@ -1457,7 +1457,7 @@ class Instrument(object):
         ValueError
             If both `date` and `fid` are None, or if `inc` left unspecified.
         """
-            # Set default `load_kwargs`.
+        # Set default `load_kwargs`.
         if load_kwargs is None:
             load_kwargs = self.kwargs['load']
 
