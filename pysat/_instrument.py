@@ -29,41 +29,35 @@ class Instrument(object):
 
     Parameters
     ----------
-    platform : str
-        name of instrument platform (default='')
-    name : str
-        name of instrument (default='')
+    platform : str or NoneType
+        Name of instrument platform. If None, creates 'unaffiliated' Instrument.
+        (default=None)
+    name : str or NoneType
+        Name of instrument. If None, creates 'unaffiliated' Instrument.
+        (default=None)
     tag : str
-        identifies particular subset of instrument data
-        (default='')
+        Identifies particular subset of instrument data. (default='')
     inst_id : str
         Secondary level of identification, such as spacecraft within a
-        constellation platform (default='')
+        constellation platform. (default='')
     clean_level : str or NoneType
         Level of data quality. If not provided, will default to the
-        setting in `pysat.params['clean_level']` (default=None)
+        setting in `pysat.params['clean_level']`. (default=None)
+    update_files : bool or NoneType
+        If True, immediately query filesystem for instrument files and store.
+        If False, the local files are presumed to be the same. By default,
+        this setting will be obtained from `pysat.params` (default=None)
     pad : pandas.DateOffset, dict, or NoneType
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
         custom functions. Dictionary, if supplied, is simply passed to
         pandas DateOffset. (default=None)
-    orbit_info : dict
+    orbit_info : dict or NoneType
         Orbit information, {'index': index, 'kind': kind, 'period': period}.
-        See pysat.Orbits for more information.  (default={})
+        See pysat.Orbits for more information.  (default=None)
     inst_module : module or NoneType
         Provide instrument module directly, takes precedence over platform/name
         (default=None)
-    update_files : bool or NoneType
-        If True, immediately query filesystem for instrument files and store.
-        If False, the local files are presumed to be the same. By default,
-        this setting will be obtained from `pysat.params` (default=None)
-    temporary_file_list : bool
-        If true, the list of Instrument files will not be written to disk.
-        Prevents a race condition when running multiple pysat processes.
-        (default=False)
-    strict_time_flag : bool
-        If true, pysat will check data to ensure times are unique and
-        monotonically increasing. (default=True)
     data_dir : str
         Directory without sub-directory variables that allows one to
         bypass the directories provided by pysat.params['data_dirs'].  Only
@@ -79,10 +73,18 @@ class Instrument(object):
         provided, it must take `tag` and `inst_id` as arguments and return an
         appropriate string. (default=None)
     file_format : str or NoneType
-        File naming structure in string format.  Variables such as year,
-        month, and inst_id will be filled in as needed using python string
-        formatting.  The default file format structure is supplied in the
-        instrument list_files routine. (default=None)
+        File naming structure in string format.  Variables such as `year`,
+        `month`, `day`, etc. will be filled in as needed using python
+        string formatting.  The default file format structure is supplied in the
+        instrument `list_files` routine. See
+        `pysat.files.parse_delimited_filenames` and
+        `pysat.files.parse_fixed_width_filenames` for more. (default=None)
+    temporary_file_list : bool
+        If true, the list of Instrument files will not be written to disk.
+        (default=False)
+    strict_time_flag : bool
+        If true, pysat will check data to ensure times are unique and
+        monotonically increasing. (default=True)
     ignore_empty_files : bool
         Flag controling behavior for listing available files. If True, the list
         of files found will be checked to ensure the filesizes are greater than
@@ -109,11 +111,11 @@ class Instrument(object):
     pad
     orbit_info
     inst_module
-    temporary_file_list
-    strict_time_flag
     data_dir
     directory_format
     file_format
+    temporary_file_list
+    strict_time_flag
     bounds : tuple
         Tuple of datetime objects or filenames indicating bounds for loading
         data, or a tuple of NoneType objects. Users may provide as a tuple or
@@ -130,39 +132,46 @@ class Instrument(object):
     data : pandas.DataFrame or xarray.Dataset
         Class object holding the loaded science data
     date : dt.datetime or NoneType
-        Date and time for loaded data, None if no data is loaded
-    yr : int or NoneType
-        Year for loaded data, None if no data is loaded
+        Date and time for loaded data, None if no data is loaded.
     doy : int or NoneType
-        Day of year for loaded data, None if no data is loaded
-    yesterday : dt.datetime
-        Date and time for yesterday in UT
-    today : dt.datetime
-        Date and time for the current day in UT
-    tomorrow : dt.datetime
-        Date and time for tomorrow in UT
+        Day of year for loaded data, None if no data is loaded.
     files : pysat.Files
-        Class to hold and interact with the available instrument files
+        Class to hold and interact with the available instrument files.
     kwargs : dict
-        Keyword arguments passed to the standard Instrument routines
+        Keyword arguments passed to the standard Instrument routines.
     kwargs_supported : dict
-        Stores all supported keywords for user edification
+        Stores all supported keywords for user edification.
     kwargs_reserved : dict
-        Keyword arguments for reserved method arguments
-    meta_labels : dict
-        Dict containing defaults for new Meta data labels
-    meta : pysat.Meta
-        Class holding the instrument metadata
-    orbits : pysat.Orbits
-        Interface to extracting data orbit-by-orbit
-    variables : list
-        List of loaded data variables
-    pandas_format : bool
-        Flag indicating whether `data` is stored as a pandas.DataFrame (True)
-        or an xarray.Dataset (False)
+        Keyword arguments for reserved method arguments.
     load_step : dt.timedelta
         The temporal increment for loading data, defaults to a timestep of one
-        day
+        day.
+    meta : pysat.Meta
+        Class holding the instrument metadata.
+    meta_labels : dict
+        Dict containing defaults for new Meta data labels.
+    orbits : pysat.Orbits
+        Interface to extracting data orbit-by-orbit.
+    pandas_format : bool
+        Flag indicating whether `data` is stored as a pandas.DataFrame (True)
+        or an xarray.Dataset (False).
+    today : dt.datetime
+        Date and time for the current day in UT.
+    tomorrow : dt.datetime
+        Date and time for tomorrow in UT.
+    variables : list
+        List of loaded data variables.
+    yesterday : dt.datetime
+        Date and time for yesterday in UT.
+    yr : int or NoneType
+        Year for loaded data, None if no data is loaded.
+
+    Raises
+    ------
+    ValueError
+        If platform and name are mixture of None and str, an unknown or reserved
+         keyword is used, or if `file_format`, `custom`, or `pad` are improperly
+         formatted.
 
     Note
     ----
