@@ -3270,7 +3270,7 @@ class Instrument(object):
         Returns
         -------
         List
-            First and last datetimes obtained from remote_file_list
+            First and last datetimes obtained from `remote_file_list`
 
         Note
         ----
@@ -3293,11 +3293,10 @@ class Instrument(object):
 
         Note
         ----
-        Data will be downloaded to pysat_data_dir/patform/name/tag
+        Data will be downloaded to `self.files.data_path`.
 
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
-
 
         If no remote file listing method is available, existing local files are
         assumed to be up-to-date and gaps are assumed to be missing files.
@@ -3310,14 +3309,14 @@ class Instrument(object):
 
         """
 
-        # Get list of remote files
+        # Get list of remote files.
         remote_files = self.remote_file_list()
         if remote_files is not None and remote_files.empty:
             logger.warning(' '.join(('No remote files found. Unable to',
                                      'download latest data.')))
             return
 
-        # Get current list of local files
+        # Get current list of local files.
         self.files.refresh()
         local_files = self.files.files
 
@@ -3325,7 +3324,7 @@ class Instrument(object):
         # for the requested times that aren't available locally.  Otherwise,
         # compare the remote and local file lists.
         if remote_files is None:
-            # Get an array of the desired dates
+            # Get an array of the desired dates.
             if 'date_array' in kwargs.keys():
                 new_dates = kwargs['date_array']
             elif 'start' in kwargs.keys():
@@ -3339,25 +3338,24 @@ class Instrument(object):
                 new_dates = pds.date_range(local_files.index[0],
                                            local_files.index[-1], freq='1D')
 
-            # Provide updating information
+            # Provide updating information.
             logger.info(''.join(['No remote file listing method, looking for ',
                                  'file gaps between ',
                                  '{:} and {:} (inclusive).'.format(
                                      new_dates[0].strftime('%d %b %Y'),
                                      new_dates[-1].strftime('%d %b %Y'))]))
 
-            # Determine which dates are mising
+            # Determine which dates are mising.
             missing_inds = [i for i, req_dates in enumerate(new_dates)
                             if req_dates not in local_files.index]
 
-            # Extract only the missing dates
+            # Extract only the missing dates.
             new_dates = new_dates[missing_inds]
             logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
                                  'files are new.')))
         else:
             # Compare local and remote files. First look for dates that are in
-            # remote but not in local
-            # Provide updating information
+            # remote but not in local. Provide updating information.
             logger.info(''.join(['A remote file listing method exists, looking',
                                  ' for updated files and gaps at all times.']))
 
@@ -3378,10 +3376,10 @@ class Instrument(object):
                                  'files are new or updated.')))
 
         if len(new_dates) > 0:
-            # Update download kwargs to include new `date_array` value
+            # Update download kwargs to include new `date_array` value.
             kwargs['date_array'] = new_dates
 
-            # Download date for dates in new_dates (also includes new names)
+            # Download date for dates in new_dates (also includes new names).
             self.download(**kwargs)
         else:
             logger.info('Did not find any new or updated files.')
@@ -3413,9 +3411,14 @@ class Instrument(object):
             databases requiring sign in or registration. 'freq' temporarily
             ingested through this input option.
 
+        Raises
+        ------
+        ValueError
+            Raised if there is an issue creating `self.files.data_path`.
+
         Note
         ----
-        Data will be downloaded to pysat_data_dir/patform/name/tag
+        Data will be downloaded to `self.files.data_path`.
 
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
@@ -3525,7 +3528,7 @@ class Instrument(object):
                                        self.files[dsel2][-1],
                                        curr_bound[2], curr_bound[3])
         else:
-            logger.warning('Requested download over an empty date range')
+            logger.warning('Requested download over an empty date range.')
 
         return
 
@@ -3551,7 +3554,8 @@ class Instrument(object):
             Label in file for datetime index of Instrument object
             (default='Epoch')
         zlib : bool
-            Flag for engaging zlib compression (True - compression on)
+            Flag for engaging zlib compression (True - compression on).
+            (default=False)
         complevel : int
             An integer flag between 1 and 9 describing the level of compression
             desired. Ignored if zlib=False. (default=4)
@@ -3625,17 +3629,17 @@ _reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
 
 
 def _kwargs_keys_to_func_name(kwargs_key):
-    """Convert from self.kwargs key name to the function/method name.
+    """Convert from `self.kwargs` key name to the function/method name.
 
     Parameters
     ----------
     kwargs_key : str
-        Key from self.kwargs dictionary
+        Key from `self.kwargs` dictionary.
 
     Returns
     -------
     func_name : str
-        Name of method or function associated with the input key
+        Name of method or function associated with the input key.
 
     """
 
@@ -3649,12 +3653,12 @@ def _get_supported_keywords(local_func):
     Parameters
     ----------
     local_func : function, method, or functools.partial
-        Method used to load data within pysat
+        Method used to load data within pysat.
 
     Returns
     -------
     out_dict : dict
-        dict of supported keywords and default values
+        dict of supported keywords and default values.
 
     Note
     ----
@@ -3670,15 +3674,15 @@ def _get_supported_keywords(local_func):
 
     # Check if this is a partial function
     if isinstance(local_func, functools.partial):
-        # get keyword arguments already applied to function
+        # Get keyword arguments already applied to function
         existing_kws = local_func.keywords
 
-        # pull out python function portion
+        # Pull out python function portion
         local_func = local_func.func
     else:
         existing_kws = {}
 
-    # account for keywords already set since input was a partial function
+    # Account for keywords already set since input was a partial function
     pre_kws.extend(existing_kws.keys())
 
     # Get the lists of arguments and defaults
@@ -3691,25 +3695,25 @@ def _get_supported_keywords(local_func):
     func_args = list(sig.args)
 
     # Recast the function defaults as a list instead of NoneType or tuple.
-    # inspect returns func_defaults=None when there are no defaults
+    # Inspect returns func_defaults=None when there are no defaults.
     if sig.defaults is None:
         func_defaults = []
     else:
         func_defaults = [dval for dval in sig.defaults]
 
-    # Remove arguments from the start of the func_args list
+    # Remove arguments from the start of the func_args list.
     while len(func_args) > len(func_defaults):
         func_args.pop(0)
 
-    # Remove pre-existing keywords from output. Start by identifying locations
+    # Remove pre-existing keywords from output. Start by identifying locations.
     pop_list = [i for i, arg in enumerate(func_args) if arg in pre_kws]
 
-    # Remove pre-selected by cycling backwards through the list of indices
+    # Remove pre-selected by cycling backwards through the list of indices.
     for i in pop_list[::-1]:
         func_args.pop(i)
         func_defaults.pop(i)
 
-    # Create the output dict
+    # Create the output dict.
     out_dict = {akey: func_defaults[i] for i, akey in enumerate(func_args)}
 
     return out_dict
