@@ -27,7 +27,7 @@ class Files(object):
     Parameters
     ----------
     inst : pysat.Instrument
-        Instrument object
+        Instrument object.
     data_dir : str or NoneType
         Directory without sub-directory variables that allows one to
         bypass the directories provided by pysat.params['data_dirs'].  Only
@@ -72,9 +72,10 @@ class Files(object):
         selected from data_paths.
     data_paths: list of str
         Available paths that pysat will use when looking for files. The
-        class uses the first directory with relevant data, stored in data_path.
+        class uses the first directory with relevant data, stored in
+        `data_path`.
     files : pds.Series
-        Series of data files, indexed by file start time
+        Series of data files, indexed by file start time.
     inst_info : dict
         Contains pysat.Instrument parameters 'platform', 'name', 'tag',
         and 'inst_id', identifying the source of the files.
@@ -86,7 +87,7 @@ class Files(object):
         by associated pysat.Instrument object.
     multi_file_day : boolean
         Flag copied from associated pysat.Instrument object that indicates
-        when data for day n may be found in files for days n-1, or n+1
+        when data for day n may be found in files for days n-1, or n+1.
     start_date : datetime or NoneType
         Date of first file, used as default start bound for instrument
         object, or None if no files are loaded.
@@ -122,21 +123,21 @@ class Files(object):
     --------
     ::
 
-        # Convenient file access
+        # Convenient file access.
         inst = pysat.Instrument(platform=platform, name=name, tag=tag,
                                 inst_id=inst_id)
-        # First file
+        # First file.
         inst.files[0]
 
-        # Files from start up to stop (exclusive on stop)
+        # Files from start up to stop (exclusive on stop).
         start = dt.datetime(2009,1,1)
         stop = dt.datetime(2009,1,3)
         print(inst.files[start:stop])
 
-        # Files for date
+        # Files for date.
         print(inst.files[start])
 
-        # Files by slicing
+        # Files by slicing.
         print(inst.files[0:4])
 
         # Get a list of new files.

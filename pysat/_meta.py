@@ -84,7 +84,7 @@ class Meta(object):
     --------
     ::
 
-        # Instantiate Meta object, default values for attribute labels are used
+        # Instantiate Meta object, default values for attribute labels are used.
         meta = pysat.Meta()
 
         # Set several variable units. Note that other base parameters are not
@@ -105,7 +105,7 @@ class Meta(object):
                             'scale': 'linear', 'axis_multiplier': 1e4}
         meta['var_name'] = {'PI': 'Dr. R. Song'}
 
-        # Meta data may be assigned to multiple variables at once
+        # Meta data may be assigned to multiple variables at once.
         meta[['var_name1', 'var_name2']] = {'long_name': ['Name1', 'Name2'],
                                             'units': ['Units1', 'Units2'],
                                             'scale': ['linear', 'linear']}
@@ -145,7 +145,7 @@ class Meta(object):
         # in the attached MetaLabels class object.
         meta[key1, meta.labels.fill_val]
 
-        # You may change a label used by Meta object to have a different value
+        # You may change a label used by Meta object to have a different value.
         meta.labels.fill_val = '_FillValue'
 
         # Note that the fill label is intended for use when interacting
@@ -550,7 +550,7 @@ class Meta(object):
             inst.load(date=inst.inst_module._test_dates[''][''])
             meta = inst.meta
 
-            # For standard data, many slicing options are available
+            # For standard data, many slicing options are available.
             meta['uts']
             meta['uts', 'units']
             meta['uts', ['units', 'long_name']]
@@ -560,7 +560,7 @@ class Meta(object):
             meta[:, ['units', 'long_name']]
 
             # For higher order data, slicing is not supported for multiple
-            # parents with any children
+            # parents with any children.
             meta['profiles', 'density', 'units']
             meta['profiles', 'density', ['units', 'long_name']]
             meta['profiles', ['density', 'dummy_str'], ['units', 'long_name']]

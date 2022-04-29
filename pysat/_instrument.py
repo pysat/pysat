@@ -184,7 +184,7 @@ class Instrument(object):
     --------
     ::
 
-        # 1-second mag field data
+        # 1-second mag field data.
         vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 2)
@@ -193,7 +193,7 @@ class Instrument(object):
         print(vefi['dB_mer'])
         print(vefi.meta['db_mer'])
 
-        # 1-second thermal plasma parameters
+        # 1-second thermal plasma parameters.
         ivm = pysat.Instrument(platform='cnofs', name='ivm')
         ivm.download(start, stop)
         ivm.load(2009, 1)
@@ -227,7 +227,7 @@ class Instrument(object):
         print(inst['new_data2'])
 
         # Custom methods may also be attached at instantiation.
-        # Create a dictionary for each custom method and associated inputs
+        # Create a dictionary for each custom method and associated inputs.
         custom_func_1 = {'function': custom_func,
                          'kwargs': {'opt_param1': True}}
         custom_func_2 = {'function': custom_func, 'args'=[True, False]}
@@ -236,10 +236,10 @@ class Instrument(object):
 
         # Combine all dicts into a list in order of application and execution,
         # although this can be modified by specifying 'at_pos'. The actual
-        # order these functions will run is: 3, 1, 2
+        # order these functions will run is: 3, 1, 2.
         custom = [custom_func_1, custom_func_2, custom_func_3]
 
-        # Instantiate pysat.Instrument
+        # Instantiate `pysat.Instrument`.
         inst = pysat.Instrument(platform, name, inst_id=inst_id, tag=tag,
                                 custom=custom)
 
@@ -741,25 +741,25 @@ class Instrument(object):
         --------
         ::
 
-            # By name
+            # By name.
             inst['name']
 
-            # By list of names
+            # By list of names.
             inst[['name1', 'name2']]
 
-            # By position
+            # By position.
             inst[row_index, 'name']
 
-            # Slicing by row
+            # Slicing by row.
             inst[row1:row2, 'name']
 
-            # By Date
+            # By Date.
             inst[datetime, 'name']
 
-            # Slicing by date, inclusive
+            # Slicing by date, inclusive.
             inst[datetime1:datetime2, 'name']
 
-            # Slicing by name and row/date
+            # Slicing by name and row/date.
             inst[datetime1:datetime2, 'name1':'name2']
 
         """
@@ -1838,7 +1838,7 @@ class Instrument(object):
             # Iterate via a non-standard step size of two days.
             inst.bounds = ([start, start2], [stop, stop2], '2D')
 
-            # Load more than a single day/file at a time when iterating
+            # Load more than a single day/file at a time when iterating.
             inst.bounds = ([start, start2], [stop, stop2], '2D',
                            dt.timedelta(days=3))
 
