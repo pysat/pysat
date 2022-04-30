@@ -984,8 +984,8 @@ class Files(object):
         """
 
         if data_path is None:
-            raise ValueError(" ".join[("Must supply instrument directory path",
-                                       "(data_path).")])
+            raise ValueError(" ".join(["Must supply instrument directory path",
+                                       "(data_path)."]))
         if format_str is None:
             raise ValueError("Must supply `format_str`.")
 
