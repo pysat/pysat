@@ -150,12 +150,10 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
     tag : str
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself. While
-        tag defaults to None here, pysat provides '' as the default
-        tag unless specified by user at Instrument instantiation. (default='')
+        Tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
     inst_id : str
-        Satellite ID used to identify particular data set to be loaded.
+        Instrument ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
     strict_meta : bool
         Flag that checks if metadata across fnames is the same if True

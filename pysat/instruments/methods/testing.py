@@ -29,16 +29,14 @@ def init(self, test_init_kwarg=None):
 
     Runs once upon instantiation.
 
-    Shifts time index of files by 5-minutes if mangle_file_dates
+    Shifts time index of files by 5-minutes if `mangle_file_dates`
     set to True at pysat.Instrument instantiation.
 
-    Creates a file list for a given range if the file_date_range
+    Creates a file list for a given range if the `file_date_range`
     keyword is set at instantiation.
 
     Parameters
     ----------
-    self : pysat.Instrument
-        This object
     test_init_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -60,8 +58,6 @@ def clean(self, test_clean_kwarg=None):
 
     Parameters
     ----------
-    self : pysat.Instrument
-        This object
     test_clean_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -82,8 +78,6 @@ def preprocess(self, test_preprocess_kwarg=None):
 
     Parameters
     ----------
-    self : pysat.Instrument
-        This object
     test_preprocess_kwarg : any or NoneType
         Testing keyword (default=None)
 
@@ -228,27 +222,30 @@ def initialize_test_meta(epoch_name, data_keys):
     return meta
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
+def list_files(tag='', inst_id='', data_path='', format_str=None,
                file_date_range=None, test_dates=None, mangle_file_dates=False,
                test_list_files_kwarg=None):
     """Produce a fake list of files spanning three years.
 
     Parameters
     ----------
-    tag : str or NoneType
-        pysat instrument tag (default=None)
-    inst_id : str or NoneType
-        pysat satellite ID tag (default=None)
-    data_path : str or NoneType
-        pysat data path (default=None)
+    tag : str
+        Tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    data_path : str
+        Path to data directory. This input is nominally provided by pysat
+        itself. (default='')
     format_str : str or NoneType
-        file format string (default=None)
+        File format string. This is passed from the user at pysat.Instrument
+         instantiation, if provided. (default=None)
     file_date_range : pds.date_range
         File date range. The default mode generates a list of 3 years of daily
         files (1 year back, 2 years forward) based on the test_dates passed
         through below.  Otherwise, accepts a range of files specified by the
-        user.
-        (default=None)
+        user. (default=None)
     test_dates : dt.datetime or NoneType
         Pass the _test_date object through from the test instrument files
     mangle_file_dates : bool
@@ -265,9 +262,6 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     # Support keyword testing
     logger.info(''.join(('test_list_files_kwarg = ',
                          str(test_list_files_kwarg))))
-
-    if data_path is None:
-        data_path = ''
 
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
@@ -289,7 +283,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     return pds.Series(names, index=index)
 
 
-def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
+def list_remote_files(tag='', inst_id='', data_path='', format_str=None,
                       start=None, stop=None, test_dates=None, user=None,
                       password=None, mangle_file_dates=False,
                       test_list_remote_kwarg=None):
@@ -301,12 +295,15 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : str or NoneType
-        pysat instrument tag (default=None)
-    inst_id : str or NoneType
-        pysat satellite ID tag (default=None)
-    data_path : str or NoneType
-        pysat data path (default=None)
+    tag : str
+        Tag name used to identify particular data set.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data.
+        This input is nominally provided by pysat itself. (default='')
+    data_path : str
+        Path to data directory. This input is nominally provided by pysat
+        itself. (default='')
     format_str : str or NoneType
         file format string (default=None)
     start : dt.datetime or NoneType
@@ -319,11 +316,11 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         (default=None)
     test_dates : dt.datetime or NoneType
         Pass the _test_date object through from the test instrument files
-    user : string or NoneType
+    user : str or NoneType
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
         error if user not supplied. (default=None)
-    password : string or NoneType
+    password : str or NoneType
         Password for data download. (default=None)
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
@@ -357,28 +354,23 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
                       test_dates=test_dates)
 
 
-def download(date_array, tag, inst_id, data_path=None, user=None,
+def download(date_array, tag, inst_id, data_path='', user=None,
              password=None, test_download_kwarg=None):
     """Pass through when asked to download for a test instrument.
-
-    Note
-    ----
-    This routine is invoked by pysat and is not intended for direct use by the
-    end user.
 
     Parameters
     ----------
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string
+    tag : str
         Tag identifier used for particular dataset. This input is provided by
         pysat. (default='')
-    inst_id : string
+    inst_id : str
         Instrument ID string identifier used for particular dataset. This input
         is provided by pysat. (default='')
-    data_path : string or NoneType
-        Path to directory to download data to. (default=None)
+    data_path : str
+        Path to directory to download data to. (default='')
     user : string or NoneType
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for downloads this routine here must
@@ -396,6 +388,11 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
     Warnings
     --------
     When no download support will be provided
+
+    Note
+    ----
+    This routine is invoked by pysat and is not intended for direct use by the
+    end user.
 
     """
 
@@ -464,7 +461,7 @@ def generate_times(fnames, num, freq='1S', start_time=None):
     num : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day.
-    freq : string
+    freq : str
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
     start_time : dt.timedelta or NoneType

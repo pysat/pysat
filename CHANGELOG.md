@@ -111,6 +111,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added docstring linting via flake-docstrings and hacking to CI tests
    * Added clarification to the tutorials
    * Added limitations to the `listify` docstring
+   * Updated `tag` and `inst_id` keywords and docstrings to new standards```
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
@@ -171,6 +172,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Updated pandas syntax to be compatible with pandas 2.0 (pandas 1.4
      deprecations)
    * Cleaned up excess variables upon import
+   * Removed `data_path` check from `pysat.instruments.methods.general.list_files`
 
 [3.0.1] - 2021-07-28
 --------------------

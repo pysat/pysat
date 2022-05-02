@@ -61,7 +61,7 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
+def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
          start_time=None, num_samples=86400, test_load_kwarg=None,
          max_latitude=90.):
@@ -71,10 +71,12 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     ----------
     fnames : list
         List of filenames
-    tag : str or NoneType
-        Instrument tag (accepts '')
-    inst_id : str or NoneType
-        Instrument satellite ID (accepts '')
+    tag : str
+        Tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
     sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
