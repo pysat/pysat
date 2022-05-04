@@ -631,10 +631,10 @@ def apply_table_translation_from_file(trans_table, meta_dict):
 def meta_array_expander(meta_dict):
     """Expand meta arrays by storing each element with new incremented label.
 
-    if meta_dict[variable]['label'] = [ item1, item2, ..., itemn] then
-    the returned dict will contain, meta_dict[variable]['label0'] = item1,
-    meta_dict[variable]['label1'] = item2,
-    meta_dict[variable]['labeln-1'] = itemn
+    If `meta_dict[variable]['label'] = [ item1, item2, ..., itemn]` then
+    the returned dict will contain: `meta_dict[variable]['label0'] = item1`,
+    `meta_dict[variable]['label1'] = item2`, and so on up to
+    `meta_dict[variable]['labeln-1'] = itemn`.
 
     Parameters
     ----------
