@@ -1,10 +1,9 @@
 """Standard functions for the test instruments."""
 
 import datetime as dt
-import sys
+import os
 
 import numpy as np
-import os
 import pandas as pds
 import time
 import warnings
