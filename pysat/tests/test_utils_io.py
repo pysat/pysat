@@ -918,13 +918,15 @@ class TestNetCDF4Integration(object):
         # Confirm inverse translation worked.
         attrs = list(meta.attrs())
         for key in meta_trans.keys():
-            # Confirm inverse-translated label in metadata
-            assert key in attrs
+            # Confirm inverse-translated label in metadata.
+            wstr = ''.join([key, ' not found in loaded meta information.'])
+            assert key in attrs, wstr
 
             # Confirm labels used in file that should have been translated
             # are not present.
             for var in meta_trans[key]:
-                assert var not in attrs
+                wstr = ''.join([var, ' should have been translated.'])
+                assert var not in attrs, wstr
 
         return
 
@@ -1444,13 +1446,13 @@ class TestMetaTranslation(object):
         assert np.all(self.out != self.meta_dict), 'Return dict same as input.'
 
         # Confirm array expansion
-        estr = 'Missing expansion of array labels'
-        estr2 = 'Missing values in expanded labels'
+        estr = 'Missing expansion of array labels: {}'
+        estr2 = 'Missing/incorrect values in expanded labels, {}'
         for var in self.out.keys():
             for tvar in np.arange(4):
                 tstr = 'array_test{:1d}'.format(tvar)
-                assert tstr in self.out[var], estr
-                assert self.out[var][tstr] == tvar + 1, estr2
+                assert tstr in self.out[var], estr.format(tstr)
+                assert self.out[var][tstr] == tvar + 1, estr2.format(tstr)
 
                 # Remove expanded elements to enable different test, later
                 self.out[var].pop(tstr)
