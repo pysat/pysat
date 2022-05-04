@@ -876,12 +876,12 @@ class TestNetCDF4Integration(object):
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
 
+        mkwargs = {} if assign_flag else {'meta_translation': meta_trans}
         if assign_flag:
             self.testInst._meta_translation_table = meta_trans
-            pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
-        else:
-            pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
-                                          meta_translation=meta_trans)
+
+        pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                      **mkwargs)
 
         # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
