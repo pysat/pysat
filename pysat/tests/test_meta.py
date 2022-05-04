@@ -2160,7 +2160,7 @@ class TestDeprecation(object):
 
 
 class TestToDict(object):
-    """Test `.to_dict` functions using pysat test Instruments."""
+    """Test `.to_dict` method using pysat test Instruments."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -2183,7 +2183,7 @@ class TestToDict(object):
 
     @pytest.mark.parametrize("preserve_case", [False, True])
     def test_to_dict(self, preserve_case):
-        """Test `to_dict` function.
+        """Test `to_dict` method.
 
         Parameters
         ----------
@@ -2238,7 +2238,7 @@ class TestToDict(object):
 
 
 class TestToDictXarray(TestToDict):
-    """Test `.to_dict` functions using pysat test Instruments."""
+    """Test `.to_dict` methods using pysat test Instruments."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -2256,7 +2256,7 @@ class TestToDictXarray(TestToDict):
 
 
 class TestToDictXarray2D(TestToDict):
-    """Test `.to_dict` functions using pysat test Instruments."""
+    """Test `.to_dict` methods using pysat test Instruments."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -2274,7 +2274,7 @@ class TestToDictXarray2D(TestToDict):
 
 
 class TestToDictPandas2D(TestToDict):
-    """Test `.to_dict` functions using pysat test Instruments."""
+    """Test `.to_dict` methods using pysat test Instruments."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -2292,7 +2292,7 @@ class TestToDictPandas2D(TestToDict):
 
 
 class TestToDictXarrayModel(TestToDict):
-    """Test `.to_dict` functions using pysat test Instruments."""
+    """Test `.to_dict` methods using pysat test Instruments."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
