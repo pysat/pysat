@@ -38,7 +38,7 @@ class Files(object):
         Variables such as `platform`, `name`, `tag`, and `inst_id` will be
         filled in as needed using python string formatting, if a string is
         supplied. The default directory structure, which is used if None is
-        specified, is provided by `pysat.params['directory_format']`and is
+        specified, is provided by `pysat.params['directory_format']` and is
         typically '{platform}/{name}/{tag}/{inst_id}'. (default=None)
     update_files : boolean
         If True, immediately query filesystem for instrument files and
