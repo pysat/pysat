@@ -19,12 +19,14 @@ from pysat.instruments.methods import testing as mm_test
 
 logger = pysat.logger
 
-# pysat required parameters
+# pysat required parameters.
 platform = 'pysat'
 name = 'testing_xarray'
-# dictionary of data 'tags' and corresponding description
+
+# Dictionary of data 'tags' and corresponding description.
 tags = {'': 'Regular testing data set'}
-# dictionary of satellite IDs, list of corresponding tags
+
+# Dictionary of satellite IDs, list of corresponding tags.
 inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
@@ -32,7 +34,7 @@ pandas_format = False
 epoch_name = u'time'
 
 
-# Init method
+# Init method.
 def init(self, test_init_kwarg=None):
     """Initialize the test instrument.
 
@@ -53,11 +55,11 @@ def init(self, test_init_kwarg=None):
     return
 
 
-# Clean method
+# Clean method.
 clean = mm_test.clean
 
 
-# Optional method, preprocess
+# Optional method, preprocess.
 preprocess = mm_test.preprocess
 
 
@@ -70,33 +72,32 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     Parameters
     ----------
     fnames : list
-        List of filenames
+        List of filenames.
     tag : str
         Tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
     inst_id : str
         Instrument ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
-    sim_multi_file_right : boolean
+    sim_multi_file_right : bool
         Adjusts date range to be 12 hours in the future or twelve hours beyond
-        root_date (default=False)
-    sim_multi_file_left : boolean
+        `root_date`. (default=False)
+    sim_multi_file_left : bool
         Adjusts date range to be 12 hours in the past or twelve hours before
-        root_date (default=False)
-    malformed_index : boolean
+        `root_date`. (default=False)
+    malformed_index : bool
         If True, time index will be non-unique and non-monotonic.
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
-        will begin at midnight.
-        (default=None)
+        will begin at midnight. (default=None)
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=86400)
     test_load_kwarg : any or NoneType
-        Testing keyword (default=None)
+        Testing keyword. (default=None)
     max_latitude : float
         Latitude simulated as `max_latitude` * cos(theta(t))`, where
-        theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.).
+        theta is a linear periodic signal bounded by [0, 2 * pi). (default=90.)
 
     Returns
     -------
@@ -107,10 +108,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     """
 
-    # Support keyword testing
+    # Support keyword testing.
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # create an artifical satellite data set
+    # Create an artifical satellite data set.
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
@@ -127,49 +128,50 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     if malformed_index:
         index = index.tolist()
 
-        # Create a nonmonotonic index
+        # Create a non-monotonic index.
         index[0:3], index[3:6] = index[3:6], index[0:3]
 
-        # Create a non-unique index
+        # Create a non-unique index.
         index[6:9] = [index[6]] * 3
 
     data = xr.Dataset({'uts': ((epoch_name), uts)},
                       coords={epoch_name: index})
-    # need to create simple orbits here. Have start of first orbit
-    # at 2009,1, 0 UT. 14.84 orbits per day
+
+    # Need to create simple orbits here. Have start of first orbit
+    # at 2009,1, 0 UT. 14.84 orbits per day.
     time_delta = dates[0] - root_date
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
     data['mlt'] = ((epoch_name), mlt)
 
-    # do slt, 20 second offset from mlt
+    # SLT, 20 second offset from `mlt`.
     slt = mm_test.generate_fake_data(time_delta.total_seconds() + 20, uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
     data['slt'] = ((epoch_name), slt)
 
-    # create a fake longitude, resets every 6240 seconds
-    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
-    # to go around full longitude
+    # Create a fake longitude, resets every 6240 seconds.
+    # Sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
+    # to go around full longitude.
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                            period=iperiod['lon'],
                                            data_range=drange['lon'])
     data['longitude'] = ((epoch_name), longitude)
 
-    # create latitude area for testing polar orbits
+    # Create latitude area for testing polar orbits.
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
     latitude = max_latitude * np.cos(angle)
     data['latitude'] = ((epoch_name), latitude)
 
-    # create constant altitude at 400 km
+    # Create constant altitude at 400 km.
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
     data['altitude'] = ((epoch_name), altitude)
 
-    # fake orbit number
+    # Fake orbit number.
     fake_delta = dates[0] - dt.datetime(2008, 1, 1)
     orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                            uts, period=iperiod['lt'],
@@ -177,7 +179,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     data['orbit_num'] = ((epoch_name), orbit_num)
 
-    # create some fake data to support testing of averaging routines
+    # Create some fake data to support testing of averaging routines.
     mlt_int = data['mlt'].astype(int).data
     long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)

@@ -22,15 +22,15 @@ pandas_format = False
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 
 
-# Init method
+# Init method.
 init = mm_test.init
 
 
-# Clean method
+# Clean method.
 clean = mm_test.clean
 
 
-# Optional method, preprocess
+# Optional method, preprocess.
 preprocess = mm_test.preprocess
 
 
@@ -41,7 +41,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     Parameters
     ----------
     fnames : list
-        List of filenames
+        List of filenames.
     tag : str
         Tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
@@ -50,8 +50,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         This input is nominally provided by pysat itself. (default='')
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
-        will begin at midnight.
-        (default=None)
+        will begin at midnight. (default=None)
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=96)
@@ -67,10 +66,10 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
 
     """
 
-    # Support keyword testing
+    # Support keyword testing.
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # Create an artificial model data set
+    # Create an artificial model data set.
     if tag == '':
         freq_str = '900S'
     else:
@@ -100,8 +99,8 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
                                   'longitude': longitude, 'lev': lev,
                                   'ilev': ilev})
 
-        # Simulate altitude values at model points
-        # Initiliaze memory
+        # Simulate altitude values at model points.
+        # Initialize memory.
         dummy0 = (data['uts'] * data['ilev'] * data['latitude']
                   * data['longitude'])
         dummy0 *= 0
@@ -110,7 +109,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         inc_arr = (np.linspace(0, 1, 72)[:, np.newaxis]
                    * np.linspace(0, 1, 144)[np.newaxis, :])
 
-        # Calculate and assign altitude values
+        # Calculate and assign altitude values.
         for i in np.arange(len(data['ilev'])):
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = i * 10. + j + inc_arr
@@ -118,12 +117,12 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         data['altitude'] = ((epoch_name, 'ilev', 'latitude', 'longitude'),
                             dummy0.data)
 
-        # Create fake 4D ion drift data set
+        # Create fake 4D ion drift data set.
         dummy0 = (data['uts'] * data['ilev'] * data['latitude']
                   * data['longitude'])
         dummy0 *= 0
 
-        # Calculate and assign fake data values
+        # Calculate and assign fake data values.
         for i in np.arange(len(data['ilev'])):
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = 2. * i * (np.sin(2 * np.pi * j / 24.)
@@ -139,7 +138,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     data['mlt'] = ((epoch_name, 'longitude'), np.mod(slt + 0.2, 24.0))
 
     # Fake 3D data consisting of non-physical values between 0 and 21 everywhere
-    # Used for interpolation routines in pysatModels
+    # Used for interpolation routines in pysatModels.
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)
     data['dummy1'] = ((epoch_name, 'latitude', 'longitude'), dummy1.data)
     data['string_dummy'] = ((epoch_name),
@@ -161,7 +160,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
 
     if tag == '':
         # Fake 4D data consisting of non-physical values between 0 and 21
-        # everywhere. Used for interpolation routines in pysatModels
+        # everywhere. Used for interpolation routines in pysatModels.
         dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
         data['dummy2'] = ((epoch_name, 'latitude', 'longitude', 'altitude'),
                           dummy2.data)
@@ -169,7 +168,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     # Set the meta data.
     meta = mm_test.initialize_test_meta(epoch_name, data.keys())
 
-    # Adjust metadata from overall defaults
+    # Adjust metadata from overall defaults.
     meta['dummy1'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
                       'fill': -2**32 + 1}
     meta['dummy2'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
