@@ -1495,20 +1495,21 @@ class Meta(object):
 
         export_dict = {}
 
-        # First Order Data
+        # First Order Data.
         for key in self.data.index:
             if preserve_case:
                 case_key = self.var_case_name(key)
             else:
                 case_key = key.lower()
 
-            # Translate each key if a translation is provided
+            # Translate each key if a translation is provided.
             export_dict[case_key] = {}
             meta_dict = self.data.loc[key].to_dict()
             for orig_key in meta_dict:
                 export_dict[case_key][orig_key] = meta_dict[orig_key]
 
-        # Higher Order Data
+        # Higher Order Data.
+        # TODO(#789): remove in pysat 3.2.0
         for key in self.ho_data:
             if preserve_case:
                 case_key = self.var_case_name(key)
