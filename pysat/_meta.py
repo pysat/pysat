@@ -1485,6 +1485,7 @@ class Meta(object):
         preserve_case : bool
             If True, the case of variables within self are preserved. If False,
             all variables returned as lower case. (default=False)
+
         Returns
         -------
         export_dict : dict

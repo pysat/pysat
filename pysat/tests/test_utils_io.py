@@ -460,10 +460,7 @@ class TestLoadNetCDF(object):
         # Write file.
         io.inst_to_netcdf(self.testInst, fname=outfile, export_nan=export_nan)
 
-        if drop_labels:
-            drop_list = [drop_label]
-        else:
-            drop_list = []
+        drop_list = [drop_label] if drop_labels else []
 
         # Load file
         pformat = self.testInst.pandas_format
@@ -890,8 +887,9 @@ class TestNetCDF4Integration(object):
         with netCDF4.Dataset(outfile) as open_f:
             for var in open_f.variables.keys():
                 test_vars = open_f[var].ncattrs()
+
                 # Confirm translated labels are in the file
-                # Avoid time variables
+                # and avoid time variables
                 if 'MonoTon' not in test_vars:
                     form = open_f[var].getncattr('Format')
                     for key in meta_trans.keys():

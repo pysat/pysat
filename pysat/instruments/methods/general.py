@@ -146,7 +146,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
     return out
 
 
-def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
+def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='time'):
     """Use datetime instead of timestamp for Epoch.
 
     .. deprecated:: 3.1.0
