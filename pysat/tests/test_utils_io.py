@@ -894,7 +894,7 @@ class TestNetCDF4Integration(object):
                     form = open_f[var].getncattr('Format')
                     for key in meta_trans.keys():
                         # String data doesn't have fill
-                        if key != 'fill' and (form != 'S1'):
+                        if key != 'fill' and form != 'S1':
                             testing.assert_list_contains(meta_trans[key],
                                                          test_vars)
 
