@@ -888,8 +888,8 @@ class TestNetCDF4Integration(object):
             for var in open_f.variables.keys():
                 test_vars = open_f[var].ncattrs()
 
-                # Confirm translated labels are in the file
-                # and avoid time variables
+                # Confirm translated labels are in the file,
+                # and avoid time variables.
                 if 'MonoTon' not in test_vars:
                     form = open_f[var].getncattr('Format')
                     for key in meta_trans.keys():
