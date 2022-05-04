@@ -625,6 +625,7 @@ def apply_table_translation_from_file(trans_table, meta_dict):
                         check = check1 and check2
                     except TypeError:
                         check = True
+
                     if check:
                         wstr = ''.join(['Inconsistent values between multiple ',
                                         'file parameters and single ',

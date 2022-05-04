@@ -166,8 +166,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     # Activate for testing malformed_index, and for instrument_test_class
     if malformed_index or tag == 'non_strict':
         index = index.tolist()
+
         # non-monotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
+
         # non-unique
         index[6:9] = [index[6]] * 3
 

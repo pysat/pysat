@@ -217,7 +217,7 @@ where the type of the metadata value is compared against the data type of the
 variable. By default, the ``fill_val``, ``min_val``, and ``max_val`` labels are
 checked.
 
-Custom metadata labels, in addition to pysat's defaults, can be written to the
+Custom metadata labels, in addition to :py:mod:`pysat`'s defaults, can be written to the
 file by adding the information to a :py:class:`pysat.Instrument`. The simplest
 method is shown below. The case of the label is retained when writing to the
 file.
@@ -344,7 +344,7 @@ information on adding a new dataset to pysat, see :ref:`rst_new_inst`.
        tag : str
            Instrument tag (accepts '' or a string to change the behaviour of
            certain instrument aspects for testing)
-       inst_id : str or NoneType
+       inst_id : str
            Instrument satellite ID (accepts '')
 
        Returns
