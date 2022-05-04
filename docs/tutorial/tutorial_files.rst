@@ -343,9 +343,9 @@ information on adding a new dataset to pysat, see :ref:`rst_new_inst`.
            List of filenames
        tag : str
            Instrument tag (accepts '' or a string to change the behaviour of
-           certain instrument aspects for testing)
+           certain instrument aspects for testing). (default='')
        inst_id : str or NoneType
-           Instrument satellite ID (accepts '')
+           Instrument ID (accepts ''). (default='')
 
        Returns
        -------
