@@ -303,12 +303,9 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
                 # Filter metadata
                 remove = True if sctype == str else False
-                out_meta_dict[sname] = \
-                    filter_netcdf4_metadata(inst, out_meta_dict[sname],
-                                            sctype, remove=remove,
-                                            check_type=check_type,
-                                            export_nan=export_nan,
-                                            varname=sname)
+                out_meta_dict[sname] = filter_netcdf4_metadata(
+                    inst, out_meta_dict[sname], sctype, remove=remove,
+                    check_type=check_type, export_nan=export_nan, varname=sname)
 
             # Get information on the subvar index. This information
             # stored under primary variable name.
@@ -342,17 +339,12 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
             # Filter metdata for other netCDF4 requirements
             remove = True if index_type == str else False
-            out_meta_dict[lower_var] = \
-                filter_netcdf4_metadata(inst, out_meta_dict[lower_var],
-                                        index_type,
-                                        remove=remove,
-                                        check_type=check_type,
-                                        export_nan=export_nan,
-                                        varname=lower_var)
+            out_meta_dict[lower_var] = filter_netcdf4_metadata(
+                inst, out_meta_dict[lower_var], index_type, remove=remove,
+                check_type=check_type, export_nan=export_nan, varname=lower_var)
 
         else:
             # Dealing with 1D data or xarray format.
-
             meta_dict['Format'] = inst._get_var_type_code(coltype)
 
             if not inst.pandas_format:
@@ -373,13 +365,9 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
             # Filter metdata for other netCDF4 requirements
             remove = True if coltype == str else False
-            out_meta_dict[lower_var] = \
-                filter_netcdf4_metadata(inst, out_meta_dict[lower_var],
-                                        coltype,
-                                        remove=remove,
-                                        check_type=check_type,
-                                        export_nan=export_nan,
-                                        varname=lower_var)
+            out_meta_dict[lower_var] = filter_netcdf4_metadata(
+                inst, out_meta_dict[lower_var], coltype, remove=remove,
+                check_type=check_type, export_nan=export_nan, varname=lower_var)
 
     return out_meta_dict
 
@@ -424,10 +412,8 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
 
         if 'meta' in lower_sub_keys:
             # Higher dimensional data, recursive treatment.
-            mdict[key]['meta'] = remove_netcdf4_standards_from_meta(mdict[key]
-                                                                    ['meta'],
-                                                                    '',
-                                                                    labels)
+            mdict[key]['meta'] = remove_netcdf4_standards_from_meta(
+                mdict[key]['meta'], '', labels)
 
         # Check for presence of time information.
         for lval in lower_sub_keys:
@@ -480,16 +466,13 @@ def default_from_netcdf_translation_table(meta):
 
     """
 
-    # Define a default translation
-    trans_table = {}
-
-    # Update labels required by netCDF4
-    trans_table['_FillValue'] = meta.labels.fill_val
-    trans_table['FillVal'] = meta.labels.fill_val
+    # Define a default translation with labels required by netCDF4.
+    trans_table = {'_FillValue': meta.labels.fill_val,
+                   'FillVal': meta.labels.fill_val,
+                   'fill': meta.labels.fill_val}
 
     # We *may* need to keep this for backwards compatibility. Unintended use
     # of 'fill' in pysat generated files.
-    trans_table['fill'] = meta.labels.fill_val
 
     return trans_table
 
@@ -510,14 +493,10 @@ def default_to_netcdf_translation_table(inst):
 
     """
 
-    # Define a default translation
-    trans_table = {}
+    # Define a default translation, starting with pysat defaults.
+    trans_table = {val: [val] for val in inst.meta.labels.label_attrs.keys()}
 
-    # Start with pysat defaults
-    for val in inst.meta.labels.label_attrs.keys():
-        trans_table[val] = [val]
-
-    # Update labels required by netCDF4
+    # Update labels required by netCDF4.
     trans_table['fill'] = ['_FillValue', 'FillVal', 'fill']
 
     return trans_table
@@ -552,10 +531,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
         trans_table = default_to_netcdf_translation_table(inst)
 
     # Confirm there are no duplicated translation labels
-    trans_labels = []
-    for key in trans_table.keys():
-        trans_labels.extend(trans_table[key])
-
+    trans_labels = [trans_table[key] for key in trans_table.keys()]
     for i in np.arange(len(trans_labels)):
         item = trans_labels.pop(0)
         if item in trans_labels:
@@ -563,7 +539,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
                             '`trans_table`: ', item])
             raise ValueError(estr)
 
-    # Translate each metadata label if a translation is provided
+    # Translate each metadata label if a translation is provided.
     for key in meta_dict.keys():
         export_dict[key] = {}
         loop_meta_dict = meta_dict[key]
@@ -1466,22 +1442,27 @@ def return_epoch_metadata(inst, epoch_name):
 def xarray_vars_no_time(data, time_label='time'):
     """Return all DataSet variables except `time_label` dimension.
 
-    If `time_label` not found, removes first 1D dimension with datetime data.
-
     Parameters
     ----------
     data : xarray.Dataset
+        Dataset to get variables from.
+    time_label : str
+        Label used within `data` for time information.
 
     Returns
     -------
-    variables :
-        All variables, dimensions, and coordinates, except the first
-        dimension.
+    variables : list
+        All variables, dimensions, and coordinates, except for `time_label`.
+
+    Raises
+    ------
+    ValueError
+        If `time_label` not present in `data`.
 
     """
     vars = list(data.variables.keys())
 
-    # Remove `time_label` dimension
+    # Remove `time_label` dimension.
     if time_label in vars:
         for i, var in enumerate(vars):
             if var == time_label:
@@ -1491,7 +1472,7 @@ def xarray_vars_no_time(data, time_label='time'):
         estr = ''.join(["Didn't find time dimension '", time_label, "'"])
         raise ValueError(estr)
 
-    return
+    return []
 
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
