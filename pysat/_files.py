@@ -40,7 +40,7 @@ class Files(object):
         supplied. The default directory structure, which is used if None is
         specified, is provided by `pysat.params['directory_format']` and is
         typically '{platform}/{name}/{tag}/{inst_id}'. (default=None)
-    update_files : boolean
+    update_files : bool
         If True, immediately query filesystem for instrument files and
         store. (default=False)
     file_format : str or NoneType
@@ -85,7 +85,7 @@ class Files(object):
     list_files_rtn : method
         Method used to locate relevant files on the local system. Provided
         by associated pysat.Instrument object.
-    multi_file_day : boolean
+    multi_file_day : bool
         Flag copied from associated pysat.Instrument object that indicates
         when data for day n may be found in files for days n-1, or n+1.
     start_date : datetime or NoneType
@@ -140,9 +140,8 @@ class Files(object):
         # Files by slicing.
         print(inst.files[0:4])
 
-        # Get a list of new files.
-        # New files are those that weren't present the last time
-        # a given instrument's file list was stored.
+        # Get a list of new files. New files are those that weren't present
+        # the last time a given instrument's file list was stored.
         new_files = inst.files.get_new()
 
         # Search pysat appropriate directory for instrument files and
@@ -994,17 +993,17 @@ class Files(object):
         search_dict = futils.construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
 
-        # Perform the local file search
+        # Perform the local file search.
         files = futils.search_local_system_formatted_filename(data_path,
                                                               search_str)
 
         # Use the file list to extract the information. Pull data from the
-        # areas identified by format_str
+        # areas identified by `format_str`.
         if delimiter is None:
             stored = futils.parse_fixed_width_filenames(files, format_str)
         else:
             stored = futils.parse_delimited_filenames(files, format_str,
                                                       delimiter)
 
-        # Process the parsed filenames and return a properly formatted Series
+        # Process the parsed filenames and return a properly formatted Series.
         return futils.process_parsed_filenames(stored, two_digit_year_break)
