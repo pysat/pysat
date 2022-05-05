@@ -1313,7 +1313,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Rename `epoch_name` to 'time'.
     if epoch_name != 'time':
-        if epoch_name in data:
+        if epoch_name in data.dims:
             data = data.rename({epoch_name: 'time'})
         else:
             estr = ''.join(['User provided time information variable ',
