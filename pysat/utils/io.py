@@ -471,8 +471,8 @@ def default_from_netcdf_translation_table(meta):
                    'FillVal': meta.labels.fill_val,
                    'fill': meta.labels.fill_val}
 
-    # We *may* need to keep this for backwards compatibility. Unintended use
-    # of 'fill' in pysat generated files.
+    # We need to keep 'fill' for backwards compatibility. Unintended use
+    # of 'fill' in pysat generated files in at least v3.0.1.
 
     return trans_table
 
@@ -530,7 +530,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     if trans_table is None:
         trans_table = default_to_netcdf_translation_table(inst)
 
-    # Confirm there are no duplicated translation labels
+    # Confirm there are no duplicated translation labels.
     trans_labels = [trans_table[key] for key in trans_table.keys()]
     for i in np.arange(len(trans_labels)):
         item = trans_labels.pop(0)
