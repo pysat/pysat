@@ -1315,10 +1315,15 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     if epoch_name != 'time':
         if epoch_name in data.dims:
             data = data.rename({epoch_name: 'time'})
+        elif epoch_name in xarray_all_vars(data):
+            data = data.rename({epoch_name: 'time'})
+            wstr = ''.join(['User provided time information variable ',
+                            epoch_name, ' is not a dimension.'])
+            pysat.logger.warning(wstr)
         else:
             estr = ''.join(['User provided time information variable ',
-                            epoch_name, ' not found in loaded data ',
-                            'dimensions ', repr(data.dims)])
+                            epoch_name, ' not found in loaded data, ',
+                            repr(xarray_all_vars(data))])
             raise ValueError(estr)
 
     # Convert 'time' to datetime objects, depending upon settings.
@@ -1331,15 +1336,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Copy the variable attributes from the data object to the metadata.
     # Need to get a list of all variables, dimensions, and coordinates.
-    all_vars = list(data.variables.keys())
-    dims = list(data.dims)
-    for dim in dims:
-        if dim not in all_vars:
-            all_vars.append(dim)
-    coords = list(data.coords)
-    for coord in coords:
-        if coord not in all_vars:
-            all_vars.append(dim)
+    all_vars = xarray_all_vars(data)
 
     for key in all_vars:
         meta_dict = {}
@@ -1473,6 +1470,39 @@ def xarray_vars_no_time(data, time_label='time'):
         raise ValueError(estr)
 
     return []
+
+
+def xarray_all_vars(data):
+    """Return all variable names, including dimensions and coordinates.
+
+    data : xarray.Dataset
+        Dataset to get all variables from.
+
+    Returns
+    -------
+    variables : list
+        List of all `data.data_vars`, `data.dims`, and `data.coords`.
+
+    """
+
+    # Construct a list of all variables, dimensions, and coordinates.
+
+    # Start with the dimensions!
+    all_vars = list(data.dims)
+
+    # Add coordinate information.
+    coords = list(data.coords)
+    for coord in coords:
+        if coord not in all_vars:
+            all_vars.append(coord)
+
+    # Add variable information.
+    vars = list(data.data_vars.keys())
+    for var in vars:
+        if var not in all_vars:
+            all_vars.append(var)
+
+    return all_vars
 
 
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
@@ -1708,7 +1738,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     epoch_meta = return_epoch_metadata(inst, epoch_name)
     export_meta[epoch_name] = epoch_meta
 
-    # Ensure the metadata is set and updated to netCDF4 standards
+    # Ensure the metadata is set and updated to netCDF4 standards.
     export_meta = add_netcdf4_standards_to_metadict(inst, export_meta,
                                                     epoch_name,
                                                     check_type=check_type,
@@ -1718,7 +1748,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     export_meta = apply_table_translation_to_file(inst, export_meta,
                                                   meta_translation)
 
-    # Apply instrument specific post-processing to the export_meta
+    # Apply instrument specific post-processing to the `export_meta`.
     if meta_processor is None:
         if hasattr(inst._export_meta_post_processing, '__call__'):
             meta_processor = inst._export_meta_post_processing
@@ -1726,7 +1756,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     if meta_processor is not None:
         export_meta = meta_processor(export_meta)
 
-    # Handle output differently, depending on data format
+    # Handle output differently, depending on data format.
     if inst.pandas_format:
         # General process for writing data:
         # 1) take care of the EPOCH information,
@@ -1743,10 +1773,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
             # Attach the global attributes
             out_data.setncatts(attrb_dict)
 
-            # Specify the number of items, to reduce function calls
+            # Specify the number of items, to reduce function calls.
             num = len(inst.index)
 
-            # Write out the datetime index
+            # Write out the datetime index.
             if unlimited_time:
                 out_data.createDimension(epoch_name, None)
             else:
@@ -1757,10 +1787,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                              complevel=complevel,
                                              shuffle=shuffle)
 
-            # Attach epoch metadata
+            # Attach epoch metadata.
             cdfkey.setncatts(export_meta[epoch_name])
 
-            # Attach the time index to the data
+            # Attach the time index to the data.
             cdfkey[:] = (inst.index.values.astype(np.int64)
                          * 1.0E-6).astype(np.int64)
 
@@ -1770,41 +1800,41 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                 # Get information on type data we are dealing with.  `data` is
                 # data in prior type (multiformat support).  `coltype` is the
                 # direct type, and np.int64 and datetime_flag lets you know if
-                # the data is full of time information
+                # the data is full of time information.
                 if preserve_meta_case:
-                    # Use the variable case stored in the MetaData object
+                    # Use the variable case stored in the MetaData object.
                     case_key = inst.meta.var_case_name(key)
                 else:
-                    # Use variable names used by user when working with data
+                    # Use variable names used by user when working with data.
                     case_key = key
                 lower_key = key.lower()
 
                 data, coltype, datetime_flag = inst._get_data_info(inst[key])
 
-                # Operate on data based upon type
+                # Operate on data based upon type.
                 if inst[key].dtype != np.dtype('O'):
-                    # Not an object, normal basic 1D data
+                    # Not an object, normal basic 1D data.
                     cdfkey = out_data.createVariable(case_key, coltype,
                                                      dimensions=(epoch_name),
                                                      zlib=zlib,
                                                      complevel=complevel,
                                                      shuffle=shuffle)
-                    # Set metadata
+                    # Set metadata.
                     cdfkey.setncatts(export_meta[lower_key])
 
-                    # Assign data
+                    # Assign data.
                     if datetime_flag:
-                        # Datetime is in nanoseconds, storing milliseconds
+                        # Datetime is in nanoseconds, storing milliseconds.
                         cdfkey[:] = (data.values.astype(coltype)
                                      * 1.0E-6).astype(coltype)
                     else:
-                        # Not datetime data, just store as is
+                        # Not datetime data, just store as is.
                         cdfkey[:] = data.values.astype(coltype)
                 else:
                     # It is a Series of objects.  First, figure out what the
                     # individual object types are.  Then, act as needed.
 
-                    # Use info in coltype to get real datatype of object
+                    # Use info in coltype to get real datatype of object.
                     if coltype == str:
                         cdfkey = out_data.createVariable(case_key, coltype,
                                                          dimensions=epoch_name,
@@ -1812,10 +1842,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
 
-                        # Set metadata
+                        # Set metadata.
                         cdfkey.setncatts(export_meta[lower_key])
 
-                        # Time to actually write the data now
+                        # Time to actually write the data now.
                         cdfkey[:] = data.values
 
                     else:
@@ -1830,34 +1860,34 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         obj_dim_names = []
 
                         # Pad dimensions so that the rest of the code works
-                        # for either a Series or a DataFrame
+                        # for either a Series or a DataFrame.
                         if len(dims) == 1:
                             dims = (dims[0], 0)
 
                         # Don't need to go over last dimension value,
-                        # it covers number of columns (if a frame)
+                        # it covers number of columns (if a frame).
                         for i, dim in enumerate(dims[:-1]):
                             obj_dim_names.append(case_key)
                             out_data.createDimension(obj_dim_names[-1], dim)
 
                         # Create simple tuple with information needed to create
                         # the right dimensions for variables that will
-                        # be written to file
+                        # be written to file.
                         var_dim = tuple([epoch_name] + obj_dim_names)
 
-                        # Determine whether data is in a DataFrame or Series
+                        # Determine whether data is in a DataFrame or Series.
                         try:
-                            # Start by assuming it is a DataFrame
+                            # Start by assuming it is a DataFrame.
                             iterable = inst[key].iloc[0].columns
                             is_frame = True
                         except AttributeError:
-                            # Otherwise get sub-variables for a Series
+                            # Otherwise get sub-variables for a Series.
                             iterable = [inst[key].iloc[0].name]
                             is_frame = False
 
                         # Find the subvariable data within the main variable,
                         # checking that this is not an empty DataFrame or
-                        # Series. Determine the underlying data types
+                        # Series. Determine the underlying data types.
                         good_data_loc = 0
                         for idat in np.arange(len(inst.data)):
                             if len(inst.data[key].iloc[0]) > 0:
@@ -1867,12 +1897,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         # Found a place with data, if there is one
                         # now iterate over the subvariables, get data info
                         # create netCDF4 variables and store the data
-                        # stored name is variable_subvariable
+                        # stored name is variable_subvariable.
                         for col in iterable:
                             if is_frame:
                                 # We are working with a DataFrame, so
                                 # multiple subvariables stored under a single
-                                # main variable heading
+                                # main variable heading.
                                 idx = inst[key].iloc[good_data_loc][col]
                                 data, coltype, _ = inst._get_data_info(idx)
                                 cdfkey = out_data.createVariable(
@@ -1880,25 +1910,25 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                     dimensions=var_dim, zlib=zlib,
                                     complevel=complevel, shuffle=shuffle)
 
-                                # Set metadata
+                                # Set metadata.
                                 lkey = '_'.join((lower_key, col.lower()))
                                 cdfkey.setncatts(export_meta[lkey])
 
                                 # Attach data.  It may be slow to repeatedly
                                 # call the store method as well astype method
                                 # below collect data into a numpy array, then
-                                # write the full array in one go
+                                # write the full array in one go.
                                 temp_cdf_data = np.zeros(
                                     (num, dims[0])).astype(coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = inst[
                                         key].iloc[i][col].values
 
-                                # Write data
+                                # Write data.
                                 cdfkey[:, :] = temp_cdf_data
                             else:
                                 # We are dealing with a Series.  Get
-                                # information from within the series
+                                # information from within the series.
                                 idx = inst[key].iloc[good_data_loc]
                                 data, coltype, _ = inst._get_data_info(idx)
                                 cdfkey = out_data.createVariable(
@@ -1906,24 +1936,24 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                     dimensions=var_dim, zlib=zlib,
                                     complevel=complevel, shuffle=shuffle)
 
-                                # Set metadata
+                                # Set metadata.
                                 tempk = '_'.join([lower_key, lower_key])
                                 cdfkey.setncatts(export_meta[tempk])
 
-                                # Attach data
+                                # Attach data.
                                 temp_cdf_data = np.zeros(
                                     (num, dims[0]), dtype=coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = inst[i, key].values
 
-                                # Write data
+                                # Write data.
                                 cdfkey[:, :] = temp_cdf_data
 
                         # We are done storing the actual data for the given
                         # higher order variable. Now we need to store the index
                         # for all of that fancy data.
 
-                        # Get index information
+                        # Get index information.
                         idx = good_data_loc
                         data, coltype, datetime_flag = inst._get_data_info(
                             inst[key].iloc[idx].index)
@@ -1935,10 +1965,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
-                        # Set meta data
+                        # Set meta data.
                         cdfkey.setncatts(export_meta[lower_key])
 
-                        # Treat time and non-time data differently
+                        # Treat time and non-time data differently.
                         if datetime_flag:
                             # Set data
                             temp_cdf_data = np.zeros((num, dims[0]),
@@ -1949,7 +1979,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                 coltype)
 
                         else:
-                            # Set data
+                            # Set data.
                             temp_cdf_data = np.zeros((num, dims[0]),
                                                      dtype=coltype)
 
@@ -1962,7 +1992,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         # the Instrument data object is unchanged.
         xr_data = xr.Dataset(inst.data)
 
-        # Convert datetime values into integers as done for pandas
+        # Convert datetime values into integers as done for pandas.
         xr_data['time'] = (inst['time'].values.astype(np.int64)
                            * 1.0E-6).astype(np.int64)
 
@@ -1972,26 +2002,26 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         # Transfer metadata.
         pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)
 
-        # If the case needs to be preserved, update Dataset variables
+        # If the case needs to be preserved, update Dataset variables.
         if preserve_meta_case:
             for var in xarray_vars_no_time(xr_data, time_label=epoch_name):
-                # Use the variable case stored in the MetaData object
+                # Use the variable case stored in the MetaData object.
                 case_var = inst.meta.var_case_name(var)
 
                 if case_var != var:
                     xr_data = xr_data.rename({var: case_var})
 
-        # Set the standard encoding values
+        # Set the standard encoding values.
         encoding = {var: {'zlib': zlib, 'complevel': complevel,
                           'shuffle': shuffle} for var in xr_data.keys()}
 
         if unlimited_time:
             xr_data.encoding['unlimited_dims'] = {epoch_name: True}
 
-        # Add general attributes
+        # Add general attributes.
         xr_data.attrs = attrb_dict
 
-        # Write the netCDF4 file
+        # Write the netCDF4 file.
         xr_data.to_netcdf(fname, mode=mode, encoding=encoding)
 
         # Close for safety.

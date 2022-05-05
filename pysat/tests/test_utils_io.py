@@ -4,7 +4,7 @@
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
 """Tests the pysat utility io routines."""
-
+import copy
 import datetime as dt
 import functools
 import logging
@@ -162,36 +162,36 @@ class TestLoadNetCDF(object):
     def test_inst_write_and_read_netcdf(self):
         """Test Instrument netCDF4 read/write."""
 
-        # Set the output file information
+        # Set the output file information.
         file_root = 'pysat_test_ncdf_{year:04}{day:03}.nc'
         file_path = self.tempdir.name
         outfile = self.stime.strftime(os.path.join(file_path,
                                                    'pysat_test_ncdf_%Y%j.nc'))
 
-        # Load and write the test instrument data
+        # Load and write the test instrument data.
         self.testInst.load(date=self.stime, use_header=True)
         self.testInst.to_netcdf4(fname=outfile)
 
-        # Load the written file directly into an Instrument
+        # Load the written file directly into an Instrument.
         netcdf_inst = pysat.Instrument(
             'pysat', 'netcdf', data_dir=file_path,
             file_format=file_root, pandas_format=self.testInst.pandas_format,
             update_files=True)
 
-        # Confirm data path is correct
+        # Confirm data path is correct.
         assert os.path.normpath(netcdf_inst.files.data_path)\
                == os.path.normpath(self.tempdir.name)
 
         # Deleting the test file here via os.remove(...) does work.
 
-        # Load data
+        # Load data.
         netcdf_inst.load(date=self.stime, use_header=True)
 
-        # Test the loaded Instrument data
+        # Test the loaded Instrument data.
         self.loaded_inst = netcdf_inst.data
         self.eval_loaded_data()
 
-        # Test the Instrument self-description
+        # Test the Instrument self-description.
         for attr in ["platform", "name", "tag", "inst_id", "acknowledgements",
                      "references"]:
             assert getattr(self.testInst, attr) == getattr(netcdf_inst, attr), \
@@ -1237,6 +1237,33 @@ class TestXarrayIO(object):
         assert 'time' not in vars
 
         assert len(xarray_vars) == len(vars) + 1
+
+        return
+
+
+    def test_xarray_all_vars(self):
+        """Test `xarray_all_vars`."""
+
+        # Get all variables.
+        vars = io.xarray_all_vars(self.testInst.data)
+
+        # Get data variables.
+        xvars = self.testInst.data.data_vars.keys()
+        testing.assert_list_contains(xvars, vars)
+
+        # Get/test coordinate variables.
+        xcoords = self.testInst.data.coords.keys()
+        testing.assert_list_contains(xcoords, vars)
+
+        # Get/test dimension variables.
+        xdims = self.testInst.data.dims.keys()
+        testing.assert_list_contains(xdims, vars)
+
+        # Test uniqueness.
+        vars_copy = copy.deepcopy(vars)
+        for var in vars:
+            vars_copy.pop(0)
+            assert var not in vars_copy, 'List not unique.'
 
         return
 
