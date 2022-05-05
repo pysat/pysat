@@ -6,6 +6,7 @@
 """Tests the pysat utility io routines."""
 
 import datetime as dt
+import functools
 import logging
 import shutil
 
@@ -930,6 +931,53 @@ class TestNetCDF4Integration(object):
 
         return
 
+    def meta_proc_stub(self, meta_dict, vals=None, remove_labels=None):
+        """`meta_processor` function for load/write processor tests.
+
+        Parameters
+        ----------
+        meta_dict : dict
+            Dictionary keyed by variable name, mapping to another
+            dictionary with all variable metadata.
+        vals : dict or NoneType
+            Dictionary of keys and values to be assigned to each variable
+            in `meta_dict`. (default=None)
+        remove_labels : list or NoneType
+            List of strings that will be removed from each variables metadata
+            in `meta_dict`. (default=None)
+
+        Returns
+        -------
+        proc_dict : dict
+            Dictionary processed for the file.
+
+        """
+
+        # Needs to be a keyword for functools.partial. Can't use [] as default
+        # in function call to ensure consistent function defaults.
+        if remove_labels is None:
+            remove_labels = []
+
+        # Needs to be a keyword for functools.partial. Can't use {} as default
+        # in function call to ensure consistent function defaults.
+        if vals is None:
+            vals = {}
+
+        assert isinstance(meta_dict, dict)
+
+        # Add metadata info.
+        for var in meta_dict.keys():
+            for key in vals.keys():
+                meta_dict[var][key] = vals[key]
+
+        # Remove info as directed by user.
+        for var in meta_dict.keys():
+            for label in remove_labels:
+                if label in meta_dict[var].keys():
+                    meta_dict[var].pop(label)
+
+        return meta_dict
+
     @pytest.mark.parametrize('assign_flag', [True, False])
     def test_meta_processor_to_from_netcdf4(self, assign_flag):
         """Test impact of meta_processor on netCDF output.
@@ -943,94 +991,52 @@ class TestNetCDF4Integration(object):
 
         """
 
-        # Target meta info
-        present = ['testing_metadata_pysat_answer',
-                   'testing_metadata_pysat_question']
-        qstr = 'simulation running'
+        # Target meta info.
+        target = {'testing_metadata_pysat_answer': '42',
+                  'testing_metadata_pysat_question': 'simulation running'}
 
-        def to_meta_proc(meta_dict):
-            """Test meta processor function when writing data.
-
-            Parameters
-            ----------
-            meta_dict : dict
-                Dictionary keyed by variable name, mapping to another
-                dictionary with all variable metadata.
-
-            Returns
-            -------
-            proc_dict : dict
-                Dictionary processed for the file.
-
-            """
-
-            assert isinstance(meta_dict, dict)
-
-            # Add metadata info
-            for var in meta_dict.keys():
-                meta_dict[var][present[0]] = 42
-                meta_dict[var][present[1]] = qstr
-
-            # Remove normally present info
-            for var in meta_dict.keys():
-                if 'units' in meta_dict[var].keys():
-                    meta_dict[var].pop('units')
-
-            return meta_dict
-
-        # Write the file
+        # Create meta processor function.
+        to_meta_proc = functools.partial(self.meta_proc_stub, vals=target,
+                                         remove_labels=['units'])
+        # Write the file.
         outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
+        mkwargs = {} if assign_flag else {'meta_processor': to_meta_proc}
         if assign_flag:
             self.testInst._export_meta_post_processing = to_meta_proc
-            pysat.utils.io.inst_to_netcdf(self.testInst, outfile)
-        else:
-            pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
-                                          meta_processor=to_meta_proc)
 
-        # Load file back and test metadata is as expected
+        pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                      **mkwargs)
+
+        # Load file back and test metadata is as expected.
         with netCDF4.Dataset(outfile) as open_f:
             for var in open_f.variables.keys():
                 test_vars = open_f[var].ncattrs()
 
-                # Avoid time variables
+                # Avoid time variables.
                 if 'MonoTon' not in test_vars:
-                    testing.assert_list_contains(present, test_vars)
+                    testing.assert_list_contains(list(target.keys()), test_vars)
                     assert 'units' not in test_vars, "'units' found!"
 
-        # Test loading data via pysat
-        def from_meta_proc(meta_dict):
-            """Test meta processor function when loading data.
+        # Create inverse target values.
+        inv_target = {}
+        for key in target.keys():
+            inv_target[key] = target[key][::-1]
 
-            Parameters
-            ----------
-            meta_dict : dict
-                Dictionary keyed by variable name, mapping to another
-                dictionary with all variable metadata.
+        # Create meta processor function.
+        from_meta_proc = functools.partial(self.meta_proc_stub, vals=inv_target,
+                                           remove_labels=[])
 
-            Returns
-            -------
-            proc_dict : dict
-                Dictionary to be passed to pysat.
-
-            """
-
-            assert isinstance(meta_dict, dict)
-
-            # Add metadata info
-            for var in meta_dict.keys():
-                meta_dict[var][present[0]] = 24
-                meta_dict[var][present[1]] = qstr[::-1]
-
-            return meta_dict
-
-        # Load the file
+        # Load the file.
         data, meta = pysat.utils.io.load_netcdf(outfile,
                                                 meta_processor=from_meta_proc,
                                                 pandas_format=self.pformat)
+
+        wstr = ''.join(['Incorrect metadata value after inverse processor for',
+                        ' variable: {:} and label: {:}'])
         for var in meta.keys():
             # Confirm from_meta_... info
-            assert meta[var][present[0]] == 24
-            assert meta[var][present[1]] == qstr[::-1]
+            for key in inv_target.keys():
+                assert meta[var][key] == inv_target[key], wstr.format(var, key)
 
             # Confirm system handles lack of 'units' in file since it
             # is a default metadata label.
