@@ -893,8 +893,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     KeyError
         If epoch/time dimension could not be identified.
     ValueError
-        When attempting to load data with more than 2 dimensions or if
-        `strict_meta` is True and meta data changes across files.
+        When attempting to load data with more than 2 dimensions, or if
+        `strict_meta` is True and meta data changes across files, or if
+        epoch/time dimension could not be identified.
 
     See Also
     --------
