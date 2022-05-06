@@ -242,13 +242,13 @@ class TestLoadNetCDF(object):
 
     def test_write_netcdf4_duplicate_variable_names(self):
         """Test netCDF4 writing with duplicate variable names."""
-        # Create a bunch of files by year and doy
+        # Create a bunch of files by year and doy.
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         self.testInst['MLT'] = 1
 
-        # Evaluate the expected error and message
+        # Evaluate the expected error and message.
         testing.eval_bad_input(
             io.inst_to_netcdf, ValueError, "multiple variables",
             input_args=[self.testInst],
@@ -261,7 +261,16 @@ class TestLoadNetCDF(object):
                                                       "'time' already present")
                                                      ])
     def test_read_netcdf4_bad_epoch_name(self, write_epoch, err_msg):
-        """Test netCDF4 load with bad epoch name/or 'time' already present."""
+        """Test netCDF4 load with bad epoch name/or 'time' already present.
+
+        Parameters
+        ----------
+        write_epoch : str
+            Label used for time data when writing file.
+        err_msg : str
+            Error message to test for.
+
+        """
         # Load data.
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
@@ -312,17 +321,17 @@ class TestLoadNetCDF(object):
     def test_write_and_read_netcdf4_w_kwargs(self, wkwargs, lkwargs):
         """Test success of writing and reading a netCDF4 file."""
 
-        # Create a new file based on loaded test data
+        # Create a new file based on loaded test data.
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile, **wkwargs)
 
-        # Load the data that was created
+        # Load the data that was created.
         lkwargs['pandas_format'] = self.testInst.pandas_format
         self.loaded_inst, meta = io.load_netcdf(outfile, **lkwargs)
 
-        # Test the loaded data
+        # Test the loaded data.
         self.eval_loaded_data()
         return
 
@@ -1267,7 +1276,12 @@ class TestXarrayIO(object):
 
     @pytest.mark.parametrize('time_label', ['time', 'wrong_time'])
     def test_xarray_vars_no_time(self, time_label):
-        """Test `xarray_vars_no_time`."""
+        """Test `xarray_vars_no_time`.
+
+        time_label : str
+            Label for datetime data.
+
+        """
 
         if time_label == 'time':
             vars = io.xarray_vars_no_time(self.testInst.data,
