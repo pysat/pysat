@@ -1291,7 +1291,6 @@ class TestXarrayIO(object):
 
         return
 
-
     def test_xarray_all_vars(self):
         """Test `xarray_all_vars`."""
 
