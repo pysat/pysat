@@ -989,9 +989,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     obj_key = dim[0]
                 else:
                     estr = ''.join(['Epoch label: "', epoch_name, '"',
-                                    ' was not found in loaded dimensions [',
+                                    ' not found in loaded dimensions [',
                                     ', '.join(dim), ']'])
-                    raise KeyError(estr)
+                    raise ValueError(estr)
 
                 # Collect variable names associated with dimension
                 idx_bool = [dim == i for i in two_d_dims]
@@ -1112,7 +1112,13 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 loaded_vars[obj_key] = loop_list
                 del loop_list
 
-            # Prepare dataframe index for this netcdf file
+            # Prepare dataframe index for this netcdf file.
+            if epoch_name not in loaded_vars.keys():
+                estr = ''.join(['Epoch label: "', epoch_name, '"',
+                                ' not found in loaded data, ',
+                                repr(loaded_vars.keys())])
+                raise ValueError(estr)
+
             time_var = loaded_vars.pop(epoch_name)
             loaded_vars[epoch_name] = pds.to_datetime(time_var, unit=epoch_unit,
                                                       origin=epoch_origin)
@@ -1200,9 +1206,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     Parameters
     ----------
     fnames : str or array_like
-        Filename(s) to load
+        Filename(s) to load.
     strict_meta : bool
-        Flag that checks if metadata across fnames is the same if True
+        Flag that checks if metadata across `fnames` is the same if True.
         (default=False)
     file_format : str or NoneType
         file_format keyword passed to netCDF4 routine.  Expects one of
@@ -1282,11 +1288,11 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     if epoch_name is None:
         epoch_name = 'time'
 
-    # Ensure inputs are in the correct format
+    # Ensure inputs are in the correct format.
     fnames = pysat.utils.listify(fnames)
     file_format = file_format.upper()
 
-    # Initialize local variables
+    # Initialize local variables.
     meta = pysat.Meta(labels=labels)
 
     # Store all metadata in a dict that may be filtered before
@@ -1294,7 +1300,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     full_mdict = {}
 
     if meta_translation is None:
-        # Assign default translation using `meta`
+        # Assign default translation using `meta`.
         meta_translation = default_from_netcdf_translation_table(meta)
 
     # Drop metadata labels initialization.
@@ -1303,7 +1309,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     else:
         drop_meta_labels = pysat.utils.listify(drop_meta_labels)
 
-    # Load the data differently for single or multiple files
+    # Load the data differently for single or multiple files.
     if len(fnames) == 1:
         data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta,
                                decode_times=decode_times)
@@ -1311,19 +1317,28 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
                                  combine='by_coords', decode_times=decode_times)
 
+    # Need to get a list of all variables, dimensions, and coordinates.
+    all_vars = xarray_all_vars(data)
+
     # Rename `epoch_name` to 'time'.
     if epoch_name != 'time':
-        if epoch_name in data.dims:
-            data = data.rename({epoch_name: 'time'})
-        elif epoch_name in xarray_all_vars(data):
-            data = data.rename({epoch_name: 'time'})
-            wstr = ''.join(['User provided time information variable ',
-                            epoch_name, ' is not a dimension.'])
-            pysat.logger.warning(wstr)
+        if 'time' not in all_vars:
+            if epoch_name in data.dims:
+                data = data.rename({epoch_name: 'time'})
+            elif epoch_name in all_vars:
+                data = data.rename({epoch_name: 'time'})
+                wstr = ''.join(['Epoch label: "', epoch_name, '"',
+                                ' is not a dimension.'])
+                pysat.logger.warning(wstr)
+            else:
+                estr = ''.join(['Epoch label: "', epoch_name, '"',
+                                ' not found in loaded data, ',
+                                repr(all_vars)])
+                raise ValueError(estr)
         else:
-            estr = ''.join(['User provided time information variable ',
-                            epoch_name, ' not found in loaded data, ',
-                            repr(xarray_all_vars(data))])
+            estr = ''.join(["'time' already present in file. Can't rename ",
+                            epoch_name, " to 'time'. To load this file ",
+                            "it may be necessary to set `decode_times=True`."])
             raise ValueError(estr)
 
     # Convert 'time' to datetime objects, depending upon settings.
@@ -1334,10 +1349,11 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                  origin=epoch_origin)
         data['time'] = xr.DataArray(edates, coords=data['time'].coords)
 
-    # Copy the variable attributes from the data object to the metadata.
     # Need to get a list of all variables, dimensions, and coordinates.
+    # Variables could have been altered since last call.
     all_vars = xarray_all_vars(data)
 
+    # Copy the variable attributes from the data object to the metadata.
     for key in all_vars:
         meta_dict = {}
         for nc_key in data[key].attrs.keys():
@@ -1345,10 +1361,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
         full_mdict[key] = meta_dict
 
-        # Remove variable attributes from the data object
+        # Remove variable attributes from the data object.
         data[key].attrs = {}
 
-    # Copy the file attributes from the data object to the metadata
+    # Copy the file attributes from the data object to the metadata.
     for data_attr in data.attrs.keys():
         setattr(meta.header, data_attr, getattr(data, data_attr))
 
@@ -1363,7 +1379,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                                     meta.labels)
 
     # Translate labels from file to pysat compatible labels using
-    # `meta_translation`
+    # `meta_translation`.
     filt_mdict = apply_table_translation_from_file(meta_translation, filt_mdict)
 
     # Next, allow processing by developers so they can deal with
@@ -1379,7 +1395,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     for key in filt_mdict:
         meta[key] = filt_mdict[key]
 
-    # Remove attributes from the data object
+    # Remove attributes from the data object.
     data.attrs = {}
 
     # Close any open links to file through xarray.
