@@ -255,6 +255,57 @@ class TestLoadNetCDF(object):
             input_kwargs={'fname': outfile, 'preserve_meta_case': True})
         return
 
+    @pytest.mark.parametrize("write_epoch,err_msg", [('epoch',
+                                                      '"whoosthat" not found '),
+                                                     ('time',
+                                                      "'time' already present")
+                                                     ])
+    def test_read_netcdf4_bad_epoch_name(self, write_epoch, err_msg):
+        """Test netCDF4 load with bad epoch name/or 'time' already present."""
+        # Load data.
+        outfile = os.path.join(self.tempdir.name,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime, use_header=True)
+
+        # Write file.
+        io.inst_to_netcdf(self.testInst, fname=outfile, epoch_name=write_epoch)
+
+        # Pandas doesn't have 'time' error.
+        if self.testInst.pandas_format:
+            err_msg = '"whoosthat" not found in'
+
+        # Evaluate the expected error and message.
+        testing.eval_bad_input(
+            io.load_netcdf, ValueError, err_msg,
+            input_args=[outfile],
+            input_kwargs={'epoch_name': 'whoosthat',
+                          'pandas_format': self.testInst.pandas_format})
+        return
+
+    @pytest.mark.parametrize("write_epoch,war_msg", [('epoch',
+                                                      'is not a dimension.')])
+    def test_read_netcdf4_epoch_not_xarray_dimension(self, caplog, write_epoch,
+                                                     war_msg):
+        """Test netCDF4 load `epoch_name` not a dimension."""
+
+        if not self.testInst.pandas_format:
+            # Load data.
+            outfile = os.path.join(self.tempdir.name,
+                                   'pysat_test_ncdf.nc')
+            self.testInst.load(date=self.stime, use_header=True)
+
+            # Write file.
+            io.inst_to_netcdf(self.testInst, outfile, epoch_name=write_epoch)
+
+            # Evaluate the expected warning.
+            with caplog.at_level(logging.WARNING, logger='pysat'):
+                io.load_netcdf(outfile, epoch_name='slt',
+                               pandas_format=self.testInst.pandas_format)
+
+            self.out = caplog.text
+            assert self.out.find(war_msg)
+        return
+
     @pytest.mark.parametrize("wkwargs, lkwargs", [
         ({"zlib": True}, {}), ({}, {}), ({"unlimited_time": False}, {}),
         ({"epoch_name": "Santa"}, {"epoch_name": "Santa"})])
