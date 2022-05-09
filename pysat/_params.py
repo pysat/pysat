@@ -6,7 +6,6 @@
 
 import copy
 import json
-import numpy as np
 import os
 
 from portalocker import Lock
@@ -25,26 +24,26 @@ class Parameters(object):
     ----------
     path : str
         If provided, the directory path will be used to load/store a
-        parameters file with name 'pysat_settings.json' (default=None).
+        parameters file with name 'pysat_settings.json'. (default=None)
     create_new : bool
         If True, a new parameters file is created. Will be created at path
-        if provided. If not, file will be created in `pysat.pysat_dir`.
+        if provided. If not, file will be created in `~/.pysat`.
 
     Attributes
     ----------
     data : dict
-        pysat user settings dictionary
+        pysat user settings dictionary.
     defaults : dict
         Default parameters (keys) and values used by pysat that include
         {'clean_level': 'clean', 'directory_format':
         os.path.join('{platform}', '{name}', '{tag}', '{inst_id}'),
         'ignore_empty_files': False, 'update_files': True,
-        'file_timeout': 10, 'user_modules' : {}, 'warn_empty_file_list': False}
+        'file_timeout': 10, 'user_modules' : {}, 'warn_empty_file_list': False}.
     file_path : str
-        Location of file used to store settings
+        Location of file used to store settings.
     non_defaults : list
         List of pysat parameters (strings) that don't have a defined
-        default and are unaffected by self.restore_defaults().
+        default and are unaffected by `self.restore_defaults()`.
 
     Raises
     ------
@@ -52,6 +51,8 @@ class Parameters(object):
         The 'user_modules' parameter may not be set directly by the
         user. Please use the `pysat.utils.regsitry` module to modify
         the packages stored in 'user_modules'.
+    OSError
+        User provided path does not exist.
 
     Note
     ----
@@ -88,7 +89,7 @@ class Parameters(object):
         self.data = {}
         self.file_path = None
 
-        # Define default parameters and values
+        # Define default parameters and values.
         dir_format = os.path.join('{platform}', '{name}', '{tag}', '{inst_id}')
         defaults = {'clean_level': 'clean',
                     'directory_format': dir_format,
@@ -98,23 +99,23 @@ class Parameters(object):
                     'user_modules': {},
                     'warn_empty_file_list': False}
 
-        # Attach default parameters and values to object
+        # Attach default parameters and values to object.
         self.defaults = defaults
 
-        # Define stored pysat parameters without a default setting
+        # Define stored pysat parameters without a default setting.
         non_defaults = ['data_dirs']
         self.non_defaults = non_defaults
 
         # If path provided, use it. Otherwise, iterate through potential
         # locations until file is found.
         if path is not None:
-            # Confirm path is valid
+            # Confirm path is valid.
             if not os.path.exists(path):
                 estr = ''.join(('Supplied path does not exist on the local ',
                                 'system. Please create it and try again.'))
                 raise OSError(estr)
 
-            # Store full file path including fixed settings file name
+            # Store full file path including fixed settings file name.
             self.file_path = os.path.join(path, sfname)
 
         else:
@@ -149,10 +150,10 @@ class Parameters(object):
             self.data = json.load(fout)
             fout.flush()
             try:
-                # In case of network file system
+                # In case of network file system.
                 os.fsync(fout.fileno())
             except OSError:
-                # Not a network file system
+                # Not a network file system.
                 pass
 
         return
@@ -163,7 +164,7 @@ class Parameters(object):
         Returns
         -------
         out_str : str
-            Simply formatted output string
+            Simply formatted output string.
 
         """
         dir_path = os.path.split(self.file_path)[0]
@@ -176,35 +177,35 @@ class Parameters(object):
         Parameters
         ----------
         long_str : bool
-            Return short version if False and long version if True
+            Return short version if False and long version if True.
             (default=True)
 
         Returns
         -------
         out_str : str
-            Nicely formatted output string
+            Nicely formatted output string.
 
         """
 
-        # Get typical pysat parameters (those with defaults)
+        # Get typical pysat parameters (those with defaults).
         typical = list(self.defaults.keys())
 
-        # Get pysat parameters without working defaults
+        # Get pysat parameters without working defaults.
         pparams = self.non_defaults
 
-        # Get any additional parameters set by the user
+        # Get any additional parameters set by the user.
         both = typical.copy()
         both.extend(pparams)
         users = [key for key in self.data.keys() if key not in both]
 
-        # Print the short output
+        # Print the short output.
         out_str = "pysat Parameters object\n"
         out_str += "----------------------\n"
         out_str += "Tracking {:d} pysat settings\n".format(len(typical))
         out_str += "Tracking {:d} settings (non-default)\n".format(len(pparams))
         out_str += "Tracking {:d} user values\n".format(len(users))
 
-        # Print the longer output
+        # Print the longer output.
         if long_str:
 
             out_str += "\nStandard parameters:\n"
@@ -239,10 +240,10 @@ class Parameters(object):
                             '`user_modules` is not modifiable here.'))
             raise ValueError(estr)
         else:
-            # General or user parameter, no additional processing
+            # General or user parameter, no additional processing.
             self.data[key] = value
 
-        # Store updated parameters to disk
+        # Store updated parameters to disk.
         self.store()
 
     def _set_data_dirs(self, path=None, store=True):
@@ -251,33 +252,33 @@ class Parameters(object):
         Parameters
         ----------
         path : string or list-like of str
-            Valid path(s) to directory
+            Valid path(s) to directory.
         store : bool
             Optionally store parameters to disk. Present to support a
-            Deprecated method (default=True).
+            Deprecated method. (default=True)
 
         """
 
         paths = pysat.utils.listify(path)
 
-        # Account for a user prefix in the path, such as ~
+        # Account for a user prefix in the path, such as ~.
         paths = [os.path.expanduser(pval) for pval in paths]
 
-        # Account for the presence of $HOME or similar
+        # Account for the presence of $HOME or similar.
         paths = [os.path.expandvars(pval) for pval in paths]
 
-        # Make sure paths don't end with path separator for consistency
+        # Make sure paths don't end with path separator for consistency.
         paths = [pval if pval[-1] != os.path.sep else pval[:-1]
                  for pval in paths]
 
-        # Ensure all paths are valid, create if not
+        # Ensure all paths are valid, create if not.
         for pval in paths:
             check_and_make_path(pval)
 
-        # Assign updated and validated paths
+        # Assign updated and validated paths.
         self.data['data_dirs'] = paths
 
-        # Optionally store information
+        # Optionally store information.
         if store:
             self.store()
 
@@ -292,14 +293,14 @@ class Parameters(object):
 
         """
 
-        # Clear current data and assign a copy of default values
+        # Clear current data and assign a copy of default values.
         self.data = copy.deepcopy(self.defaults)
 
-        # Set pysat parameters without a default working value to []
+        # Set pysat parameters without a default working value to [].
         for key in self.non_defaults:
             self.data[key] = []
 
-        # Trigger a file write
+        # Trigger a file write.
         self.store()
 
         return
@@ -321,25 +322,25 @@ class Parameters(object):
         for key in keys:
             self.data[key] = self.defaults[key]
 
-        # Trigger a file write
+        # Trigger a file write.
         self.store()
 
         return
 
     def store(self):
-        """Store parameters using the filename specified in self.file_path."""
+        """Store parameters using the filename specified in `self.file_path`."""
 
-        # Store settings in file
+        # Store settings in file.
         with Lock(self.file_path, 'w', self['file_timeout']) as fout:
             json.dump(self.data, fout)
 
-            # Ensure write is fully complete even for network file systems
+            # Ensure write is fully complete even for network file systems.
             fout.flush()
             try:
-                # In case of network file system
+                # In case of network file system.
                 os.fsync(fout.fileno())
             except OSError:
-                # Not a network file system
+                # Not a network file system.
                 pass
 
         return
