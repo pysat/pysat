@@ -1635,6 +1635,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         pysat.logger.warning('Empty Instrument, not writing {:}'.format(fname))
         return
 
+    # Ensure directory path leading up to filename exists.
+    pysat.utils.files.check_and_make_path(os.path.split(fname)[0])
+
     # Check export NaNs first
     if export_nan is None:
         dstr = '`export_nan` not defined, using `self.meta._export_nan`.'
