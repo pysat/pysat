@@ -83,6 +83,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added clarification to the tutorials
    * Added limitations to the `listify` docstring
    * Updated `tag` and `inst_id` keywords and docstrings to new standards```
+   * Updated image link in `README.md` to display in more environments.
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle
