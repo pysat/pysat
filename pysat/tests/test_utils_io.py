@@ -31,7 +31,7 @@ class TestLoadNetCDF(object):
     def setup(self):
         """Set up the test environment."""
 
-        # Create temporary directory
+        # Create temporary directory.
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
         pysat.params['data_dirs'] = self.tempdir.name
@@ -41,7 +41,7 @@ class TestLoadNetCDF(object):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.epoch_name = 'time'
 
-        # Initalize the loaded data
+        # Initialize the loaded data.
         self.loaded_inst = None
         return
 
@@ -159,12 +159,20 @@ class TestLoadNetCDF(object):
 
         return
 
-    def test_inst_write_and_read_netcdf(self):
-        """Test Instrument netCDF4 read/write."""
+    @pytest.mark.parametrize("add_path", [(''), ('unknown_dir')])
+    def test_inst_write_and_read_netcdf(self, add_path):
+        """Test Instrument netCDF4 read/write, including non-existent paths.
+
+        Parameters
+        ----------
+        add_path : str
+            Additional component to add to path to write to.
+
+        """
 
         # Set the output file information.
         file_root = 'pysat_test_ncdf_{year:04}{day:03}.nc'
-        file_path = self.tempdir.name
+        file_path = os.path.join(self.tempdir.name, add_path)
         outfile = self.stime.strftime(os.path.join(file_path,
                                                    'pysat_test_ncdf_%Y%j.nc'))
 
@@ -180,7 +188,7 @@ class TestLoadNetCDF(object):
 
         # Confirm data path is correct.
         assert os.path.normpath(netcdf_inst.files.data_path)\
-               == os.path.normpath(self.tempdir.name)
+               == os.path.normpath(os.path.join(self.tempdir.name, add_path))
 
         # Deleting the test file here via os.remove(...) does work.
 

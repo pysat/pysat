@@ -65,6 +65,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added support for `meta_processor` in `pysat.utils.io.load_netcdf`
      and `pysat.utils.io.inst_to_netcdf` enabling developers to easily modify 
      metadata before it is loaded from/written to storage.
+   * Intermediate missing directories are now created as needed when writing
+     files using `pysat.utils.io.inst_to_netcdf`.
    * Condensed code present in both pandas and xarray into
      `pysat.utils.io.meta_array_expander`.
    * Non-default Meta.labels are now retained by Instrument if defined by 
