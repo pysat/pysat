@@ -33,10 +33,8 @@ _test_load_opt = {'': {'': {'num_samples': 13}}}
 # Init method.
 init = mm_test.init
 
-
 # Clean method.
 clean = mm_test.clean
-
 
 # Optional method, preprocess.
 preprocess = mm_test.preprocess

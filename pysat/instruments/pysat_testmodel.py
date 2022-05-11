@@ -21,14 +21,11 @@ inst_ids = {'': [tag for tag in tags.keys()]}
 pandas_format = False
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 
-
 # Init method.
 init = mm_test.init
 
-
 # Clean method.
 clean = mm_test.clean
-
 
 # Optional method, preprocess.
 preprocess = mm_test.preprocess

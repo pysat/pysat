@@ -24,14 +24,11 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 epoch_name = u'time'
 
-
 # Init method.
 init = mm_test.init
 
-
 # Clean method.
 clean = mm_test.clean
-
 
 # Optional method, preprocess.
 preprocess = mm_test.preprocess

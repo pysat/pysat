@@ -52,7 +52,6 @@ def init(self, test_init_kwarg=None):
 # Clean method
 clean = mm_test.clean
 
-
 # Optional method, preprocess
 preprocess = mm_test.preprocess
 
