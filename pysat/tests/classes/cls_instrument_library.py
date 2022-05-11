@@ -375,7 +375,7 @@ class InstLibTests(object):
         return
 
     @pytest.mark.download
-    def test_remote_file_list(self, inst_dict):
+    def test_remote_file_list(self, inst_dict, caplog):
         """Test if optional list_remote_files routine exists and is callable.
 
         Parameters
@@ -395,9 +395,19 @@ class InstLibTests(object):
             # Check for username
             dl_dict = inst_dict['user_info'] if 'user_info' in \
                 inst_dict.keys() else {}
-            files = test_inst.remote_file_list(start=date, stop=date, **dl_dict)
-            # If test date is correctly chosen, files should exist
-            assert len(files) > 0
+
+            # Raise and catch warnings
+            with warnings.catch_warnings(record=True) as war:
+                files = test_inst.remote_file_list(start=date, stop=date,
+                                                   **dl_dict)
+            if len(files) == 0:
+                # Not all `tag` or `inst_id` settings may have support.
+                # If not supported, warning should be issued.
+                testing.eval_warnings(war, 'Not implemented in this version.',
+                                      UserWarning)
+            else:
+                # If test date is correctly chosen, files should exist.
+                assert len(files) > 0
         else:
             pytest.skip("remote_file_list not available")
 
