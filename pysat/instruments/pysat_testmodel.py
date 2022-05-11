@@ -54,8 +54,10 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=96)
-    test_load_kwarg : any or NoneType
-        Testing keyword (default=None)
+    test_load_kwarg : any
+        Keyword used for pysat unit testing to ensure that functionality for
+        custom keywords defined in instrument support functions is working
+        correctly. (default=None)
 
     Returns
     -------
@@ -146,17 +148,16 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     data['unicode_dummy'] = ((epoch_name),
                              [u'test'] * len(data.indexes[epoch_name]))
     data['int8_dummy'] = ((epoch_name),
-                          np.array([1] * len(data.indexes[epoch_name]),
-                          dtype=np.int8))
+                          np.ones(len(data.indexes[epoch_name]), dtype=np.int8))
     data['int16_dummy'] = ((epoch_name),
-                           np.array([1] * len(data.indexes[epoch_name]),
-                           dtype=np.int16))
+                           np.ones(len(data.indexes[epoch_name]),
+                                   dtype=np.int16))
     data['int32_dummy'] = ((epoch_name),
-                           np.array([1] * len(data.indexes[epoch_name]),
-                           dtype=np.int32))
+                           np.ones(len(data.indexes[epoch_name]),
+                                   dtype=np.int32))
     data['int64_dummy'] = ((epoch_name),
-                           np.array([1] * len(data.indexes[epoch_name]),
-                           dtype=np.int64))
+                           np.ones(len(data.indexes[epoch_name]),
+                                   dtype=np.int64))
 
     if tag == '':
         # Fake 4D data consisting of non-physical values between 0 and 21

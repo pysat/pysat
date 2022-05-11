@@ -82,8 +82,10 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=864)
-    test_load_kwarg : any or NoneType
-        Testing keyword (default=None)
+    test_load_kwarg : any
+        Keyword used for pysat unit testing to ensure that functionality for
+        custom keywords defined in instrument support functions is working
+        correctly. (default=None)
     max_latitude : float
         Latitude simulated as `max_latitude` * cos(theta(t))`, where
         theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.).
@@ -111,16 +113,17 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
     # Need to create simple orbits here. Have start of first orbit
-    # at 2009,1, 0 UT. 14.84 orbits per day.
-    # Figure out how far in time from the root start a measurement is and
-    # use that info to create a signal that is continuous from that start.
-    # Going to presume there are 5820 seconds per orbit (97 minute period).
+    # at 2009,1, 0 UT. 14.84 orbits per day. Figure out how far in time from
+    # the root start a measurement is and use that info to create a signal
+    # that is continuous from that start. Going to presume there are 5820
+    # seconds per orbit (97 minute period).
     time_delta = dates[0] - dt.datetime(2009, 1, 1)
 
     # MLT runs 0-24 each orbit.
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                              period=iperiod['lt'],
                                              data_range=drange['lt'])
+
     # SLT, 20 second offset from `mlt`.
     data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds() + 20,
                                              uts, period=iperiod['lt'],
@@ -170,8 +173,8 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     end_date = dates[0] + dt.timedelta(seconds=2 * num_profiles - 1)
     high_rate_template = pds.date_range(dates[0], end_date, freq='2S')
 
-    # Create a few simulated profiles.
-    # DataFrame at each time with mixed variables.
+    # Create a few simulated profiles.  This results in a pds.DataFrame at
+    # each time with mixed variables.
     profiles = []
 
     # DataFrame at each time with numeric variables only.

@@ -75,8 +75,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=86400)
-    test_load_kwarg : any or NoneType
-        Testing keyword. (default=None)
+    test_load_kwarg : any
+        Keyword used for pysat unit testing to ensure that functionality for
+        custom keywords defined in instrument support functions is working
+        correctly. (default=None)
     max_latitude : float
         Latitude simulated as `max_latitude` * cos(theta(t))`, where
         theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.).

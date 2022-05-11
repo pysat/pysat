@@ -242,12 +242,12 @@ metadata labels, including the type.
 
    # Define SPDF metadata labels
    labels = {'units': ('units', str), 'name': ('long_name', str),
-            'notes': ('notes', str), 'desc': ('desc', str),
-            'plot': ('plot_label', str), 'axis': ('axis', str),
-            'scale': ('scale', str),
-            'min_val': ('value_min', np.float64),
-            'max_val': ('value_max', np.float64),
-            'fill_val': ('fill', np.float64)}
+             'notes': ('notes', str), 'desc': ('desc', str),
+             'plot': ('plot_label', str), 'axis': ('axis', str),
+             'scale': ('scale', str),
+             'min_val': ('value_min', np.float64),
+             'max_val': ('value_max', np.float64),
+             'fill_val': ('fill', np.float64)}
 
    # Instantiate instrument
    inst = pysat.Instrument('pysat', 'testing', labels=labels)
@@ -399,12 +399,12 @@ instance.
     # while the values are the labels in the file and type.
     # Only one type is currently supported for each metadata label.
     labels = {'units': ('Units', str), 'name': ('Long_Name', str),
-             'notes': ('Var_Notes', str), 'desc': ('CatDesc', str),
-             'plot': ('FieldNam', str), 'axis': ('LablAxis', str),
-             'scale': ('ScaleTyp', str),
-             'min_val': ('Valid_Min', np.float64),
-             'max_val': ('Valid_Max', np.float64),
-             'fill_val': ('FillVal', np.float64)}
+              'notes': ('Var_Notes', str), 'desc': ('CatDesc', str),
+              'plot': ('FieldNam', str), 'axis': ('LablAxis', str),
+              'scale': ('ScaleTyp', str),
+              'min_val': ('Valid_Min', np.float64),
+              'max_val': ('Valid_Max', np.float64),
+              'fill_val': ('FillVal', np.float64)}
 
     # Both 'ValidMin' and 'Valid_Min' are in the file with the same
     # content. Only need one.
@@ -440,12 +440,12 @@ to map the labels in the file to a more user friendly label.
     # The labels are applied last in the loading process.
     # Only one type is currently supported for each metadata label.
     labels = {'units': ('Units', str), 'name': ('Long_Name', str),
-             'notes': ('Var_Notes', str), 'desc': ('CatDesc', str),
-             'plot': ('plot', str), 'axis': ('axis', str),
-             'scale': ('scale', str),
-             'min_val': ('Valid_Min', np.float64),
-             'max_val': ('Valid_Max', np.float64),
-             'fill_val': ('fill', np.float64)}
+              'notes': ('Var_Notes', str), 'desc': ('CatDesc', str),
+              'plot': ('plot', str), 'axis': ('axis', str),
+              'scale': ('scale', str),
+              'min_val': ('Valid_Min', np.float64),
+              'max_val': ('Valid_Max', np.float64),
+              'fill_val': ('fill', np.float64)}
 
     # Generate custom meta translation table. When left unspecified the default
     # table handles the multiple values for fill. We must recreate that
@@ -486,12 +486,12 @@ metadata.
     # The labels are applied last in the loading process.
     # Only one type is currently supported for each metadata label.
     local_labels = {'units': ('UNITS', str), 'name': ('LongEST_Name', str),
-             'notes': ('FLY', str), 'desc': ('DIGits', str),
-             'plot': ('plottER', str), 'axis': ('axisER', str),
-             'scale': ('scalER', str),
-             'min_val': ('INVALIDmin', np.float64),
-             'max_val': ('invalidMAX', np.float64),
-             'fill_val': ('fillerest', np.float64)}
+                    'notes': ('FLY', str), 'desc': ('DIGits', str),
+                    'plot': ('plottER', str), 'axis': ('axisER', str),
+                    'scale': ('scalER', str),
+                    'min_val': ('INVALIDmin', np.float64),
+                    'max_val': ('invalidMAX', np.float64),
+                    'fill_val': ('fillerest', np.float64)}
 
     # Instantiate generic Instrument and pass in modification options.
     test_inst = pysat.Instrument("pysat", "netcdf", pandas_format=True,

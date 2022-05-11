@@ -1503,8 +1503,7 @@ def xarray_all_vars(data):
     """
 
     # Construct a list of all variables, dimensions, and coordinates.
-
-    # Start with the dimensions!
+    # Start by obtaining the dimensions.
     all_vars = list(data.dims)
 
     # Add coordinate information.
@@ -1581,10 +1580,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     meta_translation : dict or NoneType
         The keys in the input dict are used to map
         metadata labels for `inst` to one or more values used when writing
-        the file. eg. {meta.labels.fill_val: ['FillVal', '_FillValue']} would
-        result in both 'FillVal' and '_FillValue' being used to store
-        variable fill values in the netCDF file. Overrides
-        use of `inst._meta_translation_table`.
+        the file. E.g., `{meta.labels.fill_val: ['FillVal', '_FillValue']}`
+        would result in both 'FillVal' and '_FillValue' being used to store
+        variable fill values in the netCDF file. Overrides use of
+        `inst._meta_translation_table`.
     meta_processor : function or NoneType
         If not None, a dict containing all of the metadata will be
         passed to `meta_processor` which should return a processed version

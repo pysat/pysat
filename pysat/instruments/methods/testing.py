@@ -153,10 +153,9 @@ def initialize_test_meta(epoch_name, data_keys):
                         'value_max': 4294967295, 'fill': -1,
                         'desc': ''.join(['Testing profile multi-dimensional ',
                                          'data indexed by time.']),
-                        'notes': ''.join(['Note the value_max is largest ',
-                                          'netCDF4 supports, but is ',
-                                          'lower than actual 64-bit int limit.',
-                                          ])}
+                        'notes': ''.join([
+                            'Note the value_max is largest netCDF4 supports, ',
+                            'but is lower than actual 64-bit int limit.'])}
 
     # Children metadata required for 2D pandas.
     # TODO(#789): Delete after removal of Meta children.
@@ -181,8 +180,9 @@ def initialize_test_meta(epoch_name, data_keys):
                                     'desc': ''.join(['Simulated fractional O+ ',
                                                      'composition.'])}
     meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
-                            'desc': ''.join(['Testing profile multi-dimensiona',
-                                             'l data indexed by float.']),
+                            'desc': ''.join([
+                                'Testing profile multi-dimensional data ',
+                                'indexed by float.']),
                             'units': 'km',
                             'meta': alt_profile_meta}
 
