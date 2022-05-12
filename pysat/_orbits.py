@@ -101,12 +101,12 @@ class Orbits(object):
     """
 
     # -----------------------------------------------------------------------
-    # Define the magic methods.
+    # Define the magic methods
 
     def __init__(self, inst, index=None, kind='local time', period=None):
         """Initialize `pysat.Instrument.orbits` object."""
 
-        # Set the class attributes.
+        # Set the class attributes
         self.inst = weakref.proxy(inst)
         self.kind = kind.lower()
 
@@ -192,7 +192,7 @@ class Orbits(object):
                     key_check.append(key)
 
                 elif key in ['_full_day_data']:
-                    # Compare data.
+                    # Compare data
                     if isinstance(self.__dict__[key], pds.DataFrame):
                         try:
                             # Comparisons can error simply for having
@@ -207,7 +207,7 @@ class Orbits(object):
                         key_check.append(key)
 
                     else:
-                        # xarray comparison.
+                        # xarray comparison
                         test = xr.Dataset.equals(self.__dict__[key],
                                                  other.__dict__[key])
                         checks.append(test)
@@ -262,10 +262,10 @@ class Orbits(object):
 
         """
         if orbit_key < 0:
-            # Loading for reverse indices.
+            # Loading for reverse indices
             self.load(orbit_key)
         else:
-            # Loading for forward indices.
+            # Loading for forward indices
             self.load(orbit_key + 1)
 
     def __iter__(self):
@@ -314,7 +314,7 @@ class Orbits(object):
 
                 local_inst.date = self.inst.date
 
-                # Restore data.
+                # Restore data
                 self.inst.data = data
                 local_inst.data = data
                 self.inst._curr_data = curr_data
@@ -335,7 +335,7 @@ class Orbits(object):
                 return
 
     # -----------------------------------------------------------------------
-    # Define the hidden methods.
+    # Define the hidden methods
 
     def _report_current_orbit(self):
         """Report the current orbit to log at the info level."""
@@ -726,7 +726,7 @@ class Orbits(object):
         return
 
     # -----------------------------------------------------------------------
-    # Define the public methods and properties.
+    # Define the public methods and properties
 
     def copy(self):
         """Provide a deep copy of object.

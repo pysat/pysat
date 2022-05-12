@@ -158,18 +158,18 @@ class Files(object):
                  ignore_empty_files=False):
         """Initialize `pysat.Files` object."""
 
-        # Set the hidden variables.
+        # Set the hidden variables
         self.update_files = update_files
 
-        # Location of directory to store file information in.
+        # Location of directory to store file information in
         self.home_path = os.path.join(pysat.pysat_dir, 'instruments')
 
-        # Assign base default dates and an empty list of files.
+        # Assign base default dates and an empty list of files
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None, dtype='object')
 
-        # Grab Instrument info.
+        # Grab Instrument information
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
                           'tag': inst.tag, 'inst_id': inst.inst_id,
                           'inst_module': inst.inst_module,
@@ -182,7 +182,7 @@ class Files(object):
         # data sets employ a function that creates filenames on-the-fly.
         self.list_files_creator = None
 
-        # Set the location of stored files.
+        # Set the location of stored files
         self.stored_file_name = '_'.join((self.inst_info['platform'],
                                           self.inst_info['name'],
                                           self.inst_info['tag'],
@@ -198,7 +198,7 @@ class Files(object):
         # Set the user-specified file format template variable string.
         self.file_format = file_format
 
-        # Construct the subdirectory path.
+        # Construct the subdirectory path
         self.sub_dir_path = os.path.normpath(
             self.directory_format.format(**self.inst_info))
 
@@ -249,7 +249,7 @@ class Files(object):
                 # Refresh filenames as directed by user.
                 self.refresh()
             else:
-                # Load stored file info.
+                # Load stored file information.
                 file_info = self._load()
                 if file_info.empty:
                     # Didn't find stored information. Search local system.
@@ -320,7 +320,7 @@ class Files(object):
 
             # Confirm each object has the same keys.
             if key in other.__dict__.keys():
-                # Define default comparison.
+                # Define default comparison
                 if key not in ['files', '_previous_file_list',
                                '_current_file_list', 'inst_info']:
                     test = np.all(self.__dict__[key] == other.__dict__[key])
@@ -433,7 +433,7 @@ class Files(object):
         return out
 
     # -----------------------------------------------------------------------
-    # Define the hidden methods.
+    # Define the hidden methods
 
     def _filter_empty_files(self, path):
         """Update the file list (`self.files`) with empty files removed.
@@ -482,13 +482,13 @@ class Files(object):
         """
 
         if not files_info.empty:
-            # Attach data.
+            # Attach data
             self.files = files_info
 
-            # Ensure times are unique.
+            # Ensure times are unique
             self._ensure_unique_file_datetimes()
 
-            # Filter for empty files.
+            # Filter for empty files
             if self.ignore_empty_files:
                 self._filter_empty_files(path=self.data_path)
 
@@ -497,11 +497,11 @@ class Files(object):
                 self.start_date = filter_datetime_input(self.files.index[0])
                 self.stop_date = filter_datetime_input(self.files.index[-1])
             else:
-                # No files found.
+                # No files found
                 self.start_date = None
                 self.stop_date = None
         else:
-            # No files found.
+            # No files found
             self.start_date = None
             self.stop_date = None
 
@@ -661,7 +661,7 @@ class Files(object):
         return out
 
     # -----------------------------------------------------------------------
-    # Define the public methods and properties.
+    # Define the public methods and properties
 
     def copy(self):
         """Provide a deep copy of object.
@@ -831,7 +831,7 @@ class Files(object):
 
         """
 
-        # Refresh file series.
+        # Refresh file series
         self.refresh()
 
         # Load current and previous set of files.
