@@ -123,10 +123,10 @@ class Files(object):
     --------
     ::
 
-        # Convenient file access.
+        # Convenient file access
         inst = pysat.Instrument(platform=platform, name=name, tag=tag,
                                 inst_id=inst_id)
-        # First file.
+        # First file
         inst.files[0]
 
         # Files from start up to stop (exclusive on stop).
@@ -134,10 +134,10 @@ class Files(object):
         stop = dt.datetime(2009,1,3)
         print(inst.files[start:stop])
 
-        # Files for date.
+        # Files for date
         print(inst.files[start])
 
-        # Files by slicing.
+        # Files by slicing
         print(inst.files[0:4])
 
         # Get a list of new files. New files are those that weren't present
