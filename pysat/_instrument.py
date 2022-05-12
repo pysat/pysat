@@ -78,7 +78,8 @@ class Instrument(object):
         string formatting.  The default file format structure is supplied in the
         instrument `list_files` routine. See
         `pysat.files.parse_delimited_filenames` and
-        `pysat.files.parse_fixed_width_filenames` for more information. (default=None)
+        `pysat.files.parse_fixed_width_filenames` for more information.
+        (default=None)
     temporary_file_list : bool
         If true, the list of Instrument files will not be written to disk.
         (default=False)
