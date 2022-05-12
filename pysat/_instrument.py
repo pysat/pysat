@@ -741,25 +741,25 @@ class Instrument(object):
         --------
         ::
 
-            # By name.
+            # By name
             inst['name']
 
-            # By list of names.
+            # By list of names
             inst[['name1', 'name2']]
 
-            # By position.
+            # By position
             inst[row_index, 'name']
 
-            # Slicing by row.
+            # Slicing by row
             inst[row1:row2, 'name']
 
-            # By Date.
+            # By Date
             inst[datetime, 'name']
 
             # Slicing by date, inclusive.
             inst[datetime1:datetime2, 'name']
 
-            # Slicing by name and row/date.
+            # Slicing by name and row/date
             inst[datetime1:datetime2, 'name1':'name2']
 
         """
@@ -824,22 +824,22 @@ class Instrument(object):
         --------
         ::
 
-            # By name.
+            # By name
             inst['name']
 
-            # By position.
+            # By position
             inst[row_index, 'name']
 
-            # Slicing by row.
+            # Slicing by row
             inst[row1:row2, 'name']
 
-            # By Date.
+            # By Date
             inst[datetime, 'name']
 
             # Slicing by date, inclusive.
             inst[datetime1:datetime2, 'name']
 
-            # Slicing by name and row/date.
+            # Slicing by name and row/date
             inst[datetime1:datetime2, 'name1':'name2']
 
         """
@@ -928,7 +928,7 @@ class Instrument(object):
             # 'units' = ''
             inst['name'] = newData
 
-            # Assignment with Metadata.
+            # Assignment with Metadata
             inst['name'] = {'data':new_data,
                             'long_name':long_name,
                             'units':units}
