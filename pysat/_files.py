@@ -49,7 +49,7 @@ class Files(object):
         string formatting.  The default file format structure is supplied in the
         instrument `list_files` routine. See
         `pysat.files.parse_delimited_filenames` and
-        `pysat.files.parse_fixed_width_filenames` for more. (default=None)
+        `pysat.files.parse_fixed_width_filenames` for more information. (default=None)
     write_to_disk : bool
         If true, the list of Instrument files will be written to disk.
         (default=True)
@@ -883,7 +883,7 @@ class Files(object):
 
         Parameters
         ----------
-        start: array_like or str
+        start: array-like or str
             Filenames for start of returned filelist.
         stop: array_like or str
             Filenames inclusive of the ending of list provided by the stop time.
