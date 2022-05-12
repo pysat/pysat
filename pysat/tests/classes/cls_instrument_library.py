@@ -34,6 +34,7 @@ import pytest
 
 import pysat
 from pysat.utils import generate_instrument_list
+from pysat.utils import testing
 
 
 def initialize_test_inst_and_date(inst_dict):
