@@ -142,13 +142,14 @@ def initialize_test_meta(epoch_name, data_keys):
 
     meta['dummy_drifts'] = {'desc': 'Dummy drift values.', 'value_min': -1000.,
                             'value_max': 1000., 'fill': np.nan}
-    # Add metadata for integer dummy variables.
+
+    # Add metadata for integer dummy variables
     meta_dict = {'value_min': 0, 'value_max': 2, 'fill': -1}
     var_list = ['int8_dummy', 'int16_dummy', 'int32_dummy', 'int64_dummy']
     for var in var_list:
         meta[var] = meta_dict
 
-    # Standard metadata required for xarray.
+    # Standard metadata required for xarray
     meta['profiles'] = {'long_name': 'profiles', 'value_min': 0,
                         'value_max': 4294967295, 'fill': -1,
                         'desc': ''.join(['Testing profile multi-dimensional ',

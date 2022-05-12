@@ -30,10 +30,10 @@ _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 _test_download = {'': {'no_download': False}}
 _test_load_opt = {'': {'': {'num_samples': 13}}}
 
-# Init method.
+# Init method
 init = mm_test.init
 
-# Clean method.
+# Clean method
 clean = mm_test.clean
 
 # Optional method, preprocess.
@@ -90,10 +90,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     """
 
-    # Support keyword testing.
+    # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # Create an artificial satellite data set.
+    # Create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
@@ -131,23 +131,23 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
                                                    uts, period=iperiod['lon'],
                                                    data_range=drange['lon'])
 
-    # Create latitude area for testing polar orbits.
+    # Create latitude area for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(),
                                        uts, period=iperiod['angle'],
                                        data_range=drange['angle'])
     data['latitude'] = max_latitude * np.cos(angle)
 
-    # Create constant altitude at 400 km.
+    # Create constant altitude at 400 km
     alt0 = 400.0
     data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
-    # Fake orbit number.
+    # Fake orbit number
     fake_delta = dates[0] - (_test_dates[''][''] - pds.DateOffset(years=1))
     data['orbit_num'] = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                                    uts, period=iperiod['lt'],
                                                    cyclic=False)
 
-    # Create some fake data to support testing of averaging routines.
+    # Create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.0).astype(int)
     data['dummy1'] = mlt_int
