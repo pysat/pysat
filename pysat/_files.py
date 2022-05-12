@@ -883,9 +883,9 @@ class Files(object):
 
         Parameters
         ----------
-        start: array_like or str
+        start: array-like or str
             Filenames for start of returned filelist.
-        stop: array_like or str
+        stop: array-like or str
             Filenames inclusive of the ending of list provided by the stop time.
 
         Returns
@@ -993,7 +993,7 @@ class Files(object):
         search_dict = futils.construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
 
-        # Perform the local file search.
+        # Perform the local file search
         files = futils.search_local_system_formatted_filename(data_path,
                                                               search_str)
 
@@ -1005,5 +1005,5 @@ class Files(object):
             stored = futils.parse_delimited_filenames(files, format_str,
                                                       delimiter)
 
-        # Process the parsed filenames and return a properly formatted Series.
+        # Process the parsed filenames and return a properly formatted Series
         return futils.process_parsed_filenames(stored, two_digit_year_break)

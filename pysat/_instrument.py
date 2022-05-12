@@ -450,7 +450,7 @@ class Instrument(object):
                     if ckey != req_key:
                         cust_kwargs[ckey] = cust[ckey]
 
-                # Inputs have been checked, add to Instrument object
+                # Inputs have been checked, add to Instrument object.
                 self.custom_attach(cust['function'], **cust_kwargs)
 
         # Create arrays to store data around loaded day. This enables padding
@@ -551,7 +551,7 @@ class Instrument(object):
 
         # Both the same data type, do both have data?
         if self.empty and other.empty:
-            # This check needed to establish next check.
+            # This check needed to establish next check
             pass
         elif self.empty or other.empty:
             # Only one has data, exit early.
@@ -1283,7 +1283,7 @@ class Instrument(object):
         if by_name:
             # pysat platform is reserved for modules within pysat.instruments.
             if self.platform == 'pysat':
-                # Look within pysat.
+                # Look within pysat
                 self.inst_module = importlib.import_module(
                     ''.join(('.', self.platform, '_', self.name)),
                     package='pysat.instruments')
@@ -1538,7 +1538,7 @@ class Instrument(object):
                     if len(fname) > 1:
                         output_str = ' '.join((output_str, '::', fname[-1]))
 
-        # Remove extra spaces, if any are present
+        # Remove extra spaces, if any are present.
         output_str = " ".join(output_str.split())
         logger.info(output_str)
 
@@ -1964,7 +1964,7 @@ class Instrument(object):
                     # Account for width of load. Don't extend past bound.
                     stop_idx = stop_idx - self._iter_width + 1
 
-                    # Stop index is exclusive when called this way, pad by 1
+                    # Stop index is exclusive when called this way, pad by 1.
                     itemp = self.files.files.values[start_idx:(stop_idx + 1)]
 
                     # Downselect based on step size
@@ -2117,8 +2117,8 @@ class Instrument(object):
         self.orbits = saved_orbits
 
         # Support a copy if a user does something like,
-        # self.orbits.inst.copy(), or
-        # self.files.inst_info['inst'].copy()
+        # `self.orbits.inst.copy()`, or
+        # `self.files.inst_info['inst'].copy()`.
         if not isinstance(inst_copy, weakref.ProxyType):
             inst_copy.files.inst_info['inst'] = weakref.proxy(inst_copy)
             inst_copy.orbits.inst = weakref.proxy(inst_copy)
