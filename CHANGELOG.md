@@ -112,7 +112,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Moved function call for Instrument modules init function to end of
      pysat.Instrument instantiation to ensure Instrument is complete when passed
      to init.
-   * Expanded `remote_file_list` to account for warnings raised by 
+   * Expanded `remote_file_list` unit test to account for warnings raised by 
      unsupported `tag` and `inst_id` combinations.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
