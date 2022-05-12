@@ -270,7 +270,7 @@ class Instrument(object):
                                     "None."]),
                           DeprecationWarning, stacklevel=2)
 
-        # Set default tag, inst_id, and Instrument module
+        # Set default tag, inst_id, and Instrument module.
         self.tag = '' if tag is None else tag.lower()
         self.inst_id = '' if inst_id is None else inst_id.lower()
 
@@ -306,7 +306,7 @@ class Instrument(object):
                                         ", name =", self.inst_module.name)),
                               stacklevel=2)
 
-            # User has provided a module, assign platform and name here
+            # User has provided a module, assign platform and name here.
             for iattr in ['platform', 'name']:
                 if hasattr(self.inst_module, iattr):
                     setattr(self, iattr,
@@ -498,7 +498,7 @@ class Instrument(object):
         # Initialize orbit support
         if orbit_info is None:
             if self.orbit_info is None:
-                # If default info not provided, use class defaults
+                # If default info not provided, use class defaults.
                 self.orbit_info = dict()
         else:
             self.orbit_info = orbit_info
@@ -517,7 +517,7 @@ class Instrument(object):
         # Start with a daily increment for loading
         self.load_step = dt.timedelta(days=1)
 
-        # Store base attributes, used in particular by Meta class
+        # Store base attributes, used in particular by Meta class.
         self._base_attr = dir(self)
 
         # Run instrument init function, a basic pass function is used if the
@@ -852,7 +852,7 @@ class Instrument(object):
 
         if isinstance(key, tuple):
             if len(key) == 2:
-                # Support slicing time, variable name
+                # Support slicing time, variable name.
                 try:
                     return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
                 except (TypeError, KeyError):
@@ -863,7 +863,7 @@ class Instrument(object):
                         # Construct dataset from names
                         return self.data[self.variables[key[1]]]
                 except ValueError as verr:
-                    # This may be multidimensional indexing, where the mutliple
+                    # This may be multidimensional indexing, where the multiple
                     # dimensions are contained within an iterable object.
                     var_name = key[-1]
 
@@ -879,7 +879,7 @@ class Instrument(object):
 
                     return self.data[var_name][indict]
             else:
-                # Multidimensional indexing where the multple dimensions are
+                # Multidimensional indexing where the multiple dimensions are
                 # not contained within another object.
                 var_name = key[-1]
 
@@ -1056,7 +1056,7 @@ class Instrument(object):
                         self.data[key] = (epoch_name,
                                           [in_data[0]] * len(self.index))
                     elif len(in_data) == 0:
-                        # Provided an empty iterable, make everything NaN
+                        # Provided an empty iterable, make everything NaN.
                         self.data[key] = (epoch_name,
                                           [np.nan] * len(self.index))
                 elif len(np.shape(in_data)) == 0:
@@ -1128,7 +1128,7 @@ class Instrument(object):
             # Iterate over dates. A list of dates is generated whenever
             # bounds are set.
             for date in self._iter_list:
-                # Use a copy trick, starting with null data in object
+                # Use a copy trick, starting with null data in object.
                 self.data = self._null_data
                 local_inst = self.copy()
 
@@ -1281,7 +1281,7 @@ class Instrument(object):
         # Get the instrument module information, returning with defaults
         # if none is supplied.
         if by_name:
-            # pysat platform is reserved for modules within pysat.instruments.
+            # pysat platform is reserved for modules within `pysat.instruments`
             if self.platform == 'pysat':
                 # Look within pysat
                 self.inst_module = importlib.import_module(
@@ -1921,10 +1921,10 @@ class Instrument(object):
                     # and bounds will fill the `None` with actual start or stop.
                     # Allow for a Nonetype only if length is one.
                     if len(starts) == 1 and (start is None):
-                        # We are good on type change, start is None, no error
+                        # We are good on type change, start is None, no error.
                         break
                     elif len(stops) == 1 and (stop is None):
-                        # We are good on type change, stop is None, no error
+                        # We are good on type change, stop is None, no error.
                         break
                     raise ValueError(' '.join(('Start and stop items must all',
                                                'be of the same type')))
@@ -2421,7 +2421,7 @@ class Instrument(object):
         """
         # Make sure we can iterate
         if len(self._iter_list) == 0:
-            # Nothing to potentially iterate over.
+            # Nothing to potentially iterate over
             raise StopIteration(''.join(('File list is empty. ',
                                          'Nothing to be done.')))
 
