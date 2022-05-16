@@ -444,7 +444,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
 
 
 def default_from_netcdf_translation_table(meta):
-    """Return metadata translation table with minimal netcdf requirements.
+    """Create metadata translation table with minimal netCDF requirements.
 
     Parameters
     ----------
@@ -478,7 +478,7 @@ def default_from_netcdf_translation_table(meta):
 
 
 def default_to_netcdf_translation_table(inst):
-    """Return metadata translation table with minimal netcdf requirements.
+    """Create metadata translation table with minimal netCDF requirements.
 
     Parameters
     ----------
@@ -554,7 +554,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
 
 
 def apply_table_translation_from_file(trans_table, meta_dict):
-    """Return `meta_dict` after applying `trans_table` to metadata keys.
+    """Modify `meta_dict` by applying `trans_table` to metadata keys.
 
     Parameters
     ----------
@@ -1406,7 +1406,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
 
 def return_epoch_metadata(inst, epoch_name):
-    """Return epoch or time-index metadata.
+    """Create epoch or time-index metadata.
 
     Parameters
     ----------
@@ -1454,7 +1454,7 @@ def return_epoch_metadata(inst, epoch_name):
 
 
 def xarray_vars_no_time(data, time_label='time'):
-    """Return all DataSet variables except `time_label` dimension.
+    """Extract all DataSet variables except `time_label` dimension.
 
     Parameters
     ----------
@@ -1490,7 +1490,7 @@ def xarray_vars_no_time(data, time_label='time'):
 
 
 def xarray_all_vars(data):
-    """Return all variable names, including dimensions and coordinates.
+    """Extract all variable names, including dimensions and coordinates.
 
     data : xarray.Dataset
         Dataset to get all variables from.
