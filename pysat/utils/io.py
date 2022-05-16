@@ -1720,8 +1720,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         elif isinstance(attrb_dict[akey], bool):
             attrb_dict[akey] = int(attrb_dict[akey])
 
-    # Check if there are multiple variables with same characters
-    # but with different case.
+    # Check if there are multiple variables with same characters,
+    # but with a different case.
     lower_variables = [var.lower() for var in inst.variables]
     unique_lower_variables = np.unique(lower_variables)
     if len(unique_lower_variables) != len(lower_variables):

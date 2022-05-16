@@ -95,8 +95,8 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
                                   'longitude': longitude, 'lev': lev,
                                   'ilev': ilev})
 
-        # Simulate altitude values at model points.
-        # Initialize memory.
+        # Simulate altitude values at the model nodes.
+        # Start by initializing the memory.
         dummy0 = (data['uts'] * data['ilev'] * data['latitude']
                   * data['longitude'])
         dummy0 *= 0
