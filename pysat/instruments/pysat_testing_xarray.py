@@ -155,9 +155,9 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
                                      data_range=drange['lt'])
     data['slt'] = ((epoch_name), slt)
 
-    # Create a fake longitude, resets every 6240 seconds.
-    # Sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
-    # to go around full longitude.
+    # Create a fake longitude, resets every 6240 seconds. Sat moves at
+    # 360/5820 deg/s, Earth rotates at 360/86400, takes extra time to go
+    # around full longitude.
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                            period=iperiod['lon'],
                                            data_range=drange['lon'])
