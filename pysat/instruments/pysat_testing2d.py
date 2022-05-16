@@ -165,9 +165,8 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     data.index = index
     data.index.name = 'Epoch'
 
-    # Higher rate time signal (for scalar >= 2).
-    # This time signal is used for 2D profiles associated with each time in main
-    # DataFrame.
+    # Higher rate time signal (for scalar >= 2). This time signal is used
+    # for 2D profiles associated with each time in main DataFrame.
     num_profiles = 50 if num_samples >= 50 else num_samples
     end_date = dates[0] + dt.timedelta(seconds=2 * num_profiles - 1)
     high_rate_template = pds.date_range(dates[0], end_date, freq='2S')
