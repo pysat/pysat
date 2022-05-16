@@ -64,8 +64,8 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
     if epoch_name in pysat_meta.keys():
         for meta_key in pysat_meta[epoch_name].keys():
             # Assign attributes
-            xr_data[epoch_name].attrs[meta_key] = \
-                pysat_meta[epoch_name][meta_key]
+            xr_data[epoch_name].attrs[meta_key] = pysat_meta[epoch_name][
+                meta_key]
 
     return
 
