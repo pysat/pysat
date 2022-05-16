@@ -19,14 +19,14 @@ from pysat.instruments.methods import testing as mm_test
 
 logger = pysat.logger
 
-# pysat required parameters.
+# pysat required parameters
 platform = 'pysat'
 name = 'testing_xarray'
 
-# Dictionary of data 'tags' and corresponding description.
+# Dictionary of data 'tags' and corresponding description
 tags = {'': 'Regular testing data set'}
 
-# Dictionary of satellite IDs, list of corresponding tags.
+# Dictionary of satellite IDs, list of corresponding tags
 inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
@@ -34,7 +34,7 @@ pandas_format = False
 epoch_name = u'time'
 
 
-# Init method.
+# Init method
 def init(self, test_init_kwarg=None):
     """Initialize the test instrument.
 
@@ -55,10 +55,10 @@ def init(self, test_init_kwarg=None):
     return
 
 
-# Clean method.
+# Clean method
 clean = mm_test.clean
 
-# Optional method, preprocess.
+# Optional method, preprocess
 preprocess = mm_test.preprocess
 
 
@@ -109,10 +109,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     """
 
-    # Support keyword testing.
+    # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # Create an artifical satellite data set.
+    # Create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
@@ -129,10 +129,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     if malformed_index:
         index = index.tolist()
 
-        # Create a non-monotonic index.
+        # Create a non-monotonic index
         index[0:3], index[3:6] = index[3:6], index[0:3]
 
-        # Create a non-unique index.
+        # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
     data = xr.Dataset({'uts': ((epoch_name), uts)},
@@ -163,19 +163,19 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
                                            data_range=drange['lon'])
     data['longitude'] = ((epoch_name), longitude)
 
-    # Create latitude area for testing polar orbits.
+    # Create latitude area for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
     latitude = max_latitude * np.cos(angle)
     data['latitude'] = ((epoch_name), latitude)
 
-    # Create constant altitude at 400 km.
+    # Create constant altitude at 400 km
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
     data['altitude'] = ((epoch_name), altitude)
 
-    # Fake orbit number.
+    # Fake orbit number
     fake_delta = dates[0] - dt.datetime(2008, 1, 1)
     orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                            uts, period=iperiod['lt'],
@@ -183,7 +183,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     data['orbit_num'] = ((epoch_name), orbit_num)
 
-    # Create some fake data to support testing of averaging routines.
+    # Create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int).data
     long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)
@@ -206,7 +206,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
                            np.ones(len(data.indexes[epoch_name]),
                                    dtype=np.int64))
 
-    # Set the meta data.
+    # Set the meta data
     meta = mm_test.initialize_test_meta(epoch_name, data.keys())
     return data, meta
 

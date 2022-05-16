@@ -36,7 +36,7 @@ init = mm_test.init
 # Clean method
 clean = mm_test.clean
 
-# Optional method, preprocess.
+# Optional method, preprocess
 preprocess = mm_test.preprocess
 
 
@@ -100,7 +100,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='1S',
                                                start_time=start_time)
 
-    # Specify the date tag locally and determine the desired date range.
+    # Specify the date tag locally and determine the desired date range
     pds_offset = dt.timedelta(hours=12)
     if sim_multi_file_right:
         root_date = root_date or _test_dates[''][''] + pds_offset
@@ -165,16 +165,16 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     if malformed_index or tag == 'non_strict':
         index = index.tolist()
 
-        # Create a non-monotonic index.
+        # Create a non-monotonic index
         index[0:3], index[3:6] = index[3:6], index[0:3]
 
-        # Create a non-unique index.
+        # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
     data.index = index
     data.index.name = 'Epoch'
 
-    # Set the meta data.
+    # Set the meta data
     meta = mm_test.initialize_test_meta('Epoch', data.keys())
 
     if tag == 'default_meta':

@@ -21,13 +21,13 @@ inst_ids = {'': [tag for tag in tags.keys()]}
 pandas_format = False
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 
-# Init method.
+# Init method
 init = mm_test.init
 
-# Clean method.
+# Clean method
 clean = mm_test.clean
 
-# Optional method, preprocess.
+# Optional method, preprocess
 preprocess = mm_test.preprocess
 
 
@@ -65,10 +65,10 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
 
     """
 
-    # Support keyword testing.
+    # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # Create an artificial model data set.
+    # Create an artificial model data set
     if tag == '':
         freq_str = '900S'
     else:
@@ -104,11 +104,11 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
                   * data['longitude'])
         dummy0 *= 0
 
-        # Provide a 2D linear gradient across latitude and longitude.
+        # Provide a 2D linear gradient across latitude and longitude
         inc_arr = (np.linspace(0, 1, 72)[:, np.newaxis]
                    * np.linspace(0, 1, 144)[np.newaxis, :])
 
-        # Calculate and assign altitude values.
+        # Calculate and assign altitude values
         for i in np.arange(len(data['ilev'])):
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = i * 10. + j + inc_arr
@@ -116,12 +116,12 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         data['altitude'] = ((epoch_name, 'ilev', 'latitude', 'longitude'),
                             dummy0.data)
 
-        # Create fake 4D ion drift data set.
+        # Create fake 4D ion drift data set
         dummy0 = (data['uts'] * data['ilev'] * data['latitude']
                   * data['longitude'])
         dummy0 *= 0
 
-        # Calculate and assign fake data values.
+        # Calculate and assign fake data values
         for i in np.arange(len(data['ilev'])):
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = 2. * i * (np.sin(2 * np.pi * j / 24.)
@@ -163,10 +163,10 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         data['dummy2'] = ((epoch_name, 'latitude', 'longitude', 'altitude'),
                           dummy2.data)
 
-    # Set the meta data.
+    # Set the meta data
     meta = mm_test.initialize_test_meta(epoch_name, data.keys())
 
-    # Adjust metadata from overall defaults.
+    # Adjust metadata from overall defaults
     meta['dummy1'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
                       'fill': -2**32 + 1}
     meta['dummy2'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
@@ -184,7 +184,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
                             meta.labels.fill_val: np.nan}
 
         # Assigning metadata for meridional ion drifts since it differs from
-        # default info.
+        # default info
         meta['iv_mer'] = {meta.labels.units: 'm/s',
                           meta.labels.name: 'Meridional Ion Drift',
                           meta.labels.min_val: -250.,

@@ -24,13 +24,13 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 epoch_name = u'time'
 
-# Init method.
+# Init method
 init = mm_test.init
 
-# Clean method.
+# Clean method
 clean = mm_test.clean
 
-# Optional method, preprocess.
+# Optional method, preprocess
 preprocess = mm_test.preprocess
 
 
@@ -75,10 +75,10 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
 
     """
 
-    # Support keyword testing.
+    # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # Create an artifical satellite data set.
+    # Create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
@@ -89,10 +89,10 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     if malformed_index:
         index = index.tolist()
 
-        # Create a non-monotonic index.
+        # Create a non-monotonic index
         index[0:3], index[3:6] = index[3:6], index[0:3]
 
-        # Create a non-unique index.
+        # Create a non-unique index
         index[6:9] = [index[6]] * 3
     data = xr.Dataset({'uts': ((epoch_name), uts)},
                       coords={epoch_name: index})
@@ -104,7 +104,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     # seconds per orbit (97 minute period).
     time_delta = dates[0] - dt.datetime(2009, 1, 1)
 
-    # MLT runs 0-24 each orbit.
+    # MLT runs 0-24 each orbit
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
@@ -124,7 +124,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
                                            data_range=drange['lon'])
     data['longitude'] = ((epoch_name), longitude)
 
-    # Create fake satellite latitude for testing polar orbits.
+    # Create fake satellite latitude for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
@@ -132,12 +132,12 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     data['latitude'] = ((epoch_name), latitude)
 
     # Create constant altitude at 400 km for a satellite that has yet
-    # to experience orbital decay.
+    # to experience orbital decay
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
     data['altitude'] = ((epoch_name), altitude)
 
-    # Create some fake data to support testing of averaging routines.
+    # Create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int).data
     long_int = (data['longitude'] / 15.).astype(int).data
     data['dummy1'] = ((epoch_name), mlt_int)
@@ -160,19 +160,19 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
                            np.ones(len(data.indexes[epoch_name]),
                                    dtype=np.int64))
 
-    # Add dummy coords.
+    # Add dummy coords
     data.coords['x'] = (('x'), np.arange(17))
     data.coords['y'] = (('y'), np.arange(17))
     data.coords['z'] = (('z'), np.arange(15))
 
-    # Create altitude 'profile' at each location to simulate remote data.
+    # Create altitude 'profile' at each location to simulate remote data
     num = len(data['uts'])
     data['profiles'] = (
         (epoch_name, 'profile_height'),
         data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['profile_height'] = ('profile_height', np.arange(15))
 
-    # Profiles that could have different altitude values.
+    # Profiles that could have different altitude values
     data['variable_profiles'] = (
         (epoch_name, 'z'), data['dummy3'].values[:, np.newaxis]
         * np.ones((num, 15)))

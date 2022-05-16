@@ -98,17 +98,17 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
 
     """
 
-    # Support keyword testing.
+    # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # Create an artificial satellite data set.
+    # Create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    # Using 100s frequency for compatibility with seasonal analysis unit tests.
+    # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
                                                start_time=start_time)
-    # Seed the DataFrame with a UT array.
+    # Seed the DataFrame with a UT array
     data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
     # Need to create simple orbits here. Have start of first orbit
@@ -118,7 +118,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     # seconds per orbit (97 minute period).
     time_delta = dates[0] - dt.datetime(2009, 1, 1)
 
-    # MLT runs 0-24 each orbit.
+    # MLT runs 0-24 each orbit
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                              period=iperiod['lt'],
                                              data_range=drange['lt'])
@@ -135,17 +135,17 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
                                                    uts, period=iperiod['lon'],
                                                    data_range=drange['lon'])
 
-    # Create latitude signal for testing polar orbits.
+    # Create latitude signal for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(),
                                        uts, period=iperiod['angle'],
                                        data_range=drange['angle'])
     data['latitude'] = max_latitude * np.cos(angle)
 
-    # Create constant altitude at 400 km.
+    # Create constant altitude at 400 km
     alt0 = 400.0
     data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
-    # Dummy variable data for different types.
+    # Dummy variable data for different types
     data['string_dummy'] = ['test'] * len(data)
     data['unicode_dummy'] = [u'test'] * len(data)
     data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
@@ -156,10 +156,10 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     if malformed_index:
         index = index.tolist()
 
-        # Create a non-monotonic index.
+        # Create a non-monotonic index
         index[0:3], index[3:6] = index[3:6], index[0:3]
 
-        # Create a non-unique index.
+        # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
     data.index = index
@@ -176,13 +176,13 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     # each time with mixed variables.
     profiles = []
 
-    # DataFrame at each time with numeric variables only.
+    # DataFrame at each time with numeric variables only
     alt_profiles = []
 
-    # Series at each time, numeric data only.
+    # Series at each time, numeric data only
     series_profiles = []
 
-    # Frame indexed by date times.
+    # Frame indexed by date times
     frame = pds.DataFrame({'density': data.loc[data.index[0:num_profiles],
                                                'mlt'].values.copy(),
                            'dummy_str': ['test'] * num_profiles,
@@ -190,7 +190,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
                           index=data.index[0:num_profiles],
                           columns=['density', 'dummy_str', 'dummy_ustr'])
 
-    # Frame indexed by float.
+    # Frame indexed by float
     dd = np.arange(num_profiles) * 1.2
     ff = np.arange(num_profiles) / num_profiles
     ii = np.arange(num_profiles) * 0.5
@@ -198,7 +198,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
                               index=ii,
                               columns=['density', 'fraction'])
 
-    # Series version of storage.
+    # Series version of storage
     series_alt = pds.Series(dd, index=ii, name='series_profiles')
 
     for time in data.index:
@@ -207,15 +207,15 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
         alt_profiles.append(frame_alt)
         series_profiles.append(series_alt)
 
-    # Store multiple data types into main frame.
+    # Store multiple data types into main frame
     data['profiles'] = pds.Series(profiles, index=data.index)
     data['alt_profiles'] = pds.Series(alt_profiles, index=data.index)
     data['series_profiles'] = pds.Series(series_profiles, index=data.index)
 
-    # Set the meta data.
+    # Set the meta data
     meta = mm_test.initialize_test_meta('epoch', data.keys())
 
-    # Reset profiles as children meta.
+    # Reset profiles as children meta
     profile_meta = pysat.Meta()
     profile_meta['density'] = {'long_name': 'density', 'units': 'N/cc',
                                'desc': 'Fake "density" signal for testing.',
@@ -226,7 +226,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     profile_meta['dummy_ustr'] = {'long_name': 'dummy_ustr',
                                   'desc': 'Unicode string data for testing.'}
 
-    # Update profiles metadata with sub-variable information.
+    # Update profiles metadata with sub-variable information
     meta['profiles'] = {'meta': profile_meta}
 
     return data, meta
