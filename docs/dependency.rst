@@ -335,3 +335,20 @@ Remember to include pysat as a dependency in your setup.py or setup.cfg file.
 The CI environment will also need to be configured to install pysat and its
 dependencies.  You may need to install pysat from github rather than pip if
 you need to test against a specific development branch.
+
+If the pysat api is changing for an upcoming release, you can use ``packaging``
+to quickly determine the pysat version and potentially skip tests.
+
+.. code:: python
+
+  from packaging.version import Version
+  import pysat
+  import pytest
+
+  @pytest.mark.skipif(Version(pysat.__version__) <= Version('3.0.1'),
+                      reason=''.join(('Requires test model in pysat ',
+                                      ' v3.0.2 or later.')))
+  def test_new_feature(self):
+     """Check a new feature that requires the develop pysat."""
+
+  
