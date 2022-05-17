@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Produces fake instrument data for testing.
 
-.. deprecated:: 3.1.0
+.. deprecated:: 3.0.2
     All data present in this instrument is duplicated in pysat_testing2d_xarray.
     This instrument will be removed in 3.2.0+ to reduce redundancy.
 
