@@ -336,8 +336,9 @@ The CI environment will also need to be configured to install pysat and its
 dependencies.  You may need to install pysat from github rather than pip if
 you need to test against a specific development branch.
 
-If the pysat api is changing for an upcoming release, you can use ``packaging``
-to quickly determine the pysat version and potentially skip tests.
+If the pysat API is changing for an upcoming release, you can use :py:mod:`packaging`
+to quickly determine the pysat version and potentially skip tests that are only
+necessary for a limited range of pysat versions.
 
 .. code:: python
 
