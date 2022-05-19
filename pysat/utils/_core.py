@@ -191,7 +191,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
                          'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat.
 
-    .. deprecated:: 3.1.0
+    .. deprecated:: 3.0.2
        Function moved to `pysat.utils.io.load_netcdf`, this wrapper will be
        removed in the 3.2.0+ release.
        No longer allow non-string file formats in the 3.2.0+ release.
