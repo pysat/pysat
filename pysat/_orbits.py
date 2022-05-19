@@ -673,7 +673,9 @@ class Orbits(object):
         Parameters
         ----------
         orbit_num : int
-            Orbit number, 1 indexed, negative indexes allowed, -1 last orbit.
+            Orbit number. Note that the first orbit is `orbit_num=1`,
+            rather than a zero index. Negative indexes are allowed
+            with `-1` as the last orbit.
 
         Raises
         ------
