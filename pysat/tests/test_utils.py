@@ -114,7 +114,7 @@ class TestScaleUnits(object):
             if out_unit.find("deg") == 0:
                 assert self.scale == 1.0, estr
             elif out_unit.find("rad") == 0:
-                assert self.scale == np.pi / 180.0, est
+                assert self.scale == np.pi / 180.0, estr
             else:
                 assert self.scale == 1.0 / 15.0, estr
         elif scale_type.lower() == 'distance':
