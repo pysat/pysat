@@ -306,18 +306,27 @@ class TestLoadNetCDF(object):
                                                       'is not a dimension.')])
     def test_read_netcdf4_epoch_not_xarray_dimension(self, caplog, write_epoch,
                                                      war_msg):
-        """Test netCDF4 load `epoch_name` not a dimension."""
+        """Test netCDF4 load `epoch_name` not a dimension.
+
+        Parameters
+        ----------
+        write_epoch : str
+            Label used for datetime data when writing file.
+        war_msg : str
+            Warning message to test for.
+
+        """
 
         if not self.testInst.pandas_format:
-            # Load data.
+            # Load data
             outfile = os.path.join(self.tempdir.name,
                                    'pysat_test_ncdf.nc')
             self.testInst.load(date=self.stime, use_header=True)
 
-            # Write file.
+            # Write file
             io.inst_to_netcdf(self.testInst, outfile, epoch_name=write_epoch)
 
-            # Evaluate the expected warning.
+            # Evaluate the expected warning
             with caplog.at_level(logging.WARNING, logger='pysat'):
                 io.load_netcdf(outfile, epoch_name='slt',
                                pandas_format=self.testInst.pandas_format)
@@ -330,19 +339,28 @@ class TestLoadNetCDF(object):
         ({"zlib": True}, {}), ({}, {}), ({"unlimited_time": False}, {}),
         ({"epoch_name": "Santa"}, {"epoch_name": "Santa"})])
     def test_write_and_read_netcdf4_w_kwargs(self, wkwargs, lkwargs):
-        """Test success of writing and reading a netCDF4 file."""
+        """Test success of writing and reading a netCDF4 file
 
-        # Create a new file based on loaded test data.
+        Parameters
+        ----------
+        wkargs : dict
+            Keyword arguments passed to `inst_to_netcdf`.
+        lwkargs : dict
+            Keyword arguments passed to `io.load_netcdf`.
+
+        """
+
+        # Create a new file based on loaded test data
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         io.inst_to_netcdf(self.testInst, fname=outfile, **wkwargs)
 
-        # Load the data that was created.
+        # Load the data that was created
         lkwargs['pandas_format'] = self.testInst.pandas_format
         self.loaded_inst, meta = io.load_netcdf(outfile, **lkwargs)
 
-        # Test the loaded data.
+        # Test the loaded data
         self.eval_loaded_data()
         return
 
@@ -604,23 +622,34 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
                                                ({'decode_timedelta': True},
                                                 True)])
     def test_read_netcdf4_with_time_meta_labels(self, kwargs, target):
-        """Test that read_netcdf correctly interprets time labels in meta."""
-        # Prepare output test data.
+        """Test that read_netcdf correctly interprets time labels in meta.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Keyword arguments passed to `io.load_netcdf`.
+        target : bool
+            Target boolean value for testing.
+
+        """
+        # Prepare output test data
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
-        # Modify the variable attributes directly before writing to file.
+
+        # Modify the variable attributes directly before writing to file
         self.testInst.meta['uts'] = {'units': 'seconds'}
         self.testInst.meta['mlt'] = {'units': 'minutes'}
         self.testInst.meta['slt'] = {'units': 'hours'}
-        # Write output test data.
+
+        # Write output test data
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         # Load the written data
         self.loaded_inst, meta = io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format, **kwargs)
 
-        # Check that labels pass through as correct type.
+        # Check that labels pass through as correct type
         vars = ['uts', 'mlt', 'slt']
         for var in vars:
             val = self.loaded_inst[var].values[0]
