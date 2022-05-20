@@ -339,7 +339,7 @@ class TestLoadNetCDF(object):
         ({"zlib": True}, {}), ({}, {}), ({"unlimited_time": False}, {}),
         ({"epoch_name": "Santa"}, {"epoch_name": "Santa"})])
     def test_write_and_read_netcdf4_w_kwargs(self, wkwargs, lkwargs):
-        """Test success of writing and reading a netCDF4 file
+        """Test success of writing and reading a netCDF4 file.
 
         Parameters
         ----------
