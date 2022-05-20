@@ -194,8 +194,8 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
     Note
     ----
-    Does perform filtering to remove variable metadata not supported by the
-    SPDF ISTP/IACG NetCDF standards using
+    Removes variable metadata not supported by the SPDF ISTP/IACG
+    NetCDF standards using
     `pysat.utils.io.filter_netcdf4_metadata`.
 
     For xarray inputs, converts datetimes to integers representing milliseconds
@@ -487,7 +487,7 @@ def default_to_netcdf_translation_table(inst):
 
     Returns
     -------
-    dict
+    trans_table : dict
         Keyed by self.labels with a list of strings to be used
         when writing netcdf files.
 
@@ -1465,7 +1465,7 @@ def xarray_vars_no_time(data, time_label='time'):
 
     Returns
     -------
-    variables : list
+    vars : list
         All variables, dimensions, and coordinates, except for `time_label`.
 
     Raises

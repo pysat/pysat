@@ -187,7 +187,7 @@ class TestLoadNetCDF(object):
             update_files=True)
 
         # Confirm data path is correct.
-        assert os.path.normpath(netcdf_inst.files.data_path)\
+        assert os.path.normpath(netcdf_inst.files.data_path) \
                == os.path.normpath(os.path.join(self.tempdir.name, add_path))
 
         # Deleting the test file here via os.remove(...) does work.
@@ -1003,7 +1003,7 @@ class TestNetCDF4Integration(object):
         return
 
     def meta_proc_stub(self, meta_dict, vals=None, remove_labels=None):
-        """`meta_processor` function for load/write processor tests.
+        """Load and write processor tests; supports `meta_processor`.
 
         Parameters
         ----------
@@ -1289,6 +1289,8 @@ class TestXarrayIO(object):
     def test_xarray_vars_no_time(self, time_label):
         """Test `xarray_vars_no_time`.
 
+        Parameters
+        ------------
         time_label : str
             Label for datetime data.
 
