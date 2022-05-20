@@ -990,9 +990,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     obj_key = dim[0]
                 else:
                     estr = ''.join(['Epoch label: "', epoch_name, '"',
-                                    ' not found in loaded dimensions [',
+                                    ' was not found in loaded dimensions [',
                                     ', '.join(dim), ']'])
-                    raise ValueError(estr)
+                    raise KeyError(estr)
 
                 # Collect variable names associated with dimension
                 idx_bool = [dim == i for i in two_d_dims]
@@ -1116,9 +1116,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
             # Prepare dataframe index for this netcdf file
             if epoch_name not in loaded_vars.keys():
                 estr = ''.join(['Epoch label: "', epoch_name, '"',
-                                ' not found in loaded data, ',
-                                repr(loaded_vars.keys())])
-                raise ValueError(estr)
+                                ' was not found in loaded dimensions [',
+                                ', '.join(loaded_vars.keys()), ']'])
+                raise KeyError(estr)
 
             time_var = loaded_vars.pop(epoch_name)
             loaded_vars[epoch_name] = pds.to_datetime(time_var, unit=epoch_unit,
@@ -1333,9 +1333,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                 pysat.logger.warning(wstr)
             else:
                 estr = ''.join(['Epoch label: "', epoch_name, '"',
-                                ' not found in loaded data, ',
-                                repr(all_vars)])
-                raise ValueError(estr)
+                                ' was not found in loaded dimensions [',
+                                ', '.join(all_vars), ']'])
+                raise KeyError(estr)
         else:
             estr = ''.join(["'time' already present in file. Can't rename ",
                             epoch_name, " to 'time'. To load this file ",

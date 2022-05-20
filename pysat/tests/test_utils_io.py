@@ -263,12 +263,12 @@ class TestLoadNetCDF(object):
             input_kwargs={'fname': outfile, 'preserve_meta_case': True})
         return
 
-    @pytest.mark.parametrize("write_epoch,err_msg", [('epoch',
-                                                      '"whoosthat" not found '),
-                                                     ('time',
-                                                      "'time' already present")
-                                                     ])
-    def test_read_netcdf4_bad_epoch_name(self, write_epoch, err_msg):
+    @pytest.mark.parametrize("write_epoch,err_msg,err_type",
+                             [('epoch', '"whoosthat" was not found in loaded',
+                               KeyError),
+                              ('time', "'time' already present",
+                               ValueError)])
+    def test_read_netcdf4_bad_epoch_name(self, write_epoch, err_msg, err_type):
         """Test netCDF4 load with bad epoch name/or 'time' already present.
 
         Parameters
@@ -277,6 +277,8 @@ class TestLoadNetCDF(object):
             Label used for time data when writing file.
         err_msg : str
             Error message to test for.
+        err_type : Error
+            Type of error eg. ValueError
 
         """
         # Load data.
@@ -289,11 +291,12 @@ class TestLoadNetCDF(object):
 
         # Pandas doesn't have 'time' error.
         if self.testInst.pandas_format:
-            err_msg = '"whoosthat" not found in'
+            err_msg = '"whoosthat" was not found in'
+            err_type = KeyError
 
         # Evaluate the expected error and message.
         testing.eval_bad_input(
-            io.load_netcdf, ValueError, err_msg,
+            io.load_netcdf, err_type, err_msg,
             input_args=[outfile],
             input_kwargs={'epoch_name': 'whoosthat',
                           'pandas_format': self.testInst.pandas_format})
