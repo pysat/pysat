@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Produces fake instrument data for testing.
 
-.. deprecated:: 3.1.0
+.. deprecated:: 3.0.2
     Support for 2d pandas objects will be removed in 3.2.0+.  This instrument
     module simulates an object that will no longer be supported.
 

@@ -80,6 +80,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      of times when loading a file via `pysat.utils.io.load_netcdf`.
    * Added `pysat.utils.io.xarray_all_vars` which returns a list of all variables,
      coordinates, and dimensions.
+   * Added more volume units to `pysat.utils.scale_units`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -95,10 +96,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Deprecated support for 2D pandas datasets
    * Deprecated `pysat.instruments.pysat_testing_xarray`
    * Deprecated usage of higher order metadata
-   * Deprecated `pysat.instruments.methods.general.convert_timestamp_to_datetime`
-     which is replaced by new functionality in `load_netCDF4`.
    * Deprecated `pysat.Instrument.generic_meta_translator` which is replaced
      by `pysat.utils.io.apply_table_translation_to_file`.
+   * Deprecated the general instrument method, `convert_timestamp_to_datetime`,
+     which is replaced by new functionality in `load_netcdf`.
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
@@ -115,7 +116,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added docstring linting via flake-docstrings and hacking to CI tests
    * Added clarification to the tutorials
    * Added limitations to the `listify` docstring
-   * Updated `tag` and `inst_id` keywords and docstrings to new standards```
+   * Updated `tag` and `inst_id` keywords and docstrings to new standards
+   * Added example for version checking when writing tests for packages that
+     rely on pysat
 * Bug Fix
    * Fixed default MetaLabel specification in `pysat.utils.load_netcdf4`
    * Fixed `parse_delimited_filename` output consistency and ability to handle

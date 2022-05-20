@@ -1667,7 +1667,7 @@ class Instrument(object):
                                  export_nan=None):
         """Filter metadata properties to be consistent with netCDF4.
 
-        .. deprecated:: 3.1.0
+        .. deprecated:: 3.0.2
             Moved to `pysat.utils.io.filter_netcdf4_metadata. This wrapper
             will be removed in 3.2.0+.
 
@@ -3445,7 +3445,7 @@ class Instrument(object):
                    unlimited_time=True, modify=False):
         """Store loaded data into a netCDF4 file.
 
-        .. deprecated:: 3.1.0
+        .. deprecated:: 3.0.2
             Changed `fname` from a kwarg to an arg of type str in the 3.2.0+
             release.
 
