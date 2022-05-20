@@ -192,11 +192,14 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
     in_meta_dict : dict
         Input dictionary with additional information for standards.
 
+    See Also
+    --------
+    filter_netcdf4_metadata :
+        Removes unsupported SPDF ISTP/IACG variable metadata.
+
     Note
     ----
-    Removes variable metadata not supported by the SPDF ISTP/IACG
-    NetCDF standards using
-    `pysat.utils.io.filter_netcdf4_metadata`.
+    Removes unsupported SPDF ISTP/IACG variable metadata.
 
     For xarray inputs, converts datetimes to integers representing milliseconds
     since 1970. This does not include the main index, 'time'.
@@ -251,7 +254,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                 # for either a Series or a DataFrame.
                 dims = (dims[0], 0)
 
-            for i, dim in enumerate(dims[:-1]):
+            for dim in dims[:-1]:
                 # Don't need to go over last dimension value,
                 # it covers number of columns (if a DataFrame)
                 obj_dim_names.append(var)
@@ -1481,17 +1484,19 @@ def xarray_vars_no_time(data, time_label='time'):
         for i, var in enumerate(vars):
             if var == time_label:
                 vars.pop(i)
-                return vars
+                break
     else:
         estr = ''.join(["Didn't find time dimension '", time_label, "'"])
         raise ValueError(estr)
 
-    return []
+    return vars
 
 
 def xarray_all_vars(data):
     """Extract all variable names, including dimensions and coordinates.
 
+    Parameters
+    ----------
     data : xarray.Dataset
         Dataset to get all variables from.
 
