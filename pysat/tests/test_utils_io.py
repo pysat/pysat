@@ -1319,7 +1319,7 @@ class TestXarrayIO(object):
         """Test `xarray_vars_no_time`.
 
         Parameters
-        ------------
+        ----------
         time_label : str
             Label for datetime data.
 
