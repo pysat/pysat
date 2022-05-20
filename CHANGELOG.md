@@ -49,6 +49,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      are immediately reflected by changes to Instrument object.
    * Added a test function for bad class/function/method input to reduce
      duplicate code and improve message test combliance
+   * Added more volume units to `pysat.utils.scale_units`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -64,8 +65,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Deprecated support for 2D pandas datasets
    * Deprecated `pysat.instruments.pysat_testing_xarray`
    * Deprecated usage of higher order metadata
-   * Deprecated `pysat.instruments.methods.general.convert_timestamp_to_datetime`
-     which is replaced by new functionality in `load_netCDF4`.
+   * Deprecated the general instrument method, `convert_timestamp_to_datetime`,
+     which is replaced by new functionality in `load_netcdf`.
 * Documentation
    * Moved logo to 'docs\images'
    * Improved consistency of headers throughout documentation
