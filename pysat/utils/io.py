@@ -385,7 +385,12 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
     epoch_name : str
         Name for epoch or time-index variable. Use '' if no epoch variable.
     labels : Meta.labels
-        Meta.labels instance
+        `Meta.labels` instance.
+
+    Returns
+    -------
+    mdict : dict
+        File metadata with netCDF4 SPDF information removed.
 
     Note
     ----
@@ -456,7 +461,7 @@ def default_from_netcdf_translation_table(meta):
 
     Returns
     -------
-    dict
+    trans_table : dict
         Keyed by self.labels with a list of strings to be used
         when writing netcdf files.
 
@@ -568,7 +573,7 @@ def apply_table_translation_from_file(trans_table, meta_dict):
 
     Returns
     -------
-    dict
+    filt_dict : dict
        `meta_dict` after the mapping in `trans_table` applied.
 
     Note
@@ -648,7 +653,7 @@ def meta_array_expander(meta_dict):
     Returns
     -------
     meta_dict : dict
-        Input dict with expanded array elements
+        Input dict with expanded array elements.
 
     Note
     ----
