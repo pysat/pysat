@@ -649,7 +649,7 @@ def meta_array_expander(meta_dict):
 
     Note
     ----
-    pysat.Meta can not take array data.
+    pysat.Meta can not take array-like or list-like data.
 
     """
 
