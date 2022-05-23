@@ -376,7 +376,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
 
 def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
-    """Remove metadata variables in SPDF ISTP/IACG NetCDF standards.
+    """Remove metadata from loaded file using SPDF ISTP/IACG NetCDF standards.
 
     Parameters
     ----------
@@ -390,7 +390,11 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
     Returns
     -------
     mdict : dict
-        File metadata with netCDF4 SPDF information removed.
+        File metadata with unnecessary netCDF4 SPDF information removed.
+
+    See Also
+    --------
+    add_netcdf4_standards_to_metadict : Adds SPDF ISTP/IACG netCDF4 metadata.
 
     Note
     ----
@@ -398,14 +402,10 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
     'Display_Type', 'Var_Type', 'Format', 'Time_Scale', 'MonoTon',
     'calendar', and 'Time_Base'.
 
-    Does not perform filtering to remove variables not supported by the
-    SPDF ISTP/IACG NetCDF standards.  For this, see
-    pysat.utils.io.filter_netcdf4_metadata.
-
     """
 
     # Metadata added by `add_netcdf4_standards_to_metadict` or similar
-    # method to maintain basic compliance with SPDF ISTP/IACG NetCDF standards
+    # method to maintain basic compliance with SPDF ISTP/IACG NetCDF standards.
     vals = ['Depend_0', 'Depend_1', 'Depend_2', 'Depend_3', 'Depend_4',
             'Depend_5', 'Depend_6', 'Depend_7', 'Depend_8', 'Depend_9',
             'Display_Type', 'Var_Type', 'Format',
@@ -474,13 +474,12 @@ def default_from_netcdf_translation_table(meta):
 
     """
 
-    # Define a default translation with labels required by netCDF4
+    # Define a default translation with labels required by netCDF4.
+    # We need to keep 'fill' for backwards compatibility. Unintended use
+    # of 'fill' in pysat generated files in at least v3.0.1.
     trans_table = {'_FillValue': meta.labels.fill_val,
                    'FillVal': meta.labels.fill_val,
                    'fill': meta.labels.fill_val}
-
-    # We need to keep 'fill' for backwards compatibility. Unintended use
-    # of 'fill' in pysat generated files in at least v3.0.1.
 
     return trans_table
 

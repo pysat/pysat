@@ -107,8 +107,7 @@ class TestLoadNetCDF(object):
         else:
             # Don't apply to 'time'
             xarr_vars = io.xarray_vars_no_time(self.testInst.data)
-            map_keys = {dkey: dkey.upper()
-                        for dkey in xarr_vars}
+            map_keys = {dkey: dkey.upper() for dkey in xarr_vars}
             self.testInst.data = self.testInst.data.rename(map_keys)
 
         # Meta case is preserved and has not been altered
@@ -148,8 +147,7 @@ class TestLoadNetCDF(object):
         else:
             xarr_vars = io.xarray_vars_no_time(self.testInst.data)
             self.testInst.data = self.testInst.data.rename(
-                {dkey: dkey.upper()
-                 for dkey in xarr_vars})
+                {dkey: dkey.upper() for dkey in xarr_vars})
 
         io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True)
 
@@ -182,9 +180,8 @@ class TestLoadNetCDF(object):
 
         # Load the written file directly into an Instrument.
         netcdf_inst = pysat.Instrument(
-            'pysat', 'netcdf', data_dir=file_path,
-            file_format=file_root, pandas_format=self.testInst.pandas_format,
-            update_files=True)
+            'pysat', 'netcdf', data_dir=file_path, update_files=True,
+            file_format=file_root, pandas_format=self.testInst.pandas_format)
 
         # Confirm data path is correct.
         assert os.path.normpath(netcdf_inst.files.data_path) \
@@ -192,7 +189,7 @@ class TestLoadNetCDF(object):
 
         # Deleting the test file here via os.remove(...) does work.
 
-        # Load data.
+        # Load data
         netcdf_inst.load(date=self.stime, use_header=True)
 
         # Test the loaded Instrument data.
@@ -241,7 +238,10 @@ class TestLoadNetCDF(object):
 
         del netcdf_inst.data, netcdf_inst
 
-        # Delete the file. This doesn't work on Windows. It does work if
+        # TODO(#974) It appears the source of the open references is related
+        # to xarray itself. Code below is debugging code that may be used
+        # to identify when and if the problem within xarray is sorted out.
+        # Debug- delete the file. This doesn't work on Windows. It does work if
         # executed before the netCDF is loaded. Despite our .close() statement
         # in loading code, there are still open references.
         # os.remove(outfile)
