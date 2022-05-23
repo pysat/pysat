@@ -1137,7 +1137,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
             if strict_meta:
                 if saved_meta is None:
                     saved_meta = full_mdict.copy()
-                elif (full_mdict != saved_meta):
+                elif full_mdict != saved_meta:
                     raise ValueError(' '.join(('Metadata across filenames',
                                                'is not the same.')))
 
@@ -1507,7 +1507,7 @@ def xarray_all_vars(data):
 
     Returns
     -------
-    variables : list
+    all_vars : list
         List of all `data.data_vars`, `data.dims`, and `data.coords`.
 
     """
