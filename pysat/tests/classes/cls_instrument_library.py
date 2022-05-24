@@ -404,7 +404,7 @@ class InstLibTests(object):
             if len(files) == 0:
                 # Not all `tag` or `inst_id` settings may have support.
                 # If not supported, warning should be issued.
-                testing.eval_warnings(war, 'Not implemented in this version.',
+                testing.eval_warnings(war, 'Not implemented',
                                       UserWarning)
             else:
                 # If test date is correctly chosen, files should exist.
