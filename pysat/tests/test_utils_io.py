@@ -1508,6 +1508,7 @@ class TestMetaTranslation(object):
 
         # Ensure original information recovered
         assert np.all(self.out == self.meta_dict)
+        return
 
     def test_from_file_table_translation_inconsistent(self, caplog):
         """Test `apply_table_translation_from_file` inconsistency message."""

@@ -1,7 +1,4 @@
-"""Tests for pysat.Instrument integration tests.
-
-Includes:
-* Ensuring no stale data paths after changing pysat.params['data_dirs']
+"""Integration tests for pysat.Instrument, including tests for stale data paths from `pysat.params`.
 
 Note
 ----
