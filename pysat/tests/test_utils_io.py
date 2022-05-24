@@ -622,7 +622,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
                                                ({'decode_timedelta': True},
                                                 True)])
     def test_read_netcdf4_with_time_meta_labels(self, kwargs, target):
-        """Test that read_netcdf correctly interprets time labels in meta.
+        """Test that `read_netcdf` correctly interprets time labels in meta.
 
         Parameters
         ----------
@@ -959,7 +959,7 @@ class TestNetCDF4Integration(object):
                                             ])
     @pytest.mark.parametrize('assign_flag', [True, False])
     def test_meta_translation_to_from_netcdf4(self, assign_flag, meta_trans):
-        """Test impact of meta_translation on netCDF output.
+        """Test impact of `meta_translation` on netCDF output.
 
         Parameters
         ----------
@@ -1080,14 +1080,14 @@ class TestNetCDF4Integration(object):
 
     @pytest.mark.parametrize('assign_flag', [True, False])
     def test_meta_processor_to_from_netcdf4(self, assign_flag):
-        """Test impact of meta_processor on netCDF output.
+        """Test impact of `meta_processor` on netCDF output.
 
         Parameters
         ----------
         assign_flag : bool
             If True, assigns meta processor func as
             ._export_meta_post_processing. Otherwise, uses
-            meta_processor keyword argument.
+            `meta_processor` keyword argument.
 
         """
 
@@ -1098,6 +1098,7 @@ class TestNetCDF4Integration(object):
         # Create meta processor function
         to_meta_proc = functools.partial(self.meta_proc_stub, vals=target,
                                          remove_labels=['units'])
+
         # Write the file
         outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
         mkwargs = {} if assign_flag else {'meta_processor': to_meta_proc}
