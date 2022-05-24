@@ -1,4 +1,5 @@
-"""Integration tests for pysat.Instrument, including tests for stale data paths from `pysat.params`.
+"""Integration tests for pysat.Instrument, including tests for stale data paths
+from `pysat.params`.
 
 Note
 ----
