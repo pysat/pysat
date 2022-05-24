@@ -1086,7 +1086,7 @@ class TestNetCDF4Integration(object):
         ----------
         assign_flag : bool
             If True, assigns meta processor func as
-            ._export_meta_post_processing. Otherwise, uses
+            `self.testInst._export_meta_post_processing`. Otherwise, uses
             `meta_processor` keyword argument.
 
         """
