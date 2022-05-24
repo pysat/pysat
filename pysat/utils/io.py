@@ -22,11 +22,12 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
     Parameters
     ----------
     xr_data : xarray.Dataset
-        Xarray Dataset whose attributes will be updated
+        Xarray Dataset whose attributes will be updated.
     pysat_meta : dict
-        Output starting from Instrument.meta.to_dict() supplying attribute data.
+        Output starting from `Instrument.meta.to_dict()` supplying attribute
+        data.
     epoch_name : str
-        Label for datetime index information
+        Label for datetime index information.
 
     """
 
@@ -218,14 +219,12 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
         lower_var = var.lower()
 
-        # if var in inst.meta:
         # Update metadata based on data type.
         if datetime_flag:
             time_meta = return_epoch_metadata(inst, epoch_name)
             time_meta.pop('MonoTon')
             if inst.pandas_format:
                 # Pandas file create will set long_name to 'Epoch'
-                # time_meta.pop(inst.meta.labels.name)
                 pass
             else:
                 # Convert times to integers
@@ -256,17 +255,17 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
             for dim in dims[:-1]:
                 # Don't need to go over last dimension value,
-                # it covers number of columns (if a DataFrame)
+                # it covers number of columns (if a DataFrame).
                 obj_dim_names.append(var)
 
             # Set the base-level meta data.
             meta_dict['Depend_1'] = obj_dim_names[-1]
 
-            # Cycle through each of the sub-variable, updating metadata
+            # Cycle through each of the sub-variable, updating metadata.
             for svar in subvars:
                 # Find the subvariable data within the main variable,
                 # checking that this is not an empty DataFrame or
-                # Series. Determine the underlying data types
+                # Series. Determine the underlying data types.
                 good_data_loc = 0
                 for idat in np.arange(len(inst.data)):
                     if len(inst[idat, var]) > 0:
@@ -274,7 +273,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                         break
 
                 # Get the correct location of the sub-variable based on
-                # the object type
+                # the object type.
                 if is_frame:
                     good_data = inst[good_data_loc, var][svar]
                 else:
@@ -284,18 +283,18 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                 _, sctype, sdflag = inst._get_data_info(good_data)
 
                 if not sdflag:
-                    # Not a datetime index.
+                    # Not a datetime index
                     smeta_dict = {'Depend_0': epoch_name,
                                   'Depend_1': obj_dim_names[-1],
                                   'Display_Type': 'Multidimensional',
                                   'Format': inst._get_var_type_code(sctype),
                                   'Var_Type': 'data'}
                 else:
-                    # Attach datetime index metadata.
+                    # Attach datetime index metadata
                     smeta_dict = return_epoch_metadata(inst, epoch_name)
                     smeta_dict.pop('MonoTon')
 
-                # Construct name, variable_subvariable, and store
+                # Construct name, variable_subvariable, and store.
                 sname = '_'.join([lower_var, svar.lower()])
                 if sname in out_meta_dict:
                     out_meta_dict[sname].update(smeta_dict)
@@ -316,7 +315,7 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
             _, coltype, datetime_flag = inst._get_data_info(sub_index)
             meta_dict['Format'] = inst._get_var_type_code(coltype)
 
-            # Deal with index information for holding variable.
+            # Deal with index information for holding variable
             _, index_type, index_flag = inst._get_data_info(
                 inst[good_data_loc, var].index)
 
@@ -364,7 +363,6 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
                 warnings.warn(''.join(['Unable to find MetaData for ',
                                        var]))
                 out_meta_dict[lower_var] = meta_dict
-            # out_meta_dict[lower_var].update(meta_dict)
 
             # Filter metdata for other netCDF4 requirements
             remove = True if coltype == str else False
@@ -426,7 +424,7 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
         # Check for presence of time information
         for lval in lower_sub_keys:
             if lval in lower_time_vals:
-                # Remove time related information, as well as units
+                # Remove time related information, as well as units.
                 for val in time_vals:
                     if val in mdict[key]:
                         mdict[key].pop(val)
@@ -522,13 +520,13 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
         Keyed by current metalabels containing a list of
         metadata labels to use within the returned dict. If None,
         a default translation using `self.labels` will be used except
-        `self.labels.fill_val` will be mapped to `['_FillValue', 'FillVal']`
-        as required by netCDF files.
+        `self.labels.fill_val` will be mapped to
+        `['_FillValue', 'FillVal', 'fill']`.
 
     Returns
     -------
     export_dict : dict
-        A dictionary of the metadata for each variable of an output file
+        A dictionary of the metadata for each variable of an output file.
 
     """
 
@@ -911,8 +909,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     """
 
     if epoch_name is None:
-        # I'm not sure if we need to have DeprecationWarnings.
-        # Starting at the most severe setting.
         dstr = ''.join(['Assigning "Epoch" for time index. In the future, '
                         'this will be updated to "time." Set a value ',
                         'for `epoch_name` to silence this warning.'])
@@ -932,7 +928,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     meta = pysat.Meta(labels=labels)
 
     # Store all metadata in a dict that may be filtered before
-    # assignment to `meta`
+    # assignment to `meta`.
     full_mdict = {}
 
     if meta_translation is None:
@@ -960,11 +956,11 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 setattr(meta.header, ncattr, data.getncattr(ncattr))
 
             # Load the metadata.  From here group unique dimensions and
-            # act accordingly, 1D, 2D, 3D
+            # act accordingly, 1D, 2D, 3D.
             loaded_vars = {}
             for key in data.variables.keys():
                 if len(data.variables[key].dimensions) == 1:
-                    # Load 1D data variables, assuming time is the dimension
+                    # Load 1D data variables, assuming time is the dimension.
                     loaded_vars[key] = data.variables[key][:]
 
                     # Load up metadata
@@ -987,10 +983,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
             # TODO(#913): Remove 2D support
             # We now have a list of keys that need to go into a dataframe,
-            # could be more than one, collect unique dimensions for 2D keys
+            # could be more than one, collect unique dimensions for 2D keys.
             for dim in set(two_d_dims):
                 # First or second dimension could be epoch. Use other
-                # dimension name as variable name
+                # dimension name as variable name.
                 if dim[0] == epoch_name:
                     obj_key = dim[1]
                 elif dim[1] == epoch_name:
@@ -1014,14 +1010,14 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 # Figure out how to index this data, it could provide its
                 # own index - or we may have to create simple integer based
                 # DataFrame access. If the dimension is stored as its own
-                # variable then use that info for index
+                # variable then use that info for index.
                 if obj_key in obj_var_keys:
                     # String used to indentify dimension also in
-                    # data.variables will be used as an index
+                    # data.variables will be used as an index.
                     index_key_name = obj_key
 
                     # If the object index uses UNIX time, process into
-                    # datetime index
+                    # datetime index.
                     if data.variables[obj_key].getncattr(
                             name_label) == epoch_name:
                         # Found the name to be used in DataFrame index
@@ -1040,7 +1036,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                 # Iterate over the variables and grab metadata
                 dim_meta_data = {}
 
-                # Store attributes in metadata, except for the dimension name
+                # Store attributes in metadata, except for the dimension name.
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
@@ -1059,10 +1055,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                     full_mdict[obj_key] = dim_meta_dict
 
                 # Iterate over all variables with this dimension
-                # data storage, whole shebang
+                # data storage, whole shebang.
                 loop_dict = {}
 
-                # List holds a series of slices, parsed from dict above
+                # List holds a series of slices, parsed from dict above.
                 loop_list = []
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     loop_dict[clean_key] = data.variables[
@@ -1116,7 +1112,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                         loop_list[-1].index.name = new_index_name
 
                 # Add 2D object data, all based on a unique dimension within
-                # netCDF, to loaded data dictionary
+                # netCDF, to loaded data dictionary.
                 loaded_vars[obj_key] = loop_list
                 del loop_list
 
@@ -1160,7 +1156,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name,
                                                     meta.labels)
     # Translate labels from file to pysat compatible labels using
-    # `meta_translation`
+    # `meta_translation`.
     filt_mdict = apply_table_translation_from_file(meta_translation, filt_mdict)
 
     # Next, allow processing by developers so they can deal with
@@ -1304,7 +1300,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     meta = pysat.Meta(labels=labels)
 
     # Store all metadata in a dict that may be filtered before
-    # assignment to `meta`
+    # assignment to `meta`.
     full_mdict = {}
 
     if meta_translation is None:
@@ -1387,11 +1383,11 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                                     meta.labels)
 
     # Translate labels from file to pysat compatible labels using
-    # `meta_translation`
+    # `meta_translation`.
     filt_mdict = apply_table_translation_from_file(meta_translation, filt_mdict)
 
     # Next, allow processing by developers so they can deal with
-    # issues with specific files
+    # issues with specific files.
     if meta_processor is not None:
         filt_mdict = meta_processor(filt_mdict)
 
@@ -1420,7 +1416,7 @@ def return_epoch_metadata(inst, epoch_name):
     inst : pysat.Instrument
         Instrument object with data and metadata.
     epoch_name : str
-        Data key for time-index or epoch data
+        Data key for time-index or epoch data.
 
     Returns
     -------
@@ -1435,7 +1431,7 @@ def return_epoch_metadata(inst, epoch_name):
     else:
         new_dict = {}
 
-    # Update basic labels, if they are missing
+    # Update basic labels, if they are missing.
     epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
     basic_labels = [inst.meta.labels.units]
 
@@ -1986,8 +1982,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         data, coltype, datetime_flag = inst._get_data_info(
                             inst[key].iloc[idx].index)
 
-                        # Create dimension variable to store index in
-                        # netCDF4
+                        # Create dimension variable to store index in netCDF4
                         cdfkey = out_data.createVariable(case_key, coltype,
                                                          dimensions=var_dim,
                                                          zlib=zlib,
@@ -2033,7 +2028,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         # If the case needs to be preserved, update Dataset variables.
         if preserve_meta_case:
             for var in xarray_vars_no_time(xr_data, time_label=epoch_name):
-                # Use the variable case stored in the MetaData object.
+                # Use the variable case stored in the MetaData object
                 case_var = inst.meta.var_case_name(var)
 
                 if case_var != var:

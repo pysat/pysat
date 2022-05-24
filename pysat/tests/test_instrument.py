@@ -20,7 +20,7 @@ from pysat.tests.classes.cls_instrument_property import InstPropertyTests
 from pysat.utils import testing
 
 
-class TestBasics(InstIntegrationTests, InstAccessTests, InstIterationTests,
+class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
                  InstPropertyTests):
     """Unit tests for pysat.Instrument object."""
 

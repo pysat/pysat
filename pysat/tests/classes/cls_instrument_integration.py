@@ -56,7 +56,7 @@ class InstIntegrationTests(object):
 
         # Make another new instrument now that `data_dirs` changed. Normally,
         # pysat will use whatever directory was stored with the list of
-        # files. However, since the sata directory has changed, pysat should
+        # files. However, since the data directory has changed, pysat should
         # notice the directory is stale and correct the situation.
         with caplog.at_level(logging.DEBUG, logger='pysat'):
             self.testInst = eval(inst_str)

@@ -2166,8 +2166,7 @@ class TestToDict(object):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5)
-        self.stime = pysat.instruments.pysat_testing._test_dates[
-            '']['']
+        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.load(date=self.stime)
 
         # For output
@@ -2188,7 +2187,7 @@ class TestToDict(object):
         Parameters
         ----------
         preserve_case : bool
-            Flag passed along to `to_dict`
+            Flag passed along to `to_dict`.
 
         """
 
@@ -2245,8 +2244,7 @@ class TestToDictXarray(TestToDict):
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=5)
-        self.stime = pysat.instruments.pysat_testing_xarray._test_dates[
-            '']['']
+        self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
         self.testInst.load(date=self.stime)
 
         # For output
@@ -2263,8 +2261,7 @@ class TestToDictXarray2D(TestToDict):
 
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
                                          num_samples=5)
-        self.stime = pysat.instruments.pysat_testing_xarray._test_dates[
-            '']['']
+        self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
         self.testInst.load(date=self.stime)
 
         # For output
@@ -2281,8 +2278,7 @@ class TestToDictPandas2D(TestToDict):
 
         self.testInst = pysat.Instrument('pysat', 'testing2d',
                                          num_samples=5)
-        self.stime = pysat.instruments.pysat_testing2d._test_dates[
-            '']['']
+        self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.testInst.load(date=self.stime)
 
         # For output
@@ -2299,8 +2295,7 @@ class TestToDictXarrayModel(TestToDict):
 
         self.testInst = pysat.Instrument('pysat', 'testmodel',
                                          num_samples=5)
-        self.stime = pysat.instruments.pysat_testmodel._test_dates[
-            '']['']
+        self.stime = pysat.instruments.pysat_testmodel._test_dates['']['']
         self.testInst.load(date=self.stime)
 
         # For output

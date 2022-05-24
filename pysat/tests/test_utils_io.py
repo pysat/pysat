@@ -31,7 +31,7 @@ class TestLoadNetCDF(object):
     def setup(self):
         """Set up the test environment."""
 
-        # Create temporary directory.
+        # Create temporary directory
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
         pysat.params['data_dirs'] = self.tempdir.name
@@ -41,7 +41,7 @@ class TestLoadNetCDF(object):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.epoch_name = 'time'
 
-        # Initialize the loaded data.
+        # Initialize the loaded data
         self.loaded_inst = None
         return
 
@@ -168,35 +168,35 @@ class TestLoadNetCDF(object):
 
         """
 
-        # Set the output file information.
+        # Set the output file information
         file_root = 'pysat_test_ncdf_{year:04}{day:03}.nc'
         file_path = os.path.join(self.tempdir.name, add_path)
         outfile = self.stime.strftime(os.path.join(file_path,
                                                    'pysat_test_ncdf_%Y%j.nc'))
 
-        # Load and write the test instrument data.
+        # Load and write the test instrument data
         self.testInst.load(date=self.stime, use_header=True)
         self.testInst.to_netcdf4(fname=outfile)
 
-        # Load the written file directly into an Instrument.
+        # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
             'pysat', 'netcdf', data_dir=file_path, update_files=True,
             file_format=file_root, pandas_format=self.testInst.pandas_format)
 
-        # Confirm data path is correct.
+        # Confirm data path is correct
         assert os.path.normpath(netcdf_inst.files.data_path) \
                == os.path.normpath(os.path.join(self.tempdir.name, add_path))
 
-        # Deleting the test file here via os.remove(...) does work.
+        # Deleting the test file here via os.remove(...) does work
 
         # Load data
         netcdf_inst.load(date=self.stime, use_header=True)
 
-        # Test the loaded Instrument data.
+        # Test the loaded Instrument data
         self.loaded_inst = netcdf_inst.data
         self.eval_loaded_data()
 
-        # Test the Instrument self-description.
+        # Test the Instrument self-description
         for attr in ["platform", "name", "tag", "inst_id", "acknowledgements",
                      "references"]:
             assert getattr(self.testInst, attr) == getattr(netcdf_inst, attr), \
@@ -250,13 +250,13 @@ class TestLoadNetCDF(object):
 
     def test_write_netcdf4_duplicate_variable_names(self):
         """Test netCDF4 writing with duplicate variable names."""
-        # Create a bunch of files by year and doy.
+        # Create a bunch of files by year and doy
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
         self.testInst['MLT'] = 1
 
-        # Evaluate the expected error and message.
+        # Evaluate the expected error and message
         testing.eval_bad_input(
             io.inst_to_netcdf, ValueError, "multiple variables",
             input_args=[self.testInst],
@@ -281,20 +281,20 @@ class TestLoadNetCDF(object):
             Type of error eg. ValueError
 
         """
-        # Load data.
+        # Load data
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
 
-        # Write file.
+        # Write file
         io.inst_to_netcdf(self.testInst, fname=outfile, epoch_name=write_epoch)
 
-        # Pandas doesn't have 'time' error.
+        # Pandas doesn't have 'time' error
         if self.testInst.pandas_format:
             err_msg = '"whoosthat" was not found in'
             err_type = KeyError
 
-        # Evaluate the expected error and message.
+        # Evaluate the expected error and message
         testing.eval_bad_input(
             io.load_netcdf, err_type, err_msg,
             input_args=[outfile],
@@ -482,7 +482,7 @@ class TestLoadNetCDF(object):
         Parameters
         ----------
         decode_times : bool
-            Passed along to `io.load_netcdf`
+            Passed along to `io.load_netcdf`.
 
         """
         # Create a file
@@ -514,7 +514,7 @@ class TestLoadNetCDF(object):
             assert np.all(self.testInst[self.epoch_name]
                           == self.loaded_inst[self.epoch_name])
         else:
-            # Later epoch means loaded data in relative future.
+            # Later epoch means loaded data in relative future
             assert np.all(self.testInst[self.epoch_name]
                           <= self.loaded_inst[self.epoch_name])
 
@@ -547,7 +547,7 @@ class TestLoadNetCDF(object):
                       self.testInst.meta.labels.min_val,
                       drop_label]
 
-        # Write file.
+        # Write file
         io.inst_to_netcdf(self.testInst, fname=outfile, export_nan=export_nan)
 
         drop_list = [drop_label] if drop_labels else []
@@ -558,7 +558,7 @@ class TestLoadNetCDF(object):
                                                 drop_meta_labels=drop_list,
                                                 pandas_format=pformat)
 
-        # Test for `drop_label` if it should or should not be present.
+        # Test for `drop_label` if it should or should not be present
         if drop_labels:
             assert drop_label not in meta.data.columns
         else:
@@ -731,7 +731,7 @@ class TestNetCDF4Integration(object):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
+        # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
@@ -968,7 +968,7 @@ class TestNetCDF4Integration(object):
             ._meta_translation_table. Otherwise, uses
             meta_translation keyword argument.
         meta_trans : dict
-            Metadata label translation dict
+            Metadata label translation dict.
 
         """
 
@@ -999,7 +999,7 @@ class TestNetCDF4Integration(object):
                             testing.assert_list_contains(meta_trans[key],
                                                          test_vars)
 
-                # Confirm pre-translation form of label not in file.
+                # Confirm pre-translation form of label not in file
                 for mvar in meta_trans.keys():
                     assert mvar not in test_vars, \
                         '{:} was written to the netCDF file'.format(repr(mvar))
@@ -1016,10 +1016,10 @@ class TestNetCDF4Integration(object):
                                                 meta_translation=inv_trans,
                                                 pandas_format=self.pformat)
 
-        # Confirm inverse translation worked.
+        # Confirm inverse translation worked
         attrs = list(meta.attrs())
         for key in meta_trans.keys():
-            # Confirm inverse-translated label in metadata.
+            # Confirm inverse-translated label in metadata
             wstr = ''.join([key, ' not found in loaded meta information.'])
             assert key in attrs, wstr
 
@@ -1065,12 +1065,12 @@ class TestNetCDF4Integration(object):
 
         assert isinstance(meta_dict, dict)
 
-        # Add metadata info.
+        # Add metadata info
         for var in meta_dict.keys():
             for key in vals.keys():
                 meta_dict[var][key] = vals[key]
 
-        # Remove info as directed by user.
+        # Remove info as directed by user
         for var in meta_dict.keys():
             for label in remove_labels:
                 if label in meta_dict[var].keys():
@@ -1091,14 +1091,14 @@ class TestNetCDF4Integration(object):
 
         """
 
-        # Target meta info.
+        # Target meta info
         target = {'testing_metadata_pysat_answer': '42',
                   'testing_metadata_pysat_question': 'simulation running'}
 
-        # Create meta processor function.
+        # Create meta processor function
         to_meta_proc = functools.partial(self.meta_proc_stub, vals=target,
                                          remove_labels=['units'])
-        # Write the file.
+        # Write the file
         outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
         mkwargs = {} if assign_flag else {'meta_processor': to_meta_proc}
         if assign_flag:
@@ -1107,26 +1107,26 @@ class TestNetCDF4Integration(object):
         pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
                                       **mkwargs)
 
-        # Load file back and test metadata is as expected.
+        # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
             for var in open_f.variables.keys():
                 test_vars = open_f[var].ncattrs()
 
-                # Avoid time variables.
+                # Avoid time variables
                 if 'MonoTon' not in test_vars:
                     testing.assert_list_contains(list(target.keys()), test_vars)
                     assert 'units' not in test_vars, "'units' found!"
 
-        # Create inverse target values.
+        # Create inverse target values
         inv_target = {}
         for key in target.keys():
             inv_target[key] = target[key][::-1]
 
-        # Create meta processor function.
+        # Create meta processor function
         from_meta_proc = functools.partial(self.meta_proc_stub, vals=inv_target,
                                            remove_labels=[])
 
-        # Load the file.
+        # Load the file
         data, meta = pysat.utils.io.load_netcdf(outfile,
                                                 meta_processor=from_meta_proc,
                                                 pandas_format=self.pformat)
@@ -1191,7 +1191,7 @@ class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
+        # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=5)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
@@ -1208,7 +1208,7 @@ class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
+        # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing2D', num_samples=5)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
@@ -1224,7 +1224,7 @@ class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
+        # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
                                          num_samples=5)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
@@ -1241,7 +1241,7 @@ class TestNetCDF4IntegrationXarrayModels(TestNetCDF4Integration):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
+        # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testmodel', num_samples=5)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
@@ -1257,7 +1257,7 @@ class TestXarrayIO(object):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting
+        # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=5)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
@@ -1350,22 +1350,22 @@ class TestXarrayIO(object):
     def test_xarray_all_vars(self):
         """Test `xarray_all_vars`."""
 
-        # Get all variables.
+        # Get all variables
         vars = io.xarray_all_vars(self.testInst.data)
 
-        # Get data variables.
+        # Get data variables
         xvars = self.testInst.data.data_vars.keys()
         testing.assert_list_contains(xvars, vars)
 
-        # Get/test coordinate variables.
+        # Get/test coordinate variables
         xcoords = self.testInst.data.coords.keys()
         testing.assert_list_contains(xcoords, vars)
 
-        # Get/test dimension variables.
+        # Get/test dimension variables
         xdims = self.testInst.data.dims.keys()
         testing.assert_list_contains(xdims, vars)
 
-        # Test uniqueness.
+        # Test uniqueness
         vars_copy = copy.deepcopy(vars)
         for var in vars:
             vars_copy.pop(0)
@@ -1421,7 +1421,7 @@ class TestMetaTranslation(object):
         ----------
         meta_trans : dict
             Used by `apply_table_translation_to_file` to translate metadata from
-            keys into values
+            keys into values.
 
         """
 
@@ -1434,13 +1434,13 @@ class TestMetaTranslation(object):
             # Default translation table that should be used by `apply_...`
             meta_trans = io.default_to_netcdf_translation_table(self.test_inst)
 
-        # Confirm all variables from `meta_dict` still present.
+        # Confirm all variables from `meta_dict` still present
         for key in self.meta_dict.keys():
             estr = ''.join(['Not all variables were output. Missing ',
                             key])
             assert key in self.out, estr
 
-        # Confirm translation applied and old labels no longer present.
+        # Confirm translation applied and old labels no longer present
         checked_labels = []
         estr = 'Translated label {} missing.'
         estr2 = 'Label {} to be translated still present.'
@@ -1454,7 +1454,7 @@ class TestMetaTranslation(object):
                             assert label not in self.out[key].keys(), \
                                 estr2.format(label)
 
-        # Confirm all labels in meta_trans are checked.
+        # Confirm all labels in meta_trans are checked
         for key in meta_trans.keys():
             assert key in checked_labels, "Lost label {}".format(key)
 
@@ -1581,7 +1581,7 @@ class TestMetaTranslation(object):
         # Apply test function
         self.out = io.meta_array_expander(self.meta_dict)
 
-        # Confirm there is a change.
+        # Confirm there is a change
         assert np.all(self.out != self.meta_dict), 'Return dict same as input.'
 
         # Confirm array expansion
@@ -1593,7 +1593,7 @@ class TestMetaTranslation(object):
                 assert tstr in self.out[var], estr.format(tstr)
                 assert self.out[var][tstr] == tvar + 1, estr2.format(tstr)
 
-                # Remove expanded elements to enable different test, later
+                # Remove expanded elements to enable different test, later.
                 self.out[var].pop(tstr)
             self.meta_dict[var].pop('array_test')
 
@@ -1623,8 +1623,8 @@ class TestMetaTranslation(object):
         assert len(captured) == 0
 
         # Enforcing netcdf4 standards removes 'fill', min, and max information
-        # for string variables. This is no re-added by the `remove_` function
-        # call since, trictly speaking, we don't know what to add back in.
+        # for string variables. This is not re-added by the `remove_` function
+        # call since, strictly speaking, we don't know what to add back in.
         # Also exepmting a check on long_name for higher order data with a time
         # index. When loading files, pysat specifically checks for 'Epoch' as
         # the long_name. So, ensuring long_name for such variables is written

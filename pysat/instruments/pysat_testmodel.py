@@ -181,7 +181,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
                             meta.labels.fill_val: np.nan}
 
         # Assigning metadata for meridional ion drifts since it differs from
-        # default info
+        # default info.
         meta['iv_mer'] = {meta.labels.units: 'm/s',
                           meta.labels.name: 'Meridional Ion Drift',
                           meta.labels.min_val: -250.,
