@@ -1185,7 +1185,7 @@ class TestNetCDF4Integration(object):
 
 
 class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils."""
+    """Integration tests for the netCDF4 I/O utils using xarray data."""
 
     def setup(self):
         """Create a testing environment."""
@@ -1202,7 +1202,7 @@ class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
 
 
 class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils."""
+    """Integration tests for the netCDF4 I/O utils using pandas2D Instrument."""
 
     def setup(self):
         """Create a testing environment."""
@@ -1218,7 +1218,7 @@ class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
 
 
 class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils."""
+    """Integration tests for the netCDF4 I/O utils using xarray2D Instrument."""
 
     def setup(self):
         """Create a testing environment."""
@@ -1235,7 +1235,7 @@ class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
 
 
 class TestNetCDF4IntegrationXarrayModels(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils."""
+    """Integration tests for the netCDF4 I/O utils using models Instrument."""
 
     def setup(self):
         """Create a testing environment."""
