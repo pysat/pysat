@@ -1048,7 +1048,7 @@ class TestNetCDF4Integration(object):
 
         Returns
         -------
-        proc_dict : dict
+        meta_dict : dict
             Dictionary processed for the file.
 
         """
@@ -1202,14 +1202,14 @@ class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
 
 
 class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils using pandas2D Instrument."""
+    """Integration tests for the netCDF4 I/O utils using pandas2d Instrument."""
 
     def setup(self):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testing2D', num_samples=5)
+        self.testInst = pysat.Instrument('pysat', 'testing2d', num_samples=5)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.pformat = self.testInst.pandas_format
@@ -1218,7 +1218,7 @@ class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
 
 
 class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils using xarray2D Instrument."""
+    """Integration tests for the netCDF4 I/O utils using 2dxarray Instrument."""
 
     def setup(self):
         """Create a testing environment."""
