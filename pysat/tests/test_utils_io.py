@@ -1480,7 +1480,7 @@ class TestMetaTranslation(object):
         ----------
         meta_trans : dict
             Used by `apply_table_translation_to_file` to translate metadata from
-            keys into values
+            keys into values.
 
         """
 
@@ -1658,7 +1658,7 @@ class TestMetaTranslation(object):
 
 
 class TestMetaTranslationXarray(TestMetaTranslation):
-    """Unit tests for meta translation when writing/loading files."""
+    """Test meta translation when writing/loading files xarray Instrument."""
 
     def setup(self):
         """Create test environment."""
@@ -1682,7 +1682,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
 
 
 class TestMetaTranslation2DXarray(TestMetaTranslation):
-    """Unit tests for meta translation when writing/loading files."""
+    """Test meta translation when writing/loading files xarray2d Instrument."""
 
     def setup(self):
         """Create test environment."""
@@ -1706,7 +1706,7 @@ class TestMetaTranslation2DXarray(TestMetaTranslation):
 
 
 class TestMetaTranslation2DPandas(TestMetaTranslation):
-    """Unit tests for meta translation when writing/loading files."""
+    """Test meta translation when writing/loading files testing2d Instrument."""
 
     def setup(self):
         """Create test environment."""
@@ -1729,7 +1729,7 @@ class TestMetaTranslation2DPandas(TestMetaTranslation):
 
 
 class TestMetaTranslationModel(TestMetaTranslation):
-    """Unit tests for meta translation when writing/loading files."""
+    """Test meta translation when writing/loading files testmodel Instrument."""
 
     def setup(self):
         """Create test environment."""
