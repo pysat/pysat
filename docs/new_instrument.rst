@@ -604,6 +604,9 @@ user can search for subsets of files through optional keywords, such as:
     inst.remote_file_list(year=2019)
     inst.remote_file_list(year=2019, month=1, day=1)
 
+Note that if :py:func:`list_remote_files` can not support all ``inst_id``
+and ``tag`` combinations then a warning should be issued that includes
+the text 'Not implemented'.
 
 Logging
 -------
