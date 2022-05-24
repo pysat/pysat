@@ -204,7 +204,7 @@ is provided then pysat will use a default translation that maps
 
 As noted above pysat will add some metadata for variables as part of pysat's
 file standard. To further ensure compatibility with netCDF formats, boolean
-values are translated to integers (0/1 for True/False), and fill and range
+values are translated to integers (1/0 for True/False), and fill and range
 metadata for string variables is removed.
 
 The ``export_nan`` keyword in
@@ -252,7 +252,7 @@ metadata labels, including the type.
    # Instantiate instrument
    inst = pysat.Instrument('pysat', 'testing', labels=labels)
 
-   # Define translation of pysat metadata labels to those in the netCDF file.
+   # Define translation of pysat metadata labels to those in the netCDF file
    meta_translation_table = {inst.meta.labels.fill_val: ['_FillValue',
                                                          'FillVal'],
                              inst.meta.labels.desc: ['CatDesc'],
@@ -410,7 +410,7 @@ instance.
     # content. Only need one.
     drop_labels = ['ValidMin', 'ValidMax']
 
-    # Instantiate generic Instrument and pass in modification options.
+    # Instantiate generic Instrument and pass in modification options
     test_inst = pysat.Instrument("pysat", "netcdf", pandas_format=True,
                                  data_dir='/example/file/path/name',
                                  file_format='test_{year:04}{day:03}.nc',
@@ -493,7 +493,7 @@ metadata.
                     'max_val': ('invalidMAX', np.float64),
                     'fill_val': ('fillerest', np.float64)}
 
-    # Instantiate generic Instrument and pass in modification options.
+    # Instantiate generic Instrument and pass in modification options
     test_inst = pysat.Instrument("pysat", "netcdf", pandas_format=True,
                                  data_dir='/example/file/path/name',
                                  file_format='test_{year:04}{day:03}.nc',
