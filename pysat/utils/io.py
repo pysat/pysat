@@ -82,7 +82,7 @@ def filter_netcdf4_metadata(inst, mdata_dict, coltype, remove=False,
     mdata_dict : dict
         Dictionary equivalent to Meta object info
     coltype : type or dtype
-        Data type provided by pysat.Instrument._get_data_info.  If boolean,
+        Data type provided by `pysat.Instrument._get_data_info`.  If boolean,
         int will be used instead.
     remove : bool
         Remove metadata that should be the same type as `coltype`, but isn't
@@ -460,7 +460,7 @@ def default_from_netcdf_translation_table(meta):
     Returns
     -------
     trans_table : dict
-        Keyed by self.labels with a list of strings to be used
+        Keyed by `self.labels` with a list of strings to be used
         when writing netcdf files.
 
     Note
@@ -493,7 +493,7 @@ def default_to_netcdf_translation_table(inst):
     Returns
     -------
     trans_table : dict
-        Keyed by self.labels with a list of strings to be used
+        Keyed by `self.labels` with a list of strings to be used
         when writing netcdf files.
 
     """
@@ -515,7 +515,8 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     inst : pysat.Instrument
         Instrument object with data to be written to file.
     meta_dict : dict
-        Output starting from Instrument.meta.to_dict() supplying attribute data.
+        Output starting from `Instrument.meta.to_dict() `supplying attribute
+        data.
     trans_table : dict or NoneType
         Keyed by current metalabels containing a list of
         metadata labels to use within the returned dict. If None,
@@ -703,9 +704,9 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     Parameters
     ----------
     fnames : str or array_like
-        Filename(s) to load, will fail if None (default=None)
+        Filename(s) to load, will fail if None. (default=None)
     strict_meta : bool
-        Flag that checks if metadata across fnames is the same if True
+        Flag that checks if metadata across `fnames` is the same if True
         (default=False)
     file_format : str
         file_format keyword passed to netCDF4 routine.  Expects one of
@@ -838,7 +839,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     fnames : str or array_like
         Filename(s) to load
     strict_meta : bool
-        Flag that checks if metadata across fnames is the same if True
+        Flag that checks if metadata across `fnames` is the same if True
         (default=False)
     file_format : str
         file_format keyword passed to netCDF4 routine.  Expects one of
