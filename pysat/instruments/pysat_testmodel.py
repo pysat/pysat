@@ -21,14 +21,11 @@ inst_ids = {'': [tag for tag in tags.keys()]}
 pandas_format = False
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 
-
 # Init method
 init = mm_test.init
 
-
 # Clean method
 clean = mm_test.clean
-
 
 # Optional method, preprocess
 preprocess = mm_test.preprocess
@@ -41,7 +38,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     Parameters
     ----------
     fnames : list
-        List of filenames
+        List of filenames.
     tag : str
         Tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
@@ -50,13 +47,14 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         This input is nominally provided by pysat itself. (default='')
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
-        will begin at midnight.
-        (default=None)
+        will begin at midnight. (default=None)
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=96)
-    test_load_kwarg : any or NoneType
-        Testing keyword (default=None)
+    test_load_kwarg : any
+        Keyword used for pysat unit testing to ensure that functionality for
+        custom keywords defined in instrument support functions is working
+        correctly. (default=None)
 
     Returns
     -------
@@ -71,13 +69,11 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     # Create an artificial model data set
-    if tag == '':
-        freq_str = '900S'
-    else:
-        freq_str = '1H'
+    freq_str = '900S' if tag == '' else '1H'
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq=freq_str,
                                                start_time=start_time)
+    epoch_name = 'time'
 
     # Define range of simulated model as well as data, depending upon tag.
     if tag == '':
@@ -85,7 +81,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         longitude = np.linspace(0, 360, 72, endpoint=False)
         altitude = np.linspace(300, 500, 41)
         data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
-                          coords={'time': index, 'latitude': latitude,
+                          coords={epoch_name: index, 'latitude': latitude,
                                   'longitude': longitude, 'altitude': altitude})
 
     else:
@@ -94,18 +90,18 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
         lev = np.linspace(-7, 7, 57)
         ilev = np.linspace(-6.875, 7.125, 57)
 
-        data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
-                          coords={'time': index, 'latitude': latitude,
+        data = xr.Dataset({'uts': ((epoch_name), np.mod(uts, 86400.))},
+                          coords={epoch_name: index, 'latitude': latitude,
                                   'longitude': longitude, 'lev': lev,
                                   'ilev': ilev})
 
-        # Simulate altitude values at model points
-        # Initiliaze memory
+        # Simulate altitude values at the model nodes.
+        # Start by initializing the memory.
         dummy0 = (data['uts'] * data['ilev'] * data['latitude']
                   * data['longitude'])
         dummy0 *= 0
 
-        # Provide a 2D linear gradient across latitude and longitude.
+        # Provide a 2D linear gradient across latitude and longitude
         inc_arr = (np.linspace(0, 1, 72)[:, np.newaxis]
                    * np.linspace(0, 1, 144)[np.newaxis, :])
 
@@ -114,7 +110,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = i * 10. + j + inc_arr
         dummy0.data *= 100000.
-        data['altitude'] = (('time', 'ilev', 'latitude', 'longitude'),
+        data['altitude'] = ((epoch_name, 'ilev', 'latitude', 'longitude'),
                             dummy0.data)
 
         # Create fake 4D ion drift data set
@@ -127,30 +123,51 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
             for j in np.arange(len(data['uts'])):
                 dummy0[j, i, :, :] = 2. * i * (np.sin(2 * np.pi * j / 24.)
                                                + inc_arr)
-        data['dummy_drifts'] = (('time', 'ilev', 'latitude', 'longitude'),
+        data['dummy_drifts'] = ((epoch_name, 'ilev', 'latitude', 'longitude'),
                                 dummy0.data)
 
     slt = np.zeros([len(uts), len(longitude)])
     for i, ut in enumerate(uts):
         for j, long in enumerate(longitude):
             slt[i, j] = np.mod(ut / 3600.0 + long / 15.0, 24.0)
-    data['slt'] = (('time', 'longitude'), slt)
-    data['mlt'] = (('time', 'longitude'), np.mod(slt + 0.2, 24.0))
+    data['slt'] = ((epoch_name, 'longitude'), slt)
+    data['mlt'] = ((epoch_name, 'longitude'), np.mod(slt + 0.2, 24.0))
 
     # Fake 3D data consisting of non-physical values between 0 and 21 everywhere
-    # Used for interpolation routines in pysatModels
+    # Used for interpolation routines in pysatModels.
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)
-    data['dummy1'] = (('time', 'latitude', 'longitude'), dummy1.data)
+    data['dummy1'] = ((epoch_name, 'latitude', 'longitude'), dummy1.data)
+    data['string_dummy'] = ((epoch_name),
+                            ['test'] * len(data.indexes[epoch_name]))
+    data['unicode_dummy'] = ((epoch_name),
+                             [u'test'] * len(data.indexes[epoch_name]))
+    data['int8_dummy'] = ((epoch_name),
+                          np.ones(len(data.indexes[epoch_name]), dtype=np.int8))
+    data['int16_dummy'] = ((epoch_name),
+                           np.ones(len(data.indexes[epoch_name]),
+                                   dtype=np.int16))
+    data['int32_dummy'] = ((epoch_name),
+                           np.ones(len(data.indexes[epoch_name]),
+                                   dtype=np.int32))
+    data['int64_dummy'] = ((epoch_name),
+                           np.ones(len(data.indexes[epoch_name]),
+                                   dtype=np.int64))
 
     if tag == '':
         # Fake 4D data consisting of non-physical values between 0 and 21
-        # everywhere. Used for interpolation routines in pysatModels
+        # everywhere. Used for interpolation routines in pysatModels.
         dummy2 = np.mod(data['dummy1'] * data['altitude'], 21.0)
-        data['dummy2'] = (('time', 'latitude', 'longitude', 'altitude'),
+        data['dummy2'] = ((epoch_name, 'latitude', 'longitude', 'altitude'),
                           dummy2.data)
 
-    # Set the meta data.
-    meta = mm_test.initialize_test_meta('time', data.keys())
+    # Set the meta data
+    meta = mm_test.initialize_test_meta(epoch_name, data.keys())
+
+    # Adjust metadata from overall defaults
+    meta['dummy1'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
+                      'fill': -2**32 + 1}
+    meta['dummy2'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
+                      'fill': -2**32 + 1}
 
     if tag == 'pressure_levels':
         # Assigning new metadata for altitude since it differs from default info

@@ -33,7 +33,7 @@ strings, as illustrated in the example below.
 .. code:: python
 
    # Set a single directory to store all data
-   path = '/path/to/your/data/directory/that/already/exists'
+   path = '/path/to/your/data/directory/that/may/or/may/not/exist'
    pysat.params['data_dirs'] = path
 
    # Alternately, multiple paths may be registered. For a given Instrument,

@@ -83,7 +83,8 @@ class TestScaleUnits(object):
         self.dist_units = ["m", "km", "cm"]
         self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
                           'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
-        self.vol_units = ["m-3", "cm-3", "/cc", 'n/cc', 'm$^{-3}$', 'cm$^{-3}$']
+        self.vol_units = ["m-3", "cm-3", "/cc", 'n/cc', 'm$^{-3}$', 'cm$^{-3}$',
+                          "#/cm^3", "#/km^3", "#/m^3"]
         self.scale = 0.0
         return
 
@@ -106,30 +107,35 @@ class TestScaleUnits(object):
 
         """
 
+        estr = "bad {:s} comparison for output unit {:s}".format(scale_type,
+                                                                 out_unit)
+
         if scale_type.lower() == 'angles':
             if out_unit.find("deg") == 0:
-                assert self.scale == 1.0
+                assert self.scale == 1.0, estr
             elif out_unit.find("rad") == 0:
-                assert self.scale == np.pi / 180.0
+                assert self.scale == np.pi / 180.0, estr
             else:
-                assert self.scale == 1.0 / 15.0
+                assert self.scale == 1.0 / 15.0, estr
         elif scale_type.lower() == 'distance':
             if out_unit == "m":
-                assert self.scale == 1.0
+                assert self.scale == 1.0, estr
             elif out_unit.find("km") == 0:
-                assert self.scale == 0.001
+                assert self.scale == 0.001, estr
             else:
-                assert self.scale == 100.0
+                assert self.scale == 100.0, estr
         elif scale_type.lower() == 'velocity':
             if out_unit.find("m") == 0:
-                assert self.scale == 1.0
+                assert self.scale == 1.0, estr
             elif out_unit.find("km") == 0:
-                assert self.scale == 0.001
+                assert self.scale == 0.001, estr
         elif scale_type.lower() == 'volume':
-            if out_unit.find("m") == 0:
-                assert self.scale == 1.0
+            if out_unit.find("cm") >= 0 or out_unit.find("cc") > 0:
+                assert self.scale == 1000000.0, estr
+            elif out_unit.find("km") >= 0:
+                assert self.scale == 1.0e-9, estr
             else:
-                assert self.scale == 1000000.0
+                assert self.scale == 1.0, estr
         return
 
     def test_scale_units_same(self):
