@@ -52,7 +52,6 @@ def init(self, test_init_kwarg=None):
 # Clean method
 clean = mm_test.clean
 
-
 # Optional method, preprocess
 preprocess = mm_test.preprocess
 
@@ -82,8 +81,10 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=864)
-    test_load_kwarg : any or NoneType
-        Testing keyword (default=None)
+    test_load_kwarg : any
+        Keyword used for pysat unit testing to ensure that functionality for
+        custom keywords defined in instrument support functions is working
+        correctly. (default=None)
     max_latitude : float
         Latitude simulated as `max_latitude` * cos(theta(t))`, where
         theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.).
@@ -100,7 +101,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     # Support keyword testing
     logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
-    # create an artifical satellite data set
+    # Create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
@@ -110,74 +111,93 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     # Seed the DataFrame with a UT array
     data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
-    # need to create simple orbits here. Have start of first orbit
-    # at 2009,1, 0 UT. 14.84 orbits per day
-    # figure out how far in time from the root start
-    # use that info to create a signal that is continuous from that start
-    # going to presume there are 5820 seconds per orbit (97 minute period)
+    # Need to create simple orbits here. Have start of first orbit
+    # at 2009,1, 0 UT. 14.84 orbits per day. Figure out how far in time from
+    # the root start a measurement is and use that info to create a signal
+    # that is continuous from that start. Going to presume there are 5820
+    # seconds per orbit (97 minute period).
     time_delta = dates[0] - dt.datetime(2009, 1, 1)
-    # mlt runs 0-24 each orbit.
+
+    # MLT runs 0-24 each orbit
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                              period=iperiod['lt'],
                                              data_range=drange['lt'])
-    # do slt, 20 second offset from mlt
+
+    # SLT, 20 second offset from `mlt`.
     data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds() + 20,
                                              uts, period=iperiod['lt'],
                                              data_range=drange['lt'])
-    # create a fake longitude, resets every 6240 seconds
-    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
-    # to go around full longitude
+
+    # Create a fake longitude, resets every 6240 seconds. Sat moves at
+    # 360/5820 deg/s, Earth rotates at 360/86400, takes extra time to go
+    # around full longitude.
     data['longitude'] = mm_test.generate_fake_data(time_delta.total_seconds(),
                                                    uts, period=iperiod['lon'],
                                                    data_range=drange['lon'])
-    # create latitude signal for testing polar orbits
+
+    # Create latitude signal for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(),
                                        uts, period=iperiod['angle'],
                                        data_range=drange['angle'])
     data['latitude'] = max_latitude * np.cos(angle)
 
-    # create constant altitude at 400 km
+    # Create constant altitude at 400 km
     alt0 = 400.0
     data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
+    # Dummy variable data for different types
+    data['string_dummy'] = ['test'] * len(data)
+    data['unicode_dummy'] = [u'test'] * len(data)
+    data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
+    data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
+    data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
+    data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
+
     if malformed_index:
         index = index.tolist()
-        # nonmonotonic
+
+        # Create a non-monotonic index
         index[0:3], index[3:6] = index[3:6], index[0:3]
-        # non unique
+
+        # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
     data.index = index
     data.index.name = 'Epoch'
-    # higher rate time signal (for scalar >= 2)
-    # this time signal used for 2D profiles associated with each time in main
-    # DataFrame
+
+    # Higher rate time signal (for scalar >= 2). This time signal is used
+    # for 2D profiles associated with each time in main DataFrame.
     num_profiles = 50 if num_samples >= 50 else num_samples
     end_date = dates[0] + dt.timedelta(seconds=2 * num_profiles - 1)
     high_rate_template = pds.date_range(dates[0], end_date, freq='2S')
 
-    # create a few simulated profiles
-    # DataFrame at each time with mixed variables
+    # Create a few simulated profiles.  This results in a pds.DataFrame at
+    # each time with mixed variables.
     profiles = []
+
     # DataFrame at each time with numeric variables only
     alt_profiles = []
-    # Serie at each time, numeric data only
+
+    # Series at each time, numeric data only
     series_profiles = []
-    # frame indexed by date times
+
+    # Frame indexed by date times
     frame = pds.DataFrame({'density': data.loc[data.index[0:num_profiles],
                                                'mlt'].values.copy(),
                            'dummy_str': ['test'] * num_profiles,
                            'dummy_ustr': [u'test'] * num_profiles},
                           index=data.index[0:num_profiles],
                           columns=['density', 'dummy_str', 'dummy_ustr'])
-    # frame indexed by float
+
+    # Frame indexed by float
     dd = np.arange(num_profiles) * 1.2
     ff = np.arange(num_profiles) / num_profiles
     ii = np.arange(num_profiles) * 0.5
     frame_alt = pds.DataFrame({'density': dd, 'fraction': ff},
                               index=ii,
                               columns=['density', 'fraction'])
-    # series version of storage
+
+    # Series version of storage
     series_alt = pds.Series(dd, index=ii, name='series_profiles')
 
     for time in data.index:
@@ -185,20 +205,28 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
         profiles.append(frame)
         alt_profiles.append(frame_alt)
         series_profiles.append(series_alt)
-    # store multiple data types into main frame
+
+    # Store multiple data types into main frame
     data['profiles'] = pds.Series(profiles, index=data.index)
     data['alt_profiles'] = pds.Series(alt_profiles, index=data.index)
     data['series_profiles'] = pds.Series(series_profiles, index=data.index)
 
-    # Set the meta data.
+    # Set the meta data
     meta = mm_test.initialize_test_meta('epoch', data.keys())
 
     # Reset profiles as children meta
     profile_meta = pysat.Meta()
-    profile_meta['density'] = {'long_name': 'profiles'}
-    profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+    profile_meta['density'] = {'long_name': 'density', 'units': 'N/cc',
+                               'desc': 'Fake "density" signal for testing.',
+                               'value_min': 0., 'value_max': 25.,
+                               'fill': np.nan}
+    profile_meta['dummy_str'] = {'long_name': 'dummy_str',
+                                 'desc': 'String data for testing.'}
+    profile_meta['dummy_ustr'] = {'long_name': 'dummy_ustr',
+                                  'desc': 'Unicode string data for testing.'}
+
+    # Update profiles metadata with sub-variable information
+    meta['profiles'] = {'meta': profile_meta}
 
     return data, meta
 

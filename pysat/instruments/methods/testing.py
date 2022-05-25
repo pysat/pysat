@@ -1,8 +1,9 @@
 """Standard functions for the test instruments."""
 
 import datetime as dt
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pds
 import time
 import warnings
@@ -102,72 +103,114 @@ def initialize_test_meta(epoch_name, data_keys):
     """
     # Create standard metadata for all parameters
     meta = pysat.Meta()
-    meta[epoch_name] = {'long_name': 'Datetime Index'}
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'desc': 'Number of seconds since mindight UT',
                    'value_min': 0.0, 'value_max': 86400.0}
     meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
-                   'value_min': 0.0, 'value_max': 24.0}
+                   'value_min': 0.0, 'value_max': 24.0,
+                   'desc': 'Local time at magnetic field line at equator.'}
     meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
-                   'value_min': 0.0, 'value_max': 24.0}
+                   'value_min': 0.0, 'value_max': 24.0,
+                   'desc': 'Mean solar time.',
+                   'notes': 'Example of notes.'}
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude',
-                         'value_min': 0.0, 'value_max': 360.0}
+                         'value_min': 0.0, 'value_max': 360.0,
+                         'desc': 'Geographic Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude',
-                        'value_min': -90.0, 'value_max': 90.0}
-    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+                        'value_min': -90.0, 'value_max': 90.0,
+                        'desc': 'Geographic Latituce'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude',
+                        'value_min': 0.0, 'value_max': np.inf,
+                        'desc': 'Height above mean Earth.'}
     meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
-                         'desc': 'Orbit Number', 'value_min': 0.0,
-                         'value_max': 25000.0,
+                         'desc': 'Orbit Number', 'value_min': 0,
+                         'value_max': 25000, 'fill': -1,
                          'notes': ''.join(['Number of orbits since the start ',
                                            'of the mission. For this ',
                                            'simulation we use the number of ',
                                            '5820 second periods since the ',
                                            'start, 2008-01-01.'])}
 
-    # Standard metadata required for xarray.
-    meta['profiles'] = {'long_name': 'profiles'}
+    meta['dummy1'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy2'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy3'] = {'value_min': 0., 'value_max': 24024.}
+    meta['dummy4'] = {'desc': 'Dummy variable - UTS like', 'value_min': 0.,
+                      'value_max': 86400., 'fill': np.nan}
+
+    meta['unicode_dummy'] = {'desc': 'Dummy unicode variable.', 'units': ''}
+    meta['string_dummy'] = {'desc': 'Dummy string variable.', 'units': ''}
+
+    meta['dummy_drifts'] = {'desc': 'Dummy drift values.', 'value_min': -1000.,
+                            'value_max': 1000., 'fill': np.nan}
+
+    # Add metadata for integer dummy variables
+    meta_dict = {'value_min': 0, 'value_max': 2, 'fill': -1}
+    var_list = ['int8_dummy', 'int16_dummy', 'int32_dummy', 'int64_dummy']
+    for var in var_list:
+        meta[var] = meta_dict
+
+    # Standard metadata required for xarray
+    meta['profiles'] = {'long_name': 'profiles', 'value_min': 0,
+                        'value_max': 4294967295, 'fill': -1,
+                        'desc': ''.join(['Testing profile multi-dimensional ',
+                                         'data indexed by time.']),
+                        'notes': ''.join([
+                            'Note the value_max is largest netCDF4 supports, ',
+                            'but is lower than actual 64-bit int limit.'])}
 
     # Children metadata required for 2D pandas.
     # TODO(#789): Delete after removal of Meta children.
     series_profile_meta = pysat.Meta()
-    series_profile_meta['series_profiles'] = {'long_name': 'series'}
+    series_profile_meta['series_profiles'] = {'desc': 'Testing series data.',
+                                              'value_min': 0,
+                                              'value_max': np.inf,
+                                              'units': 'm/s'}
     meta['series_profiles'] = {'meta': series_profile_meta,
-                               'long_name': 'series'}
+                               'value_min': 0., 'value_max': 25., 'units': 'km',
+                               'fill': np.nan,
+                               'desc': ''.join(['Testing series profiles ',
+                                                'indexed by float.'])}
 
     # Children metadata required for 2D pandas.
     # TODO(#789): Delete after removal of Meta children.
     alt_profile_meta = pysat.Meta()
-    alt_profile_meta['density'] = {'long_name': 'profiles'}
-    alt_profile_meta['fraction'] = {'long_name': 'profiles'}
-    alt_profile_meta['dummy_str'] = {'long_name': 'profiles'}
-    alt_profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
-    meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
+    alt_profile_meta['density'] = {'desc': 'Simulated density values.',
+                                   'units': 'Log N/cc',
+                                   'value_min': 0, 'value_max': np.inf}
+    alt_profile_meta['fraction'] = {'value_min': 0., 'value_max': 1.,
+                                    'desc': ''.join(['Simulated fractional O+ ',
+                                                     'composition.'])}
+    meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
+                            'desc': ''.join([
+                                'Testing profile multi-dimensional data ',
+                                'indexed by float.']),
+                            'units': 'km',
+                            'meta': alt_profile_meta}
 
     # Standard metadata required for xarray.
-    meta['variable_profiles'] = {'meta': 'variable_profiles',
-                                 'long_name': 'series'}
-    meta['profile_height'] = {'long_name': 'profile height'}
+    meta['variable_profiles'] = {'desc': 'Profiles with variable altitude.'}
+    meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1,
+                              'desc': 'Altitude of profile data.'}
     meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
 
     # Standard metadata required for xarray.
-    meta['images'] = {'long_name': 'pixel value of image',
+    meta['images'] = {'desc': 'pixel value of image',
                       'notes': 'function of image_lat and image_lon'}
-    meta['x'] = {'long_name': 'x-value of image pixel',
-                 'notes': 'Dummy Variable'}
-    meta['y'] = {'long_name': 'y-value of image pixel',
-                 'notes': 'Dummy Variable'}
-    meta['z'] = {'long_name': 'z-value of profile height',
-                 'notes': 'Dummy Variable'}
-    meta['image_lat'] = {'long_name': 'Latitude of image pixel',
-                         'notes': 'Dummy Variable'}
-    meta['image_lon'] = {'long_name': 'Longitude of image pixel',
-                         'notes': 'Dummy Variable'}
-
-    # Set any dummy variable metadata present in instrument keys
-    for var in data_keys:
-        if var.find('dummy') >= 0:
-            meta[var] = {'units': 'none', 'long_name': var,
-                         'notes': 'Dummy variable'}
+    meta['x'] = {'desc': 'x-value of image pixel',
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 17, 'fill': -1}
+    meta['y'] = {'desc': 'y-value of image pixel',
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 17, 'fill': -1}
+    meta['z'] = {'desc': 'z-value of profile height',
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 15, 'fill': -1}
+    meta['image_lat'] = {'desc': 'Latitude of image pixel',
+                         'notes': 'Dummy Variable',
+                         'value_min': -90., 'value_max': 90.}
+    meta['image_lon'] = {'desc': 'Longitude of image pixel',
+                         'notes': 'Dummy Variable',
+                         'value_min': 0., 'value_max': 360.}
 
     # Drop unused meta data for desired instrument.
     for var in meta.keys():
