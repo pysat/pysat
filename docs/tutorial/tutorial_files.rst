@@ -80,13 +80,12 @@ Text_Supplement      Supplement string
 
 Metadata is also provided for each variable. An example of the default
 metadata stored within a variable as directly loaded using :py:mod:`netCDF4` is
-included below. Note that pysat added the Format, Depend_0, Display_Type,
-and Var_Type metadata parameters, part of the SPDF standard.
+included below for the variable ``longitude``. Note that pysat added the
+Format, Depend_0, Display_Type, and Var_Type metadata parameters,
+part of the SPDF standard.
 
 .. code::
 
-   In []: data['longitude']
-   Out[]:
    <class 'netCDF4._netCDF4.Variable'>
    float64 longitude(Epoch)
        units: degrees
@@ -116,8 +115,8 @@ as fill, _FillValue, and FillVal.
 
 .. code::
 
-   In []: netCDF4.Dataset(fname)
-   Out[]:
+   netCDF4.Dataset(fname)
+
    <class 'netCDF4._netCDF4.Dataset'>
    root group (NETCDF4 data model, file format HDF5):
        acknowledgements: Test instruments provided through the pysat project.
