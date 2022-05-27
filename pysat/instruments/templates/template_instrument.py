@@ -22,7 +22,7 @@ name
 tag
     *List supported tag strings here*
 inst_id
-    *List supported inst_ids here*
+    *List supported inst_id strings here*
 
 Note
 ----
