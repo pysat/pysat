@@ -36,7 +36,7 @@ def init(self, test_init_kwarg=None):
 
     Parameters
     ----------
-    test_init_kwarg : any or NoneType
+    test_init_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -57,7 +57,7 @@ def clean(self, test_clean_kwarg=None):
 
     Parameters
     ----------
-    test_clean_kwarg : any or NoneType
+    test_clean_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -77,7 +77,7 @@ def preprocess(self, test_preprocess_kwarg=None):
 
     Parameters
     ----------
-    test_preprocess_kwarg : any or NoneType
+    test_preprocess_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -250,7 +250,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
         Pass the _test_date object through from the test instrument files
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_files_kwarg : any or NoneType
+    test_list_files_kwarg : any
         Testing keyword (default=None)
 
     Returns
@@ -324,7 +324,7 @@ def list_remote_files(tag='', inst_id='', data_path='', format_str=None,
         Password for data download. (default=None)
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_remote_kwarg : any or NoneType
+    test_list_remote_kwarg : any
         Testing keyword (default=None)
 
     Returns
@@ -377,7 +377,7 @@ def download(date_array, tag, inst_id, data_path='', user=None,
         error if user not supplied. (default=None)
     password : string or NoneType
         Password for data download. (default=None)
-    test_download_kwarg : any or NoneType
+    test_download_kwarg : any
         Testing keyword (default=None)
 
     Raises
