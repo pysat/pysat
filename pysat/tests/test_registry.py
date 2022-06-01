@@ -250,7 +250,16 @@ class TestRegistration(TestWithRegistration):
                               ([], ['made_up_name', 'second']),
                               ([], ['made_up_name'])])
     def test_platform_name_length_removal_error(self, par_plat, par_name):
-        """Test error raised when platforms and names unequal lengths."""
+        """Test error raised when platforms and names unequal lengths.
+
+        Parameters
+        ----------
+        par_plat : list
+            List of non-registered `platform` labels
+        par_name : list
+            List of non-registered `name` labels
+
+        """
 
         # Register all modules at once
         registry.register(self.module_names)
