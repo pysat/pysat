@@ -594,23 +594,23 @@ def create_files(inst, start, stop, freq='1D', use_doy=True,
 
     Examples
     --------
-    >>> import datetime as dt
-    >>> inst = pysat.Instrument('pysat', 'testing')
-    >>> root_fname='pysat_testing_{year:04d}_{month:02d}_{day:02d}.txt'
-    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
-    ...              root_fname=root_fname, use_doy=False)
+    ::
+
+        # Commands below create empty files located at `inst.files.data_path`,
+        # one per day, spanning 2008, where `year`, `month`, and `day`
+        # are filled in using the provided template string appropriately.
+        # The produced files are named like: 'pysat_testing_2008_01_01.txt'
+        import datetime as dt
+        inst = pysat.Instrument('pysat', 'testing')
+        root_fname='pysat_testing_{year:04d}_{month:02d}_{day:02d}.txt'
+        create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
+                     root_fname=root_fname, use_doy=False)
 
 
-    Command creates empty files located at `inst.files.data_path`, one per day,
-    spanning 2008, where `year`, `month`, and `day` are filled in using the
-    provided template string appropriately. Produced files look like:
-    'pysat_testing_2008_01_01.txt'
-
-    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31))
-
-    In this case we use all of the function defaults which produces a set of
-    files on a daily basis, labeled by year and day of year. Produced files look
-    like: 'pysat_testing_2008_001.txt'
+        # The command below uses the default values for `create_files`, which
+        # produces a daily set of files, labeled by year and day of year.
+        # The files are names like: 'pysat_testing_2008_001.txt'
+        create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31))
 
     """
 
