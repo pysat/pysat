@@ -3535,7 +3535,7 @@ _reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
 
 
 def _kwargs_keys_to_func_name(kwargs_key):
-    """Convert from self.kwargs key name to the function/method name.
+    """Convert from self.kwargs key name to the function or method name.
 
     Parameters
     ----------
@@ -3558,7 +3558,7 @@ def _get_supported_keywords(local_func):
 
     Parameters
     ----------
-    local_func : function, method, or functools.partial
+    local_func : function or method
         Method used to load data within pysat
 
     Returns
@@ -3573,7 +3573,6 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
-    global _reserved_keywords
 
     # Account for keywords that are treated by Instrument as args
     pre_kws = _reserved_keywords.copy()
