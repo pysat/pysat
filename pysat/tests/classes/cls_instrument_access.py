@@ -1038,15 +1038,19 @@ class InstAccessTests(object):
                         # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
+
                         # Check for new name in HO data
                         test_val = values[key][ikey]
                         assert test_val in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
+
                         # Case insensitive check
                         assert values[key][ikey] in check_var
+
                         # Ensure new case in there
                         check_var = check_var[values[key][ikey]].name
                         assert values[key][ikey] == check_var
+
                         # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
