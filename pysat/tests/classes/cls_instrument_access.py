@@ -792,8 +792,10 @@ class InstAccessTests(object):
         self.out = self.testInst
         if self.testInst.pandas_format:
             self.testInst[0:3] = 0
+
             # First three values should be changed.
             assert np.all(self.testInst[0:3] == 0)
+
             # Other data should be unchanged.
             assert np.all(self.testInst[3:] == self.out[3:])
         else:

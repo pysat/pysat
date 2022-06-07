@@ -17,7 +17,7 @@ from pysat.utils import testing
 
 
 class Meta(object):
-    """Stores metadata for Instrument instance.
+    """Stores metadata for the Instrument and Constellation classes.
 
     Parameters
     ----------
@@ -206,7 +206,7 @@ class Meta(object):
         self._base_attr = dir(self)
 
     def __repr__(self):
-        """Print MetaData instantiation parameters.
+        """Print a representation of the Meta instantiation that can be called by `eval`.
 
         Returns
         -------

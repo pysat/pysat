@@ -363,12 +363,16 @@ class InstPropertyTests(object):
         self.out = self.testInst.__str__()
         assert isinstance(self.out, str)
         assert self.out.find('pysat Instrument object') == 0
+
         # No custom functions
         assert self.out.find('Custom Functions: 0') > 0
+        
         # No orbital info
         assert self.out.find('Orbit Settings') < 0
+        
         # Files exist for test inst
         assert self.out.find('Date Range:') > 0
+        
         # No loaded data
         assert self.out.find('No loaded data') > 0
         assert self.out.find('Number of variables') < 0
@@ -415,6 +419,7 @@ class InstPropertyTests(object):
 
         def passfunc(self):
             pass
+
         self.testInst.custom_attach(passfunc)
         self.out = self.testInst.__str__()
         assert self.out.find('passfunc') > 0
