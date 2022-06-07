@@ -365,10 +365,10 @@ def download(date_array, tag, inst_id, data_path='', user=None,
         be contiguous.
     tag : str
         Tag identifier used for particular dataset. This input is provided by
-        pysat. (default='')
+        pysat.
     inst_id : str
         Instrument ID string identifier used for particular dataset. This input
-        is provided by pysat. (default='')
+        is provided by pysat.
     data_path : str
         Path to directory to download data to. (default='')
     user : string or NoneType
