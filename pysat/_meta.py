@@ -206,7 +206,7 @@ class Meta(object):
         self._base_attr = dir(self)
 
     def __repr__(self):
-        """Print a representation of the Meta instantiation that can be called by `eval`.
+        """Print a representation of the Meta instantiation callable by `eval`.
 
         Returns
         -------
