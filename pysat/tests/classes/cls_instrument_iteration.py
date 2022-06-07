@@ -84,14 +84,22 @@ class InstIterationTests(object):
                                                    out)
         return
 
-    def support_iter_evaluations(self, values, for_loop=False, reverse=False,
-                                 by_date=True):
+    def support_iter_evaluations(self, starts, stops, step, width,
+                                 for_loop=False, reverse=False, by_date=True):
         """Support testing of `.next()`/`.prev()` via dates/files.
 
         Parameters
         ----------
-        values : list of four inputs
-            [starts, stops, step, width]
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         for_loop : bool
             If True, iterate via for loop.  If False, iterate via while.
             (default=False)
@@ -103,12 +111,6 @@ class InstIterationTests(object):
             (default=False)
 
         """
-
-        # Extract specific values from input.
-        starts = values[0]
-        stops = values[1]
-        step = values[2]
-        width = values[3]
 
         # Ensure dates are lists for consistency of later code.
         starts = pysat.utils.listify(starts)
@@ -310,102 +312,101 @@ class InstIterationTests(object):
                       == pds.date_range(start, stop, freq='10D').tolist())
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3),
-                                         2, 2),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4),
-                                         2, 3),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5),
-                                         3, 1),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 17),
-                                         5, 1)
-                                        ])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [(dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 3), 2, 2),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 4), 2, 3),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 5), 3, 1),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 17), 5, 1)])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_bounds_with_frequency_and_width(self, values, by_date):
+    def test_iterate_bounds_with_frequency_and_width(self, starts, stops, step,
+                                                     width, by_date):
         """Test iterate via date with mixed step/width, excludes stop date.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration bounds: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         by_date : bool
             If True, iterate by date.  If False, iterate by filename.
 
         """
 
-        out = self.support_iter_evaluations(values, for_loop=True,
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            for_loop=True,
                                             by_date=by_date)
         self.verify_iteration(out, reverse=False, inclusive=False)
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4),
-                                         2, 2),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4),
-                                         3, 1),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4),
-                                         1, 4),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5),
-                                         4, 1),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5),
-                                         2, 3),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5),
-                                         3, 2)])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [(dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 4), 2, 2),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 4), 3, 1),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 4), 1, 4),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 5), 4, 1),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 5), 2, 3),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 5), 3, 2)])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_bounds_with_frequency_and_width_incl(self, values,
-                                                          by_date):
+    def test_iterate_bounds_with_frequency_and_width_incl(self, starts, stops,
+                                                          step, width, by_date):
         """Test iterate via date with mixed step/width, includes stop date.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         by_date : bool
             If True, iterate by date.  If False, iterate by filename.
 
         """
 
-        out = self.support_iter_evaluations(values, for_loop=True,
-                                            by_date=by_date)
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            for_loop=True, by_date=by_date)
         self.verify_iteration(out, reverse=False, inclusive=True)
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 10),
-                                         2, 2),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 9),
-                                         4, 1),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11),
-                                         1, 3),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11),
-                                         1, 11),
-                                        ])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [(dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10), 2, 2),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 9), 4, 1),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 11), 1, 3),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 11), 1, 11)])
     @pytest.mark.parametrize("reverse", [True, False])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_with_frequency_and_width_incl(self, values, reverse,
-                                                   by_date):
+    def test_iterate_with_frequency_and_width_incl(self, starts, stops, step,
+                                                   width, reverse, by_date):
         """Test iteration via date step/width >1, includes stop date.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         reverse : bool
             If True, iterate backwards.  If False, iterate forwards.
         by_date : bool
@@ -413,37 +414,37 @@ class InstIterationTests(object):
 
         """
 
-        out = self.support_iter_evaluations(values, reverse=reverse,
-                                            by_date=by_date)
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            reverse=reverse, by_date=by_date)
         self.verify_iteration(out, reverse=reverse, inclusive=True)
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11),
-                                         2, 2),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12),
-                                         2, 3),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 13),
-                                         3, 2),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3),
-                                         4, 2),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12),
-                                         2, 1)])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [(dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 11), 2, 2),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 12), 2, 3),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 13), 3, 2),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 3), 4, 2),
+         (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 12), 2, 1)])
     @pytest.mark.parametrize("reverse", [True, False])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_with_frequency_and_width(self, values, reverse, by_date):
+    def test_iterate_with_frequency_and_width(self, starts, stops, step, width,
+                                              reverse, by_date):
         """Test iteration with step and width excluding stop date.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration bounds: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         reverse : bool
             If True, iterate backwards.  If False, iterate forwards.
         by_date : bool
@@ -451,39 +452,38 @@ class InstIterationTests(object):
 
         """
 
-        out = self.support_iter_evaluations(values, reverse=reverse,
-                                            by_date=by_date)
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            reverse=reverse, by_date=by_date)
         self.verify_iteration(out, reverse=reverse, inclusive=False)
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 13)),
-                                         2, 2),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         3, 1),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         2, 4)
-                                        ])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 4), dt.datetime(2009, 1, 13)], 2, 2),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 7), dt.datetime(2009, 1, 16)], 3, 1),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 6), dt.datetime(2009, 1, 15)], 2, 4)])
     @pytest.mark.parametrize("reverse", [True, False])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_season_frequency_and_width_incl(self, values, reverse,
-                                                     by_date):
+    def test_iterate_season_frequency_and_width_incl(self, starts, stops, step,
+                                                     width, reverse, by_date):
         """Test iteration via date season step/width > 1, include stop date.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         reverse : bool
             If True, iterate backwards.  If False, iterate forwards.
         by_date : bool
@@ -491,39 +491,38 @@ class InstIterationTests(object):
 
         """
 
-        out = self.support_iter_evaluations(values, reverse=reverse,
-                                            by_date=by_date)
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            reverse=reverse, by_date=by_date)
         self.verify_iteration(out, reverse=reverse, inclusive=True)
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 12)),
-                                         2, 2),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         3, 1),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         2, 4)
-                                        ])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 3), dt.datetime(2009, 1, 12)], 2, 2),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 6), dt.datetime(2009, 1, 15)], 3, 1),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 7), dt.datetime(2009, 1, 16)], 2, 4)])
     @pytest.mark.parametrize("reverse", [True, False])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_season_frequency_and_width(self, values, reverse,
-                                                by_date):
+    def test_iterate_season_frequency_and_width(self, starts, stops, step,
+                                                width, reverse, by_date):
         """Test iteration via date season step/width>1, exclude stop date.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         reverse : bool
             If True, iterate backwards.  If False, iterate forwards.
         by_date : bool
@@ -531,8 +530,8 @@ class InstIterationTests(object):
 
         """
 
-        out = self.support_iter_evaluations(values, reverse=reverse,
-                                            by_date=by_date)
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            reverse=reverse, by_date=by_date)
         self.verify_iteration(out, reverse=reverse, inclusive=False)
 
         return
@@ -720,74 +719,74 @@ class InstIterationTests(object):
         self.eval_iter_list(date_range[0], date_range[-1], dates=True)
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 12)),
-                                         2, 2),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         3, 1),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         2, 4)
-                                        ])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 3), dt.datetime(2009, 1, 12)], 2, 2),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 6), dt.datetime(2009, 1, 15)], 3, 1),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 7), dt.datetime(2009, 1, 16)], 2, 4)])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_over_bounds_season_step_width(self, values, by_date):
+    def test_iterate_over_bounds_season_step_width(self, starts, stops, step,
+                                                   width, by_date):
         """Test iterate over season, step/width > 1, exclude stop bounds.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         by_date : bool
             If True, iterate by date.  If False, iterate by filename.
 
         """
 
-        out = self.support_iter_evaluations(values, for_loop=True,
-                                            by_date=by_date)
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            for_loop=True, by_date=by_date)
         self.verify_iteration(out, reverse=False, inclusive=False)
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 13)),
-                                         2, 2),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         3, 1),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         2, 4)
-                                        ])
+    @pytest.mark.parametrize(
+        "starts,stops,step,width",
+        [([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 4), dt.datetime(2009, 1, 13)], 2, 2),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 7), dt.datetime(2009, 1, 16)], 3, 1),
+         ([dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 10)],
+          [dt.datetime(2009, 1, 6), dt.datetime(2009, 1, 15)], 2, 4)])
     @pytest.mark.parametrize("by_date", [True, False])
-    def test_iterate_bounds_season_step_width_incl(self, values, by_date):
+    def test_iterate_bounds_season_step_width_incl(self, starts, stops, step,
+                                                   width, by_date):
         """Test iterate over season, step/width > 1, includes stop bounds.
 
         Parameters
         ----------
-        values : tuple of size 4
-            Defines the iteration boundas: (start, stop, step, width). start
-            and stop should be datetime, step and width should be int.
+        starts : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        stops : dt.datetime or list of dt.datetime
+            The start date for iterations, or dates for iteration over multiple
+            segments.
+        step : int
+            The step size for the iteration bounds.
+        width : int
+            The width of the iteration bounds.
         by_date : bool
             If True, iterate by date.  If False, iterate by filename.
 
         """
 
-        out = self.support_iter_evaluations(values, for_loop=True,
-                                            by_date=by_date)
+        out = self.support_iter_evaluations(starts, stops, step, width,
+                                            for_loop=True, by_date=by_date)
         self.verify_iteration(out, reverse=False, inclusive=True)
 
         return
