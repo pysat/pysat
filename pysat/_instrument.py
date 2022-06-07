@@ -2761,8 +2761,8 @@ class Instrument(object):
                 kwargs[lkey] = self.kwargs['load'][lkey]
 
         # Set options used by loading routine based upon user input
-        if (yr is not None) and (doy is not None):
-            if (doy < 1) or (doy > 366):
+        if yr is not None and doy is not None:
+            if doy < 1 or doy > 366:
                 estr = ''.join(('Day of year (doy) is only valid between and ',
                                 'including 1-366.'))
                 raise ValueError(estr)
@@ -2775,15 +2775,15 @@ class Instrument(object):
                                         "%Y %j")
             self._set_load_parameters(date=date, fid=None)
 
-            if (end_yr is not None) and (end_doy is not None):
-                if end_doy < 1 or (end_doy > 366):
+            if end_yr is not None and end_doy is not None:
+                if end_doy < 1 or end_doy > 366:
                     estr = ''.join(('Day of year (end_doy) is only valid ',
                                     'between and including 1-366.'))
                     raise ValueError(estr)
                 end_date = dt.datetime.strptime(
                     "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j")
                 self.load_step = end_date - date
-            elif (end_yr is not None) or (end_doy is not None):
+            elif end_yr is not None or end_doy is not None:
                 estr = ''.join(('Both end_yr and end_doy must be set, ',
                                 'or neither.'))
                 raise ValueError(estr)
