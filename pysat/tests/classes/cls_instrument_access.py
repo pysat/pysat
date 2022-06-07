@@ -27,8 +27,6 @@ import xarray as xr
 import pysat
 from pysat.utils import testing
 
-logger = pysat.logger
-
 
 class InstAccessTests(object):
     """Basic tests for `pysat.Instrument` data access.

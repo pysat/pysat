@@ -19,8 +19,6 @@ import xarray as xr
 import pysat
 from pysat.utils import testing
 
-logger = pysat.logger
-
 
 class InstIntegrationTests(object):
     """Integration tests for `pysat.Instrument`.
