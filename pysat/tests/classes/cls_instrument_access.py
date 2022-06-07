@@ -741,9 +741,8 @@ class InstAccessTests(object):
         """Test setting series data by name."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
-        self.testInst['doubleMLT'] = \
-            2. * pds.Series(self.testInst['mlt'].values,
-                            index=self.testInst.index)
+        self.testInst['doubleMLT'] = 2. * pds.Series(
+            self.testInst['mlt'].values, index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
 
         self.testInst['blankMLT'] = pds.Series(None, dtype='float64')
@@ -754,10 +753,10 @@ class InstAccessTests(object):
         """Test setting pandas dataframe by name."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
-        self.testInst[['doubleMLT', 'tripleMLT']] = \
-            pds.DataFrame({'doubleMLT': 2. * self.testInst['mlt'].values,
-                           'tripleMLT': 3. * self.testInst['mlt'].values},
-                          index=self.testInst.index)
+        self.testInst[['doubleMLT', 'tripleMLT']] = pds.DataFrame(
+            {'doubleMLT': 2. * self.testInst['mlt'].values,
+             'tripleMLT': 3. * self.testInst['mlt'].values},
+            index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         assert np.all(self.testInst['tripleMLT'] == 3. * self.testInst['mlt'])
         return
