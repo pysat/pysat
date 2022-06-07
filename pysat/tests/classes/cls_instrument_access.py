@@ -858,9 +858,9 @@ class InstAccessTests(object):
             assert inst_subset.sizes[self.xarray_epoch_name] == len(index)
         return
 
-    @pytest.mark.parametrize("values",
-        [{'help': 'I need somebody'}, {'UTS': 'litte_uts', 'mlt': 'big_mlt'},
-         {'utS': 'uts1', 'help': {'me': 'do', 'things': 'well'}}])
+    @pytest.mark.parametrize("values", [
+        {'help': 'I need somebody'}, {'UTS': 'litte_uts', 'mlt': 'big_mlt'},
+        {'utS': 'uts1', 'help': {'me': 'do', 'things': 'well'}}])
     def test_unknown_variable_error_renaming(self, values):
         """Test that unknown variable renaming raises a value error.
 
