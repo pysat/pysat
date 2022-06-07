@@ -396,6 +396,7 @@ class InstLibTests(object):
             dl_dict = inst_dict['user_info'] if 'user_info' in \
                 inst_dict.keys() else {}
             files = test_inst.remote_file_list(start=date, stop=date, **dl_dict)
+
             # If test date is correctly chosen, files should exist
             assert len(files) > 0
         else:

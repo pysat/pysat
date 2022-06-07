@@ -937,7 +937,7 @@ class Instrument(object):
             # the rest of the keys are presumed to be metadata
             in_data = new.pop('data')
 
-            # TODO(#908): remove code below with removal of 2d pandas support.
+            # TODO(#908): remove code below with removal of 2D pandas support.
             if hasattr(in_data, '__iter__'):
                 if isinstance(in_data, pds.DataFrame):
                     pass
@@ -2743,12 +2743,12 @@ class Instrument(object):
             # Jan. 1st (inclusive) - Jan. 3rd (exclusive)
             inst.load(2009, 1, 2009, 3)
 
-            # Same procedure using datetimes
+            # Load a range of days using datetimes
             date = dt.datetime(2009, 1, 1)
             end_date = dt.datetime(2009, 1, 3)
             inst.load(date=date, end_date=end_date)
 
-            # Same procedure using filenames. Note the change in index due to
+            # Load several files by filename. Note the change in index due to
             # inclusive slicing on filenames!
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
@@ -3626,7 +3626,7 @@ def _get_supported_keywords(local_func):
 
 
 def _pass_func(*args, **kwargs):
-    """Empty, default function for updateable Instrument methods."""
+    """Empty, default function for updatable Instrument methods."""
     pass
 
 

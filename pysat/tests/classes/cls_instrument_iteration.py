@@ -943,17 +943,22 @@ class InstIterationTests(object):
                                 self.testInst.files.files.index[9])
         # Ensure no data to begin
         assert self.testInst.empty
+        
         # Perform comprehension and ensure there are as many as there should be
         insts = [inst for inst in self.testInst]
         assert len(insts) == 10
+        
         # Get list of dates
         dates = pds.Series([inst.date for inst in insts])
         assert dates.is_monotonic_increasing
+        
         # Dates are unique
         assert np.all(np.unique(dates) == dates.values)
+        
         # Iteration instruments are not the same as original
         for inst in insts:
             assert not (inst is self.testInst)
+            
         # Check there is data after iteration
         assert not self.testInst.empty
 
