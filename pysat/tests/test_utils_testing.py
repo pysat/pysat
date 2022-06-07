@@ -84,7 +84,9 @@ class TestTestingUtils(object):
             Input list for testing
         blist : list
             Second input list for testing
-
+        kwargs : dict
+            Dictionary of keyword arguments and values passed to
+            `testing.assert_lists_equal`
         """
 
         testing.assert_lists_equal(slist, blist, **kwargs)
