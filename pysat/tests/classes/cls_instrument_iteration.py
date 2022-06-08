@@ -312,6 +312,8 @@ class InstIterationTests(object):
                       == pds.date_range(start, stop, freq='10D').tolist())
         return
 
+    # TODO(#863): Remove hardwired dates and streamline here and below
+    # TODO(#902): Combine inclusive and exclusive tests via parametrize
     @pytest.mark.parametrize(
         "starts,stops,step,width",
         [(dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 3), 2, 2),
