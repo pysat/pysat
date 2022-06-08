@@ -21,7 +21,6 @@ import xarray as xr
 
 import pysat
 from pysat import logger
-from pysat import utils
 
 
 class Instrument(object):
@@ -700,7 +699,7 @@ class Instrument(object):
                 len(self.variables))
 
             output_str += '\nVariable Names:\n'
-            output_str += utils._core.fmt_output_in_cols(self.variables)
+            output_str += pysat.utils._core.fmt_output_in_cols(self.variables)
 
             # Print the short version of the metadata
             output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
@@ -1415,7 +1414,7 @@ class Instrument(object):
         if load_kwargs is None:
             load_kwargs = self.kwargs['load']
 
-        date = utils.time.filter_datetime_input(date)
+        date = pysat.utils.time.filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
             # inclusive loading on filenames
@@ -1566,7 +1565,7 @@ class Instrument(object):
         self._fid = fid
 
         if date is not None:
-            year, doy = utils.time.getyrdoy(date)
+            year, doy = pysat.utils.time.getyrdoy(date)
             self.yr = year
             self.doy = doy
             self._load_by_date = True
@@ -1716,10 +1715,10 @@ class Instrument(object):
         else:
             check_type = None
 
-        return utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
-                                                remove=remove,
-                                                check_type=check_type,
-                                                export_nan=export_nan)
+        return pysat.utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
+                                                      remove=remove,
+                                                      check_type=check_type,
+                                                      export_nan=export_nan)
 
     # -----------------------------------------------------------------------
     # Define all accessible methods
@@ -1835,9 +1834,8 @@ class Instrument(object):
                 ustops = [istop - self._iter_width + dt.timedelta(days=1)
                           for istop in self._iter_stop]
                 ufreq = self._iter_step
-                self._iter_list = utils.time.create_date_range(self._iter_start,
-                                                               ustops,
-                                                               freq=ufreq)
+                self._iter_list = pysat.utils.time.create_date_range(
+                    self._iter_start, ustops, freq=ufreq)
             else:
                 # Instrument has no files
                 self._iter_list = []
@@ -1926,8 +1924,8 @@ class Instrument(object):
                     self._iter_width = dt.timedelta(days=1)
 
                 # Create list-like of dates for iteration
-                starts = utils.time.filter_datetime_input(starts)
-                stops = utils.time.filter_datetime_input(stops)
+                starts = pysat.utils.time.filter_datetime_input(starts)
+                stops = pysat.utils.time.filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
@@ -1945,9 +1943,9 @@ class Instrument(object):
                 ustops = [stop - width + dt.timedelta(days=1)
                           for stop in stops]
                 # Date range is inclusive, no need to pad.
-                self._iter_list = utils.time.create_date_range(starts,
-                                                               ustops,
-                                                               freq=freq)
+                self._iter_list = pysat.utils.time.create_date_range(starts,
+                                                                     ustops,
+                                                                     freq=freq)
                 # go back to time index
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
 
@@ -1967,7 +1965,7 @@ class Instrument(object):
     @date.setter
     def date(self, new_date):
         # Set the date property, see property docstring for details
-        self._date = utils.time.filter_datetime_input(new_date)
+        self._date = pysat.utils.time.filter_datetime_input(new_date)
 
     @property
     def empty(self):
@@ -2228,7 +2226,7 @@ class Instrument(object):
             Today's date in UTC
 
         """
-        return utils.time.today()
+        return pysat.utils.time.today()
 
     def tomorrow(self):
         """Get tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -2522,7 +2520,7 @@ class Instrument(object):
 
             # Collect normal variables and rename higher order variables
             for vkey in self.variables:
-                map_key = utils.get_mapped_value(vkey, mapper)
+                map_key = pysat.utils.get_mapped_value(vkey, mapper)
 
                 if map_key is not None:
                     # Treat higher-order pandas and normal pandas separately
@@ -2546,7 +2544,8 @@ class Instrument(object):
                         else:
                             # This is either a value or a mapping function
                             for hkey in self.meta[vkey]['children'].keys():
-                                hmap = utils.get_mapped_value(hkey, mapper)
+                                hmap = pysat.utils.get_mapped_value(hkey,
+                                                                    mapper)
                                 if hmap is not None:
                                     hdict[hkey] = hmap
 
@@ -2603,7 +2602,7 @@ class Instrument(object):
             # data, but not the metadata. Xarray requires dict input for rename.
             gdict = {}
             for vkey in self.variables:
-                map_key = utils.get_mapped_value(vkey, mapper)
+                map_key = pysat.utils.get_mapped_value(vkey, mapper)
                 if map_key is not None:
                     if lowercase_data_labels:
                         gdict[vkey] = map_key.lower()
@@ -2800,7 +2799,7 @@ class Instrument(object):
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
-            date = utils.time.filter_datetime_input(date)
+            date = pysat.utils.time.filter_datetime_input(date)
 
             # Increment after determining the desired step size
             if end_date is not None:
@@ -3062,7 +3061,7 @@ class Instrument(object):
             else:
                 temp = self.index[0]
             self.date = dt.datetime(temp.year, temp.month, temp.day)
-            self.yr, self.doy = utils.time.getyrdoy(self.date)
+            self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
 
         # Ensure data is unique and monotonic. Check occurs after all the data
         # padding loads, or individual load. Thus, it can potentially check
@@ -3378,9 +3377,10 @@ class Instrument(object):
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
             # whole days
-            start = utils.time.filter_datetime_input(start)
-            stop = utils.time.filter_datetime_input(stop)
-            date_array = utils.time.create_date_range(start, stop, freq=freq)
+            start = pysat.utils.time.filter_datetime_input(start)
+            stop = pysat.utils.time.filter_datetime_input(stop)
+            date_array = pysat.utils.time.create_date_range(start, stop,
+                                                            freq=freq)
 
         # Add necessary kwargs to the optional kwargs
         kwargs['tag'] = self.tag
@@ -3512,13 +3512,13 @@ class Instrument(object):
         inst = self if modify else self.copy()
 
         # Write the output file
-        utils.io.inst_to_netcdf(inst, fname=fname,
-                                base_instrument=base_instrument,
-                                epoch_name=epoch_name, zlib=zlib,
-                                complevel=complevel, shuffle=shuffle,
-                                preserve_meta_case=preserve_meta_case,
-                                export_nan=export_nan,
-                                unlimited_time=unlimited_time)
+        pysat.utils.io.inst_to_netcdf(inst, fname=fname,
+                                      base_instrument=base_instrument,
+                                      epoch_name=epoch_name, zlib=zlib,
+                                      complevel=complevel, shuffle=shuffle,
+                                      preserve_meta_case=preserve_meta_case,
+                                      export_nan=export_nan,
+                                      unlimited_time=unlimited_time)
 
         return
 
