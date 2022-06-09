@@ -8,17 +8,15 @@ import copy
 import datetime as dt
 import functools
 import logging
-import shutil
-
+import netCDF4
 import numpy as np
 import os
 import pandas as pds
+import pytest
+import shutil
 import sys
 import tempfile
 import warnings
-
-import netCDF4
-import pytest
 
 import pysat
 from pysat.utils import io
