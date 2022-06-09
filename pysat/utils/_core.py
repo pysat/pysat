@@ -66,10 +66,14 @@ def scale_units(out_unit, in_unit):
                       'm/s': ['m/s', 'cm/s', 'km/s', 'm s$^{-1}$',
                               'cm s$^{-1}$', 'km s$^{-1}$', 'm s-1', 'cm s-1',
                               'km s-1'],
-                      'm-3': ['m-3', 'cm-3', 'n/cc', '/cc', 'km-3', 'm$^{-3}$',
-                              'cm$^{-3}$', 'km$^{-3}$']}
-    replace_str = {'/s': [' s$^{-1}$', ' s-1'],
-                   '-3': ['$^{-3}$'], 'cm-3': ['n/cc', '/cc']}
+                      'm-3': ['m-3', 'cm-3', 'km-3', 'n/cc', '/cc', '#/cc',
+                              '#/cm3', '#/cm^3', '#/km3', '#/km^3', '#/m3',
+                              '#/m^3', 'm$^{-3}$', 'cm$^{-3}$', 'km$^{-3}$',
+                              'cm^-3', 'm^-3', 'km^-3', 'cm^{-3}', 'm^{-3}',
+                              'km^{-3}']}
+    replace_str = {'/s': [' s$^{-1}$', ' s-1'], '': ['#'], 'km-3': ['/km^3'],
+                   '-3': ['$^{-3}$', '^{-3}', '^-3'],
+                   'cm-3': ['n/cc', '/cc', '/cm^3'], 'm-3': ['/m^3']}
 
     scales = {'deg': 180.0, 'rad': np.pi, 'h': 12.0,
               'm': 1.0, 'km': 0.001, 'cm': 100.0,
@@ -191,7 +195,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
                          'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat.
 
-    .. deprecated:: 3.1.0
+    .. deprecated:: 3.0.2
        Function moved to `pysat.utils.io.load_netcdf`, this wrapper will be
        removed in the 3.2.0+ release.
        No longer allow non-string file formats in the 3.2.0+ release.

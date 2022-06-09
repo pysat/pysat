@@ -90,6 +90,6 @@ python setup.py develop
 * The first time the package is run, you will need to specify a directory to
   store data. In python, run:
 ```
-pysat.params['data_dirs'] = 'path/to/directory/that/exists'
+pysat.params['data_dirs'] = 'path/to/directory/that/may/or/may/not/exist'
 ```
   * Nominal organization of data is top_dir/platform/name/tag/inst_id/files

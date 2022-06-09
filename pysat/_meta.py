@@ -17,7 +17,7 @@ from pysat.utils import testing
 
 
 class Meta(object):
-    """Store metadata for Instrument instance.
+    """Store metadata for the Instrument and Constellation classes.
 
     Parameters
     ----------
@@ -84,7 +84,7 @@ class Meta(object):
     --------
     ::
 
-        # Instantiate Meta object, default values for attribute labels are used.
+        # Instantiate Meta object, default values for attribute labels are used
         meta = pysat.Meta()
 
         # Set several variable units. Note that other base parameters are not
@@ -105,7 +105,7 @@ class Meta(object):
                             'scale': 'linear', 'axis_multiplier': 1e4}
         meta['var_name'] = {'PI': 'Dr. R. Song'}
 
-        # Meta data may be assigned to multiple variables at once.
+        # Meta data may be assigned to multiple variables at once
         meta[['var_name1', 'var_name2']] = {'long_name': ['Name1', 'Name2'],
                                             'units': ['Units1', 'Units2'],
                                             'scale': ['linear', 'linear']}
@@ -122,7 +122,7 @@ class Meta(object):
         meta['var_name4'].children['name41']
         meta['var_name4'].children['name42']
 
-        # You may, of course, have a mixture of 1D and nD data.
+        # You may, of course, have a mixture of 1D and nD data
         meta = pysat.Meta()
         meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
         meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
@@ -132,7 +132,7 @@ class Meta(object):
                                       'long_name': [None, 'boohoo']}
 
         # Meta data may be assigned from another Meta object using dict-like
-        # assignments.
+        # assignments
         key1 = 'var_name'
         key2 = 'var_name4'
         meta[key1] = meta2[key2]
@@ -145,7 +145,7 @@ class Meta(object):
         # in the attached MetaLabels class object.
         meta[key1, meta.labels.fill_val]
 
-        # You may change a label used by Meta object to have a different value.
+        # You may change a label used by Meta object to have a different value
         meta.labels.fill_val = '_FillValue'
 
         # Note that the fill label is intended for use when interacting
@@ -171,19 +171,19 @@ class Meta(object):
         # anything else, or `__setattr__` breaks.
         self.mutable = True
 
-        # Set the global meta data.
+        # Set the global meta data
         self.header = MetaHeader(header_data)
 
-        # Set the NaN export list.
+        # Set the NaN export list
         self._export_nan = [] if export_nan is None else export_nan
         for lvals in labels.values():
             if lvals[0] not in self._export_nan and lvals[1] == float:
                 self._export_nan.append(lvals[0])
 
-        # Set the labels.
+        # Set the labels
         self.labels = MetaLabels(metadata=self, **labels)
 
-        # Initialize higher order (nD) data structure container, a dict.
+        # Initialize higher order (nD) data structure container, a dict
         self._ho_data = {}
 
         # Use any user provided data to instantiate object with data.
@@ -192,7 +192,7 @@ class Meta(object):
             if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
 
-                # Make sure defaults are taken care of for required metadata.
+                # Make sure defaults are taken care of for required metadata
                 self.accept_default_labels(self)
             else:
                 raise ValueError(''.join(('Input must be a pandas DataFrame ',
@@ -203,16 +203,16 @@ class Meta(object):
                        for mlab in self.labels.label_type.keys()]
             self._data = pds.DataFrame(None, columns=columns)
 
-        # Establish attributes intrinsic to object, before user can add any.
+        # Establish attributes intrinsic to object, before user can add any
         self._base_attr = dir(self)
 
     def __repr__(self):
-        """Print MetaData instantiation parameters.
+        """Print a representation of the Meta instantiation callable by `eval`.
 
         Returns
         -------
         out_str : str
-            Simply formatted output string.
+            Simply formatted output string
 
         """
         nvar = len([kk for kk in self.keys()])
@@ -229,16 +229,16 @@ class Meta(object):
         Parameters
         ----------
         long_str : bool
-            Return short version if False and long version if True.
+            Return short version if False and long version if True
             (default=True)
 
         Returns
         -------
         out_str : str
-            Nicely formatted output string.
+            Nicely formatted output string
 
         """
-        # Get the desired variables as lists.
+        # Get the desired variables as lists
         labs = [var for var in self.attrs()]
         vdim = [var for var in self.keys() if var not in self.keys_nD()]
         nchild = {var: len([kk for kk in self[var]['children'].keys()])
@@ -246,28 +246,29 @@ class Meta(object):
         ndim = ["{:} -> {:d} children".format(var, nchild[var])
                 for var in self.keys_nD()]
 
-        # Get the lengths of each list.
+        # Get the lengths of each list
         nlabels = len(labs)
         nvdim = len(vdim)
         nndim = len(ndim)
 
-        # Print the short output.
+        # Print the short output
         out_str = "pysat Meta object\n"
         out_str += "-----------------\n"
         out_str += "Tracking {:d} metadata values\n".format(nlabels)
         out_str += "Metadata for {:d} standard variables\n".format(nvdim)
         out_str += "Metadata for {:d} ND variables\n".format(nndim)
 
-        # Print the global meta data.
-        max_num = 6 if long_str else 0  # Should be divible by 2 and ncol
+        # Print the global meta data. `max_num` should be divisible by 2 and
+        # `ncol`.
+        max_num = 6 if long_str else 0
         out_str += self.header.__str__(max_num_display=max_num)
 
-        # Print the longer output.
+        # Print the longer output
         if long_str:
-            # Print all the metadata labels.
+            # Print all the metadata labels
             out_str += "\n{:s}".format(self.labels.__str__())
 
-            # Print a subset of the metadata variables, divided by order.
+            # Print a subset of the metadata variables, divided by order
             ncol = 3
             if nvdim > 0:
                 out_str += "\nStandard Metadata variables:\n"
@@ -286,10 +287,10 @@ class Meta(object):
         Parameters
         ----------
         name : str
-            Attribute name to be assigned to Meta.
+            Attribute name to be assigned to Meta
         value : str or boolean
             String to be assigned to attribute specified by name or boolean
-            if name is 'mutable'.
+            if name is 'mutable'
 
         Note
         ----
@@ -299,31 +300,31 @@ class Meta(object):
         method from https://stackoverflow.com/a/15751135
 
         """
-        # Mutable handled explicitly to avoid recursion.
+        # Mutable handled explicitly to avoid recursion
         if name != 'mutable':
 
             # Check if this attribute is a property
             propobj = getattr(self.__class__, name, None)
             if isinstance(propobj, property):
-                # Check if the property is settable.
+                # Check if the property is settable
                 if propobj.fset is None:
                     raise AttributeError(''.join("can't set attribute  ",
                                                  name, " to ", value, ", ",
                                                  "property has no fset"))
 
-                # Make self mutable in case fset needs it to be.
+                # Make self mutable in case `fset` needs it to be
                 mutable_tmp = self.mutable
                 self.mutable = True
 
-                # Set the property.
+                # Set the property
                 propobj.fset(self, value)
 
-                # Restore mutability flag.
+                # Restore mutability flag
                 self.mutable = mutable_tmp
             else:
-                # A normal attribute.
+                # A normal attribute
                 if self.mutable:
-                    # Use Object to avoid recursion.
+                    # Use Object to avoid recursion
                     super(Meta, self).__setattr__(name, value)
                 else:
                     estr = ' '.join(("Cannot set attribute", name, "to {val!s}",
@@ -339,16 +340,16 @@ class Meta(object):
         Parameters
         ----------
         data_vars : str, list
-            Data variable names for the input metadata.
+            Data variable names for the input metadata
         input_dat : dict, pds.Series, or Meta
-            Input metadata to be assigned.
+            Input metadata to be assigned
 
         """
 
         input_data = deepcopy(input_dat)
 
         if isinstance(input_data, dict):
-            # If not passed an iterable, make it one.
+            # If not passed an iterable, make it one
             if isinstance(data_vars, str):
                 data_vars = [data_vars]
                 for key in input_data:
@@ -395,7 +396,7 @@ class Meta(object):
                 if new_name != iname:
                     input_data[new_name] = input_data.pop(iname)
 
-            # Time to actually add the metadata.
+            # Time to actually add the metadata
             for ikey in input_data:
                 if ikey not in ['children', 'meta']:
                     for i, var in enumerate(data_vars):
@@ -403,21 +404,21 @@ class Meta(object):
                         good_set = True
 
                         # See if this meta data key has already been defined
-                        # in MetaLabels.
+                        # in MetaLabels
                         if ikey in self.labels.label_attrs.keys():
                             iattr = self.labels.label_attrs[ikey]
                             if not isinstance(
                                     to_be_set, self.labels.label_type[iattr]):
                                 # If this is a disagreement between byte data
-                                # and an expected str, resolve it here.
+                                # and an expected str, resolve it here
                                 if(isinstance(to_be_set, bytes)
                                    and self.labels.label_type[iattr] == str):
                                     to_be_set = core_utils.stringify(to_be_set)
                                 else:
-                                    # This type is incorrect, try casting it.
+                                    # This type is incorrect, try casting it
                                     wmsg = ''.join(['Metadata with type ',
                                                     repr(type(to_be_set)),
-                                                    'does not match expected ',
+                                                    ' does not match expected ',
                                                     'type ',
                                                     repr(self.labels.label_type[
                                                         iattr])])
@@ -434,13 +435,13 @@ class Meta(object):
                                             to_be_set = self.labels.label_type[
                                                 iattr](to_be_set)
 
-                                        # Inform user data was recast.
+                                        # Inform user data was recast
                                         pysat.logger.info(''.join((
                                             wmsg, '. Recasting input for ',
                                             repr(var), ' with key ',
                                             repr(ikey))))
                                     except (TypeError, ValueError):
-                                        # Warn user data was dropped.
+                                        # Warn user data was dropped
                                         warnings.warn(''.join((
                                             wmsg, '. Dropping input for ',
                                             repr(var), ' with key ',
@@ -456,11 +457,11 @@ class Meta(object):
                                 itype = str
 
                             # Update the MetaLabels object and the existing
-                            # metadata to ensure all data have all labels.
+                            # metadata to ensure all data have all labels
                             self.labels.update(iattr, ikey, itype)
                             self._label_setter(ikey, ikey, type(to_be_set))
 
-                        # Set the data.
+                        # Set the data
                         if good_set:
                             self._data.loc[var, ikey] = to_be_set
                 else:
@@ -482,22 +483,22 @@ class Meta(object):
                 self._warn_meta_children()
                 child = in_dict.pop('children')
                 if child is not None:
-                    # If there is data in the child object, assign it here.
+                    # If there is data in the child object, assign it here
                     self.ho_data[data_vars] = child
 
-            # Remaining items are simply assigned via recursive call.
+            # Remaining items are simply assigned via recursive call
             self[data_vars] = in_dict
 
         elif isinstance(input_data, Meta):
-            # Dealing with a higher order data set.
+            # Dealing with a higher order data set
             self._warn_meta_children()
-            # data_vars is only a single name here (by choice for support)
+            # `data_vars` is only a single name here (by choice for support)
             if (data_vars in self._ho_data) and input_data.empty:
                 # No actual metadata provided and there is already some
-                # higher order metadata in self.
+                # higher order metadata in self
                 return
 
-            # Get Meta approved variable data names.
+            # Get Meta approved variable data names
             new_item_name = self.var_case_name(data_vars)
 
             # Ensure that Meta labels of object to be assigned are
@@ -511,7 +512,7 @@ class Meta(object):
             attr_names = [item for item in input_data.attrs()]
             input_data.data.columns = self.attr_case_name(attr_names)
 
-            # Same thing for variables.
+            # Same thing for variables
             input_data.data.index = self.var_case_name(input_data.data.index)
 
             # Assign Meta object now that things are consistent with Meta
@@ -520,7 +521,7 @@ class Meta(object):
             # if there is no existing metadata info.
             self[new_item_name] = {}
 
-            # Now add to higher order data.
+            # Now add to higher order data
             self._ho_data[new_item_name] = input_data
         return
 
@@ -532,14 +533,14 @@ class Meta(object):
         Parameters
         ----------
         key : str, tuple, or list
-            A single variable name, a tuple, or a list.
+            A single variable name, a tuple, or a list
 
         Raises
         ------
         KeyError
-            If a properly formatted key is not present.
+            If a properly formatted key is not present
         NotImplementedError
-            If the input is not one of the allowed data types.
+            If the input is not one of the allowed data types
 
         Examples
         --------
@@ -550,7 +551,7 @@ class Meta(object):
             inst.load(date=inst.inst_module._test_dates[''][''])
             meta = inst.meta
 
-            # For standard data, many slicing options are available.
+            # For standard data, many slicing options are available
             meta['uts']
             meta['uts', 'units']
             meta['uts', ['units', 'long_name']]
@@ -560,7 +561,7 @@ class Meta(object):
             meta[:, ['units', 'long_name']]
 
             # For higher order data, slicing is not supported for multiple
-            # parents with any children.
+            # parents with any children
             meta['profiles', 'density', 'units']
             meta['profiles', 'density', ['units', 'long_name']]
             meta['profiles', ['density', 'dummy_str'], ['units', 'long_name']]
@@ -568,31 +569,31 @@ class Meta(object):
             meta[['series_profiles', 'profiles'], ('units', 'long_name')]
 
         """
-        # Define a local convenience function.
+        # Define a local convenience function
         def match_name(func, var_name, index_or_column):
             """Alter variables using input function."""
 
             if isinstance(var_name, slice):
                 # If variable is a slice, use it to select data from the
-                # supplied index or column input.
+                # supplied index or column input
                 return func(index_or_column[var_name])
             else:
                 return func(var_name)
 
-        # Access desired metadata based on key data type.
+        # Access desired metadata based on key data type
         if isinstance(key, tuple):
-            # If key is a tuple, looking at index, column access pattern.
+            # If key is a tuple, looking at index, column access pattern
             if len(key) == 2:
-                # If tuple length is 2, index, column.
+                # If tuple length is 2, index, column
                 new_index = match_name(self.var_case_name, key[0],
                                        self.data.index)
                 try:
-                    # Assume this is a label name.
+                    # Assume this is a label name
                     new_name = match_name(self.attr_case_name, key[1],
                                           self.data.columns)
                     return self.data.loc[new_index, new_name]
                 except KeyError as kerr:
-                    # This may instead be a child variable, check for children.
+                    # This may instead be a child variable, check for children
                     if(hasattr(self[new_index], 'children')
                        and self[new_index].children is None):
                         raise kerr
@@ -608,7 +609,7 @@ class Meta(object):
                                      'from multiple parents']))
 
             elif len(key) == 3:
-                # If tuple length is 3, index, child_index, column.
+                # If tuple length is 3, index, child_index, column
                 new_index = match_name(self.var_case_name, key[0],
                                        self.data.index)
                 try:
@@ -625,17 +626,17 @@ class Meta(object):
                                                         new_name]
 
         elif isinstance(key, list):
-            # If key is a list, selection works as-is.
+            # If key is a list, selection works as-is
             return self[key, :]
 
         elif isinstance(key, str):
-            # If key is a string, treatment varies based on metadata dimension.
+            # If key is a string, treatment varies based on metadata dimension
             if key in self:
-                # Get case preserved string for variable name.
+                # Get case preserved string for variable name
                 new_key = self.var_case_name(key)
 
                 # Don't need to check if in lower, all variables are always in
-                # the lower metadata.
+                # the lower metadata
                 #
                 # Assign meta_row using copy to avoid pandas
                 # SettingWithCopyWarning, as suggested in
@@ -666,7 +667,7 @@ class Meta(object):
         -------
         does_contain : boolean
             True if input Meta class contains the default labels, False if it
-            does not.
+            does not
 
         """
         does_contain = False
@@ -686,12 +687,12 @@ class Meta(object):
         Parameters
         ----------
         other_meta : Meta
-            A second Meta class object.
+            A second Meta class object
 
         Returns
         -------
         bool
-            True if equal, False if not equal.
+            True if equal, False if not equal
 
         Note
         ----
@@ -705,10 +706,10 @@ class Meta(object):
 
         """
         if not isinstance(other_meta, Meta):
-            # The object being compared wasn't even the correct class.
+            # The object being compared wasn't even the correct class
             return NotImplemented
 
-        # Check if the variables and attributes are the same.
+        # Check if the variables and attributes are the same
         for iter1, iter2 in [(self.keys(), other_meta.keys()),
                              (self.attrs(), other_meta.attrs())]:
             list1 = [value for value in iter1]
@@ -752,7 +753,7 @@ class Meta(object):
                 except AssertionError:
                     return False
 
-            # Check if all elements are individually equal.
+            # Check if all elements are individually equal
             for ckey in self[key].children.keys():
                 for cattr in self[key].children.attrs():
                     if not testing.nan_equal(
@@ -760,11 +761,11 @@ class Meta(object):
                             other_meta[key].children[ckey, cattr]):
                         return False
 
-        # If we made it this far, things are good.
+        # If we made it this far, things are good
         return True
 
     # -----------------------------------------------------------------------
-    # Define the hidden methods.
+    # Define the hidden methods
 
     def _insert_default_values(self, data_var):
         """Set the default label values for a data variable.
@@ -782,7 +783,7 @@ class Meta(object):
 
         """
         # Cycle through each label type to create a list of label names
-        # and label default values.
+        # and label default values
         labels = list()
         default_vals = list()
         name_idx = None
@@ -811,36 +812,36 @@ class Meta(object):
         Parameters
         ----------
         new_label : str
-            New label to use in the Meta object.
+            New label to use in the Meta object
         current_label : str
-            The current label used within Meta object.
+            The current label used within Meta object
         default_type : type
-            Type of value to be stored.
+            Type of value to be stored
         use_names_default : bool
             if True, MetaData variable names are used as the default
-            value for the specified Meta attributes settings. (default=False)
+            value for the specified Meta attributes settings (default=False)
 
         Note
         ----
-        Not intended for end user.
+        Not intended for end user
 
         """
         self_attrs = list(self.attrs())
         if new_label not in self_attrs:
             # New label not in metadata
             if current_label in self_attrs:
-                # Current label exists and has expected case.
+                # Current label exists and has expected case
                 self.data.loc[:, new_label] = self.data.loc[:, current_label]
                 self.data = self.data.drop(current_label, axis=1)
             else:
                 if self.hasattr_case_neutral(current_label):
-                    # There is a similar label with different capitalization.
+                    # There is a similar label with different capitalization
                     current_label = self.attr_case_name(current_label)
                     self.data.loc[:, new_label] = self.data.loc[:,
                                                                 current_label]
                     self.data = self.data.drop(current_label, axis=1)
                 else:
-                    # There is no existing label, setting for the first time.
+                    # There is no existing label, setting for the first time
                     if use_names_default:
                         self.data[new_label] = self.data.index
                     else:
@@ -857,16 +858,16 @@ class Meta(object):
                                              'Meta instantiation.'))
                             pysat.logger.info(mstr)
 
-            # Check higher order structures and recursively change labels.
+            # Check higher order structures and recursively change labels
             for key in self.keys_nD():
-                # Update children.
+                # Update children
                 self.ho_data[key]._label_setter(new_label, current_label,
                                                 default_type, use_names_default)
 
         return
 
     # -----------------------------------------------------------------------
-    # Define the public methods and properties.
+    # Define the public methods and properties
 
     @property
     def data(self):
@@ -906,7 +907,7 @@ class Meta(object):
         Returns
         -------
         bool
-            Returns True if there is no data, and False if there is data.
+            Returns True if there is no data, and False if there is data
 
         """
 
@@ -923,12 +924,12 @@ class Meta(object):
         Parameters
         ----------
         other : pysat.Meta
-            Metadata to be merged into `self`.
+            Metadata to be merged into `self`
         """
 
         for key in other.keys():
             if key not in self:
-                # Copies over both lower and higher dimensional data.
+                # Copies over both lower and higher dimensional data
                 self[key] = other[key]
         return
 
@@ -938,14 +939,14 @@ class Meta(object):
         Parameters
         ----------
         names : list-like
-            List of strings specifying the variable names to drop.
+            List of strings specifying the variable names to drop
 
         """
 
-        # Drop the lower dimension data.
+        # Drop the lower dimension data
         self.data = self._data.drop(names, axis=0)
 
-        # Drop the higher dimension data.
+        # Drop the higher dimension data
         for name in names:
             if name in self._ho_data:
                 self._ho_data.pop(name)
@@ -957,19 +958,19 @@ class Meta(object):
         Parameters
         ----------
         keep_names : list-like
-            Variables to keep.
+            Variables to keep
 
         """
-        # Create a list of variable names to keep.
+        # Create a list of variable names to keep
         keep_names = self.var_case_name(keep_names)
 
-        # Get a list of current variable names.
+        # Get a list of current variable names
         current_names = self._data.index
 
-        # Build a list of variable names to drop.
+        # Build a list of variable names to drop
         drop_names = [name for name in current_names if name not in keep_names]
 
-        # Drop names not specified in keep_names list.
+        # Drop names not specified in keep_names list
         self.drop(drop_names)
         return
 
@@ -979,21 +980,21 @@ class Meta(object):
         Parameters
         ----------
         other_meta : Meta
-            Meta object to have default labels applied.
+            Meta object to have default labels applied
 
         Returns
         -------
         other_updated : Meta
-            Meta object with the default labels applied.
+            Meta object with the default labels applied
 
         """
-        # Create a copy of other, to avoid altering in place.
+        # Create a copy of other, to avoid altering in place
         other_updated = other_meta.copy()
 
-        # Update the Meta labels.
+        # Update the Meta labels
         other_updated.accept_default_labels(self.labels)
 
-        # Return the updated Meta class object.
+        # Return the updated Meta class object
         return other_updated
 
     def accept_default_labels(self, other_meta):
@@ -1002,15 +1003,15 @@ class Meta(object):
         Parameters
         ----------
         other_meta : Meta
-            Meta object to take default labels from.
+            Meta object to take default labels from
 
         """
-        # Update labels in metadata.
+        # Update labels in metadata
         for key in other_meta.labels.label_type.keys():
             new_name = getattr(other_meta.labels, key)
 
             if hasattr(self.labels, key):
-                # This label exists, but the name may need updating.
+                # This label exists, but the name may need updating
                 old_name = getattr(self.labels, key)
                 if old_name != new_name:
                     self._label_setter(new_name, old_name,
@@ -1022,6 +1023,16 @@ class Meta(object):
                                    other_meta.labels.label_type[key])
                 self._label_setter(new_name, new_name,
                                    other_meta.labels.label_type[key])
+
+        # Need to deal with case where self has labels that other doesn't
+        for key in self.labels.label_type.keys():
+            if not hasattr(other_meta.labels, key):
+                # This label doesn't exist, add it.
+                new_name = getattr(self.labels, key)
+                other_meta.labels.update(key, new_name,
+                                         self.labels.label_type[key])
+                other_meta._label_setter(new_name, new_name,
+                                         self.labels.label_type[key])
 
         self.labels = other_meta.labels
 
@@ -1049,16 +1060,16 @@ class Meta(object):
 
         """
 
-        # Ensure input is a str if string-like.
+        # Ensure input is a str if string-like
         name = pysat.utils.stringify(name)
 
-        # Flag if list-like input provided.
+        # Flag if list-like input provided
         return_list = False if isinstance(name, str) else True
 
-        # Ensure we operate on a list of names.
+        # Ensure we operate on a list of names
         names = pysat.utils.listify(name)
 
-        # Get a lower-case version of the name(s).
+        # Get a lower-case version of the name(s)
         lower_names = [iname.lower() for iname in names]
 
         # Cycle through all places where this variable name could be, returning
@@ -1066,7 +1077,7 @@ class Meta(object):
         # version of the variable name supplied.
         case_names = []
 
-        # Create a list of all variable names and lower case variable names.
+        # Create a list of all variable names and lower case variable names
         self_keys = [key for key in self.keys()]
         lower_self_keys = [key.lower() for key in self_keys]
 
@@ -1105,7 +1116,7 @@ class Meta(object):
         Parameters
         ----------
         attr_name : str
-            Name of attribute to find.
+            Name of attribute to find
 
         Returns
         -------
@@ -1115,7 +1126,7 @@ class Meta(object):
 
         Note
         ----
-        Does not check higher order meta objects.
+        Does not check higher order meta objects
 
         """
 
@@ -1147,19 +1158,19 @@ class Meta(object):
 
         """
 
-        # Ensure input is a str if string-like.
+        # Ensure input is a str if string-like
         name = pysat.utils.stringify(name)
 
-        # Flag if list-like object provided.
+        # Flag if list-like object provided
         return_list = False if isinstance(name, str) else True
 
-        # Ensure we operate on a list of names.
+        # Ensure we operate on a list of names
         names = pysat.utils.listify(name)
 
-        # Get a lower-case version of the name(s).
+        # Get a lower-case version of the name(s)
         lower_names = [iname.lower() for iname in names]
 
-        # Create a list of all attribute names and lower case attribute names.
+        # Create a list of all attribute names and lower case attribute names
         self_keys = [key for key in self.attrs()]
         for key in list(self.keys_nD()):
             self_keys.extend(self.ho_data[key].data.columns)
@@ -1188,7 +1199,7 @@ class Meta(object):
         ----------
         mapper : dict or func
             Dictionary with old names as keys and new names as variables or
-            a function to apply to all names.
+            a function to apply to all names
 
         Raises
         ------
@@ -1205,9 +1216,9 @@ class Meta(object):
 
         """
 
-        # Cycle through the top-level variables.
+        # Cycle through the top-level variables
         for var in self.keys():
-            # Update the attribute name.
+            # Update the attribute name
             map_var = core_utils.get_mapped_value(var, mapper)
             if map_var is not None:
                 if isinstance(map_var, dict):
@@ -1219,20 +1230,20 @@ class Meta(object):
                         raise ValueError('unknown mapped value at {:}'.format(
                             repr(var)))
                 else:
-                    # Get and update the meta data.
+                    # Get and update the meta data
                     hold_meta = self[var].copy()
                     hold_meta.name = map_var
 
-                    # Remove the metadata under the previous variable name.
+                    # Remove the metadata under the previous variable name
                     self.drop(var)
                     if var in self.ho_data:
                         del self.ho_data[var]
 
-                    # Re-add the meta data with the updated variable name.
+                    # Re-add the meta data with the updated variable name
                     self[map_var] = hold_meta
 
                     # Determine if the attribute is present in higher order
-                    # structures.
+                    # structures
                     if map_var in self.keys_nD():
                         # The children attribute is a Meta class object.
                         # Recursively call the current routine. The only way to
@@ -1250,15 +1261,15 @@ class Meta(object):
         Parameters
         ----------
         other_meta : Meta
-            Meta object to be concatenated.
+            Meta object to be concatenated
         strict : bool
-            If True, this flag ensures there are no duplicate variable names.
+            If True, this flag ensures there are no duplicate variable names
             (default=False)
 
         Returns
         -------
         mdata : Meta
-            Concatenated object.
+            Concatenated object
 
         Raises
         ------
@@ -1267,28 +1278,28 @@ class Meta(object):
 
         Note
         ----
-        Uses units and name label of `self` if `other_meta` is different.
+        Uses units and name label of `self` if `other_meta` is different
 
         """
         mdata = self.copy()
         mdata_keys = [key.lower() for key in mdata.keys()]
 
-        # Check the inputs.
+        # Check the inputs
         if strict:
             for key in other_meta.keys():
                 if key.lower() in mdata_keys:
                     raise KeyError(''.join(('Duplicated keys (variable names) ',
                                             'in Meta.keys().')))
 
-        # Make sure labels between the two objects are the same.
+        # Make sure labels between the two objects are the same
         other_meta_updated = other_meta.copy()
         other_meta_updated.labels = self.labels
 
-        # Concat 1D metadata in data frames to copy of current metadata.
+        # Concat 1D metadata in data frames to copy of current metadata
         for key in other_meta_updated.keys():
             mdata.data.loc[key] = other_meta.data.loc[key]
 
-        # Combine the higher order meta data.
+        # Combine the higher order meta data
         for key in other_meta_updated.keys_nD():
             mdata.ho_data[key] = other_meta.ho_data[key]
 
@@ -1304,20 +1315,20 @@ class Meta(object):
         Parameters
         ----------
         label_name : str
-            Meta key for a data variable.
+            Meta key for a data variable
 
         Returns
         -------
         output : pds.Series
-            Series of metadata for variable.
+            Series of metadata for variable
 
         """
-        # Check if the specified label name is present.
+        # Check if the specified label name is present
         if label_name in self:
-            # Get case preserved name for variable.
+            # Get case preserved name for variable
             new_name = self.var_case_name(label_name)
 
-            # Check if the label name is for 1D or nD meta data.
+            # Check if the label name is for 1D or nD meta data
             if new_name in self.keys():
                 output = self[new_name]
                 self.data = self.data.drop(new_name, axis=0)
@@ -1335,7 +1346,7 @@ class Meta(object):
         ----------
         strict_names : bool
             If True, produces an error if the MetaHeader object already
-            has an attribute with the same name to be copied. (default=False)
+            has an attribute with the same name to be copied (default=False)
 
         Raises
         ------
@@ -1344,23 +1355,23 @@ class Meta(object):
 
         """
 
-        # Get base attribute set, and attributes attached to Meta.
+        # Get base attribute set, and attributes attached to Meta
         base_attrb = self._base_attr
         this_attrb = dir(self)
 
-        # Update the MetaHeader.
+        # Update the MetaHeader
         for key in this_attrb:
-            # Don't store any hidden or base attributes.
+            # Don't store any hidden or base attributes
             if key not in base_attrb and key[0] != '_':
                 if strict_names and key in self.header.global_attrs:
                     raise AttributeError(''.join([
                         'Attribute ', repr(key), ' attached to the Meta cannot',
                         ' be transferred as it already exists in MetaHeader']))
 
-                # Save the attribute name (key) and value.
+                # Save the attribute name (key) and value
                 setattr(self.header, key, getattr(self, key))
 
-                # Remove key from meta.
+                # Remove key from meta
                 delattr(self, key)
 
         return
@@ -1371,10 +1382,10 @@ class Meta(object):
         Parameters
         ----------
         inst : pysat.Instrument
-            Instrument object to transfer attributes to.
+            Instrument object to transfer attributes to
         strict_names : bool
             If True, produces an error if the Instrument object already
-            has an attribute with the same name to be copied. (default=False)
+            has an attribute with the same name to be copied (default=False)
 
         Raises
         ------
@@ -1392,38 +1403,38 @@ class Meta(object):
 
         """
 
-        # Test the instrument parameter for type.
+        # Test the instrument parameter for type
         if not isinstance(inst, pysat.Instrument):
             raise ValueError("".join(["Can't transfer Meta attributes to ",
                                       "non-Instrument object of type ",
                                       str(type(inst))]))
 
-        # Save the base Instrument attributes.
+        # Save the base Instrument attributes
         banned = inst._base_attr
 
-        # Get base attribute set, and attributes attached to instance.
+        # Get base attribute set, and attributes attached to instance
         base_attrb = self._base_attr
         this_attrb = dir(self)
 
-        # Collect these attributes into a dict.
+        # Collect these attributes into a dict
         adict = {}
         transfer_key = []
         for key in this_attrb:
-            # Don't store any hidden, banned, or base attributes.
+            # Don't store any hidden, banned, or base attributes
             if key not in banned and key not in base_attrb and key[0] != '_':
                 adict[key] = getattr(self, key)
                 transfer_key.append(key)
 
-                # Remove key from meta.
+                # Remove key from meta
                 delattr(self, key)
 
         # Store any non-standard attributes in Instrument get list of
         # instrument objects attributes first to check if a duplicate
-        # instrument attributes stay with instrument.
+        # instrument attributes stay with instrument
         inst_attr = dir(inst)
 
         for key in transfer_key:
-            # Note, keys in transfer_key already checked against banned.
+            # Note, keys in transfer_key already checked against banned
             if key not in inst_attr:
                 setattr(inst, key, adict[key])
             else:
@@ -1431,7 +1442,7 @@ class Meta(object):
                     setattr(inst, key, adict[key])
                 else:
                     if not strict_names:
-                        # Use naming convention: new_name = 'pysat_attr_' + key.
+                        # Use naming convention: new_name = 'pysat_attr_' + key
                         inst.__setattr__(key, adict[key])
                     else:
                         aerr = ''.join(('Attribute ', repr(key),
@@ -1447,16 +1458,16 @@ class Meta(object):
         Parameters
         ----------
         epoch_name : str
-            Data key for time-index or epoch data.
+            Data key for time-index or epoch data
 
         """
-        # Get existing meta data.
+        # Get existing meta data
         if epoch_name in self:
             new_dict = self[self.var_case_name(epoch_name)]
         else:
             new_dict = {}
 
-        # Update basic labels, if they are missing.
+        # Update basic labels, if they are missing
         epoch_label = 'Milliseconds since 1970-1-1 00:00:00'
         basic_labels = [self.labels.units, self.labels.name, self.labels.desc,
                         self.labels.notes]
@@ -1464,10 +1475,63 @@ class Meta(object):
             if label not in new_dict or len(new_dict[label]) == 0:
                 new_dict[label] = epoch_label
 
-        # Update the meta data.
+        # Update the meta data
         self[self.var_case_name(epoch_name)] = new_dict
 
         return
+
+    def to_dict(self, preserve_case=False):
+        """Convert self into a dictionary.
+
+        Parameters
+        ----------
+        preserve_case : bool
+            If True, the case of variables within self are preserved. If False,
+            all variables returned as lower case. (default=False)
+
+        Returns
+        -------
+        export_dict : dict
+            A dictionary of the metadata for each variable of an output file
+
+        """
+
+        export_dict = {}
+
+        # First Order Data
+        for key in self.data.index:
+            if preserve_case:
+                case_key = self.var_case_name(key)
+            else:
+                case_key = key.lower()
+
+            # Translate each key if a translation is provided
+            export_dict[case_key] = {}
+            meta_dict = self.data.loc[key].to_dict()
+            for orig_key in meta_dict:
+                export_dict[case_key][orig_key] = meta_dict[orig_key]
+
+        # Higher Order Data
+        # TODO(#789): remove in pysat 3.2.0
+        for key in self.ho_data:
+            if preserve_case:
+                case_key = self.var_case_name(key)
+            else:
+                case_key = key.lower()
+
+            if case_key not in export_dict:
+                export_dict[case_key] = {}
+            for ho_key in self.ho_data[key].data.index:
+                if preserve_case:
+                    case_ho_key = self.var_case_name(ho_key)
+                else:
+                    case_ho_key = ho_key.lower()
+
+                new_key = '_'.join((case_key, case_ho_key))
+                export_dict[new_key] = \
+                    self.ho_data[key].data.loc[ho_key].to_dict()
+
+        return export_dict
 
     @classmethod
     def from_csv(cls, filename=None, col_names=None, sep=None, **kwargs):
@@ -1477,13 +1541,13 @@ class Meta(object):
         ----------
         filename : string
             Absolute filename for csv file or name of file stored in pandas
-            instruments location.
+            instruments location
         col_names : list-like collection of strings
-            Column names in csv and resultant meta object.
+            Column names in csv and resultant meta object
         sep : string
-            Column seperator for supplied csv filename.
+            Column seperator for supplied csv filename
         **kwargs : dict
-            Optional kwargs used by `pds.read_csv`.
+            Optional kwargs used by `pds.read_csv`
 
         Note
         ----
@@ -1511,7 +1575,7 @@ class Meta(object):
             if os.path.isfile(testfile):
                 filename = testfile
             else:
-                # Try to form an absolute path, if the relative path failed.
+                # Try to form an absolute path, if the relative path failed
                 testfile = os.path.abspath(filename)
                 if not os.path.isfile(testfile):
                     raise ValueError("Unable to create valid file path.")
@@ -1521,7 +1585,7 @@ class Meta(object):
         mdata = pds.read_csv(filename, names=col_names, sep=sep, **kwargs)
 
         if not mdata.empty:
-            # Make sure the data name is the index.
+            # Make sure the data name is the index
             mdata.index = mdata['name']
             del mdata['name']
             return cls(metadata=mdata)
@@ -1545,34 +1609,34 @@ class MetaLabels(object):
     Parameters
     ----------
     units : tuple
-        Units label name and value type. (default=('units', str))
+        Units label name and value type (default=('units', str))
     name : tuple
-        Name label name and value type. (default=('long_name', str))
+        Name label name and value type (default=('long_name', str))
     notes : tuple
-        Notes label name and value type. (default=('notes', str))
+        Notes label name and value type (default=('notes', str))
     desc : tuple
-        Description label name and value type. (default=('desc', str))
+        Description label name and value type (default=('desc', str))
     min_val : tuple
-        Minimum value label name and value type. (default=('value_min', float))
+        Minimum value label name and value type (default=('value_min', float))
     max_val : tuple
-        Maximum value label name and value type. (default=('value_max', float))
+        Maximum value label name and value type (default=('value_max', float))
     fill_val : tuple
-        Fill value label name and value type. (default=('fill', float))
+        Fill value label name and value type (default=('fill', float))
     kwargs : dict
         Dictionary containing optional label attributes, where the keys are the
         attribute names and the values are tuples containing the label name and
-        value type.
+        value type
 
     Attributes
     ----------
     meta : pandas.DataFrame or NoneType
-        Coupled MetaData data object or NoneType.
+        Coupled MetaData data object or NoneType
     units : str
         String used to label units in storage. (default='units')
     name : str
         String used to label long_name in storage. (default='long_name')
     notes : str
-       String used to label notes in storage. (default='notes')
+       String used to label notes in storage (default='notes')
     desc : str
        String used to label variable descriptions in storage.
        (default='desc')
@@ -1584,16 +1648,16 @@ class MetaLabels(object):
        (default='value_max')
     fill_val : str
         String used to label fill value in storage. The default follows the
-        netCDF4 standards. (default='fill')
+        netCDF4 standards (default='fill')
     label_type : dict
-        Dict with attribute names as keys and expected data types as values.
+        Dict with attribute names as keys and expected data types as values
     label_attrs : dict
-        Dict with attribute names as values and attributes values as keys.
+        Dict with attribute names as values and attributes values as keys
 
     Raises
     ------
     TypeError
-        If meta data type is invalid.
+        If meta data type is invalid
 
     Note
     ----
@@ -1628,11 +1692,11 @@ class MetaLabels(object):
                  **kwargs):
         """Initialize the MetaLabels class."""
 
-        # Initialize the coupled metadata.
+        # Initialize the coupled metadata
         self.meta = metadata
 
         # Initialize a dictionary of label types, whose keys are the label
-        # attributes.
+        # attributes
         self.label_type = {'units': units[1], 'name': name[1],
                            'notes': notes[1], 'desc': desc[1],
                            'min_val': min_val[1], 'max_val': max_val[1],
@@ -1642,18 +1706,18 @@ class MetaLabels(object):
                             min_val[0]: 'min_val', max_val[0]: 'max_val',
                             fill_val[0]: 'fill_val'}
 
-        # Ensure all standard label types are valid.
+        # Ensure all standard label types are valid
         for label in self.label_type.keys():
             if not self._eval_label_type(self.label_type[label]):
                 raise TypeError(''.join([
                     'iterable types like ', repr(self.label_type[label]),
                     ' (set for ', repr(label), ') are not allowed']))
 
-        # Set the standard label attributes.
+        # Set the standard label attributes
         for label_val in self.label_attrs.keys():
             setattr(self, self.label_attrs[label_val], label_val)
 
-        # Set and evaluate the custom labels and label types.
+        # Set and evaluate the custom labels and label types
         for custom_label in kwargs.keys():
             self.update(custom_label, *kwargs[custom_label])
 
@@ -1665,21 +1729,21 @@ class MetaLabels(object):
         Parameters
         ----------
         name : str
-            Attribute name to be assigned to MetaLabels.
+            Attribute name to be assigned to MetaLabels
         value
-            Value (any type) to be assigned to attribute specified by name.
+            Value (any type) to be assigned to attribute specified by name
 
         """
-        # Get old attribute value for reference.
+        # Get old attribute value for reference
         if hasattr(self, name):
             old_value = getattr(self, name)
         else:
             old_value = None
 
-        # Use Object to avoid recursion.
+        # Use Object to avoid recursion
         super(MetaLabels, self).__setattr__(name, value)
 
-        # Before setting the attribute, see if upstream changes are needed.
+        # Before setting the attribute, see if upstream changes are needed
         if old_value is not None and name not in ['label_type', 'meta']:
             if hasattr(self, 'meta') and hasattr(self.meta, 'data'):
                 self.meta._label_setter(value, getattr(self, name),
@@ -1692,7 +1756,7 @@ class MetaLabels(object):
         Returns
         -------
         out_str : str
-            Simply formatted output string.
+            Simply formatted output string
 
         """
         label_str = ', '.join(["{:s}={:} {:}".format(mlab, getattr(self, mlab),
@@ -1707,16 +1771,16 @@ class MetaLabels(object):
         Returns
         -------
         out_str : str
-            Nicely formatted output string.
+            Nicely formatted output string
 
         """
-        # Set the printing limits and get the label attributes.
+        # Set the printing limits and get the label attributes
         ncol = 3
         lab_attrs = ["{:s}->{:s}".format(mlab, getattr(self, mlab))
                      for mlab in self.label_type.keys()]
         nlabels = len(lab_attrs)
 
-        # Print the MetaLabels.
+        # Print the MetaLabels
         out_str = "MetaLabels:\n"
         out_str += "-----------\n"
         out_str += core_utils.fmt_output_in_cols(lab_attrs, ncols=ncol,
@@ -1730,12 +1794,12 @@ class MetaLabels(object):
         Parameters
         ----------
         val_type : type
-            Variable type for the value to be assigned to a MetaLabel.
+            Variable type for the value to be assigned to a MetaLabel
 
         Returns
         -------
         valid : bool
-            True if this is a valid type, False if not valid.
+            True if this is a valid type, False if not valid
 
         """
 
@@ -1743,7 +1807,7 @@ class MetaLabels(object):
         valid = True
 
         if default_val is None and val_type not in [type(None), bool, bytes]:
-            # Ensure the type is not iterable.
+            # Ensure the type is not iterable
             try:
                 val_type([])
                 valid = False
@@ -1761,13 +1825,13 @@ class MetaLabels(object):
         Parameters
         ----------
         val_type : type
-            Variable type for the value to be assigned to a MetaLabel.
+            Variable type for the value to be assigned to a MetaLabel
 
         Returns
         -------
         default_val : str, float, int, NoneType
             Sets NaN for all float values, -1 for all int values, and '' for
-            all str values, and None for any other data type.
+            all str values, and None for any other data type
 
         """
 
@@ -1779,7 +1843,7 @@ class MetaLabels(object):
             if str(err).find('not a callable function') > 0:
                 floating_check = False
             else:
-                # Unexpected input.
+                # Unexpected input
                 floating_check = None
         try:
             int_check = isinstance(val_type(), np.integer)
@@ -1787,7 +1851,7 @@ class MetaLabels(object):
             if str(err).find('not a callable function') > 0:
                 int_check = False
             else:
-                # Unexpected input.
+                # Unexpected input
                 int_check = None
 
         try:
@@ -1796,10 +1860,10 @@ class MetaLabels(object):
             if str(err).find('must be a class') > 0:
                 str_check = False
             else:
-                # Unexpected input.
+                # Unexpected input
                 str_check = None
 
-        # Assign the default value.
+        # Assign the default value
         if str_check:
             default_val = ''
         elif val_type is float or floating_check:
@@ -1819,27 +1883,27 @@ class MetaLabels(object):
         Parameters
         ----------
         attr_name : str
-            Label attribute name (e.g., max_val).
+            Label attribute name (e.g., max_val)
 
         Returns
         -------
         default_val : str, float, int, or NoneType
             Sets NaN for all float values, -1 for all int values, and ''
             for all str values except for 'scale', which defaults to 'linear',
-            and None for any other data type.
+            and None for any other data type
 
         Raises
         ------
         ValueError
-            For unknown `attr_name`.
+            For unknown `attr_name`
 
         """
 
-        # Test the input parameter.
+        # Test the input parameter
         if attr_name not in self.label_type.keys():
             raise ValueError('unknown label attribute {:}'.format(attr_name))
 
-        # Assign the default value.
+        # Assign the default value
         if attr_name == 'scale':
             default_val = 'linear'
         else:
@@ -1863,26 +1927,26 @@ class MetaLabels(object):
         Parameters
         ----------
         lattr : str
-            Attribute for this new label.
+            Attribute for this new label
         lname : str
-            MetaData name for this label.
+            MetaData name for this label
         ltype : type
-            Expected data type for this label.
+            Expected data type for this label
 
         Raises
         ------
         TypeError
-            If meta data type is invalid.
+            If meta data type is invalid
 
         """
 
         if self._eval_label_type(ltype):
-            # This is a valid meta data type, update the class attributes.
+            # This is a valid meta data type, update the class attributes
             setattr(self, lattr, lname)
             self.label_type[lattr] = ltype
             self.label_attrs[lname] = lattr
         else:
-            # This is an invalid meta data type, raise a TypeError.
+            # This is an invalid meta data type, raise a TypeError
             raise TypeError(''.join(['iterable types like ', repr(ltype),
                                      ' (set for ', repr(lattr),
                                      ') are not allowed']))
@@ -1902,10 +1966,10 @@ class MetaHeader(object):
     Attributes
     ----------
     global_attrs : list
-        List of global attribute names.
+        List of global attribute names
     <attrs> :
         Attributes with names corresponding to the values of `global_attrs`,
-        may have any type.
+        may have any type
 
     Methods
     -------
@@ -1935,19 +1999,19 @@ class MetaHeader(object):
         Parameters
         ----------
         name : str
-            Attribute name to be assigned to MetaLabels.
+            Attribute name to be assigned to MetaLabels
         value
-            Value (any type) to be assigned to attribute specified by name.
+            Value (any type) to be assigned to attribute specified by name
 
         """
-        # If this is a new attribute, update the `global_attrs` list.
+        # If this is a new attribute, update the `global_attrs` list
         if not hasattr(self, name) and name != 'global_attrs':
             # Only need to expand the global attributes if the new name
-            # is not present in the list.
+            # is not present in the list
             if name not in self.global_attrs:
                 self.global_attrs.append(name)
 
-        # Use Object to avoid recursion.
+        # Use Object to avoid recursion
         super(MetaHeader, self).__setattr__(name, value)
         return
 
@@ -1957,7 +2021,7 @@ class MetaHeader(object):
         Returns
         -------
         out_str : str
-            Simply formatted output string.
+            Simply formatted output string
 
         """
         out_str = ''.join(['pysat.MetaHeader(header_data=',
@@ -1970,20 +2034,20 @@ class MetaHeader(object):
         Parameters
         ----------
         max_num_display : int
-            Maximum number of attribute names to display.
+            Maximum number of attribute names to display
 
         Returns
         -------
         out_str : str
-            Nicely formatted output string.
+            Nicely formatted output string
 
         """
-        # Set the printing limits and get the label attributes.
+        # Set the printing limits and get the label attributes
         ncol = 3
         nattrs = len(self.global_attrs)
         lab_attrs = [repr(gattr) for gattr in self.global_attrs]
 
-        # Print the MetaHeader data.
+        # Print the MetaHeader data
         out_str = "Metadata for {:d} global attributes\n".format(nattrs)
         if nattrs > 0 and max_num_display > 0:
             out_str += "-----------------------------------\n"
@@ -2007,11 +2071,11 @@ class MetaHeader(object):
 
         """
 
-        # Check if other is the same class or not.
+        # Check if other is the same class or not
         if not isinstance(other, self.__class__):
             return False
 
-        # Ensure the expected attributes are present and equal.
+        # Ensure the expected attributes are present and equal
         if not hasattr(other, "to_dict") or not hasattr(self, "to_dict"):
             return False
 
@@ -2025,7 +2089,7 @@ class MetaHeader(object):
             except AssertionError:
                 return False
 
-        # Ensure the global header data is the same.
+        # Ensure the global header data is the same
         for attr in other.global_attrs:
             if not hasattr(self, attr):
                 return False

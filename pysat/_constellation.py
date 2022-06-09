@@ -403,7 +403,7 @@ class Constellation(object):
         return eflag
 
     def _index(self):
-        """Return a common time index for the loaded data.
+        """Create a common time index for the loaded data.
 
         Returns
         -------

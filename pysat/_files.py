@@ -27,7 +27,7 @@ class Files(object):
     Parameters
     ----------
     inst : pysat.Instrument
-        Instrument object.
+        Instrument object
     data_dir : str or NoneType
         Directory without sub-directory variables that allows one to
         bypass the directories provided by pysat.params['data_dirs'].  Only
@@ -49,7 +49,8 @@ class Files(object):
         string formatting.  The default file format structure is supplied in the
         instrument `list_files` routine. See
         `pysat.files.parse_delimited_filenames` and
-        `pysat.files.parse_fixed_width_filenames` for more. (default=None)
+        `pysat.files.parse_fixed_width_filenames` for more information.
+        (default=None)
     write_to_disk : bool
         If true, the list of Instrument files will be written to disk.
         (default=True)
@@ -123,10 +124,10 @@ class Files(object):
     --------
     ::
 
-        # Convenient file access.
+        # Convenient file access
         inst = pysat.Instrument(platform=platform, name=name, tag=tag,
                                 inst_id=inst_id)
-        # First file.
+        # First file
         inst.files[0]
 
         # Files from start up to stop (exclusive on stop).
@@ -134,10 +135,10 @@ class Files(object):
         stop = dt.datetime(2009,1,3)
         print(inst.files[start:stop])
 
-        # Files for date.
+        # Files for date
         print(inst.files[start])
 
-        # Files by slicing.
+        # Files by slicing
         print(inst.files[0:4])
 
         # Get a list of new files. New files are those that weren't present
@@ -249,7 +250,10 @@ class Files(object):
                 # Refresh filenames as directed by user.
                 self.refresh()
             else:
-                # Load stored file information.
+                # Load stored file info. Note if there is a stored `data_path`
+                # that is still in `self.data_paths` then stored value will
+                # be used to replace current `self.data_path`. This is done
+                # to provide support for multiple directories.
                 file_info = self._load()
                 if file_info.empty:
                     # Didn't find stored information. Search local system.
@@ -618,8 +622,21 @@ class Files(object):
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
                                       header=0).squeeze("columns")
                 if update_path:
-                    # Store the `data_path` from the .csv onto `Files`.
-                    self.data_path = loaded.name
+                    # Store the data_path from the .csv onto Files
+                    if loaded.name in self.data_paths:
+                        dstr = ' '.join(['Assigning `data_path` found',
+                                         'in stored file list:',
+                                         loaded.name])
+                        logger.debug(dstr)
+                        self.data_path = loaded.name
+                    else:
+                        dstr = ' '.join(['`data_path` found',
+                                         'in stored file list is not in',
+                                         'current supported `self.data_paths`.',
+                                         'Ignoring stored path:', loaded.name,
+                                         'Clearing out stored files as well.'])
+                        logger.debug(dstr)
+                        loaded = pds.Series([], dtype='a')
 
                 # Ensure the name of returned Series is None for consistency.
                 loaded.name = None
@@ -634,6 +651,8 @@ class Files(object):
         else:
             # Storage file not present.
             return pds.Series([], dtype='a')
+
+        return
 
     def _remove_data_dir_path(self, file_series=None):
         """Remove the data directory path from filenames.
@@ -884,9 +903,9 @@ class Files(object):
 
         Parameters
         ----------
-        start: array_like or str
+        start: array-like or str
             Filenames for start of returned filelist.
-        stop: array_like or str
+        stop: array-like or str
             Filenames inclusive of the ending of list provided by the stop time.
 
         Returns
@@ -994,7 +1013,7 @@ class Files(object):
         search_dict = futils.construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
 
-        # Perform the local file search.
+        # Perform the local file search
         files = futils.search_local_system_formatted_filename(data_path,
                                                               search_str)
 
@@ -1006,5 +1025,5 @@ class Files(object):
             stored = futils.parse_delimited_filenames(files, format_str,
                                                       delimiter)
 
-        # Process the parsed filenames and return a properly formatted Series.
+        # Process the parsed filenames and return a properly formatted Series
         return futils.process_parsed_filenames(stored, two_digit_year_break)

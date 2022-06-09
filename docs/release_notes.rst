@@ -11,6 +11,28 @@ Narrative
 
 .. _rel-narative-3.0.0:
 
+v3.0.2 Release
+--------------
+The Python Satellite Data Analysis Toolkit (pysat) v3.0.2 release is a
+substantive release intended to further improve support pysat in operational
+envrionments as well as improve compatibility with an expanded range of files.
+Sharing data is fundamental to a healthy scientific community thus pysat features
+significant improvements to file reading, writing, metadata handling,
+and filename parsing. Some of the file standards compatibility features have
+been in use by active satellite missions but this update makes them accessible
+to a broader audience, and consistent across Pandas and Xarray data types.
+
+A future where the sky is filled with space-borne scientific instrumentation
+may not be so far away. In preparation, the Constellation class, based
+on a collection of Instruments, has a variety of improvements,
+from improved compatibility with the Instrument class, as well
+as features geared towards working with multiple data sets within the
+Constellation. While the Constellation class is still early in its
+development the foundation is being solidified here.
+
+
+.. _rel-narative-3.0.0:
+
 v3.0 Release
 ------------
 The Python Satellite Data Analysis Toolkit (pysat) v3.0.0 release is a

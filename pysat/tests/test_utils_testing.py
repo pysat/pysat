@@ -32,7 +32,16 @@ class TestTestingUtils(object):
                               (['one', 'two'], ['three', 'two', 'one']),
                               ([None, False], [True, False, None])])
     def test_assert_list_contains_good(self, slist, blist):
-        """Test the successful evaluation of overlapping list contents."""
+        """Test the successful evaluation of overlapping list contents.
+
+        Parameters
+        ----------
+        slist : list
+            Input list for testing
+        blist : list
+            Second input list for testing
+
+        """
 
         testing.assert_list_contains(slist, blist)
         return
@@ -42,7 +51,16 @@ class TestTestingUtils(object):
                               (['one', 'two'], ['three', 'one']),
                               ([None, False], [True, False, "None"])])
     def test_assert_list_contains_bad(self, slist, blist):
-        """Test raises AssertionError for lists where elements are unique."""
+        """Test raises AssertionError for lists where elements are unique.
+
+        Parameters
+        ----------
+        slist : list
+            Input list for testing
+        blist : list
+            Second input list for testing
+
+        """
 
         with pytest.raises(AssertionError) as aerr:
             testing.assert_list_contains(slist, blist)
@@ -58,7 +76,18 @@ class TestTestingUtils(object):
                                {"test_case": False}),
                               ([np.nan, 1], [1, np.nan], {"test_nan": True})])
     def test_assert_list_equal_good(self, slist, blist, kwargs):
-        """Test the evaluation of lists with unordered but identical values."""
+        """Test the evaluation of lists with unordered but identical values.
+
+        Parameters
+        ----------
+        slist : list
+            Input list for testing
+        blist : list
+            Second input list for testing
+        kwargs : dict
+            Dictionary of keyword arguments and values passed to
+            `testing.assert_lists_equal`
+        """
 
         testing.assert_lists_equal(slist, blist, **kwargs)
         return
@@ -70,7 +99,16 @@ class TestTestingUtils(object):
                               (['one', 'two'], ['One', 'TWO']),
                               ([None, False], [True, False, "None"])])
     def test_assert_list_equal_bad(self, slist, blist):
-        """Test the evaluation of overlapping list contents."""
+        """Test the evaluation of overlapping list contents.
+
+        Parameters
+        ----------
+        slist : list
+            Input list for testing
+        blist : list
+            Second input list for testing
+
+        """
 
         with pytest.raises(AssertionError):
             testing.assert_lists_equal(slist, blist)
@@ -81,7 +119,16 @@ class TestTestingUtils(object):
                                             (True, 1), (False, 0),
                                             (np.inf, np.inf), (10, 10)])
     def test_nan_equal_good(self, val1, val2):
-        """Test successful evaluation of equivalent values."""
+        """Test successful evaluation of equivalent values.
+
+        Parameters
+        ----------
+        val1 : any
+            First item for equivalence comparison
+        val2 : any
+            Second item for equivalence comparison
+
+        """
 
         assert testing.nan_equal(val1, val2)
         return
@@ -91,7 +138,16 @@ class TestTestingUtils(object):
                                             (True, 'true'), (False, 'F'),
                                             (np.inf, -np.inf), (1, 11)])
     def test_nan_equal_bad(self, val1, val2):
-        """Test successful evaluation of un-equivalent values."""
+        """Test successful evaluation of un-equivalent values.
+
+        Parameters
+        ----------
+        val1 : any
+            First item for equivalence comparison
+        val2 : any
+            Second item for equivalence comparison
+
+        """
 
         assert not testing.nan_equal(val1, val2)
         return

@@ -3,6 +3,7 @@ ipython
 m2r2
 netCDF4
 numpydoc
+packaging
 pandas
 portalocker
 pytest
