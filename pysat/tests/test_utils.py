@@ -84,7 +84,8 @@ class TestScaleUnits(object):
         self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
                           'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
         self.vol_units = ["m-3", "cm-3", "/cc", 'n/cc', 'm$^{-3}$', 'cm$^{-3}$',
-                          "#/cm^3", "#/km^3", "#/m^3"]
+                          "#/cm^3", "#/km^3", "#/m^3", "cm^-3", "km^-3", "m^-3",
+                          'cm^{-3}', 'm^{-3}', 'km^{-3}']
         self.scale = 0.0
         return
 
