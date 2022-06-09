@@ -8,6 +8,7 @@ Includes:
 * concat
 * empty data flags
 * variable renaming
+* generic meta translation
 
 Note
 ----
@@ -25,8 +26,6 @@ import xarray as xr
 
 import pysat
 from pysat.utils import testing
-
-logger = pysat.logger
 
 
 class InstAccessTests(object):
@@ -740,9 +739,8 @@ class InstAccessTests(object):
         """Test setting series data by name."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
-        self.testInst['doubleMLT'] = \
-            2. * pds.Series(self.testInst['mlt'].values,
-                            index=self.testInst.index)
+        self.testInst['doubleMLT'] = 2. * pds.Series(
+            self.testInst['mlt'].values, index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
 
         self.testInst['blankMLT'] = pds.Series(None, dtype='float64')
@@ -753,10 +751,10 @@ class InstAccessTests(object):
         """Test setting pandas dataframe by name."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
-        self.testInst[['doubleMLT', 'tripleMLT']] = \
-            pds.DataFrame({'doubleMLT': 2. * self.testInst['mlt'].values,
-                           'tripleMLT': 3. * self.testInst['mlt'].values},
-                          index=self.testInst.index)
+        self.testInst[['doubleMLT', 'tripleMLT']] = pds.DataFrame(
+            {'doubleMLT': 2. * self.testInst['mlt'].values,
+             'tripleMLT': 3. * self.testInst['mlt'].values},
+            index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         assert np.all(self.testInst['tripleMLT'] == 3. * self.testInst['mlt'])
         return
@@ -791,8 +789,10 @@ class InstAccessTests(object):
         self.out = self.testInst
         if self.testInst.pandas_format:
             self.testInst[0:3] = 0
+
             # First three values should be changed.
             assert np.all(self.testInst[0:3] == 0)
+
             # Other data should be unchanged.
             assert np.all(self.testInst[3:] == self.out[3:])
         else:
@@ -862,7 +862,7 @@ class InstAccessTests(object):
         {'help': 'I need somebody'}, {'UTS': 'litte_uts', 'mlt': 'big_mlt'},
         {'utS': 'uts1', 'help': {'me': 'do', 'things': 'well'}}])
     def test_unknown_variable_error_renaming(self, values):
-        """Test that unknown variable renaming raises a logger warning.
+        """Test that unknown variable renaming raises a value error.
 
         Parameters
         ----------
@@ -1035,17 +1035,46 @@ class InstAccessTests(object):
                         # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
+
                         # Check for new name in HO data
                         test_val = values[key][ikey]
                         assert test_val in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
+
                         # Case insensitive check
                         assert values[key][ikey] in check_var
+
                         # Ensure new case in there
                         check_var = check_var[values[key][ikey]].name
                         assert values[key][ikey] == check_var
+
                         # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var
+        return
+
+    def test_generic_meta_translator(self):
+        """Test `generic_meta_translator`."""
+
+        # Get default meta translation table
+        trans_table = pysat.utils.io.default_to_netcdf_translation_table(
+            self.testInst)
+
+        # Load data
+        self.testInst.load(date=self.ref_time)
+
+        # Assign table
+        self.testInst._meta_translation_table = trans_table
+
+        # Apply translation
+        trans_meta = self.testInst.generic_meta_translator(self.testInst.meta)
+
+        # Perform equivalent via replacement functions
+        meta_dict = self.testInst.meta.to_dict()
+        truth_meta = pysat.utils.io.apply_table_translation_to_file(
+            self.testInst, meta_dict, trans_table=trans_table)
+
+        assert np.all(truth_meta == trans_meta)
+
         return

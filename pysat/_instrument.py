@@ -21,7 +21,6 @@ import xarray as xr
 
 import pysat
 from pysat import logger
-from pysat import utils
 
 
 class Instrument(object):
@@ -709,7 +708,7 @@ class Instrument(object):
                 len(self.variables))
 
             output_str += '\nVariable Names:\n'
-            output_str += utils._core.fmt_output_in_cols(self.variables)
+            output_str += pysat.utils._core.fmt_output_in_cols(self.variables)
 
             # Print the short version of the metadata
             output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
@@ -975,7 +974,7 @@ class Instrument(object):
             # the rest of the keys are presumed to be metadata
             in_data = new.pop('data')
 
-            # TODO(#908): remove code below with removal of 2d pandas support.
+            # TODO(#908): remove code below with removal of 2D pandas support.
             if hasattr(in_data, '__iter__'):
                 if isinstance(in_data, pds.DataFrame):
                     pass
@@ -1464,7 +1463,8 @@ class Instrument(object):
         if inc is None:
             raise ValueError('Must supply value for `inc`.')
 
-        date = utils.time.filter_datetime_input(date)
+        date = pysat.utils.time.filter_datetime_input(date)
+
         if fid is not None:
             # Get filename based off of index value. Inclusive loading on
             # filenames per construction below.
@@ -1619,7 +1619,7 @@ class Instrument(object):
         self._fid = fid
 
         if date is not None:
-            year, doy = utils.time.getyrdoy(date)
+            year, doy = pysat.utils.time.getyrdoy(date)
             self.yr = year
             self.doy = doy
             self._load_by_date = True
@@ -1696,6 +1696,9 @@ class Instrument(object):
             if data_type == np.dtype('<M8[ns]'):
                 data_type = np.int64
                 datetime_flag = True
+            elif data_type == np.dtype('<U4'):
+                data_type = str
+                datetime_flag = False
             else:
                 datetime_flag = False
         else:
@@ -1717,7 +1720,7 @@ class Instrument(object):
                                  export_nan=None):
         """Filter metadata properties to be consistent with netCDF4.
 
-        .. deprecated:: 3.1.0
+        .. deprecated:: 3.0.2
             Moved to `pysat.utils.io.filter_netcdf4_metadata. This wrapper
             will be removed in 3.2.0+.
 
@@ -1766,10 +1769,10 @@ class Instrument(object):
         else:
             check_type = None
 
-        return utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
-                                                remove=remove,
-                                                check_type=check_type,
-                                                export_nan=export_nan)
+        return pysat.utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
+                                                      remove=remove,
+                                                      check_type=check_type,
+                                                      export_nan=export_nan)
 
     # -----------------------------------------------------------------------
     # Define all accessible methods
@@ -1893,9 +1896,8 @@ class Instrument(object):
                 ustops = [istop - self._iter_width + dt.timedelta(days=1)
                           for istop in self._iter_stop]
                 ufreq = self._iter_step
-                self._iter_list = utils.time.create_date_range(self._iter_start,
-                                                               ustops,
-                                                               freq=ufreq)
+                self._iter_list = pysat.utils.time.create_date_range(
+                    self._iter_start, ustops, freq=ufreq)
             else:
                 # Instrument has no files
                 self._iter_list = []
@@ -1992,8 +1994,8 @@ class Instrument(object):
                     self._iter_width = dt.timedelta(days=1)
 
                 # Create list-like of dates for iteration
-                starts = utils.time.filter_datetime_input(starts)
-                stops = utils.time.filter_datetime_input(stops)
+                starts = pysat.utils.time.filter_datetime_input(starts)
+                stops = pysat.utils.time.filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
@@ -2012,10 +2014,10 @@ class Instrument(object):
                           for stop in stops]
 
                 # Date range is inclusive, no need to pad.
-                self._iter_list = utils.time.create_date_range(starts,
-                                                               ustops,
-                                                               freq=freq)
-                # Go back to time index
+                self._iter_list = pysat.utils.time.create_date_range(starts,
+                                                                     ustops,
+                                                                     freq=freq)
+                # go back to time index
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
 
             else:
@@ -2034,7 +2036,7 @@ class Instrument(object):
     @date.setter
     def date(self, new_date):
         # Set the date property, see property docstring for details
-        self._date = utils.time.filter_datetime_input(new_date)
+        self._date = pysat.utils.time.filter_datetime_input(new_date)
 
     @property
     def empty(self):
@@ -2079,6 +2081,15 @@ class Instrument(object):
             return self.data.columns
         else:
             return list(self.data.variables.keys())
+
+    @property
+    def vars_no_time(self):
+        """List of variables for the loaded data, excluding time index."""
+
+        if self.pandas_format:
+            return self.data.columns
+        else:
+            return pysat.utils.io.xarray_vars_no_time(self.data)
 
     def copy(self):
         """Create a deep copy of the entire Instrument object.
@@ -2286,7 +2297,7 @@ class Instrument(object):
             Today's date in UTC
 
         """
-        return utils.time.today()
+        return pysat.utils.time.today()
 
     def tomorrow(self):
         """Get tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -2581,7 +2592,7 @@ class Instrument(object):
 
             # Collect normal variables and rename higher order variables
             for vkey in self.variables:
-                map_key = utils.get_mapped_value(vkey, mapper)
+                map_key = pysat.utils.get_mapped_value(vkey, mapper)
 
                 if map_key is not None:
                     # Treat higher-order pandas and normal pandas separately
@@ -2605,7 +2616,8 @@ class Instrument(object):
                         else:
                             # This is either a value or a mapping function
                             for hkey in self.meta[vkey]['children'].keys():
-                                hmap = utils.get_mapped_value(hkey, mapper)
+                                hmap = pysat.utils.get_mapped_value(hkey,
+                                                                    mapper)
                                 if hmap is not None:
                                     hdict[hkey] = hmap
 
@@ -2662,7 +2674,7 @@ class Instrument(object):
             # data, but not the metadata. Xarray requires dict input for rename.
             gdict = {}
             for vkey in self.variables:
-                map_key = utils.get_mapped_value(vkey, mapper)
+                map_key = pysat.utils.get_mapped_value(vkey, mapper)
                 if map_key is not None:
                     if lowercase_data_labels:
                         gdict[vkey] = map_key.lower()
@@ -2678,7 +2690,10 @@ class Instrument(object):
         return
 
     def generic_meta_translator(self, input_meta):
-        """Convert the metadata contained in an object into a dictionary.
+        """Convert the `input_meta` metadata into a dictionary.
+
+        .. deprecated:: 3.2.0
+           `generic_meta_translator` will be removed in the 3.2.0+ release.
 
         Parameters
         ----------
@@ -2690,57 +2705,26 @@ class Instrument(object):
         export_dict : dict
             A dictionary of the metadata for each variable of an output file
 
+        Note
+        ----
+        Uses the translation dict, if present, at `self._meta_translation_table`
+        to map existing metadata labels to a list of labels used in the
+        returned dict.
+
         """
-        export_dict = {}
-        if self._meta_translation_table is not None:
-            # Create a translation table for the actual values of the meta
-            # labels. The instrument specific translation table only stores the
-            # names of the attributes that hold the various meta labels.
-            translation_table = {}
-            for key in self._meta_translation_table:
-                translation_table[
-                    getattr(self, key)] = self._meta_translation_table[key]
-        else:
-            translation_table = None
 
-        # First Order Data
-        for key in input_meta.data.index:
-            if translation_table is None:
-                export_dict[key] = input_meta.data.loc[key].to_dict()
-            else:
-                # Translate each key if a translation is provided
-                export_dict[key] = {}
-                meta_dict = input_meta.data.loc[key].to_dict()
-                for orig_key in meta_dict:
-                    if orig_key in translation_table:
-                        for translated_key in translation_table[orig_key]:
-                            export_dict[
-                                key][translated_key] = meta_dict[orig_key]
-                    else:
-                        export_dict[key][orig_key] = meta_dict[orig_key]
+        dstr = ''.join(['This function has been deprecated. Please see ',
+                        '`pysat.utils.io.apply_table_translation_to_file` and ',
+                        '`self.meta.to_dict` to get equivalent functionality.'])
+        warnings.warn(dstr, DeprecationWarning, stacklevel=2)
 
-        # Higher Order Data
-        for key in input_meta.ho_data:
-            if key not in export_dict:
-                export_dict[key] = {}
-            for ho_key in input_meta.ho_data[key].data.index:
-                new_key = '_'.join((key, ho_key))
-                if translation_table is None:
-                    export_dict[new_key] = \
-                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
-                else:
-                    # Translate each key if a translation is provided
-                    export_dict[new_key] = {}
-                    meta_dict = \
-                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
-                    for orig_key in meta_dict:
-                        if orig_key in translation_table:
-                            for translated_key in translation_table[orig_key]:
-                                export_dict[new_key][
-                                    translated_key] = meta_dict[orig_key]
-                        else:
-                            export_dict[new_key][orig_key] = meta_dict[orig_key]
-        return export_dict
+        meta_dict = input_meta.to_dict()
+        trans_table = self._meta_translation_table
+        exp_dict = pysat.utils.io.apply_table_translation_to_file(self,
+                                                                  meta_dict,
+                                                                  trans_table)
+
+        return exp_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
@@ -2831,12 +2815,12 @@ class Instrument(object):
             # Jan. 1st (inclusive) - Jan. 3rd (exclusive)
             inst.load(2009, 1, 2009, 3)
 
-            # Same procedure using datetimes
+            # Load a range of days using datetimes
             date = dt.datetime(2009, 1, 1)
             end_date = dt.datetime(2009, 1, 3)
             inst.load(date=date, end_date=end_date)
 
-            # Same procedure using filenames. Note the change in index due to
+            # Load several files by filename. Note the change in index due to
             # inclusive slicing on filenames!
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
@@ -2849,8 +2833,8 @@ class Instrument(object):
                 kwargs[lkey] = self.kwargs['load'][lkey]
 
         # Set options used by loading routine based upon user input
-        if (yr is not None) and (doy is not None):
-            if (doy < 1) or (doy > 366):
+        if yr is not None and doy is not None:
+            if doy < 1 or doy > 366:
                 estr = ''.join(('Day of year (doy) is only valid between and ',
                                 'including 1-366.'))
                 raise ValueError(estr)
@@ -2864,15 +2848,15 @@ class Instrument(object):
                                         "%Y %j")
             self._set_load_parameters(date=date, fid=None)
 
-            if (end_yr is not None) and (end_doy is not None):
-                if end_doy < 1 or (end_doy > 366):
+            if end_yr is not None and end_doy is not None:
+                if end_doy < 1 or end_doy > 366:
                     estr = ''.join(('Day of year (end_doy) is only valid ',
                                     'between and including 1-366.'))
                     raise ValueError(estr)
                 end_date = dt.datetime.strptime(
                     "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j")
                 self.load_step = end_date - date
-            elif (end_yr is not None) or (end_doy is not None):
+            elif end_yr is not None or end_doy is not None:
                 estr = ''.join(('Both end_yr and end_doy must be set, ',
                                 'or neither.'))
                 raise ValueError(estr)
@@ -2889,7 +2873,7 @@ class Instrument(object):
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
-            date = utils.time.filter_datetime_input(date)
+            date = pysat.utils.time.filter_datetime_input(date)
 
             # Increment after determining the desired step size
             if end_date is not None:
@@ -2977,7 +2961,7 @@ class Instrument(object):
             if self._empty(self._next_data) and self._empty(self._prev_data):
                 # Data has not already been loaded for previous and next days.
                 # Load data for all three.
-                logger.info('Initializing three day/file window')
+                logger.debug('Initializing data cache.')
 
                 # Using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
@@ -2987,6 +2971,7 @@ class Instrument(object):
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
+                    logger.debug('Using data cache. Loading next.')
                     # Moving forward in time
                     del self._prev_data
                     self._prev_data = self._curr_data
@@ -2995,6 +2980,7 @@ class Instrument(object):
                     self._curr_meta = self._next_meta
                     self._next_data, self._next_meta = self._load_next()
                 elif self._prev_data_track == curr:
+                    logger.debug('Using data cache. Loading previous.')
                     # Moving backward in time
                     del self._next_data
                     self._next_data = self._curr_data
@@ -3005,6 +2991,7 @@ class Instrument(object):
                 else:
                     # Jumped in time/or switched from filebased to date based
                     # access
+                    logger.debug('Resetting data cache.')
                     del self._prev_data
                     del self._curr_data
                     del self._next_data
@@ -3110,36 +3097,36 @@ class Instrument(object):
                 if (self.index[-1] == last_pad) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # If self.pad is False, load single day
         else:
+            # If self.pad is False, load single day
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
                                               inc=self.load_step,
                                               load_kwargs=kwargs)
             if not self.empty:
+                # Data was returned. Assign returned metadata information.
                 self.meta = meta
-
-                # If only some metadata included, define the remaining
-                # variables
-                warn_default = False
-                for var in self.variables:
-                    if var not in self.meta:
-                        default_warn = "".join(["Metadata set to defaults, as",
-                                                " they were missing in the ",
-                                                "Instrument"])
-                        warn_default = True
-                        self.meta[var] = {self.meta.labels.name: var,
-                                          self.meta.labels.notes: default_warn}
-
-                if warn_default:
-                    warnings.warn(default_warn, stacklevel=2)
             else:
                 estr = ''.join(('Metadata was not assigned as there was ',
                                 'no data returned.'))
                 pysat.logger.info(estr)
 
-        # Check if load routine actually returns meta
-        if self.meta.data.empty:
-            self.meta[self.variables] = {self.meta.labels.name: self.variables}
+        if not self.empty:
+            # Check for partial metadata, define the remaining variables.
+            warn_missing_vars = []
+            default_warn = "".join(["Metadata set to defaults, as they were ",
+                                    "missing in the Instrument."])
+            for var in self.vars_no_time:
+                if var not in self.meta:
+                    warn_missing_vars.append(var)
+                    self.meta[var] = {self.meta.labels.name: var,
+                                      self.meta.labels.notes: default_warn}
+
+            if len(warn_missing_vars) > 0:
+                default_warn = "".join(["Metadata for variables [{:s}] set to ",
+                                        "defaults, as they were ",
+                                        "missing in the Instrument."])
+                default_warn = default_warn.format(', '.join(warn_missing_vars))
+                warnings.warn(default_warn, stacklevel=2)
 
         # If loading by file and there is data, set the yr, doy, and date
         if not self._load_by_date and not self.empty:
@@ -3148,7 +3135,7 @@ class Instrument(object):
             else:
                 temp = self.index[0]
             self.date = dt.datetime(temp.year, temp.month, temp.day)
-            self.yr, self.doy = utils.time.getyrdoy(self.date)
+            self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
 
         # Ensure data is unique and monotonic. Check occurs after all the data
         # padding loads, or individual load. Thus, it can potentially check
@@ -3467,9 +3454,10 @@ class Instrument(object):
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
             # whole days.
-            start = utils.time.filter_datetime_input(start)
-            stop = utils.time.filter_datetime_input(stop)
-            date_array = utils.time.create_date_range(start, stop, freq=freq)
+            start = pysat.utils.time.filter_datetime_input(start)
+            stop = pysat.utils.time.filter_datetime_input(stop)
+            date_array = pysat.utils.time.create_date_range(start, stop,
+                                                            freq=freq)
 
         # Add necessary kwargs to the optional kwargs
         kwargs['tag'] = self.tag
@@ -3528,13 +3516,13 @@ class Instrument(object):
 
         return
 
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name=None,
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
                    unlimited_time=True, modify=False):
         """Store loaded data into a netCDF4 file.
 
-        .. deprecated:: 3.1.0
+        .. deprecated:: 3.0.2
             Changed `fname` from a kwarg to an arg of type str in the 3.2.0+
             release.
 
@@ -3546,9 +3534,9 @@ class Instrument(object):
             Class used as a comparison, only attributes that are present with
             self and not on base_instrument are written to netCDF. Using None
             assigns an unmodified pysat.Instrument object. (default=None)
-        epoch_name : str
+        epoch_name : str or NoneType
             Label in file for datetime index of Instrument object
-            (default='Epoch')
+            (default=None)
         zlib : bool
             Flag for engaging zlib compression (True - compression on)
             (default=False)
@@ -3602,13 +3590,13 @@ class Instrument(object):
         inst = self if modify else self.copy()
 
         # Write the output file
-        utils.io.inst_to_netcdf(inst, fname=fname,
-                                base_instrument=base_instrument,
-                                epoch_name=epoch_name, zlib=zlib,
-                                complevel=complevel, shuffle=shuffle,
-                                preserve_meta_case=preserve_meta_case,
-                                export_nan=export_nan,
-                                unlimited_time=unlimited_time)
+        pysat.utils.io.inst_to_netcdf(inst, fname=fname,
+                                      base_instrument=base_instrument,
+                                      epoch_name=epoch_name, zlib=zlib,
+                                      complevel=complevel, shuffle=shuffle,
+                                      preserve_meta_case=preserve_meta_case,
+                                      export_nan=export_nan,
+                                      unlimited_time=unlimited_time)
 
         return
 
@@ -3625,7 +3613,7 @@ _reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
 
 
 def _kwargs_keys_to_func_name(kwargs_key):
-    """Convert from `self.kwargs` key name to the function/method name.
+    """Convert from `self.kwargs` key name to the function or method name.
 
     Parameters
     ----------
@@ -3648,7 +3636,7 @@ def _get_supported_keywords(local_func):
 
     Parameters
     ----------
-    local_func : function, method, or functools.partial
+    local_func : function or method
         Method used to load data within pysat
 
     Returns
@@ -3663,7 +3651,6 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
-    global _reserved_keywords
 
     # Account for keywords that are treated by Instrument as args
     pre_kws = _reserved_keywords.copy()
@@ -3716,7 +3703,7 @@ def _get_supported_keywords(local_func):
 
 
 def _pass_func(*args, **kwargs):
-    """Empty, default function for updateable Instrument methods."""
+    """Empty, default function for updatable Instrument methods."""
     pass
 
 

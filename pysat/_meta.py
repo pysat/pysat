@@ -17,7 +17,7 @@ from pysat.utils import testing
 
 
 class Meta(object):
-    """Store metadata for Instrument instance.
+    """Store metadata for the Instrument and Constellation classes.
 
     Parameters
     ----------
@@ -207,7 +207,7 @@ class Meta(object):
         self._base_attr = dir(self)
 
     def __repr__(self):
-        """Print MetaData instantiation parameters.
+        """Print a representation of the Meta instantiation callable by `eval`.
 
         Returns
         -------
@@ -418,7 +418,7 @@ class Meta(object):
                                     # This type is incorrect, try casting it
                                     wmsg = ''.join(['Metadata with type ',
                                                     repr(type(to_be_set)),
-                                                    'does not match expected ',
+                                                    ' does not match expected ',
                                                     'type ',
                                                     repr(self.labels.label_type[
                                                         iattr])])
@@ -1024,6 +1024,16 @@ class Meta(object):
                 self._label_setter(new_name, new_name,
                                    other_meta.labels.label_type[key])
 
+        # Need to deal with case where self has labels that other doesn't
+        for key in self.labels.label_type.keys():
+            if not hasattr(other_meta.labels, key):
+                # This label doesn't exist, add it.
+                new_name = getattr(self.labels, key)
+                other_meta.labels.update(key, new_name,
+                                         self.labels.label_type[key])
+                other_meta._label_setter(new_name, new_name,
+                                         self.labels.label_type[key])
+
         self.labels = other_meta.labels
 
         return
@@ -1469,6 +1479,59 @@ class Meta(object):
         self[self.var_case_name(epoch_name)] = new_dict
 
         return
+
+    def to_dict(self, preserve_case=False):
+        """Convert self into a dictionary.
+
+        Parameters
+        ----------
+        preserve_case : bool
+            If True, the case of variables within self are preserved. If False,
+            all variables returned as lower case. (default=False)
+
+        Returns
+        -------
+        export_dict : dict
+            A dictionary of the metadata for each variable of an output file
+
+        """
+
+        export_dict = {}
+
+        # First Order Data
+        for key in self.data.index:
+            if preserve_case:
+                case_key = self.var_case_name(key)
+            else:
+                case_key = key.lower()
+
+            # Translate each key if a translation is provided
+            export_dict[case_key] = {}
+            meta_dict = self.data.loc[key].to_dict()
+            for orig_key in meta_dict:
+                export_dict[case_key][orig_key] = meta_dict[orig_key]
+
+        # Higher Order Data
+        # TODO(#789): remove in pysat 3.2.0
+        for key in self.ho_data:
+            if preserve_case:
+                case_key = self.var_case_name(key)
+            else:
+                case_key = key.lower()
+
+            if case_key not in export_dict:
+                export_dict[case_key] = {}
+            for ho_key in self.ho_data[key].data.index:
+                if preserve_case:
+                    case_ho_key = self.var_case_name(ho_key)
+                else:
+                    case_ho_key = ho_key.lower()
+
+                new_key = '_'.join((case_key, case_ho_key))
+                export_dict[new_key] = \
+                    self.ho_data[key].data.loc[ho_key].to_dict()
+
+        return export_dict
 
     @classmethod
     def from_csv(cls, filename=None, col_names=None, sep=None, **kwargs):

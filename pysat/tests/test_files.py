@@ -345,6 +345,10 @@ class TestBasics(object):
 
         """
 
+        # Add suffix to denote pysat testing file
+        root_fname = '.'.join((root_fname, 'pysat_testing_file'))
+        root_pname = '.'.join((root_pname, 'pysat_testing_file'))
+
         # Truth dates
         dates = pysat.utils.time.create_date_range(self.start, self.stop, '1D')
 

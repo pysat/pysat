@@ -131,14 +131,17 @@ def download(date_array, tag, inst_id, data_path=None):
 
 
 def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
-         epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
+         epoch_name=None, epoch_unit='ms', epoch_origin='unix',
          pandas_format=True, decode_timedelta=False,
-         labels={'units': ('units', str), 'name': ('long_name', str),
-                 'notes': ('notes', str), 'desc': ('desc', str),
-                 'plot': ('plot_label', str), 'axis': ('axis', str),
-                 'scale': ('scale', str), 'min_val': ('value_min', np.float64),
-                 'max_val': ('value_max', np.float64),
-                 'fill_val': ('fill', np.float64)}):
+         load_labels={'units': ('units', str), 'name': ('long_name', str),
+                      'notes': ('notes', str), 'desc': ('desc', str),
+                      'plot': ('plot_label', str), 'axis': ('axis', str),
+                      'scale': ('scale', str),
+                      'min_val': ('value_min', np.float64),
+                      'max_val': ('value_max', np.float64),
+                      'fill_val': ('fill', np.float64)},
+         meta_processor=None,
+         meta_translation=None, drop_meta_labels=None, decode_times=None):
     """Load pysat-created NetCDF data and meta data.
 
     Parameters
@@ -159,12 +162,12 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
         (default='NETCDF4')
-    epoch_name : str
+    epoch_name : str or NoneType
         Data key for epoch variable.  The epoch variable is expected to be an
         array of integer or float values denoting time elapsed from an origin
         specified by `epoch_origin` with units specified by `epoch_unit`. This
         epoch variable will be converted to a `DatetimeIndex` for consistency
-        across pysat instruments.  (default='Epoch')
+        across pysat instruments.  (default=None)
     epoch_unit : str
         The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
         'ns'). (default='ms')
@@ -184,13 +187,35 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         Used for xarray data (`pandas_format` is False).  If True, variables
         with unit attributes that  are 'timelike' ('hours', 'minutes', etc) are
         converted to `np.timedelta64`. (default=False)
-    labels : dict
+    load_labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
         'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+    meta_processor : function or NoneType
+        If not None, a dict containing all of the loaded metadata will be
+        passed to `meta_processor` which should return a filtered version
+        of the input dict. The returned dict is loaded into a pysat.Meta
+        instance and returned as `meta`. (default=None)
+    meta_translation : dict or NoneType
+        Translation table used to map metadata labels in the file to
+        those used by the returned `meta`. Keys are labels from file
+        and values are labels in `meta`. Redundant file labels may be
+        mapped to a single pysat label. If None, will use
+        `default_from_netcdf_translation_table`. This feature
+        is maintained for file compatibility. To disable all translation,
+        input an empty dict. (default=None)
+    drop_meta_labels : list or NoneType
+        List of variable metadata labels that should be dropped. Applied
+        to metadata as loaded from the file. (default=None)
+    decode_times : bool or NoneType
+        If True, variables with unit attributes that are 'timelike' ('hours',
+        'minutes', etc) are converted to `np.timedelta64` by xarray. If False,
+        then `epoch_name` will be converted to datetime using `epoch_unit`
+        and `epoch_origin`. If None, will be set to False for backwards
+        compatibility. For xarray only. (default=None)
 
     Returns
     -------
@@ -200,7 +225,6 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         Pysat Meta data for each data variable.
 
     """
-
     # netCDF4 files, particularly those produced by pysat can be loaded using a
     # pysat provided function, load_netcdf4.
     data, mdata = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
@@ -210,6 +234,10 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                                              epoch_origin=epoch_origin,
                                              pandas_format=pandas_format,
                                              decode_timedelta=decode_timedelta,
-                                             labels=labels)
+                                             labels=load_labels,
+                                             meta_processor=meta_processor,
+                                             meta_translation=meta_translation,
+                                             drop_meta_labels=drop_meta_labels,
+                                             decode_times=decode_times)
 
     return data, mdata

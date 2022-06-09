@@ -14,12 +14,14 @@ import pysat.instruments.pysat_testing2d_xarray
 import pysat.instruments.pysat_testing_xarray
 
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
+from pysat.tests.classes.cls_instrument_integration import InstIntegrationTests
 from pysat.tests.classes.cls_instrument_iteration import InstIterationTests
 from pysat.tests.classes.cls_instrument_property import InstPropertyTests
 from pysat.utils import testing
 
 
-class TestBasics(InstAccessTests, InstIterationTests, InstPropertyTests):
+class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
+                 InstPropertyTests):
     """Unit tests for pysat.Instrument object."""
 
     def setup_class(self):
@@ -384,6 +386,21 @@ class TestDeprecation(object):
 
         # Test the warning messages, ensuring each attribute is present.
         testing.eval_warnings(self.war, self.warn_msgs)
+        return
+
+    def test_generic_meta_translator(self):
+        """Test deprecation of `generic_meta_translator`."""
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as self.war:
+            tinst = pysat.Instrument(**self.in_kwargs)
+            tinst.generic_meta_translator(tinst.meta)
+
+        self.warn_msgs = np.array(["".join(["This function has been deprecated",
+                                            ". Please see "])])
+
+        # Evaluate the warning output
+        self.eval_warnings()
         return
 
     def test_download_freq_kwarg(self):

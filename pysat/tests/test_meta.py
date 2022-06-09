@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------
 """Tests the pysat Meta object."""
 
+import copy
 import logging
 import numpy as np
 import os
@@ -341,14 +342,14 @@ class TestMeta(object):
 
         # Test the warning
         default_str = ''.join(['Metadata set to defaults, as they were',
-                               ' missing in the Instrument'])
+                               ' missing in the Instrument.'])
         assert len(war) >= 1
 
         categories = [war[j].category for j in range(len(war))]
         assert UserWarning in categories
 
         ind = categories.index(UserWarning)
-        assert default_str in str(war[ind].message)
+        assert default_str[8:] in str(war[ind].message)
 
         # Prepare to test the Metadata
         self.dval = 'int32_dummy'
@@ -467,7 +468,7 @@ class TestMeta(object):
         if long_str:
             if inst_kwargs is not None:
                 ndvar = 0
-                for dvar in self.testInst.variables:
+                for dvar in self.testInst.vars_no_time:
                     if out.find(dvar) > 0:
                         ndvar += 1
                 assert ndvar > 0, "Represented data variable names missing"
@@ -619,7 +620,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
 
         # Pop each of the data variables
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             mcomp = self.meta[dvar]
             mpop = self.meta.pop(dvar)
 
@@ -643,6 +644,37 @@ class TestMeta(object):
 
     # -------------------------------------
     # Test the class with standard metadata
+
+    def test_accept_default_labels(self):
+        """Test `Meta.accept_default_labels."""
+
+        # Start with default test labels
+        other_labels = copy.deepcopy(self.meta_labels)
+
+        # Remove 'units' label
+        other_labels.pop('units')
+
+        # Modify remaining labels
+        for label in other_labels.keys():
+            other_labels[label] = (self.meta_labels[label][0].upper(),
+                                   self.meta_labels[label][1])
+
+        # Define new label
+        other_labels['new_label_label'] = ('new_data_label', np.int)
+
+        # Run function
+        other_meta = pysat.Meta(labels=other_labels)
+        self.meta.accept_default_labels(other_meta)
+
+        # Confirm results at MetaLabels level
+        other_meta_labels = pysat.MetaLabels(metadata=pysat.Meta(),
+                                             **other_labels)
+
+        # Confirm underlying information correct
+        assert self.meta.labels.label_type == other_meta_labels.label_type
+        assert self.meta.labels.label_attrs == other_meta_labels.label_attrs
+
+        return
 
     @pytest.mark.parametrize("custom_attr", [None, 'custom_meta'])
     @pytest.mark.parametrize("assign_type", [dict, pds.Series])
@@ -738,7 +770,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
 
         # Get the selection criteria
-        dvals = list(self.testInst.variables[:num_dvals])
+        dvals = list(self.testInst.vars_no_time[:num_dvals])
         mvals = [getattr(self.meta.labels, mattr)
                  for mattr in list(self.meta_labels.keys())[:num_mvals]]
 
@@ -788,7 +820,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': "testing"})
 
         # Change the meta and update the evaluation data
-        self.dval = self.testInst.variables[0]
+        self.dval = self.testInst.vars_no_time[0]
 
         for val in self.default_val.keys():
             # These values will be unaltered, use what was set
@@ -832,7 +864,7 @@ class TestMeta(object):
 
         # Update the meta data
         dvals = [self.dval.upper() if use_upper else self.dval
-                 for self.dval in self.testInst.variables[:num_dvars]]
+                 for self.dval in self.testInst.vars_no_time[:num_dvars]]
 
         for label in self.default_nan:
             self.default_val[label] = -47
@@ -904,7 +936,7 @@ class TestMeta(object):
         # Test that standard attributes are missing and non-standard
         # attributes are present
         standard_labels = pysat.MetaLabels()
-        for dval in self.testInst.variables:
+        for dval in self.testInst.vars_no_time:
             for label in self.meta_labels.keys():
                 slabel = getattr(standard_labels, label)
                 assert not hasattr(self.meta[dval], slabel), \
@@ -1108,7 +1140,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Get the data variables to drop
-        self.dval = self.testInst.variables[:num_drop]
+        self.dval = self.testInst.vars_no_time[:num_drop]
         testing.assert_list_contains(self.dval,
                                      [val for val in self.meta.keys()])
 
@@ -1118,7 +1150,7 @@ class TestMeta(object):
         # Test the successful deletion
         meta_vals = [val for val in self.meta.keys()]
 
-        assert len(meta_vals) == len(self.testInst.variables) - num_drop
+        assert len(meta_vals) == len(self.testInst.vars_no_time) - num_drop
         for val in self.dval:
             assert val not in meta_vals, \
                 "{:} not dropped from Meta".format(val.__repr__())
@@ -1139,7 +1171,7 @@ class TestMeta(object):
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Get the data variables to drop
-        self.dval = self.testInst.variables[:num_keep]
+        self.dval = self.testInst.vars_no_time[:num_keep]
         testing.assert_list_contains(self.dval,
                                      [val for val in self.meta.keys()])
 
@@ -1193,7 +1225,7 @@ class TestMeta(object):
                                    'labels': self.meta_labels})
 
         # Set data using lower case labels
-        dvals = self.testInst.variables[:num_dvals]
+        dvals = self.testInst.vars_no_time[:num_dvals]
 
         for label in ['fill_val', 'max_val', 'min_val']:
             self.meta[dvals] = {self.meta_labels[label][0].lower():
@@ -1334,7 +1366,7 @@ class TestMeta(object):
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(str.upper)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             assert dvar not in self.meta.keys(), \
                 "variable not renamed: {:}".format(repr(dvar))
             assert dvar.upper() in self.meta.keys(), \
@@ -1351,14 +1383,14 @@ class TestMeta(object):
         # Create a renaming dictionary, which only changes three of the
         # variable names
         rename_dict = {dvar: dvar.upper()
-                       for i, dvar in enumerate(self.testInst.variables)
+                       for i, dvar in enumerate(self.testInst.vars_no_time)
                        if i < 3}
 
         # Rename the meta variables to be all upper case, this will differ
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(rename_dict)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             if dvar in rename_dict.keys():
                 assert dvar not in self.meta.keys(), \
                     "variable not renamed: {:}".format(repr(dvar))
@@ -1707,7 +1739,7 @@ class TestMeta(object):
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(str.upper)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             mvar = dvar.upper()
 
             # Test the lower order variables
@@ -1742,7 +1774,7 @@ class TestMeta(object):
         # Create a renaming dictionary, which only changes up to four of the
         # variable names
         rename_dict = {dvar: dvar.upper()
-                       for i, dvar in enumerate(self.testInst.variables)
+                       for i, dvar in enumerate(self.testInst.vars_no_time)
                        if i < 3 or dvar == 'profiles'}
         rename_dict['profiles'] = {'density': 'DeNsItY'}
 
@@ -1750,7 +1782,7 @@ class TestMeta(object):
         # from the Instrument variables, as pysat defaults to lower case
         self.meta.rename(rename_dict)
 
-        for dvar in self.testInst.variables:
+        for dvar in self.testInst.vars_no_time:
             # Test the lower order variables
             if dvar in rename_dict.keys():
                 mvar = rename_dict[dvar]
@@ -2123,5 +2155,150 @@ class TestDeprecation(object):
 
         # Test the warning messages, ensuring each attribute is present
         testing.eval_warnings(war, self.warn_msgs)
+
+        return
+
+
+class TestToDict(object):
+    """Test `.to_dict` method using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5)
+        self.stime = pysat.instruments.pysat_testing._test_dates['']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+    def teardown(self):
+        """Clean up the unit test environment after each method."""
+        del self.testInst, self.stime, self.out
+
+        return
+
+    @pytest.mark.parametrize("preserve_case", [False, True])
+    def test_to_dict(self, preserve_case):
+        """Test `to_dict` method.
+
+        Parameters
+        ----------
+        preserve_case : bool
+            Flag passed along to `to_dict`.
+
+        """
+
+        self.out = self.testInst.meta.to_dict(preserve_case=preserve_case)
+
+        # Confirm type
+        assert isinstance(self.out, dict)
+
+        # Check for higher order products
+        ho_vars = []
+        for var in self.testInst.meta.keys():
+            if 'children' in self.testInst.meta[var]:
+                if self.testInst.meta[var]['children'] is not None:
+                    for subvar in self.testInst.meta[var]['children'].keys():
+                        ho_vars.append('_'.join([var, subvar]))
+
+        # Confirm the contents of the output for variables
+        for var in self.out.keys():
+            if var not in ho_vars:
+                for label in self.out[var]:
+                    assert label in self.testInst.meta.data.columns
+                    assert testing.nan_equal(self.out[var][label],
+                                             self.testInst.meta[var][label]), \
+                        'Differing values.'
+
+        # Confirm case
+        if not preserve_case:
+            # Outputs should all be lower case
+            for key in self.out.keys():
+                assert key == key.lower(), 'Output not lower case.'
+            for key in ho_vars:
+                assert key == key.lower(), 'Output not lower case.'
+                assert key.lower() in self.out, 'Missing output variable.'
+        else:
+            # Case should be preserved
+            for key in self.out.keys():
+                assert key == self.testInst.meta.var_case_name(key), \
+                    'Output case different.'
+            for key in ho_vars:
+                assert key in self.out, 'Output case different, or missing.'
+
+        num_target_vars = len(ho_vars) + len(list(self.testInst.meta.keys()))
+        assert num_target_vars == len(self.out), \
+            'Different number of variables.'
+
+        return
+
+
+class TestToDictXarray(TestToDict):
+    """Test `.to_dict` methods using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+
+class TestToDictXarray2D(TestToDict):
+    """Test `.to_dict` methods using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+
+class TestToDictPandas2D(TestToDict):
+    """Test `.to_dict` methods using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testing2d',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
+
+        return
+
+
+class TestToDictXarrayModel(TestToDict):
+    """Test `.to_dict` methods using pysat test Instruments."""
+
+    def setup(self):
+        """Set up the unit test environment for each method."""
+
+        self.testInst = pysat.Instrument('pysat', 'testmodel',
+                                         num_samples=5)
+        self.stime = pysat.instruments.pysat_testmodel._test_dates['']['']
+        self.testInst.load(date=self.stime)
+
+        # For output
+        self.out = None
 
         return

@@ -27,8 +27,10 @@ class TestGetTimes(object):
         ----------
         in_date : dt.datetime
             Datetime object
-        out_year : float
+        tst_year : int
             Decimal year
+        tst_doy : int
+            Decimal day of year
 
         """
         out_yr, out_doy = pytime.getyrdoy(in_date)
@@ -301,7 +303,16 @@ class TestFilterDatetimeInput(object):
                                                 dt.timedelta(seconds=14400)))
                                 for i in range(3)], True)])
     def test_filter_datetime(self, in_time, islist):
-        """Test range of allowed inputs for the Instrument datetime filter."""
+        """Test range of allowed inputs for the Instrument datetime filter.
+
+        Parameters
+        ----------
+        in_time : dt.datetime or list-like
+            Input time
+        islist : bool
+            Boolean flag to indicate if `in_time` a list.
+
+        """
 
         # Because the input datetime is the middle of the day and the offset
         # is four hours, the reference date and input date are the same

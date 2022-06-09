@@ -15,7 +15,7 @@ import pysat.tests.classes.cls_instrument_library as cls_inst_lib
 def initialize_test_inst_and_date(inst_dict):
     """Initialize the instrument object to test and date.
 
-    .. deprecated:: 3.1.0
+    .. deprecated:: 3.0.2
         `initialize_test_inst_and_date` will be removed in pysat 3.2.0, it is
         moved to `pysat.tests.classes.cls_instrument_library`.
 
@@ -44,7 +44,7 @@ def initialize_test_inst_and_date(inst_dict):
 class InstTestClass(cls_inst_lib.InstLibTests):
     """Provide standardized tests for pysat instrument libraries.
 
-    .. deprecated:: 3.1.0
+    .. deprecated:: 3.0.2
         `InstTestClass` will be removed in pysat 3.2.0, it is replaced by
         `pysat.tests.classes.cls_instrument_library.InstLibTests`.
 
