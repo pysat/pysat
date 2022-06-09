@@ -538,7 +538,7 @@ class Meta(object):
         Raises
         ------
         KeyError
-            If a properly formatted key is not present.
+            If a properly formatted key is not present
         NotImplementedError
             If the input is not one of the allowed data types
 

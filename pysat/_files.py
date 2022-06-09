@@ -27,7 +27,7 @@ class Files(object):
     Parameters
     ----------
     inst : pysat.Instrument
-        Instrument object.
+        Instrument object
     data_dir : str or NoneType
         Directory without sub-directory variables that allows one to
         bypass the directories provided by pysat.params['data_dirs'].  Only

@@ -39,7 +39,7 @@ class Instrument(object):
         Identifies particular subset of instrument data. (default='')
     inst_id : str
         Secondary level of identification, such as spacecraft within a
-        constellation platform. (default='')
+        constellation platform (default='')
     clean_level : str or NoneType
         Level of data quality. If not provided, will default to the
         setting in `pysat.params['clean_level']`. (default=None)
@@ -123,49 +123,49 @@ class Instrument(object):
         tuple of lists (useful for bounds with gaps). The attribute is always
         stored as a tuple of lists for consistency.
     custom_functions : list
-        List of functions to be applied by instrument nano-kernel.
+        List of functions to be applied by instrument nano-kernel
     custom_args : list
-        List of lists containing arguments to be passed to particular.
+        List of lists containing arguments to be passed to particular
         custom function
     custom_kwargs : list
-        List of dictionaries with keywords and values to be passed.
+        List of dictionaries with keywords and values to be passed
         to a custom function
     data : pandas.DataFrame or xarray.Dataset
-        Class object holding the loaded science data.
+        Class object holding the loaded science data
     date : dt.datetime or NoneType
-        Date and time for loaded data, None if no data is loaded.
+        Date and time for loaded data, None if no data is loaded
     doy : int or NoneType
-        Day of year for loaded data, None if no data is loaded.
+        Day of year for loaded data, None if no data is loaded
     files : pysat.Files
-        Class to hold and interact with the available instrument files.
+        Class to hold and interact with the available instrument files
     kwargs : dict
-        Keyword arguments passed to the standard Instrument routines.
+        Keyword arguments passed to the standard Instrument routines
     kwargs_supported : dict
-        Stores all supported keywords for user edification.
+        Stores all supported keywords for user edification
     kwargs_reserved : dict
-        Keyword arguments for reserved method arguments.
+        Keyword arguments for reserved method arguments
     load_step : dt.timedelta
         The temporal increment for loading data, defaults to a timestep of one
-        day.
+        day
     meta : pysat.Meta
-        Class holding the instrument metadata.
+        Class holding the instrument metadata
     meta_labels : dict
-        Dict containing defaults for new Meta data labels.
+        Dict containing defaults for new Meta data labels
     orbits : pysat.Orbits
-        Interface to extracting data orbit-by-orbit.
+        Interface to extracting data orbit-by-orbit
     pandas_format : bool
         Flag indicating whether `data` is stored as a pandas.DataFrame (True)
-        or an xarray.Dataset (False).
+        or an xarray.Dataset (False)
     today : dt.datetime
-        Date and time for the current day in UT.
+        Date and time for the current day in UT
     tomorrow : dt.datetime
-        Date and time for tomorrow in UT.
+        Date and time for tomorrow in UT
     variables : list
-        List of loaded data variables.
+        List of loaded data variables
     yesterday : dt.datetime
-        Date and time for yesterday in UT.
+        Date and time for yesterday in UT
     yr : int or NoneType
-        Year for loaded data, None if no data is loaded.
+        Year for loaded data, None if no data is loaded
 
     Raises
     ------
@@ -837,7 +837,7 @@ class Instrument(object):
             # By Date
             inst[datetime, 'name']
 
-            # Slicing by date, inclusive.
+            # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
 
             # Slicing by name and row/date
@@ -924,7 +924,7 @@ class Instrument(object):
         --------
         ::
 
-            # Simple assignment, default metadata assigned.
+            # Simple assignment, default metadata assigned
             # 'long_name' = 'name'
             # 'units' = ''
             inst['name'] = newData
@@ -952,7 +952,7 @@ class Instrument(object):
         new = copy.deepcopy(new_data)
 
         # Add data to main pandas.DataFrame, depending upon the input
-        # aka slice, and a name.
+        # aka slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
                 try:
@@ -1162,7 +1162,7 @@ class Instrument(object):
         Returns
         -------
         bool
-            True if there is no Instrument data, False if there is data.
+            True if there is no Instrument data, False if there is data
 
         """
 
@@ -1977,8 +1977,8 @@ class Instrument(object):
                 self._iter_type = 'date'
 
                 if starts[0] is None:
-                    # Start and stop dates on self.files already filtered
-                    # to include only year, month, and day.
+                    # Start and stop dates on `self.files` already filtered
+                    # to include only year, month, and day
                     starts = [self.files.start_date]
                 if stops[0] is None:
                     stops = [self.files.stop_date]
@@ -3630,7 +3630,7 @@ def _kwargs_keys_to_func_name(kwargs_key):
     Parameters
     ----------
     kwargs_key : str
-        Key from `self.kwargs` dictionary.
+        Key from `self.kwargs` dictionary
 
     Returns
     -------
