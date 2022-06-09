@@ -190,20 +190,20 @@ class Files(object):
                                           self.inst_info['inst_id'],
                                           'stored_file_info.txt'))
 
-        # Set the path for sub-directories under pysat data path.
+        # Set the path for sub-directories under pysat data path
         if directory_format is None:
             # Assign stored template if user doesn't provide one.
             directory_format = pysat.params['directory_format']
         self.directory_format = directory_format
 
-        # Set the user-specified file format template variable string.
+        # Set the user-specified file format template variable string
         self.file_format = file_format
 
         # Construct the subdirectory path
         self.sub_dir_path = os.path.normpath(
             self.directory_format.format(**self.inst_info))
 
-        # Ensure we have at least one path for pysat data directory.
+        # Ensure we have at least one path for pysat data directory
         if len(pysat.params['data_dirs']) == 0:
             raise NameError(" ".join(("pysat's `data_dirs` hasn't been set.",
                                       "Please set a top-level directory",
@@ -216,12 +216,12 @@ class Files(object):
                            for pdir in pysat.params['data_dirs']]
 
         # If a one-use directory was provided, insert it to the start of the
-        # list of potential data paths.
+        # list of potential data paths
         if data_dir is not None:
             self.data_paths.insert(0, data_dir)
             self.data_paths.insert(0, os.path.join(data_dir, self.sub_dir_path))
 
-        # Ensure path always ends with directory separator.
+        # Ensure path always ends with directory separator
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
 
@@ -233,21 +233,21 @@ class Files(object):
         # are no files.
         self.data_path = self.data_paths[0]
 
-        # Set the preference of writing the file list to disk or not.
+        # Set the preference of writing the file list to disk or not
         self.write_to_disk = write_to_disk
         if not self.write_to_disk:
-            # Use blank memory rather than loading from disk.
+            # Use blank memory rather than loading from disk
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
 
-        # Set the preference to ignore or include empty files.
+        # Set the preference to ignore or include empty files
         self.ignore_empty_files = ignore_empty_files
 
         if self.inst_info['platform'] != '':
             # Only load filenames if this is associated with a real
-            # `pysat.Instrument` instance, not `pysat.Instrument()`.
+            # `pysat.Instrument` instance, not `pysat.Instrument()`
             if self.update_files:
-                # Refresh filenames as directed by user.
+                # Refresh filenames as directed by user
                 self.refresh()
             else:
                 # Load stored file info. Note if there is a stored `data_path`
@@ -261,7 +261,7 @@ class Files(object):
                     # filenames as needed that is handled in refresh.
                     self.refresh()
                 else:
-                    # Attach the files data loaded.
+                    # Attach the files data loaded
                     self._attach_files(file_info)
         return
 
@@ -303,15 +303,15 @@ class Files(object):
         Parameters
         ----------
         other : any
-            Other object to compare for equality.
+            Other object to compare for equality
 
         Returns
         -------
         bool
-            True if objects are identical, False if they are not.
+            True if objects are identical, False if they are not
 
         """
-        # Check if the other object has the same type.
+        # Check if the other object has the same type
         if not isinstance(other, self.__class__):
             return False
 
@@ -322,7 +322,7 @@ class Files(object):
         for key in self.__dict__.keys():
             key_check.append(key)
 
-            # Confirm each object has the same keys.
+            # Confirm each object has the same keys
             if key in other.__dict__.keys():
                 # Define default comparison
                 if key not in ['files', '_previous_file_list',
@@ -332,22 +332,22 @@ class Files(object):
 
                 else:
                     if key not in ['inst_info']:
-                        # Comparing one of the stored pandas Series.
+                        # Comparing one of the stored pandas Series
                         try:
                             # Comparison only works for identically-labeled
-                            # series.
+                            # series
                             check = np.all(self.__dict__[key]
                                            == other.__dict__[key])
                             checks.append(check)
                         except ValueError:
-                            # If there is an error they aren't the same.
+                            # If there is an error they aren't the same
                             return False
 
                     elif key == 'inst_info':
                         ichecks = []
                         for ii_key in self.inst_info.keys():
                             if ii_key != 'inst':
-                                # Standard attribute check.
+                                # Standard attribute check
                                 ichecks.append(self.inst_info[ii_key]
                                                == other.inst_info[ii_key])
 
@@ -361,15 +361,15 @@ class Files(object):
                                     ichecks.append(str(self.inst_info[ii_key])
                                                    == str(oinst))
                                 except AttributeError:
-                                    # If one object is missing a required key.
+                                    # If one object is missing a required key
                                     return False
                         checks.append(np.all(ichecks))
 
             else:
-                # `other` did not have a key that `self` did.
+                # `other` did not have a key that `self` did
                 return False
 
-        # Confirm that `Files` object `other` doesn't have extra terms.
+        # Confirm that `Files` object `other` doesn't have extra terms
         for key in other.__dict__.keys():
             if key not in self.__dict__.keys():
                 return False
@@ -384,34 +384,34 @@ class Files(object):
         Parameters
         ----------
         key : int, list, slice, dt.datetime
-            Key for locating files from a pandas Series indexed by time.
+            Key for locating files from a pandas Series indexed by time
 
         Returns
         -------
         out : pds.Series
-           Subset of the files as a Series.
+           Subset of the files as a Series
 
         Raises
         ------
         IndexError
-            If data is outside of file bounds.
+            If data is outside of file bounds
 
         Note
         ----
-        Slicing has a non-inclusive end point.
+        Slicing has a non-inclusive end point
 
         """
         if self.list_files_creator is not None:
-            # Return filename generated on demand.
+            # Return filename generated on demand
             out = self.list_files_creator(key)
 
         elif isinstance(key, slice):
             try:
                 try:
-                    # Assume key is integer (including list or slice).
+                    # Assume key is integer (including list or slice)
                     out = self.files.iloc[key]
                 except TypeError:
-                    # The key must be something else, use alternative access.
+                    # The key must be something else, use alternative access
                     out = self.files.loc[key]
             except IndexError as err:
                 raise IndexError(''.join((str(err), '\n',
@@ -419,7 +419,7 @@ class Files(object):
                                           'bounds.')))
 
             if isinstance(key.start, dt.datetime):
-                # Enforce exclusive slicing on datetime.
+                # Enforce exclusive slicing on datetime
                 if len(out) > 1:
                     if out.index[-1] >= key.stop:
                         out = out[:-1]
@@ -428,10 +428,10 @@ class Files(object):
                         out = pds.Series([], dtype='a')
         else:
             try:
-                # Assume key is integer (including list or slice).
+                # Assume key is integer (including list or slice)
                 out = self.files.iloc[key]
             except TypeError:
-                # The key must be something else, use alternative access.
+                # The key must be something else, use alternative access
                 out = self.files.loc[key]
 
         return out
@@ -451,17 +451,17 @@ class Files(object):
 
         keep_index = []
         for i, fname in enumerate(self.files):
-            # Create full path for each file.
+            # Create full path for each file
             full_fname = os.path.join(path, fname)
 
-            # Ensure the file exists.
+            # Ensure the file exists
             if os.path.isfile(full_fname):
-                # Check for size.
+                # Check for size
                 if os.path.getsize(full_fname) > 0:
-                    # Store if not empty.
+                    # Store if not empty
                     keep_index.append(i)
 
-        # Remove filenames as needed.
+        # Remove filenames as needed
         dropped_num = len(self.files.index) - len(keep_index)
         if dropped_num > 0:
             logger.warning(' '.join(('Removing {:d}'.format(dropped_num),
@@ -496,7 +496,7 @@ class Files(object):
             if self.ignore_empty_files:
                 self._filter_empty_files(path=self.data_path)
 
-            # Extract date information from first and last files.
+            # Extract date information from first and last files
             if not self.files.empty:
                 self.start_date = filter_datetime_input(self.files.index[0])
                 self.stop_date = filter_datetime_input(self.files.index[-1])
@@ -526,11 +526,11 @@ class Files(object):
 
         """
 
-        # Check if files are unique.
+        # Check if files are unique
         unique_files = len(self.files.index.unique()) == len(self.files)
 
         if not self.multi_file_day and not unique_files:
-            # Give user feedback about the issue.
+            # Give user feedback about the issue
             estr = ''.join(['Duplicate datetimes in stored filename ',
                             'information.\nKeeping one of each ',
                             'of the duplicates, dropping the rest. ',
@@ -540,7 +540,7 @@ class Files(object):
             ind = self.files.index.duplicated()
             logger.warning(self.files.index[ind].unique())
 
-            # Downselect to unique file datetimes.
+            # Downselect to unique file datetimes
             idx = np.unique(self.files.index, return_index=True)
             self.files = self.files.iloc[idx[1]]
 
@@ -560,30 +560,30 @@ class Files(object):
         # do nothing.
         stored_files = self._load(update_path=False)
         if len(stored_files) != len(self.files):
-            # The number of items is different, things are new.
+            # The number of items is different, things are new
             new_flag = True
         else:
-            # The number of items is the same, check specifically for equality.
+            # The number of items is the same, check specifically for equality
             if stored_files.eq(self.files).all():
                 new_flag = False
             else:
-                # Stored and new data are not equal, there are new files.
+                # Stored and new data are not equal, there are new files
                 new_flag = True
 
         if new_flag:
             if self.write_to_disk:
-                # Save the previous data in a backup file.
+                # Save the previous data in a backup file
                 prev_name = os.path.join(self.home_path, 'archive', stored_name)
                 stored_files.to_csv(prev_name,
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
                                     header=[self.data_path])
 
-                # Overwrite the old reference file with the new file info.
+                # Overwrite the old reference file with the new file info
                 self.files.to_csv(os.path.join(self.home_path, stored_name),
                                   date_format='%Y-%m-%d %H:%M:%S.%f',
                                   header=[self.data_path])
             else:
-                # Update the hidden `File` attributes.
+                # Update the hidden `File` attributes
                 self._previous_file_list = stored_files
                 self._current_file_list = self.files.copy()
 
@@ -610,15 +610,15 @@ class Files(object):
 
         fname = self.stored_file_name
         if prev_version:
-            # Archived file list storage filename.
+            # Archived file list storage filename
             fname = os.path.join(self.home_path, 'archive', fname)
         else:
-            # Current file list storage filename.
+            # Current file list storage filename
             fname = os.path.join(self.home_path, fname)
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                # Load data stored on the local drive.
+                # Load data stored on the local drive
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
                                       header=0).squeeze("columns")
                 if update_path:
@@ -638,18 +638,18 @@ class Files(object):
                         logger.debug(dstr)
                         loaded = pds.Series([], dtype='a')
 
-                # Ensure the name of returned Series is None for consistency.
+                # Ensure the name of returned Series is None for consistency
                 loaded.name = None
 
                 return loaded
             else:
-                # Grab content from memory rather than local disk.
+                # Grab content from memory rather than local disk
                 if prev_version:
                     return self._previous_file_list
                 else:
                     return self._current_file_list
         else:
-            # Storage file not present.
+            # Storage file not present
             return pds.Series([], dtype='a')
 
         return
@@ -671,10 +671,10 @@ class Files(object):
         """
         out = None
         if file_series is not None:
-            # Ensure there is a directory divider at the end of the path.
+            # Ensure there is a directory divider at the end of the path
             split_str = os.path.join(self.data_path, '')
 
-            # Remove the data path from all filenames in the Series.
+            # Remove the data path from all filenames in the Series
             out = file_series.apply(lambda x: x.split(split_str)[-1])
 
         return out
@@ -699,7 +699,7 @@ class Files(object):
         saved_info = self.inst_info
         self.inst_info = None
 
-        # Copy everything but the problematic info.
+        # Copy everything but the problematic info
         files_copy = copy.deepcopy(self)
 
         # Restore the saved information, then copy over items that can be copied
@@ -709,10 +709,10 @@ class Files(object):
             if key not in ['inst', 'inst_module']:
                 files_copy.inst_info[key] = copy.deepcopy(self.inst_info[key])
 
-        # Can't copy the weakreference.
+        # Can't copy the weakreference
         files_copy.inst_info['inst'] = self.inst_info['inst']
 
-        # Can't copy the module.
+        # Can't copy the module
         files_copy.inst_info['inst_module'] = self.inst_info['inst_module']
         return files_copy
 
@@ -728,7 +728,7 @@ class Files(object):
 
         """
 
-        # Let interested users know pysat is searching for.
+        # Let interested users know pysat is searching for
         info_str = '{platform} {name} {tag} {inst_id}'.format(
             **self.inst_info)
         info_str = " ".join(("pysat is searching for", info_str, "files."))
@@ -747,7 +747,7 @@ class Files(object):
                                        **kwarg_inputs)
 
             # Check if `list_files_rtn` is actually returning filename or a
-            # dict to be passed to filename creator function.
+            # dict to be passed to filename creator function
             if isinstance(new_files, dict):
                 self.list_files_creator = partial(general.filename_creator,
                                                   **new_files)
@@ -762,7 +762,7 @@ class Files(object):
                 # there truly a point to this?
                 return
 
-            # Ensure the name of returned Series is None for consistency.
+            # Ensure the name of returned Series is None for consistency
             new_files.name = None
 
             # If we find some files, this is the one directory we store.
@@ -777,24 +777,24 @@ class Files(object):
                 new_files = self._remove_data_dir_path(new_files)
                 break
 
-        # Feedback to info on number of files located.
+        # Feedback to info on number of files located
         logger.info('Found {:d} local files.'.format(len(new_files)))
 
         if not new_files.empty:
-            # Sort files to ensure they are in order.
+            # Sort files to ensure they are in order
             new_files = new_files.sort_index()
         elif pysat.params['warn_empty_file_list']:
-            # Warn user if no files found, if `pysat.params` set.
+            # Warn user if no files found, if `pysat.params` set
             pstrs = "\n".join(self.data_paths)
             estr = "".join(("Unable to find any files that match the supplied ",
                             "template: ", self.file_format, "\n",
                             "In the following directories: \n", pstrs))
             logger.warning(estr)
 
-        # Attach Series of files to the class object.
+        # Attach Series of files to the class object
         self._attach_files(new_files)
 
-        # Store to disk, if enabled for this class.
+        # Store to disk, if enabled for this class
         self._store()
         return
 
@@ -814,7 +814,7 @@ class Files(object):
         Raises
         ------
         ValueError
-            If `path` not in `pysat.params['data_dirs']`.
+            If `path` not in `pysat.params['data_dirs']`
 
         Warnings
         --------
@@ -853,11 +853,11 @@ class Files(object):
         # Refresh file series
         self.refresh()
 
-        # Load current and previous set of files.
+        # Load current and previous set of files
         new_file_series = self._load(update_path=False)
         old_file_series = self._load(prev_version=True, update_path=False)
 
-        # Select files that are in the new series and not the old series.
+        # Select files that are in the new series and not the old series
         new_files = new_file_series[-new_file_series.isin(old_file_series)]
 
         return new_files
@@ -885,7 +885,7 @@ class Files(object):
 
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
-            # Filename not in index, try reloading files from disk.
+            # Filename not in index, try reloading files from disk
             self.refresh()
             idx, = np.where(fname == np.array(self.files))
 
@@ -917,7 +917,7 @@ class Files(object):
         Note
         ----
         `start` and `stop` must be of the same type: both array-like or both
-        strings.
+        strings
 
         """
 
@@ -975,7 +975,7 @@ class Files(object):
 
         Note
         ----
-        Requires fixed_width or delimited filename.
+        Requires fixed_width or delimited filename
 
         Does not produce a `Files` instance, but the proper output from
         `instrument_module.list_files` method.
