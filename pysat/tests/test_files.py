@@ -314,22 +314,14 @@ class TestBasics(object):
 
         return
 
-    @pytest.mark.parametrize("root_fname,root_pname",
-                             [[''.join(['pysat_1234567_junk_{year:04d}_gold_',
-                                       '{day:03d}_stuff.pysat_testing_file']),
-                               ''.join(['pysat_{code:7s}_junk_{year:04d}_gold_',
-                                        '{day:03d}_stuff.pysat_testing_file'])],
-                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
-                                        '{day:03d}_stuff.pysat_testing_file']),
-                               ''.join(['pysat_123{code:4s}_junk_{year:04d}_',
-                                        'gold_{day:03d}_stuff.pysat_testing',
-                                        '_file'])],
-                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
-                                        '{day:03d}_stuff.pysat_testing_file']),
-                               ''.join(['{code:5s}_{code2:7s}_junk_{year:04d}',
-                                        '_gold_{day:03d}_stuff.pysat_testing',
-                                        '_file'])]
-                              ])
+    @pytest.mark.parametrize(
+        "root_fname,root_pname",
+        [['pysat_1234567_junk_{year:04d}_gold_{day:03d}_stuff',
+          'pysat_{code:7s}_junk_{year:04d}_gold_{day:03d}_stuff'],
+         ['pysat_1234567_junk_{year:04d}_gold_{day:03d}_stuff',
+          'pysat_123{code:4s}_junk_{year:04d}_gold_{day:03d}_stuff'],
+         ['pysat_1234567_junk_{year:04d}_gold_{day:03d}_stuff',
+          '{code:5s}_{code2:7s}_junk_{year:04d}_gold_{day:03d}_stuff']])
     @pytest.mark.parametrize("delimiter", [None, '_'])
     def test_from_os_user_vars(self, delimiter, root_fname, root_pname):
         """Check that Files.from_os works with user vars.
