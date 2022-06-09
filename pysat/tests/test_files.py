@@ -122,7 +122,8 @@ class TestBasics(object):
 
         self.testInst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, clean_level='clean',
-            temporary_file_list=self.temporary_file_list, update_files=True)
+            temporary_file_list=self.temporary_file_list, update_files=True,
+            use_header=True)
 
         # Create instrument directories in tempdir
         create_dir(self.testInst)

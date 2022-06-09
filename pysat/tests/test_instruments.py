@@ -85,7 +85,7 @@ class TestInstruments(InstLibTests):
         num = 10
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
-                                          num_samples=num)
+                                          num_samples=num, use_header=True)
         self.test_inst.load(date=date)
 
         assert len(self.test_inst['uts']) == num
@@ -100,7 +100,7 @@ class TestInstruments(InstLibTests):
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                           file_date_range=file_date_range,
-                                          update_files=True)
+                                          update_files=True, use_header=True)
         file_list = self.test_inst.files.files
 
         assert all(file_date_range == file_list.index)

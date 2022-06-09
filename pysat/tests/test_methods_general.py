@@ -92,7 +92,7 @@ class TestRemoveLeadText(object):
 
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
-                                         clean_level='clean')
+                                         clean_level='clean', use_header=True)
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
         return
@@ -178,7 +178,8 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
                                          num_samples=12,
-                                         clean_level='clean')
+                                         clean_level='clean',
+                                         use_header=True)
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
         return
@@ -297,7 +298,7 @@ class TestDeprecation(object):
              "for generalized handling, deprecated",
              "function will be removed in pysat 3.2.0+"])]
 
-        test = pysat.Instrument('pysat', 'testing')
+        test = pysat.Instrument('pysat', 'testing', use_header=True)
         test.load(2009, 1)
         with warnings.catch_warnings(record=True) as war:
             gen.convert_timestamp_to_datetime(test, epoch_name='uts')

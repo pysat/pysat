@@ -152,13 +152,15 @@ class TestFileDirectoryTranslations(CICleanSetup):
         self.insts_kwargs = []
 
         # Data by day, ACE SIS data
-        self.insts.append(pysat.Instrument('ace', 'sis', tag='historic'))
+        self.insts.append(pysat.Instrument('ace', 'sis', tag='historic',
+                                           use_header=True))
         test_dates = pysatSpaceWeather.instruments.ace_sis._test_dates
         self.insts_dates.append([test_dates['']['historic']] * 2)
         self.insts_kwargs.append({})
 
         # Data with date mangling, regular F10.7 data, stored monthly
-        self.insts.append(pysat.Instrument('sw', 'f107', tag='historic'))
+        self.insts.append(pysat.Instrument('sw', 'f107', tag='historic',
+                                           use_header=True))
         test_dates = pysatSpaceWeather.instruments.sw_f107._test_dates
         self.insts_dates.append([test_dates['']['historic'],
                                  test_dates['']['historic']
@@ -260,7 +262,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
             # Refresh inst with the old directory template set to get now 'old'
             # path information.
             inst2 = pysat.Instrument(inst.platform, inst.name, tag=inst.tag,
-                                     inst_id=inst.inst_id)
+                                     inst_id=inst.inst_id, use_header=True)
 
             # Check that directories with simpler platform org were NOT removed.
             assert os.path.isdir(inst2.files.data_path)
@@ -321,7 +323,7 @@ class TestFileUtils(CICleanSetup):
 
         self.testInst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, clean_level='clean',
-            update_files=True)
+            update_files=True, use_header=True)
 
         # Create instrument directories in tempdir
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
