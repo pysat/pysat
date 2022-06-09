@@ -97,6 +97,10 @@ class Instrument(object):
     custom : list or NoneType
         Input list containing dicts of inputs for `custom_attach` method inputs
         that may be applied or None (default=None)
+    use_header : bool or NoneType
+        If True, moves custom Meta attributes to MetaHeader instead of
+        Instrument. The setting here overrides the default in `load`.
+        If None, then the default value at `load` used instead. (default=None)
 
     Attributes
     ----------
@@ -113,6 +117,7 @@ class Instrument(object):
     data_dir
     directory_format
     file_format
+    use_header
     bounds : tuple
         Tuple of datetime objects or filenames indicating bounds for loading
         data, or a tuple of NoneType objects. Users may provide as a tuple or
@@ -249,7 +254,7 @@ class Instrument(object):
                          'min_val': ('value_min', np.float64),
                          'max_val': ('value_max', np.float64),
                          'fill_val': ('fill', np.float64)},
-                 custom=None, **kwargs):
+                 custom=None, use_header=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
         # Check for deprecated usage of None.
@@ -507,6 +512,9 @@ class Instrument(object):
 
         # Start with a daily increment for loading
         self.load_step = dt.timedelta(days=1)
+
+        # `use_header` keyword storage
+        self.use_header = use_header
 
         # Store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
@@ -2656,7 +2664,7 @@ class Instrument(object):
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
-             use_header=False, **kwargs):
+             use_header=None, **kwargs):
         """Load the instrument data and metadata.
 
         Parameters
@@ -2692,9 +2700,11 @@ class Instrument(object):
         verifyPad : bool
             If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
-        use_header : bool
+        use_header : bool or NoneType
             If True, moves custom Meta attributes to MetaHeader instead of
-            Instrument (default=False)
+            Instrument. If `use_header` here is None, but is defined at the
+            Instrument level, then that value is used instead. If both
+            are None, then set to False. (default=None)
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments.
 
@@ -3101,6 +3111,12 @@ class Instrument(object):
                     self.data = self[:-1]
 
         # Transfer any extra attributes in meta to the Instrument object
+        if use_header is None:
+            if self.use_header is not None:
+                use_header = self.use_header
+            else:
+                use_header = False
+
         if use_header:
             self.meta.transfer_attributes_to_header()
         else:
