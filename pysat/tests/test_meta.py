@@ -67,7 +67,7 @@ class TestMeta(object):
         """
         if inst_kwargs is not None:
             # Load the test Instrument
-            self.testInst = pysat.Instrument(**inst_kwargs)
+            self.testInst = pysat.Instrument(**inst_kwargs, use_header=True)
             stime = self.testInst.inst_module._test_dates['']['']
             self.testInst.load(date=stime)
 
@@ -1963,7 +1963,8 @@ class TestMetaMutable(object):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument(platform='pysat', name='testing')
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
         self.meta = self.testInst.meta
         self.meta.mutable = True
