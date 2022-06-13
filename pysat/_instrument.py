@@ -326,6 +326,12 @@ class Instrument(object):
             # Get dict of supported keywords and values
             default_kwargs = _get_supported_keywords(func)
 
+            # Expand the dict to include method keywords for load.
+            # TODO(#1020): Remove this if statement for the 3.2.0+ release 
+            if fkey == 'load':
+                meth = getattr(self, fkey)
+                default_kwargs.update(_get_supported_keywords(meth))
+
             # Confirm there are no reserved keywords present
             for kwarg in kwargs.keys():
                 if kwarg in self.kwargs_reserved:
@@ -3100,8 +3106,9 @@ class Instrument(object):
                 if (self.index[-1] == last_time) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # Transfer any extra attributes in meta to the Instrument object
-        if use_header:
+        # Transfer any extra attributes in meta to the Instrument object.
+        # TODO(#1020): Change the way this kwarg is handled
+        if use_header or self.kwargs['load']['use_header']:
             self.meta.transfer_attributes_to_header()
         else:
             warnings.warn(''.join(['Meta now contains a class for global ',
@@ -3529,9 +3536,10 @@ class Instrument(object):
 # Hidden variable to store pysat reserved keywords. Defined here, since these
 # values are used by both the Instrument class and a function defined below.
 # In release 3.2.0+ `freq` will be removed.
-_reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
-                      'data_path', 'format_str', 'supported_tags',
-                      'start', 'stop', 'freq']
+_reserved_keywords = ['inst_id', 'tag', 'date_array', 'data_path', 'format_str',
+                      'supported_tags', 'start', 'stop', 'freq', 'yr', 'doy',
+                      'end_yr', 'end_doy', 'date', 'end_date', 'fname',
+                      'fnames', 'stop_fname']
 
 
 def _kwargs_keys_to_func_name(kwargs_key):
