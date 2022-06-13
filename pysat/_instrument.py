@@ -327,7 +327,7 @@ class Instrument(object):
             default_kwargs = _get_supported_keywords(func)
 
             # Expand the dict to include method keywords for load.
-            # TODO(#1020): Remove this if statement for the 3.2.0+ release 
+            # TODO(#1020): Remove this if statement for the 3.2.0+ release
             if fkey == 'load':
                 meth = getattr(self, fkey)
                 default_kwargs.update(_get_supported_keywords(meth))
@@ -1419,6 +1419,10 @@ class Instrument(object):
         # Set default load_kwargs
         if load_kwargs is None:
             load_kwargs = self.kwargs['load']
+
+        # TODO(#1020): Remove after removing `use_header`
+        if 'use_header' in load_kwargs.keys():
+            del load_kwargs['use_header']
 
         date = pysat.utils.time.filter_datetime_input(date)
         if fid is not None:
