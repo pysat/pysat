@@ -3124,7 +3124,7 @@ class Instrument(object):
                                    'of global attributes to Instrument will ',
                                    'be Deprecated in pysat 3.2.0+. Set ',
                                    '`use_header=True` in this load call or ',
-                                   'on instrument instantiation to remove this',
+                                   'on Instrument instantiation to remove this',
                                    ' warning.']), DeprecationWarning,
                           stacklevel=2)
             self.meta.transfer_attributes_to_instrument(self)
