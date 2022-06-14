@@ -1420,6 +1420,9 @@ class Instrument(object):
         if load_kwargs is None:
             load_kwargs = self.kwargs['load']
 
+        # Ensure that the local optional kwarg `use_header` is not passed
+        # to the instrument routine.
+        #
         # TODO(#1020): Remove after removing `use_header`
         if 'use_header' in load_kwargs.keys():
             del load_kwargs['use_header']
@@ -3112,7 +3115,8 @@ class Instrument(object):
 
         # Transfer any extra attributes in meta to the Instrument object.
         # TODO(#1020): Change the way this kwarg is handled
-        if use_header or self.kwargs['load']['use_header']:
+        if use_header or ('use_header' in self.kwargs['load']
+                          and self.kwargs['load']['use_header']):
             self.meta.transfer_attributes_to_header()
         else:
             warnings.warn(''.join(['Meta now contains a class for global ',
