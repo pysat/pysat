@@ -417,7 +417,14 @@ class TestMeta(object):
 
     @pytest.mark.parametrize("in_val", [1., 1, {}, None, []])
     def test_info_message_incorrect_input_meta_labels(self, in_val, caplog):
-        """Test for info message when labels input not correct."""
+        """Test for info message when labels input not correct.
+
+        Parameters
+        ----------
+        in_val : any
+            Value to assign to test metadata variable
+
+        """
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.meta = pysat.Meta(labels={'min_val': ('min_val', in_val)})
@@ -450,7 +457,16 @@ class TestMeta(object):
                              [None, {'platform': 'pysat', 'name': 'testing'},
                               {'platform': 'pysat', 'name': 'testing2d'}])
     def test_str(self, long_str, inst_kwargs):
-        """Test long string output with custom meta data."""
+        """Test long string output with custom meta data.
+
+        Parameters
+        ----------
+        long_str : bool
+            Flag for testing expanded output
+        inst_kwargs : dict or NoneType
+            Passed to `self.set_meta`
+
+        """
 
         # Set the meta object
         self.set_meta(inst_kwargs=inst_kwargs)
@@ -557,7 +573,14 @@ class TestMeta(object):
         {'units': 'U', 'long_name': 'HO Val', 'radn': 'raiden'},
         {'units': 'MetaU', 'long_name': 'HO Val'}])
     def test_inequality_with_higher_order_meta(self, val_dict):
-        """Test inequality with higher order metadata."""
+        """Test inequality with higher order metadata.
+
+        Parameters
+        ----------
+        val_dict : dict
+            Information to be added to higher order metadata variable
+
+        """
 
         meta_dict = {'units': {'ho_val': 'U', 'ho_prof': 'e-'},
                      'long_name': {'ho_val': 'HO Val', 'ho_prof': 'HO Profile'}}
@@ -565,7 +588,7 @@ class TestMeta(object):
         # Set the default meta object
         self.meta['ho_data'] = pysat.Meta(pds.DataFrame(meta_dict))
 
-        # Set the altrered meta object
+        # Set the altered meta object
         cmeta = pysat.Meta()
 
         for vkey in val_dict.keys():
@@ -583,7 +606,14 @@ class TestMeta(object):
     @pytest.mark.parametrize("label_key", ["units", "name", "notes", "desc",
                                            "min_val", "max_val", "fill_val"])
     def test_value_inequality(self, label_key):
-        """Test that meta equality works without copy."""
+        """Test that meta equality works without copy.
+
+        Parameters
+        ----------
+        label_key : str
+            metadata key being tested
+
+        """
 
         # Add different data to the test and comparison meta objects
         meta_dict = {'units': 'testU',
@@ -614,7 +644,14 @@ class TestMeta(object):
                                            "testing2d_xarray", "testing_xarray",
                                            "testmodel"])
     def test_pop(self, inst_name):
-        """Test meta attributes are retained when extracted using pop."""
+        """Test meta attributes are retained when extracted using pop.
+
+        Parameters
+        ----------
+        inst_name : str
+            pysat test instrument name
+
+        """
 
         # Initialize the Meta data
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name})
@@ -953,7 +990,16 @@ class TestMeta(object):
                               (['units', 'long_name'], ['V', 'Longgggg']),
                               (['fill'], [-999])])
     def test_inst_data_assign_meta(self, labels, vals):
-        """Test Meta initialization with data."""
+        """Test Meta initialization with data.
+
+        Parameters
+        ----------
+        labels : list
+            List of strings for metadata keys to be tested
+        vals : list
+            List of values for metadata keys
+
+        """
 
         # Initialize the instrument
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
@@ -980,7 +1026,16 @@ class TestMeta(object):
     @pytest.mark.parametrize("mlabel,slist", [("units", []),
                                               ("notes", ['A', 'B'])])
     def test_inst_data_assign_meta_string_list(self, mlabel, slist):
-        """Test string assignment to meta with a list of strings."""
+        """Test string assignment to meta with a list of strings.
+
+        Parameters
+        ----------
+        mlabel : str
+            Meta key to be tested
+        slist : list
+            List of values to be assigned to `mlabel`
+
+        """
 
         # Initialize the instrument
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
@@ -1280,7 +1335,14 @@ class TestMeta(object):
     @pytest.mark.parametrize("data_val", ['test_val', 'TEST_VAL', 'Test_Val',
                                           'TeSt_vAl'])
     def test_var_case_name_list_input(self, data_val):
-        """Test `meta.var_case_name` preserves case for list inputs."""
+        """Test `meta.var_case_name` preserves case for list inputs.
+
+        Parameters
+        ----------
+        data_val : str
+            Key string used for testing
+
+        """
 
         self.meta[data_val] = self.default_val
 
@@ -1319,6 +1381,11 @@ class TestMeta(object):
                                        'MeTa_lAbEl'])
     def test_get_attribute_name_case_preservation_list_input(self, label):
         """Test that meta labels and values preserve the input case, list input.
+
+        Parameters
+        ----------
+        label : str
+            Metadata string label used for testing
 
         """
 
@@ -1471,7 +1538,14 @@ class TestMeta(object):
                             'dummy_frame2': 'Dummy 2'},
               'bananas': {'dummy_frame1': 1, 'dummy_frame2': 2}}))}])
     def test_inst_ho_data_assignment(self, meta_dict):
-        """Test the assignment of the higher order metadata."""
+        """Test the assignment of the higher order metadata.
+
+        Parameters
+        ----------
+        meta_dict : dict or NoneType
+            Dictionary used to create test metadata
+
+        """
 
         # Initialize the Meta data
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
@@ -1824,7 +1898,14 @@ class TestMeta(object):
                                        'MeTa_lAbEl'])
     def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
                                                                          label):
-        """Test that get attribute names preserves the case with ho metadata."""
+        """Test that get attribute names preserves the case with ho metadata.
+
+        Parameters
+        ----------
+        label : str
+            String label used for testing metadata
+
+        """
 
         # Set a meta data variable
         self.dval = 'test_val'
@@ -1915,7 +1996,16 @@ class TestMetaImmutable(TestMeta):
     @pytest.mark.parametrize("prop,set_val", [('data', pds.DataFrame()),
                                               ('ho_data', {})])
     def test_meta_mutable_properties(self, prop, set_val):
-        """Test that @properties are always mutable."""
+        """Test that @properties are always mutable.
+
+        Parameters
+        ----------
+        prop : str
+            Attribute on `self.meta` to be tested
+        set_val : any
+            Value to be assigned to `prop` on `self.meta`
+
+        """
 
         # Set anything that can be immutable to be immutable
         self.meta.mutable = self.mutable
@@ -1933,7 +2023,14 @@ class TestMetaImmutable(TestMeta):
     @pytest.mark.parametrize("label", ['units', 'name', 'desc', 'notes',
                                        'min_val', 'max_val', 'fill_val'])
     def test_meta_mutable_properties_labels(self, label):
-        """Test that @properties are always mutable."""
+        """Test that @properties are always mutable.
+
+        Parameters
+        ----------
+        label : str
+            Metadata label to be tested
+
+        """
 
         # Set anything that can be immutable to be immutable
         self.meta.mutable = self.mutable
