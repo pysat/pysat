@@ -8,15 +8,16 @@ import copy
 import datetime as dt
 import functools
 import logging
-import netCDF4
 import numpy as np
 import os
-import pandas as pds
-import pytest
 import shutil
 import sys
 import tempfile
 import warnings
+
+import netCDF4
+import pandas as pds
+import pytest
 
 import pysat
 from pysat.utils import io
@@ -607,7 +608,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
         try:
             self.tempdir.cleanup()
-        except:  # noqa E722
+        except Exception:
             pass
 
         # Clear the directory attributes

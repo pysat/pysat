@@ -36,7 +36,7 @@ user_info = {'pysat_testing': {'user': 'pysat_testing',
 #                                       user_info=user_info)
 
 # If custom tests need to be added to the class, the instrument lists may be
-# included as an optional output.
+# included as an optional output using the following command:
 # instruments = InstLibTests.initialize_test_package(InstLibTests,
 #                                                    inst_loc=mypackage.inst)
 instruments = InstLibTests.initialize_test_package(InstLibTests,

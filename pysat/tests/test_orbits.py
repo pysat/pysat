@@ -296,6 +296,7 @@ class TestSpecificUTOrbits(object):
         """Test orbit previous call without loading data."""
 
         self.testInst.orbits.prev()
+
         # This isn't a full orbit
         assert (self.testInst.index[-1]
                 == dt.datetime(2010, 12, 31, 23, 59, 59))

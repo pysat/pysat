@@ -170,6 +170,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
     Note
     ----
     Includes additional xarray-specific tests.
+
     """
 
     def setup(self):

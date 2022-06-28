@@ -148,6 +148,7 @@ class InstLibTests(object):
         # Find all methods in the standard test class.
         method_list = [func for func in dir(self)
                        if callable(getattr(self, func))]
+
         # Search tests for iteration via pytestmark, update w/ instrument list.
         for method in method_list:
             if hasattr(getattr(self, method), 'pytestmark'):
@@ -225,6 +226,7 @@ class InstLibTests(object):
         # Ensure that each module is at minimum importable
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
+
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
             self.assert_hasattr(module, mattr)
@@ -365,6 +367,7 @@ class InstLibTests(object):
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
+
             # If cleaning not used, something should be in the file
             # Not used for clean levels since cleaning may remove all data
             if clean_level == "none":

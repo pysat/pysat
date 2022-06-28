@@ -147,6 +147,7 @@ class TestBasics2DXarray(TestBasics):
     Note
     ----
     Includes additional tests for multidimensional objects.
+
     """
 
     def setup(self):

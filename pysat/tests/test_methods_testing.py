@@ -66,6 +66,7 @@ class TestBasics(object):
         assert uts[-1] == output[1]
         assert len(uts) == len(index)
         assert len(dates) == 1
+
         # Check that calculations are done correctly.
         delta_time = [dt.timedelta(seconds=sec) for sec in uts]
         assert (index.to_pydatetime() - delta_time == dates).all

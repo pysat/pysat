@@ -59,7 +59,7 @@ class TestMeta(object):
         Parameters
         ----------
         inst_kwargs : NoneType or dict
-            kwargs to initialize pysat.Instrument object
+            kwargs to initialize pysat.Instrument object (default=None)
         keep_mutable : bool
             Keep the default `meta.mutable` value if True, if False set to
             class `mutable` attribute. (default=False)
