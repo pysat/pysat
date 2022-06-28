@@ -63,7 +63,19 @@ class TestDataPaddingbyFile(object):
     @pytest.mark.parametrize("dmin,tind,ncycle", [
         (5, 1, 0), (5, 1, 1), (5, 1, 2), (5, 2, -1), (5, 10, -2)])
     def test_fname_data_padding(self, dmin, tind, ncycle):
-        """Test data padding load by filename."""
+        """Test data padding load by filename.
+
+        Parameters
+        ----------
+        dmin : int
+            Number of iteration cycles before performing padding test.
+            Positive values move forward in time, negative values backward.
+        tind : int
+            File index to load data for
+        ncycle : int
+            Difference in data coverage times in number of minutes. Must
+            be the same value as the `pad` keyword passed to `self.testInst`.
+        """
 
         # Load the test data with padding
         self.testInst.load(fname=self.testInst.files[tind], verifyPad=True)
