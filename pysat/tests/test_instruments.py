@@ -24,6 +24,8 @@ from pysat.utils import testing
 user_info = {'pysat_testing': {'user': 'pysat_testing',
                                'password': 'pysat.developers@gmail.com'}}
 
+# Initialize tests for sources in pysat.instruments in the same way data sources
+# outside of pysat would be tested
 instruments = InstLibTests.initialize_test_package(InstLibTests,
                                                    inst_loc=pysat.instruments,
                                                    user_info=user_info)
@@ -41,12 +43,24 @@ class TestInstruments(InstLibTests):
 
     # Custom package unit tests can be added here
 
-    # Custom Integration Tests added to all test instruments in core package.
+    # Custom Integration Tests added to all test instruments in core package
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     @pytest.mark.parametrize("kwarg,output", [(None, 0.0),
                                               (dt.timedelta(hours=1), 3600.0)])
     def test_inst_start_time(self, inst_dict, kwarg, output):
-        """Test operation of start_time keyword, including default behavior."""
+        """Test operation of start_time keyword, including default behavior.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+        kwarg : dt.timedelta or NoneType
+            Passed to `pysat.Instrument` as value for `start_time` keyword
+        output : float
+            Expected value for the first loaded value in variable `uts`
+
+        """
 
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         if kwarg:
@@ -63,7 +77,15 @@ class TestInstruments(InstLibTests):
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_num_samples(self, inst_dict):
-        """Test operation of num_samples keyword."""
+        """Test operation of num_samples keyword.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+
+        """
 
         # Number of samples needs to be <96 because freq is not settable.
         # Different test instruments have different default number of points.
@@ -78,7 +100,15 @@ class TestInstruments(InstLibTests):
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_file_date_range(self, inst_dict):
-        """Test operation of file_date_range keyword."""
+        """Test operation of file_date_range keyword.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+
+        """
 
         file_date_range = pds.date_range(dt.datetime(2021, 1, 1),
                                          dt.datetime(2021, 12, 31))
@@ -93,7 +123,15 @@ class TestInstruments(InstLibTests):
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_max_latitude(self, inst_dict):
-        """Test operation of max_latitude keyword."""
+        """Test operation of max_latitude keyword.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+
+        """
 
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'])
