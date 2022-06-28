@@ -21,24 +21,9 @@ from pysat.utils import testing
 
 # Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords
-# user_info = {'platform_name': {'user': 'pysat_user',
-#                                'password': 'None'}}
 user_info = {'pysat_testing': {'user': 'pysat_testing',
                                'password': 'pysat.developers@gmail.com'}}
 
-# Developers for instrument libraries should update the following line to
-# point to their own subpackage location
-# e.g.,
-# InstLibTests.initialize_test_package(InstLibTests, inst_loc=mypackage.inst)
-
-# If user and password info supplied, use the following instead
-# InstLibTests.initialize_test_package(InstLibTests, inst_loc=mypackage.inst,
-#                                       user_info=user_info)
-
-# If custom tests need to be added to the class, the instrument lists may be
-# included as an optional output using the following command:
-# instruments = InstLibTests.initialize_test_package(InstLibTests,
-#                                                    inst_loc=mypackage.inst)
 instruments = InstLibTests.initialize_test_package(InstLibTests,
                                                    inst_loc=pysat.instruments,
                                                    user_info=user_info)
