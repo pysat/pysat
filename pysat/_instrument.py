@@ -2705,7 +2705,7 @@ class Instrument(object):
         verifyPad : bool
             If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
-        use_header : bool or NoneType
+        use_header : bool
             If True, moves custom Meta attributes to MetaHeader instead of
             Instrument (default=False)
         **kwargs : dict

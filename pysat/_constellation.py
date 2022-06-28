@@ -59,10 +59,10 @@ class Constellation(object):
         Input dict containing dicts of inputs for `custom_attach` method inputs
         that may be applied to all instruments or at the Constellation-level or
         None (default=None)
-    use_header : bool or NoneType
+    use_header : bool
         If True, moves custom Meta attributes to MetaHeader instead of
         Instrument. The setting here overrides the default in `load`.
-        If None, then the default value at `load` used instead. (default=None)
+        If None, then the default value at `load` used instead. (default=False)
 
     Attributes
     ----------
@@ -128,7 +128,7 @@ class Constellation(object):
 
     def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
                  const_module=None, instruments=None, index_res=None,
-                 common_index=True, custom=None, use_header=None):
+                 common_index=True, custom=None, use_header=False):
         """Initialize the Constellation object."""
 
         # Initalize the `instruments` attribute to be an empty list before
