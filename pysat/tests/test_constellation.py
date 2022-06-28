@@ -24,12 +24,23 @@ class TestConstellationInitReg(TestWithRegistration):
                               (["names", "tags"], [["name2"], [""]], 2),
                               (["names"], [["name1", "name2"]], 15)])
     def test_construct_constellation(self, ikeys, ivals, ilen):
-        """Test construction of a Constellation with good input."""
+        """Test construction of a Constellation with good input.
+
+        Parameters
+        ----------
+        ikeys : list
+            Strings for keyword arguments in Constellation
+        ivals : str
+            Keyword arguments values
+        ilen : int
+            Number of expected Instruments within Constellation
+
+        """
 
         # Register fake Instrument modules
         pysat.utils.registry.register(self.module_names)
 
-        # Initalize the Constellation using the desired kwargs
+        # Initialize the Constellation using the desired kwargs
         const = pysat.Constellation(
             **{ikey: ivals[i] for i, ikey in enumerate(ikeys)})
 
@@ -95,7 +106,18 @@ class TestConstellationInit(object):
                               ("instruments", None, 1),
                               (None, None, 2)])
     def test_construct_constellation(self, ikey, ival, ilen):
-        """Test construction of a Constellation with good input."""
+        """Test construction of a Constellation with good input.
+
+        Parameters
+        ----------
+        ikey : str
+            Keyword argument passed to Constellation
+        ival : NoneType
+            Value for keyword argument
+        ilen : int
+            Number of expected Instruments within Constellation
+
+        """
 
         if ikey is not None:
             self.in_kwargs[ikey] = ival
@@ -179,7 +201,15 @@ class TestConstellationInit(object):
     @pytest.mark.parametrize("common_index,cstr", [(True, "Common"),
                                                    (False, "Full")])
     def test_str_with_data(self, common_index, cstr):
-        """Test Constellation string output with loaded data."""
+        """Test Constellation string output with loaded data.
+
+        Parameters
+        ----------
+        common_index : bool
+            Value for 'common_index' passed to Constellation
+        cstr : str
+            String to test for
+        """
 
         self.in_kwargs["common_index"] = common_index
         self.const = pysat.Constellation(**self.in_kwargs)
@@ -245,7 +275,14 @@ class TestConstellationFunc(object):
 
     @pytest.mark.parametrize("test_ind", [0, 1, 2, 3])
     def test_equal_length_attrs(self, test_ind):
-        """Ensure each instruments-length attribute is the correct length."""
+        """Ensure each instruments-length attribute is the correct length.
+
+        Parameters
+        ----------
+        test_inst : list
+            Index into `self.attrs`
+
+        """
         comp_len = len(self.const.instruments)
         assert len(getattr(self.const, self.attrs[test_ind])) == comp_len
         return
