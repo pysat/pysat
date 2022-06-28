@@ -54,7 +54,18 @@ class TestBasics(object):
                                [3600.0, 3690.0]),
                               (87000, {}, [0.0, 86399.0])])
     def test_generate_times_kwargs(self, num, kwargs, output):
-        """Test use of kwargs in generate_times, including default behavior."""
+        """Test use of kwargs in generate_times, including default behavior.
+
+        Parameters
+        ----------
+        num : int
+            Number of times to generate
+        kwargs : dict or NoneType
+            Passed to `mm_test.generate_times`
+        output : list
+            List of first and last times expected by internal tests
+
+        """
 
         if kwargs:
             uts, index, dates = mm_test.generate_times(self.fnames, num,
