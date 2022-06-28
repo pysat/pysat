@@ -128,7 +128,13 @@ class TestOrbitsUserInterface(object):
                                       ({'index': 'magnetic local time',
                                         'kind': 'orbit'})])
     def test_orbit_w_bad_orbit_info(self, info):
-        """Test orbit failure on iteration with orbit initialization."""
+        """Test orbit failure on iteration with orbit initialization.
+
+        Parameters
+        ----------
+        info : dict
+            Passed to Instrument as `orbit_info`
+        """
 
         self.in_kwargs['orbit_info'] = info
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
@@ -213,7 +219,13 @@ class TestSpecificUTOrbits(object):
 
     @pytest.mark.parametrize('orbit_inc', [(0), (1), (-1), (-2), (14)])
     def test_single_orbit_call_by_index(self, orbit_inc):
-        """Test successful orbit call by index."""
+        """Test successful orbit call by index.
+
+        Parameters
+        ----------
+        orbit_inc : int
+            Orbit index value
+        """
 
         # Load the data
         self.testInst.load(date=self.stime)
@@ -237,7 +249,17 @@ class TestSpecificUTOrbits(object):
         (17, ValueError, 'Requested an orbit past total'),
         (None, TypeError, 'not supported between instances of')])
     def test_single_orbit_call_bad_index(self, orbit_ind, raise_err, err_msg):
-        """Test orbit failure with bad index."""
+        """Test orbit failure with bad index.
+
+        Parameters
+        ----------
+        orbit_ind : int
+            Orbit index value
+        raise_err : Error
+            Error that should be raised
+        err_msg : str
+            Error string that should be raised
+        """
 
         self.testInst.load(date=self.stime)
         with pytest.raises(raise_err) as err:
@@ -611,7 +633,14 @@ class TestGeneralOrbitsNonStandardIteration(object):
 
     @pytest.mark.parametrize("bounds_type", ['by_date', 'by_file'])
     def test_no_orbit_overlap_with_nonoverlapping_iteration(self, bounds_type):
-        """Ensure orbit data does not overlap when overlap in iteration data."""
+        """Ensure orbit data does not overlap when overlap in iteration data.
+
+        Parameters
+        ----------
+        bounds_type : str
+            Enforce bounds `by_date` or `by_file`
+
+        """
 
         if bounds_type == 'by_date':
             bounds = (self.testInst.files.files.index[0],
@@ -802,9 +831,18 @@ class TestOrbitsGappyData(object):
 
     @pytest.mark.parametrize("day,iterations", [(1, 20), (19, 45), (25, 20)])
     def test_repeat_orbit_calls_cutoffs_with_gaps(self, day, iterations):
-        """Test that orbits are selected at same cutoffs when reversed."""
+        """Test that orbits are selected at same cutoffs when reversed.
 
-        # Start date offsets alligned to times defined in TestOrbitsGappyData
+        Parameters
+        ----------
+        day : int
+            Loads data for `self.stime` + `day` - 1
+        iterations : int
+            Number of iterations to test, passed to `assert_reversible_orbit`
+
+        """
+
+        # Start date offsets aligned to times defined in TestOrbitsGappyData
         self.testInst.load(date=(self.stime + dt.timedelta(days=(day - 1))))
         self.testInst.orbits.next()
         assert_reversible_orbit(self.testInst, iterations)
