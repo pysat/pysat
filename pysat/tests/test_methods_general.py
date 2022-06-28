@@ -61,7 +61,18 @@ class TestFileCadence(object):
                               ("minutes", 1, True), ("hours", 1, True),
                               ("days", 1, True), ("days", 2, False)])
     def test_datetime_file_cadence(self, time_kwarg, time_val, is_daily):
-        """Test `is_daily_file_cadence` with dt.datetime input."""
+        """Test `is_daily_file_cadence` with dt.datetime input.
+
+        Parameters
+        ----------
+        time_kwarg : str
+            Keyword argument for `dt.timedelta`
+        time_val : int
+            Value for keyword argument above
+        is_daily : bool
+            Target value for internal test files have daily cadence
+
+        """
 
         in_time = dt.timedelta(**{time_kwarg: time_val})
         check_daily = gen.is_daily_file_cadence(in_time)
@@ -75,7 +86,18 @@ class TestFileCadence(object):
                               ("days", 1, True), ("days", 2, False),
                               ("months", 1, False), ("years", 1, False)])
     def test_dateoffset_file_cadence(self, time_kwarg, time_val, is_daily):
-        """Test `is_daily_file_cadence` with pds.DateOffset input."""
+        """Test `is_daily_file_cadence` with pds.DateOffset input.
+
+        Parameters
+        ----------
+        time_kwarg : str
+            Keyword argument for `dt.timedelta`
+        time_val : int
+            Value for keyword argument above
+        is_daily : bool
+            Target value for internal test files have daily cadence
+
+        """
 
         in_time = pds.DateOffset(**{time_kwarg: time_val})
         check_daily = gen.is_daily_file_cadence(in_time)
