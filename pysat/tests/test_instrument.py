@@ -523,8 +523,10 @@ class TestDeprecation(object):
                                             'Default attachment of global ',
                                             'attributes to Instrument will be',
                                             ' Deprecated in pysat 3.2.0+. Set ',
-                                            '`use_header=True` to remove this ',
-                                            'warning.'])])
+                                            '`use_header=True` in this load ',
+                                            'call or on Instrument ',
+                                            'instantiation to remove this',
+                                            ' warning.'])])
 
         # Capture the warnings
         with warnings.catch_warnings(record=True) as self.war:
