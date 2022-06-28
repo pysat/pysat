@@ -177,7 +177,14 @@ class TestBasics2DXarray(TestBasics):
                                        (slice(0, 10)),
                                        (np.array([0, 1, 2, 3]))])
     def test_data_access_by_2d_indices_and_name(self, index):
-        """Check that variables and be accessed by each supported index type."""
+        """Check that variables and be accessed by each supported index type.
+
+        Parameters
+        ----------
+        index : iterable
+            Indexing iterable to test, such as lists, arrays, slices
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         assert np.all(self.testInst[index, index, 'profiles']
@@ -225,7 +232,16 @@ class TestBasics2DXarray(TestBasics):
                               (slice(0, 10), slice(10, None)),
                               (np.array([0, 1, 2, 3]), slice(4, None))])
     def test_setting_partial_data_by_2d_indices_and_name(self, changed, fixed):
-        """Check that data can be set using each supported index type."""
+        """Check that data can be set using each supported index type.
+
+        Parameters
+        ----------
+        changed : int, list, slice, or np.array
+            Index locations to change within test
+        fixed : slice
+            Index slice for locations unaffected
+
+        """
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
