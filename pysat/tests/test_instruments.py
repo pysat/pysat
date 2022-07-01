@@ -66,10 +66,11 @@ class TestInstruments(InstLibTests):
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         if kwarg:
             self.test_inst = pysat.Instrument(
-                inst_module=inst_dict['inst_module'], start_time=kwarg)
+                inst_module=inst_dict['inst_module'], start_time=kwarg,
+                use_header=True)
         else:
             self.test_inst = pysat.Instrument(
-                inst_module=inst_dict['inst_module'])
+                inst_module=inst_dict['inst_module'], use_header=True)
 
         self.test_inst.load(date=date)
 
@@ -85,7 +86,7 @@ class TestInstruments(InstLibTests):
         num = 10
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
-                                          num_samples=num)
+                                          num_samples=num, use_header=True)
         self.test_inst.load(date=date)
 
         assert len(self.test_inst['uts']) == num
@@ -100,7 +101,7 @@ class TestInstruments(InstLibTests):
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                           file_date_range=file_date_range,
-                                          update_files=True)
+                                          update_files=True, use_header=True)
         file_list = self.test_inst.files.files
 
         assert all(file_date_range == file_list.index)
@@ -111,7 +112,8 @@ class TestInstruments(InstLibTests):
         """Test operation of max_latitude keyword."""
 
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
-        self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'])
+        self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
+                                          use_header=True)
         if self.test_inst.name != 'testmodel':
             self.test_inst.load(date=date, max_latitude=10.)
             assert np.all(np.abs(self.test_inst['latitude']) <= 10.)
@@ -200,7 +202,8 @@ class TestDeprecation(object):
 
         with warnings.catch_warnings(record=True) as war:
             pysat.Instrument(inst_module=getattr(pysat.instruments,
-                                                 inst_module))
+                                                 inst_module),
+                             use_header=True)
 
         warn_msgs = [" ".join(["The instrument module",
                                "`{:}`".format(inst_module),

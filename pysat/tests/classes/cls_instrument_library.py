@@ -59,7 +59,8 @@ def initialize_test_inst_and_date(inst_dict):
                                  tag=inst_dict['tag'],
                                  inst_id=inst_dict['inst_id'],
                                  temporary_file_list=True,
-                                 update_files=True, **kwargs)
+                                 update_files=True, use_header=True,
+                                 **kwargs)
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
@@ -236,7 +237,7 @@ class InstLibTests(object):
         for inst_id in module.inst_ids.keys():
             for tag in module.inst_ids[inst_id]:
                 inst = pysat.Instrument(inst_module=module, tag=tag,
-                                        inst_id=inst_id)
+                                        inst_id=inst_id, use_header=True)
 
                 # Test to see that the class parameters were passed in
                 self.assert_isinstance(inst, pysat.Instrument)

@@ -59,6 +59,11 @@ class Constellation(object):
         Input dict containing dicts of inputs for `custom_attach` method inputs
         that may be applied to all instruments or at the Constellation-level or
         None (default=None)
+    **kwargs : dict
+        Additional keyword arguments are passed to Instruments instantiated
+        within the class through use of input arguments `platforms`, `names`,
+        `tags`, and `inst_ids`. Additional keywords are not applied when
+        using the `const_module` or `instruments` inputs.
 
     Attributes
     ----------
@@ -124,7 +129,7 @@ class Constellation(object):
 
     def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
                  const_module=None, instruments=None, index_res=None,
-                 common_index=True, custom=None):
+                 common_index=True, custom=None, **kwargs):
         """Initialize the Constellation object."""
 
         # Initalize the `instruments` attribute to be an empty list before
@@ -171,7 +176,7 @@ class Constellation(object):
                                 # name, inst_id, and tag
                                 self.instruments.append(pysat.Instrument(
                                     platform=ptf, name=flg, tag=tflg,
-                                    inst_id=iid))
+                                    inst_id=iid, **kwargs))
                                 added_platforms.append(ptf)
                                 added_names.append(flg)
                                 added_tags.append(tflg)

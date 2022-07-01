@@ -16,7 +16,7 @@ class TestBasics(object):
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        self.test_inst = pysat.Instrument('pysat', 'testing')
+        self.test_inst = pysat.Instrument('pysat', 'testing', use_header=True)
 
         # Get list of filenames.
         self.fnames = [self.test_inst.files.files.values[0]]

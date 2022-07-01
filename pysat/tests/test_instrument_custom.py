@@ -74,7 +74,8 @@ class TestBasics(object):
 
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean',
-                                         update_files=True, use_header=True)
+                                         update_files=True,
+                                         use_header=True)
         self.load_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.load(date=self.load_date)
         self.custom_args = [2]
@@ -258,8 +259,8 @@ class TestConstellationBasics(object):
 
         self.testConst = pysat.Constellation(instruments=[
             pysat.Instrument('pysat', 'testing', num_samples=10,
-                             clean_level='clean',
-                             update_files=True, use_header=True)
+                             clean_level='clean', update_files=True,
+                             use_header=True)
             for i in range(5)])
         self.load_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.testConst.load(date=self.load_date)
@@ -370,7 +371,8 @@ class TestConstellationBasics(object):
                   {'function': mult_data, 'args': self.custom_args}]
         testConst2 = pysat.Constellation(instruments=[
             pysat.Instrument('pysat', 'testing', num_samples=10,
-                             clean_level='clean', custom=custom)
+                             clean_level='clean', custom=custom,
+                             use_header=True)
             for i in range(5)])
 
         # Ensure all instruments within both constellations have the same
@@ -398,7 +400,7 @@ class TestConstellationBasics(object):
                    'apply_inst': False}]
         testConst2 = pysat.Constellation(
             instruments=[pysat.Instrument('pysat', 'testing', num_samples=10,
-                                          clean_level='clean')
+                                          clean_level='clean', use_header=True)
                          for i in range(5)], custom=custom)
 
         # Ensure both constellations have the same custom_* attributes
