@@ -548,7 +548,7 @@ class Files(object):
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem.
 
-        Moves current filelist, if different, to .pysat/archive.
+        Moves current filelist, if different, to .pysat/archive
 
         """
 
@@ -597,7 +597,7 @@ class Files(object):
             If True, will load previous version of file list
         update_path : bool
             If True, the path written to stored info will be
-            assigned to `self.data_path`. (default=True)
+            assigned to `self.data_path` (default=True)
 
         Returns
         -------
@@ -659,7 +659,7 @@ class Files(object):
         Parameters
         ----------
         file_series : pds.Series or NoneType
-            Series of filenames, potentially with file paths. (default=None)
+            Series of filenames, potentially with file paths (default=None)
 
         Returns
         -------
