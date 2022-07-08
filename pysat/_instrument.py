@@ -1418,7 +1418,7 @@ class Instrument(object):
         """
         # Set default load_kwargs
         if load_kwargs is None:
-            load_kwargs = self.kwargs['load']
+            load_kwargs = copy.deepcopy(self.kwargs['load'])
 
         # Ensure that the local optional kwarg `use_header` is not passed
         # to the instrument routine.
