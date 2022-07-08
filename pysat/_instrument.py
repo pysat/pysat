@@ -982,10 +982,8 @@ class Instrument(object):
 
             # TODO(#908): remove code below with removal of 2D pandas support.
             if hasattr(in_data, '__iter__'):
-                if isinstance(in_data, pds.DataFrame):
-                    pass
-                    # Filter for elif
-                elif isinstance(next(iter(in_data), None), pds.DataFrame):
+                if not isinstance(in_data, pds.DataFrame) and isinstance(
+                        next(iter(in_data), None), pds.DataFrame):
                     # Input is a list_like of frames, denoting higher order data
                     warnings.warn(" ".join(["Support for 2D pandas instrument",
                                             "data has been deprecated and will",
