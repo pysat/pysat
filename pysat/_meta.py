@@ -48,11 +48,11 @@ class Meta(object):
         Index is variable standard name, 'units', 'long_name', and other
         defaults are also stored along with additional user provided labels.
     labels : MetaLabels
-        Labels for MetaData attributes.
+        Labels for MetaData attributes
     mutable : bool
-        If True, attributes directly attached to Meta are modifiable.
+        If True, attributes directly attached to Meta are modifiable
     header : MetaHeader
-        Class containing global metadata.
+        Class containing global metadata
 
     Note
     ----
@@ -508,7 +508,7 @@ class Meta(object):
             # Go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
             # this covers custom attributes not handled by default routine
-            # above.
+            # above
             attr_names = [item for item in input_data.attrs()]
             input_data.data.columns = self.attr_case_name(attr_names)
 
@@ -1551,8 +1551,8 @@ class Meta(object):
 
         Note
         ----
-        Column names must include at least ['name', 'long_name', 'units'].
-        Assumed if `col_names` is None.
+        Column names must include at least ['name', 'long_name', 'units'],
+        which are assumed if `col_names` is None
 
         """
         req_names = ['name', 'long_name', 'units']
@@ -1632,23 +1632,23 @@ class MetaLabels(object):
     meta : pandas.DataFrame or NoneType
         Coupled MetaData data object or NoneType
     units : str
-        String used to label units in storage. (default='units')
+        String used to label units in storage (default='units')
     name : str
-        String used to label long_name in storage. (default='long_name')
+        String used to label long_name in storage (default='long_name')
     notes : str
        String used to label notes in storage (default='notes')
     desc : str
-       String used to label variable descriptions in storage.
+       String used to label variable descriptions in storage
        (default='desc')
     min_val : str
-       String used to label typical variable value min limit in storage.
+       String used to label typical variable value min limit in storage
        (default='value_min')
     max_val : str
-       String used to label typical variable value max limit in storage.
+       String used to label typical variable value max limit in storage
        (default='value_max')
     fill_val : str
         String used to label fill value in storage. The default follows the
-        netCDF4 standards (default='fill')
+        netCDF4 standards. (default='fill')
     label_type : dict
         Dict with attribute names as keys and expected data types as values
     label_attrs : dict
@@ -1665,11 +1665,11 @@ class MetaLabels(object):
     receives the data. Subsequent calls to set new metadata with the same
     variable or attribute will use case of first call. Accessing or setting
     data thereafter is case insensitive. In practice, use is case insensitive
-    but the original case is preserved. Case preseveration is built in to
+    but the original case is preserved. Case preservation is built in to
     support writing files with a desired case to meet standards.
 
     Metadata for higher order data objects, those that have
-    multiple products under a single variable name in a pysat.Instrument
+    multiple products under a single variable name in a `pysat.Instrument`
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata

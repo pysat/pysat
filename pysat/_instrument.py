@@ -35,7 +35,7 @@ class Instrument(object):
         Name of instrument. If None, creates 'unaffiliated' Instrument.
         (default=None)
     tag : str
-        Identifies particular subset of instrument data. (default='')
+        Identifies particular subset of instrument data (default='')
     inst_id : str
         Secondary level of identification, such as spacecraft within a
         constellation platform (default='')
@@ -80,11 +80,11 @@ class Instrument(object):
         `pysat.files.parse_fixed_width_filenames` for more information.
         (default=None)
     temporary_file_list : bool
-        If true, the list of Instrument files will not be written to disk.
+        If true, the list of Instrument files will not be written to disk
         (default=False)
     strict_time_flag : bool
         If true, pysat will check data to ensure times are unique and
-        monotonically increasing. (default=True)
+        monotonically increasing (default=True)
     ignore_empty_files : bool
         Flag controling behavior for listing available files. If True, the list
         of files found will be checked to ensure the filesizes are greater than
@@ -171,7 +171,7 @@ class Instrument(object):
     ValueError
         If platform and name are mixture of None and str, an unknown or reserved
          keyword is used, or if `file_format`, `custom`, or `pad` are improperly
-         formatted.
+         formatted
 
     Note
     ----
@@ -434,11 +434,11 @@ class Instrument(object):
 
         # Process provided user input for custom methods, if provided.
         if custom is not None:
-            # Required keys
+            # Required keys.
             req_key = 'function'
 
             for cust in custom:
-                # Check if required keys present in input
+                # Check if required keys present in input.
                 if req_key not in cust:
                     estr = ''.join(('Input dict to custom is missing the ',
                                     'required key: ', req_key))
@@ -573,7 +573,7 @@ class Instrument(object):
                 key_check.append(key)
                 if key in other.__dict__.keys():
                     if key in partial_funcs:
-                        # Partial function comparison doesn't work directly
+                        # Partial function comparison doesn't work directly.
                         try:
                             checks.append(str(self.__dict__[key])
                                           == str(other.__dict__[key]))
@@ -729,7 +729,7 @@ class Instrument(object):
         Raises
         ------
         ValueError
-            When an underlying error for data access is raised.
+            When an underlying error for data access is raised
 
         Note
         ----
@@ -812,7 +812,7 @@ class Instrument(object):
         ------
         ValueError
             Data access issues, passed from underlying xarray library, or a
-            mismatch of indices and dimensions.
+            mismatch of indices and dimensions
 
         Note
         ----
@@ -1087,12 +1087,12 @@ class Instrument(object):
     def __iter__(self):
         """Load data for subsequent days or files.
 
-        Default bounds are the first and last dates from files on local system.
+        Default bounds are the first and last dates from files on local system
 
         Note
         ----
         Limits of iteration, and iteration type (date/file) set by `bounds`
-         attribute.
+        attribute
 
         Examples
         --------
@@ -1454,7 +1454,7 @@ class Instrument(object):
         Raises
         ------
         ValueError
-            If both `date` and `fid` are None, or if `inc` left unspecified.
+            If both `date` and `fid` are None, or if `inc` left unspecified
         """
         # Set default `load_kwargs`
         if load_kwargs is None:
@@ -1602,7 +1602,7 @@ class Instrument(object):
         """Set the necesssary load attributes.
 
         Sets `self._load_by_date`, `self.date`, `self._fid`, `self.yr`, and
-        `self.doy`.
+        `self.doy`
 
         Parameters
         ----------
@@ -1640,7 +1640,7 @@ class Instrument(object):
         Returns
         -------
         str
-            The variable type code for the given type.
+            The variable type code for the given type
 
         Raises
         ------
@@ -1805,7 +1805,7 @@ class Instrument(object):
             If `start` and `stop` don't have the same type, or if too many
             input argument supplied, or unequal number of elements in
             `start`/`stop`, or if bounds aren't in increasing order, or if
-            the input type for `start` or `stop` isn't recognized.
+            the input type for `start` or `stop` isn't recognized
 
         Note
         ----
@@ -2129,7 +2129,7 @@ class Instrument(object):
 
         # Support a copy if a user does something like,
         # `self.orbits.inst.copy()`, or
-        # `self.files.inst_info['inst'].copy()`.
+        # `self.files.inst_info['inst'].copy()`
         if not isinstance(inst_copy, weakref.ProxyType):
             inst_copy.files.inst_info['inst'] = weakref.proxy(inst_copy)
             inst_copy.orbits.inst = weakref.proxy(inst_copy)
@@ -2148,7 +2148,7 @@ class Instrument(object):
             New data objects to be concatonated
         prepend : bool
             If True, assign new data before existing data; if False append new
-            data. (default=False)
+            data (default=False)
         **kwargs : dict
             Optional keyword arguments passed to pds.concat or xr.concat
 
@@ -2197,16 +2197,16 @@ class Instrument(object):
         Parameters
         ----------
         function : str or function object
-            Name of function or function object to be added to queue.
+            Name of function or function object to be added to queue
         at_pos : str or int
             Accepts string 'end' or a number that will be used to determine
             the insertion order if multiple custom functions are attached
-            to an Instrument object. (default='end')
+            to an Instrument object (default='end')
         args : list, tuple, or NoneType
             Ordered arguments following the instrument object input that are
             required by the custom function (default=None)
         kwargs : dict or NoneType
-            Dictionary of keyword arguments required by the custom function.
+            Dictionary of keyword arguments required by the custom function
             (default=None)
 
         Note
@@ -2504,7 +2504,7 @@ class Instrument(object):
             a function to apply to all names
         lowercase_data_labels : bool
             If True, the labels applied to `self.data` are forced to lowercase.
-            The case supplied in `mapper` is retained within `inst.meta`
+            The case supplied in `mapper` is retained within `inst.meta`.
 
         Examples
         --------
@@ -2525,7 +2525,7 @@ class Instrument(object):
         for all times in the dataset.
         ::
 
-            # Applies to higher-order datasets that are loaded into pandas.
+            # Applies to higher-order datasets that are loaded into pandas
             inst = pysat.Instrument('pysat', 'testing2D')
             inst.load(2009, 1)
             mapper = {'uts': 'pysat_uts',
@@ -2780,10 +2780,10 @@ class Instrument(object):
 
         Note
         ----
-        Loads data for a chosen instrument into .data. Any functions chosen
-        by the user and added to the custom processing queue (.custom.attach)
+        Loads data for a chosen instrument into `.data`. Any functions chosen
+        by the user and added to the custom processing queue (`.custom.attach`)
         are automatically applied to the data before it is available to
-        user in `.data.`
+        user in `.data`.
 
         A mixed combination of `.load()` keywords such as `yr` and `date` are
         not allowed.
@@ -2935,7 +2935,7 @@ class Instrument(object):
 
         self.orbits._reset()
 
-        # If `pad` or `multi_file_day` is True, need to load three days/files.
+        # If `pad` or `multi_file_day` is True, need to load three days/files
         loop_pad = self.pad if self.pad is not None else dt.timedelta(seconds=0)
 
         # Check for consistency between loading range and data padding, if any
@@ -3731,7 +3731,7 @@ def _check_load_arguments_none(args, raise_error=False):
     Note
     ----
     Used to support `.load` method checks that arguments that should be
-    None are None, while also keeping the `.load` method readable.
+    None are None, while also keeping the `.load` method readable
 
     """
 
