@@ -46,7 +46,8 @@ class InstAccessTests(object):
         """Test Instrument object fully complete by self._init_rtn()."""
 
         # Create a base instrument to compare against
-        inst_copy = pysat.Instrument(inst_module=self.testInst.inst_module)
+        inst_copy = pysat.Instrument(inst_module=self.testInst.inst_module,
+                                     use_header=True)
 
         # Get instrument module and init funtcion
         inst_mod = self.testInst.inst_module
@@ -69,7 +70,7 @@ class InstAccessTests(object):
 
         # Instantiate instrument with test module which invokes needed test
         # code in the background
-        pysat.Instrument(inst_module=inst_mod)
+        pysat.Instrument(inst_module=inst_mod, use_header=True)
 
         # Restore nominal init function
         inst_mod.init = inst_mod_init
