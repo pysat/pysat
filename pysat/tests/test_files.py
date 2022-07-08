@@ -21,14 +21,23 @@ from pysat.utils import testing
 
 
 def create_dir(inst=None, temporary_file_list=False):
-    """Create a temporary datset directory for a test instrument."""
+    """Create a temporary datset directory for a test instrument.
+
+    Parameters
+    ----------
+    inst : pysat.Instrument or NoneType
+        Instrument to create directory for. If `None`, then a 'pysat'
+        'testing' Instrument created. (default=None)
+    temporary_file_list : bool
+        Flag passed to `pysat.Instrument` if `inst` is None (default=False)
+    """
     if inst is None:
-        # create instrument
+        # Create instrument
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 temporary_file_list=temporary_file_list,
                                 update_files=True)
 
-    # create data directories
+    # Create data directories
     try:
         os.makedirs(inst.files.data_path)
     except OSError:
@@ -39,7 +48,22 @@ def create_dir(inst=None, temporary_file_list=False):
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                version=False):
-    """Return a Pandas Series of every file for chosen instrument data."""
+    """Return a Pandas Series of every file for chosen instrument data.
+
+    Parameters
+    ----------
+    tag : str or NoneType
+        Instrument `tag` string (default=None)
+    inst_id : str or NoneType
+        Instrument `inst_id` string (default=None)
+    data_path : str or NoneType
+        Path to files (default=None)
+    format_str : str or NoneType
+        Instrument file format template string (default=None)
+    version : bool
+        If True, then `format_str` includes version, revision, and cycle
+        information
+    """
 
     if format_str is None:
         if version:
@@ -122,7 +146,8 @@ class TestBasics(object):
 
         self.testInst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, clean_level='clean',
-            temporary_file_list=self.temporary_file_list, update_files=True)
+            temporary_file_list=self.temporary_file_list, update_files=True,
+            use_header=True)
 
         # Create instrument directories in tempdir
         create_dir(self.testInst)
@@ -314,22 +339,14 @@ class TestBasics(object):
 
         return
 
-    @pytest.mark.parametrize("root_fname,root_pname",
-                             [[''.join(['pysat_1234567_junk_{year:04d}_gold_',
-                                       '{day:03d}_stuff.pysat_testing_file']),
-                               ''.join(['pysat_{code:7s}_junk_{year:04d}_gold_',
-                                        '{day:03d}_stuff.pysat_testing_file'])],
-                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
-                                        '{day:03d}_stuff.pysat_testing_file']),
-                               ''.join(['pysat_123{code:4s}_junk_{year:04d}_',
-                                        'gold_{day:03d}_stuff.pysat_testing',
-                                        '_file'])],
-                              [''.join(['pysat_1234567_junk_{year:04d}_gold_',
-                                        '{day:03d}_stuff.pysat_testing_file']),
-                               ''.join(['{code:5s}_{code2:7s}_junk_{year:04d}',
-                                        '_gold_{day:03d}_stuff.pysat_testing',
-                                        '_file'])]
-                              ])
+    @pytest.mark.parametrize(
+        "root_fname,root_pname",
+        [['pysat_1234567_junk_{year:04d}_gold_{day:03d}_stuff',
+          'pysat_{code:7s}_junk_{year:04d}_gold_{day:03d}_stuff'],
+         ['pysat_1234567_junk_{year:04d}_gold_{day:03d}_stuff',
+          'pysat_123{code:4s}_junk_{year:04d}_gold_{day:03d}_stuff'],
+         ['pysat_1234567_junk_{year:04d}_gold_{day:03d}_stuff',
+          '{code:5s}_{code2:7s}_junk_{year:04d}_gold_{day:03d}_stuff']])
     @pytest.mark.parametrize("delimiter", [None, '_'])
     def test_from_os_user_vars(self, delimiter, root_fname, root_pname):
         """Check that Files.from_os works with user vars.
@@ -882,8 +899,8 @@ class TestInstWithFiles(object):
         # Remove files, same number as will be added
         to_be_removed = len(dates)
         for the_file in os.listdir(self.testInst.files.data_path):
-            if (the_file[0:13] == 'pysat_testing') & \
-                    (the_file[-19:] == '.pysat_testing_file'):
+            if (the_file[0:13] == 'pysat_testing') \
+                    and the_file[-19:] == '.pysat_testing_file':
                 file_path = os.path.join(self.testInst.files.data_path,
                                          the_file)
                 if os.path.isfile(file_path) & (to_be_removed > 0):
@@ -1276,8 +1293,8 @@ class TestFilesRaceCondition(object):
                          temporary_file_list=self.temporary_file_list)
         pysat.params['data_dirs'] = self.data_paths
 
-# TODO(#871): This needs to be replaced or expanded based on the tests that
-# portalocker uses
+    # TODO(#871): This needs to be replaced or expanded based on the tests that
+    # portalocker uses
     def test_race_condition(self):
         """Test that multiple instances of pysat instrument creation run."""
         processes = 5

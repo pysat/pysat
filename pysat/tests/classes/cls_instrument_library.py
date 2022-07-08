@@ -59,7 +59,8 @@ def initialize_test_inst_and_date(inst_dict):
                                  tag=inst_dict['tag'],
                                  inst_id=inst_dict['inst_id'],
                                  temporary_file_list=True,
-                                 update_files=True, **kwargs)
+                                 update_files=True, use_header=True,
+                                 **kwargs)
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
@@ -148,6 +149,7 @@ class InstLibTests(object):
         # Find all methods in the standard test class.
         method_list = [func for func in dir(self)
                        if callable(getattr(self, func))]
+
         # Search tests for iteration via pytestmark, update w/ instrument list.
         for method in method_list:
             if hasattr(getattr(self, method), 'pytestmark'):
@@ -225,6 +227,7 @@ class InstLibTests(object):
         # Ensure that each module is at minimum importable
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
+
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
             self.assert_hasattr(module, mattr)
@@ -236,7 +239,7 @@ class InstLibTests(object):
         for inst_id in module.inst_ids.keys():
             for tag in module.inst_ids[inst_id]:
                 inst = pysat.Instrument(inst_module=module, tag=tag,
-                                        inst_id=inst_id)
+                                        inst_id=inst_id, use_header=True)
 
                 # Test to see that the class parameters were passed in
                 self.assert_isinstance(inst, pysat.Instrument)
@@ -365,6 +368,7 @@ class InstLibTests(object):
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
+
             # If cleaning not used, something should be in the file
             # Not used for clean levels since cleaning may remove all data
             if clean_level == "none":

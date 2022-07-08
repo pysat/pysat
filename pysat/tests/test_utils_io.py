@@ -8,15 +8,16 @@ import copy
 import datetime as dt
 import functools
 import logging
-import netCDF4
 import numpy as np
 import os
-import pandas as pds
-import pytest
 import shutil
 import sys
 import tempfile
 import warnings
+
+import netCDF4
+import pandas as pds
+import pytest
 
 import pysat
 from pysat.utils import io
@@ -35,7 +36,8 @@ class TestLoadNetCDF(object):
         pysat.params['data_dirs'] = self.tempdir.name
 
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=100, update_files=True)
+                                         num_samples=100, update_files=True,
+                                         use_header=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.epoch_name = 'time'
 
@@ -179,7 +181,8 @@ class TestLoadNetCDF(object):
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
             'pysat', 'netcdf', data_dir=file_path, update_files=True,
-            file_format=file_root, pandas_format=self.testInst.pandas_format)
+            file_format=file_root, pandas_format=self.testInst.pandas_format,
+            use_header=True)
 
         # Confirm data path is correct
         assert os.path.normpath(netcdf_inst.files.data_path) \
@@ -584,7 +587,8 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
-                                         update_files=True, num_samples=100)
+                                         update_files=True, num_samples=100,
+                                         use_header=True)
         self.stime = pysat.instruments.pysat_testing2d_xarray._test_dates[
             '']['']
         self.epoch_name = 'time'
@@ -607,7 +611,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
         try:
             self.tempdir.cleanup()
-        except:  # noqa E722
+        except Exception:
             pass
 
         # Clear the directory attributes
@@ -684,7 +688,8 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         pysat.params['data_dirs'] = self.tempdir.name
 
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
-                                         update_files=True, num_samples=100)
+                                         update_files=True, num_samples=100,
+                                         use_header=True)
         self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.epoch_name = 'time'
 
@@ -730,7 +735,8 @@ class TestNetCDF4Integration(object):
 
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5)
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5,
+                                         use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.pformat = self.testInst.pandas_format
@@ -1192,7 +1198,7 @@ class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
-                                         num_samples=5)
+                                         num_samples=5, use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.pformat = self.testInst.pandas_format
@@ -1208,7 +1214,8 @@ class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
 
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testing2d', num_samples=5)
+        self.testInst = pysat.Instrument('pysat', 'testing2d', num_samples=5,
+                                         use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.pformat = self.testInst.pandas_format
@@ -1225,7 +1232,7 @@ class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
-                                         num_samples=5)
+                                         num_samples=5, use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.pformat = self.testInst.pandas_format
@@ -1241,7 +1248,8 @@ class TestNetCDF4IntegrationXarrayModels(TestNetCDF4Integration):
 
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testmodel', num_samples=5)
+        self.testInst = pysat.Instrument('pysat', 'testmodel', num_samples=5,
+                                         use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.pformat = self.testInst.pandas_format
@@ -1258,7 +1266,7 @@ class TestXarrayIO(object):
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
-                                         num_samples=5)
+                                         num_samples=5, use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.epoch_name = 'time'
@@ -1379,7 +1387,8 @@ class TestMetaTranslation(object):
     def setup(self):
         """Create test environment."""
 
-        self.test_inst = pysat.Instrument('pysat', 'testing', num_samples=5)
+        self.test_inst = pysat.Instrument('pysat', 'testing', num_samples=5,
+                                          use_header=True)
         self.test_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.test_inst.load(date=self.test_date)
         self.meta_dict = self.test_inst.meta.to_dict()
@@ -1663,7 +1672,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing_xarray',
-                                          num_samples=5)
+                                          num_samples=5, use_header=True)
         self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
         self.test_date = self.test_date['']['']
         self.test_inst.load(date=self.test_date)
@@ -1687,7 +1696,7 @@ class TestMetaTranslation2DXarray(TestMetaTranslation):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing2d_xarray',
-                                          num_samples=5)
+                                          num_samples=5, use_header=True)
         self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
         self.test_date = self.test_date['']['']
         self.test_inst.load(date=self.test_date)
@@ -1711,7 +1720,7 @@ class TestMetaTranslation2DPandas(TestMetaTranslation):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing2d',
-                                          num_samples=5)
+                                          num_samples=5, use_header=True)
         self.test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.test_inst.load(date=self.test_date)
         self.meta_dict = self.test_inst.meta.to_dict()
@@ -1734,7 +1743,7 @@ class TestMetaTranslationModel(TestMetaTranslation):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testmodel',
-                                          num_samples=5)
+                                          num_samples=5, use_header=True)
         self.test_date = pysat.instruments.pysat_testmodel._test_dates['']['']
         self.test_inst.load(date=self.test_date)
         self.meta_dict = self.test_inst.meta.to_dict()

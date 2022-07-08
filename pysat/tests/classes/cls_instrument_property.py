@@ -390,7 +390,8 @@ class InstPropertyTests(object):
                                     num_samples=10,
                                     clean_level='clean',
                                     update_files=True,
-                                    orbit_info=orbit_info)
+                                    orbit_info=orbit_info,
+                                    use_header=True)
 
         self.out = testInst.__str__()
 
