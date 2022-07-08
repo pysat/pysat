@@ -29,10 +29,10 @@ class Instrument(object):
     Parameters
     ----------
     platform : str or NoneType
-        Name of instrument platform. If None, creates 'unaffiliated' Instrument.
+        Name of instrument platform. If None and `name` is also None, creates an Instrument with empty `platform` and `name` attributes.
         (default=None)
     name : str or NoneType
-        Name of instrument. If None, creates 'unaffiliated' Instrument.
+        Name of instrument. If None and `name` is also None, creates an Instrument with empty `platform` and `name` attributes.
         (default=None)
     tag : str
         Identifies particular subset of instrument data (default='')
@@ -957,7 +957,7 @@ class Instrument(object):
         new = copy.deepcopy(new_data)
 
         # Add data to main pandas.DataFrame, depending upon the input
-        # aka slice, and a name
+        # slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
                 try:
@@ -2373,7 +2373,7 @@ class Instrument(object):
                                     'ranges.'))
                     raise StopIteration(estr)
                 elif idx[-1] >= len(self._iter_list) - 1:
-                    # Gone to far!
+                    # Gone too far!
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     # Not going past the last day, safe to move forward
