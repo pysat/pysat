@@ -23,8 +23,30 @@ import pysat
 from pysat.utils import io
 from pysat.utils import testing
 
-# Define `epoch_name` for future changes in default values
+# Define `epoch_name` and `decode_times` for future changes in default values
 default_epoch_name = 'Epoch'
+default_decode_times = False
+
+
+def decode_times_val(pandas_format):
+    """Return appropriate default value based upon `pandas_format`.
+
+    Parameters
+    ----------
+    pandas_format : bool
+        True, if working with a pandas data format `pysat.Instrument`
+
+    Returns
+    -------
+    decode_times : bool
+
+    """
+    if pandas_format:
+        decode_times = {}
+    else:
+        decode_times = {'decode_times': default_decode_times}
+
+    return decode_times
 
 
 class TestLoadNetCDF(object):
@@ -117,9 +139,11 @@ class TestLoadNetCDF(object):
         io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True,
                           epoch_name=default_epoch_name)
 
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
         self.loaded_inst, meta = io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format,
-            epoch_name=default_epoch_name)
+            epoch_name=default_epoch_name, **tkwargs)
 
         # Revert data names to meta case
         if self.testInst.pandas_format:
@@ -157,9 +181,11 @@ class TestLoadNetCDF(object):
         io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True,
                           epoch_name=default_epoch_name)
 
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
         self.loaded_inst, meta = io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format,
-            epoch_name=default_epoch_name)
+            epoch_name=default_epoch_name, **tkwargs)
         self.eval_loaded_data()
 
         return
@@ -186,10 +212,12 @@ class TestLoadNetCDF(object):
         self.testInst.to_netcdf4(fname=outfile, epoch_name=default_epoch_name)
 
         # Load the written file directly into an Instrument
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
         netcdf_inst = pysat.Instrument(
             'pysat', 'netcdf', data_dir=file_path, update_files=True,
             file_format=file_root, pandas_format=self.testInst.pandas_format,
-            use_header=True, epoch_name=default_epoch_name)
+            use_header=True, epoch_name=default_epoch_name, **tkwargs)
 
         # Confirm data path is correct
         assert os.path.normpath(netcdf_inst.files.data_path) \
@@ -302,13 +330,17 @@ class TestLoadNetCDF(object):
         if self.testInst.pandas_format:
             err_msg = '"whoosthat" was not found in'
             err_type = KeyError
+            decode_times = None
+        else:
+            decode_times = default_decode_times
 
         # Evaluate the expected error and message
         testing.eval_bad_input(
             io.load_netcdf, err_type, err_msg,
             input_args=[outfile],
             input_kwargs={'epoch_name': 'whoosthat',
-                          'pandas_format': self.testInst.pandas_format})
+                          'pandas_format': self.testInst.pandas_format,
+                          'decode_times': decode_times})
         return
 
     @pytest.mark.parametrize("write_epoch,war_msg", [('epoch',
@@ -337,8 +369,11 @@ class TestLoadNetCDF(object):
 
             # Evaluate the expected warning
             with caplog.at_level(logging.WARNING, logger='pysat'):
+                tkwargs = decode_times_val(self.testInst.pandas_format)
+
                 io.load_netcdf(outfile, epoch_name='slt',
-                               pandas_format=self.testInst.pandas_format)
+                               pandas_format=self.testInst.pandas_format,
+                               **tkwargs)
 
             self.out = caplog.text
             assert self.out.find(war_msg)
@@ -371,7 +406,10 @@ class TestLoadNetCDF(object):
         lkwargs['pandas_format'] = self.testInst.pandas_format
         if 'epoch_name' not in lkwargs.keys():
             lkwargs['epoch_name'] = default_epoch_name
-        self.loaded_inst, meta = io.load_netcdf(outfile, **lkwargs)
+
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
+        self.loaded_inst, meta = io.load_netcdf(outfile, **lkwargs, **tkwargs)
 
         # Test the loaded data
         self.eval_loaded_data()
@@ -408,7 +446,10 @@ class TestLoadNetCDF(object):
         # Load the data that was created
         kwargs['pandas_format'] = self.testInst.pandas_format
         kwargs['epoch_name'] = default_epoch_name
-        self.loaded_inst, meta = io.load_netcdf(outfile, **kwargs)
+
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
+        self.loaded_inst, meta = io.load_netcdf(outfile, **tkwargs, **kwargs)
 
         # Check that the step size is expected
         if self.testInst.pandas_format:
@@ -481,9 +522,11 @@ class TestLoadNetCDF(object):
         io.inst_to_netcdf(self.testInst, fname=outfile,
                           epoch_name=default_epoch_name)
 
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
         _, meta = io.load_netcdf(
             outfile, pandas_format=self.testInst.pandas_format,
-            epoch_name=default_epoch_name)
+            epoch_name=default_epoch_name, **tkwargs)
 
         # Custom attribute correctly read from file
         if hasattr(meta, "header"):
@@ -574,10 +617,12 @@ class TestLoadNetCDF(object):
 
         # Load file
         pformat = self.testInst.pandas_format
+        tkwargs = decode_times_val(pformat)
         self.loaded_inst, meta = io.load_netcdf(outfile,
                                                 drop_meta_labels=drop_list,
                                                 pandas_format=pformat,
-                                                epoch_name=default_epoch_name)
+                                                epoch_name=default_epoch_name,
+                                                **tkwargs)
 
         # Test for `drop_label` if it should or should not be present
         if drop_labels:
@@ -668,8 +713,11 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         io.inst_to_netcdf(self.testInst, fname=outfile)
 
         # Load the written data
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
         self.loaded_inst, meta = io.load_netcdf(
-            outfile, pandas_format=self.testInst.pandas_format, **kwargs)
+            outfile, pandas_format=self.testInst.pandas_format, **kwargs,
+            **tkwargs)
 
         # Check that labels pass through as correct type
         vars = ['uts', 'mlt', 'slt']
@@ -1038,10 +1086,13 @@ class TestNetCDF4Integration(object):
                 inv_trans[var] = key
 
         # Load the file
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
         data, meta = pysat.utils.io.load_netcdf(outfile,
                                                 meta_translation=inv_trans,
                                                 pandas_format=self.pformat,
-                                                epoch_name=default_epoch_name)
+                                                epoch_name=default_epoch_name,
+                                                **tkwargs)
 
         # Confirm inverse translation worked
         attrs = list(meta.attrs())
@@ -1156,10 +1207,13 @@ class TestNetCDF4Integration(object):
                                            remove_labels=[])
 
         # Load the file
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
         data, meta = pysat.utils.io.load_netcdf(outfile,
                                                 meta_processor=from_meta_proc,
                                                 pandas_format=self.pformat,
-                                                epoch_name=default_epoch_name)
+                                                epoch_name=default_epoch_name,
+                                                **tkwargs)
 
         wstr = ''.join(['Incorrect metadata value after inverse processor for',
                         ' variable: {:} and label: {:}'])
