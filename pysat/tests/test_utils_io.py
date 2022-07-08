@@ -23,6 +23,9 @@ import pysat
 from pysat.utils import io
 from pysat.utils import testing
 
+# Define `epoch_name` for future changes in default values
+default_epoch_name = 'Epoch'
+
 
 class TestLoadNetCDF(object):
     """Unit tests for `utils.io.load_netcdf` and `utils.io.inst_to_netcdf`."""
@@ -111,10 +114,12 @@ class TestLoadNetCDF(object):
             self.testInst.data = self.testInst.data.rename(map_keys)
 
         # Meta case is preserved and has not been altered
-        io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True)
+        io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True,
+                          epoch_name=default_epoch_name)
 
         self.loaded_inst, meta = io.load_netcdf(
-            outfile, pandas_format=self.testInst.pandas_format)
+            outfile, pandas_format=self.testInst.pandas_format,
+            epoch_name=default_epoch_name)
 
         # Revert data names to meta case
         if self.testInst.pandas_format:
@@ -149,10 +154,12 @@ class TestLoadNetCDF(object):
             self.testInst.data = self.testInst.data.rename(
                 {dkey: dkey.upper() for dkey in xarr_vars})
 
-        io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True)
+        io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True,
+                          epoch_name=default_epoch_name)
 
         self.loaded_inst, meta = io.load_netcdf(
-            outfile, pandas_format=self.testInst.pandas_format)
+            outfile, pandas_format=self.testInst.pandas_format,
+            epoch_name=default_epoch_name)
         self.eval_loaded_data()
 
         return
@@ -176,13 +183,13 @@ class TestLoadNetCDF(object):
 
         # Load and write the test instrument data
         self.testInst.load(date=self.stime, use_header=True)
-        self.testInst.to_netcdf4(fname=outfile)
+        self.testInst.to_netcdf4(fname=outfile, epoch_name=default_epoch_name)
 
         # Load the written file directly into an Instrument
         netcdf_inst = pysat.Instrument(
             'pysat', 'netcdf', data_dir=file_path, update_files=True,
             file_format=file_root, pandas_format=self.testInst.pandas_format,
-            use_header=True)
+            use_header=True, epoch_name=default_epoch_name)
 
         # Confirm data path is correct
         assert os.path.normpath(netcdf_inst.files.data_path) \
@@ -261,7 +268,8 @@ class TestLoadNetCDF(object):
         testing.eval_bad_input(
             io.inst_to_netcdf, ValueError, "multiple variables",
             input_args=[self.testInst],
-            input_kwargs={'fname': outfile, 'preserve_meta_case': True})
+            input_kwargs={'fname': outfile, 'preserve_meta_case': True,
+                          'epoch_name': 'Epoch'})
         return
 
     @pytest.mark.parametrize("write_epoch,err_msg,err_type",
@@ -355,10 +363,14 @@ class TestLoadNetCDF(object):
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
+        if 'epoch_name' not in wkwargs.keys():
+            wkwargs['epoch_name'] = default_epoch_name
         io.inst_to_netcdf(self.testInst, fname=outfile, **wkwargs)
 
         # Load the data that was created
         lkwargs['pandas_format'] = self.testInst.pandas_format
+        if 'epoch_name' not in lkwargs.keys():
+            lkwargs['epoch_name'] = default_epoch_name
         self.loaded_inst, meta = io.load_netcdf(outfile, **lkwargs)
 
         # Test the loaded data
@@ -390,10 +402,12 @@ class TestLoadNetCDF(object):
                                'pysat_{:}_ncdf.nc'.format(self.testInst.name))
         self.testInst.load(date=self.stime, use_header=True)
 
-        io.inst_to_netcdf(self.testInst, fname=outfile)
+        io.inst_to_netcdf(self.testInst, fname=outfile,
+                          epoch_name=default_epoch_name)
 
         # Load the data that was created
         kwargs['pandas_format'] = self.testInst.pandas_format
+        kwargs['epoch_name'] = default_epoch_name
         self.loaded_inst, meta = io.load_netcdf(outfile, **kwargs)
 
         # Check that the step size is expected
@@ -464,10 +478,12 @@ class TestLoadNetCDF(object):
 
         fname = 'output.nc'
         outfile = os.path.join(self.tempdir.name, fname)
-        io.inst_to_netcdf(self.testInst, fname=outfile)
+        io.inst_to_netcdf(self.testInst, fname=outfile,
+                          epoch_name=default_epoch_name)
 
         _, meta = io.load_netcdf(
-            outfile, pandas_format=self.testInst.pandas_format)
+            outfile, pandas_format=self.testInst.pandas_format,
+            epoch_name=default_epoch_name)
 
         # Custom attribute correctly read from file
         if hasattr(meta, "header"):
@@ -490,12 +506,14 @@ class TestLoadNetCDF(object):
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
         self.testInst.load(date=self.stime, use_header=True)
-        io.inst_to_netcdf(self.testInst, fname=outfile)
+        io.inst_to_netcdf(self.testInst, fname=outfile,
+                          epoch_name=default_epoch_name)
 
         # Load the written data
         input_kwargs = {"decode_times": decode_times,
                         "pandas_format": self.testInst.pandas_format,
-                        "epoch_origin": dt.datetime(1980, 1, 1)}
+                        "epoch_origin": dt.datetime(1980, 1, 1),
+                        "epoch_name": default_epoch_name}
 
         # Not supported for pandas
         if self.testInst.pandas_format:
@@ -549,7 +567,8 @@ class TestLoadNetCDF(object):
                       drop_label]
 
         # Write file
-        io.inst_to_netcdf(self.testInst, fname=outfile, export_nan=export_nan)
+        io.inst_to_netcdf(self.testInst, fname=outfile, export_nan=export_nan,
+                          epoch_name=default_epoch_name)
 
         drop_list = [drop_label] if drop_labels else []
 
@@ -557,7 +576,8 @@ class TestLoadNetCDF(object):
         pformat = self.testInst.pandas_format
         self.loaded_inst, meta = io.load_netcdf(outfile,
                                                 drop_meta_labels=drop_list,
-                                                pandas_format=pformat)
+                                                pandas_format=pformat,
+                                                epoch_name=default_epoch_name)
 
         # Test for `drop_label` if it should or should not be present
         if drop_labels:
@@ -783,7 +803,8 @@ class TestNetCDF4Integration(object):
         # Write the file
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
-        self.testInst.to_netcdf4(outfile, export_nan=export_nan)
+        self.testInst.to_netcdf4(outfile, export_nan=export_nan,
+                                 epoch_name=default_epoch_name)
 
         # Load file back and test metadata is as expected
         with netCDF4.Dataset(outfile) as open_f:
@@ -986,6 +1007,7 @@ class TestNetCDF4Integration(object):
             self.testInst._meta_translation_table = meta_trans
 
         pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                      epoch_name=default_epoch_name,
                                       **mkwargs)
 
         # Load file back and test metadata is as expected
@@ -1018,7 +1040,8 @@ class TestNetCDF4Integration(object):
         # Load the file
         data, meta = pysat.utils.io.load_netcdf(outfile,
                                                 meta_translation=inv_trans,
-                                                pandas_format=self.pformat)
+                                                pandas_format=self.pformat,
+                                                epoch_name=default_epoch_name)
 
         # Confirm inverse translation worked
         attrs = list(meta.attrs())
@@ -1110,6 +1133,7 @@ class TestNetCDF4Integration(object):
             self.testInst._export_meta_post_processing = to_meta_proc
 
         pysat.utils.io.inst_to_netcdf(self.testInst, outfile,
+                                      epoch_name=default_epoch_name,
                                       **mkwargs)
 
         # Load file back and test metadata is as expected
@@ -1134,7 +1158,8 @@ class TestNetCDF4Integration(object):
         # Load the file
         data, meta = pysat.utils.io.load_netcdf(outfile,
                                                 meta_processor=from_meta_proc,
-                                                pandas_format=self.pformat)
+                                                pandas_format=self.pformat,
+                                                epoch_name=default_epoch_name)
 
         wstr = ''.join(['Incorrect metadata value after inverse processor for',
                         ' variable: {:} and label: {:}'])
