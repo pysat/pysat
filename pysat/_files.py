@@ -480,7 +480,7 @@ class Files(object):
         Note
         ----
         Updates the file list (files), `start_date`, and `stop_date` attributes
-        of the Files class object.
+        of the Files class object
 
         """
 
