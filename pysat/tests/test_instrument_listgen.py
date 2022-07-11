@@ -42,6 +42,7 @@ class TestInstListGeneration(object):
         """Test that instruments without _test_dates are added to the list."""
 
         del self.test_library.pysat_testing._test_dates
+
         # If an instrument does not have the _test_dates attribute, it should
         # still be added to the list for other checks to be run.
         # This will be caught later by InstTestClass.test_instrument_test_dates.

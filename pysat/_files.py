@@ -42,7 +42,7 @@ class Files(object):
         typically '{platform}/{name}/{tag}/{inst_id}'. (default=None)
     update_files : bool
         If True, immediately query filesystem for instrument files and
-        store. (default=False)
+        store (default=False)
     file_format : str or NoneType
         File naming structure in string format.  Variables such as `year`,
         `month`, `day`, etc. will be filled in as needed using python
@@ -88,7 +88,7 @@ class Files(object):
         by associated pysat.Instrument object.
     multi_file_day : bool
         Flag copied from associated pysat.Instrument object that indicates
-        when data for day n may be found in files for days n-1, or n+1.
+        when data for day n may be found in files for days n-1, or n+1
     start_date : datetime or NoneType
         Date of first file, used as default start bound for instrument
         object, or None if no files are loaded.
@@ -105,7 +105,7 @@ class Files(object):
     Raises
     ------
     NameError
-        If `pysat.params['data_dirs']` not assigned.
+        If `pysat.params['data_dirs']` not assigned
 
     Note
     ----
@@ -130,7 +130,7 @@ class Files(object):
         # First file
         inst.files[0]
 
-        # Files from start up to stop (exclusive on stop).
+        # Files from start up to stop (exclusive on stop)
         start = dt.datetime(2009,1,1)
         stop = dt.datetime(2009,1,3)
         print(inst.files[start:stop])
@@ -481,7 +481,7 @@ class Files(object):
         Note
         ----
         Updates the file list (files), `start_date`, and `stop_date` attributes
-        of the Files class object.
+        of the Files class object
 
         """
 
@@ -549,7 +549,7 @@ class Files(object):
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem.
 
-        Moves current filelist, if different, to .pysat/archive.
+        Moves current filelist, if different, to .pysat/archive
 
         """
 
@@ -595,10 +595,10 @@ class Files(object):
         Parameters
         ----------
         prev_version : bool
-            If True, will load previous version of file list.
+            If True, will load previous version of file list
         update_path : bool
             If True, the path written to stored info will be
-            assigned to `self.data_path`. (default=True)
+            assigned to `self.data_path` (default=True)
 
         Returns
         -------
@@ -660,7 +660,7 @@ class Files(object):
         Parameters
         ----------
         file_series : pds.Series or NoneType
-            Series of filenames, potentially with file paths. (default=None)
+            Series of filenames, potentially with file paths (default=None)
 
         Returns
         -------
@@ -803,7 +803,7 @@ class Files(object):
 
         Sets a valid `self.data_path` using provided top-level directory
         path and the associated pysat subdirectories derived from the
-        `directory_format` attribute as stored in `self.sub_dir_path`.
+        `directory_format` attribute as stored in `self.sub_dir_path`
 
         Parameters
         ----------
@@ -873,7 +873,7 @@ class Files(object):
         Raises
         ------
         ValueError
-            Filename not in index.
+            Filename not in index
 
         Note
         ----
@@ -904,9 +904,9 @@ class Files(object):
         Parameters
         ----------
         start: array-like or str
-            Filenames for start of returned filelist.
+            Filenames for start of returned filelist
         stop: array-like or str
-            Filenames inclusive of the ending of list provided by the stop time.
+            Filenames inclusive of the ending of list provided by the stop time
 
         Returns
         -------
@@ -971,7 +971,7 @@ class Files(object):
         Raises
         ------
         ValueError
-            If `data_path` or `format_str` is None.
+            If `data_path` or `format_str` is None
 
         Note
         ----
