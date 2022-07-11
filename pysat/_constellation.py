@@ -259,7 +259,8 @@ class Constellation(object):
 
         # Process provided user input for custom methods, if provided.
         if custom is not None:
-            req_key = 'function'  # Set the equired key
+            # Set the required key
+            req_key = 'function'
 
             for cust_dict in custom:
                 # Check if required keys present in input.
