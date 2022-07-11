@@ -697,7 +697,7 @@ class TestMeta(object):
                                    self.meta_labels[label][1])
 
         # Define new label
-        other_labels['new_label_label'] = ('new_data_label', np.int)
+        other_labels['new_label_label'] = ('new_data_label', np.int64)
 
         # Run function
         other_meta = pysat.Meta(labels=other_labels)

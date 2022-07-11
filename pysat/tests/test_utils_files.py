@@ -173,7 +173,10 @@ class TestFileDirectoryTranslations(CICleanSetup):
             ostr = ' '.join(('Downloading data for', inst.platform,
                              inst.name, inst.tag, inst.inst_id))
             print(ostr)
-            inst.download(start=dates[0], stop=dates[1], **kwargs)
+
+            # Support non-daily download frequencies
+            dates = pds.date_range(dates[0], dates[1], **kwargs)
+            inst.download(date_array=dates)
 
     def teardown(self):
         """Clean up the unit test environment after each method."""

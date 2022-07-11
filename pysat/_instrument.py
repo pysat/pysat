@@ -1462,7 +1462,7 @@ class Instrument(object):
         """
         # Set default `load_kwargs`
         if load_kwargs is None:
-            load_kwargs = self.kwargs['load']
+            load_kwargs = copy.deepcopy(self.kwargs['load'])
 
         if inc is None:
             raise ValueError('Must supply value for `inc`.')

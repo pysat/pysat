@@ -123,7 +123,7 @@ class TestConstellationInit(object):
 
         if ikey is not None:
             self.in_kwargs[ikey] = ival
-        self.const = pysat.Constellation(**self.in_kwargs, use_header=True)
+        self.const = pysat.Constellation(**self.in_kwargs)
         assert len(self.const.instruments) == ilen
         return
 
@@ -214,8 +214,8 @@ class TestConstellationInit(object):
         """
 
         self.in_kwargs["common_index"] = common_index
-        self.const = pysat.Constellation(**self.in_kwargs, use_header=True)
-        self.const.load(date=self.ref_time)
+        self.const = pysat.Constellation(**self.in_kwargs)
+        self.const.load(date=self.ref_time, use_header=True)
         out_str = self.const.__str__()
 
         assert out_str.find("pysat Constellation ") >= 0
@@ -234,11 +234,11 @@ class TestConstellationInit(object):
 
         # Initialize the constellation
         self.in_kwargs['const_module'] = None
-        self.const = pysat.Constellation(**self.in_kwargs, use_header=True)
+        self.const = pysat.Constellation(**self.in_kwargs)
 
         # Add the custom function
         self.const.custom_attach(double_mlt, at_pos='end')
-        self.const.load(date=self.ref_time)
+        self.const.load(date=self.ref_time, use_header=True)
 
         # Test the added value
         for inst in self.const:
@@ -335,7 +335,7 @@ class TestConstellationFunc(object):
         """Test the status of the empty flag for partially loaded data."""
 
         # Load only one instrument and test the status flag
-        self.const.instruments[0].load(date=self.ref_time)
+        self.const.instruments[0].load(date=self.ref_time, use_header=True)
         assert self.const.empty_partial
         assert not self.const.empty
         return
@@ -344,7 +344,7 @@ class TestConstellationFunc(object):
         """Test the alt status of the empty flag for partially loaded data."""
 
         # Load only one instrument and test the status flag for alternate flag
-        self.const.instruments[0].load(date=self.ref_time)
+        self.const.instruments[0].load(date=self.ref_time, use_header=True)
         assert not self.const._empty(all_inst=False)
         return
 
@@ -352,7 +352,7 @@ class TestConstellationFunc(object):
         """Test the status of the empty flag for loaded data."""
 
         # Load data and test the status flag
-        self.const.load(date=self.ref_time)
+        self.const.load(date=self.ref_time, use_header=True)
         assert not self.const.empty
         return
 
@@ -362,9 +362,8 @@ class TestConstellationFunc(object):
         """Test the empty index attribute."""
 
         # Test the attribute with loaded data
-        self.const = pysat.Constellation(instruments=self.inst, **ikwarg,
-                                         use_header=True)
-        self.const.load(date=self.ref_time)
+        self.const = pysat.Constellation(instruments=self.inst, **ikwarg)
+        self.const.load(date=self.ref_time, use_header=True)
         assert isinstance(self.const.index, pds.Index)
         assert self.const.index[0] == self.ref_time
 
@@ -386,7 +385,7 @@ class TestConstellationFunc(object):
         """Test the date property when no data is loaded."""
 
         # Test the attribute with loaded data
-        self.const.load(date=self.ref_time)
+        self.const.load(date=self.ref_time, use_header=True)
 
         assert self.const.date == self.ref_time
         return
@@ -395,7 +394,7 @@ class TestConstellationFunc(object):
         """Test the variables property when no data is loaded."""
 
         # Test the attribute with loaded data
-        self.const.load(date=self.ref_time)
+        self.const.load(date=self.ref_time, use_header=True)
 
         assert len(self.const.variables) > 0
         assert 'uts_pysat_testing' in self.const.variables
