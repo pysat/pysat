@@ -978,7 +978,7 @@ class Files(object):
         Requires fixed_width or delimited filename
 
         Does not produce a `Files` instance, but the proper output from
-        `instrument_module.list_files` method.
+        `instrument_module.list_files` method
 
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.

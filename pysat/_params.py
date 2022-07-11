@@ -38,12 +38,12 @@ class Parameters(object):
         {'clean_level': 'clean', 'directory_format':
         os.path.join('{platform}', '{name}', '{tag}', '{inst_id}'),
         'ignore_empty_files': False, 'update_files': True,
-        'file_timeout': 10, 'user_modules' : {}, 'warn_empty_file_list': False}.
+        'file_timeout': 10, 'user_modules' : {}, 'warn_empty_file_list': False}
     file_path : str
         Location of file used to store settings
     non_defaults : list
         List of pysat parameters (strings) that don't have a defined
-        default and are unaffected by `self.restore_defaults()`.
+        default and are unaffected by `self.restore_defaults()`
     Raises
     ------
     ValueError
@@ -277,7 +277,7 @@ class Parameters(object):
         # Assign updated and validated paths
         self.data['data_dirs'] = paths
 
-        # Optionally store information.
+        # Optionally store information
         if store:
             self.store()
 

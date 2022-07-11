@@ -361,7 +361,7 @@ class Orbits(object):
             If the the Instrument bounds are set to load overlapping data sets
 
         """
-        # Check there isn't an overlapping data set from iteration bounds.
+        # Check there isn't an overlapping data set from iteration bounds
         estr = ' '.join(('Orbit iteration is not currently supported',
                          'when the pysat.Instrument bounds are',
                          'configured for loading overlapping',
@@ -412,7 +412,7 @@ class Orbits(object):
         ------
         ValueError
             If the `orbit_index` attribute is not set to an appropriate value,
-            or if the requested index not in loaded data.
+            or if the requested index not in loaded data
 
         """
 
@@ -462,7 +462,7 @@ class Orbits(object):
 
             # Check for large positive gradients around the break that would
             # suggest not a true orbit break, but rather bad `orbit_index`
-            # values.
+            # values
             new_ind = []
             for idx in ind:
                 tidx, = np.where(lt_diff[(idx - 5):(idx + 6)]
@@ -569,7 +569,7 @@ class Orbits(object):
         ------
         ValueError
             If the `orbit_index` attribute is not set to an appropriate value,
-            or if the requested index not in the loaded data.
+            or if the requested index not in the loaded data
 
         Note
         ----
@@ -625,7 +625,7 @@ class Orbits(object):
         ------
         ValueError
             If the `orbit_index` attribute is not set to an appropriate value,
-            or if the requested orbit not in the loaded data.
+            or if the requested orbit not in the loaded data
 
         Note
         ----
@@ -680,7 +680,7 @@ class Orbits(object):
         Raises
         ------
         ValueError
-            If `orbit_num` set to 0, or if requested orbit past loaded orbits.
+            If `orbit_num` set to 0, or if requested orbit past loaded orbits
 
         Note
         ----
