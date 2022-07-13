@@ -1,5 +1,5 @@
 dask
-netCDF4<1.6.0
+netCDF4
 numpy>=1.12
 pandas
 portalocker
