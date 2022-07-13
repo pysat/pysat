@@ -27,7 +27,8 @@ class Parameters(object):
         parameters file with name 'pysat_settings.json' (default=None)
     create_new : bool
         If True, a new parameters file is created. Will be created at path
-        if provided. If not, file will be created in `~/.pysat`.
+        if provided. If not, file will be created in `.pysat` directory
+        stored under the user's home directory.
 
     Attributes
     ----------
