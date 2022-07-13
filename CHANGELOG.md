@@ -116,6 +116,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added docstring linting via flake-docstrings and hacking to CI tests
    * Added clarification to the tutorials
    * Added limitations to the `listify` docstring
+   * Updated image link in `README.md` to display in more environments.
    * Updated `tag` and `inst_id` keywords and docstrings to new standards
    * Added example for version checking when writing tests for packages that
      rely on pysat

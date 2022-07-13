@@ -6,7 +6,6 @@
 
 import copy
 import json
-import numpy as np
 import os
 
 from portalocker import Lock
@@ -25,10 +24,11 @@ class Parameters(object):
     ----------
     path : str
         If provided, the directory path will be used to load/store a
-        parameters file with name 'pysat_settings.json' (default=None).
+        parameters file with name 'pysat_settings.json' (default=None)
     create_new : bool
         If True, a new parameters file is created. Will be created at path
-        if provided. If not, file will be created in `pysat.pysat_dir`.
+        if provided. If not, file will be created in `.pysat` directory
+        stored under the user's home directory.
 
     Attributes
     ----------
@@ -44,14 +44,15 @@ class Parameters(object):
         Location of file used to store settings
     non_defaults : list
         List of pysat parameters (strings) that don't have a defined
-        default and are unaffected by self.restore_defaults().
-
+        default and are unaffected by `self.restore_defaults()`
     Raises
     ------
     ValueError
         The 'user_modules' parameter may not be set directly by the
         user. Please use the `pysat.utils.regsitry` module to modify
         the packages stored in 'user_modules'.
+    OSError
+        User provided path does not exist
 
     Note
     ----
@@ -129,7 +130,7 @@ class Parameters(object):
                     self.file_path = fileloc
                     break
 
-            # Ensure we have a valid file if the user isn't creating a new one.
+            # Ensure we have a valid file if the user isn't creating a new one
             if self.file_path is None and (not create_new):
                 estr = ''.join(('pysat is unable to locate a user settings ',
                                 'file. Please check the locations, "./" or ',
@@ -228,7 +229,7 @@ class Parameters(object):
     def __setitem__(self, key, value):
         """Update current settings in Parameters."""
 
-        # Some parameters require processing before storage.
+        # Some parameters require processing before storage
         if key == 'data_dirs':
             self._set_data_dirs(value)
 
@@ -254,7 +255,7 @@ class Parameters(object):
             Valid path(s) to directory
         store : bool
             Optionally store parameters to disk. Present to support a
-            Deprecated method (default=True).
+            Deprecated method. (default=True)
 
         """
 
@@ -288,7 +289,7 @@ class Parameters(object):
 
         Note
         ----
-        pysat parameters without a default value are set to [].
+        pysat parameters without a default value are set to []
 
         """
 
@@ -327,7 +328,7 @@ class Parameters(object):
         return
 
     def store(self):
-        """Store parameters using the filename specified in self.file_path."""
+        """Store parameters using the filename specified in `self.file_path`."""
 
         # Store settings in file
         with Lock(self.file_path, 'w', self['file_timeout']) as fout:

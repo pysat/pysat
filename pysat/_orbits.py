@@ -16,14 +16,15 @@ from pysat import logger
 
 
 class Orbits(object):
-    """Determines orbits on the fly and provides orbital data in .data.
+    """Determine orbits on the fly and provide orbital data in `.data`.
 
     Parameters
     ----------
     inst : pysat.Instrument
         Instrument object for which the orbits will be determined
     index : str or NoneType
-        Name of the data series to use for determing orbit breaks (default=None)
+        Name of the data series to use for determining orbit breaks
+        (default=None)
     kind : str
         Kind of orbit, which specifies how orbital breaks are determined.
         Expects one of: 'local time', 'longitude', 'polar', or 'orbit'
@@ -34,38 +35,34 @@ class Orbits(object):
         (default='local time')
     period : np.timedelta64 or NoneType
         length of time for orbital period, used to gauge when a break
-        in the datetime index (inst.data.index) is large enough to
-        consider it a new orbit
+        in the datetime index `inst.index` is large enough to
+        consider it a new orbit (default=None)
 
     Attributes
     ----------
-    inst : pysat.Instrument
-        Instrument object for which the orbits will be determined
-    kind : str
-        Kind of orbit, which specifies how orbital breaks are determined.
-        Expects one of: 'local time', 'longitude', 'polar', or 'orbit'
-        - local time : negative gradients in lt or breaks in inst.data.index
-        - longitude : negative gradients or breaks in inst.data.index
-        - polar : zero crossings in latitude or breaks in inst.data.index
-        - orbit : uses unique values of orbit number
-        (default='local time')
+    inst
+    kind
     orbit_period : pds.Timedelta
         Pandas Timedelta that specifies the orbit period.  Used instead of
-        dt.timedelta to enable np.timedelta64 input.
-        (default=97 min)
+        dt.timedelta to enable np.timedelta64 input. (default=97 min)
     num : int
         Number of orbits in loaded data
     orbit_index : int
         Index of currently loaded orbit, zero indexed
 
+    Raises
+    ------
+    ValueError
+        If `kind` is unsupported
+
     Note
     ----
-    Determines the locations of orbit breaks in the loaded data in inst.data
+    Determines the locations of orbit breaks in the loaded data in `inst.data`
     and provides iteration tools and convenient orbit selection via
-    inst.orbit[orbit num].
+    `inst.orbit[orbit num]`
 
     This class should not be called directly by the user, it uses the interface
-    provided by inst.orbits where inst = pysat.Instrument()
+    provided by `inst.orbits` where `inst = pysat.Instrument()`
 
     Examples
     --------
@@ -76,27 +73,29 @@ class Orbits(object):
         vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                                 clean_level=None, orbit_info=orbit_info)
 
+        # Load data
+        vefi.load(date=start)
+
         # Set the instrument bounds
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 10)
-        vefi.load(date=start)
         vefi.bounds(start, stop)
 
         # Iterate over orbits
-        for vefi in vefi.orbits:
-            print('Next available orbit ', vefi['dB_mer'])
+        for loop_vefi in vefi.orbits:
+            print('Next available orbit ', loop_vefi['dB_mer'])
 
         # Load fifth orbit of first day
         vefi.load(date=start)
         vefi.orbits[5]
 
-        # Less convenient load
+        # Equivalent but less convenient load
         vefi.orbits.load(5)
 
-        # Manually iterate forwards in the orbit
+        # Manually iterate forwards to the orbit
         vefi.orbits.next()
 
-        # Manually iterate backwards in the orbit
+        # Manually iterate backwards to the previous orbit
         vefi.orbits.prev()
 
     """
@@ -197,7 +196,7 @@ class Orbits(object):
                     if isinstance(self.__dict__[key], pds.DataFrame):
                         try:
                             # Comparisons can error simply for having
-                            # different DataFrames
+                            # different DataFrames.
                             check = np.all(self.__dict__[key]
                                            == other.__dict__[key])
                         except ValueError:
@@ -247,7 +246,7 @@ class Orbits(object):
         Parameters
         ----------
         orbit_key : int or None
-            Orbit number to get
+            Orbit number to get, zero indexed
 
         Examples
         --------
@@ -263,9 +262,11 @@ class Orbits(object):
 
         """
         if orbit_key < 0:
-            self.load(orbit_key)  # Loading for reverse indices
+            # Loading for reverse indices
+            self.load(orbit_key)
         else:
-            self.load(orbit_key + 1)  # Loading for forward indices
+            # Loading for forward indices
+            self.load(orbit_key + 1)
 
     def __iter__(self):
         """Support iteration by orbit.
@@ -274,15 +275,15 @@ class Orbits(object):
         --------
         ::
 
-            for inst in inst.orbits:
-                print('next available orbit ', inst.data)
+            for loop_inst in inst.orbits:
+                print('next available orbit ', loop_inst.data)
 
         Note
         ----
         For each iteration the next available orbit is loaded into
-        inst.data.
+        `inst.data`
 
-        Limits of iteration set by setting inst.bounds.
+        Limits of iteration set by setting `inst.bounds`
 
         """
         # Load up the first increment of data
@@ -296,7 +297,7 @@ class Orbits(object):
             try:
                 self.next()
 
-                # Ensure that garbage collection doesn't delete self.inst
+                # Ensure that garbage collection doesn't delete `self.inst`
                 # by yielding a copy, without spending time on copying data
                 data = self.inst.data
                 self.inst.data = self.inst._null_data
@@ -382,9 +383,9 @@ class Orbits(object):
 
         # If the breaks between orbit have not been defined, define them here.
         # Also store the data so that grabbing different orbits does not
-        # require reloads of whole dataset
+        # require reloads of whole dataset.
         if len(self._orbit_breaks) == 0:
-            # Eetermine orbit breaks
+            # Determine orbit breaks
             self._det_breaks()
 
             # Store a copy of data
@@ -392,6 +393,8 @@ class Orbits(object):
 
             # Set current orbit counter to zero (default)
             self._current = 0
+
+        return
 
     def _equa_breaks(self, orbit_index_period=24.0):
         """Determine where breaks in an equatorial satellite orbit occur.
@@ -408,7 +411,8 @@ class Orbits(object):
         Raises
         ------
         ValueError
-            If the orbit_index attribute is not set to an appropriate value
+            If the `orbit_index` attribute is not set to an appropriate value,
+            or if the requested index not in loaded data
 
         """
 
@@ -449,7 +453,7 @@ class Orbits(object):
             dist = ind[1:] - ind[0:-1]
 
             # Only keep orbit breaks with a distance greater than 1.  This check
-            # is done to ensure robustness
+            # is done to ensure robustness.
             if len(ind) > 1:
                 if min(dist) == 1:
                     logger.info(' '.join(('There are orbit breaks right next',
@@ -457,7 +461,8 @@ class Orbits(object):
                 ind = ind[:-1][dist > 1]
 
             # Check for large positive gradients around the break that would
-            # suggest not a true orbit break, but rather bad orbit_index values
+            # suggest not a true orbit break, but rather bad `orbit_index`
+            # values
             new_ind = []
             for idx in ind:
                 tidx, = np.where(lt_diff[(idx - 5):(idx + 6)]
@@ -465,12 +470,13 @@ class Orbits(object):
 
                 if len(tidx) != 0:
                     # There are large changes, this suggests a false alarm.
-                    # Iterate over samples and check
+                    # Iterate over samples and check.
                     for sub_tidx in tidx:
                         # Look at time change vs local time change
                         if(ut_diff[idx - 5:idx + 6].iloc[sub_tidx]
                            < lt_diff[idx - 5:idx + 6].iloc[sub_tidx]
                            / orbit_index_period * self.orbit_period):
+
                             # The change in UT is small compared to the change
                             # in the orbit index this is flagged as a false
                             # alarm, or dropped from consideration
@@ -554,13 +560,16 @@ class Orbits(object):
         self._orbit_breaks = ind
         self.num = len(ind)
 
+        return
+
     def _polar_breaks(self):
         """Determine where breaks in a polar orbiting satellite orbit occur.
 
         Raises
         ------
         ValueError
-            If the orbit_index attribute is not set to an appropriate value
+            If the `orbit_index` attribute is not set to an appropriate value,
+            or if the requested index not in the loaded data
 
         Note
         ----
@@ -607,13 +616,16 @@ class Orbits(object):
         self._orbit_breaks = ind
         self.num = len(ind)
 
+        return
+
     def _orbit_number_breaks(self):
         """Find orbital breaks in a dataset with orbit numbers occur.
 
         Raises
         ------
         ValueError
-            If the orbit_index attribute is not set to an appropriate value
+            If the `orbit_index` attribute is not set to an appropriate value,
+            or if the requested orbit not in the loaded data
 
         Note
         ----
@@ -653,13 +665,22 @@ class Orbits(object):
         self._orbit_breaks = ind
         self.num = len(ind)
 
+        return
+
     def _get_basic_orbit(self, orbit_num):
         """Load a particular orbit into .data for loaded day.
 
         Parameters
         ----------
         orbit_num : int
-            orbit number, 1 indexed, negative indexes allowed, -1 last orbit
+            Orbit number. Note that the first orbit is `orbit_num=1`,
+            rather than a zero index. Negative indexes are allowed
+            with `-1` as the last orbit.
+
+        Raises
+        ------
+        ValueError
+            If `orbit_num` set to 0, or if requested orbit past loaded orbits
 
         Note
         ----
@@ -698,12 +719,12 @@ class Orbits(object):
                 self._current = orbit_num
             elif orbit_num == 0:
                 raise ValueError(' '.join(('Orbits internally indexed by',
-                                           '1, 0 not allowed')))
+                                           '1, 0 not allowed.')))
             else:
                 # Gone too far
                 self.inst.data = []
                 raise ValueError(' '.join(('Requested an orbit past total',
-                                           'orbits for day')))
+                                           'orbits for day.')))
         return
 
     # -----------------------------------------------------------------------
@@ -782,13 +803,13 @@ class Orbits(object):
             # Pull out the requested orbit
             if orbit_num < 0:
                 # Negative indexing consistent with numpy, -1 last,
-                # -2 second to last, etc.
+                # -2 second to last, etc
                 orbit_num = self.num + 1 + orbit_num
 
             if orbit_num == self.num:
                 # We get here if user asks for last orbit. This cal is first to
                 # trap case where there is only one orbit (self.num=1), which
-                # needs to be treated differently than a orbit=1 call
+                # needs to be treated differently than a orbit=1 call.
                 if self.num != 1:
                     # More than one orbit, go back one (simple call) and
                     # then forward doing full logic for breaks across day
@@ -804,7 +825,7 @@ class Orbits(object):
 
                     if delta_start <= self.orbit_period * 1.05:
                         # We are near the beginning. Load the previous file,
-                        # then go forward one orbit
+                        # then go forward one orbit.
                         self.inst.prev()
                         self.next()
                         if self.inst.index[-1] < date + delta_start:
@@ -812,7 +833,7 @@ class Orbits(object):
                             # above, and the data we have is the wrong day.
                             # In this case, move forward again.  This happens
                             # when previous day doesn't have data near end of
-                            # the day
+                            # the day.
                             self.next()
 
                     elif delta_end <= self.orbit_period * 1.05:
@@ -825,7 +846,7 @@ class Orbits(object):
                             # as above, and the data we have is the wrong day.
                             # In this case, move back again. This happens when
                             # next day doesn't have data near beginning of the
-                            # day
+                            # day.
                             self.prev()
                     else:
                         # Not near beginning or end, just get the last orbit
@@ -843,14 +864,14 @@ class Orbits(object):
 
                     # If and else added because of Instruments that have large
                     # gaps (e.g., C/NOFS).  In this case, prev can return
-                    # empty data
+                    # empty data.
                     if not self.inst.empty:
                         # Get last orbit if there is data. This will deal with
-                        # orbits across file cleanly
+                        # orbits across file cleanly.
                         self.load(-1)
                     else:
                         # No data, no previous data to account for. Move back
-                        # to original data, do simple load of first orbit
+                        # to original data, do simple load of first orbit.
                         self.inst.next()
                         self._get_basic_orbit(1)
 
@@ -875,13 +896,20 @@ class Orbits(object):
                 # Gone too far
                 self.inst.data = self.inst._null_data
                 raise ValueError(' '.join(('Requested an orbit past total',
-                                           'orbits for day')))
+                                           'orbits for day.')))
         else:
             logger.info(' '.join(('No data loaded in instrument object to',
                                   'determine orbits.')))
 
+        return
+
     def next(self):
         """Load the next orbit into associated `Instrument.data` object.
+
+        Raises
+        ------
+        RuntimeError
+            Placed in code that a user should never be able to reach
 
         Note
         ----
@@ -940,7 +968,6 @@ class Orbits(object):
             elif self._current == (self.num):
                 # At the last orbit, need to be careful about getting the next
                 # orbit save this current orbit and load the next day
-                # temp_orbit_data = self.inst.data.copy()
                 temp_orbit_data = self.inst.copy()
 
                 # Load next day, which clears orbit breaks info
@@ -992,7 +1019,7 @@ class Orbits(object):
                     # There is no data for the next day, continue loading data
                     # until there is some.  The `next` method raises
                     # StopIteration when it reaches the end, leaving this
-                    # function
+                    # function.
                     while self.inst.empty:
                         self.inst.next()
                     self._get_basic_orbit(1)
@@ -1032,6 +1059,11 @@ class Orbits(object):
     def prev(self):
         """Load the previous orbit into associated `Instrument.data` object.
 
+        Raises
+        ------
+        RuntimeError
+            Placed in code that a user should never be able to reach
+
         Note
         ----
         Forms complete orbits across day boundaries. If no data loaded
@@ -1045,15 +1077,13 @@ class Orbits(object):
             self._calc_orbits()
 
             if (self._current > 2) and (self._current <= self.num):
-                # If not close to the first orbit, just pull the previous orbit
-                #
-                # Load orbit and put it into self.inst.data
+                # If not close to the first orbit, just pull the previous orbit.
+                # Load orbit and put it into `self.inst.data`.
                 self._get_basic_orbit(self._current - 1)
                 self._report_current_orbit()
             elif self._current == 2:
-                # If current orbit near the first, must be careful
-                #
-                # First, load prev orbit data
+                # If current orbit near the first, must be careful.
+                # First, load prev orbit data.
                 self._get_basic_orbit(self._current - 1)
 
                 load_prev = True
@@ -1086,7 +1116,7 @@ class Orbits(object):
                         # If loading the first orbit, of first day of data,
                         # you'll end up here as the attempt to make a full
                         # orbit will move the date backwards, and StopIteration
-                        # is made. everything is already ok, just move along
+                        # is made. Everything is already ok, just move along.
                         pass
 
                     del temp_orbit_data
