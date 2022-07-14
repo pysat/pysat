@@ -281,7 +281,7 @@ class TestLoadNetCDF(object):
         # Windows due to open references despite our .close() statement in
         # loading code. The debugging check below can be removed if tests
         # continue to pass after the debug statement is uncommented.
-        # os.remove(outfile) # This the debug check
+        # os.remove(outfile) # This is the debug check
 
         return
 
