@@ -496,12 +496,14 @@ class TestLoadNetCDF(object):
         # Test that `bespoke` attribute is initially missing
         assert not hasattr(self.testInst, 'bespoke')
 
-        # Instrument meta attributes immutable upon load
+        # Instrument meta attributes are immutable upon load
         assert not self.testInst.meta.mutable
-        try:
+
+        # Ensure error raised if attribute assignment attempted
+        with pytest.raises(AttributeError) as verr:
             self.testInst.meta.bespoke = True
-        except AttributeError:
-            pass
+
+        assert str(verr).find("Cannot set attribute bespoke to True")
 
         # Test that `bespoke` attribute is still missing
         assert not hasattr(self.testInst, 'bespoke')
