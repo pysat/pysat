@@ -277,10 +277,11 @@ class TestLoadNetCDF(object):
         # TODO(#974) It appears the source of the open references is related
         # to xarray itself. Code below is debugging code that may be used
         # to identify when and if the problem within xarray is sorted out.
-        # Debug- delete the file. This doesn't work on Windows. It does work if
-        # executed before the netCDF is loaded. Despite our .close() statement
-        # in loading code, there are still open references.
-        # os.remove(outfile)
+        # Debug process - delete the file we've created. This doesn't work on
+        # Windows due to open references despite our .close() statement in
+        # loading code. The debugging check below can be removed if tests
+        # continue to pass after the debug statement is uncommented.
+        # os.remove(outfile) # This the debug check
 
         return
 
