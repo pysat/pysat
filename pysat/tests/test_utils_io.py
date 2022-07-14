@@ -1355,7 +1355,7 @@ class TestXarrayIO(object):
     def teardown(self):
         """Clean up the test environment."""
 
-        del self.testInst
+        del self.testInst, self.epoch_name
         return
 
     def test_pysat_meta_to_xarray_attr(self):

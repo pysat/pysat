@@ -19,12 +19,12 @@ class TestCyclicData(object):
     """Unit tests for the `adjust_cyclic_data` function."""
 
     def setup(self):
-        """Run to set up a clean test environment."""
+        """Set up the unit test environment."""
         self.ref_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         return
 
     def teardown(self):
-        """Run after every method to clean up previous testing."""
+        """Clean up the unit test environment."""
         del self.ref_angles
         return
 

@@ -124,7 +124,7 @@ class Files(object):
     --------
     ::
 
-        # Convenient file access
+        # Instantiate instrument to generate file list
         inst = pysat.Instrument(platform=platform, name=name, tag=tag,
                                 inst_id=inst_id)
         # First file

@@ -2703,7 +2703,7 @@ class Instrument(object):
     def generic_meta_translator(self, input_meta):
         """Convert the `input_meta` metadata into a dictionary.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.0.2
            `generic_meta_translator` will be removed in the 3.2.0+ release.
 
         Parameters

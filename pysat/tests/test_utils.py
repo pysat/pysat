@@ -312,7 +312,7 @@ class TestFmtCols(object):
     """Unit tests for `fmt_output_in_cols`."""
 
     def setup(self):
-        """Run to set up the test environment."""
+        """Set up the test environment."""
 
         self.in_str = np.arange(0, 40, 1).astype(str)
         self.in_kwargs = {"ncols": 5, "max_num": 40, "lpad": None}
