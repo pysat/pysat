@@ -903,9 +903,9 @@ class Files(object):
 
         Parameters
         ----------
-        start: array-like or str
+        start : array-like or str
             Filenames for start of returned filelist
-        stop: array-like or str
+        stop : array-like or str
             Filenames inclusive of the ending of list provided by the stop time
 
         Returns

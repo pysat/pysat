@@ -32,7 +32,7 @@ class Instrument(object):
         Name of instrument platform. If None and `name` is also None, creates an
         Instrument with empty `platform` and `name` attributes. (default=None)
     name : str or NoneType
-        Name of instrument. If None and `name` is also None, creates an
+        Name of instrument. If None and `platform` is also None, creates an
         Instrument with empty `platform` and `name` attributes. (default=None)
     tag : str
         Identifies particular subset of instrument data (default='')
