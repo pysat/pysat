@@ -267,7 +267,7 @@ class InstLibTests(object):
         info = module._test_dates
         for inst_id in info.keys():
             for tag in info[inst_id].keys():
-                self.assert_isinstance(info[inst_id][tag], dt.datetime)
+                assert_isinstance(info[inst_id][tag], dt.datetime)
         return
 
     @pytest.mark.first
