@@ -81,6 +81,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `pysat.utils.io.xarray_all_vars` which returns a list of all variables,
      coordinates, and dimensions.
    * Added more volume units to `pysat.utils.scale_units`
+   * Added `assert_isinstance` and `assert_hasattr` to `pysat.utils.testing`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
