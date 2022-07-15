@@ -279,7 +279,7 @@ class TestLoadNetCDF(object):
         # to identify when and if the problem within xarray is sorted out.
         # Debug process - delete the file we've created. This doesn't work on
         # Windows due to open references despite our .close() statement in
-        # loading code. The debugging check below can be removed if tests
+        # writing code. The debugging check below can be removed if tests
         # continue to pass after the debug statement is uncommented.
         # os.remove(outfile) # This is the debug check
 
