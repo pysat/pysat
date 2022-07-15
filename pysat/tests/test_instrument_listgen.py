@@ -25,7 +25,7 @@ class TestInstListGeneration(object):
         return
 
     def test_import_error_behavior(self):
-        """Test that `generate_instrument_list` works with a broken instrument."""
+        """Test `generate_instrument_list` works with a broken instrument."""
 
         self.test_library.__all__.append('broken_inst')
 
@@ -39,7 +39,7 @@ class TestInstListGeneration(object):
         return
 
     def test_for_missing_test_date(self):
-        """Test that instruments without the `_test_dates` attr are added to the list."""
+        """Test that instruments without the `_test_dates` attr are added."""
 
         del self.test_library.pysat_testing._test_dates
 
