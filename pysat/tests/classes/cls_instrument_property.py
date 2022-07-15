@@ -24,6 +24,22 @@ from pysat.utils.time import filter_datetime_input
 class InstPropertyTests(object):
     """Basic tests for `pysat.Instrument` properties.
 
+    Attributes
+    ----------
+    out : any
+        Stores relevant output in a test method for further testing
+    ref_time : dt.datetime
+        Datetime for testing. Comes from instrument module under test.
+    ref_doy : int
+        Day of year for testing
+    test_inst : pysat.Instrument
+        Instrument to test
+    testing_kwargs : dict
+        Dictionary of kwargs used for testing custom kwarg support across
+        the range of `pysat.Instrument` dataset module methods
+    xarray_epoch_name : str
+        String used within a xarray testing `pysat.Instrument` object
+
     Note
     ----
     Inherited by classes in test_instrument.py.  Setup and teardown methods are
