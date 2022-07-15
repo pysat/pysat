@@ -34,6 +34,7 @@ import pytest
 
 import pysat
 from pysat.utils import generate_instrument_list
+from pysat.utils.testing import assert_isinstance, assert_hasattr
 
 
 def initialize_test_inst_and_date(inst_dict):
@@ -178,40 +179,6 @@ class InstLibTests(object):
 
         return instruments
 
-    def assert_hasattr(self, obj, attr_name):
-        """Provide useful info if object is missing a required attribute.
-
-        Parameters
-        ----------
-        obj : object
-            Name of object to check.
-        attr_name : str
-            Name of required attribute that must be present in `obj`.
-
-        """
-
-        estr = "Object {:} missing attribute {:}".format(obj.__repr__(),
-                                                         attr_name)
-        assert hasattr(obj, attr_name), estr
-        return
-
-    def assert_isinstance(self, obj, obj_type):
-        """Provide useful info if object is the wrong type.
-
-        Parameters
-        ----------
-        obj : object
-            Name of object to check.
-        obj_type : str
-            Required type of object.
-
-        """
-
-        estr = "Object {:} is type {:}, but should be type {:}".format(
-            obj.__repr__(), type(obj), obj_type)
-        assert isinstance(obj, obj_type), estr
-        return
-
     @pytest.mark.all_inst
     def test_modules_standard(self, inst_name):
         """Test that modules are importable and have standard properties.
@@ -230,10 +197,10 @@ class InstLibTests(object):
 
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
-            self.assert_hasattr(module, mattr)
+            assert_hasattr(module, mattr)
             if mattr in self.attr_types.keys():
-                self.assert_isinstance(getattr(module, mattr),
-                                       self.attr_types[mattr])
+                assert_isinstance(getattr(module, mattr),
+                                  self.attr_types[mattr])
 
         # Check for presence of required instrument attributes
         for inst_id in module.inst_ids.keys():
@@ -242,7 +209,7 @@ class InstLibTests(object):
                                         inst_id=inst_id, use_header=True)
 
                 # Test to see that the class parameters were passed in
-                self.assert_isinstance(inst, pysat.Instrument)
+                assert_isinstance(inst, pysat.Instrument)
                 assert inst.platform == module.platform
                 assert inst.name == module.name
                 assert inst.inst_id == inst_id
@@ -251,10 +218,10 @@ class InstLibTests(object):
 
                 # Test the required class attributes
                 for iattr in self.inst_attrs:
-                    self.assert_hasattr(inst, iattr)
+                    assert_hasattr(inst, iattr)
                     if iattr in self.attr_types:
-                        self.assert_isinstance(getattr(inst, iattr),
-                                               self.attr_types[iattr])
+                        assert_isinstance(getattr(inst, iattr),
+                                          self.attr_types[iattr])
         return
 
     @pytest.mark.all_inst
