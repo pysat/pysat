@@ -7,7 +7,7 @@ from pysat.utils import generate_instrument_list
 
 
 class TestInstListGeneration(object):
-    """Tests to ensure the instrument test class is working as expected."""
+    """Tests that ensure `generate_instrument_list` is working as expected."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
