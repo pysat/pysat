@@ -34,7 +34,8 @@ import pytest
 
 import pysat
 from pysat.utils import generate_instrument_list
-from pysat.utils.testing import assert_isinstance, assert_hasattr
+from pysat.utils.testing import assert_hasattr
+from pysat.utils.testing import assert_isinstance
 
 
 def initialize_test_inst_and_date(inst_dict):
