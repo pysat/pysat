@@ -1742,7 +1742,7 @@ class TestMeta(object):
             for cvar in concat_meta[dvar].children.keys():
                 # TODO(#911): will either fix this or require warning test
                 assert self.meta[dvar].children[
-                    cvar, self.meta.labels.units].find('Updated') < 0
+                    cvar, self.meta.labels.units].find('Updated') > 0
         return
 
     # TODO(#789): remove tests for higher order meta
