@@ -21,11 +21,11 @@ Examples
 
     class TestInstruments(InstLibTests):
         '''Create a testable object from standard library.
-        
+
         Note
         -----
         In your docstring be sure to use double quotes instead of single quotes.
-        
+
         '''
 
 
