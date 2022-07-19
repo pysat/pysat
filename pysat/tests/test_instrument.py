@@ -555,7 +555,7 @@ class TestDeprecation(object):
         return
 
     def test_set_2d_pandas_data(self):
-        """Check that setting 2d data for pandas raises a DeprecationWarning."""
+        """Check that setting 2D data for pandas raises a DeprecationWarning."""
 
         test_inst = pysat.Instrument('pysat', 'testing2d', use_header=True)
         test_date = pysat.instruments.pysat_testing2d._test_dates['']['']

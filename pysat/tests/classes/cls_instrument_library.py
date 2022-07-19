@@ -20,7 +20,13 @@ Examples
                                          user_info=user_info)
 
     class TestInstruments(InstLibTests):
-        '''Create a testable object from standard library.'''
+        '''Create a testable object from standard library.
+        
+        Note
+        -----
+        In your docstring be sure to use double quotes instead of single quotes.
+        
+        '''
 
 
 """
@@ -159,6 +165,7 @@ class InstLibTests(object):
                 n_args = len(getattr(self, method).pytestmark)
                 mark_names = [getattr(self, method).pytestmark[j].name
                               for j in range(0, n_args)]
+
                 # Add instruments from your library.
                 if 'all_inst' in mark_names:
                     mark = pytest.mark.parametrize("inst_name",

@@ -10,7 +10,7 @@ from pysat.instruments.methods import testing as mm_test
 from pysat.utils import testing
 
 
-class TestBasics(object):
+class TestMethodsTesting(object):
     """Unit tests for testing methods."""
 
     def setup(self):

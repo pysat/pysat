@@ -194,7 +194,7 @@ class TestMeta(object):
         assert str(ierr).find('expected tuple, list, or str') >= 0
         return
 
-    # TODO(#913): remove tests for 2d metadata
+    # TODO(#913): remove tests for 2D metadata
     @pytest.mark.parametrize("parent_child", [
         (['alt_profiles', 'profiles'], 'density'),
         (['alt_profiles', 'profiles'], ['density', 'dummy_str']),
@@ -311,7 +311,7 @@ class TestMeta(object):
                                input_kwargs=kwargs)
         return
 
-    # TODO(#913): remove tests for 2d metadata
+    # TODO(#913): remove tests for 2D metadata
     def test_meta_rename_bad_ho_input(self):
         """Test raises ValueError when treating normal data like HO data."""
 
@@ -785,7 +785,7 @@ class TestMeta(object):
             self.eval_meta_settings()
         return
 
-    # TODO(#913): remove tests for 2d metadata
+    # TODO(#913): remove tests for 2D metadata
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     @pytest.mark.parametrize('num_mvals', [0, 1, 3])
     @pytest.mark.parametrize('num_dvals', [0, 1, 3])
@@ -954,7 +954,7 @@ class TestMeta(object):
 
         return
 
-    # TODO(#913): remove tests for 2d metadata
+    # TODO(#913): remove tests for 2D metadata
     @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
     def test_assign_nonstandard_metalabels(self, inst_name):
         """Test labels do not conform to the standard values if set that way.
@@ -1648,7 +1648,7 @@ class TestMeta(object):
         self.eval_ho_meta_settings(meta_dict)
         return
 
-    # TODO(#913): remove tests for 2d metadata
+    # TODO(#913): remove tests for 2D metadata
     def test_inst_ho_data_assign_meta_different_labels(self):
         """Test the higher order assignment of custom metadata labels."""
 
@@ -1802,7 +1802,7 @@ class TestMeta(object):
         assert self.meta[self.dval].children.hasattr_case_neutral(label)
         return
 
-    # TODO(#913): remove tests for 2d metadata
+    # TODO(#913): remove tests for 2D metadata
     def test_ho_meta_rename_function(self):
         """Test `meta.rename` method with ho data using a function."""
 
@@ -1838,7 +1838,7 @@ class TestMeta(object):
 
         return
 
-    # TODO(#913): remove tests for 2d metadata
+    # TODO(#913): remove tests for 2D metadata
     def test_ho_meta_rename_dict(self):
         """Test `meta.rename` method with ho data using a dict."""
 

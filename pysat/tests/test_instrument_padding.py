@@ -77,6 +77,7 @@ class TestDataPaddingbyFile(object):
         ncycle : int
             Difference in data coverage times in number of minutes. Must
             be the same value as the `pad` keyword passed to `self.testInst`.
+
         """
 
         # Load the test data with padding
