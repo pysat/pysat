@@ -28,7 +28,7 @@ def filter_data(inst, times):
     inst : pysat.Instrument
         The instrument to be filtered
     times : array of dt.datetimes
-        A 2xN array consisting of the start and stop of each gap in a list of
+        A (2, N) array consisting of the start and stop of each gap in a list of
         N gaps
 
     """
