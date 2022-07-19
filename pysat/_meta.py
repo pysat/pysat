@@ -641,9 +641,9 @@ class Meta(object):
                 # Assign meta_row using copy to avoid pandas
                 # SettingWithCopyWarning, as suggested in
                 # https://www.dataquest.io/blog/settingwithcopywarning/
-                meta_row = self.data.loc[new_key].copy()
+                meta_row = self.data.loc[new_key]
                 if new_key in self.keys_nD():
-                    meta_row.at['children'] = self.ho_data[new_key].copy()
+                    meta_row.at['children'] = self.ho_data[new_key]
                 else:
                     meta_row.at['children'] = None  # Return empty meta instance
 
