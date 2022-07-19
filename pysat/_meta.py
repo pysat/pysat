@@ -646,9 +646,9 @@ class Meta(object):
                 #  change was made late in the v3.0.2 review thus the comment
                 #  above and commented .copy code below have been kept. Remove
                 #  for any subsequent releases if things are still ok.
-                meta_row = self.data.loc[new_key] #.copy()
+                meta_row = self.data.loc[new_key]  # .copy()
                 if new_key in self.keys_nD():
-                    meta_row.at['children'] = self.ho_data[new_key] #.copy()
+                    meta_row.at['children'] = self.ho_data[new_key]  # .copy()
                 else:
                     meta_row.at['children'] = None  # Return empty meta instance
 
