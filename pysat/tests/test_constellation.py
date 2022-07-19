@@ -3,7 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""Unit tests for the `constellation` class and methods."""
+"""Unit tests for the Constellation class."""
 
 import datetime as dt
 import logging
@@ -71,8 +71,7 @@ class TestConstellationInitReg(TestWithRegistration):
         # Load the Constellation and capture log output
         with caplog.at_level(logging.WARNING, logger='pysat'):
             const = pysat.Constellation(platforms=['Executor', 'platname1'],
-                                        tags=[''],
-                                        use_header=True)
+                                        tags=[''], use_header=True)
 
         # Test the partial Constellation initialization
         assert len(const.instruments) == 2

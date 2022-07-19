@@ -62,6 +62,7 @@ def assert_reversible_orbit(inst, iterations):
         p_time.append(inst.index[0])
 
     assert all(control.data == inst.data)
+
     # Don't check breaks for long gap.  See #861
     if iterations < 30:
         assert np.all(p_time == n_time[::-1])
@@ -83,8 +84,10 @@ def assert_reversible_orbit_symmetric(inst, iterations):
     control = inst.copy()
     for j in range(iterations):
         inst.orbits.next()
+
     for j in range(2 * iterations):
         inst.orbits.prev()
+
     for j in range(iterations):
         inst.orbits.next()
     assert all(control.data == inst.data)
@@ -230,6 +233,7 @@ class TestSpecificUTOrbits(object):
         ----------
         orbit_inc : int
             Orbit index value
+
         """
 
         # Load the data

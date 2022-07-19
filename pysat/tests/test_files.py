@@ -30,6 +30,7 @@ def create_dir(inst=None, temporary_file_list=False):
         'testing' Instrument created. (default=None)
     temporary_file_list : bool
         Flag passed to `pysat.Instrument` if `inst` is None (default=False)
+
     """
     if inst is None:
         # Create instrument
@@ -63,6 +64,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     version : bool
         If True, then `format_str` includes version, revision, and cycle
         information
+
     """
 
     if format_str is None:
@@ -496,8 +498,7 @@ class TestBasics(object):
                      root_fname=root_fname, version=self.version,
                      use_doy=True)
 
-        # Create equivlanet of `from_os` but with transparency to user vars.
-
+        # Create equivalent of `from_os` but with transparency to user vars.
         # Parse format string to figure out which search string should be used
         # to identify files in the filesystem.
         search_dict = futils.construct_searchstring_from_format(root_pname)
@@ -550,8 +551,7 @@ class TestBasics(object):
                      root_fname=root_fname, version=self.version,
                      use_doy=True)
 
-        # Create equivlanet of `from_os` but with transparency to user vars.
-
+        # Create equivalent of `from_os` but with transparency to user vars.
         # Parse format string to figure out which search string should be used
         # to identify files in the filesystem.
         search_dict = futils.construct_searchstring_from_format(root_pname)
