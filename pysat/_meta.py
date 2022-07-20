@@ -880,6 +880,7 @@ class Meta(object):
 
         May be set using `data.setter(new_frame)`, where `new_frame` is a
         pandas Dataframe containing the metadata with label names as columns.
+
         """
         return self._data
 
@@ -930,6 +931,7 @@ class Meta(object):
         ----------
         other : pysat.Meta
             Metadata to be merged into `self`
+
         """
 
         for key in other.keys():

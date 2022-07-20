@@ -210,6 +210,7 @@ class TestConstellationInit(object):
             Value for 'common_index' passed to Constellation
         cstr : str
             String to test for
+
         """
 
         self.in_kwargs["common_index"] = common_index

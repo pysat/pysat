@@ -28,7 +28,6 @@ Examples
 
         '''
 
-
 """
 
 import datetime as dt
