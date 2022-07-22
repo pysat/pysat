@@ -21,7 +21,8 @@ class TestMalformedIndex(object):
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
-                                         strict_time_flag=True)
+                                         strict_time_flag=True,
+                                         use_header=True)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         return
@@ -54,7 +55,8 @@ class TestMalformedIndexXArray(TestMalformedIndex):
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
-                                         strict_time_flag=True)
+                                         strict_time_flag=True,
+                                         use_header=True)
         self.ref_time = dt.datetime(2009, 1, 1)
         self.ref_doy = 1
         return

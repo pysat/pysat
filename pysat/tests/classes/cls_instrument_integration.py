@@ -19,8 +19,6 @@ import xarray as xr
 import pysat
 from pysat.utils import testing
 
-logger = pysat.logger
-
 
 class InstIntegrationTests(object):
     """Integration tests for `pysat.Instrument`.
@@ -71,7 +69,7 @@ class InstIntegrationTests(object):
         # Confirm the right data_path is present. `data_paths` is longer
         # than tempdir.name by instrument specific directories.
         lim = len(os.path.normpath(tempdir.name))
-        assert os.path.normpath(self.testInst.files.data_path)[:lim]\
+        assert os.path.normpath(self.testInst.files.data_path)[:lim] \
                == os.path.normpath(tempdir.name)
         assert len(self.testInst.files.files) > 0
 

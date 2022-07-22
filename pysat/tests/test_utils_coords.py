@@ -19,12 +19,12 @@ class TestCyclicData(object):
     """Unit tests for the `adjust_cyclic_data` function."""
 
     def setup(self):
-        """Run to set up a clean test environment."""
+        """Set up the unit test environment."""
         self.ref_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         return
 
     def teardown(self):
-        """Run after every method to clean up previous testing."""
+        """Clean up the unit test environment."""
         del self.ref_angles
         return
 
@@ -68,7 +68,8 @@ class TestUpdateLon(object):
     def test_update_longitude(self, name):
         """Test `update_longitude` successful run."""
 
-        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name,
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time)
 
         # Test instruments initially define longitude between 0-360 deg
@@ -85,7 +86,8 @@ class TestUpdateLon(object):
     def test_bad_lon_name_update_longitude(self):
         """Test update_longitude with a bad longitude name."""
 
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing")
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing",
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time)
 
         testing.eval_bad_input(coords.update_longitude, ValueError,
@@ -123,7 +125,7 @@ class TestCalcSLT(object):
 
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        num_samples=1)
+                                        num_samples=1, use_header=True)
         self.py_inst.load(date=self.inst_time)
 
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -147,7 +149,7 @@ class TestCalcSLT(object):
 
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        num_samples=1)
+                                        num_samples=1, use_header=True)
         self.py_inst.load(date=self.inst_time)
 
         # Apply solar local time method and capture logging output
@@ -166,7 +168,8 @@ class TestCalcSLT(object):
         """Test calc_solar_local_time with longitudes from -180 to 180 deg."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing")
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing",
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time)
 
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -184,7 +187,8 @@ class TestCalcSLT(object):
         """Test raises ValueError with a bad longitude name."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing")
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing",
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time)
 
         # Test that the correct Exception and error message are raised
@@ -201,7 +205,8 @@ class TestCalcSLT(object):
         """Test calc_solar_local_time with longitude coordinates."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name,
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time)
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt')
@@ -217,7 +222,8 @@ class TestCalcSLT(object):
         """Test non modulated solar local time output for a 2 day range."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name,
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time,
                           end_date=self.inst_time + dt.timedelta(days=2))
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -235,7 +241,8 @@ class TestCalcSLT(object):
         """Test non modulated SLT output for a 2 day range with a ref date."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name,
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time, end_date=self.inst_time
                           + dt.timedelta(days=2))
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -255,7 +262,8 @@ class TestCalcSLT(object):
         """Test SLT calc with longitude coordinates and no modulus."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name,
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time)
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt', apply_modulus=False)
@@ -270,7 +278,8 @@ class TestCalcSLT(object):
         """Test calc_solar_local_time with a single longitude value."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing_xarray")
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing_xarray",
+                                        use_header=True)
         self.py_inst.load(date=self.inst_time)
         lon_name = 'lon2'
 

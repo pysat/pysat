@@ -84,7 +84,8 @@ class TestScaleUnits(object):
         self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
                           'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
         self.vol_units = ["m-3", "cm-3", "/cc", 'n/cc', 'm$^{-3}$', 'cm$^{-3}$',
-                          "#/cm^3", "#/km^3", "#/m^3"]
+                          "#/cm^3", "#/km^3", "#/m^3", "cm^-3", "km^-3", "m^-3",
+                          'cm^{-3}', 'm^{-3}', 'km^{-3}']
         self.scale = 0.0
         return
 
@@ -311,7 +312,7 @@ class TestFmtCols(object):
     """Unit tests for `fmt_output_in_cols`."""
 
     def setup(self):
-        """Run to set up the test environment."""
+        """Set up the test environment."""
 
         self.in_str = np.arange(0, 40, 1).astype(str)
         self.in_kwargs = {"ncols": 5, "max_num": 40, "lpad": None}
@@ -477,7 +478,14 @@ class TestAvailableInst(TestWithRegistration):
 
     @pytest.mark.parametrize("inst_loc", [None, [pysat.instruments]])
     def test_display_instrument_stats(self, inst_loc, capsys):
-        """Test display_instrument_stats options."""
+        """Test display_instrument_stats options.
+
+        Parameters
+        ----------
+        inst_loc : any
+            Passed to `display_instrument_stats`
+
+        """
 
         utils.display_instrument_stats(inst_loc)
 
@@ -576,7 +584,14 @@ class TestGenerateInstList(object):
 
     @pytest.mark.parametrize("list_name", [('download'), ('no_download')])
     def test_generate_module_list_attributes(self, list_name):
-        """Test that each instrument dict has sufficient information."""
+        """Test that each instrument dict has sufficient information.
+
+        Parameters
+        ----------
+        list_name : str
+            Label to check within `self.inst_list`
+
+        """
 
         for inst_dict in self.inst_list[list_name]:
             for item in ['inst_module', 'tag', 'inst_id']:
@@ -589,7 +604,15 @@ class TestGenerateInstList(object):
     @pytest.mark.parametrize("list_name,output", [('download', False),
                                                   ('no_download', True)])
     def test_proper_sorting_of_no_download(self, list_name, output):
-        """Test that instruments without downloads are sorted properly."""
+        """Test that instruments without downloads are sorted properly.
+
+        Parameters
+        ----------
+        list_name : str
+            Label to check within `self.inst_list`
+        output : bool
+            Boolean value expected from internal test
+        """
 
         tags = [inst['tag'] for inst in self.inst_list[list_name]]
         assert ('no_download' in tags) == output
@@ -619,7 +642,16 @@ class TestDeprecation(object):
                               ({'fnames': 'no_file', 'file_format': None},
                                [0, 2])])
     def test_load_netcdf4(self, kwargs, msg_inds):
-        """Test deprecation warnings from load_netcdf4."""
+        """Test deprecation warnings from load_netcdf4.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Keyword arguments passed to `load_netcdf4`
+        msg_inds : list
+            List of indices indicating which warning message is expected
+
+        """
         with warnings.catch_warnings(record=True) as war:
             try:
                 # Generate relocation warning and file_format warning

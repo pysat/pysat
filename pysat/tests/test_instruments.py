@@ -21,24 +21,11 @@ from pysat.utils import testing
 
 # Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords
-# user_info = {'platform_name': {'user': 'pysat_user',
-#                                'password': 'None'}}
 user_info = {'pysat_testing': {'user': 'pysat_testing',
                                'password': 'pysat.developers@gmail.com'}}
 
-# Developers for instrument libraries should update the following line to
-# point to their own subpackage location
-# e.g.,
-# InstLibTests.initialize_test_package(InstLibTests, inst_loc=mypackage.inst)
-
-# If user and password info supplied, use the following instead
-# InstLibTests.initialize_test_package(InstLibTests, inst_loc=mypackage.inst,
-#                                       user_info=user_info)
-
-# If custom tests need to be added to the class, the instrument lists may be
-# included as an optional output.
-# instruments = InstLibTests.initialize_test_package(InstLibTests,
-#                                                    inst_loc=mypackage.inst)
+# Initialize tests for sources in pysat.instruments in the same way data sources
+# outside of pysat would be tested
 instruments = InstLibTests.initialize_test_package(InstLibTests,
                                                    inst_loc=pysat.instruments,
                                                    user_info=user_info)
@@ -56,20 +43,33 @@ class TestInstruments(InstLibTests):
 
     # Custom package unit tests can be added here
 
-    # Custom Integration Tests added to all test instruments in core package.
+    # Custom Integration Tests added to all test instruments in core package
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     @pytest.mark.parametrize("kwarg,output", [(None, 0.0),
                                               (dt.timedelta(hours=1), 3600.0)])
     def test_inst_start_time(self, inst_dict, kwarg, output):
-        """Test operation of start_time keyword, including default behavior."""
+        """Test operation of start_time keyword, including default behavior.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+        kwarg : dt.timedelta or NoneType
+            Passed to `pysat.Instrument` as value for `start_time` keyword
+        output : float
+            Expected value for the first loaded value in variable `uts`
+
+        """
 
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         if kwarg:
             self.test_inst = pysat.Instrument(
-                inst_module=inst_dict['inst_module'], start_time=kwarg)
+                inst_module=inst_dict['inst_module'], start_time=kwarg,
+                use_header=True)
         else:
             self.test_inst = pysat.Instrument(
-                inst_module=inst_dict['inst_module'])
+                inst_module=inst_dict['inst_module'], use_header=True)
 
         self.test_inst.load(date=date)
 
@@ -78,14 +78,22 @@ class TestInstruments(InstLibTests):
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_num_samples(self, inst_dict):
-        """Test operation of num_samples keyword."""
+        """Test operation of num_samples keyword.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+
+        """
 
         # Number of samples needs to be <96 because freq is not settable.
         # Different test instruments have different default number of points.
         num = 10
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
-                                          num_samples=num)
+                                          num_samples=num, use_header=True)
         self.test_inst.load(date=date)
 
         assert len(self.test_inst['uts']) == num
@@ -93,14 +101,22 @@ class TestInstruments(InstLibTests):
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_file_date_range(self, inst_dict):
-        """Test operation of file_date_range keyword."""
+        """Test operation of file_date_range keyword.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+
+        """
 
         file_date_range = pds.date_range(dt.datetime(2021, 1, 1),
                                          dt.datetime(2021, 12, 31))
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
         self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                           file_date_range=file_date_range,
-                                          update_files=True)
+                                          update_files=True, use_header=True)
         file_list = self.test_inst.files.files
 
         assert all(file_date_range == file_list.index)
@@ -108,10 +124,19 @@ class TestInstruments(InstLibTests):
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_inst_max_latitude(self, inst_dict):
-        """Test operation of max_latitude keyword."""
+        """Test operation of max_latitude keyword.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test
+
+        """
 
         _, date = cls_inst_lib.initialize_test_inst_and_date(inst_dict)
-        self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'])
+        self.test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
+                                          use_header=True)
         if self.test_inst.name != 'testmodel':
             self.test_inst.load(date=date, max_latitude=10.)
             assert np.all(np.abs(self.test_inst['latitude']) <= 10.)
@@ -200,7 +225,8 @@ class TestDeprecation(object):
 
         with warnings.catch_warnings(record=True) as war:
             pysat.Instrument(inst_module=getattr(pysat.instruments,
-                                                 inst_module))
+                                                 inst_module),
+                             use_header=True)
 
         warn_msgs = [" ".join(["The instrument module",
                                "`{:}`".format(inst_module),

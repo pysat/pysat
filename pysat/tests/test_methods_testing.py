@@ -10,13 +10,13 @@ from pysat.instruments.methods import testing as mm_test
 from pysat.utils import testing
 
 
-class TestBasics(object):
+class TestMethodsTesting(object):
     """Unit tests for testing methods."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
 
-        self.test_inst = pysat.Instrument('pysat', 'testing')
+        self.test_inst = pysat.Instrument('pysat', 'testing', use_header=True)
 
         # Get list of filenames.
         self.fnames = [self.test_inst.files.files.values[0]]
@@ -54,7 +54,18 @@ class TestBasics(object):
                                [3600.0, 3690.0]),
                               (87000, {}, [0.0, 86399.0])])
     def test_generate_times_kwargs(self, num, kwargs, output):
-        """Test use of kwargs in generate_times, including default behavior."""
+        """Test use of kwargs in generate_times, including default behavior.
+
+        Parameters
+        ----------
+        num : int
+            Number of times to generate
+        kwargs : dict or NoneType
+            Passed to `mm_test.generate_times`
+        output : list
+            List of first and last times expected by internal tests
+
+        """
 
         if kwargs:
             uts, index, dates = mm_test.generate_times(self.fnames, num,
@@ -66,6 +77,7 @@ class TestBasics(object):
         assert uts[-1] == output[1]
         assert len(uts) == len(index)
         assert len(dates) == 1
+
         # Check that calculations are done correctly.
         delta_time = [dt.timedelta(seconds=sec) for sec in uts]
         assert (index.to_pydatetime() - delta_time == dates).all

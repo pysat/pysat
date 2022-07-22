@@ -59,6 +59,11 @@ class Constellation(object):
         Input dict containing dicts of inputs for `custom_attach` method inputs
         that may be applied to all instruments or at the Constellation-level or
         None (default=None)
+    **kwargs : dict
+        Additional keyword arguments are passed to Instruments instantiated
+        within the class through use of input arguments `platforms`, `names`,
+        `tags`, and `inst_ids`. Additional keywords are not applied when
+        using the `const_module` or `instruments` inputs.
 
     Attributes
     ----------
@@ -124,7 +129,7 @@ class Constellation(object):
 
     def __init__(self, platforms=None, names=None, tags=None, inst_ids=None,
                  const_module=None, instruments=None, index_res=None,
-                 common_index=True, custom=None):
+                 common_index=True, custom=None, **kwargs):
         """Initialize the Constellation object."""
 
         # Initalize the `instruments` attribute to be an empty list before
@@ -171,7 +176,7 @@ class Constellation(object):
                                 # name, inst_id, and tag
                                 self.instruments.append(pysat.Instrument(
                                     platform=ptf, name=flg, tag=tflg,
-                                    inst_id=iid))
+                                    inst_id=iid, **kwargs))
                                 added_platforms.append(ptf)
                                 added_names.append(flg)
                                 added_tags.append(tflg)
@@ -254,7 +259,8 @@ class Constellation(object):
 
         # Process provided user input for custom methods, if provided.
         if custom is not None:
-            req_key = 'function'  # Set the equired key
+            # Set the required key
+            req_key = 'function'
 
             for cust_dict in custom:
                 # Check if required keys present in input.
@@ -402,7 +408,7 @@ class Constellation(object):
         return eflag
 
     def _index(self):
-        """Return a common time index for the loaded data.
+        """Create a common time index for the loaded data.
 
         Returns
         -------

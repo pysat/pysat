@@ -42,7 +42,7 @@ def init(self, test_init_kwarg=None):
     ----------
     self : pysat.Instrument
         This object
-    test_init_kwarg : any or NoneType
+    test_init_kwarg : any
         Testing keyword (default=None)
 
     """

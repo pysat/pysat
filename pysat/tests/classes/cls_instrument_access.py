@@ -27,8 +27,6 @@ import xarray as xr
 import pysat
 from pysat.utils import testing
 
-logger = pysat.logger
-
 
 class InstAccessTests(object):
     """Basic tests for `pysat.Instrument` data access.
@@ -48,7 +46,8 @@ class InstAccessTests(object):
         """Test Instrument object fully complete by self._init_rtn()."""
 
         # Create a base instrument to compare against
-        inst_copy = pysat.Instrument(inst_module=self.testInst.inst_module)
+        inst_copy = pysat.Instrument(inst_module=self.testInst.inst_module,
+                                     use_header=True)
 
         # Get instrument module and init funtcion
         inst_mod = self.testInst.inst_module
@@ -71,7 +70,7 @@ class InstAccessTests(object):
 
         # Instantiate instrument with test module which invokes needed test
         # code in the background
-        pysat.Instrument(inst_module=inst_mod)
+        pysat.Instrument(inst_module=inst_mod, use_header=True)
 
         # Restore nominal init function
         inst_mod.init = inst_mod_init
@@ -741,9 +740,8 @@ class InstAccessTests(object):
         """Test setting series data by name."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
-        self.testInst['doubleMLT'] = \
-            2. * pds.Series(self.testInst['mlt'].values,
-                            index=self.testInst.index)
+        self.testInst['doubleMLT'] = 2. * pds.Series(
+            self.testInst['mlt'].values, index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
 
         self.testInst['blankMLT'] = pds.Series(None, dtype='float64')
@@ -754,10 +752,10 @@ class InstAccessTests(object):
         """Test setting pandas dataframe by name."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
-        self.testInst[['doubleMLT', 'tripleMLT']] = \
-            pds.DataFrame({'doubleMLT': 2. * self.testInst['mlt'].values,
-                           'tripleMLT': 3. * self.testInst['mlt'].values},
-                          index=self.testInst.index)
+        self.testInst[['doubleMLT', 'tripleMLT']] = pds.DataFrame(
+            {'doubleMLT': 2. * self.testInst['mlt'].values,
+             'tripleMLT': 3. * self.testInst['mlt'].values},
+            index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         assert np.all(self.testInst['tripleMLT'] == 3. * self.testInst['mlt'])
         return
@@ -792,8 +790,10 @@ class InstAccessTests(object):
         self.out = self.testInst
         if self.testInst.pandas_format:
             self.testInst[0:3] = 0
+
             # First three values should be changed.
             assert np.all(self.testInst[0:3] == 0)
+
             # Other data should be unchanged.
             assert np.all(self.testInst[3:] == self.out[3:])
         else:
@@ -863,7 +863,7 @@ class InstAccessTests(object):
         {'help': 'I need somebody'}, {'UTS': 'litte_uts', 'mlt': 'big_mlt'},
         {'utS': 'uts1', 'help': {'me': 'do', 'things': 'well'}}])
     def test_unknown_variable_error_renaming(self, values):
-        """Test that unknown variable renaming raises a logger warning.
+        """Test that unknown variable renaming raises a value error.
 
         Parameters
         ----------
@@ -1036,15 +1036,19 @@ class InstAccessTests(object):
                         # Check column name unchanged
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
+
                         # Check for new name in HO data
                         test_val = values[key][ikey]
                         assert test_val in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
+
                         # Case insensitive check
                         assert values[key][ikey] in check_var
+
                         # Ensure new case in there
                         check_var = check_var[values[key][ikey]].name
                         assert values[key][ikey] == check_var
+
                         # Ensure old name not present
                         assert ikey not in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']

@@ -2,7 +2,7 @@
 """Produces fake instrument data for testing.
 
 .. deprecated:: 3.0.2
-    Support for 2d pandas objects will be removed in 3.2.0+.  This instrument
+    Support for 2D pandas objects will be removed in 3.2.0+.  This instrument
     module simulates an object that will no longer be supported.
 
 """
@@ -34,7 +34,7 @@ def init(self, test_init_kwarg=None):
     ----------
     self : pysat.Instrument
         This object
-    test_init_kwarg : any or NoneType
+    test_init_kwarg : any
         Testing keyword (default=None)
 
     """

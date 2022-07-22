@@ -81,7 +81,14 @@ class TestMetaLabels(object):
 
     @pytest.mark.parametrize("in_val", [1., 1, {}, None, []])
     def test_default_value_from_type_unexpected_input(self, in_val, caplog):
-        """Test `MetaLabels.default_values_from_type` with unexpected input."""
+        """Test `MetaLabels.default_values_from_type` with unexpected input.
+
+        Parameters
+        ----------
+        in_val : any
+            The type of `in_val`, rather than the value, drives this test
+
+        """
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.meta_labels.default_values_from_type(in_val)
@@ -144,7 +151,14 @@ class TestMetaLabels(object):
     @pytest.mark.parametrize("in_val",
                              [float, np.float16, np.float32, np.float64])
     def test_default_value_from_type_float_inputs(self, in_val):
-        """Test `MetaLabels.default_values_from_type` with float inputs."""
+        """Test `MetaLabels.default_values_from_type` with float inputs.
+
+        Parameters
+        ----------
+        in_val : type
+            A sub-type within general floating point numbers
+
+        """
 
         out = self.meta.labels.default_values_from_type(in_val)
         assert np.isnan(out)
@@ -155,7 +169,16 @@ class TestMetaLabels(object):
                              [(int, -1), (np.int8, -1), (np.int16, -1),
                               (np.int32, -1), (np.int64, -1), (str, '')])
     def test_default_value_from_type_int_inputs(self, in_val, comp_val):
-        """Test `MetaLabels.default_values_from_type` with int inputs."""
+        """Test `MetaLabels.default_values_from_type` with int inputs.
+
+        Parameters
+        ----------
+        in_val :  type
+            Type of data
+        comp_val : any
+            Target value for internal test
+
+        """
 
         out = self.meta.labels.default_values_from_type(in_val)
         assert out == comp_val

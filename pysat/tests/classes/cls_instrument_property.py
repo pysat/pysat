@@ -24,6 +24,22 @@ from pysat.utils.time import filter_datetime_input
 class InstPropertyTests(object):
     """Basic tests for `pysat.Instrument` properties.
 
+    Attributes
+    ----------
+    out : any
+        Stores relevant output in a test method for further testing
+    ref_time : dt.datetime
+        Datetime for testing. Comes from instrument module under test.
+    ref_doy : int
+        Day of year for testing
+    test_inst : pysat.Instrument
+        Instrument to test
+    testing_kwargs : dict
+        Dictionary of kwargs used for testing custom kwarg support across
+        the range of `pysat.Instrument` dataset module methods
+    xarray_epoch_name : str
+        String used within a xarray testing `pysat.Instrument` object
+
     Note
     ----
     Inherited by classes in test_instrument.py.  Setup and teardown methods are
@@ -363,12 +379,16 @@ class InstPropertyTests(object):
         self.out = self.testInst.__str__()
         assert isinstance(self.out, str)
         assert self.out.find('pysat Instrument object') == 0
+
         # No custom functions
         assert self.out.find('Custom Functions: 0') > 0
+
         # No orbital info
         assert self.out.find('Orbit Settings') < 0
+
         # Files exist for test inst
         assert self.out.find('Date Range:') > 0
+
         # No loaded data
         assert self.out.find('No loaded data') > 0
         assert self.out.find('Number of variables') < 0
@@ -386,7 +406,8 @@ class InstPropertyTests(object):
                                     num_samples=10,
                                     clean_level='clean',
                                     update_files=True,
-                                    orbit_info=orbit_info)
+                                    orbit_info=orbit_info,
+                                    use_header=True)
 
         self.out = testInst.__str__()
 
@@ -415,6 +436,7 @@ class InstPropertyTests(object):
 
         def passfunc(self):
             pass
+
         self.testInst.custom_attach(passfunc)
         self.out = self.testInst.__str__()
         assert self.out.find('passfunc') > 0

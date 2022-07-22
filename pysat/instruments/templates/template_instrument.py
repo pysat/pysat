@@ -22,7 +22,7 @@ name
 tag
     *List supported tag strings here*
 inst_id
-    *List supported inst_ids here*
+    *List supported inst_id strings here*
 
 Note
 ----
@@ -178,7 +178,7 @@ def preprocess(self):
 
 
 # Required function
-def list_files(tag='', inst_id='', data_path=None, format_str=None):
+def list_files(tag='', inst_id='', data_path='', format_str=None):
     """Produce a list of files corresponding to PLATFORM/NAME.
 
     This routine is invoked by pysat and is not intended for direct
@@ -195,7 +195,7 @@ def list_files(tag='', inst_id='', data_path=None, format_str=None):
     data_path : str
         Full path to directory containing files to be loaded. This
         is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here. (default=None)
+        at Instrument instantiation and it will appear here. (default='')
     format_str : str
         String template used to parse the datasets filenames. If a user
         supplies a template string at Instrument instantiation

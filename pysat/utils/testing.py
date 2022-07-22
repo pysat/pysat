@@ -84,6 +84,52 @@ def assert_lists_equal(list1, list2, test_nan=False, test_case=True):
     return
 
 
+def assert_hasattr(obj, attr_name):
+    """Provide useful info if object is missing a required attribute.
+
+    Parameters
+    ----------
+    obj : object
+        Name of object to check
+    attr_name : str
+        Name of required attribute that must be present in `obj`
+
+    Raises
+    ------
+    AssertionError
+        If `obj` does not have attribute `attr_name`
+
+    """
+
+    estr = "Object {:} missing attribute {:}".format(obj.__repr__(),
+                                                     attr_name)
+    assert hasattr(obj, attr_name), estr
+    return
+
+
+def assert_isinstance(obj, obj_type):
+    """Provide useful info if object is the wrong type.
+
+    Parameters
+    ----------
+    obj : object
+        Name of object to check
+    obj_type : str
+        Required type of object
+
+    Raises
+    ------
+    AssertionError
+        If `obj` is not type `obj_type`
+
+    """
+
+    estr = "Object {:} is type {:}, but should be type {:}".format(
+        obj.__repr__(), type(obj), obj_type)
+    assert isinstance(obj, obj_type), estr
+    return
+
+
 def nan_equal(value1, value2):
     """Determine if values are equal or are both NaN.
 

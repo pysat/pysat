@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.0] - 2022-04-15
+[3.0.2] - 2022-07-22
 --------------------
 * New Features
    * Added the property `empty_partial` to the Constellation class
@@ -81,6 +81,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added `pysat.utils.io.xarray_all_vars` which returns a list of all variables,
      coordinates, and dimensions.
    * Added more volume units to `pysat.utils.scale_units`
+   * Added `assert_isinstance` and `assert_hasattr` to `pysat.utils.testing`
 * Deprecations
    * Removed `freq` as a standard kwarg for `pysat.Instruments.download`
    * Deprecated `_test_download_travis` as a standard attribute for
@@ -116,6 +117,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Added docstring linting via flake-docstrings and hacking to CI tests
    * Added clarification to the tutorials
    * Added limitations to the `listify` docstring
+   * Updated image link in `README.md` to display in more environments.
    * Updated `tag` and `inst_id` keywords and docstrings to new standards
    * Added example for version checking when writing tests for packages that
      rely on pysat
@@ -180,6 +182,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      deprecations)
    * Cleaned up excess variables upon import
    * Removed `data_path` check from `pysat.instruments.methods.general.list_files`
+   * Compatible with netCDF v1.6.0
 
 [3.0.1] - 2021-07-28
 --------------------

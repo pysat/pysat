@@ -20,8 +20,13 @@ Examples
                                          user_info=user_info)
 
     class TestInstruments(InstLibTests):
-        '''Create a testable object from standard library.'''
+        '''Create a testable object from standard library.
 
+        Note
+        -----
+        In your docstring be sure to use double quotes instead of single quotes.
+
+        '''
 
 """
 
@@ -34,6 +39,8 @@ import pytest
 
 import pysat
 from pysat.utils import generate_instrument_list
+from pysat.utils.testing import assert_hasattr
+from pysat.utils.testing import assert_isinstance
 
 
 def initialize_test_inst_and_date(inst_dict):
@@ -59,7 +66,8 @@ def initialize_test_inst_and_date(inst_dict):
                                  tag=inst_dict['tag'],
                                  inst_id=inst_dict['inst_id'],
                                  temporary_file_list=True,
-                                 update_files=True, **kwargs)
+                                 update_files=True, use_header=True,
+                                 **kwargs)
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
@@ -148,6 +156,7 @@ class InstLibTests(object):
         # Find all methods in the standard test class.
         method_list = [func for func in dir(self)
                        if callable(getattr(self, func))]
+
         # Search tests for iteration via pytestmark, update w/ instrument list.
         for method in method_list:
             if hasattr(getattr(self, method), 'pytestmark'):
@@ -155,6 +164,7 @@ class InstLibTests(object):
                 n_args = len(getattr(self, method).pytestmark)
                 mark_names = [getattr(self, method).pytestmark[j].name
                               for j in range(0, n_args)]
+
                 # Add instruments from your library.
                 if 'all_inst' in mark_names:
                     mark = pytest.mark.parametrize("inst_name",
@@ -176,40 +186,6 @@ class InstLibTests(object):
 
         return instruments
 
-    def assert_hasattr(self, obj, attr_name):
-        """Provide useful info if object is missing a required attribute.
-
-        Parameters
-        ----------
-        obj : object
-            Name of object to check.
-        attr_name : str
-            Name of required attribute that must be present in `obj`.
-
-        """
-
-        estr = "Object {:} missing attribute {:}".format(obj.__repr__(),
-                                                         attr_name)
-        assert hasattr(obj, attr_name), estr
-        return
-
-    def assert_isinstance(self, obj, obj_type):
-        """Provide useful info if object is the wrong type.
-
-        Parameters
-        ----------
-        obj : object
-            Name of object to check.
-        obj_type : str
-            Required type of object.
-
-        """
-
-        estr = "Object {:} is type {:}, but should be type {:}".format(
-            obj.__repr__(), type(obj), obj_type)
-        assert isinstance(obj, obj_type), estr
-        return
-
     @pytest.mark.all_inst
     def test_modules_standard(self, inst_name):
         """Test that modules are importable and have standard properties.
@@ -225,21 +201,22 @@ class InstLibTests(object):
         # Ensure that each module is at minimum importable
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
+
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
-            self.assert_hasattr(module, mattr)
+            assert_hasattr(module, mattr)
             if mattr in self.attr_types.keys():
-                self.assert_isinstance(getattr(module, mattr),
-                                       self.attr_types[mattr])
+                assert_isinstance(getattr(module, mattr),
+                                  self.attr_types[mattr])
 
         # Check for presence of required instrument attributes
         for inst_id in module.inst_ids.keys():
             for tag in module.inst_ids[inst_id]:
                 inst = pysat.Instrument(inst_module=module, tag=tag,
-                                        inst_id=inst_id)
+                                        inst_id=inst_id, use_header=True)
 
                 # Test to see that the class parameters were passed in
-                self.assert_isinstance(inst, pysat.Instrument)
+                assert_isinstance(inst, pysat.Instrument)
                 assert inst.platform == module.platform
                 assert inst.name == module.name
                 assert inst.inst_id == inst_id
@@ -248,10 +225,10 @@ class InstLibTests(object):
 
                 # Test the required class attributes
                 for iattr in self.inst_attrs:
-                    self.assert_hasattr(inst, iattr)
+                    assert_hasattr(inst, iattr)
                     if iattr in self.attr_types:
-                        self.assert_isinstance(getattr(inst, iattr),
-                                               self.attr_types[iattr])
+                        assert_isinstance(getattr(inst, iattr),
+                                          self.attr_types[iattr])
         return
 
     @pytest.mark.all_inst
@@ -296,7 +273,7 @@ class InstLibTests(object):
         info = module._test_dates
         for inst_id in info.keys():
             for tag in info[inst_id].keys():
-                self.assert_isinstance(info[inst_id][tag], dt.datetime)
+                assert_isinstance(info[inst_id][tag], dt.datetime)
         return
 
     @pytest.mark.first
@@ -365,6 +342,7 @@ class InstLibTests(object):
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
+
             # If cleaning not used, something should be in the file
             # Not used for clean levels since cleaning may remove all data
             if clean_level == "none":
@@ -392,10 +370,15 @@ class InstLibTests(object):
 
         if hasattr(getattr(self.inst_loc, name), 'list_remote_files'):
             assert callable(test_inst.remote_file_list)
+
             # Check for username
-            dl_dict = inst_dict['user_info'] if 'user_info' in \
-                inst_dict.keys() else {}
+            if 'user_info' in inst_dict.keys():
+                dl_dict = inst_dict['user_info']
+            else:
+                dl_dict = {}
+
             files = test_inst.remote_file_list(start=date, stop=date, **dl_dict)
+
             # If test date is correctly chosen, files should exist
             assert len(files) > 0
         else:

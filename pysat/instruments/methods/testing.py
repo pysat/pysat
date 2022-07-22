@@ -36,7 +36,7 @@ def init(self, test_init_kwarg=None):
 
     Parameters
     ----------
-    test_init_kwarg : any or NoneType
+    test_init_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -57,7 +57,7 @@ def clean(self, test_clean_kwarg=None):
 
     Parameters
     ----------
-    test_clean_kwarg : any or NoneType
+    test_clean_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -77,7 +77,7 @@ def preprocess(self, test_preprocess_kwarg=None):
 
     Parameters
     ----------
-    test_preprocess_kwarg : any or NoneType
+    test_preprocess_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -250,7 +250,7 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
         Pass the _test_date object through from the test instrument files
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_files_kwarg : any or NoneType
+    test_list_files_kwarg : any
         Testing keyword (default=None)
 
     Returns
@@ -324,7 +324,7 @@ def list_remote_files(tag='', inst_id='', data_path='', format_str=None,
         Password for data download. (default=None)
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_remote_kwarg : any or NoneType
+    test_list_remote_kwarg : any
         Testing keyword (default=None)
 
     Returns
@@ -365,10 +365,10 @@ def download(date_array, tag, inst_id, data_path='', user=None,
         be contiguous.
     tag : str
         Tag identifier used for particular dataset. This input is provided by
-        pysat. (default='')
+        pysat.
     inst_id : str
         Instrument ID string identifier used for particular dataset. This input
-        is provided by pysat. (default='')
+        is provided by pysat.
     data_path : str
         Path to directory to download data to. (default='')
     user : string or NoneType
@@ -377,7 +377,7 @@ def download(date_array, tag, inst_id, data_path='', user=None,
         error if user not supplied. (default=None)
     password : string or NoneType
         Password for data download. (default=None)
-    test_download_kwarg : any or NoneType
+    test_download_kwarg : any
         Testing keyword (default=None)
 
     Raises
@@ -594,23 +594,23 @@ def create_files(inst, start, stop, freq='1D', use_doy=True,
 
     Examples
     --------
-    >>> import datetime as dt
-    >>> inst = pysat.Instrument('pysat', 'testing')
-    >>> root_fname='pysat_testing_{year:04d}_{month:02d}_{day:02d}.txt'
-    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
-    ...              root_fname=root_fname, use_doy=False)
+    ::
+
+        # Commands below create empty files located at `inst.files.data_path`,
+        # one per day, spanning 2008, where `year`, `month`, and `day`
+        # are filled in using the provided template string appropriately.
+        # The produced files are named like: 'pysat_testing_2008_01_01.txt'
+        import datetime as dt
+        inst = pysat.Instrument('pysat', 'testing')
+        root_fname='pysat_testing_{year:04d}_{month:02d}_{day:02d}.txt'
+        create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
+                     root_fname=root_fname, use_doy=False)
 
 
-    Command creates empty files located at `inst.files.data_path`, one per day,
-    spanning 2008, where `year`, `month`, and `day` are filled in using the
-    provided template string appropriately. Produced files look like:
-    'pysat_testing_2008_01_01.txt'
-
-    >>> create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31))
-
-    In this case we use all of the function defaults which produces a set of
-    files on a daily basis, labeled by year and day of year. Produced files look
-    like: 'pysat_testing_2008_001.txt'
+        # The command below uses the default values for `create_files`, which
+        # produces a daily set of files, labeled by year and day of year.
+        # The files are names like: 'pysat_testing_2008_001.txt'
+        create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31))
 
     """
 

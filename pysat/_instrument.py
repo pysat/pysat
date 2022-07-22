@@ -21,7 +21,6 @@ import xarray as xr
 
 import pysat
 from pysat import logger
-from pysat import utils
 
 
 class Instrument(object):
@@ -29,41 +28,35 @@ class Instrument(object):
 
     Parameters
     ----------
-    platform : str
-        name of instrument platform (default='')
-    name : str
-        name of instrument (default='')
+    platform : str or NoneType
+        Name of instrument platform. If None and `name` is also None, creates an
+        Instrument with empty `platform` and `name` attributes. (default=None)
+    name : str or NoneType
+        Name of instrument. If None and `platform` is also None, creates an
+        Instrument with empty `platform` and `name` attributes. (default=None)
     tag : str
-        identifies particular subset of instrument data
-        (default='')
+        Identifies particular subset of instrument data (default='')
     inst_id : str
         Secondary level of identification, such as spacecraft within a
         constellation platform (default='')
     clean_level : str or NoneType
         Level of data quality. If not provided, will default to the
-        setting in `pysat.params['clean_level']` (default=None)
+        setting in `pysat.params['clean_level']`. (default=None)
+    update_files : bool or NoneType
+        If True, immediately query filesystem for instrument files and store.
+        If False, the local files are presumed to be the same. By default,
+        this setting will be obtained from `pysat.params` (default=None)
     pad : pandas.DateOffset, dict, or NoneType
         Length of time to pad the begining and end of loaded data for
         time-series processing. Extra data is removed after applying all
         custom functions. Dictionary, if supplied, is simply passed to
         pandas DateOffset. (default=None)
-    orbit_info : dict
+    orbit_info : dict or NoneType
         Orbit information, {'index': index, 'kind': kind, 'period': period}.
-        See pysat.Orbits for more information.  (default={})
+        See pysat.Orbits for more information.  (default=None)
     inst_module : module or NoneType
-        Provide instrument module directly, takes precedence over platform/name
+        Provide instrument module directly, takes precedence over platform/name.
         (default=None)
-    update_files : bool or NoneType
-        If True, immediately query filesystem for instrument files and store.
-        If False, the local files are presumed to be the same. By default,
-        this setting will be obtained from `pysat.params` (default=None)
-    temporary_file_list : bool
-        If true, the list of Instrument files will not be written to disk.
-        Prevents a race condition when running multiple pysat processes.
-        (default=False)
-    strict_time_flag : bool
-        If true, pysat will check data to ensure times are unique and
-        monotonically increasing. (default=True)
     data_dir : str
         Directory without sub-directory variables that allows one to
         bypass the directories provided by pysat.params['data_dirs'].  Only
@@ -79,10 +72,19 @@ class Instrument(object):
         provided, it must take `tag` and `inst_id` as arguments and return an
         appropriate string. (default=None)
     file_format : str or NoneType
-        File naming structure in string format.  Variables such as year,
-        month, and inst_id will be filled in as needed using python string
-        formatting.  The default file format structure is supplied in the
-        instrument list_files routine. (default=None)
+        File naming structure in string format.  Variables such as `year`,
+        `month`, `day`, etc. will be filled in as needed using python
+        string formatting.  The default file format structure is supplied in the
+        instrument `list_files` routine. See
+        `pysat.files.parse_delimited_filenames` and
+        `pysat.files.parse_fixed_width_filenames` for more information.
+        (default=None)
+    temporary_file_list : bool
+        If true, the list of Instrument files will not be written to disk
+        (default=False)
+    strict_time_flag : bool
+        If true, pysat will check data to ensure times are unique and
+        monotonically increasing (default=True)
     ignore_empty_files : bool
         Flag controling behavior for listing available files. If True, the list
         of files found will be checked to ensure the filesizes are greater than
@@ -109,11 +111,11 @@ class Instrument(object):
     pad
     orbit_info
     inst_module
-    temporary_file_list
-    strict_time_flag
     data_dir
     directory_format
     file_format
+    temporary_file_list
+    strict_time_flag
     bounds : tuple
         Tuple of datetime objects or filenames indicating bounds for loading
         data, or a tuple of NoneType objects. Users may provide as a tuple or
@@ -131,16 +133,8 @@ class Instrument(object):
         Class object holding the loaded science data
     date : dt.datetime or NoneType
         Date and time for loaded data, None if no data is loaded
-    yr : int or NoneType
-        Year for loaded data, None if no data is loaded
     doy : int or NoneType
         Day of year for loaded data, None if no data is loaded
-    yesterday : dt.datetime
-        Date and time for yesterday in UT
-    today : dt.datetime
-        Date and time for the current day in UT
-    tomorrow : dt.datetime
-        Date and time for tomorrow in UT
     files : pysat.Files
         Class to hold and interact with the available instrument files
     kwargs : dict
@@ -149,20 +143,35 @@ class Instrument(object):
         Stores all supported keywords for user edification
     kwargs_reserved : dict
         Keyword arguments for reserved method arguments
-    meta_labels : dict
-        Dict containing defaults for new Meta data labels
-    meta : pysat.Meta
-        Class holding the instrument metadata
-    orbits : pysat.Orbits
-        Interface to extracting data orbit-by-orbit
-    variables : list
-        List of loaded data variables
-    pandas_format : bool
-        Flag indicating whether `data` is stored as a pandas.DataFrame (True)
-        or an xarray.Dataset (False)
     load_step : dt.timedelta
         The temporal increment for loading data, defaults to a timestep of one
         day
+    meta : pysat.Meta
+        Class holding the instrument metadata
+    meta_labels : dict
+        Dict containing defaults for new Meta data labels
+    orbits : pysat.Orbits
+        Interface to extracting data orbit-by-orbit
+    pandas_format : bool
+        Flag indicating whether `data` is stored as a pandas.DataFrame (True)
+        or an xarray.Dataset (False)
+    today : dt.datetime
+        Date and time for the current day in UT
+    tomorrow : dt.datetime
+        Date and time for tomorrow in UT
+    variables : list
+        List of loaded data variables
+    yesterday : dt.datetime
+        Date and time for yesterday in UT
+    yr : int or NoneType
+        Year for loaded data, None if no data is loaded
+
+    Raises
+    ------
+    ValueError
+        If platform and name are mixture of None and str, an unknown or reserved
+         keyword is used, or if `file_format`, `custom`, or `pad` are improperly
+         formatted
 
     Note
     ----
@@ -227,10 +236,10 @@ class Instrument(object):
 
         # Combine all dicts into a list in order of application and execution,
         # although this can be modified by specifying 'at_pos'. The actual
-        # order these functions will run is: 3, 1, 2
+        # order these functions will run is: 3, 1, 2.
         custom = [custom_func_1, custom_func_2, custom_func_3]
 
-        # Instantiate pysat.Instrument
+        # Instantiate `pysat.Instrument`
         inst = pysat.Instrument(platform, name, inst_id=inst_id, tag=tag,
                                 custom=custom)
 
@@ -253,7 +262,7 @@ class Instrument(object):
                  custom=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
-        # Check for deprecated usage of None.
+        # Check for deprecated usage of None
         if None in [tag, inst_id]:
             warnings.warn(" ".join(["The usage of None in `tag` and `inst_id`",
                                     "has been deprecated and will be removed",
@@ -327,6 +336,12 @@ class Instrument(object):
             # Get dict of supported keywords and values
             default_kwargs = _get_supported_keywords(func)
 
+            # Expand the dict to include method keywords for load.
+            # TODO(#1020): Remove this if statement for the 3.2.0+ release
+            if fkey == 'load':
+                meth = getattr(self, fkey)
+                default_kwargs.update(_get_supported_keywords(meth))
+
             # Confirm there are no reserved keywords present
             for kwarg in kwargs.keys():
                 if kwarg in self.kwargs_reserved:
@@ -362,13 +377,13 @@ class Instrument(object):
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else pysat.params['clean_level'])
 
-        # Assign strict_time_flag
+        # Assign `strict_time_flag`
         self.strict_time_flag = strict_time_flag
 
         # Assign directory format information, which tells pysat how to look in
         # sub-directories for files.
         if directory_format is not None:
-            # assign_func sets some instrument defaults, but user inputs
+            # `assign_func` sets some instrument defaults, but user inputs
             # take precedence
             self.directory_format = directory_format
 
@@ -399,8 +414,7 @@ class Instrument(object):
 
         # Check to make sure value is reasonable
         if self.file_format is not None:
-            # Check if it is an iterable string.  If it isn't formatted
-            # properly, raise a ValueError
+            # Check if it is an iterable string
             if(not isinstance(self.file_format, str)
                or (self.file_format.find("{") < 0)
                or (self.file_format.find("}") < 0)):
@@ -414,7 +428,7 @@ class Instrument(object):
         self.data = self._null_data.copy()
 
         # Create Meta instance with appropriate labels.  Meta class methods will
-        # use Instrument definition of MetaLabels over the Metadata declaration
+        # use Instrument definition of MetaLabels over the Metadata declaration.
         self.meta_labels = labels
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta.mutable = False
@@ -478,7 +492,7 @@ class Instrument(object):
                                  write_to_disk=temporary_file_list,
                                  ignore_empty_files=ignore_empty_files)
 
-        # Set bounds for iteration. self.bounds requires the Files class, and
+        # Set bounds for iteration. `self.bounds` requires the Files class, and
         # setting bounds to (None, None) loads the default bounds.
         self.bounds = (None, None)
         self.date = None
@@ -574,7 +588,7 @@ class Instrument(object):
                             return False
 
                     else:
-                        # General check for everything else.
+                        # General check for everything else
                         checks.append(np.all(self.__dict__[key]
                                              == other.__dict__[key]))
 
@@ -627,7 +641,7 @@ class Instrument(object):
             for meth_key in self.kwargs[sort_key]:
                 in_kwargs[meth_key] = self.kwargs[sort_key][meth_key]
 
-        # Get the inst_module string
+        # Get the `inst_module` string
         if self.inst_module is None:
             istr = "None"
         else:
@@ -700,7 +714,7 @@ class Instrument(object):
                 len(self.variables))
 
             output_str += '\nVariable Names:\n'
-            output_str += utils._core.fmt_output_in_cols(self.variables)
+            output_str += pysat.utils._core.fmt_output_in_cols(self.variables)
 
             # Print the short version of the metadata
             output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
@@ -716,7 +730,12 @@ class Instrument(object):
         ----------
         key : str, tuple, or dict
             Data variable name, tuple with a slice, or dict used to locate
-            desired data
+            desired data.
+
+        Raises
+        ------
+        ValueError
+            When an underlying error for data access is raised
 
         Note
         ----
@@ -730,16 +749,22 @@ class Instrument(object):
 
             # By name
             inst['name']
+
             # By list of names
             inst[['name1', 'name2']]
+
             # By position
             inst[row_index, 'name']
+
             # Slicing by row
             inst[row1:row2, 'name']
+
             # By Date
             inst[datetime, 'name']
-            # Slicing by date, inclusive
+
+            # Slicing by date, inclusive.
             inst[datetime1:datetime2, 'name']
+
             # Slicing by name and row/date
             inst[datetime1:datetime2, 'name1':'name2']
 
@@ -753,9 +778,9 @@ class Instrument(object):
                     # Pass keys directly through
                     return self.data.loc[key[0], key[1]]
                 except (KeyError, TypeError) as err1:
-                    # TypeError for single integer
-                    # KeyError for list, array, slice of integers
-                    # Assume key[0] is integer (including list or slice)
+                    # TypeError for single integer. KeyError for list, array,
+                    # slice of integers. Assume key[0] is integer
+                    # (including list or slice).
                     try:
                         return self.data.loc[self.data.index[key[0]], key[1]]
                     except IndexError as err2:
@@ -766,11 +791,11 @@ class Instrument(object):
                                                    err_message)))
             else:
                 try:
-                    # integer based indexing
+                    # Integer based indexing
                     return self.data.iloc[key]
                 except (TypeError, ValueError):
-                    # If it's not an integer, TypeError is thrown
-                    # If it's a list, ValueError is thrown
+                    # If it's not an integer, TypeError is thrown. If it's a
+                    # list, ValueError is thrown.
                     return self.data[key]
         else:
             return self.__getitem_xarray__(key)
@@ -789,11 +814,17 @@ class Instrument(object):
         xr.Dataset
             Dataset of with only the desired values
 
+        Raises
+        ------
+        ValueError
+            Data access issues, passed from underlying xarray library, or a
+            mismatch of indices and dimensions
+
         Note
         ----
-        inst['name'] is inst.data.name
+        inst['name'] is `inst.data.name`
 
-        See xarray .loc and .iloc documentation for more details
+        See xarray `.loc` and `.iloc` documentation for more details
 
         Examples
         --------
@@ -801,14 +832,19 @@ class Instrument(object):
 
             # By name
             inst['name']
+
             # By position
             inst[row_index, 'name']
+
             # Slicing by row
             inst[row1:row2, 'name']
+
             # By Date
             inst[datetime, 'name']
+
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
+
             # Slicing by name and row/date
             inst[datetime1:datetime2, 'name1':'name2']
 
@@ -833,7 +869,7 @@ class Instrument(object):
                         # Construct dataset from names
                         return self.data[self.variables[key[1]]]
                 except ValueError as verr:
-                    # This may be multidimensional indexing, where the mutliple
+                    # This may be multidimensional indexing, where the multiple
                     # dimensions are contained within an iterable object
                     var_name = key[-1]
 
@@ -849,7 +885,7 @@ class Instrument(object):
 
                     return self.data[var_name][indict]
             else:
-                # Multidimensional indexing where the multple dimensions are
+                # Multidimensional indexing where the multiple dimensions are
                 # not contained within another object
                 var_name = key[-1]
 
@@ -893,14 +929,22 @@ class Instrument(object):
         --------
         ::
 
-            # Simple Assignment, default metadata assigned
+            # Simple assignment, default metadata assigned
             # 'long_name' = 'name'
             # 'units' = ''
             inst['name'] = newData
+
             # Assignment with Metadata
             inst['name'] = {'data':new_data,
                             'long_name':long_name,
                             'units':units}
+
+        Raises
+        ------
+        ValueError
+            If underlying data's datetime index not stored as `Epoch` or `time`.
+            If tuple not used when assigning dimensions for new multidimensional
+            data.
 
         Note
         ----
@@ -912,37 +956,34 @@ class Instrument(object):
 
         new = copy.deepcopy(new_data)
 
-        # add data to main pandas.DataFrame, depending upon the input
-        # aka slice, and a name
+        # Add data to main pandas.DataFrame, depending upon the input
+        # slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
                 try:
-                    # Pass directly through to loc
-                    # This line raises a FutureWarning if key[0] is a slice
-                    # The future behavior is TypeError, which is already
-                    # handled correctly below
+                    # Pass directly through to loc. This line raises a
+                    # FutureWarning if key[0] is a slice. The future behavior
+                    # is TypeError, which is already handled correctly below.
                     self.data.loc[key[0], key[1]] = new
                 except (KeyError, TypeError):
-                    # TypeError for single integer, slice (pandas 2.0)
-                    # KeyError for list, array
-                    # Assume key[0] is integer (including list or slice)
+                    # TypeError for single integer, slice (pandas 2.0). KeyError
+                    # for list, array. Assume key[0] is integer
+                    # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
-                # make it a dict to simplify downstream processing
+                # Make it a dict to simplify downstream processing
                 new = {'data': new}
 
-            # input dict must have data in 'data',
+            # Input dict must have data in 'data',
             # the rest of the keys are presumed to be metadata
             in_data = new.pop('data')
 
-            # TODO(#908): remove code below with removal of 2d pandas support.
+            # TODO(#908): remove code below with removal of 2D pandas support.
             if hasattr(in_data, '__iter__'):
-                if isinstance(in_data, pds.DataFrame):
-                    pass
-                    # filter for elif
-                elif isinstance(next(iter(in_data), None), pds.DataFrame):
+                if not isinstance(in_data, pds.DataFrame) and isinstance(
+                        next(iter(in_data), None), pds.DataFrame):
                     # Input is a list_like of frames, denoting higher order data
                     warnings.warn(" ".join(["Support for 2D pandas instrument",
                                             "data has been deprecated and will",
@@ -958,12 +999,12 @@ class Instrument(object):
                         # This will ensure the correct defaults for all
                         # subvariables.  Meta can filter out empty metadata as
                         # needed, the check above reduces the need to create
-                        # Meta instances
+                        # Meta instances.
                         ho_meta = pysat.Meta(labels=self.meta_labels)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
 
-            # assign data and any extra metadata
+            # Assign data and any extra metadata
             self.data[key] = in_data
             self.meta[key] = new
 
@@ -982,12 +1023,12 @@ class Instrument(object):
                                            '"Epoch" or "time".')))
 
             if isinstance(key, tuple):
-                # user provided more than one thing in assignment location
-                # something like, index integers and a variable name
+                # User provided more than one thing in assignment location
+                # something like, index integers and a variable name,
                 # self[idx, 'variable'] = stuff
-                # or, self[idx1, idx2, idx3, 'variable'] = stuff
-                # construct dictionary of dimensions and locations for
-                # xarray standards
+                # or, self[idx1, idx2, idx3, 'variable'] = stuff.
+                # Construct dictionary of dimensions and locations for
+                # xarray standards.
                 indict = {}
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
@@ -1002,7 +1043,6 @@ class Instrument(object):
                 return
             elif isinstance(key, str):
                 # Assigning basic variables
-
                 if isinstance(in_data, xr.DataArray):
                     # If xarray input, take as is
                     self.data[key] = in_data
@@ -1014,7 +1054,7 @@ class Instrument(object):
                         # 'Epoch'
                         self.data[key] = (epoch_name, in_data)
                     elif len(in_data) == 1:
-                        # only provided a single number in iterable, make that
+                        # Only provided a single number in iterable, make that
                         # the input for all times
                         self.data[key] = (epoch_name,
                                           [in_data[0]] * len(self.index))
@@ -1024,11 +1064,11 @@ class Instrument(object):
                                           [np.nan] * len(self.index))
                 elif len(np.shape(in_data)) == 0:
                     # Not an iterable input, rather a single number.  Make
-                    # that number the input for all times
+                    # that number the input for all times.
                     self.data[key] = (epoch_name, [in_data] * len(self.index))
                 else:
                     # Multidimensional input that is not an xarray.  The user
-                    # needs to provide everything that is required for success
+                    # needs to provide everything that is required for success.
                     if isinstance(in_data, tuple):
                         self.data[key] = in_data
                     else:
@@ -1038,8 +1078,8 @@ class Instrument(object):
 
             elif hasattr(key, '__iter__'):
                 # Multiple input strings (keys) are provided, but not in tuple
-                # form.  Recurse back into this function, setting each input
-                # individually
+                # form. Recurse back into this function, setting each input
+                # individually.
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
 
@@ -1051,12 +1091,12 @@ class Instrument(object):
     def __iter__(self):
         """Load data for subsequent days or files.
 
+        Default bounds are the first and last dates from files on local system
+
         Note
         ----
-        Limits of iteration, and iteration type (date/file)
-        set by `bounds` attribute.
-
-        Default bounds are the first and last dates from files on local system.
+        Limits of iteration, and iteration type (date/file) set by `bounds`
+        attribute
 
         Examples
         --------
@@ -1066,8 +1106,8 @@ class Instrument(object):
             start = dt.datetime(2009, 1, 1)
             stop = dt.datetime(2009, 1, 31)
             inst.bounds = (start, stop)
-            for inst in inst:
-                print('Another day loaded', inst.date)
+            for loop_inst in inst:
+                print('Another day loaded ', loop_inst.date)
 
         """
 
@@ -1080,15 +1120,16 @@ class Instrument(object):
                 # of an empty object is going to be faster than a full one.
                 self.data = self._null_data
                 local_inst = self.copy()
-                # load range of files
-                # get location for second file, width of 1 loads only one file
+
+                # Load range of files. Get location for second file,
+                # width of 1 loads only one file.
                 nfid = self.files.get_index(fname) + width - 1
                 local_inst.load(fname=fname, stop_fname=self.files[nfid])
                 yield local_inst
 
         elif self._iter_type == 'date':
             # Iterate over dates. A list of dates is generated whenever
-            # bounds are set
+            # bounds are set.
             for date in self._iter_list:
                 # Use a copy trick, starting with null data in object
                 self.data = self._null_data
@@ -1119,7 +1160,7 @@ class Instrument(object):
         Parameters
         ----------
         data : NoneType, pds.DataFrame, or xr.Dataset
-            Data object
+            Data object. If None, will use `self.data`.
 
         Returns
         -------
@@ -1128,6 +1169,7 @@ class Instrument(object):
 
         """
 
+        # Support easy application to `self.data`
         if data is None:
             if hasattr(self, 'data'):
                 data = self.data
@@ -1153,14 +1195,15 @@ class Instrument(object):
         Parameters
         ----------
         data : NoneType, pds.DataFrame, or xr.Dataset
-            Data object
+            Data object. If None, use `self.data`.
 
         Returns
         -------
         pds.Series
-            Series containing the time indeces for the Instrument data
+            Series containing the time indices for the Instrument data
 
         """
+        # Support easy application to `self.data`
         if data is None:
             data = self.data
 
@@ -1184,8 +1227,8 @@ class Instrument(object):
         Parameters
         ----------
         by_name : boolean
-            If True, uses self.platform and self.name to load the Instrument,
-            if False uses inst_module. (default=False)
+            If True, uses `self.platform` and `self.name` to load the
+            Instrument, if False uses inst_module. (default=False)
 
         Raises
         ------
@@ -1241,14 +1284,14 @@ class Instrument(object):
         # Get the instrument module information, returning with defaults
         # if none is supplied
         if by_name:
-            # pysat platform is reserved for modules within pysat.instruments
+            # pysat platform is reserved for modules within `pysat.instruments`
             if self.platform == 'pysat':
                 # Look within pysat
                 self.inst_module = importlib.import_module(
                     ''.join(('.', self.platform, '_', self.name)),
                     package='pysat.instruments')
             else:
-                # Not a native pysat.Instrument.  First, get the supporting
+                # Not a native pysat.Instrument. First, get the supporting
                 # instrument module from the pysat registry.
                 user_modules = pysat.params['user_modules']
                 if self.platform not in user_modules.keys():
@@ -1262,7 +1305,7 @@ class Instrument(object):
 
                 mod = user_modules[self.platform][self.name]
 
-                # Import the registered module.  Though modules are checked to
+                # Import the registered module. Though modules are checked to
                 # ensure they may be imported when registered, something may
                 # have changed on the system since it was originally checked.
                 try:
@@ -1277,7 +1320,7 @@ class Instrument(object):
             # No module or name info, default pass functions assigned
             return
 
-        # Check if tag and inst_id are appropriate for the module
+        # Check if `tag` and `inst_id` are appropriate for the module
         if self.inst_id not in self.inst_module.inst_ids.keys():
             inst_id_str = ', '.join([ikey.__repr__() for ikey
                                      in self.inst_module.inst_ids.keys()])
@@ -1299,6 +1342,7 @@ class Instrument(object):
             for mname in inst_methods[mstat]:
                 if hasattr(self.inst_module, mname):
                     local_name = _kwargs_keys_to_func_name(mname)
+
                     # Remote functions are not attached as methods unless
                     # cast that way, specifically
                     # https://stackoverflow.com/questions/972/
@@ -1353,7 +1397,7 @@ class Instrument(object):
                 local_attr = getattr(self.inst_module, iattr)
 
                 # Test to see that this attribute is set for the desired
-                # inst_id and tag
+                # `inst_id` and `tag`
                 if self.inst_id in local_attr.keys():
                     if self.tag in local_attr[self.inst_id].keys():
                         # Update the test attribute value
@@ -1371,7 +1415,7 @@ class Instrument(object):
             local_attr = getattr(self.inst_module, '_test_download_travis')
 
             # Test to see that this attribute is set for the desired
-            # inst_id and tag
+            # `inst_id` and `tag`.
             if self.inst_id in local_attr.keys():
                 if self.tag in local_attr[self.inst_id].keys():
                     # Update the test attribute value
@@ -1394,10 +1438,10 @@ class Instrument(object):
         Parameters
         ----------
         date : dt.datetime or NoneType
-            file date (default=None)
+            File date (default=None)
         fid : int or NoneType
-            filename index value (default=None)
-        inc : dt.timedelta or int
+            Filename index value (default=None)
+        inc : dt.timedelta, int, or NoneType
             Increment of files or dates to load, starting from the
             root date or fid (default=None)
         load_kwargs : dict
@@ -1410,15 +1454,31 @@ class Instrument(object):
             pysat data
         meta : pysat.Meta
             pysat meta data
-        """
-        # Set default load_kwargs
-        if load_kwargs is None:
-            load_kwargs = self.kwargs['load']
 
-        date = utils.time.filter_datetime_input(date)
+        Raises
+        ------
+        ValueError
+            If both `date` and `fid` are None, or if `inc` left unspecified
+        """
+        # Set default `load_kwargs`
+        if load_kwargs is None:
+            load_kwargs = copy.deepcopy(self.kwargs['load'])
+
+        if inc is None:
+            raise ValueError('Must supply value for `inc`.')
+
+        # Ensure that the local optional kwarg `use_header` is not passed
+        # to the instrument routine.
+        #
+        # TODO(#1020): Remove after removing `use_header`
+        if 'use_header' in load_kwargs.keys():
+            del load_kwargs['use_header']
+
+        date = pysat.utils.time.filter_datetime_input(date)
+
         if fid is not None:
-            # get filename based off of index value
-            # inclusive loading on filenames
+            # Get filename based off of index value. Inclusive loading on
+            # filenames per construction below.
             fname = self.files[fid:(fid + inc + 1)]
         elif date is not None:
             fname = self.files[date:(date + inc)]
@@ -1492,6 +1552,7 @@ class Instrument(object):
         # Remove extra spaces, if any are present
         output_str = " ".join(output_str.split())
         logger.info(output_str)
+
         return data, mdata
 
     def _load_next(self):
@@ -1510,7 +1571,7 @@ class Instrument(object):
         data.
 
         Uses info stored in object to either increment the date,
-        or the file. Looks for self._load_by_date flag.
+        or the file. Looks for `self._load_by_date` flag.
 
         """
         if self._load_by_date:
@@ -1536,7 +1597,7 @@ class Instrument(object):
         data
 
         Uses info stored in object to either decrement the date,
-        or the file. Looks for self._load_by_date flag.
+        or the file. Looks for `self._load_by_date` flag.
 
         """
         load_kwargs = {'inc': self.load_step}
@@ -1551,22 +1612,25 @@ class Instrument(object):
     def _set_load_parameters(self, date=None, fid=None):
         """Set the necesssary load attributes.
 
+        Sets `self._load_by_date`, `self.date`, `self._fid`, `self.yr`, and
+        `self.doy`
+
         Parameters
         ----------
-        date : (dt.datetime.date object or NoneType)
-            file date
-        fid : (int or NoneType)
-            filename index value
+        date : dt.datetime.date or NoneType
+            File date (default=None)
+        fid : int or NoneType
+            Filename index value (default=None)
 
         """
         # Filter supplied data so that it is only year, month, and day and
         # then store as part of instrument object.  Filtering is performed
-        # by the class property `self.date`
+        # by the class property `self.date`.
         self.date = date
         self._fid = fid
 
         if date is not None:
-            year, doy = utils.time.getyrdoy(date)
+            year, doy = pysat.utils.time.getyrdoy(date)
             self.yr = year
             self.doy = doy
             self._load_by_date = True
@@ -1651,7 +1715,7 @@ class Instrument(object):
         else:
             # We're dealing with a more complicated object. Iterate
             # over elements until we hit something that is something,
-            # and not NaN
+            # and not NaN.
             data_type = type(data.iloc[0])
             for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
@@ -1676,7 +1740,7 @@ class Instrument(object):
         mdata_dict : dict
             Dictionary equivalent to Meta object info
         coltype : type
-            Data type provided by pysat.Instrument._get_data_info
+            Data type provided by `pysat.Instrument._get_data_info`
         remove : bool
             Removes FillValue and associated parameters disallowed for strings
             (default=False)
@@ -1716,10 +1780,10 @@ class Instrument(object):
         else:
             check_type = None
 
-        return utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
-                                                remove=remove,
-                                                check_type=check_type,
-                                                export_nan=export_nan)
+        return pysat.utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
+                                                      remove=remove,
+                                                      check_type=check_type,
+                                                      export_nan=export_nan)
 
     # -----------------------------------------------------------------------
     # Define all accessible methods
@@ -1730,11 +1794,11 @@ class Instrument(object):
 
         Parameters
         ----------
-        start : datetime object, filename, or NoneType
-            start of iteration, if None uses first data date.
+        start : dt.datetime, str, or NoneType
+            Start of iteration, if None uses first data date.
             list-like collection also accepted. (default=None)
-        stop :  datetime object, filename, or None
-            stop of iteration, inclusive. If None uses last data date.
+        stop :  dt.datetime, str, or None
+            Stop of iteration, inclusive. If None uses last data date.
             list-like collection also accepted. (default=None)
         step : str, int, or NoneType
             Step size used when iterating from start to stop. Use a
@@ -1745,6 +1809,14 @@ class Instrument(object):
             Data window used when loading data within iteration. Defaults to a
             single day/file if not assigned. (default=dt.timedelta(days=1),
             1)
+
+        Raises
+        ------
+        ValueError
+            If `start` and `stop` don't have the same type, or if too many
+            input argument supplied, or unequal number of elements in
+            `start`/`stop`, or if bounds aren't in increasing order, or if
+            the input type for `start` or `stop` isn't recognized
 
         Note
         ----
@@ -1777,7 +1849,7 @@ class Instrument(object):
             stop2 = dt.datetime(2010,2,14)
             inst.bounds = ([start, start2], [stop, stop2])
 
-            # Iterate via a non-standard step size of two days.
+            # Iterate via a non-standard step size of two days
             inst.bounds = ([start, start2], [stop, stop2], '2D')
 
             # Load more than a single day/file at a time when iterating
@@ -1791,7 +1863,7 @@ class Instrument(object):
 
     @bounds.setter
     def bounds(self, value=None):
-        # Set the bounds property.  See property docstring for details
+        # Set the bounds property.  See property docstring for details.
 
         if value is None:
             # User wants defaults
@@ -1835,9 +1907,8 @@ class Instrument(object):
                 ustops = [istop - self._iter_width + dt.timedelta(days=1)
                           for istop in self._iter_stop]
                 ufreq = self._iter_step
-                self._iter_list = utils.time.create_date_range(self._iter_start,
-                                                               ustops,
-                                                               freq=ufreq)
+                self._iter_list = pysat.utils.time.create_date_range(
+                    self._iter_start, ustops, freq=ufreq)
             else:
                 # Instrument has no files
                 self._iter_list = []
@@ -1846,13 +1917,13 @@ class Instrument(object):
             starts = pysat.utils.listify(start)
             stops = pysat.utils.listify(stop)
 
-            # check equal number of elements
+            # Check equal number of elements
             if len(starts) != len(stops):
                 estr = ' '.join(('Both start and stop must have the same',
                                  'number of elements'))
                 raise ValueError(estr)
 
-            # check everything is the same type
+            # Check everything is the same type
             base = type(starts[0])
             for lstart, lstop in zip(starts, stops):
                 etype = type(lstop)
@@ -1860,30 +1931,33 @@ class Instrument(object):
                 check2 = not isinstance(lstart, base)
                 if check1 or check2:
                     # Method allows for inputs like inst.bounds = (start, None)
-                    # and bounds will fill the None with actual start or stop.
+                    # and bounds will fill the `None` with actual start or stop.
                     # Allow for a Nonetype only if length is one.
                     if len(starts) == 1 and (start is None):
-                        # we are good on type change, start is None, no error
+                        # We are good on type change, start is None, no error
                         break
                     elif len(stops) == 1 and (stop is None):
-                        # we are good on type change, stop is None, no error
+                        # We are good on type change, stop is None, no error
                         break
                     raise ValueError(' '.join(('Start and stop items must all',
                                                'be of the same type')))
 
-            # set bounds based upon passed data type
+            # Set bounds based upon passed data type
             if isinstance(starts[0], str) or isinstance(stops[0], str):
-                # one of the inputs is a string
+                # One of the inputs is a string
                 self._iter_type = 'file'
-                # could be (string, None) or (None, string)
-                # replace None with first/last, as appropriate
+
+                # Could be (string, None) or (None, string). Replace None
+                # with first/last, as appropriate.
                 if starts[0] is None:
                     starts = [self.files[0]]
                 if stops[0] is None:
                     stops = [self.files[-1]]
+
                 # Default step size
                 if self._iter_step is None:
                     self._iter_step = 1
+
                 # Default window size
                 if self._iter_width is None:
                     self._iter_width = 1
@@ -1899,11 +1973,14 @@ class Instrument(object):
                                          'order.', istart, 'occurs after',
                                          istop))
                         raise ValueError(estr)
+
                     # Account for width of load. Don't extend past bound.
                     stop_idx = stop_idx - self._iter_width + 1
+
                     # Stop index is exclusive when called this way, pad by 1
                     itemp = self.files.files.values[start_idx:(stop_idx + 1)]
-                    # Downselect based on step size.
+
+                    # Downselect based on step size
                     itemp = itemp[::self._iter_step]
                     self._iter_list.extend(itemp)
 
@@ -1913,21 +1990,23 @@ class Instrument(object):
                 self._iter_type = 'date'
 
                 if starts[0] is None:
-                    # Start and stop dates on self.files already filtered
+                    # Start and stop dates on `self.files` already filtered
                     # to include only year, month, and day
                     starts = [self.files.start_date]
                 if stops[0] is None:
                     stops = [self.files.stop_date]
+
                 # Default step size
                 if self._iter_step is None:
                     self._iter_step = '1D'
+
                 # Default window size
                 if self._iter_width is None:
                     self._iter_width = dt.timedelta(days=1)
 
                 # Create list-like of dates for iteration
-                starts = utils.time.filter_datetime_input(starts)
-                stops = utils.time.filter_datetime_input(stops)
+                starts = pysat.utils.time.filter_datetime_input(starts)
+                stops = pysat.utils.time.filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
@@ -1944,10 +2023,11 @@ class Instrument(object):
                 # Account for width of load. Don't extend past bound.
                 ustops = [stop - width + dt.timedelta(days=1)
                           for stop in stops]
+
                 # Date range is inclusive, no need to pad.
-                self._iter_list = utils.time.create_date_range(starts,
-                                                               ustops,
-                                                               freq=freq)
+                self._iter_list = pysat.utils.time.create_date_range(starts,
+                                                                     ustops,
+                                                                     freq=freq)
                 # go back to time index
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
 
@@ -1967,7 +2047,7 @@ class Instrument(object):
     @date.setter
     def date(self, new_date):
         # Set the date property, see property docstring for details
-        self._date = utils.time.filter_datetime_input(new_date)
+        self._date = pysat.utils.time.filter_datetime_input(new_date)
 
     @property
     def empty(self):
@@ -1987,7 +2067,7 @@ class Instrument(object):
     @pandas_format.setter
     def pandas_format(self, new_value):
         # Set pandas_format attribute, see property docstring for details.
-        # Note that pandas_format is assigned by default by `_assign_attrs()`.
+        # Note that `pandas_format` is assigned by default by `_assign_attrs()`.
         if self.empty:
             if new_value:
                 self._null_data = pds.DataFrame(None)
@@ -2059,8 +2139,8 @@ class Instrument(object):
         self.orbits = saved_orbits
 
         # Support a copy if a user does something like,
-        # self.orbits.inst.copy(), or
-        # self.files.inst_info['inst'].copy()
+        # `self.orbits.inst.copy()`, or
+        # `self.files.inst_info['inst'].copy()`
         if not isinstance(inst_copy, weakref.ProxyType):
             inst_copy.files.inst_info['inst'] = weakref.proxy(inst_copy)
             inst_copy.orbits.inst = weakref.proxy(inst_copy)
@@ -2086,15 +2166,15 @@ class Instrument(object):
         Note
         ----
         For pandas, sort=False is passed along to the underlying
-        pandas.concat method. If sort is supplied as a keyword, the
+        `pandas.concat` method. If sort is supplied as a keyword, the
         user provided value is used instead.  Recall that sort orders the
         data columns, not the data values or the index.
 
-        For xarray, dim=Instrument.index.name is passed along to xarray.concat
+        For xarray, `dim=Instrument.index.name` is passed along to xarray.concat
         except if the user includes a value for dim as a keyword argument.
 
         """
-        # Order the data to be concatonated in a list
+        # Order the data to be concatenated in a list
         if not isinstance(new_data, list):
             new_data = [new_data]
 
@@ -2103,7 +2183,7 @@ class Instrument(object):
         else:
             new_data.insert(0, self.data)
 
-        # Retrieve the appropriate concatonation function
+        # Retrieve the appropriate concatenation function
         if self.pandas_format:
             # Specifically do not sort unless otherwise specified
             if 'sort' not in kwargs:
@@ -2115,7 +2195,7 @@ class Instrument(object):
                 kwargs['dim'] = self.index.name
             concat_func = xr.concat
 
-        # Assign the concatonated data to the instrument
+        # Assign the concatenated data to the instrument
         self.data = concat_func(new_data, **kwargs)
         return
 
@@ -2128,11 +2208,11 @@ class Instrument(object):
         Parameters
         ----------
         function : str or function object
-            name of function or function object to be added to queue
+            Name of function or function object to be added to queue
         at_pos : str or int
             Accepts string 'end' or a number that will be used to determine
             the insertion order if multiple custom functions are attached
-            to an Instrument object. (default='end').
+            to an Instrument object (default='end')
         args : list, tuple, or NoneType
             Ordered arguments following the instrument object input that are
             required by the custom function (default=None)
@@ -2167,12 +2247,12 @@ class Instrument(object):
 
         # If the position is 'end' or greater
         if (at_pos == 'end') | (at_pos == len(self.custom_functions)):
-            # store function object
+            # Store function object
             self.custom_functions.append(function)
             self.custom_args.append(args)
             self.custom_kwargs.append(kwargs)
         else:
-            # user picked a specific location to insert
+            # User picked a specific location to insert
             self.custom_functions.insert(at_pos, function)
             self.custom_args.insert(at_pos, args)
             self.custom_kwargs.insert(at_pos, kwargs)
@@ -2228,7 +2308,7 @@ class Instrument(object):
             Today's date in UTC
 
         """
-        return utils.time.today()
+        return pysat.utils.time.today()
 
     def tomorrow(self):
         """Get tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -2273,15 +2353,15 @@ class Instrument(object):
 
         """
 
-        # make sure we can iterate
+        # Make sure we can iterate
         if len(self._iter_list) == 0:
-            # nothing to potentially iterate over
+            # Nothing to potentially iterate over
             raise StopIteration(''.join(('File list is empty. ',
                                          'Nothing to be done.')))
 
         if self._iter_type == 'date':
             if self.date is not None:
-                # data is already loaded in .data
+                # Data is already loaded in `.data`
                 idx, = np.where(self.date == self._iter_list)
                 if len(idx) == 0:
                     estr = ''.join(('Unable to find loaded date ',
@@ -2291,17 +2371,18 @@ class Instrument(object):
                                     'ranges.'))
                     raise StopIteration(estr)
                 elif idx[-1] >= len(self._iter_list) - 1:
-                    # gone to far!
+                    # Gone too far!
                     raise StopIteration('Outside the set date boundaries.')
                 else:
-                    # not going past the last day, safe to move forward
+                    # Not going past the last day, safe to move forward
                     date = self._iter_list[idx[0] + 1]
                     end_date = date + self._iter_width
             else:
-                # no data currently loaded, start at the beginning
+                # No data currently loaded, start at the beginning
                 date = self._iter_list[0]
                 end_date = date + self._iter_width
-            # perform load
+
+            # Perform load
             self.load(date=date, end_date=end_date, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
@@ -2310,12 +2391,12 @@ class Instrument(object):
             step = self._iter_step
             width = self._iter_width
             if self._fid is not None:
-                # data already loaded in .data
+                # Data already loaded in `.data`
                 if (self._fid < first) | (self._fid + step > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    # step size already accounted for in the list of files
-                    # get location of current file in iteration list
+                    # Step size already accounted for in the list of files. Get
+                    # location of current file in iteration list.
                     idx = None
                     fname = self.files[self._fid]
                     for i, name in enumerate(self._iter_list):
@@ -2331,11 +2412,11 @@ class Instrument(object):
                         raise StopIteration(estr)
                     fname = self._iter_list[idx + 1]
             else:
-                # no data loaded yet, start with the first file
+                # No data loaded yet, start with the first file
                 fname = self._iter_list[0]
 
-            # load range of files at a time
-            # get location for second file. Note a width of 1 loads single file
+            # Get location for second file. Note a width of 1 loads single file.
+            # Load range of files.
             nfid = self.files.get_index(fname) + width - 1
             self.load(fname=fname, stop_fname=self.files[nfid],
                       verifyPad=verifyPad)
@@ -2368,7 +2449,7 @@ class Instrument(object):
 
         if self._iter_type == 'date':
             if self.date is not None:
-                # Some data has already been loaded in self.data
+                # Some data has already been loaded in `self.data`
                 idx, = np.where(self._iter_list == self.date)
                 if len(idx) == 0:
                     estr = ''.join(('Unable to find loaded date ',
@@ -2381,7 +2462,7 @@ class Instrument(object):
                     # We have gone too far!
                     raise StopIteration('Outside the set date boundaries.')
                 else:
-                    # not on first day, safe to move backward
+                    # Not on first day, safe to move backward
                     date = self._iter_list[idx[0] - 1]
                     end_date = self._iter_list[idx[0] - 1] + self._iter_width
                     self.load(date=date, end_date=end_date, verifyPad=verifyPad)
@@ -2433,8 +2514,8 @@ class Instrument(object):
             Dictionary with old names as keys and new names as variables or
             a function to apply to all names
         lowercase_data_labels : bool
-            If True, the labels applied to inst.data are forced to lowercase.
-            The case supplied in `mapper` is retained within inst.meta.
+            If True, the labels applied to `self.data` are forced to lowercase.
+            The case supplied in `mapper` is retained within `inst.meta`.
 
         Examples
         --------
@@ -2470,7 +2551,7 @@ class Instrument(object):
             print(inst[0, 'pysat_profile'].columns)
 
             # A function will affect both standard and higher-order data.
-            # Remember this function also updates the Meta data
+            # Remember this function also updates the Meta data.
             inst.rename(str.capitalize)
             print(inst.meta['Pysat_profile']['children'])
 
@@ -2497,8 +2578,8 @@ class Instrument(object):
             # case insensitive
             print('True meta variable name is ', inst.meta['pysat_uts'].name)
 
-            # Note that the labels in meta may be used when creating a file.
-            # Thus, 'Pysat_UTS' would be found in the resulting file
+            # Note that the labels in meta may be used when creating a file,
+            # thus, 'Pysat_UTS' would be found in the resulting file
             inst.to_netcdf4('./test.nc', preserve_meta_case=True)
 
             # Load in file and check
@@ -2522,7 +2603,7 @@ class Instrument(object):
 
             # Collect normal variables and rename higher order variables
             for vkey in self.variables:
-                map_key = utils.get_mapped_value(vkey, mapper)
+                map_key = pysat.utils.get_mapped_value(vkey, mapper)
 
                 if map_key is not None:
                     # Treat higher-order pandas and normal pandas separately
@@ -2532,7 +2613,7 @@ class Instrument(object):
                         if isinstance(map_key, dict):
                             # Changing a variable name within a higher order
                             # object using a dictionary. First ensure the
-                            # variable exist
+                            # variable exist.
                             for hkey in map_key.keys():
                                 if hkey not in self.meta[
                                         vkey]['children'].keys():
@@ -2546,7 +2627,8 @@ class Instrument(object):
                         else:
                             # This is either a value or a mapping function
                             for hkey in self.meta[vkey]['children'].keys():
-                                hmap = utils.get_mapped_value(hkey, mapper)
+                                hmap = pysat.utils.get_mapped_value(hkey,
+                                                                    mapper)
                                 if hmap is not None:
                                     hdict[hkey] = hmap
 
@@ -2589,7 +2671,7 @@ class Instrument(object):
                     else:
                         # This is a normal variable. Add it to the pandas
                         # renaming dictionary after accounting for the
-                        # `lowercase_data_labels` flag
+                        # `lowercase_data_labels` flag.
                         if lowercase_data_labels:
                             if vkey != map_key.lower():
                                 pdict[vkey] = map_key.lower()
@@ -2603,7 +2685,7 @@ class Instrument(object):
             # data, but not the metadata. Xarray requires dict input for rename.
             gdict = {}
             for vkey in self.variables:
-                map_key = utils.get_mapped_value(vkey, mapper)
+                map_key = pysat.utils.get_mapped_value(vkey, mapper)
                 if map_key is not None:
                     if lowercase_data_labels:
                         gdict[vkey] = map_key.lower()
@@ -2621,7 +2703,7 @@ class Instrument(object):
     def generic_meta_translator(self, input_meta):
         """Convert the `input_meta` metadata into a dictionary.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.0.2
            `generic_meta_translator` will be removed in the 3.2.0+ release.
 
         Parameters
@@ -2662,29 +2744,30 @@ class Instrument(object):
 
         Parameters
         ----------
-        yr : int
+        yr : int or NoneType
             Year for desired data. pysat will load all files with an
-            associated date between yr, doy and yr, doy + 1 (default=None)
-        doy : int
-            Day of year for desired data. Must be present with yr input.
+            associated date between `yr`, `doy` and `yr`, `doy` + 1.
             (default=None)
-        end_yr : int
-            Used when loading a range of dates, from yr, doy to end_yr, end_doy
-            based upon the dates associated with the Instrument's files. Date
-            range is inclusive for yr, doy but exclusive for end_yr, end_doy.
+        doy : int or NoneType
+            Day of year for desired data. Must be present with `yr` input.
             (default=None)
-        end_doy : int
-            Used when loading a range of dates, from yr, doy to end_yr, end_doy
-            based upon the dates associated with the Instrument's files. Date
-            range is inclusive for yr, doy but exclusive for end_yr, end_doy.
-            (default=None)
-        date : dt.datetime
+        end_yr : int or NoneType
+            Used when loading a range of dates, from `yr`, `doy` to `end_yr`,
+            `end_doy` based upon the dates associated with the Instrument's
+            files. Date range is inclusive for `yr`, `doy` but exclusive for
+            `end_yr`, `end_doy`. (default=None)
+        end_doy : int or NoneType
+            Used when loading a range of dates, from `yr`, `doy` to `end_yr`,
+            `end_doy` based upon the dates associated with the Instrument's
+            files. Date range is inclusive for `yr`, `doy` but exclusive for
+            `end_yr`, `end_doy`. (default=None)
+        date : dt.datetime or NoneType
             Date to load data. pysat will load all files with an associated
-            date between date and date + 1 day (default=None)
-        end_date : dt.datetime
+            date between `date` and `date` + 1 day. (default=None)
+        end_date : dt.datetime or NoneType
             Used when loading a range of data from `date` to `end_date` based
             upon the dates associated with the Instrument's files. Date range
-            is inclusive for date but exclusive for end_date. (default=None)
+            is inclusive for `date` but exclusive for `end_date`. (default=None)
         fname : str or NoneType
             Filename to be loaded (default=None)
         stop_fname : str or NoneType
@@ -2708,10 +2791,10 @@ class Instrument(object):
 
         Note
         ----
-        Loads data for a chosen instrument into .data. Any functions chosen
-        by the user and added to the custom processing queue (.custom.attach)
+        Loads data for a chosen instrument into `.data`. Any functions chosen
+        by the user and added to the custom processing queue (`.custom.attach`)
         are automatically applied to the data before it is available to
-        user in .data.
+        user in `.data`.
 
         A mixed combination of `.load()` keywords such as `yr` and `date` are
         not allowed.
@@ -2743,12 +2826,12 @@ class Instrument(object):
             # Jan. 1st (inclusive) - Jan. 3rd (exclusive)
             inst.load(2009, 1, 2009, 3)
 
-            # Same procedure using datetimes
+            # Load a range of days using datetimes
             date = dt.datetime(2009, 1, 1)
             end_date = dt.datetime(2009, 1, 3)
             inst.load(date=date, end_date=end_date)
 
-            # Same procedure using filenames. Note the change in index due to
+            # Load several files by filename. Note the change in index due to
             # inclusive slicing on filenames!
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
@@ -2761,8 +2844,8 @@ class Instrument(object):
                 kwargs[lkey] = self.kwargs['load'][lkey]
 
         # Set options used by loading routine based upon user input
-        if (yr is not None) and (doy is not None):
-            if (doy < 1) or (doy > 366):
+        if yr is not None and doy is not None:
+            if doy < 1 or doy > 366:
                 estr = ''.join(('Day of year (doy) is only valid between and ',
                                 'including 1-366.'))
                 raise ValueError(estr)
@@ -2770,20 +2853,21 @@ class Instrument(object):
             # Verify arguments make sense, in context
             _check_load_arguments_none([fname, stop_fname, date, end_date],
                                        raise_error=True)
+
             # Convert yr/doy to a date
             date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy),
                                         "%Y %j")
             self._set_load_parameters(date=date, fid=None)
 
-            if (end_yr is not None) and (end_doy is not None):
-                if end_doy < 1 or (end_doy > 366):
+            if end_yr is not None and end_doy is not None:
+                if end_doy < 1 or end_doy > 366:
                     estr = ''.join(('Day of year (end_doy) is only valid ',
                                     'between and including 1-366.'))
                     raise ValueError(estr)
                 end_date = dt.datetime.strptime(
                     "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j")
                 self.load_step = end_date - date
-            elif (end_yr is not None) or (end_doy is not None):
+            elif end_yr is not None or end_doy is not None:
                 estr = ''.join(('Both end_yr and end_doy must be set, ',
                                 'or neither.'))
                 raise ValueError(estr)
@@ -2800,7 +2884,7 @@ class Instrument(object):
 
             # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
-            date = utils.time.filter_datetime_input(date)
+            date = pysat.utils.time.filter_datetime_input(date)
 
             # Increment after determining the desired step size
             if end_date is not None:
@@ -2865,7 +2949,7 @@ class Instrument(object):
         # If `pad` or `multi_file_day` is True, need to load three days/files
         loop_pad = self.pad if self.pad is not None else dt.timedelta(seconds=0)
 
-        # Check for constiency between loading range and data padding, if any
+        # Check for consistency between loading range and data padding, if any
         if self.pad is not None:
             if self._load_by_date:
                 tdate = dt.datetime(2009, 1, 1)
@@ -2886,8 +2970,8 @@ class Instrument(object):
 
         if (self.pad is not None) or self.multi_file_day:
             if self._empty(self._next_data) and self._empty(self._prev_data):
-                # Data has not already been loaded for previous and next days
-                # load data for all three
+                # Data has not already been loaded for previous and next days.
+                # Load data for all three.
                 logger.debug('Initializing data cache.')
 
                 # Using current date or fid
@@ -2993,7 +3077,7 @@ class Instrument(object):
 
                 # __getitem__ used below to get data from instrument object.
                 # Details for handling pandas and xarray are different and
-                # handled by __getitem__
+                # handled by __getitem__.
                 self.data = self[first_pad:temp_time]
                 if not self.empty:
                     if self.index[-1] == temp_time:
@@ -3006,7 +3090,7 @@ class Instrument(object):
                 stored_data = self.data  # .copy()
                 temp_time = copy.deepcopy(self.index[-1])
 
-                # Pad data using access mechanisms that work foro both pandas
+                # Pad data using access mechanisms that work for both pandas
                 # and xarray
                 self.data = self._next_data.copy()
                 self.data = self[temp_time:last_pad]
@@ -3062,11 +3146,11 @@ class Instrument(object):
             else:
                 temp = self.index[0]
             self.date = dt.datetime(temp.year, temp.month, temp.day)
-            self.yr, self.doy = utils.time.getyrdoy(self.date)
+            self.yr, self.doy = pysat.utils.time.getyrdoy(self.date)
 
         # Ensure data is unique and monotonic. Check occurs after all the data
         # padding loads, or individual load. Thus, it can potentially check
-        # issues with padding or with raw data
+        # issues with padding or with raw data.
         if not (self.index.is_monotonic_increasing and self.index.is_unique):
             message = ''
             if not self.index.is_unique:
@@ -3090,7 +3174,7 @@ class Instrument(object):
         if (not self.empty) & (self.clean_level != 'none'):
             self._clean_rtn(**self.kwargs['clean'])
 
-        # Apply custom functions via the nanokernel in self.custom
+        # Apply custom functions via the nanokernel in `self.custom`
         if not self.empty:
             self.custom_apply_all()
 
@@ -3101,16 +3185,19 @@ class Instrument(object):
                 if (self.index[-1] == last_time) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # Transfer any extra attributes in meta to the Instrument object
-        if use_header:
+        # Transfer any extra attributes in meta to the Instrument object.
+        # TODO(#1020): Change the way this kwarg is handled
+        if use_header or ('use_header' in self.kwargs['load']
+                          and self.kwargs['load']['use_header']):
             self.meta.transfer_attributes_to_header()
         else:
             warnings.warn(''.join(['Meta now contains a class for global ',
                                    'metadata (MetaHeader). Default attachment ',
                                    'of global attributes to Instrument will ',
                                    'be Deprecated in pysat 3.2.0+. Set ',
-                                   '`use_header=True` to remove this ',
-                                   'warning.']), DeprecationWarning,
+                                   '`use_header=True` in this load call or ',
+                                   'on Instrument instantiation to remove this',
+                                   ' warning.']), DeprecationWarning,
                           stacklevel=2)
             self.meta.transfer_attributes_to_instrument(self)
         self.meta.mutable = False
@@ -3180,7 +3267,7 @@ class Instrument(object):
         Returns
         -------
         List
-            First and last datetimes obtained from remote_file_list
+            First and last datetimes obtained from `remote_file_list`
 
         Note
         ----
@@ -3203,11 +3290,10 @@ class Instrument(object):
 
         Note
         ----
-        Data will be downloaded to pysat_data_dir/patform/name/tag
+        Data will be downloaded to `self.files.data_path`
 
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
-
 
         If no remote file listing method is available, existing local files are
         assumed to be up-to-date and gaps are assumed to be missing files.
@@ -3256,7 +3342,7 @@ class Instrument(object):
                                      new_dates[0].strftime('%d %b %Y'),
                                      new_dates[-1].strftime('%d %b %Y'))]))
 
-            # Determine which dates are mising
+            # Determine which dates are missing
             missing_inds = [i for i, req_dates in enumerate(new_dates)
                             if req_dates not in local_files.index]
 
@@ -3266,8 +3352,7 @@ class Instrument(object):
                                  'files are new.')))
         else:
             # Compare local and remote files. First look for dates that are in
-            # remote but not in local
-            # Provide updating information
+            # remote but not in local. Provide updating information.
             logger.info(''.join(['A remote file listing method exists, looking',
                                  ' for updated files and gaps at all times.']))
 
@@ -3323,9 +3408,14 @@ class Instrument(object):
             databases requiring sign in or registration. 'freq' temporarily
             ingested through this input option.
 
+        Raises
+        ------
+        ValueError
+            Raised if there is an issue creating `self.files.data_path`
+
         Note
         ----
-        Data will be downloaded to pysat_data_dir/patform/name/tag
+        Data will be downloaded to `self.files.data_path`
 
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
@@ -3377,10 +3467,11 @@ class Instrument(object):
 
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
-            # whole days
-            start = utils.time.filter_datetime_input(start)
-            stop = utils.time.filter_datetime_input(stop)
-            date_array = utils.time.create_date_range(start, stop, freq=freq)
+            # whole days.
+            start = pysat.utils.time.filter_datetime_input(start)
+            stop = pysat.utils.time.filter_datetime_input(stop)
+            date_array = pysat.utils.time.create_date_range(start, stop,
+                                                            freq=freq)
 
         # Add necessary kwargs to the optional kwargs
         kwargs['tag'] = self.tag
@@ -3435,7 +3526,7 @@ class Instrument(object):
                                        self.files[dsel2][-1],
                                        curr_bound[2], curr_bound[3])
         else:
-            logger.warning('Requested download over an empty date range')
+            logger.warning('Requested download over an empty date range.')
 
         return
 
@@ -3462,12 +3553,13 @@ class Instrument(object):
             (default=None)
         zlib : bool
             Flag for engaging zlib compression (True - compression on)
+            (default=False)
         complevel : int
             An integer flag between 1 and 9 describing the level of compression
-            desired. Ignored if zlib=False. (default=4)
+            desired. Ignored if `zlib=False`. (default=4)
         shuffle : bool
             The HDF5 shuffle filter will be applied before compressing the data.
-            This significantly improves compression. Ignored if zlib=False.
+            This significantly improves compression. Ignored if `zlib=False`.
             (default=True)
         preserve_meta_case : bool
             Flag specifying the case of the meta data variable strings. If True,
@@ -3512,13 +3604,13 @@ class Instrument(object):
         inst = self if modify else self.copy()
 
         # Write the output file
-        utils.io.inst_to_netcdf(inst, fname=fname,
-                                base_instrument=base_instrument,
-                                epoch_name=epoch_name, zlib=zlib,
-                                complevel=complevel, shuffle=shuffle,
-                                preserve_meta_case=preserve_meta_case,
-                                export_nan=export_nan,
-                                unlimited_time=unlimited_time)
+        pysat.utils.io.inst_to_netcdf(inst, fname=fname,
+                                      base_instrument=base_instrument,
+                                      epoch_name=epoch_name, zlib=zlib,
+                                      complevel=complevel, shuffle=shuffle,
+                                      preserve_meta_case=preserve_meta_case,
+                                      export_nan=export_nan,
+                                      unlimited_time=unlimited_time)
 
         return
 
@@ -3529,18 +3621,19 @@ class Instrument(object):
 # Hidden variable to store pysat reserved keywords. Defined here, since these
 # values are used by both the Instrument class and a function defined below.
 # In release 3.2.0+ `freq` will be removed.
-_reserved_keywords = ['fnames', 'inst_id', 'tag', 'date_array',
-                      'data_path', 'format_str', 'supported_tags',
-                      'start', 'stop', 'freq']
+_reserved_keywords = ['inst_id', 'tag', 'date_array', 'data_path', 'format_str',
+                      'supported_tags', 'start', 'stop', 'freq', 'yr', 'doy',
+                      'end_yr', 'end_doy', 'date', 'end_date', 'fname',
+                      'fnames', 'stop_fname']
 
 
 def _kwargs_keys_to_func_name(kwargs_key):
-    """Convert from self.kwargs key name to the function/method name.
+    """Convert from `self.kwargs` key name to the function or method name.
 
     Parameters
     ----------
     kwargs_key : str
-        Key from self.kwargs dictionary
+        Key from `self.kwargs` dictionary
 
     Returns
     -------
@@ -3558,7 +3651,7 @@ def _get_supported_keywords(local_func):
 
     Parameters
     ----------
-    local_func : function, method, or functools.partial
+    local_func : function or method
         Method used to load data within pysat
 
     Returns
@@ -3573,26 +3666,25 @@ def _get_supported_keywords(local_func):
     functools.partial instantiation.
 
     """
-    global _reserved_keywords
 
     # Account for keywords that are treated by Instrument as args
     pre_kws = _reserved_keywords.copy()
 
     # Check if this is a partial function
     if isinstance(local_func, functools.partial):
-        # get keyword arguments already applied to function
+        # Get keyword arguments already applied to function
         existing_kws = local_func.keywords
 
-        # pull out python function portion
+        # Pull out python function portion
         local_func = local_func.func
     else:
         existing_kws = {}
 
-    # account for keywords already set since input was a partial function
+    # Account for keywords already set since input was a partial function
     pre_kws.extend(existing_kws.keys())
 
-    # Get the lists of arguments and defaults
-    # The args and kwargs are both in the args list, and args are placed first
+    # Get the lists of arguments and defaults. The args and kwargs are both
+    # in the args list, and args are placed first.
     #
     # modified from code on
     # https://stackoverflow.com/questions/196960/
@@ -3601,7 +3693,7 @@ def _get_supported_keywords(local_func):
     func_args = list(sig.args)
 
     # Recast the function defaults as a list instead of NoneType or tuple.
-    # inspect returns func_defaults=None when there are no defaults
+    # Inspect returns func_defaults=None when there are no defaults.
     if sig.defaults is None:
         func_defaults = []
     else:
@@ -3611,7 +3703,7 @@ def _get_supported_keywords(local_func):
     while len(func_args) > len(func_defaults):
         func_args.pop(0)
 
-    # Remove pre-existing keywords from output. Start by identifying locations
+    # Remove pre-existing keywords from output. Start by identifying locations.
     pop_list = [i for i, arg in enumerate(func_args) if arg in pre_kws]
 
     # Remove pre-selected by cycling backwards through the list of indices
@@ -3626,7 +3718,7 @@ def _get_supported_keywords(local_func):
 
 
 def _pass_func(*args, **kwargs):
-    """Empty, default function for updateable Instrument methods."""
+    """Empty, default function for updatable Instrument methods."""
     pass
 
 
@@ -3653,9 +3745,8 @@ def _check_load_arguments_none(args, raise_error=False):
 
     Note
     ----
-    Used to support .load method checks that arguments that should be
-    None are None, while also keeping the .load method readable.
-
+    Used to support `.load` method checks that arguments that should be
+    None are None, while also keeping the `.load` method readable
 
     """
 

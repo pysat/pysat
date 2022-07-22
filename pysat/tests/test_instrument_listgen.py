@@ -7,7 +7,7 @@ from pysat.utils import generate_instrument_list
 
 
 class TestInstListGeneration(object):
-    """Tests to ensure the instrument test class is working as expected."""
+    """Tests that ensure `generate_instrument_list` is working as expected."""
 
     def setup(self):
         """Set up the unit test environment for each method."""
@@ -25,7 +25,7 @@ class TestInstListGeneration(object):
         return
 
     def test_import_error_behavior(self):
-        """Test that instrument list works if a broken instrument is found."""
+        """Test `generate_instrument_list` works with a broken instrument."""
 
         self.test_library.__all__.append('broken_inst')
 
@@ -39,9 +39,10 @@ class TestInstListGeneration(object):
         return
 
     def test_for_missing_test_date(self):
-        """Test that instruments without _test_dates are added to the list."""
+        """Test that instruments without the `_test_dates` attr are added."""
 
         del self.test_library.pysat_testing._test_dates
+
         # If an instrument does not have the _test_dates attribute, it should
         # still be added to the list for other checks to be run.
         # This will be caught later by InstTestClass.test_instrument_test_dates.

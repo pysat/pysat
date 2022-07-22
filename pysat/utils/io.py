@@ -1863,7 +1863,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                     if coltype == str:
                         cdfkey = out_data.createVariable(case_key, coltype,
                                                          dimensions=epoch_name,
-                                                         zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
 
@@ -1930,9 +1929,16 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                 # main variable heading.
                                 idx = inst[key].iloc[good_data_loc][col]
                                 data, coltype, _ = inst._get_data_info(idx)
+
+                                # netCDF4 doesn't support string compression
+                                if coltype == str:
+                                    lzlib = False
+                                else:
+                                    lzlib = zlib
+
                                 cdfkey = out_data.createVariable(
                                     '_'.join((case_key, col)), coltype,
-                                    dimensions=var_dim, zlib=zlib,
+                                    dimensions=var_dim, zlib=lzlib,
                                     complevel=complevel, shuffle=shuffle)
 
                                 # Set metadata
@@ -1956,9 +1962,16 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                                 # information from within the series.
                                 idx = inst[key].iloc[good_data_loc]
                                 data, coltype, _ = inst._get_data_info(idx)
+
+                                # netCDF4 doesn't support string compression
+                                if coltype == str:
+                                    lzlib = False
+                                else:
+                                    lzlib = zlib
+
                                 cdfkey = out_data.createVariable(
                                     case_key + '_data', coltype,
-                                    dimensions=var_dim, zlib=zlib,
+                                    dimensions=var_dim, zlib=lzlib,
                                     complevel=complevel, shuffle=shuffle)
 
                                 # Set metadata
@@ -2038,6 +2051,18 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         # Set the standard encoding values
         encoding = {var: {'zlib': zlib, 'complevel': complevel,
                           'shuffle': shuffle} for var in xr_data.keys()}
+
+        # netCDF4 doesn't support compression for string data. Reset values
+        # in `encoding` for data found to be string type.
+        for var in xr_data.keys():
+            vtype = xr_data[var].dtype
+
+            # Account for possible type for unicode strings
+            if vtype == np.dtype('<U4'):
+                vtype = str
+
+            if vtype == str:
+                encoding[var]['zlib'] = False
 
         if unlimited_time:
             xr_data.encoding['unlimited_dims'] = {epoch_name: True}
