@@ -11,13 +11,14 @@ import numpy as np
 import os
 import pandas as pds
 from portalocker import Lock
+import warnings
 import xarray as xr
 
 import pysat
 
 
 def scale_units(out_unit, in_unit):
-    """ Determine the scaling factor between two units
+    """Determine the scaling factor between two units.
 
     Parameters
     ----------
@@ -35,11 +36,15 @@ def scale_units(out_unit, in_unit):
     ----
     Accepted units include degrees ('deg', 'degree', 'degrees'),
     radians ('rad', 'radian', 'radians'),
-    hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
-    Can convert between degrees, radians, and hours or different lengths.
+    hours ('h', 'hr', 'hrs', 'hour', 'hours'), lengths ('m', 'km', 'cm'),
+    volumes ('m-3', 'cm-3', '/cc', 'n/cc', 'km-3', 'm$^{-3}$', 'cm$^{-3}$',
+    'km$^{-3}$'), and speeds ('m/s', 'cm/s', 'km/s', 'm s$^{-1}$',
+    'cm s$^{-1}$', 'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1').
+    Can convert between degrees, radians, and hours or different lengths,
+    volumes, or speeds.
 
-    Example
-    -------
+    Examples
+    --------
     ::
 
         import numpy as np
@@ -60,12 +65,20 @@ def scale_units(out_unit, in_unit):
                       'm': ['m', 'km', 'cm'],
                       'm/s': ['m/s', 'cm/s', 'km/s', 'm s$^{-1}$',
                               'cm s$^{-1}$', 'km s$^{-1}$', 'm s-1', 'cm s-1',
-                              'km s-1']}
-    replace_str = {'/s': [' s$^{-1}$', ' s-1']}
+                              'km s-1'],
+                      'm-3': ['m-3', 'cm-3', 'km-3', 'n/cc', '/cc', '#/cc',
+                              '#/cm3', '#/cm^3', '#/km3', '#/km^3', '#/m3',
+                              '#/m^3', 'm$^{-3}$', 'cm$^{-3}$', 'km$^{-3}$',
+                              'cm^-3', 'm^-3', 'km^-3', 'cm^{-3}', 'm^{-3}',
+                              'km^{-3}']}
+    replace_str = {'/s': [' s$^{-1}$', ' s-1'], '': ['#'], 'km-3': ['/km^3'],
+                   '-3': ['$^{-3}$', '^{-3}', '^-3'],
+                   'cm-3': ['n/cc', '/cc', '/cm^3'], 'm-3': ['/m^3']}
 
     scales = {'deg': 180.0, 'rad': np.pi, 'h': 12.0,
               'm': 1.0, 'km': 0.001, 'cm': 100.0,
-              'm/s': 1.0, 'cm/s': 100.0, 'km/s': 0.001}
+              'm/s': 1.0, 'cm/s': 100.0, 'km/s': 0.001,
+              'm-3': 1.0, 'cm-3': 1.0e6, 'km-3': 1.0e-9}
 
     # Test input and determine transformation type
     out_key = out_unit.lower()
@@ -92,32 +105,35 @@ def scale_units(out_unit, in_unit):
     if in_key not in accepted_units.keys():
         raise ValueError('Unknown input unit {:}'.format(in_unit))
 
-    if out_key == 'm' or out_key == 'm/s' or in_key == 'm' or in_key == 'm/s':
+    if out_key in ['m', 'm/s', 'm-3'] or in_key in ['m', 'm/s', 'm-3']:
         if in_key != out_key:
             raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
                                                                  in_unit))
+
         # Recast units as keys for the scales dictionary and ensure that
         # the format is consistent
-        rkey = ''
+        rkeys = []
         for rr in replace_str.keys():
-            if out_key.find(rr):
-                rkey = rr
+            if out_key.find(rr) >= 0 or rr.find(out_key) >= 0:
+                rkeys.append(rr)
 
+        # Redefine keys to find correct values for scaling
         out_key = out_unit.lower()
         in_key = in_unit.lower()
 
-        if rkey in replace_str.keys():
+        for rkey in rkeys:
             for rval in replace_str[rkey]:
                 out_key = out_key.replace(rval, rkey)
                 in_key = in_key.replace(rval, rkey)
 
+    # Calculate the scaling factor
     unit_scale = scales[out_key] / scales[in_key]
 
     return unit_scale
 
 
 def listify(iterable):
-    """Returns a flattened list of iterable if not already a list
+    """Produce a flattened list of items from input that may not be iterable.
 
     Parameters
     ----------
@@ -129,9 +145,16 @@ def listify(iterable):
     list
         An enclosing 1-D list of iterable if not already a list
 
+    Note
+    ----
+    Does not accept dict_keys or dict_values as input.
+
     """
 
+    # Cast as an array-like object
     arr_iter = np.asarray(iterable)
+
+    # Treat output differently based on the array shape
     if arr_iter.shape == ():
         list_iter = [arr_iter.tolist()]
     elif arr_iter.shape[0] == 0:
@@ -142,291 +165,160 @@ def listify(iterable):
     return list_iter
 
 
-def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
-                 epoch_name='Epoch', pandas_format=True,
+def stringify(strlike):
+    """Convert input into a str type.
+
+    Parameters
+    ----------
+    strlike: str or bytes
+        Input values in str or byte form
+
+    Returns
+    -------
+    strlike: str or input type
+        If input is not string-like then the input type is retained.
+
+    """
+
+    if isinstance(strlike, bytes):
+        return strlike.decode('utf-8')
+    return strlike
+
+
+def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
+                 epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
+                 pandas_format=True, decode_timedelta=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot_label', str), 'axis': ('axis', str),
-                         'scale': ('scale', str),
                          'min_val': ('value_min', np.float64),
                          'max_val': ('value_max', np.float64),
                          'fill_val': ('fill', np.float64)}):
     """Load netCDF-3/4 file produced by pysat.
 
+    .. deprecated:: 3.0.2
+       Function moved to `pysat.utils.io.load_netcdf`, this wrapper will be
+       removed in the 3.2.0+ release.
+       No longer allow non-string file formats in the 3.2.0+ release.
+
     Parameters
     ----------
-    fnames : string, array_like of strings, or NoneType
+    fnames : str, array_like, or NoneType
         Filename(s) to load, will fail if None (default=None)
-    strict_meta : boolean
+    strict_meta : bool
         Flag that checks if metadata across fnames is the same if True
         (default=False)
-    file_format : string or NoneType
+    file_format : str
         file_format keyword passed to netCDF4 routine.  Expects one of
         'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
-        If None, defaults to 'NETCDF4'. (default=None)
-    epoch_name : string
-        Data key for time variable (default='Epoch')
+        (default='NETCDF4')
+    epoch_name : str
+        Data key for epoch variable.  The epoch variable is expected to be an
+        array of integer or float values denoting time elapsed from an origin
+        specified by `epoch_origin` with units specified by `epoch_unit`. This
+        epoch variable will be converted to a `DatetimeIndex` for consistency
+        across pysat instruments.  (default='Epoch')
+    epoch_unit : str
+        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
+        'ns'). (default='ms')
+    epoch_origin : str or timestamp-convertable
+        Origin of epoch calculation, following convention for
+        `pandas.to_datetime`.  Accepts timestamp-convertable objects, as well as
+        two specific strings for commonly used calendars.  These conversions are
+        handled by `pandas.to_datetime`.
+        If ‘unix’ (or POSIX) time; origin is set to 1970-01-01.
+        If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
+        Julian Calendar. Julian day number 0 is assigned to the day starting at
+        noon on January 1, 4713 BC. (default='unix')
     pandas_format : bool
         Flag specifying if data is stored in a pandas DataFrame (True) or
         xarray Dataset (False). (default=False)
+    decode_timedelta : bool
+        Used for xarray datasets.  If True, variables with unit attributes that
+        are 'timelike' ('hours', 'minutes', etc) are converted to
+        `np.timedelta64`. (default=False)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
-        'plot': ('plot_label', str), 'axis': ('axis', str),
-        'scale': ('scale', str), 'min_val': ('value_min', np.float64),
+        'min_val': ('value_min', np.float64),
         'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
 
     Returns
-    --------
-    out : pandas.DataFrame
-        DataFrame output
+    -------
+    data : pandas.DataFrame or xarray.Dataset
+        Class holding file data
     meta : pysat.Meta
-        Meta data
+        Class holding file meta data
 
     Raises
     ------
     ValueError
         If kwargs that should be args are not set on instantiation.
+    KeyError
+        If epoch/time dimension could not be identified.
 
     """
+    warnings.warn("".join(["function moved to `pysat.utils.io`, deprecated ",
+                           "wrapper will be removed in pysat 3.2.0+"]),
+                  DeprecationWarning, stacklevel=2)
 
     if fnames is None:
+        warnings.warn("".join(["`fnames` as a kwarg has been deprecated, must ",
+                               "supply a string or list of strings in 3.2.0+"]),
+                      DeprecationWarning, stacklevel=2)
         raise ValueError("Must supply a filename/list of filenames")
-    fnames = listify(fnames)
 
     if file_format is None:
+        warnings.warn("".join(["`file_format` must be a string value in ",
+                               "3.2.0+, instead of None use 'NETCDF4' for ",
+                               "same behavior."]),
+                      DeprecationWarning, stacklevel=2)
         file_format = 'NETCDF4'
-    else:
-        file_format = file_format.upper()
 
-    saved_meta = None
-    running_idx = 0
-    running_store = []
-    two_d_keys = []
-    two_d_dims = []
-    meta = pysat.Meta(labels=labels)
+    data, meta = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
+                                            file_format=file_format,
+                                            epoch_name=epoch_name,
+                                            epoch_unit=epoch_unit,
+                                            epoch_origin=epoch_origin,
+                                            pandas_format=pandas_format,
+                                            decode_timedelta=decode_timedelta,
+                                            labels=labels)
 
-    if pandas_format:
-        for fname in fnames:
-            with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
-                # Build a dictionary with all global ncattrs and add those
-                # attributes to a pysat meta object
-                for ncattr in data.ncattrs():
-                    if hasattr(meta, ncattr):
-                        meta.__setattr__('{:}_'.format(ncattr),
-                                         data.getncattr(ncattr))
-                    else:
-                        meta.__setattr__(ncattr, data.getncattr(ncattr))
+    return data, meta
 
-                loaded_vars = {}
-                for key in data.variables.keys():
-                    # Load the metadata.  From here group unique dimensions and
-                    # act accordingly, 1D, 2D, 3D
-                    if len(data.variables[key].dimensions) == 1:
-                        if pandas_format:
-                            # Load 1D data variables, assuming basic
-                            # time dimension
-                            loaded_vars[key] = data.variables[key][:]
 
-                        # Load up metadata
-                        meta_dict = {}
-                        for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = \
-                                data.variables[key].getncattr(nc_key)
-                        meta[key] = meta_dict
+def get_mapped_value(value, mapper):
+    """Adjust value using mapping dict or function.
 
-                    if len(data.variables[key].dimensions) == 2:
-                        # Part of dataframe within dataframe
-                        two_d_keys.append(key)
-                        two_d_dims.append(data.variables[key].dimensions)
+    Parameters
+    ----------
+    value : str
+        MetaData variable name to be adjusted
+    mapper : dict or function
+        Dictionary with old names as keys and new names as variables or
+        a function to apply to all names
 
-                    if len(data.variables[key].dimensions) >= 3:
-                        raise ValueError(' '.join(('pysat only supports 1D',
-                                                   'and 2D data in pandas.',
-                                                   'Please use xarray for',
-                                                   'this data product.')))
+    Returns
+    -------
+    mapped_val : str or NoneType
+        Adjusted MetaData variable name or NoneType if input value
+        should stay the same
 
-                # We now have a list of keys that need to go into a dataframe,
-                # could be more than one, collect unique dimensions for 2D keys
-                for dim in set(two_d_dims):
-                    # First or second dimension could be epoch. Use other
-                    # dimension name as variable name
-                    if dim[0] == epoch_name:
-                        obj_key = dim[1]
-                    elif dim[1] == epoch_name:
-                        obj_key = dim[0]
-                    else:
-                        raise KeyError('Epoch not found!')
-                    # collect variable names associated with dimension
-                    idx_bool = [dim == i for i in two_d_dims]
-                    idx, = np.where(np.array(idx_bool))
-                    obj_var_keys = []
-                    clean_var_keys = []
-                    for i in idx:
-                        obj_var_keys.append(two_d_keys[i])
-                        clean_var_keys.append(
-                            two_d_keys[i].split(obj_key + '_')[-1])
-
-                    # Figure out how to index this data, it could provide its
-                    # own index - or we may have to create simple integer based
-                    # DataFrame access. If the dimension is stored as its own
-                    # variable then use that info for index
-                    if obj_key in obj_var_keys:
-                        # string used to indentify dimension also in
-                        # data.variables will be used as an index
-                        index_key_name = obj_key
-                        # if the object index uses UNIX time, process into
-                        # datetime index
-                        if data.variables[obj_key].getncattr(
-                                meta.labels.name) == epoch_name:
-                            # Name to be used in DataFrame index
-                            index_name = epoch_name
-                            time_index_flag = True
-                        else:
-                            time_index_flag = False
-                            # Label to be used in DataFrame index
-                            index_name = data.variables[obj_key].getncattr(
-                                meta.labels.name)
-                    else:
-                        # Dimension is not itself a variable
-                        index_key_name = None
-
-                    # Iterate over the variables and grab metadata
-                    dim_meta_data = pysat.Meta(labels=labels)
-
-                    for key, clean_key in zip(obj_var_keys, clean_var_keys):
-                        # store attributes in metadata, exept for dim name
-                        meta_dict = {}
-                        for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = \
-                                data.variables[key].getncattr(nc_key)
-                        dim_meta_data[clean_key] = meta_dict
-
-                    dim_meta_dict = {'meta': dim_meta_data}
-                    if index_key_name is not None:
-                        # Add top level meta
-                        for nc_key in data.variables[obj_key].ncattrs():
-                            dim_meta_dict[nc_key] = \
-                                data.variables[obj_key].getncattr(nc_key)
-                        meta[obj_key] = dim_meta_dict
-
-                    # Iterate over all variables with this dimension
-                    # data storage, whole shebang
-                    loop_dict = {}
-
-                    # List holds a series of slices, parsed from dict above
-                    loop_list = []
-                    for key, clean_key in zip(obj_var_keys, clean_var_keys):
-                        # data
-                        loop_dict[clean_key] = \
-                            data.variables[key][:, :].flatten(order='C')
-
-                    # Number of values in time
-                    loop_lim = data.variables[obj_var_keys[0]].shape[0]
-
-                    # Number of values per time
-                    step = len(data.variables[obj_var_keys[0]][0, :])
-
-                    # Check if there is an index we should use
-                    if not (index_key_name is None):
-                        # An index was found
-                        time_var = loop_dict.pop(index_key_name)
-                        if time_index_flag:
-                            # Create datetime index from data
-                            time_var = pds.to_datetime(1.0E6 * time_var)
-                        new_index = time_var
-                        new_index_name = index_name
-                    else:
-                        # Using integer indexing
-                        new_index = np.arange((loop_lim * step),
-                                              dtype=np.int64) % step
-                        new_index_name = 'index'
-
-                    # Load all data into frame
-                    if len(loop_dict.keys()) > 1:
-                        loop_frame = pds.DataFrame(loop_dict,
-                                                   columns=clean_var_keys)
-                        if obj_key in loop_frame:
-                            del loop_frame[obj_key]
-
-                        # Break massive frame into bunch of smaller frames
-                        for i in np.arange(loop_lim, dtype=np.int64):
-                            loop_list.append(loop_frame.iloc[(step * i):
-                                                             (step * (i + 1)),
-                                                             :])
-                            loop_list[-1].index = new_index[(step * i):
-                                                            (step * (i + 1))]
-                            loop_list[-1].index.name = new_index_name
-                    else:
-                        loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
-                                                name=obj_var_keys[0])
-
-                        # Break massive series into bunch of smaller series
-                        for i in np.arange(loop_lim, dtype=np.int64):
-                            loop_list.append(loop_frame.iloc[(step * i):
-                                                             (step * (i + 1))])
-                            loop_list[-1].index = new_index[(step * i):
-                                                            (step * (i + 1))]
-                            loop_list[-1].index.name = new_index_name
-
-                    # Add 2D object data, all based on a unique dimension within
-                    # netCDF, to loaded data dictionary
-                    loaded_vars[obj_key] = loop_list
-                    del loop_list
-
-                # Prepare dataframe index for this netcdf file
-                time_var = loaded_vars.pop(epoch_name)
-
-                # Convert from GPS seconds to seconds used in pandas (unix time,
-                # no leap)
-                # time_var = convert_gps_to_unix_seconds(time_var)
-                loaded_vars[epoch_name] = pds.to_datetime(
-                    (1.0E6 * time_var).astype(np.int64))
-                running_store.append(loaded_vars)
-                running_idx += len(loaded_vars[epoch_name])
-
-                if strict_meta:
-                    if saved_meta is None:
-                        saved_meta = meta.copy()
-                    elif (meta != saved_meta):
-                        raise ValueError(' '.join(('Metadata across filenames',
-                                                   'is not the same.')))
-
-        # Combine all of the data loaded across files together
-        out = []
-        for item in running_store:
-            out.append(pds.DataFrame.from_records(item, index=epoch_name))
-        out = pds.concat(out, axis=0)
-    else:
-        if len(fnames) == 1:
-            out = xr.open_dataset(fnames[0])
+    """
+    if isinstance(mapper, dict):
+        if value in mapper.keys():
+            mapped_val = mapper[value]
         else:
-            out = xr.open_mfdataset(fnames, combine='by_coords')
-        for key in out.variables.keys():
-            # Copy the variable attributes from the data object to the metadata
-            meta_dict = {}
-            for nc_key in out.variables[key].attrs.keys():
-                meta_dict[nc_key] = out.variables[key].attrs[nc_key]
-            meta[key] = meta_dict
-            # Remove variable attributes from the data object
-            out.variables[key].attrs = {}
-        # Copy the file attributes from the data object to the metadata
-        for out_attr in out.attrs.keys():
-            if hasattr(meta, out_attr):
-                set_attr = "".join([out_attr, "_"])
-                meta.__setattr__(set_attr, out.attrs[out_attr])
-            else:
-                meta.__setattr__(out_attr, out.attrs[out_attr])
-        # Remove attributes from the data object
-        out.attrs = {}
+            mapped_val = None
+    else:
+        mapped_val = mapper(value)
 
-    return out, meta
+    return mapped_val
 
 
 def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
-    """ Format a string with desired output values in columns
+    """Format a string with desired output values in columns.
 
     Parameters
     ----------
@@ -442,7 +334,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
 
     Returns
     -------
-    output : string
+    output : str
         String with desired data formatted in columns
 
     """
@@ -502,7 +394,6 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
 def generate_instrument_list(inst_loc, user_info=None):
     """Iterate through and classify instruments in a given subpackage.
 
-
     Parameters
     ----------
     inst_loc : python subpackage
@@ -534,6 +425,7 @@ def generate_instrument_list(inst_loc, user_info=None):
 
     instrument_names = inst_loc.__all__
     instrument_download = []
+    instrument_optional_load = []
     instrument_no_download = []
 
     # Look through list of available instrument modules in the given location
@@ -572,22 +464,62 @@ def generate_instrument_list(inst_loc, user_info=None):
                                             tag=tag,
                                             inst_id=inst_id,
                                             temporary_file_list=True)
-                    travis_skip = ((os.environ.get('TRAVIS') == 'true')
-                                   and not inst._test_download_travis)
-                    if inst._test_download:
-                        if not travis_skip:
-                            instrument_download.append(inst_dict)
+                    # Set flag to skip tests on a CI environment
+                    ci_skip = ((os.environ.get('CI') == 'true')
+                               and not inst._test_download_ci)
+                    if inst._test_download and not ci_skip:
+                        instrument_download.append(inst_dict)
+                        if hasattr(module, '_test_load_opt'):
+                            # Add optional load tests
+                            try:
+                                kwarg_list = module._test_load_opt[inst_id][tag]
+                                kwarg_list = pysat.utils.listify(kwarg_list)
+                                for kwargs in kwarg_list:
+                                    inst_dict['kwargs'] = kwargs
+                                    instrument_optional_load.append(inst_dict)
+                            except KeyError:
+                                # Option does not exist for tag/inst_id combo
+                                pass
+
                     elif not inst._password_req:
-                        # we don't want to test download for this combo
-                        # But we do want to test the download warnings
-                        # for instruments without a password requirement
+                        # We don't want to test download for this combo, but
+                        # we do want to test the download warnings for
+                        # instruments without a password requirement
                         instrument_no_download.append(inst_dict)
 
+    # load options requires all downloaded instruments plus additional options
     output = {'names': instrument_names,
               'download': instrument_download,
+              'load_options': instrument_download + instrument_optional_load,
               'no_download': instrument_no_download}
 
     return output
+
+
+def display_instrument_stats(inst_locs=None):
+    """Display supported instrument stats.
+
+    Parameters
+    ----------
+    inst_locs : list of packages
+        List of instrument library modules to inspect for pysat support.
+        If None, report on default pysat package.  (default=None)
+
+    """
+
+    if inst_locs is None:
+        inst_locs = [pysat.instruments]
+
+    num_dl = 0
+    num_nodl = 0
+    for inst_loc in inst_locs:
+        instruments = generate_instrument_list(inst_loc=inst_loc)
+        num_dl += len(instruments['download'])
+        num_nodl += len(instruments['no_download'])
+
+    print("\n{:} supported data products with download access".format(num_dl))
+    print("{:} supported data products with local access".format(num_nodl))
+    return
 
 
 def available_instruments(inst_loc=None):
@@ -733,8 +665,10 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
 
 
 class NetworkLock(Lock):
+    """Unit tests for NetworkLock manager."""
+
     def __init__(self, *args, **kwargs):
-        """Lock manager compatible with networked file systems.
+        """Initialize lock manager compatible with networked file systems.
 
         Parameters
         ----------
@@ -748,8 +682,8 @@ class NetworkLock(Lock):
         See portalocker.utils.Lock for more details
         (:class:`portalocker.utils.Lock`)
 
-        Example
-        -------
+        Examples
+        --------
         ::
 
             from pysat.utils import NetworkLock
@@ -769,7 +703,7 @@ class NetworkLock(Lock):
                                           *args, **kwargs)
 
     def release(self):
-        """Releases the Lock so the file system
+        """Release the Lock from the file system.
 
         From portalocker docs:
           On some networked filesystems it might be needed to force

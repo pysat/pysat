@@ -11,7 +11,7 @@ Instrument
 
 .. autoclass:: pysat.Instrument
    :members:
-
+   :noindex:
 
 .. _api-constellation:
 
@@ -20,6 +20,7 @@ Constellation
 
 .. autoclass:: pysat.Constellation
    :members:
+   :noindex:
 
 
 .. _api-files:
@@ -49,6 +50,15 @@ MetaLabels
    :members:
 
 
+.. _api-metaheader:
+
+MetaHeader
+----------
+
+.. autoclass:: pysat.MetaHeader
+   :members:
+
+
 .. _api-orbits:
 
 Orbits
@@ -65,7 +75,6 @@ Parameters
 
 .. autoclass:: pysat._params.Parameters
    :members:
-
 
 
 .. _api-instrument-methods:
@@ -108,7 +117,7 @@ files, et cetera.
 
 Core Utilities
 ^^^^^^^^^^^^^^
-These utilities are available directly from the ``pysat.utils`` module.
+These utilities are available directly from the :py:mod:`pysat.utils` module.
 
 .. automodule:: pysat.utils._core
    :members:
@@ -118,7 +127,17 @@ These utilities are available directly from the ``pysat.utils`` module.
 
 Coordinates
 ^^^^^^^^^^^
+
 .. automodule:: pysat.utils.coords
+   :members:
+
+
+.. _api-utils-io:
+
+I/O
+^^^
+
+.. automodule:: pysat.utils.io
    :members:
 
 
@@ -126,6 +145,7 @@ Coordinates
 
 Files
 ^^^^^
+
 .. automodule:: pysat.utils.files
   :members:
 
@@ -134,6 +154,7 @@ Files
 
 Registry
 ^^^^^^^^
+
 .. automodule:: pysat.utils.registry
    :members:
 
@@ -142,6 +163,7 @@ Registry
 
 Time
 ^^^^
+
 .. automodule:: pysat.utils.time
    :members:
 
@@ -150,6 +172,7 @@ Time
 
 Testing
 ^^^^^^^
+
 .. automodule:: pysat.utils.testing
    :members:
 
@@ -161,6 +184,23 @@ Instrument Template
 
 .. automodule:: pysat.instruments.templates.template_instrument
    :members: __doc__, init, clean, preprocess, list_files, download, load, list_remote_files
+
+
+.. _api-geninst:
+
+General Instruments
+-------------------
+
+The following Instrument modules support I/O and analysis in pysat.
+
+
+.. _api-pysat-netcdf:
+
+pysat_netcdf
+^^^^^^^^^^^^
+
+.. automodule:: pysat.instruments.pysat_netcdf
+   :members:
 
 
 .. _api-testinst:

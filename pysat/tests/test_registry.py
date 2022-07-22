@@ -3,9 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-tests the registration of user-defined modules
-"""
+"""Tests the registration of user-defined modules."""
 
 import copy
 import numpy as np
@@ -13,13 +11,13 @@ import pytest
 import sys
 
 import pysat
+from pysat.tests.classes.cls_registration import TestWithRegistration
 from pysat.utils import registry
-from pysat.tests.registration_test_class import TestWithRegistration
+from pysat.utils import testing
 
 
 def ensure_updated_stored_modules(modules):
-    """Ensure stored pysat.params['user_modules'] updated
-    to include modules
+    """Ensure stored pysat.params['user_modules'] updated to include modules.
 
     Parameters
     ----------
@@ -35,11 +33,11 @@ def ensure_updated_stored_modules(modules):
         assert platform in saved_modules
         assert name in saved_modules[platform]
         assert module_name in saved_modules[platform][name]
+    return
 
 
 def ensure_live_registry_updated(modules):
-    """Ensure current pysat.params['user_modules'] updated
-    to include modules
+    """Ensure current pysat.params['user_modules'] updated to include modules.
 
     Parameters
     ----------
@@ -58,13 +56,10 @@ def ensure_live_registry_updated(modules):
 
 
 class TestRegistration(TestWithRegistration):
-
-    # Set setup/teardown to the class defaults
-    setup = TestWithRegistration.setup
-    teardown = TestWithRegistration.teardown
+    """Tests for the registy."""
 
     def test_duplicate_registration_error(self):
-        """Test register error for duplicate package"""
+        """Test register error for duplicate package."""
 
         # Register all modules at once
         registry.register(self.module_names)
@@ -85,14 +80,16 @@ class TestRegistration(TestWithRegistration):
         mod_name = self.module_names[0]
         sys.modules['pysat_error.test_faux_module'] = sys.modules[mod_name]
 
-        # register packages again, this should error
-        with pytest.raises(ValueError):
-            registry.register(['pysat_error.test_faux_module'])
+        # Register packages again, this should error
+        testing.eval_bad_input(
+            registry.register, ValueError,
+            'An instrument has already been  registered for platform',
+            input_args=[['pysat_error.test_faux_module']])
 
         return
 
     def test_duplicate_registration_overwrite(self):
-        """Test register error for duplicate package"""
+        """Test register error for duplicate package."""
 
         # Register all modules at once
         registry.register(self.module_names)
@@ -126,7 +123,7 @@ class TestRegistration(TestWithRegistration):
         return
 
     def test_registration(self):
-        """Test registering multiple instruments at once"""
+        """Test registering multiple instruments at once."""
 
         # Register all modules at once
         registry.register(self.module_names)
@@ -145,7 +142,7 @@ class TestRegistration(TestWithRegistration):
         return
 
     def test_platform_removal(self):
-        """Test removing entire platform at once"""
+        """Test removing entire platform at once."""
 
         # register all modules at once
         registry.register(self.module_names)
@@ -168,7 +165,7 @@ class TestRegistration(TestWithRegistration):
         return
 
     def test_platform_removal_single(self):
-        """Test removing single platform at a time"""
+        """Test removing single platform at a time."""
 
         # Register all modules at once
         registry.register(self.module_names)
@@ -202,7 +199,7 @@ class TestRegistration(TestWithRegistration):
         return
 
     def test_platform_name_removal_single(self):
-        """Test removing single platform/name at a time"""
+        """Test removing single platform/name at a time."""
 
         # Register all modules at once
         registry.register(self.module_names)
@@ -236,7 +233,7 @@ class TestRegistration(TestWithRegistration):
         return
 
     def test_platform_removal_not_present(self):
-        """Test error raised when removing module not present"""
+        """Test error raised when removing module not present."""
 
         # Try to remove non-registered modules using only platform
         stored_modules = copy.deepcopy(pysat.params['user_modules'])
@@ -253,19 +250,30 @@ class TestRegistration(TestWithRegistration):
                               ([], ['made_up_name', 'second']),
                               ([], ['made_up_name'])])
     def test_platform_name_length_removal_error(self, par_plat, par_name):
-        """Test error raised when platforms and names unequal lengths"""
+        """Test error raised when platforms and names unequal lengths.
+
+        Parameters
+        ----------
+        par_plat : list
+            List of non-registered `platform` labels
+        par_name : list
+            List of non-registered `name` labels
+
+        """
 
         # Register all modules at once
         registry.register(self.module_names)
 
         # Raise error when removing non-existent Instruments
-        with pytest.raises(ValueError):
-            registry.remove(par_plat, par_name)
+        testing.eval_bad_input(
+            registry.remove, ValueError,
+            "The number of 'platforms' and 'names' must be the same",
+            [par_plat, par_name])
 
         return
 
     def test_module_registration_single(self):
-        """Test registering a module containing an instrument"""
+        """Test registering a module containing an instrument."""
 
         # Register and verify package by module
         for self.module_name, self.platform, self.name in self.modules:
@@ -283,16 +291,18 @@ class TestRegistration(TestWithRegistration):
         return
 
     def test_module_registration_non_importable(self):
-        """Test registering a non-existent module"""
+        """Test registering a non-existent module."""
 
-        with pytest.raises(Exception):
-            registry.register(['made.up.module'])
-
+        testing.eval_bad_input(registry.register, ImportError,
+                               'No module named', [['made.up.module']])
         return
 
 
-class TestModuleRegistration():
+class TestModuleRegistration(object):
+    """Unit tests for module registration."""
+
     def setup(self):
+        """Set up the unit test environment for each method."""
 
         self.inst_module = pysat.instruments
         # package name
@@ -315,13 +325,14 @@ class TestModuleRegistration():
         return
 
     def teardown(self):
-        # clean up
+        """Clean up the unit test environment after each method."""
+
         registry.remove(self.platforms, self.names)
 
         return
 
     def test_module_registration_multiple(self):
-        """Test registering a module containing multiple instruments"""
+        """Test registering a module containing multiple instruments."""
 
         # register package by module
         registry.register_by_module(self.inst_module)

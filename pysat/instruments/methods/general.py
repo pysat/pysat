@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Provides generalized routines for integrating instruments into pysat.
-"""
+"""Provides generalized routines for integrating instruments into pysat."""
 
 import datetime as dt
 import numpy as np
 import pandas as pds
+import warnings
 
 import pysat
 
@@ -12,7 +12,7 @@ logger = pysat.logger
 
 
 def is_daily_file_cadence(file_cadence):
-    """ Evaluate file cadence to see if it is daily or greater than daily
+    """Evaluate file cadence to see if it is daily or greater than daily.
 
     Parameters
     ----------
@@ -44,7 +44,7 @@ def is_daily_file_cadence(file_cadence):
     return is_daily
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
+def list_files(tag='', inst_id='', data_path='', format_str=None,
                supported_tags=None, file_cadence=dt.timedelta(days=1),
                two_digit_year_break=None, delimiter=None):
     """Return a Pandas Series of every file for chosen Instrument data.
@@ -53,22 +53,22 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : string or NoneType
-        Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : string or NoneType
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
+    tag : str
+        Tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    data_path : str
+        Path to data directory. This input is nominally provided by pysat
+        itself. (default='')
     format_str : string or NoneType
         User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
-    supported_tags : dict or NoneType
-        Keys are inst_id, each containing a dict keyed by tag
-        where the values file format template strings. See `Files.from_os`
+        formats associated with the supplied tags are used. See `Files.from_os`
         `format_str` kwarg for more details. (default=None)
+    supported_tags : dict or NoneType
+        Keys are `inst_id`, each containing a dict keyed by `tag`
+        where the values are file format template strings. (default=None)
     file_cadence : dt.timedelta or pds.DateOffset
         pysat assumes a daily file cadence, but some instrument data file
         contain longer periods of time.  This parameter allows the specification
@@ -79,7 +79,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         added for years >= two_digit_year_break and '2000' will be added for
         years < two_digit_year_break. If None, then four-digit years are
         assumed. (default=None)
-    delimiter : string or NoneType
+    delimiter : str or NoneType
         Delimiter string upon which files will be split (e.g., '.'). If None,
         filenames will be parsed presuming a fixed width format. (default=None)
 
@@ -92,29 +92,25 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     --------
     pysat.Files.from_os
 
+    Note
+    ----
+    This function is intended to be invoked by pysat and not the end user.
+
     Examples
     --------
     ::
 
-        fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-        supported_tags = {'dc_b': fname}
-        list_files = functools.partial(nasa_cdaweb.list_files,
-                                       supported_tags=supported_tags)
-
-        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'': fname}
+        from pysat.instruments.methods import general as mm_gen
+        fname = 'instrument_{year:04d}{month:02d}{day:02d}_v{version:02}.cdf'
+        supported_tags = {'tag_name': fname}
         list_files = functools.partial(mm_gen.list_files,
                                        supported_tags=supported_tags)
 
     """
 
-    # Test the input
-    if data_path is None:
-        estr = ''.join(('A directory must be passed to the loading routine ',
-                        'for <Instrument Code>'))
-        raise ValueError(estr)
-
     if format_str is None:
+        # pyast performs a check against `inst_id` and `tag` before calling
+        # `list_files`. However, supported_tags is a non-pysat input.
         try:
             format_str = supported_tags[inst_id][tag]
         except KeyError as kerr:
@@ -150,8 +146,13 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     return out
 
 
-def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
-    """Use datetime instead of timestamp for Epoch
+def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='time'):
+    """Use datetime instead of timestamp for Epoch.
+
+    .. deprecated:: 3.0.2
+        This routine has been deprecated with the addition of the kwargs
+        `epoch_unit` and `epoch_origin` to `pysat.utils.io.load_netcdf4`.
+        This routing will be removed in 3.2.0.
 
     Parameters
     ----------
@@ -162,17 +163,28 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     epoch_name : str
         variable name for instrument index (default='Epoch')
 
+    Note
+    ----
+    If the variable represented by epoch_name is not a float64, data is passed
+    through unchanged.
+
     """
 
-    inst.data[epoch_name] = pds.to_datetime(
-        [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
-         for epoch_time in inst.data[epoch_name]])
+    warnings.warn(" ".join(["New kwargs added to `pysat.utils.io.load_netCDF4`",
+                            "for generalized handling, deprecated",
+                            "function will be removed in pysat 3.2.0+"]),
+                  DeprecationWarning, stacklevel=2)
+
+    if inst.data[epoch_name].dtype == 'float64':
+        inst.data[epoch_name] = pds.to_datetime(
+            [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
+             for epoch_time in inst.data[epoch_name]])
 
     return
 
 
 def remove_leading_text(inst, target=None):
-    """Removes leading text on variable names
+    """Remove leading text on variable names.
 
     Parameters
     ----------
@@ -216,7 +228,7 @@ def remove_leading_text(inst, target=None):
 
 
 def filename_creator(value, format_str=None, start_date=None, stop_date=None):
-    """Creates filenames as needed to support use of generated pysat data sets
+    """Create filenames as needed to support use of generated pysat data sets.
 
     Parameters
     ----------
@@ -255,7 +267,7 @@ def filename_creator(value, format_str=None, start_date=None, stop_date=None):
 
 
 def load_csv_data(fnames, read_csv_kwargs=None):
-    """Load CSV data from a list of files into a single DataFrame
+    """Load CSV data from a list of files into a single DataFrame.
 
     Parameters
     ----------

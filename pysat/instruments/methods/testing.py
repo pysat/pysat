@@ -1,10 +1,16 @@
+"""Standard functions for the test instruments."""
+
 import datetime as dt
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pds
+import time
 import warnings
 
 import pysat
+from pysat.utils import NetworkLock
+from pysat.utils import time as putime
 
 logger = pysat.logger
 
@@ -18,21 +24,19 @@ with pysat.utils.NetworkLock(os.path.join(pysat.here, 'citation.txt'), 'r') as \
 
 
 def init(self, test_init_kwarg=None):
-    """Initializes the Instrument object with instrument specific values.
+    """Initialize the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
 
-    Shifts time index of files by 5-minutes if mangle_file_dates
+    Shifts time index of files by 5-minutes if `mangle_file_dates`
     set to True at pysat.Instrument instantiation.
 
-    Creates a file list for a given range if the file_date_range
+    Creates a file list for a given range if the `file_date_range`
     keyword is set at instantiation.
 
     Parameters
     ----------
-    self : pysat.Instrument
-        This object
-    test_init_kwarg : any or NoneType
+    test_init_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -49,13 +53,11 @@ def init(self, test_init_kwarg=None):
 
 
 def clean(self, test_clean_kwarg=None):
-    """Cleaning function
+    """Pass through when asked to clean a test instrument.
 
     Parameters
     ----------
-    self : pysat.Instrument
-        This object
-    test_clean_kwarg : any or NoneType
+    test_clean_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -67,7 +69,7 @@ def clean(self, test_clean_kwarg=None):
 
 # Optional method
 def preprocess(self, test_preprocess_kwarg=None):
-    """Customization method that performs standard preprocessing.
+    """Perform standard preprocessing.
 
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue). Object
@@ -75,7 +77,7 @@ def preprocess(self, test_preprocess_kwarg=None):
 
     Parameters
     ----------
-    test_preprocess_kwarg : any or NoneType
+    test_preprocess_kwarg : any
         Testing keyword (default=None)
 
     """
@@ -85,32 +87,170 @@ def preprocess(self, test_preprocess_kwarg=None):
     return
 
 
-def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
-               file_date_range=None, test_dates=None, mangle_file_dates=False,
-               test_list_files_kwarg=None):
-    """Produce a fake list of files spanning three years
+def initialize_test_meta(epoch_name, data_keys):
+    """Initialize meta data for test instruments.
+
+    This routine should be applied to test instruments at the end of the load
+    routine.
 
     Parameters
     ----------
-    tag : str or NoneType
-        pysat instrument tag (default=None)
-    inst_id : str or NoneType
-        pysat satellite ID tag (default=None)
-    data_path : str or NoneType
-        pysat data path (default=None)
+    epoch_name : str
+        The variable name of the instrument epoch.
+    data : pds.DataFrame or xr.Dataset
+        The dataset keys from the instrument.
+
+    """
+    # Create standard metadata for all parameters
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
+                   'desc': 'Number of seconds since mindight UT',
+                   'value_min': 0.0, 'value_max': 86400.0}
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
+                   'value_min': 0.0, 'value_max': 24.0,
+                   'desc': 'Local time at magnetic field line at equator.'}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+                   'value_min': 0.0, 'value_max': 24.0,
+                   'desc': 'Mean solar time.',
+                   'notes': 'Example of notes.'}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude',
+                         'value_min': 0.0, 'value_max': 360.0,
+                         'desc': 'Geographic Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude',
+                        'value_min': -90.0, 'value_max': 90.0,
+                        'desc': 'Geographic Latituce'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude',
+                        'value_min': 0.0, 'value_max': np.inf,
+                        'desc': 'Height above mean Earth.'}
+    meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
+                         'desc': 'Orbit Number', 'value_min': 0,
+                         'value_max': 25000, 'fill': -1,
+                         'notes': ''.join(['Number of orbits since the start ',
+                                           'of the mission. For this ',
+                                           'simulation we use the number of ',
+                                           '5820 second periods since the ',
+                                           'start, 2008-01-01.'])}
+
+    meta['dummy1'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy2'] = {'value_min': 0, 'value_max': 24, 'fill': -1}
+    meta['dummy3'] = {'value_min': 0., 'value_max': 24024.}
+    meta['dummy4'] = {'desc': 'Dummy variable - UTS like', 'value_min': 0.,
+                      'value_max': 86400., 'fill': np.nan}
+
+    meta['unicode_dummy'] = {'desc': 'Dummy unicode variable.', 'units': ''}
+    meta['string_dummy'] = {'desc': 'Dummy string variable.', 'units': ''}
+
+    meta['dummy_drifts'] = {'desc': 'Dummy drift values.', 'value_min': -1000.,
+                            'value_max': 1000., 'fill': np.nan}
+
+    # Add metadata for integer dummy variables
+    meta_dict = {'value_min': 0, 'value_max': 2, 'fill': -1}
+    var_list = ['int8_dummy', 'int16_dummy', 'int32_dummy', 'int64_dummy']
+    for var in var_list:
+        meta[var] = meta_dict
+
+    # Standard metadata required for xarray
+    meta['profiles'] = {'long_name': 'profiles', 'value_min': 0,
+                        'value_max': 4294967295, 'fill': -1,
+                        'desc': ''.join(['Testing profile multi-dimensional ',
+                                         'data indexed by time.']),
+                        'notes': ''.join([
+                            'Note the value_max is largest netCDF4 supports, ',
+                            'but is lower than actual 64-bit int limit.'])}
+
+    # Children metadata required for 2D pandas.
+    # TODO(#789): Delete after removal of Meta children.
+    series_profile_meta = pysat.Meta()
+    series_profile_meta['series_profiles'] = {'desc': 'Testing series data.',
+                                              'value_min': 0,
+                                              'value_max': np.inf,
+                                              'units': 'm/s'}
+    meta['series_profiles'] = {'meta': series_profile_meta,
+                               'value_min': 0., 'value_max': 25., 'units': 'km',
+                               'fill': np.nan,
+                               'desc': ''.join(['Testing series profiles ',
+                                                'indexed by float.'])}
+
+    # Children metadata required for 2D pandas.
+    # TODO(#789): Delete after removal of Meta children.
+    alt_profile_meta = pysat.Meta()
+    alt_profile_meta['density'] = {'desc': 'Simulated density values.',
+                                   'units': 'Log N/cc',
+                                   'value_min': 0, 'value_max': np.inf}
+    alt_profile_meta['fraction'] = {'value_min': 0., 'value_max': 1.,
+                                    'desc': ''.join(['Simulated fractional O+ ',
+                                                     'composition.'])}
+    meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
+                            'desc': ''.join([
+                                'Testing profile multi-dimensional data ',
+                                'indexed by float.']),
+                            'units': 'km',
+                            'meta': alt_profile_meta}
+
+    # Standard metadata required for xarray.
+    meta['variable_profiles'] = {'desc': 'Profiles with variable altitude.'}
+    meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1,
+                              'desc': 'Altitude of profile data.'}
+    meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
+
+    # Standard metadata required for xarray.
+    meta['images'] = {'desc': 'pixel value of image',
+                      'notes': 'function of image_lat and image_lon'}
+    meta['x'] = {'desc': 'x-value of image pixel',
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 17, 'fill': -1}
+    meta['y'] = {'desc': 'y-value of image pixel',
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 17, 'fill': -1}
+    meta['z'] = {'desc': 'z-value of profile height',
+                 'notes': 'Dummy Variable',
+                 'value_min': 0, 'value_max': 15, 'fill': -1}
+    meta['image_lat'] = {'desc': 'Latitude of image pixel',
+                         'notes': 'Dummy Variable',
+                         'value_min': -90., 'value_max': 90.}
+    meta['image_lon'] = {'desc': 'Longitude of image pixel',
+                         'notes': 'Dummy Variable',
+                         'value_min': 0., 'value_max': 360.}
+
+    # Drop unused meta data for desired instrument.
+    for var in meta.keys():
+        if var not in data_keys:
+            meta.drop(var)
+            if var in meta.keys_nD():
+                meta.ho_data.pop(var)
+
+    return meta
+
+
+def list_files(tag='', inst_id='', data_path='', format_str=None,
+               file_date_range=None, test_dates=None, mangle_file_dates=False,
+               test_list_files_kwarg=None):
+    """Produce a fake list of files spanning three years.
+
+    Parameters
+    ----------
+    tag : str
+        Tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    data_path : str
+        Path to data directory. This input is nominally provided by pysat
+        itself. (default='')
     format_str : str or NoneType
-        file format string (default=None)
+        File format string. This is passed from the user at pysat.Instrument
+         instantiation, if provided. (default=None)
     file_date_range : pds.date_range
         File date range. The default mode generates a list of 3 years of daily
         files (1 year back, 2 years forward) based on the test_dates passed
         through below.  Otherwise, accepts a range of files specified by the
-        user.
-        (default=None)
+        user. (default=None)
     test_dates : dt.datetime or NoneType
         Pass the _test_date object through from the test instrument files
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_files_kwarg : any or NoneType
+    test_list_files_kwarg : any
         Testing keyword (default=None)
 
     Returns
@@ -122,9 +262,6 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     # Support keyword testing
     logger.info(''.join(('test_list_files_kwarg = ',
                          str(test_list_files_kwarg))))
-
-    if data_path is None:
-        data_path = ''
 
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
@@ -146,21 +283,27 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     return pds.Series(names, index=index)
 
 
-def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
+def list_remote_files(tag='', inst_id='', data_path='', format_str=None,
                       start=None, stop=None, test_dates=None, user=None,
                       password=None, mangle_file_dates=False,
                       test_list_remote_kwarg=None):
-    """Produce a fake list of files spanning three years and one month to
-    simulate new data files on a remote server
+    """Produce a fake list of files to simulate new files on a remote server.
+
+    Note
+    ----
+    List spans three years and one month.
 
     Parameters
     ----------
-    tag : str or NoneType
-        pysat instrument tag (default=None)
-    inst_id : str or NoneType
-        pysat satellite ID tag (default=None)
-    data_path : str or NoneType
-        pysat data path (default=None)
+    tag : str
+        Tag name used to identify particular data set.
+        This input is nominally provided by pysat itself. (default='')
+    inst_id : str
+        Instrument ID used to identify particular data.
+        This input is nominally provided by pysat itself. (default='')
+    data_path : str
+        Path to data directory. This input is nominally provided by pysat
+        itself. (default='')
     format_str : str or NoneType
         file format string (default=None)
     start : dt.datetime or NoneType
@@ -173,15 +316,15 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
         (default=None)
     test_dates : dt.datetime or NoneType
         Pass the _test_date object through from the test instrument files
-    user : string or NoneType
+    user : str or NoneType
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
         error if user not supplied. (default=None)
-    password : string or NoneType
+    password : str or NoneType
         Password for data download. (default=None)
     mangle_file_dates : bool
         If True, file dates are shifted by 5 minutes. (default=False)
-    test_list_remote_kwarg : any or NoneType
+    test_list_remote_kwarg : any
         Testing keyword (default=None)
 
     Returns
@@ -211,33 +354,30 @@ def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
                       test_dates=test_dates)
 
 
-def download(date_array, tag, inst_id, data_path=None, user=None,
+def download(date_array, tag, inst_id, data_path='', user=None,
              password=None, test_download_kwarg=None):
-    """Simple pass function for pysat compatibility for test instruments.
-
-    This routine is invoked by pysat and is not intended for direct use by the
-    end user.
+    """Pass through when asked to download for a test instrument.
 
     Parameters
     ----------
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string
+    tag : str
         Tag identifier used for particular dataset. This input is provided by
-        pysat. (default='')
-    inst_id : string
+        pysat.
+    inst_id : str
         Instrument ID string identifier used for particular dataset. This input
-        is provided by pysat. (default='')
-    data_path : string or NoneType
-        Path to directory to download data to. (default=None)
+        is provided by pysat.
+    data_path : str
+        Path to directory to download data to. (default='')
     user : string or NoneType
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for downloads this routine here must
         error if user not supplied. (default=None)
     password : string or NoneType
         Password for data download. (default=None)
-    test_download_kwarg : any or NoneType
+    test_download_kwarg : any
         Testing keyword (default=None)
 
     Raises
@@ -248,6 +388,11 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
     Warnings
     --------
     When no download support will be provided
+
+    Note
+    ----
+    This routine is invoked by pysat and is not intended for direct use by the
+    end user.
 
     """
 
@@ -269,7 +414,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
 
 def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
                        cyclic=True):
-    """Generates fake data over a given range
+    """Generate fake data over a given range.
 
     Parameters
     ----------
@@ -306,18 +451,23 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, num, freq='1S'):
-    """Construct list of times for simulated instruments
+def generate_times(fnames, num, freq='1S', start_time=None):
+    """Construct list of times for simulated instruments.
 
     Parameters
     ----------
     fnames : list
         List of filenames.
     num : int
-        Number of times to generate
-    freq : string
+        Maximum number of times to generate.  Data points will not go beyond the
+        current day.
+    freq : str
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
+    start_time : dt.timedelta or NoneType
+        Offset time of start time in fractional hours since midnight UT.
+        If None, set to 0.
+        (default=None)
 
     Returns
     -------
@@ -336,6 +486,9 @@ def generate_times(fnames, num, freq='1S'):
                         'switch to using integers.'))
         warnings.warn(estr, DeprecationWarning)
 
+    if start_time is not None and not isinstance(start_time, dt.timedelta):
+        raise ValueError('start_time must be a dt.timedelta object')
+
     uts = []
     indices = []
     dates = []
@@ -350,7 +503,11 @@ def generate_times(fnames, num, freq='1S'):
 
         # Create one day of data at desired frequency
         end_date = date + dt.timedelta(seconds=86399)
-        index = pds.date_range(start=date, end=end_date, freq=freq)
+        if start_time is not None:
+            start_date = date + start_time
+        else:
+            start_date = date
+        index = pds.date_range(start=start_date, end=end_date, freq=freq)
         index = index[0:num]
         indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second
@@ -366,7 +523,7 @@ def generate_times(fnames, num, freq='1S'):
 
 
 def define_period():
-    """Define the default periods for the fake data functions
+    """Define the default periods for the fake data functions.
 
     Returns
     -------
@@ -387,7 +544,7 @@ def define_period():
 
 
 def define_range():
-    """Define the default ranges for the fake data functions
+    """Define the default ranges for the fake data functions.
 
     Returns
     -------
@@ -403,32 +560,94 @@ def define_range():
     return def_range
 
 
-def eval_dep_warnings(warns, check_msgs):
-    """Evaluate deprecation warnings by category and message
+def create_files(inst, start, stop, freq='1D', use_doy=True,
+                 root_fname='pysat_testing_{year:04d}_{day:03d}.txt',
+                 version=False, content=None, timeout=None):
+    """Create a file set using the year and day of year.
 
     Parameters
     ----------
-    warns : list
-        List of warnings.WarningMessage objects
-    check_msgs : list
-        List of strings containing the expected warning messages
+    inst : pysat.Instrument
+        A test instrument, used to generate file path
+    start : dt.datetime
+        The date for the first file to create
+    stop : dt.datetime
+        The date for the last file to create
+    freq : str
+        Frequency of file output.  Codes correspond to pandas.date_range
+        codes (default='1D')
+    use_doy : bool
+        If True use Day of Year (doy), if False use day of month and month.
+        (default=True)
+    root_fname : str
+        The format of the file name to create. Supports standard pysat template
+        variables 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
+        'revision', 'cycle'. (default='pysat_testing_{year:04d}_{day:03d}.txt')
+    version : bool
+        If True, iterate over version / revision / cycle. If False,
+        ignore version / revision / cycle. (default=False)
+    content : str
+        Custom text to write to temporary files (default=None)
+    timeout : float
+        Time is seconds to lock the files being created.  If None, no timeout is
+        used.  (default=None)
 
-    Returns
-    -------
-    found_msgs : list
-        List of booleans corresponding to `check_msgs`, which are True when
-        the messages are found and False when they are not
+    Examples
+    --------
+    ::
+
+        # Commands below create empty files located at `inst.files.data_path`,
+        # one per day, spanning 2008, where `year`, `month`, and `day`
+        # are filled in using the provided template string appropriately.
+        # The produced files are named like: 'pysat_testing_2008_01_01.txt'
+        import datetime as dt
+        inst = pysat.Instrument('pysat', 'testing')
+        root_fname='pysat_testing_{year:04d}_{month:02d}_{day:02d}.txt'
+        create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31),
+                     root_fname=root_fname, use_doy=False)
+
+
+        # The command below uses the default values for `create_files`, which
+        # produces a daily set of files, labeled by year and day of year.
+        # The files are names like: 'pysat_testing_2008_001.txt'
+        create_files(inst, dt.datetime(2008, 1, 1), dt.datetime(2008, 12, 31))
 
     """
 
-    # Initialize the output
-    found_msgs = [False for msg in check_msgs]
+    # Define the time range and file naming variables
+    dates = putime.create_date_range(start, stop, freq=freq)
 
-    # Test the warning messages, ensuring each attribute is present
-    for iwar in warns:
-        if iwar.category == DeprecationWarning:
-            for i, msg in enumerate(check_msgs):
-                if str(iwar.message).find(msg) >= 0:
-                    found_msgs[i] = True
+    if version:
+        versions = np.array([1, 2])
+        revisions = np.array([0, 1])
+        cycles = np.array([0, 1])
+    else:
+        versions = [None]
+        revisions = [None]
+        cycles = [None]
 
-    return found_msgs
+    # Create empty files
+    for date in dates:
+        yr, doy = putime.getyrdoy(date)
+        if not use_doy:
+            doy = date.day
+        for version in versions:
+            for revision in revisions:
+                for cycle in cycles:
+
+                    fname = os.path.join(inst.files.data_path,
+                                         root_fname.format(year=yr,
+                                                           day=doy,
+                                                           month=date.month,
+                                                           hour=date.hour,
+                                                           minute=date.minute,
+                                                           second=date.second,
+                                                           version=version,
+                                                           revision=revision,
+                                                           cycle=cycle))
+                    with NetworkLock(fname, 'w') as fout:
+                        if content is not None:
+                            fout.write(content)
+                        if timeout is not None:
+                            time.sleep(timeout)
+    return

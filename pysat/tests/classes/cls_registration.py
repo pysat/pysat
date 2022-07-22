@@ -3,21 +3,27 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
+"""Standardized class and functions to test registration for pysat libraries.
+
+Note
+----
+Not directly called by pytest, but imported as part of test_registry.py.
+
+"""
 
 import importlib
 import pytest
 import sys
 
 import pysat
+from pysat.utils import testing
 
 
-class TestWithRegistration():
-    """ Test class for unit/integration tests that need registered Instruments
-    """
+class TestWithRegistration(object):
+    """Test class for unit/integration tests with registered Instruments."""
 
     def setup(self):
-        """ Set up the environment by registering three Instruments
-        """
+        """Set up the unit test environment for each method."""
         # Define the modules and platforms
         self.modules = [('package1.module1', 'platname1', 'name1'),
                         ('package11.module2', 'platname1', 'name2'),
@@ -42,8 +48,8 @@ class TestWithRegistration():
         return
 
     def teardown(self):
-        """ Tear down the environment by removing the fake modules
-        """
+        """Clean up the unit test environment after each method."""
+
         pysat.utils.registry.remove(self.platforms, self.names)
         self.ensure_not_in_stored_modules()
 
@@ -53,7 +59,7 @@ class TestWithRegistration():
         return
 
     def ensure_not_in_stored_modules(self):
-        """Ensure modules not in stored pysat.user_modules
+        """Ensure modules not in stored pysat.user_modules.
 
         Raises
         ------
@@ -69,15 +75,16 @@ class TestWithRegistration():
             if self.platform in saved_modules:
                 assert self.module_name not in saved_modules[self.platform]
             else:
-                # platform not present, so not registered
+                # Platform not present, so not registered
                 assert True
-            with pytest.raises(KeyError):
-                pysat.Instrument(self.platform, self.name)
+
+            testing.eval_bad_input(pysat.Instrument, KeyError, 'unknown',
+                                   [self.platform, self.name])
 
         return
 
     def create_and_verify_fake_modules(self):
-        """Create fake modules and verify instantiation of Instrument modules
+        """Create fake modules and verify instantiation of Instrument modules.
 
         Raises
         ------
@@ -98,8 +105,7 @@ class TestWithRegistration():
         return
 
     def create_fake_module(self):
-        """Creates fake module and package from pysat_testing test Instrument
-        """
+        """Create fake module and package from pysat_testing test Instrument."""
 
         # Use pysat_testing as base instrument
         file_path = pysat.instruments.pysat_testing.__file__
@@ -129,7 +135,7 @@ class TestWithRegistration():
         return
 
     def verify_inst_instantiation(self):
-        """Verify that information is sufficient for importing module
+        """Verify that information is sufficient for importing module.
 
         Note
         ----

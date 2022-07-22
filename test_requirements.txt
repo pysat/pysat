@@ -1,5 +1,7 @@
-coveralls
+coveralls<3.3
 flake8
+flake8-docstrings
+hacking>=1.0
 ipython
 m2r2
 numpydoc

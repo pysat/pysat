@@ -3,9 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-pysat date and time utilities
-"""
+"""Date and time handling utilities."""
 
 import datetime as dt
 import numpy as np
@@ -28,34 +26,70 @@ def getyrdoy(date):
     doy : int
         Integer day of year
 
+    Raises
+    ------
+    AttributeError
+        If input date does not have `toordinal` method
+
     """
 
     try:
         doy = date.toordinal() - dt.datetime(date.year, 1, 1).toordinal() + 1
     except AttributeError:
-        raise AttributeError(' '.join(("Must supply a pandas datetime object",
-                                       "or equivalent")))
+        raise AttributeError(''.join(("Must supply a datetime object or an ",
+                                      "equivalent class object with the ",
+                                      "`toordinal` method")))
     else:
         return date.year, doy
 
 
-def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
-               century=2000):
-    """ Basic date parser for file reading
+def datetime_to_dec_year(dtime):
+    """Convert datetime timestamp to a decimal year.
 
     Parameters
     ----------
-    str_yr : string
+    dtime : dt.datetime
+        Datetime timestamp
+
+    Returns
+    -------
+    year : float
+        Year with decimal containing time increments of less than a year
+
+    """
+
+    year = float(dtime.year)
+    day = float(dtime.strftime("%j")) - 1.0
+    days_of_year = float(dt.datetime(dtime.year, 12, 31).strftime("%j"))
+
+    # Add fraction of day to the day
+    day += (dtime.hour + (dtime.minute
+                          + (dtime.second + dtime.microsecond * 1.0e-6) / 60.0)
+            / 60.0) / 24.0
+
+    # Determine the fraction of days in this year and add to year
+    year += (day / days_of_year)
+
+    return year
+
+
+def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
+               century=2000):
+    """Convert string dates to dt.datetime.
+
+    Parameters
+    ----------
+    str_yr : str
         String containing the year (2 or 4 digits)
-    str_mo : string
+    str_mo : str
         String containing month digits
-    str_day : string
+    str_day : str
         String containing day of month digits
-    str_hr : string
+    str_hr : str
         String containing the hour of day (default='0')
-    str_min : string
+    str_min : str
         String containing the minutes of hour (default='0')
-    str_sec : string
+    str_sec : str
         String containing the seconds of minute (default='0')
     century : int
         Century, only used if str_yr is a 2-digit year (default=2000)
@@ -64,6 +98,11 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
     -------
     out_date : dt.datetime
         datetime object
+
+    Raises
+    ------
+    ValueError
+        If any input results in an unrealistic datetime object value
 
     """
 
@@ -75,7 +114,7 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
 
 def calc_res(index, use_mean=False):
-    """ Determine the resolution for a time index
+    """Determine the resolution for a time index.
 
     Parameters
     ----------
@@ -89,6 +128,11 @@ def calc_res(index, use_mean=False):
     -------
     res_sec : float
        Resolution value in seconds
+
+    Raises
+    ------
+    ValueError
+        If `index` is too short to calculate a time resolution
 
     """
 
@@ -119,7 +163,7 @@ def calc_res(index, use_mean=False):
 
 
 def calc_freq(index):
-    """ Determine the frequency for a time index
+    """Determine the frequency for a time index.
 
     Parameters
     ----------
@@ -158,7 +202,7 @@ def calc_freq(index):
 
 
 def freq_to_res(freq):
-    """Convert a frequency string to a resolution value in seconds
+    """Convert a frequency string to a resolution value in seconds.
 
     Parameters
     ----------
@@ -174,8 +218,8 @@ def freq_to_res(freq):
     --------
     pds.offsets.DateOffset
 
-    Reference
-    ---------
+    References
+    ----------
     Separating alpha and numeric portions of strings, as described in:
     https://stackoverflow.com/a/12409995
 
@@ -198,14 +242,24 @@ def freq_to_res(freq):
 
 
 def create_date_range(start, stop, freq='D'):
-    """
-    Return array of datetime objects using input frequency from start to stop
+    """Create array of datetime objects using input freq from start to stop.
 
-    Supports single datetime object or list, tuple, ndarray of start and
-    stop dates.
+    Parameters
+    ----------
+    start : dt.datetime or list-like of dt.datetime
+        The beginning of the date range.  Supports list, tuple, or ndarray of
+        start dates.
+    stop : dt.datetime or list-like of dt.datetime
+        The end of the date range.  Supports list, tuple, or ndarray of
+        stop dates.
+    freq : str
+        The frequency of the desired output.  Codes correspond to pandas
+        date_range codes: 'D' daily, 'M' monthly, 'S' secondly
 
-    freq codes correspond to pandas date_range codes, D daily, M monthly,
-    S secondly
+    Returns
+    -------
+    season : pds.date_range
+        Range of dates over desired time with desired frequency.
 
     """
 
@@ -220,8 +274,7 @@ def create_date_range(start, stop, freq='D'):
 
 
 def create_datetime_index(year=None, month=None, day=None, uts=None):
-    """Create a timeseries index using supplied year, month, day, and ut in
-    seconds.
+    """Create a timeseries index using supplied date and time.
 
     Parameters
     ----------
@@ -234,7 +287,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
             Array of number of days as np.int. If month=None then value
             interpreted as day of year, otherwise, day of month. (default=None)
         uts : array-like or NoneType
-            Array of UT seconds of minute as np.float64 values (default=None)
+            Array of UT seconds as np.float64 values (default=None)
 
     Returns
     -------
@@ -246,61 +299,44 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
     """
 
-    # We need a timeseries index for storing satellite data in pandas, but
-    # creating a datetime object for everything is too slow.  Instead, we
-    # calculate the number of nanoseconds elapsed since first sample and
-    # create timeseries index from that.  This yields a factor of 20
-    # improvement compared to previous method, which itself was an order of
-    # magnitude faster than datetime.
-
     # Get list of unique year, and month
     if not hasattr(year, '__iter__'):
         raise ValueError('Must provide an iterable for all inputs.')
     if len(year) == 0:
         raise ValueError('Length of array must be larger than 0.')
-    year = year.astype(int)
+
+    # Establish default month
     if month is None:
-        month = np.ones(len(year), dtype=int)
-    else:
-        month = month.astype(int)
+        # If no month, assume January.  All days will be treated as day of year.
+        month = np.ones(shape=len(year))
 
-    if uts is None:
-        uts = np.zeros(len(year))
+    # Initial day is first of given month.
+    day0 = np.ones(shape=len(year))
+
     if day is None:
-        day = np.ones(len(year))
-    day = day.astype(int)
+        # If no day, assume first of month.
+        day = day0
+    if uts is None:
+        # If no seconds, assume start of day.
+        uts = np.zeros(shape=len(year))
 
-    # Track changes in seconds
-    uts_del = uts.copy().astype(np.float64)
+    # Initialize all dates as first of month and convert to index.
+    # This method allows month-day and day of year to be used.
+    df = pds.DataFrame({'year': year, 'month': month, 'day': day0})
+    index = pds.DatetimeIndex(pds.to_datetime(df))
 
-    # Determine where there are changes in year and month that need to be
-    # accounted for
-    _, idx = np.unique((year * 100. + month), return_index=True)
+    # Add days (offset by 1) to each index.
+    # Day is added here in case input is in day of year format.
+    index += (day - 1).astype('timedelta64[D]')
 
-    # Create another index array for faster algorithm below
-    idx2 = np.hstack((idx, len(year) + 1))
+    # Add seconds to each index.  Need to convert to nanoseconds first.
+    index += (1e9 * uts).astype('timedelta64[ns]')
 
-    # Computes UTC seconds offset for each unique set of year and month
-    for _idx, _idx2 in zip(idx[1:], idx2[2:]):
-        temp = (dt.datetime(year[_idx], month[_idx], 1)
-                - dt.datetime(year[0], month[0], 1))
-        uts_del[_idx:_idx2] += temp.total_seconds()
-
-    # Add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day - 1) * 86400.
-
-    # Add in seconds since unix epoch to first day
-    uts_del += (dt.datetime(year[0], month[0], 1)
-                - dt.datetime(1970, 1, 1)).total_seconds()
-
-    # Going to use routine that defaults to nanseconds for epoch
-    uts_del *= 1E9
-    return pds.to_datetime(uts_del)
+    return index
 
 
 def filter_datetime_input(date):
-    """
-    Returns datetime that only includes year, month, and day.
+    """Create a datetime object that only includes year, month, and day.
 
     Parameters
     ----------
@@ -309,10 +345,10 @@ def filter_datetime_input(date):
 
     Returns
     -------
-    out_date: NoneType, datetime, or list of datetimes
-        NoneType input yeilds NoneType output, array-like yeilds list,
-        datetime object yeilds like.  All datetime output excludes the
-        sub-daily temporal increments (keeps only date information).
+    out_date: NoneType, datetime, or array-like
+        NoneType input yeilds NoneType output, array-like yeilds list of
+        datetimes, datetime object yeilds like.  All datetime output excludes
+        the sub-daily temporal increments (keeps only date information).
 
     Note
     ----
@@ -344,7 +380,7 @@ def filter_datetime_input(date):
 
 
 def today():
-    """Returns today's date (UTC), with no hour, minute, second, etc.
+    """Obtain today's date (UTC), with no hour, minute, second, etc.
 
     Returns
     -------

@@ -7,6 +7,9 @@ Helpful programs should not be hard to figure out!  Hopefully this guide will
 get you to the important aspects of your scientific analysis quickly.  If you
 haven't installed pysat yet, the :ref:`inst` section can help you with that.
 
+
+.. _quickstart-datadir:
+
 Set the Data Directory
 ----------------------
 
@@ -24,13 +27,13 @@ for your system.
 
 Most people are fine setting a single path for all of their data, but other
 people have a LOT of data and need to store it on multiple disks. pysat supports
-setting the ``data_dirs`` parameter equal to either a string or a list of
+setting the :py:attr:`data_dirs` parameter equal to either a string or a list of
 strings, as illustrated in the example below.
 
 .. code:: python
 
    # Set a single directory to store all data
-   path = '/path/to/your/data/directory/that/already/exists'
+   path = '/path/to/your/data/directory/that/may/or/may/not/exist'
    pysat.params['data_dirs'] = path
 
    # Alternately, multiple paths may be registered. For a given Instrument,
@@ -45,6 +48,8 @@ To check the currently set data directory,
 
     print(pysat.params['data_dirs'])
 
+
+.. _quickstart-load:
 
 Load an Instrument
 ------------------
@@ -66,17 +71,19 @@ installations.
     inst.load(2009, 1)
     print(inst.data)
 
-.. note:: pysat will not allow any Instrument to be instantiated without a
-	  data directory being specified.
+.. note:: pysat will not allow any :py:class:`Instruments` to be instantiated
+	  without a data directory being specified.
 
 .. note:: Test instruments have a limited date range over which they will
 	  simulate data.
 
 
+.. _quickstart-explore:
+
 Explore the Possibilities
 -------------------------
 
 At this point, you are set up to start exploring the tools and methods pysat
-provides.  To start working with some Instruments that manage real space
-science data, check out the pysat :ref:`ecosystem`.  For a more detailed dive
-into pysat, check out the :ref:`tutorial` and :ref:`examples`.
+provides.  To start working with some :py:class:`Instruments` that manage real
+space science data, check out the pysat :ref:`ecosystem`.  For a more detailed
+dive into pysat, check out the :ref:`tutorial` and :ref:`examples`.

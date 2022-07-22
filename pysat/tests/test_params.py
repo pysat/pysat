@@ -3,9 +3,7 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 # ----------------------------------------------------------------------------
-"""
-Tests the pysat parameters storage area
-"""
+"""Tests the pysat parameters storage area."""
 
 import copy
 from importlib import reload
@@ -14,14 +12,17 @@ import pytest
 import shutil
 import tempfile
 
-import pysat  # required for reimporting pysat
-from pysat._params import Parameters  # required for eval statements
-from pysat.tests.ci_test_class import CICleanSetup
+import pysat  # Required for reimporting pysat
+from pysat._params import Parameters  # Required for eval statements
+from pysat.tests.classes.cls_ci import CICleanSetup
+from pysat.utils import testing
 
 
-class TestBasics():
+class TestBasics(object):
+    """Unit tests for accessing and changing `pysat._params`."""
+
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Set up the unit test environment for each method."""
         # Store current pysat directory
         self.stored_params = copy.deepcopy(pysat.params)
 
@@ -33,7 +34,7 @@ class TestBasics():
         self.wd = os.getcwd()
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Clean up the unit test environment after each method."""
         pysat.params = copy.deepcopy(self.stored_params)
         pysat.params.store()
         reload(pysat)
@@ -49,7 +50,7 @@ class TestBasics():
                               (os.path.join('.', ''), ['.']),
                               (['.', '.'], None)])
     def test_set_data_dirs(self, paths, check):
-        """Update pysat directory via params"""
+        """Test update of pysat directory via params."""
         if check is None:
             check = paths
 
@@ -63,24 +64,32 @@ class TestBasics():
         # Check if next load of pysat remembers the change
         reload(pysat)
         assert pysat.params['data_dirs'] == check
+        return
 
-    @pytest.mark.parametrize("path",
-                             ['no_path',
-                              'not_a_directory'])
+    @pytest.mark.parametrize("path", ['no_path', 'not_a_directory'])
     def test_set_data_dir_bad_directory(self, path):
-        """Ensure you can't set data_dirs to a bad path"""
-        with pytest.raises(ValueError) as excinfo:
+        """Ensure you can't set data_dirs to a bad path.
+
+        Parameters
+        ----------
+        path : str
+            Bad path to a directory
+
+        """
+        with pytest.raises(ValueError) as verr:
             pysat.params['data_dirs'] = path
-        assert str(excinfo.value).find("Invalid path") >= 0
+
+        assert str(verr).find("Invalid path") >= 0
         return
 
     def test_repr(self):
-        """Test __repr__ method"""
+        """Test __repr__ method."""
         out = pysat.params.__repr__()
         assert out.find('Parameters(path=') >= 0
+        return
 
     def test_str(self):
-        """Ensure str method works"""
+        """Ensure str method works."""
 
         # Include a user parameter
         pysat.params['pysat_user_test_str'] = 'We are here.'
@@ -98,9 +107,10 @@ class TestBasics():
 
         assert out.find('user values') > 0
         assert out.find('User parameters:') > 0
+        return
 
     def test_restore_defaults(self):
-        """Test restore_defaults works as intended"""
+        """Test restore_defaults works as intended."""
 
         # Get default value, as per setup
         default_val = pysat.params['update_files']
@@ -116,9 +126,10 @@ class TestBasics():
 
         # Make sure that non-default values left as is
         assert pysat.params['data_dirs'] != []
+        return
 
     def test_update_standard_value(self):
-        """Modify a pre-existing standard parameter value and ensure stored"""
+        """Test that update of a pre-existing standard value is stored."""
 
         # Get default value, as per setup
         default_val = pysat.params['update_files']
@@ -133,17 +144,19 @@ class TestBasics():
         # Using eval to ensure all settings with current pysat.params retained.
         new_params = eval(pysat.params.__repr__())
         assert new_params['update_files'] == pysat.params['update_files']
+        return
 
     def test_no_update_user_modules(self):
-        """Ensure user_modules not modifiable via params"""
+        """Ensure user_modules not modifiable via params."""
 
         # Attempt to change value
         with pytest.raises(ValueError) as err:
             pysat.params['user_modules'] = {}
         assert str(err).find('The pysat.utils.registry ') >= 0
+        return
 
     def test_add_user_parameter(self):
-        """Add custom parameter and ensure present"""
+        """Add custom parameter and ensure present."""
 
         pysat.params['hi_there'] = 'hello there!'
         assert pysat.params['hi_there'] == 'hello there!'
@@ -152,9 +165,10 @@ class TestBasics():
         # Using eval to ensure all settings with current pysat.params retained.
         new_params = eval(pysat.params.__repr__())
         assert new_params['hi_there'] == pysat.params['hi_there']
+        return
 
     def test_clear_and_restart(self):
-        """Verify clear_and_restart method impacts all values"""
+        """Verify clear_and_restart method impacts all values."""
 
         pysat.params.clear_and_restart()
 
@@ -167,24 +181,25 @@ class TestBasics():
         return
 
     def test_bad_path_instantiation(self):
-        """Ensure you can't use bad path when loading Parameters"""
-        with pytest.raises(OSError) as excinfo:
-            Parameters(path='./made_up_name')
-        assert str(excinfo.value).find("Supplied path does not exist") >= 0
+        """Ensure you can't use bad path when loading Parameters."""
+        testing.eval_bad_input(Parameters, OSError,
+                               "Supplied path does not exist",
+                               input_kwargs={"path": './made_up_name'})
+
+        return
 
 
 class TestCIonly(CICleanSetup):
     """Tests where we mess with local settings.
 
+    Note
+    ----
     These only run in CI environments to avoid breaking an end user's setup
+
     """
 
-    # Set setup/teardown to the class defaults
-    setup = CICleanSetup.setup
-    teardown = CICleanSetup.teardown
-
     def test_settings_file_must_be_present(self, capsys):
-        """Ensure pysat_settings.json must be present"""
+        """Ensure pysat_settings.json is present."""
 
         reload(pysat)
 
@@ -197,15 +212,15 @@ class TestCIonly(CICleanSetup):
                     os.path.join(self.root, 'pysat_settings_moved.json'))
 
         # Ensure we can't create a parameters file without valid .json
-        with pytest.raises(OSError) as err:
-            Parameters()
-        assert str(err).find('pysat is unable to locate a user settings') >= 0
+        testing.eval_bad_input(Parameters, OSError,
+                               'pysat is unable to locate a user settings')
 
         shutil.move(os.path.join(self.root, 'pysat_settings_moved.json'),
                     os.path.join(self.root, 'pysat_settings.json'))
+        return
 
     def test_settings_file_cwd(self, capsys):
-        """Test Parameters works when settings file in current working dir"""
+        """Test Parameters works when settings file in current working dir."""
 
         reload(pysat)
 

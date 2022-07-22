@@ -6,11 +6,11 @@
 
 import copy
 import json
-import numpy as np
 import os
 
 from portalocker import Lock
 
+import pysat.utils
 from pysat.utils.files import check_and_make_path
 
 
@@ -24,10 +24,11 @@ class Parameters(object):
     ----------
     path : str
         If provided, the directory path will be used to load/store a
-        parameters file with name 'pysat_settings.json' (default=None).
+        parameters file with name 'pysat_settings.json' (default=None)
     create_new : bool
         If True, a new parameters file is created. Will be created at path
-        if provided. If not, file will be created in `pysat.pysat_dir`.
+        if provided. If not, file will be created in `.pysat` directory
+        stored under the user's home directory.
 
     Attributes
     ----------
@@ -43,14 +44,15 @@ class Parameters(object):
         Location of file used to store settings
     non_defaults : list
         List of pysat parameters (strings) that don't have a defined
-        default and are unaffected by self.restore_defaults().
-
+        default and are unaffected by `self.restore_defaults()`
     Raises
     ------
     ValueError
         The 'user_modules' parameter may not be set directly by the
         user. Please use the `pysat.utils.regsitry` module to modify
         the packages stored in 'user_modules'.
+    OSError
+        User provided path does not exist
 
     Note
     ----
@@ -81,6 +83,8 @@ class Parameters(object):
     """
 
     def __init__(self, path=None, create_new=False):
+        """Initialize Parameters object."""
+
         sfname = 'pysat_settings.json'
         self.data = {}
         self.file_path = None
@@ -126,7 +130,7 @@ class Parameters(object):
                     self.file_path = fileloc
                     break
 
-            # Ensure we have a valid file if the user isn't creating a new one.
+            # Ensure we have a valid file if the user isn't creating a new one
             if self.file_path is None and (not create_new):
                 estr = ''.join(('pysat is unable to locate a user settings ',
                                 'file. Please check the locations, "./" or ',
@@ -155,7 +159,7 @@ class Parameters(object):
         return
 
     def __repr__(self):
-        """String describing Parameters instantiation parameters
+        """Describe the `Parameters` instantiation parameters.
 
         Returns
         -------
@@ -168,7 +172,7 @@ class Parameters(object):
         return out_str
 
     def __str__(self, long_str=True):
-        """String describing Parameters instance, variables, and attributes
+        """Describe the `Parameters` instance, variables, and attributes.
 
         Parameters
         ----------
@@ -219,11 +223,13 @@ class Parameters(object):
         return out_str
 
     def __getitem__(self, item):
+        """Get item from Parameters."""
         return self.data[item]
 
     def __setitem__(self, key, value):
-        # Update current settings
-        # Some parameters require processing before storage.
+        """Update current settings in Parameters."""
+
+        # Some parameters require processing before storage
         if key == 'data_dirs':
             self._set_data_dirs(value)
 
@@ -241,8 +247,7 @@ class Parameters(object):
         self.store()
 
     def _set_data_dirs(self, path=None, store=True):
-        """
-        Set the top level directories pysat uses to store and load data.
+        """Set the top level directories pysat uses to store and load data.
 
         Parameters
         ----------
@@ -250,17 +255,11 @@ class Parameters(object):
             Valid path(s) to directory
         store : bool
             Optionally store parameters to disk. Present to support a
-            Deprecated method (default=True).
+            Deprecated method. (default=True)
 
         """
 
-        paths = np.asarray(path)
-        if paths.shape == ():
-            paths = [paths.tolist()]
-        elif paths.shape[0] > 1:
-            paths = paths.squeeze().tolist()
-        elif paths.shape[0] == 1:
-            paths = paths.tolist()
+        paths = pysat.utils.listify(path)
 
         # Account for a user prefix in the path, such as ~
         paths = [os.path.expanduser(pval) for pval in paths]
@@ -286,9 +285,12 @@ class Parameters(object):
         return
 
     def clear_and_restart(self):
-        """Clears all stored settings and sets pysat defaults
+        """Clear all stored settings and sets pysat defaults.
 
+        Note
+        ----
         pysat parameters without a default value are set to []
+
         """
 
         # Clear current data and assign a copy of default values
@@ -304,8 +306,10 @@ class Parameters(object):
         return
 
     def restore_defaults(self):
-        """Restore default pysat parameters
+        """Restore default pysat parameters.
 
+        Note
+        ----
         Does not modify any stored custom user keys or pysat parameters
         without a default value.
 
@@ -324,8 +328,7 @@ class Parameters(object):
         return
 
     def store(self):
-        """Store parameters using the filename specified in self.file_path.
-        """
+        """Store parameters using the filename specified in `self.file_path`."""
 
         # Store settings in file
         with Lock(self.file_path, 'w', self['file_timeout']) as fout:

@@ -14,44 +14,58 @@ import weakref
 import pandas as pds
 
 import pysat  # Needed to access pysat.params across reimports
+from pysat.instruments.methods import general
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
-from pysat.instruments.methods import general
 
 logger = pysat.logger
 
 
 class Files(object):
-    """Maintains collection of files and associated methods.
+    """Maintain collection of files and associated methods.
 
     Parameters
     ----------
     inst : pysat.Instrument
         Instrument object
+    data_dir : str or NoneType
+        Directory without sub-directory variables that allows one to
+        bypass the directories provided by pysat.params['data_dirs'].  Only
+        applied if the directory exists. (default=None)
     directory_format : str or NoneType
-        Directory naming structure in string format. Variables such as
-        platform, name, tag, and inst_id will be filled in as needed using
-        python string formatting. The default directory structure would be
-        expressed as '{platform}/{name}/{tag}/{inst_id}'. If None, the default
-        directory structure is used (default=None)
-    update_files : boolean
+        Sub-directory naming structure, which is expected to exist or be
+        created within one of the `pysat.params['data_dirs']` directories.
+        Variables such as `platform`, `name`, `tag`, and `inst_id` will be
+        filled in as needed using python string formatting, if a string is
+        supplied. The default directory structure, which is used if None is
+        specified, is provided by `pysat.params['directory_format']` and is
+        typically '{platform}/{name}/{tag}/{inst_id}'. (default=None)
+    update_files : bool
         If True, immediately query filesystem for instrument files and
         store (default=False)
     file_format : str or NoneType
-        File naming structure in string format.  Variables such as year,
-        month, day, and inst_id will be filled in as needed using python string
-        formatting.  The default file format structure is supplied in the
-        instrument list_files routine. (default=None)
-    write_to_disk : boolean
+        File naming structure in string format.  Variables such as `year`,
+        `month`, `day`, etc. will be filled in as needed using python
+        string formatting.  The default file format structure is supplied in the
+        instrument `list_files` routine. See
+        `pysat.files.parse_delimited_filenames` and
+        `pysat.files.parse_fixed_width_filenames` for more information.
+        (default=None)
+    write_to_disk : bool
         If true, the list of Instrument files will be written to disk.
         (default=True)
-    ignore_empty_files : boolean
+    ignore_empty_files : bool
         If True, the list of files found will be checked to ensure the
         filesizes are greater than zero. Empty files are removed from the
         stored list of files. (default=False)
 
     Attributes
     ----------
+    directory_format
+    update_files
+    file_format
+    write_to_disk
+    ignore_empty_files
     home_path : str
         Path to the pysat information directory.
     data_path : str
@@ -59,9 +73,10 @@ class Files(object):
         selected from data_paths.
     data_paths: list of str
         Available paths that pysat will use when looking for files. The
-        class uses the first directory with relevant data, stored in data_path.
+        class uses the first directory with relevant data, stored in
+        `data_path`.
     files : pds.Series
-        Series of data files, indexed by file start time
+        Series of data files, indexed by file start time.
     inst_info : dict
         Contains pysat.Instrument parameters 'platform', 'name', 'tag',
         and 'inst_id', identifying the source of the files.
@@ -71,7 +86,7 @@ class Files(object):
     list_files_rtn : method
         Method used to locate relevant files on the local system. Provided
         by associated pysat.Instrument object.
-    multi_file_day : boolean
+    multi_file_day : bool
         Flag copied from associated pysat.Instrument object that indicates
         when data for day n may be found in files for days n-1, or n+1
     start_date : datetime or NoneType
@@ -87,46 +102,50 @@ class Files(object):
         `directory_format` string formatted for the local system.
 
 
+    Raises
+    ------
+    NameError
+        If `pysat.params['data_dirs']` not assigned
+
     Note
     ----
     Interfaces with the `list_files` method for a given instrument
     support module to create an ordered collection of files in time,
-    used primarily by the pysat.Instrument object to identify files
-    to be loaded. The Files class mediates access to the files by
+    used primarily by the `pysat.Instrument` object to identify files
+    to be loaded. The `Files` class mediates access to the files by
     datetime and contains helper methods for determining the presence of
     new files and filtering out empty files.
 
-    User should generally use the interface provided by a pysat.Instrument
-    instance. Exceptions are the classmethod from_os, provided to assist
+    User should generally use the interface provided by a `pysat.Instrument`
+    instance. Exceptions are the classmethod `from_os`, provided to assist
     in generating the appropriate output for an instrument routine.
 
     Examples
     --------
     ::
 
-        # convenient file access
+        # Instantiate instrument to generate file list
         inst = pysat.Instrument(platform=platform, name=name, tag=tag,
                                 inst_id=inst_id)
-        # first file
+        # First file
         inst.files[0]
 
-        # files from start up to stop (exclusive on stop)
+        # Files from start up to stop (exclusive on stop)
         start = dt.datetime(2009,1,1)
         stop = dt.datetime(2009,1,3)
         print(inst.files[start:stop])
 
-        # files for date
+        # Files for date
         print(inst.files[start])
 
-        # files by slicing
+        # Files by slicing
         print(inst.files[0:4])
 
-        # get a list of new files
-        # new files are those that weren't present the last time
-        # a given instrument's file list was stored
+        # Get a list of new files. New files are those that weren't present
+        # the last time a given instrument's file list was stored.
         new_files = inst.files.get_new()
 
-        # search pysat appropriate directory for instrument files and
+        # Search pysat appropriate directory for instrument files and
         # update Files instance.
         inst.files.refresh()
 
@@ -135,9 +154,10 @@ class Files(object):
     # -----------------------------------------------------------------------
     # Define the magic methods
 
-    def __init__(self, inst, directory_format=None, update_files=False,
-                 file_format=None, write_to_disk=True,
+    def __init__(self, inst, data_dir=None, directory_format=None,
+                 update_files=False, file_format=None, write_to_disk=True,
                  ignore_empty_files=False):
+        """Initialize `pysat.Files` object."""
 
         # Set the hidden variables
         self.update_files = update_files
@@ -150,7 +170,7 @@ class Files(object):
         self.stop_date = None
         self.files = pds.Series(None, dtype='object')
 
-        # Grab Instrument info
+        # Grab Instrument information
         self.inst_info = {'platform': inst.platform, 'name': inst.name,
                           'tag': inst.tag, 'inst_id': inst.inst_id,
                           'inst_module': inst.inst_module,
@@ -158,7 +178,7 @@ class Files(object):
 
         self.multi_file_day = inst.multi_file_day
 
-        # Begin with presumption that the list_files_rtn is a typical
+        # Begin with presumption that the `list_files_rtn` is a typical
         # function that returns a Series of filenames. Some generated
         # data sets employ a function that creates filenames on-the-fly.
         self.list_files_creator = None
@@ -176,7 +196,7 @@ class Files(object):
             directory_format = pysat.params['directory_format']
         self.directory_format = directory_format
 
-        # Set the user-specified file format
+        # Set the user-specified file format template variable string
         self.file_format = file_format
 
         # Construct the subdirectory path
@@ -191,10 +211,17 @@ class Files(object):
                                       "`pysat.params['data_dirs'] = path`")))
 
         # Get list of potential data directory paths from pysat. Construct
-        # possible locations for data. Ensure path always ends with directory
-        # separator.
+        # possible locations for data.
         self.data_paths = [os.path.join(pdir, self.sub_dir_path)
                            for pdir in pysat.params['data_dirs']]
+
+        # If a one-use directory was provided, insert it to the start of the
+        # list of potential data paths
+        if data_dir is not None:
+            self.data_paths.insert(0, data_dir)
+            self.data_paths.insert(0, os.path.join(data_dir, self.sub_dir_path))
+
+        # Ensure path always ends with directory separator
         self.data_paths = [os.path.join(os.path.normpath(pdir), '')
                            for pdir in self.data_paths]
 
@@ -218,12 +245,15 @@ class Files(object):
 
         if self.inst_info['platform'] != '':
             # Only load filenames if this is associated with a real
-            # pysat.Instrument instance, not pysat.Instrument().
+            # `pysat.Instrument` instance, not `pysat.Instrument()`
             if self.update_files:
                 # Refresh filenames as directed by user
                 self.refresh()
             else:
-                # Load stored file info
+                # Load stored file info. Note if there is a stored `data_path`
+                # that is still in `self.data_paths` then stored value will
+                # be used to replace current `self.data_path`. This is done
+                # to provide support for multiple directories.
                 file_info = self._load()
                 if file_info.empty:
                     # Didn't find stored information. Search local system.
@@ -231,13 +261,13 @@ class Files(object):
                     # filenames as needed that is handled in refresh.
                     self.refresh()
                 else:
-                    # Attach the data loaded
+                    # Attach the files data loaded
                     self._attach_files(file_info)
         return
 
     def __repr__(self):
-        """ Representation of the class and its current state
-        """
+        """Print representation of the class and its current state."""
+
         inst_repr = self.inst_info['inst'].__repr__()
 
         out_str = "".join(["pysat.Files(", inst_repr, ", directory_format=",
@@ -252,8 +282,7 @@ class Files(object):
         return out_str
 
     def __str__(self):
-        """ Description of the class and its contents
-        """
+        """Print the basic Files properties with detailed info."""
 
         num_files = len(self.files)
         output_str = 'Local File Statistics\n'
@@ -269,7 +298,7 @@ class Files(object):
         return output_str
 
     def __eq__(self, other):
-        """Perform equality check
+        """Perform an equality check.
 
         Parameters
         ----------
@@ -292,9 +321,10 @@ class Files(object):
         key_check = []
         for key in self.__dict__.keys():
             key_check.append(key)
+
             # Confirm each object has the same keys
             if key in other.__dict__.keys():
-                # Define default comparison.
+                # Define default comparison
                 if key not in ['files', '_previous_file_list',
                                '_current_file_list', 'inst_info']:
                     test = np.all(self.__dict__[key] == other.__dict__[key])
@@ -305,12 +335,12 @@ class Files(object):
                         # Comparing one of the stored pandas Series
                         try:
                             # Comparison only works for identically-labeled
-                            # series.
+                            # series
                             check = np.all(self.__dict__[key]
                                            == other.__dict__[key])
                             checks.append(check)
                         except ValueError:
-                            # If there is an error they aren't the same.
+                            # If there is an error they aren't the same
                             return False
 
                     elif key == 'inst_info':
@@ -322,9 +352,10 @@ class Files(object):
                                                == other.inst_info[ii_key])
 
                             else:
-                                # Don't want a recursive check on 'inst', which
-                                # contains Files. If the string representations
-                                # are the same we consider them the same.
+                                # Don't want a recursive check on `inst`, which
+                                # contains `Files`. If the string
+                                # representations are the same we consider
+                                # them the same.
                                 try:
                                     oinst = other.inst_info[ii_key]
                                     ichecks.append(str(self.inst_info[ii_key])
@@ -335,10 +366,10 @@ class Files(object):
                         checks.append(np.all(ichecks))
 
             else:
-                # other did not have an key that self did
+                # `other` did not have a key that `self` did
                 return False
 
-        # Confirm that Files object `other` doesn't have extra terms
+        # Confirm that `Files` object `other` doesn't have extra terms
         for key in other.__dict__.keys():
             if key not in self.__dict__.keys():
                 return False
@@ -348,7 +379,7 @@ class Files(object):
         return test_data
 
     def __getitem__(self, key):
-        """ Retrieve items from the files attribute
+        """Retrieve items from the files attribute.
 
         Parameters
         ----------
@@ -367,8 +398,7 @@ class Files(object):
 
         Note
         ----
-        Slicing via date and index filename is inclusive slicing, date and
-        index are normal non-inclusive end point
+        Slicing has a non-inclusive end point
 
         """
         if self.list_files_creator is not None:
@@ -410,7 +440,7 @@ class Files(object):
     # Define the hidden methods
 
     def _filter_empty_files(self, path):
-        """Update the file list (self.files) with empty files removed
+        """Update the file list (`self.files`) with empty files removed.
 
         Parameters
         ----------
@@ -441,7 +471,7 @@ class Files(object):
         return
 
     def _attach_files(self, files_info):
-        """Attaches stored file lists to self.files
+        """Attach stored file lists to `self.files`.
 
         Parameters
         ---------
@@ -450,8 +480,8 @@ class Files(object):
 
         Note
         ----
-        Updates the file list (files), start_date, and stop_date attributes
-        of the Files class object.
+        Updates the file list (files), `start_date`, and `stop_date` attributes
+        of the Files class object
 
         """
 
@@ -459,10 +489,10 @@ class Files(object):
             # Attach data
             self.files = files_info
 
-            # Ensure times are unique.
+            # Ensure times are unique
             self._ensure_unique_file_datetimes()
 
-            # Filter for empty files.
+            # Filter for empty files
             if self.ignore_empty_files:
                 self._filter_empty_files(path=self.data_path)
 
@@ -480,15 +510,23 @@ class Files(object):
             self.stop_date = None
 
             # Convert to object type if Series is empty.  This allows for
-            # `==` equality checks with strings
+            # `==` equality checks with strings.
             self.files = files_info.astype(np.dtype('O'))
 
         return
 
     def _ensure_unique_file_datetimes(self):
-        """Update the file list (self.files) to ensure uniqueness"""
+        """Update the file list (`self.files`) to ensure uniqueness.
 
-        # Check if files are unique.
+        Note
+        ----
+        Logs a warning if there are files with duplicate datetimes. Keeps
+        one of each of the duplicated files while dropping all other duplicated
+        times.
+
+        """
+
+        # Check if files are unique
         unique_files = len(self.files.index.unique()) == len(self.files)
 
         if not self.multi_file_day and not unique_files:
@@ -509,14 +547,17 @@ class Files(object):
         return
 
     def _store(self):
-        """Store currently loaded filelist for instrument onto filesystem
+        """Store currently loaded filelist for instrument onto filesystem.
+
+        Moves current filelist, if different, to .pysat/archive
+
         """
 
         stored_name = self.stored_file_name
 
         # Check if current file data is different than stored file list. If so,
         # move file list to previous file list, store current to file. If not,
-        # do nothing
+        # do nothing.
         stored_files = self._load(update_path=False)
         if len(stored_files) != len(self.files):
             # The number of items is different, things are new
@@ -542,22 +583,22 @@ class Files(object):
                                   date_format='%Y-%m-%d %H:%M:%S.%f',
                                   header=[self.data_path])
             else:
-                # Update the hidden File attributes
+                # Update the hidden `File` attributes
                 self._previous_file_list = stored_files
                 self._current_file_list = self.files.copy()
 
         return
 
     def _load(self, prev_version=False, update_path=True):
-        """Load stored filelist
+        """Load stored filelist.
 
         Parameters
         ----------
-        prev_version : boolean
-            if True, will load previous version of file list
-        update_path : boolean
+        prev_version : bool
+            If True, will load previous version of file list
+        update_path : bool
             If True, the path written to stored info will be
-            assigned to self.data_path. (default=True)
+            assigned to `self.data_path` (default=True)
 
         Returns
         -------
@@ -577,40 +618,54 @@ class Files(object):
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                # Load data stored on the local drive.
+                # Load data stored on the local drive
                 loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
-                                      squeeze=True, header=0)
+                                      header=0).squeeze("columns")
                 if update_path:
                     # Store the data_path from the .csv onto Files
-                    self.data_path = loaded.name
+                    if loaded.name in self.data_paths:
+                        dstr = ' '.join(['Assigning `data_path` found',
+                                         'in stored file list:',
+                                         loaded.name])
+                        logger.debug(dstr)
+                        self.data_path = loaded.name
+                    else:
+                        dstr = ' '.join(['`data_path` found',
+                                         'in stored file list is not in',
+                                         'current supported `self.data_paths`.',
+                                         'Ignoring stored path:', loaded.name,
+                                         'Clearing out stored files as well.'])
+                        logger.debug(dstr)
+                        loaded = pds.Series([], dtype='a')
 
                 # Ensure the name of returned Series is None for consistency
                 loaded.name = None
 
                 return loaded
             else:
-                # Grab content from memory rather than local disk.
+                # Grab content from memory rather than local disk
                 if prev_version:
                     return self._previous_file_list
                 else:
                     return self._current_file_list
         else:
-            # Storage file not present.
+            # Storage file not present
             return pds.Series([], dtype='a')
 
+        return
+
     def _remove_data_dir_path(self, file_series=None):
-        """Remove the data directory path from filenames
+        """Remove the data directory path from filenames.
 
         Parameters
         ----------
         file_series : pds.Series or NoneType
-            Series of filenames (potentially with file paths)
-            (default=None)
+            Series of filenames, potentially with file paths (default=None)
 
         Returns
         -------
         pds.series or None
-            If `file_series` is a Series, removes the data path from the
+            If `file_series` is a Series, removes `self.data path` from the
             filename, if present.  Returns None if `path_input` is None.
 
         """
@@ -628,7 +683,7 @@ class Files(object):
     # Define the public methods and properties
 
     def copy(self):
-        """Provide a deep copy of object
+        """Provide a deep copy of object.
 
         Returns
         -------
@@ -636,10 +691,10 @@ class Files(object):
             Copy of self
 
         """
-        # The copy module does not copy modules. Treat self.inst_info
+        # The copy module does not copy modules. Treat `self.inst_info`
         # differently since it possibly contains a python module, plus
         # it also contains a weakref back to Instrument.  Because the Instrument
-        # reference contains another Files object, it could cause the creation
+        # reference contains another `Files` object, it could cause the creation
         # of an infinite, recursive copy.
         saved_info = self.inst_info
         self.inst_info = None
@@ -669,7 +724,7 @@ class Files(object):
         Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
         pysat_data_dir/platform/name/tag/inst_id, where pysat_data_dir is set by
-        pysat.utils.set_data_dir(path=path).
+        `pysat.params['data_dirs'] = path`.
 
         """
 
@@ -680,8 +735,8 @@ class Files(object):
         info_str = " ".join(info_str.split())  # Remove duplicate whitespace
         logger.info(info_str)
 
-        # Check all potential directory locations for files.
-        # Stop as soon as we find some.
+        # Check all potential directory locations for files, stopping as soon
+        # as we find some.
         for path in self.data_paths:
             list_files_rtn = self.inst_info['inst']._list_files_rtn
             kwarg_inputs = self.inst_info['inst'].kwargs['list_files']
@@ -691,8 +746,8 @@ class Files(object):
                                        format_str=self.file_format,
                                        **kwarg_inputs)
 
-            # Check if list_files_rtn is actually returning filename or a
-            # dict to be passed to filename creator function.
+            # Check if `list_files_rtn` is actually returning filename or a
+            # dict to be passed to filename creator function
             if isinstance(new_files, dict):
                 self.list_files_creator = partial(general.filename_creator,
                                                   **new_files)
@@ -729,7 +784,7 @@ class Files(object):
             # Sort files to ensure they are in order
             new_files = new_files.sort_index()
         elif pysat.params['warn_empty_file_list']:
-            # Warn user if no files found, if pysat.param set
+            # Warn user if no files found, if `pysat.params` set
             pstrs = "\n".join(self.data_paths)
             estr = "".join(("Unable to find any files that match the supplied ",
                             "template: ", self.file_format, "\n",
@@ -744,23 +799,28 @@ class Files(object):
         return
 
     def set_top_level_directory(self, path):
-        """Sets top-level data directory.
+        """Set top-level data directory.
 
-        Sets a valid self.data_path using provided top-level directory
+        Sets a valid `self.data_path` using provided top-level directory
         path and the associated pysat subdirectories derived from the
-        directory_format attribute as stored in self.sub_dir_path.
+        `directory_format` attribute as stored in `self.sub_dir_path`
 
         Parameters
         ----------
         path : str
             Top-level path to use when looking for files. Must be in
-            pysat.params['data_dirs']
+            `pysat.params['data_dirs']`.
 
-        Note
-        ----
+        Raises
+        ------
+        ValueError
+            If `path` not in `pysat.params['data_dirs']`
+
+        Warnings
+        --------
         If there are Instrument files on the system under a top-level
         directory other than `path`, then, under certain conditions,
-        self.data_path may be later updated by the object to point back
+        `self.data_path` may be later updated by the object to point back
         to the directory with files.
 
         """
@@ -785,8 +845,8 @@ class Files(object):
         Note
         ----
         pysat stores filenames in the user_home/.pysat directory. Filenames are
-        stored if there is a change and either update_files is True at
-        instrument object level or files.refresh() is called.
+        stored if there is a change and either `update_files` is True at
+        instrument object level or `files.refresh()` is called.
 
         """
 
@@ -807,8 +867,13 @@ class Files(object):
 
         Parameters
         ----------
-        fname : string
+        fname : str
             Filename for the desired time index
+
+        Raises
+        ------
+        ValueError
+            Filename not in index
 
         Note
         ----
@@ -838,10 +903,10 @@ class Files(object):
 
         Parameters
         ----------
-        start: array_like or single string
-            filenames for start of returned filelist
-        stop: array_like or single string
-            filenames inclusive of the ending of list provided by the stop time
+        start : array-like or str
+            Filenames for start of returned filelist
+        stop : array-like or str
+            Filenames inclusive of the ending of list provided by the stop time
 
         Returns
         -------
@@ -872,27 +937,27 @@ class Files(object):
     @classmethod
     def from_os(cls, data_path=None, format_str=None,
                 two_digit_year_break=None, delimiter=None):
-        """
-        Produces a list of files and and formats it for Files class.
+        """Produce a list of files and format it for Files class.
 
         Parameters
         ----------
-        data_path : string
+        data_path : str or NoneType
             Top level directory to search files for. This directory
-            is provided by pysat to the instrument_module.list_files
-            functions as data_path.
-        format_str : string with python format codes
+            is provided by pysat to the `instrument_module.list_files`
+            functions as `data_path`. (default=None)
+        format_str : str or NoneType
             Provides the naming pattern of the instrument files and the
             locations of date information so an ordered list may be produced.
             Supports 'year', 'month', 'day', 'hour', 'minute', 'second',
             'version', 'revision', and 'cycle'
             Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        two_digit_year_break : int or None
+            (deafult=None)
+        two_digit_year_break : int or NoneType
             If filenames only store two digits for the year, then
             '1900' will be added for years >= two_digit_year_break
             and '2000' will be added for years < two_digit_year_break.
             If None, then four-digit years are assumed. (default=None)
-        delimiter : string or NoneType
+        delimiter : str or NoneType
             Delimiter string upon which files will be split (e.g., '.'). If
             None, filenames will be parsed presuming a fixed width format.
             (default=None)
@@ -903,16 +968,34 @@ class Files(object):
             A Series of filenames indexed by time. See
             `pysat.utils.files.process_parsed_filenames` for details.
 
+        Raises
+        ------
+        ValueError
+            If `data_path` or `format_str` is None
+
         Note
         ----
         Requires fixed_width or delimited filename
 
-        Does not produce a Files instance, but the proper output from
-        instrument_module.list_files method.
+        Does not produce a `Files` instance, but the proper output from
+        `instrument_module.list_files` method
 
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
+
+        When parsing using fixed width filenames (`delimiter=None`), leading
+        '*' wilcards are supported, '*{year:4d}{month:02d}{day:02d}_v??.cdf',
+        though the '*' is not supported after the first template variable. The
+        '?' wildcard may be used anywhere in the template string.
+
+        When parsing using a delimiter, the '*' wildcard is supported
+        when leading, trailing, or wholly contained between delimiters, such as
+        'data_name-{year:04d}-*-{day:02d}.txt', or '*-{year:04d}-{day:02d}*',
+        where '-' is the delimiter. There can not be a mixture of a template
+        variable and '*' without a delimiter in between, unless the '*'
+        occurs after the variable. The '?' wildcard may be used anywhere in
+        the template string.
 
         The 'day' format keyword may be used to specify either day of month
         (if month is included) or day of year.
@@ -920,15 +1003,14 @@ class Files(object):
         """
 
         if data_path is None:
-            raise ValueError(" ".join(("Must supply instrument directory path",
-                                       "(dir_path)")))
+            raise ValueError(" ".join(["Must supply instrument directory path",
+                                       "(data_path)."]))
+        if format_str is None:
+            raise ValueError("Must supply `format_str`.")
 
         # Parse format string to figure out which search string should be used
-        # to identify files in the filesystem. Different option required if
-        # filename is delimited
-        wildcard = False if delimiter is None else True
-        search_dict = futils.construct_searchstring_from_format(
-            format_str, wildcard=wildcard)
+        # to identify files in the filesystem.
+        search_dict = futils.construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
 
         # Perform the local file search
@@ -936,7 +1018,7 @@ class Files(object):
                                                               search_str)
 
         # Use the file list to extract the information. Pull data from the
-        # areas identified by format_str
+        # areas identified by `format_str`.
         if delimiter is None:
             stored = futils.parse_fixed_width_filenames(files, format_str)
         else:

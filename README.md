@@ -1,11 +1,11 @@
 <div align="center">
         <img height="0" width="0px">
-        <img width="20%" src="/logo.png" alt="pysat" title="pysat"</img>
+        <img width="20%" src="https://raw.githubusercontent.com/pysat/pysat/main/docs/images/logo.png" alt="The pysat logo: A snake orbiting a blue sphere" title="pysat"</img>
 </div>
 
 # pysat: Python Satellite Data Analysis Toolkit
 [![PyPI Package latest release](https://img.shields.io/pypi/v/pysat.svg)](https://pypi.python.org/pypi/pysat)
-[![Build Status](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+[![Build Status](https://github.com/pysat/pysat/actions/workflows/main.yml/badge.svg)](https://github.com/pysat/pysat/actions/workflows/main.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysat/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysat?branch=main)
 [![DOI](https://zenodo.org/badge/33449914.svg)](https://zenodo.org/badge/latestdoi/33449914)
@@ -90,6 +90,6 @@ python setup.py develop
 * The first time the package is run, you will need to specify a directory to
   store data. In python, run:
 ```
-pysat.params['data_dirs'] = 'path/to/directory/that/exists'
+pysat.params['data_dirs'] = 'path/to/directory/that/may/or/may/not/exist'
 ```
   * Nominal organization of data is top_dir/platform/name/tag/inst_id/files

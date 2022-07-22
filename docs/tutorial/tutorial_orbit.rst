@@ -1,27 +1,30 @@
 .. _tutorial-orbit:
 
 Orbit Support
-=============
+-------------
 
-pysat can break satellite data into single orbits on the fly.
-These orbits will typically span day breaks, if  needed.  The :ref:`api-orbits`
-class, which is treated as a subclass of the Instrument object performs these
+pysat can break satellite data into single orbits on the fly. These orbits will
+typically span day breaks, if  needed.  The :ref:`api-orbits` class, which is
+treated as a subclass of the :py:class:`Instrument` object, performs these
 operations.
 
-pysat, by default, does not bother to calculate any type of orbit.  To use the
-orbital methods, information about the orbit needs to be provided at Instrument
-initialization. The 'index' is the name of the data to be used for determining
-orbits, and 'kind' indicates type of orbit. There are several orbits to choose
-from.
+Orbit Type
+^^^^^^^^^^
 
-===========   ================
+pysat, by default, does not bother to calculate any type of orbit.  To use the
+orbital methods, information about the orbit needs to be provided at
+:py:class:`Instrument` initialization. The :py:data:`index` is the name of the
+data to be used for determining orbits, and :py:data:`kind` indicates type of
+orbit. There are several orbits to choose from.
+
+===========   =============================================
 **kind**	**method**
------------   ----------------
+-----------   ---------------------------------------------
 local time     Uses negative gradients to delineate orbits
 longitude      Uses negative gradients to delineate orbits
 polar	       Uses sign changes to delineate orbits
 orbit          Uses any change in value to delineate orbits
-===========   ================
+===========   =============================================
 
 Changes in universal time are also used to delineate orbits. pysat compares any
 gaps to the supplied orbital period, nominally assumed to be 97 minutes. As
@@ -39,8 +42,10 @@ orbit periods aren't constant, a 100% success rate cannot be guaranteed.
                           tag='utd', inst_id='f15', orbit_info=orbit_info,
                           clean_level='none')
 
+Loading by Orbit
+^^^^^^^^^^^^^^^^
 
-Orbit determination acts upon data loaded in the ivm object, so to begin we
+Orbit determination acts upon data loaded in the ``f15`` object, so to begin we
 must load some data (first downloading it if necessary).
 
 .. code:: python
@@ -59,8 +64,8 @@ must load some data (first downloading it if necessary).
    2012-01-01 00:02:09 2012-01-02 00:00:01
 
 
-Orbits may be selected directly from the attached ``f15.orbits`` class.
-The data for the orbit is stored in ``f15.data``.
+Orbits may be selected directly from the attached :py:class:`f15.orbits` class.
+The data for the orbit is stored in :py:attr:`f15.data`.
 
 .. code:: ipython
 
@@ -79,7 +84,8 @@ Note that getting the first orbit caused pysat to load the day previous, and
 then back to the current day.  There is also a data gap over the change of the
 year that makes these first two orbits shorter than expected.
 
-Now, you can also move forward an orbit using the ``next`` command:
+Now, you can also move forward an orbit using the :py:meth:`Orbits.next`
+command:
 
 .. code:: ipython
 
@@ -88,7 +94,7 @@ Now, you can also move forward an orbit using the ``next`` command:
 
    2012-01-01 01:03:13 2012-01-01 01:54:01
 
-And back an orbit using the ``prev`` command:
+And back an orbit using the :py:meth:`Orbits.prev` command:
 
 .. code:: ipython
 
@@ -97,8 +103,8 @@ And back an orbit using the ``prev`` command:
 
    2012-01-01 00:12:21 2012-01-01 01:03:09
 
-If we continue to iterate orbits using ``f15.orbits.next()`` the next day will
-eventually be loaded to try and form a complete orbit. You can skip the
+If we continue to iterate orbits using :py:meth:`f15.orbits.next` the next day
+will eventually be loaded to try and form a complete orbit. You can skip the
 iteration and just go for the last orbit of a day using indexing:
 
 .. code:: ipython
@@ -144,8 +150,8 @@ loaded, this would be labeled orbit 1.
    Number of Orbits: 30
    Loaded Orbit Number: 30
 
-Orbit iteration is built into f15.orbits just like daily iteration is built
-into f15 (see :ref:`tutorial-iter`).
+Orbit iteration is built into :py:class:`Orbits` just like daily iteration is
+built into :py:meth:`Instrument.load` (see :ref:`tutorial-iter`).
 
 .. code:: python
 
@@ -215,19 +221,19 @@ into f15 (see :ref:`tutorial-iter`).
 
 
 Ground-Based Instruments
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 The nominal breakdown of satellite data into discrete orbits isn't typically
-as applicable for ground based instruments, each of which makes exactly one
+as applicable for ground-based instruments, each of which makes exactly one
 geostationary orbit per day. However, as the orbit iterator triggers off of
-negative gradients in a variable, a change in sign, or any change
-in a value, this functionality may be used to break a ground based data set
-into alternative groupings, as appropriate and desired.
+negative gradients in a variable, a change in sign, or any change in a value,
+this functionality may be used to break a ground based data set into
+alternative groupings, as appropriate and desired.
 
-However, should you decide to try and use the Orbit class to break up
-ground-based data, keep in mind that the orbit iterator defaults to an orbit
-period consistent with Low Earth Orbit at Earth.  This means that the expected
-period of the 'orbits' must be provided at Instrument instantiation. Given the
-orbit heritage, it is assumed that there is a small amount of variation in the
-orbit period. pysat will actively filter 'orbits' that are inconsistent with
-the prescribed orbit period.
+However, should you decide to try and use the :py:class:`pysat.Orbits` class to
+break up ground-based data, keep in mind that the orbit iterator defaults to an
+orbit period consistent with Low Earth Orbit at Earth.  This means that the
+expected period of the "orbits" must be provided at :py:class:`Instrument`
+instantiation. Given the :py:class:`Orbits` heritage, it is assumed that there
+is a small amount of variation in the orbital period. pysat will actively
+filter "orbits" that are inconsistent with the prescribed orbital period.

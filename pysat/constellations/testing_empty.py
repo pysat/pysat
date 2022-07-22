@@ -1,5 +1,4 @@
-"""
-Creates an empty constellation for testing
+"""Create an empty constellation for testing.
 
 Attributes
 ----------
