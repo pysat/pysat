@@ -3,7 +3,12 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.0.3] - 2022-07-29
+[3.0.4] - 2022-08-XX
+--------------------
+* Maintenance
+   * Added temporary version limit to xarray in setup
+
+* [3.0.3] - 2022-07-29
 --------------------
 * Maintenance
    * Added temporary version limit to xarray due to change in indexing
