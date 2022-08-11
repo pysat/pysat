@@ -86,7 +86,7 @@ python setup.py develop
   * portalocker
   * scipy
   * toolz
-  * xarray
+  * xarray < 2022.06.0
 * The first time the package is run, you will need to specify a directory to
   store data. In python, run:
 ```
