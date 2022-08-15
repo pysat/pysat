@@ -868,9 +868,10 @@ class Instrument(object):
                         # Assume key[0] is an integer
                         new_data = self.data[self.variables[key[1]]]
                         return new_data.isel(**key_dict)
-                    except TypeError:
+                    except (KeyError, TypeError):
                         # key[0] is not an integer, switch to .sel
-                        # TypeError raised when key is datetime(s)
+                        # KeyError raised when key is single datetime
+                        # TypeError raised when key slice of datetimes
                         new_data = self.data[self.variables[key[1]]]
                         return new_data.sel(**key_dict)
                 else:
@@ -878,9 +879,10 @@ class Instrument(object):
                     try:
                         # Assume key[0] is an integer
                         return self.data.isel(**key_dict)[key[1]]
-                    except TypeError:
+                    except (KeyError, TypeError):
                         # key[0] is not an integer, switch to .sel
-                        # TypeError raised when key is datetime(s)
+                        # KeyError raised when key is single datetime
+                        # TypeError raised when key slice of datetimes
                         return self.data.sel(**key_dict)[key[1]]
                     except ValueError as verr:
                         # This may be multidimensional indexing, where the
@@ -927,7 +929,7 @@ class Instrument(object):
                     # Try to get all data variables, but for a subset of time
                     # using integer indexing
                     return self.data.isel(**key_dict)
-                except TypeError:
+                except (KeyError, TypeError):
                     # Try to get a subset of time, using label based indexing
                     return self.data.sel(**key_dict)
 
