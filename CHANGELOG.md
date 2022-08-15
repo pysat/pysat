@@ -3,6 +3,11 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.0.4] - 2022-XX-XX
+--------------------
+* Bug Fix
+   * Improved compatibility with xarray 2022.06 when accessing data via slices.
+
 [3.0.3] - 2022-07-29
 --------------------
 * Maintenance
@@ -55,32 +60,32 @@ This project adheres to [Semantic Versioning](https://semver.org/).
      are immediately reflected by changes to Instrument object.
    * Added a test function for bad class/function/method input to reduce
      duplicate code and improve message test combliance
-   * Added support for filtering basic netCDF4 metadata when loading via 
+   * Added support for filtering basic netCDF4 metadata when loading via
      `pysat.utils.io.load_netcdf`.
    * Added support for user developed functions to filter metadata as it
      loaded from disk but before assignment to a `pysat.Meta` instance.
    * Added `meta.to_dict` to support creating more compliant
-     netCDF files. 
-   * Added `meta.default_to_netcdf_translation_table`, 
-     `default_from_netcdf_translation_table` and 
-     `apply_table_translation` to `pysat.utils.io` to support 
+     netCDF files.
+   * Added `meta.default_to_netcdf_translation_table`,
+     `default_from_netcdf_translation_table` and
+     `apply_table_translation` to `pysat.utils.io` to support
      improved compatability of pysat netcdf files without user code
      changes.
    * Added `drop_meta_labels` kwarg to `pysat.utils.io.load_netcdf` to
      support easy removal of unwanted metadata during loading.
    * Added support for `meta_processor` in `pysat.utils.io.load_netcdf`
-     and `pysat.utils.io.inst_to_netcdf` enabling developers to easily modify 
+     and `pysat.utils.io.inst_to_netcdf` enabling developers to easily modify
      metadata before it is loaded from/written to storage.
    * Intermediate missing directories are now created as needed when writing
      files using `pysat.utils.io.inst_to_netcdf`.
    * Condensed code present in both pandas and xarray into
      `pysat.utils.io.meta_array_expander`.
-   * Non-default Meta.labels are now retained by Instrument if defined by 
+   * Non-default Meta.labels are now retained by Instrument if defined by
      underlying support module.
    * Made test data more consistent across pysat testing instruments.
    * Added `pysat.Instrument.vars_no_time` function to return data variables
      excluding the main time index.
-   * Added support for additional metdata and other file handling options 
+   * Added support for additional metdata and other file handling options
      to general 'pysat', 'netcdf' instrument.
    * Added keyword `decode_times` to flag using xarray or pysat processing
      of times when loading a file via `pysat.utils.io.load_netcdf`.
@@ -156,12 +161,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Moved function call for Instrument modules init function to end of
      pysat.Instrument instantiation to ensure Instrument is complete when passed
      to init.
-   * Refactored `pysat.Instrument.generic_meta_translator` to use 
+   * Refactored `pysat.Instrument.generic_meta_translator` to use
      `pysat.Meta.to_dict` and the latest metadata label standards.
    * Prevent stale data paths stored by pysat from being reassigned if
      path is no longer in `pysat.params['data_dirs']`.
    * Added missing metadata in testing instruments.
-   * Corrected identification of string data for xarray in 
+   * Corrected identification of string data for xarray in
      `pysat.Instrument._get_data_info`.
 * Maintenance
    * Added unit tests for deprecation warnings related to io_utils reorg.
