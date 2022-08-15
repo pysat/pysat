@@ -859,31 +859,39 @@ class Instrument(object):
         if isinstance(key, tuple):
             if len(key) == 2:
                 # Support slicing time, variable name
-                try:
-                    return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
-                except (TypeError, KeyError):
+                if isinstance(key[1], slice):
+                    # Extract a subset of variables before selection
                     try:
+                        new_data = self.data[self.variables[key[1]]]
+                        return new_data.isel(indexers={epoch_name: key[0]})
+                    except (TypeError, KeyError):
+                        new_data = self.data[self.variables[key[1]]]
+                        return new_data.sel(indexers={epoch_name: key[0]})
+                else:
+                    # key[1] is probably a label
+                    try:
+                        return self.data.isel(indexers={epoch_name:
+                                                        key[0]})[key[1]]
+                    except (TypeError, KeyError):
                         return self.data.sel(indexers={epoch_name:
                                                        key[0]})[key[1]]
-                    except TypeError:
-                        # Construct dataset from names
-                        return self.data[self.variables[key[1]]]
-                except ValueError as verr:
-                    # This may be multidimensional indexing, where the multiple
-                    # dimensions are contained within an iterable object
-                    var_name = key[-1]
+                    except ValueError as verr:
+                        # This may be multidimensional indexing, where the
+                        # multipledimensions are contained within an iterable
+                        # object
+                        var_name = key[-1]
 
-                    # If this is not true, raise the original error
-                    if len(key[0]) != len(self[var_name].dims):
-                        raise ValueError(verr)
+                        # If this is not true, raise the original error
+                        if len(key[0]) != len(self[var_name].dims):
+                            raise ValueError(verr)
 
-                    # Construct a dictionary with dimensions as keys and the
-                    # indexes to select for each dimension as values
-                    indict = dict()
-                    for i, dim in enumerate(self[var_name].dims):
-                        indict[dim] = key[0][i]
+                        # Construct a dictionary with dimensions as keys and the
+                        # indexes to select for each dimension as values
+                        indict = dict()
+                        for i, dim in enumerate(self[var_name].dims):
+                            indict[dim] = key[0][i]
 
-                    return self.data[var_name][indict]
+                        return self.data[var_name][indict]
             else:
                 # Multidimensional indexing where the multiple dimensions are
                 # not contained within another object
