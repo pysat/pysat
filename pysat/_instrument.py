@@ -904,7 +904,7 @@ class Instrument(object):
             try:
                 # Grab a particular variable by name
                 return self.data[key]
-            except (TypeError, KeyError):
+            except (TypeError, KeyError, ValueError):
                 # If that didn't work, likely need to use `isel` or `sel`
                 try:
                     # Try to get all data variables, but for a subset of time
