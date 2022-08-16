@@ -859,48 +859,39 @@ class Instrument(object):
         if isinstance(key, tuple):
             if len(key) == 2:
                 # Support slicing time, variable name
-                # if a tuple, key[0] must be indexed to the epoch
-                key_dict = {'indexers': {epoch_name: key[0]}}
                 if isinstance(key[1], slice):
-                    # Assume key[1] is a slice of labels.
-                    # Extract this as a subset of variables before selection.
-                    try:
-                        # Assume key[0] is an integer
-                        new_data = self.data[self.variables[key[1]]]
-                        return new_data.isel(**key_dict)
-                    except (KeyError, TypeError):
-                        # key[0] is not an integer, switch to .sel
-                        # KeyError raised when key is single datetime
-                        # TypeError raised when key slice of datetimes
-                        new_data = self.data[self.variables[key[1]]]
-                        return new_data.sel(**key_dict)
+                    # Extract subset of variables before epoch selection.
+                    data_subset = self.data[self.variables[key[1]]]
                 else:
-                    # key[1] is probably a single label
-                    try:
-                        # Assume key[0] is an integer
-                        return self.data.isel(**key_dict)[key[1]]
-                    except (KeyError, TypeError):
-                        # key[0] is not an integer, switch to .sel
-                        # KeyError raised when key is single datetime
-                        # TypeError raised when key slice of datetimes
-                        return self.data.sel(**key_dict)[key[1]]
-                    except ValueError as verr:
-                        # This may be multidimensional indexing, where the
-                        # multipledimensions are contained within an iterable
-                        # object
-                        var_name = key[-1]
+                    # Extract single variable before epoch selection.
+                    data_subset = self.data[key[1]]
+                # if a tuple, key[0] must be indexed to the epoch.
+                key_dict = {'indexers': {epoch_name: key[0]}}
+                try:
+                    # Assume key[0] is an integer
+                    return data_subset.isel(**key_dict)
+                except (KeyError, TypeError):
+                    # key[0] is not an integer, switch to .sel
+                    # KeyError raised when key is single datetime.
+                    # TypeError raised when key is slice of datetimes.
+                    return data_subset.sel(**key_dict)
+                except ValueError as verr:
+                    # This may be multidimensional indexing, where the
+                    # multiple dimensions are contained within an iterable
+                    # object
+                    var_name = key[-1]
 
-                        # If this is not true, raise the original error
-                        if len(key[0]) != len(self[var_name].dims):
-                            raise ValueError(verr)
+                    # If this is not true, raise the original error
+                    if len(key[0]) != len(self[var_name].dims):
+                        raise ValueError(verr)
 
-                        # Construct a dictionary with dimensions as keys and the
-                        # indexes to select for each dimension as values
-                        indict = dict()
-                        for i, dim in enumerate(self[var_name].dims):
-                            indict[dim] = key[0][i]
+                    # Construct a dictionary with dimensions as keys and the
+                    # indexes to select for each dimension as values
+                    indict = dict()
+                    for i, dim in enumerate(self[var_name].dims):
+                        indict[dim] = key[0][i]
 
-                        return self.data[var_name][indict]
+                    return self.data[var_name][indict]
             else:
                 # Multidimensional indexing where the multiple dimensions are
                 # not contained within another object
@@ -923,7 +914,7 @@ class Instrument(object):
                 return self.data[key]
             except (TypeError, KeyError, ValueError):
                 # If that didn't work, likely need to use `isel` or `sel`
-                # Link key to the epoch
+                # Link key to the epoch.
                 key_dict = {'indexers': {epoch_name: key}}
                 try:
                     # Try to get all data variables, but for a subset of time
