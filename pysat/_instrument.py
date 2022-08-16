@@ -879,7 +879,7 @@ class Instrument(object):
                 except ValueError as verr:
                     # This may be multidimensional indexing, where the
                     # multiple dimensions are contained within an iterable
-                    # object
+                    # object.
                     var_name = key[-1]
 
                     # If this is not true, raise the original error
