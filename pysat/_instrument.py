@@ -865,13 +865,14 @@ class Instrument(object):
                 else:
                     # Extract single variable before epoch selection.
                     data_subset = self.data[key[1]]
-                # if a tuple, key[0] must be indexed to the epoch.
+
+                # If the input is a tuple, `key[0]` must be linked to the epoch.
                 key_dict = {'indexers': {epoch_name: key[0]}}
                 try:
                     # Assume key[0] is an integer
                     return data_subset.isel(**key_dict)
                 except (KeyError, TypeError):
-                    # key[0] is not an integer, switch to .sel
+                    # Since `key[0]` is not an integer, use the `sel` method.
                     # KeyError raised when key is single datetime.
                     # TypeError raised when key is slice of datetimes.
                     return data_subset.sel(**key_dict)
