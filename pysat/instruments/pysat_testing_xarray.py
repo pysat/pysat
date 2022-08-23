@@ -17,8 +17,6 @@ import xarray as xr
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = pysat.logger
-
 # pysat required parameters
 platform = 'pysat'
 name = 'testing_xarray'
@@ -110,7 +108,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
+    pysat.logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     # Create an artificial satellite data set
     iperiod = mm_test.define_period()

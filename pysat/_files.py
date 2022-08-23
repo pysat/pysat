@@ -18,8 +18,6 @@ from pysat.instruments.methods import general
 from pysat.utils import files as futils
 from pysat.utils.time import filter_datetime_input
 
-logger = pysat.logger
-
 
 class Files(object):
     """Maintain collection of files and associated methods.
@@ -464,8 +462,9 @@ class Files(object):
         # Remove filenames as needed
         dropped_num = len(self.files.index) - len(keep_index)
         if dropped_num > 0:
-            logger.warning(' '.join(('Removing {:d}'.format(dropped_num),
-                                     'empty files from Instrument list.')))
+            dstr = ' '.join(('Removing {:d}'.format(dropped_num),
+                             'empty files from Instrument list.'))
+            pysat.logger.warning(dstr)
             self.files = self.files.iloc[keep_index]
 
         return
@@ -536,9 +535,9 @@ class Files(object):
                             'of the duplicates, dropping the rest. ',
                             'Please ensure the file datetimes ',
                             'are unique at the microsecond level.'])
-            logger.warning(estr)
+            pysat.logger.warning(estr)
             ind = self.files.index.duplicated()
-            logger.warning(self.files.index[ind].unique())
+            pysat.logger.warning(self.files.index[ind].unique())
 
             # Downselect to unique file datetimes
             idx = np.unique(self.files.index, return_index=True)
@@ -627,7 +626,7 @@ class Files(object):
                         dstr = ' '.join(['Assigning `data_path` found',
                                          'in stored file list:',
                                          loaded.name])
-                        logger.debug(dstr)
+                        pysat.logger.debug(dstr)
                         self.data_path = loaded.name
                     else:
                         dstr = ' '.join(['`data_path` found',
@@ -635,7 +634,7 @@ class Files(object):
                                          'current supported `self.data_paths`.',
                                          'Ignoring stored path:', loaded.name,
                                          'Clearing out stored files as well.'])
-                        logger.debug(dstr)
+                        pysat.logger.debug(dstr)
                         loaded = pds.Series([], dtype='a')
 
                 # Ensure the name of returned Series is None for consistency
@@ -733,7 +732,7 @@ class Files(object):
             **self.inst_info)
         info_str = " ".join(("pysat is searching for", info_str, "files."))
         info_str = " ".join(info_str.split())  # Remove duplicate whitespace
-        logger.info(info_str)
+        pysat.logger.info(info_str)
 
         # Check all potential directory locations for files, stopping as soon
         # as we find some.
@@ -778,7 +777,7 @@ class Files(object):
                 break
 
         # Feedback to info on number of files located
-        logger.info('Found {:d} local files.'.format(len(new_files)))
+        pysat.logger.info('Found {:d} local files.'.format(len(new_files)))
 
         if not new_files.empty:
             # Sort files to ensure they are in order
@@ -789,7 +788,7 @@ class Files(object):
             estr = "".join(("Unable to find any files that match the supplied ",
                             "template: ", self.file_format, "\n",
                             "In the following directories: \n", pstrs))
-            logger.warning(estr)
+            pysat.logger.warning(estr)
 
         # Attach Series of files to the class object
         self._attach_files(new_files)

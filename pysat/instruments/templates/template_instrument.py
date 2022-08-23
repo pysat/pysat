@@ -47,10 +47,6 @@ import warnings
 
 import pysat
 
-# Assign the pysat logger to the local log commands, as these functions will
-# all be executed within pysat.
-logger = pysat.logger
-
 # ----------------------------------------------------------------------------
 # Instrument attributes:
 
@@ -134,7 +130,7 @@ def init(self):
     self.references = 'These are the instrument references'
 
     # Direct feedback to logging info
-    logger.info(self.acknowledgements)
+    pysat.logger.info(self.acknowledgements)
     return
 
 

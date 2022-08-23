@@ -20,7 +20,6 @@ import pandas as pds
 import xarray as xr
 
 import pysat
-from pysat import logger
 
 
 class Instrument(object):
@@ -408,7 +407,7 @@ class Instrument(object):
             self.data_dir = data_dir
         else:
             if len(data_dir) > 0:
-                logger.warning("data directory doesn't exist: {:}".format(
+                pysat.logger.warning("data directory doesn't exist: {:}".format(
                     data_dir))
             self.data_dir = None
 
@@ -1325,7 +1324,7 @@ class Instrument(object):
                     estr = ' '.join(('unable to locate or import module for',
                                      'platform {:}, name {:}'))
                     estr = estr.format(self.platform, self.name)
-                    logger.error(estr)
+                    pysat.logger.error(estr)
                     raise ImportError(ierr)
         elif self.inst_module is None:
             # No module or name info, default pass functions assigned
@@ -1369,7 +1368,8 @@ class Instrument(object):
                                      ' for every Instrument']))
 
         if len(missing) > 0:
-            logger.debug('Missing Instrument methods: {:}'.format(missing))
+            pysat.logger.debug(
+                'Missing Instrument methods: {:}'.format(missing))
 
         # Assign the Instrument functions
         missing = list()
@@ -1386,7 +1386,8 @@ class Instrument(object):
                                      ' for every Instrument']))
 
         if len(missing) > 0:
-            logger.debug('Missing Instrument methods: {:}'.format(missing))
+            pysat.logger.debug(
+                'Missing Instrument methods: {:}'.format(missing))
 
         # Look for instrument default parameters
         missing = list()
@@ -1397,8 +1398,9 @@ class Instrument(object):
                 missing.append(iattr)
 
         if len(missing) > 0:
-            logger.debug(''.join(['These Instrument attributes kept their ',
-                                  'default  values: {:}'.format(missing)]))
+            pysat.logger.debug(' '.join(['These Instrument attributes kept',
+                                         'their default  values:',
+                                         '{:}'.format(missing)]))
 
         # Check for download flags for tests
         missing = list()
@@ -1439,8 +1441,9 @@ class Instrument(object):
                                   DeprecationWarning, stacklevel=2)
 
         if len(missing) > 0:
-            logger.debug(''.join(['These Instrument test attributes kept their',
-                                  ' default  values: {:}'.format(missing)]))
+            pysat.logger.debug(' '.join(['These Instrument test attributes',
+                                         'kept their default  values:',
+                                         '{:}'.format(missing)]))
         return
 
     def _load_data(self, date=None, fid=None, inc=None, load_kwargs=None):
@@ -1562,7 +1565,7 @@ class Instrument(object):
 
         # Remove extra spaces, if any are present
         output_str = " ".join(output_str.split())
-        logger.info(output_str)
+        pysat.logger.info(output_str)
 
         return data, mdata
 
@@ -2248,8 +2251,9 @@ class Instrument(object):
         pos_list.append('end')
 
         if at_pos not in pos_list:
-            logger.warning(''.join(['unknown position specified, including ',
-                                    'function at end of current list']))
+            pysat.logger.warning(' '.join(['unknown position specified,',
+                                           'including function at end of',
+                                           'current list']))
             at_pos = 'end'
 
         # Convert string to function object, if necessary
@@ -2977,13 +2981,13 @@ class Instrument(object):
                                 'is longer than the range of data in a file. ',
                                 'Improving the breadth of the padding window ',
                                 'is planned for the future.'))
-                logger.warning(wstr)
+                pysat.logger.warning(wstr)
 
         if (self.pad is not None) or self.multi_file_day:
             if self._empty(self._next_data) and self._empty(self._prev_data):
                 # Data has not already been loaded for previous and next days.
                 # Load data for all three.
-                logger.debug('Initializing data cache.')
+                pysat.logger.debug('Initializing data cache.')
 
                 # Using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
@@ -2993,7 +2997,7 @@ class Instrument(object):
                 self._next_data, self._next_meta = self._load_next()
             else:
                 if self._next_data_track == curr:
-                    logger.debug('Using data cache. Loading next.')
+                    pysat.logger.debug('Using data cache. Loading next.')
                     # Moving forward in time
                     del self._prev_data
                     self._prev_data = self._curr_data
@@ -3002,7 +3006,7 @@ class Instrument(object):
                     self._curr_meta = self._next_meta
                     self._next_data, self._next_meta = self._load_next()
                 elif self._prev_data_track == curr:
-                    logger.debug('Using data cache. Loading previous.')
+                    pysat.logger.debug('Using data cache. Loading previous.')
                     # Moving backward in time
                     del self._next_data
                     self._next_data = self._curr_data
@@ -3013,7 +3017,7 @@ class Instrument(object):
                 else:
                     # Jumped in time/or switched from filebased to date based
                     # access
-                    logger.debug('Resetting data cache.')
+                    pysat.logger.debug('Resetting data cache.')
                     del self._prev_data
                     del self._curr_data
                     del self._next_data
@@ -3320,8 +3324,8 @@ class Instrument(object):
         # Get list of remote files
         remote_files = self.remote_file_list()
         if remote_files is not None and remote_files.empty:
-            logger.warning(' '.join(('No remote files found. Unable to',
-                                     'download latest data.')))
+            pysat.logger.warning(' '.join(('No remote files found. Unable to',
+                                           'download latest data.')))
             return
 
         # Get current list of local files
@@ -3347,11 +3351,12 @@ class Instrument(object):
                                            local_files.index[-1], freq='1D')
 
             # Provide updating information
-            logger.info(''.join(['No remote file listing method, looking for ',
-                                 'file gaps between ',
-                                 '{:} and {:} (inclusive).'.format(
-                                     new_dates[0].strftime('%d %b %Y'),
-                                     new_dates[-1].strftime('%d %b %Y'))]))
+            pysat.logger.info(
+                ' '.join(['No remote file listing method, looking for file',
+                          'gaps between',
+                          '{:} and'.format(new_dates[0].strftime('%d %b %Y')),
+                          '{:}'.format(new_dates[-1].strftime('%d %b %Y')),
+                          '(inclusive).']))
 
             # Determine which dates are missing
             missing_inds = [i for i, req_dates in enumerate(new_dates)
@@ -3359,13 +3364,14 @@ class Instrument(object):
 
             # Extract only the missing dates
             new_dates = new_dates[missing_inds]
-            logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
-                                 'files are new.')))
+            pysat.logger.info(' '.join(('Found {:} days'.format(len(new_dates)),
+                                        'with new files.')))
         else:
             # Compare local and remote files. First look for dates that are in
             # remote but not in local. Provide updating information.
-            logger.info(''.join(['A remote file listing method exists, looking',
-                                 ' for updated files and gaps at all times.']))
+            pysat.logger.info(' '.join(['A remote file listing method exists,',
+                                        'looking for updated files and gaps at',
+                                        'all times.']))
 
             new_dates = []
             for date in remote_files.index:
@@ -3380,8 +3386,8 @@ class Instrument(object):
                     if remote_files[date] != local_files[date]:
                         new_dates.append(date)
             new_dates = np.sort(new_dates)
-            logger.info(''.join(('Found {} days whose '.format(len(new_dates)),
-                                 'files are new or updated.')))
+            pysat.logger.info(' '.join(('Found {:} days'.format(len(new_dates)),
+                                        'with new or updated files.')))
 
         if len(new_dates) > 0:
             # Update download kwargs to include new `date_array` value
@@ -3390,7 +3396,7 @@ class Instrument(object):
             # Download date for dates in new_dates (also includes new names)
             self.download(**kwargs)
         else:
-            logger.info('Did not find any new or updated files.')
+            pysat.logger.info('Did not find any new or updated files.')
 
         return
 
@@ -3467,14 +3473,16 @@ class Instrument(object):
             # Instrument object persists longer than a day then the download
             # defaults would no longer be correct. Dates are always correct in
             # this setup.
-            logger.info(''.join(['Downloading the most recent data by ',
-                                 'default (yesterday through tomorrow).']))
+            pysat.logger.info(
+                ' '.join(['Downloading the most recent data by',
+                          'default (yesterday through tomorrow).']))
             start = self.yesterday()
             stop = self.tomorrow()
         elif stop is None and date_array is None:
             stop = start + dt.timedelta(days=1)
 
-        logger.info('Downloading data to: {}'.format(self.files.data_path))
+        pysat.logger.info(
+            'Downloading data to: {:}'.format(self.files.data_path))
 
         if date_array is None:
             # Create range of dates for downloading data.  Make sure dates are
@@ -3500,7 +3508,7 @@ class Instrument(object):
             first_date = self.files.start_date
             last_date = self.files.stop_date
 
-            logger.info('Updating pysat file list')
+            pysat.logger.info('Updating pysat file list')
             self.files.refresh()
 
             # If instrument object has default bounds, update them
@@ -3510,7 +3518,8 @@ class Instrument(object):
                 if self._iter_type == 'date':
                     if(curr_bound[0][0] == first_date
                        and curr_bound[1][0] == last_date):
-                        logger.info('Updating instrument object bounds by date')
+                        pysat.logger.info(' '.join(('Updating instrument',
+                                                    'object bounds by date')))
                         self.bounds = (self.files.start_date,
                                        self.files.stop_date, curr_bound[2],
                                        curr_bound[3])
@@ -3525,7 +3534,8 @@ class Instrument(object):
                                                  seconds=59))
                     if(curr_bound[0][0] == self.files[dsel1][0]
                        and curr_bound[1][0] == self.files[dsel2][-1]):
-                        logger.info('Updating instrument object bounds by file')
+                        pysat.logger.info(' '.join(('Updating instrument',
+                                                    'object bounds by file')))
                         dsel1 = slice(self.files.start_date,
                                       self.files.start_date
                                       + dt.timedelta(hours=23, minutes=59,
@@ -3537,7 +3547,7 @@ class Instrument(object):
                                        self.files[dsel2][-1],
                                        curr_bound[2], curr_bound[3])
         else:
-            logger.warning('Requested download over an empty date range.')
+            pysat.logger.warning('Requested download over an empty date range.')
 
         return
 
