@@ -184,7 +184,6 @@ are defined as instrument attributes within the initalization method.
 
 .. code:: python
 
-  logger = pysat.logger
   platform = 'your_platform_name'
   name = 'name_of_instrument'
   tags = {'tag1': 'tag1 Descripton',
@@ -201,7 +200,7 @@ are defined as instrument attributes within the initalization method.
       elif self.tag == 'tag2':
           self.references = 'Mianaai and Mianaai, 2014'
 
-      logger.info(self.acknowledgements)
+      pysat.logger.info(self.acknowledgements)
       return
 
 
@@ -622,9 +621,9 @@ Within any instrument module,
 
 .. code:: Python
 
-    logger.info(information_string)
-    logger.warning(warning_string)
-    logger.debug(debug_string)
+    pysat.logger.info(information_string)
+    pysat.logger.warning(warning_string)
+    pysat.logger.debug(debug_string)
 
 will direct information, warnings, and debug statements appropriately.
 
@@ -814,6 +813,6 @@ generally be put in the :py:func:`init` function of each instrument.
 
         self.acknowledgements = acknowledgements_string
         self.references = references_string
-        logger.info(self.acknowledgements)
+        pysat.logger.info(self.acknowledgements)
 
         return
