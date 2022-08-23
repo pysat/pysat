@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed version cap on xarray
 * Bug Fix
    * Improved compatibility with xarray 2022.06 when accessing data via slices
+   * Fixed a bug for fractional seconds in `methods.testing.generate_times`.
 
 [3.0.3] - 2022-07-29
 --------------------
