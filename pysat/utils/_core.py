@@ -469,11 +469,11 @@ def generate_instrument_list(inst_loc, user_info=None):
                     # condition to (os.environ.get('CI') is None).
                     ci_skip = ((os.environ.get('CI') == 'true')
                                and not inst._test_download_ci)
-                    # Check if instrument is configured for download tests.
-                    if inst._test_download:
-                        # Some instruments will be skipped in CI but run
-                        # locally. Check for this flag.
-                        if not ci_skip:
+                    # Some instruments will be skipped in CI but run
+                    # locally. Check for this flag.
+                    if not ci_skip:
+                        # Check if instrument is configured for download tests.
+                        if inst._test_download:
                             instrument_download.append(in_dict)
                             if hasattr(module, '_test_load_opt'):
                                 # Add optional load tests
@@ -488,11 +488,11 @@ def generate_instrument_list(inst_loc, user_info=None):
                                     # combo
                                     pass
 
-                    elif not inst._password_req:
-                        # We don't want to test download for this combo, but
-                        # we do want to test the download warnings for
-                        # instruments without a password requirement
-                        instrument_no_download.append(in_dict)
+                        elif not inst._password_req:
+                            # We don't want to test download for this combo, but
+                            # we do want to test the download warnings for
+                            # instruments without a password requirement
+                            instrument_no_download.append(in_dict)
 
     # load options requires all downloaded instruments plus additional options
     output = {'names': instrument_names,
