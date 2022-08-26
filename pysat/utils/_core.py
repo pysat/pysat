@@ -467,10 +467,11 @@ def generate_instrument_list(inst_loc, user_info=None):
                     # Set flag to skip tests on a CI environment
                     ci_skip = ((os.environ.get('CI') == 'true')
                                and not inst._test_download_ci)
+                    # Check if instrument is configured for download tests.
                     if inst._test_download:
+                        # Some instruments will be skipped in CI but run
+                        # locally. Check for this flag.
                         if not ci_skip:
-                            # Some instruments will be skipped in CI but not
-                            # locally.
                             instrument_download.append(in_dict)
                             if hasattr(module, '_test_load_opt'):
                                 # Add optional load tests
