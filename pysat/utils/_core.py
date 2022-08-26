@@ -451,41 +451,45 @@ def generate_instrument_list(inst_loc, user_info=None):
                 info = {}
                 info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
-            for inst_id in info.keys():
-                for tag in info[inst_id].keys():
-                    inst_dict = {'inst_module': module, 'tag': tag,
-                                 'inst_id': inst_id}
+            for iid in info.keys():
+                for tag in info[iid].keys():
+                    in_dict = {'inst_module': module, 'tag': tag,
+                               'inst_id': iid}
                     # Add username and password info if needed
                     if user_info and inst_module in user_info:
-                        inst_dict['user_info'] = user_info[inst_module]
+                        in_dict['user_info'] = user_info[inst_module]
                     # Initialize instrument so that pysat can generate skip
                     # flags where appropriate
                     inst = pysat.Instrument(inst_module=module,
                                             tag=tag,
-                                            inst_id=inst_id,
+                                            inst_id=iid,
                                             temporary_file_list=True)
                     # Set flag to skip tests on a CI environment
                     ci_skip = ((os.environ.get('CI') == 'true')
                                and not inst._test_download_ci)
-                    if inst._test_download and not ci_skip:
-                        instrument_download.append(inst_dict)
-                        if hasattr(module, '_test_load_opt'):
-                            # Add optional load tests
-                            try:
-                                kwarg_list = module._test_load_opt[inst_id][tag]
-                                kwarg_list = pysat.utils.listify(kwarg_list)
-                                for kwargs in kwarg_list:
-                                    inst_dict['kwargs'] = kwargs
-                                    instrument_optional_load.append(inst_dict)
-                            except KeyError:
-                                # Option does not exist for tag/inst_id combo
-                                pass
+                    if inst._test_download:
+                        if not ci_skip:
+                            # Some instruments will be skipped in CI but not
+                            # locally.
+                            instrument_download.append(in_dict)
+                            if hasattr(module, '_test_load_opt'):
+                                # Add optional load tests
+                                try:
+                                    kw_list = module._test_load_opt[iid][tag]
+                                    kw_list = pysat.utils.listify(kw_list)
+                                    for kwargs in kw_list:
+                                        in_dict['kwargs'] = kwargs
+                                        instrument_optional_load.append(in_dict)
+                                except KeyError:
+                                    # Option does not exist for tag/inst_id
+                                    # combo
+                                    pass
 
                     elif not inst._password_req:
                         # We don't want to test download for this combo, but
                         # we do want to test the download warnings for
                         # instruments without a password requirement
-                        instrument_no_download.append(inst_dict)
+                        instrument_no_download.append(in_dict)
 
     # load options requires all downloaded instruments plus additional options
     output = {'names': instrument_names,
