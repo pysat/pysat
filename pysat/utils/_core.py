@@ -465,7 +465,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                                             inst_id=iid,
                                             temporary_file_list=True)
                     # Set flag to skip tests on a CI environment.
-                    # To test CI config on a local system, change first line
+                    # To test CI config on a local system, change first
                     # condition to (os.environ.get('CI') is None).
                     ci_skip = ((os.environ.get('CI') == 'true')
                                and not inst._test_download_ci)
