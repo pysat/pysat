@@ -511,7 +511,7 @@ def generate_times(fnames, num, freq='1S', start_time=None):
         index = index[0:num]
         indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second
-                   + 86400. * loop)
+                   + index.microsecond * 1e-6 + 86400. * loop)
 
     # Combine index times together
     index = pds.DatetimeIndex(indices)

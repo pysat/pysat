@@ -859,18 +859,27 @@ class Instrument(object):
         if isinstance(key, tuple):
             if len(key) == 2:
                 # Support slicing time, variable name
+                if isinstance(key[1], slice):
+                    # Extract subset of variables before epoch selection.
+                    data_subset = self.data[self.variables[key[1]]]
+                else:
+                    # Extract single variable before epoch selection.
+                    data_subset = self.data[key[1]]
+
+                # If the input is a tuple, `key[0]` must be linked to the epoch.
+                key_dict = {'indexers': {epoch_name: key[0]}}
                 try:
-                    return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
-                except (TypeError, KeyError):
-                    try:
-                        return self.data.sel(indexers={epoch_name:
-                                                       key[0]})[key[1]]
-                    except TypeError:
-                        # Construct dataset from names
-                        return self.data[self.variables[key[1]]]
+                    # Assume key[0] is an integer
+                    return data_subset.isel(**key_dict)
+                except (KeyError, TypeError):
+                    # Since `key[0]` is not an integer, use the `sel` method.
+                    # KeyError raised when key is single datetime.
+                    # TypeError raised when key is slice of datetimes.
+                    return data_subset.sel(**key_dict)
                 except ValueError as verr:
-                    # This may be multidimensional indexing, where the multiple
-                    # dimensions are contained within an iterable object
+                    # This may be multidimensional indexing, where the
+                    # multiple dimensions are contained within an iterable
+                    # object.
                     var_name = key[-1]
 
                     # If this is not true, raise the original error
@@ -904,15 +913,17 @@ class Instrument(object):
             try:
                 # Grab a particular variable by name
                 return self.data[key]
-            except (TypeError, KeyError):
+            except (TypeError, KeyError, ValueError):
                 # If that didn't work, likely need to use `isel` or `sel`
+                # Link key to the epoch.
+                key_dict = {'indexers': {epoch_name: key}}
                 try:
                     # Try to get all data variables, but for a subset of time
                     # using integer indexing
-                    return self.data.isel(indexers={epoch_name: key})
-                except (TypeError, KeyError):
+                    return self.data.isel(**key_dict)
+                except (KeyError, TypeError):
                     # Try to get a subset of time, using label based indexing
-                    return self.data.sel(indexers={epoch_name: key})
+                    return self.data.sel(**key_dict)
 
     def __setitem__(self, key, new_data):
         """Set data in `pysat.Instrument` object.

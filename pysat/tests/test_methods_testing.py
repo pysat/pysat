@@ -52,7 +52,8 @@ class TestMethodsTesting(object):
                               (10, {'start_time': dt.timedelta(hours=1),
                                     'freq': '10s'},
                                [3600.0, 3690.0]),
-                              (87000, {}, [0.0, 86399.0])])
+                              (87000, {}, [0.0, 86399.0]),
+                              (10, {'freq': '10mS'}, [0.0, 0.09])])
     def test_generate_times_kwargs(self, num, kwargs, output):
         """Test use of kwargs in generate_times, including default behavior.
 

@@ -6,4 +6,4 @@ portalocker
 pytest
 scipy
 toolz
-xarray<2022.06.0
+xarray
