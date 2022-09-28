@@ -3,13 +3,14 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.0.4] - 2022-XX-XX
+[3.0.4] - 2022-08-29
 --------------------
 * Maintenance
   * Removed version cap on xarray
 * Bug Fix
    * Improved compatibility with xarray 2022.06 when accessing data via slices
    * Fixed a bug for fractional seconds in `methods.testing.generate_times`.
+   * Fixed a bug for testing FTP instruments in a CI environment.
 
 [3.0.3] - 2022-07-29
 --------------------
