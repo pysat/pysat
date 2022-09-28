@@ -11,8 +11,6 @@ import pandas as pds
 
 import pysat
 
-logger = pysat.logger
-
 
 def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
     """Adjust cyclic values such as longitude to a different scale.
@@ -111,7 +109,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
 
     if ref_date is not None and apply_modulus:
         istr = 'Keyword `ref_date` only supported if `apply_modulus`=False.'
-        logger.info(istr)
+        pysat.logger.info(istr)
 
     if ref_date is None:
         # Use date information attached to Instrument object

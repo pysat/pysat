@@ -3,6 +3,11 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.X.X] - 20XX-XX-XX
+--------------------
+* Maintenance
+  * Update usage of logger throughout code.
+
 [3.0.4] - 2022-08-29
 --------------------
 * Maintenance

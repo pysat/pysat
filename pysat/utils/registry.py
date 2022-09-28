@@ -53,7 +53,6 @@ import logging
 
 import pysat
 import pysat.tests.instrument_test_class as itc
-logger = logging.getLogger(__name__)
 
 
 def load_saved_modules():
@@ -144,7 +143,7 @@ def register(module_names, overwrite=False):
         except Exception:
             # Log then preserve trace and propagate error
             estr = ' '.join(('There was a problem trying to import', mod_name))
-            logger.error(estr)
+            pysat.logger.error(estr)
             raise
 
         # Second, check that module is itself pysat compatible
@@ -184,7 +183,7 @@ def register(module_names, overwrite=False):
 
         # Only register name if it is not present under platform
         if name not in pysat.params['user_modules'][platform]:
-            logger.info('Registering user module {}'.format(mod_name))
+            pysat.logger.info('Registering user module {}'.format(mod_name))
             # Add to current user modules structure and store it to disk
             pysat.params.data['user_modules'][platform][name] = mod_name
             store()
@@ -320,7 +319,7 @@ def remove(platforms, names):
                     # name not in platform
                     estr = ''.join((platform, ', ', name, ': not a registered ',
                                     'instrument module.'))
-                    logger.info(estr)
+                    pysat.logger.info(estr)
                 # remove platform if no remaining instruments
                 if len(pysat.params['user_modules'][platform]) == 0:
                     pysat.params['user_modules'].pop(platform)
@@ -331,6 +330,6 @@ def remove(platforms, names):
             estr = ''.join((platform, ': is not a registered ',
                             'instrument platform.'))
             # platform not in registered modules
-            logger.info(estr)
+            pysat.logger.info(estr)
 
     return
