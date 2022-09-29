@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Maintenance
   * Update usage of logger throughout code.
+* Bug Fix
+   * Updated meta.py so that internal assignment of None to children is not 
+     converted to NaN
 
 [3.0.4] - 2022-08-29
 --------------------
