@@ -31,7 +31,6 @@ jobs:
       if: ${{ matrix.numpy_ver != 'latest'}}
       run: |
         pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
-        pip install "pandas<1.5.0"
 
     - name: Install standard dependencies and pysat
       run: |
