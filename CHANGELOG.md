@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Maintenance
   * Update usage of logger throughout code.
+  * Update NEP29 minimum CI numpy version to 1.20
 * Bug Fix
    * Updated meta.py so that internal assignment of None to children is not 
      converted to NaN
