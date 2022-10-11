@@ -191,7 +191,7 @@ class InstPropertyTests(object):
         # - download new files, and
         # - update local file list.
         assert "local files" in caplog.text
-        assert "files are new" in caplog.text
+        assert "with new" in caplog.text
 
         # Test for logging output based on the presence of a remote file
         # listing method

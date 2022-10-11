@@ -10,8 +10,6 @@ import xarray as xr
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
-logger = pysat.logger
-
 platform = 'pysat'
 name = 'testmodel'
 tags = {'': 'Regular testing data set',
@@ -66,7 +64,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
+    pysat.logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     # Create an artificial model data set
     freq_str = '900S' if tag == '' else '1H'

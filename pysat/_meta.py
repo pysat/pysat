@@ -117,7 +117,7 @@ class Meta(object):
         meta2['var_name42'] = {'long_name': 'name2of4', 'units': 'Units2'}
         meta['var_name4'] = {'meta': meta2}
 
-        # An alternative method to acheive the same result is:
+        # An alternative method to achieve the same result is:
         meta['var_name4'] = meta2
         meta['var_name4'].children['name41']
         meta['var_name4'].children['name42']
@@ -650,8 +650,11 @@ class Meta(object):
                 if new_key in self.keys_nD():
                     meta_row.at['children'] = self.ho_data[new_key]  # .copy()
                 else:
-                    meta_row.at['children'] = None  # Return empty meta instance
-
+                    # Not higher order meta. Assign value of None. First, we
+                    # assign a string, and then None. Ensures column is not
+                    # a numeric data type.
+                    meta_row.at['children'] = ''
+                    meta_row.at['children'] = None
                 return meta_row
             else:
                 raise KeyError("Key '{:}' not found in MetaData".format(key))

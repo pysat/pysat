@@ -12,7 +12,7 @@ import pandas as pds
 import weakref
 import xarray as xr
 
-from pysat import logger
+import pysat
 
 
 class Orbits(object):
@@ -341,7 +341,7 @@ class Orbits(object):
         """Report the current orbit to log at the info level."""
 
         # Index appears as zero-indexed, though it is one-indexed
-        logger.info('Loaded Orbit: {:d}'.format(self._current - 1))
+        pysat.logger.info('Loaded Orbit: {:d}'.format(self._current - 1))
         return
 
     def _reset(self):
@@ -436,7 +436,7 @@ class Orbits(object):
 
         # Get the typical (median) difference
         typical_lt_diff = np.nanmedian(lt_diff)
-        logger.info(''.join(('typical lt diff ', str(typical_lt_diff))))
+        pysat.logger.info(''.join(('typical lt diff ', str(typical_lt_diff))))
 
         # Get the Universal Time difference between data values. Assumes that
         # the time index is in UT.
@@ -456,8 +456,8 @@ class Orbits(object):
             # is done to ensure robustness.
             if len(ind) > 1:
                 if min(dist) == 1:
-                    logger.info(' '.join(('There are orbit breaks right next',
-                                          'to each other')))
+                    pysat.logger.info(' '.join(('There are orbit breaks right',
+                                                'next to each other')))
                 ind = ind[:-1][dist > 1]
 
             # Check for large positive gradients around the break that would
@@ -480,8 +480,8 @@ class Orbits(object):
                             # The change in UT is small compared to the change
                             # in the orbit index this is flagged as a false
                             # alarm, or dropped from consideration
-                            logger.info(''.join(('Dropping found break ',
-                                                 'as false positive.')))
+                            pysat.logger.info(' '.join(('Dropping found break',
+                                                        'as false positive.')))
                             pass
                         else:
                             # The change in UT is significant, keep orbit break
@@ -521,7 +521,7 @@ class Orbits(object):
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            logger.info('Time Gap at locations: {:}'.format(ut_ind))
+            pysat.logger.info('Time Gap at locations: {:}'.format(ut_ind))
 
         # Now that most problems in orbits should have been caught, look at
         # the time difference between orbits (not individual orbits)
@@ -898,8 +898,8 @@ class Orbits(object):
                 raise ValueError(' '.join(('Requested an orbit past total',
                                            'orbits for day.')))
         else:
-            logger.info(' '.join(('No data loaded in instrument object to',
-                                  'determine orbits.')))
+            pysat.logger.info(' '.join(('No data loaded in instrument object',
+                                        'to determine orbits.')))
 
         return
 

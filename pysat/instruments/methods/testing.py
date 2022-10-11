@@ -12,8 +12,6 @@ import pysat
 from pysat.utils import NetworkLock
 from pysat.utils import time as putime
 
-logger = pysat.logger
-
 ackn_str = ' '.join(("Test instruments provided through the pysat project.",
                      "https://www.github.com/pysat/pysat"))
 
@@ -41,7 +39,7 @@ def init(self, test_init_kwarg=None):
 
     """
 
-    logger.info(ackn_str)
+    pysat.logger.info(ackn_str)
     self.acknowledgements = ackn_str
     self.references = refs
 
@@ -260,8 +258,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_list_files_kwarg = ',
-                         str(test_list_files_kwarg))))
+    pysat.logger.info(''.join(('test_list_files_kwarg = ',
+                               str(test_list_files_kwarg))))
 
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
@@ -335,8 +333,8 @@ def list_remote_files(tag='', inst_id='', data_path='', format_str=None,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_list_remote_kwarg = ',
-                         str(test_list_remote_kwarg))))
+    pysat.logger.info(''.join(('test_list_remote_kwarg = ',
+                               str(test_list_remote_kwarg))))
 
     # Determine the appropriate date range for the fake files
     if start is None:
@@ -397,7 +395,8 @@ def download(date_array, tag, inst_id, data_path='', user=None,
     """
 
     # Support keyword testing
-    logger.info(''.join(('test_download_kwarg = ', str(test_download_kwarg))))
+    pysat.logger.info(''.join(('test_download_kwarg = ',
+                               str(test_download_kwarg))))
 
     if tag == 'no_download':
         warnings.warn('This simulates an instrument without download support')
