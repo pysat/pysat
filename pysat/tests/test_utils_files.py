@@ -182,7 +182,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
         """Clean up the unit test environment after each method."""
 
         # Clean environment
-        CICleanSetup.teardown(self)
+        CICleanSetup.teardown_method(self)
 
         self.tempdir.cleanup()
 
