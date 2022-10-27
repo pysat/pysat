@@ -17,7 +17,7 @@ from pysat.utils import testing
 class TestMetaLabels(object):
     """Unit and integration tests for the MetaLabels class."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         testInst = pysat.Instrument('pysat', 'testing')
@@ -26,7 +26,7 @@ class TestMetaLabels(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.meta, self.meta_labels
         return

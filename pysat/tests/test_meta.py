@@ -22,7 +22,7 @@ from pysat.utils import testing
 class TestMeta(object):
     """Basic unit tests for standard metadata operations."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = None
@@ -43,7 +43,7 @@ class TestMeta(object):
         self.frame_list = ['dummy_frame1', 'dummy_frame2']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.meta, self.meta_labels, self.default_name, self.default_nan
         del self.default_val, self.dval, self.frame_list, self.testInst
@@ -1963,7 +1963,7 @@ class TestMeta(object):
 class TestMetaImmutable(TestMeta):
     """Unit tests for immutable metadata."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = None
@@ -1984,7 +1984,7 @@ class TestMetaImmutable(TestMeta):
         self.frame_list = ['dummy_frame1', 'dummy_frame2']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.meta, self.meta_labels, self.default_name, self.default_nan
         del self.default_val, self.dval, self.frame_list, self.testInst
@@ -2056,7 +2056,7 @@ class TestMetaImmutable(TestMeta):
 class TestMetaMutable(object):
     """Mutable-specific Meta data unit tests."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
@@ -2067,7 +2067,7 @@ class TestMetaMutable(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.meta, self.testInst
         return
@@ -2192,7 +2192,7 @@ class TestMetaMutable(object):
 class TestDeprecation(object):
     """Unit tests for DeprecationWarnings in the Meta class."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         warnings.simplefilter("always", DeprecationWarning)
@@ -2200,7 +2200,7 @@ class TestDeprecation(object):
         self.warn_msgs = []
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.meta, self.warn_msgs
@@ -2259,7 +2259,7 @@ class TestDeprecation(object):
 class TestToDict(object):
     """Test `.to_dict` method using pysat test Instruments."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5,
@@ -2272,7 +2272,7 @@ class TestToDict(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.testInst, self.stime, self.out
 
@@ -2337,7 +2337,7 @@ class TestToDict(object):
 class TestToDictXarray(TestToDict):
     """Test `.to_dict` methods using pysat test Instruments."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -2354,7 +2354,7 @@ class TestToDictXarray(TestToDict):
 class TestToDictXarray2D(TestToDict):
     """Test `.to_dict` methods using pysat test Instruments."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
@@ -2371,7 +2371,7 @@ class TestToDictXarray2D(TestToDict):
 class TestToDictPandas2D(TestToDict):
     """Test `.to_dict` methods using pysat test Instruments."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing2d',
@@ -2388,7 +2388,7 @@ class TestToDictPandas2D(TestToDict):
 class TestToDictXarrayModel(TestToDict):
     """Test `.to_dict` methods using pysat test Instruments."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testmodel',

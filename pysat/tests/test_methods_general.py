@@ -14,7 +14,7 @@ from pysat.utils import testing
 class TestListFiles(object):
     """Unit tests for `pysat.instrument.methods.general.list_files`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         fname = 'fake_data_{year:04d}{month:02d}{day:02d}_v05.cdf'
@@ -23,7 +23,7 @@ class TestListFiles(object):
                        'supported_tags': {'': {'': fname}}}
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.kwargs
@@ -109,7 +109,7 @@ class TestFileCadence(object):
 class TestRemoveLeadText(object):
     """Unit tests for `pysat.instrument.methods.general.remove_leading_text`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         # Load a test instrument
@@ -119,7 +119,7 @@ class TestRemoveLeadText(object):
         self.npts = len(self.testInst['uts'])
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.npts
@@ -195,7 +195,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
 
     """
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         # Load a test instrument
@@ -207,7 +207,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         self.npts = len(self.testInst['uts'])
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.npts
@@ -246,7 +246,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
 class TestLoadCSVData(object):
     """Unit tests for `pysat.instrument.methods.general.load_csv_data`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         # Load a test instrument
@@ -257,7 +257,7 @@ class TestLoadCSVData(object):
         self.data = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.csv_file, self.data, self.data_cols
@@ -302,13 +302,13 @@ class TestLoadCSVData(object):
 class TestDeprecation(object):
     """Unit tests for deprecated methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         warnings.simplefilter("always", DeprecationWarning)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         return

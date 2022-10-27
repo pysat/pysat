@@ -19,7 +19,7 @@ from pysat.utils.time import filter_datetime_input
 class TestDataPaddingbyFile(object):
     """Unit tests for pandas `pysat.Instrument` with data padding by file."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -38,7 +38,7 @@ class TestDataPaddingbyFile(object):
         self.delta = dt.timedelta(seconds=0)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.rawInst, self.delta
@@ -141,7 +141,7 @@ class TestDataPaddingbyFile(object):
 class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
     """Unit tests for xarray `pysat.Instrument` with data padding by file."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing_xarray)
@@ -162,7 +162,7 @@ class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
         self.delta = dt.timedelta(seconds=0)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.rawInst, self.delta
@@ -172,7 +172,7 @@ class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
 class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
     """Unit tests for pandas `pysat.Instrument` with right offset data pad."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -193,7 +193,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
         self.delta = dt.timedelta(seconds=0)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.rawInst, self.delta
@@ -203,7 +203,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
 class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
     """Unit tests for xarray `pysat.Instrument` with right offset data pad."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing_xarray)
@@ -225,7 +225,7 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
         self.delta = dt.timedelta(seconds=0)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.rawInst, self.delta
@@ -235,7 +235,7 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
 class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
     """Unit tests for pandas `pysat.Instrument` with left offset data pad."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -255,7 +255,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
         self.delta = dt.timedelta(seconds=0)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.rawInst, self.delta
@@ -265,7 +265,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
 class TestDataPadding(object):
     """Unit tests for pandas `pysat.Instrument` with data padding."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -279,7 +279,7 @@ class TestDataPadding(object):
         self.delta = dt.timedelta(minutes=5)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy, self.delta
@@ -472,7 +472,7 @@ class TestDataPadding(object):
 class TestDataPaddingXArray(TestDataPadding):
     """Unit tests for xarray `pysat.Instrument` with data padding."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing_xarray)
@@ -487,7 +487,7 @@ class TestDataPaddingXArray(TestDataPadding):
         self.delta = dt.timedelta(minutes=5)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy, self.delta
@@ -497,7 +497,7 @@ class TestDataPaddingXArray(TestDataPadding):
 class TestMultiFileRightDataPaddingBasics(TestDataPadding):
     """Unit tests for pandas `pysat.Instrument` with right offset data pad."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -513,7 +513,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
         self.delta = dt.timedelta(minutes=5)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy, self.delta
@@ -523,7 +523,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
 class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     """Unit tests for xarray `pysat.Instrument` with right offset data pad."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing_xarray)
@@ -540,7 +540,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
         self.delta = dt.timedelta(minutes=5)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy, self.delta
@@ -550,7 +550,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
 class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     """Unit tests for pandas `pysat.Instrument` with left offset data pad."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -567,7 +567,7 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
         self.delta = dt.timedelta(minutes=5)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy, self.delta
@@ -577,7 +577,7 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
 class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     """Unit tests for xarray `pysat.Instrument` with left offset data pad."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing_xarray)
@@ -594,7 +594,7 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
         self.delta = dt.timedelta(minutes=5)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy, self.delta

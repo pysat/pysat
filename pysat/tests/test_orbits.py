@@ -97,7 +97,7 @@ def assert_reversible_orbit_symmetric(inst, iterations):
 class TestOrbitsUserInterface(object):
     """Tests the user interface for orbits, including error handling."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up User Interface unit tests."""
 
         self.in_args = ['pysat', 'testing']
@@ -106,7 +106,7 @@ class TestOrbitsUserInterface(object):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Tear down User Interface tests."""
 
         del self.in_args, self.in_kwargs, self.testInst, self.stime
@@ -206,7 +206,7 @@ class TestOrbitsUserInterface(object):
 class TestSpecificUTOrbits(object):
     """Run the tests for specific behaviour in the MLT orbits."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -219,7 +219,7 @@ class TestSpecificUTOrbits(object):
         self.etime = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.inc_min, self.etime
@@ -385,7 +385,7 @@ class TestSpecificUTOrbits(object):
 class TestGeneralOrbitsMLT(object):
     """Run the general orbit tests by MLT for pandas."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -396,7 +396,7 @@ class TestGeneralOrbitsMLT(object):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -586,7 +586,7 @@ class TestGeneralOrbitsMLT(object):
 class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
     """Run the general orbit tests by MLT for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -597,7 +597,7 @@ class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
         self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -614,7 +614,7 @@ class TestGeneralOrbitsNonStandardIteration(object):
 
     """
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -629,7 +629,7 @@ class TestGeneralOrbitsNonStandardIteration(object):
         self.orbit_stops = []
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.orbit_starts, self.orbit_stops
@@ -676,7 +676,7 @@ class TestGeneralOrbitsNonStandardIteration(object):
 class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
     """Run the general orbit tests by Longitude for pandas."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -688,7 +688,7 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -698,7 +698,7 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
 class TestGeneralOrbitsLongXarray(TestGeneralOrbitsMLT):
     """Run the general orbit tests by Longitude for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -710,7 +710,7 @@ class TestGeneralOrbitsLongXarray(TestGeneralOrbitsMLT):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -720,7 +720,7 @@ class TestGeneralOrbitsLongXarray(TestGeneralOrbitsMLT):
 class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
     """Run the general orbit tests by Orbit Number for pandas."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -732,7 +732,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -742,7 +742,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
 class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
     """Run the general orbit tests by Orbit Number for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -754,7 +754,7 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
         self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -764,7 +764,7 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
 class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
     """Run the general orbit tests for orbits defined by Latitude for pandas."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -776,7 +776,7 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -786,7 +786,7 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
 class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
     """Run the general orbit tests for orbits defined by Latitude for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -798,7 +798,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
         self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -829,7 +829,7 @@ class TestOrbitsGappyData(object):
 
         del self.deltime
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -842,7 +842,7 @@ class TestOrbitsGappyData(object):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps
@@ -871,7 +871,7 @@ class TestOrbitsGappyData(object):
 class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
     """Gappy orbit tests defined  for orbits defined by MLT for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -884,7 +884,7 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps
@@ -914,7 +914,7 @@ class TestOrbitsGappyData2(object):
 
         del self.times
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -925,7 +925,7 @@ class TestOrbitsGappyData2(object):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.times})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -943,7 +943,7 @@ class TestOrbitsGappyData2(object):
 class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
     """Run additional gappy orbit tests for orbits defined by MLT for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -954,7 +954,7 @@ class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.times})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime
@@ -964,7 +964,7 @@ class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
 class TestOrbitsGappyLongData(TestOrbitsGappyData):
     """Gappy orbit tests defined  for orbits defined by Longitude for pandas."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -978,7 +978,7 @@ class TestOrbitsGappyLongData(TestOrbitsGappyData):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps
@@ -988,7 +988,7 @@ class TestOrbitsGappyLongData(TestOrbitsGappyData):
 class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
     """Gappy orbit tests defined  for orbits defined by Longitude for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -1001,7 +1001,7 @@ class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps
@@ -1011,7 +1011,7 @@ class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
 class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
     """Gappy orbit tests defined  by Orbit Number for pandas."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -1024,7 +1024,7 @@ class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps
@@ -1034,7 +1034,7 @@ class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
 class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
     """Gappy orbit tests defined  by Orbit Number for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -1047,7 +1047,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps
@@ -1057,7 +1057,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
 class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
     """Gappy orbit tests defined  by Latitude for pandas."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -1071,7 +1071,7 @@ class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps
@@ -1081,7 +1081,7 @@ class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
 class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
     """Gappy orbit tests defined by Latitude for xarray."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -1095,7 +1095,7 @@ class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.stime, self.gaps

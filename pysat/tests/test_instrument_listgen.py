@@ -9,13 +9,13 @@ from pysat.utils import generate_instrument_list
 class TestInstListGeneration(object):
     """Tests that ensure `generate_instrument_list` is working as expected."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.test_library = pysat.instruments
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         # Reset the pysat instrument library.
