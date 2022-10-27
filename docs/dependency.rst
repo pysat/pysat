@@ -307,11 +307,11 @@ values between 0 and 20.
 
   class TestCompare:
 
-    def setup(self):
+    def setup_method(self):
         self.inst = pysat.Instrument(platform='pysat', name='testing')
         self.inst.load(2009, 1)
 
-    def teardown(self):
+    def teardown_method(self):
         del self.inst
 
     def test_stats_mean(self):
