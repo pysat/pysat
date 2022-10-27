@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Maintenance
   * Updated pytest syntax to remove nose backwards-compatibility
+  * Fixed NEP29 compliance
+  * Updated Github Actions versions
 
 [3.0.5] - 2022-10-14
 --------------------
