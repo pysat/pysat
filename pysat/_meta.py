@@ -480,12 +480,12 @@ class Meta(object):
             # from a Meta object. Set data using standard assignment via a dict.
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
-                self._warn_meta_children()
                 child = in_dict.pop('children')
                 if child is not None:
                     # If there is data in the child object, assign it here
                     self.ho_data[data_vars] = child
-
+                else:
+                    self._warn_meta_children()
             # Remaining items are simply assigned via recursive call
             self[data_vars] = in_dict
 
