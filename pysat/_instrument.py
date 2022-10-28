@@ -77,7 +77,7 @@ class Instrument(object):
         in the instrument `list_files` routine. See
         `pysat.files.parse_delimited_filenames` and
         `pysat.files.parse_fixed_width_filenames` for more information.
-        The value will be None If not specified by the user at instantiation.
+        The value will be None if not specified by the user at instantiation.
         (default=None)
     temporary_file_list : bool
         If true, the list of Instrument files will not be written to disk
