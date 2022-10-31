@@ -3,13 +3,18 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.X.X] - 2022-??-??
+--------------------
+* Maintenance
+  * Improved docstrings
+
 [3.0.5] - 2022-10-14
 --------------------
 * Maintenance
   * Update usage of logger throughout code.
   * Update NEP29 minimum CI numpy version to 1.20
 * Bug Fix
-   * Updated meta.py so that internal assignment of None to children is not 
+   * Updated meta.py so that internal assignment of None to children is not
      converted to NaN when using pandas>=1.5.0
 
 [3.0.4] - 2022-08-29
