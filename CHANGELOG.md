@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 [3.X.X] - 2022-??-??
 --------------------
 * Maintenance
+  * Updated pytest syntax to remove nose backwards-compatibility
+  * Fixed NEP29 compliance
+  * Updated Github Actions versions
   * Improved docstrings
 
 [3.0.5] - 2022-10-14

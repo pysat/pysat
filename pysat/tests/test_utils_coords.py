@@ -18,12 +18,12 @@ from pysat.utils import testing
 class TestCyclicData(object):
     """Unit tests for the `adjust_cyclic_data` function."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment."""
         self.ref_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment."""
         del self.ref_angles
         return
@@ -52,13 +52,13 @@ class TestCyclicData(object):
 class TestUpdateLon(object):
     """Unit tests for the `update_longitude` function."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment."""
         self.py_inst = None
         self.inst_time = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment."""
         del self.py_inst, self.inst_time
         return
@@ -106,14 +106,14 @@ class TestCalcSLT(object):
 
     """
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.py_inst = None
         self.inst_time = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.py_inst, self.inst_time

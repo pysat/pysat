@@ -301,7 +301,7 @@ class TestRegistration(TestWithRegistration):
 class TestModuleRegistration(object):
     """Unit tests for module registration."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.inst_module = pysat.instruments
@@ -324,7 +324,7 @@ class TestModuleRegistration(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         registry.remove(self.platforms, self.names)

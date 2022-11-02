@@ -23,7 +23,7 @@ class CICleanSetup(object):
 
     """
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.ci_env = (os.environ.get('CI') == 'true')
@@ -47,7 +47,7 @@ class CICleanSetup(object):
             shutil.move(self.root, self.new_root)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         if self.ci_env:
             # Move settings back

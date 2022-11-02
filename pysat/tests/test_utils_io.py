@@ -52,7 +52,7 @@ def decode_times_val(pandas_format):
 class TestLoadNetCDF(object):
     """Unit tests for `utils.io.load_netcdf` and `utils.io.inst_to_netcdf`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the test environment."""
 
         # Create temporary directory
@@ -70,7 +70,7 @@ class TestLoadNetCDF(object):
         self.loaded_inst = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
 
         pysat.params['data_dirs'] = self.saved_path
@@ -639,7 +639,7 @@ class TestLoadNetCDF(object):
 class TestLoadNetCDFXArray(TestLoadNetCDF):
     """Unit tests for `load_netcdf` using xarray data."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the test environment."""
 
         # Create temporary directory
@@ -665,7 +665,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         self.loaded_inst = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
 
         pysat.params['data_dirs'] = self.saved_path
@@ -750,7 +750,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
 class TestLoadNetCDF2DPandas(TestLoadNetCDF):
     """Unit tests for `load_netcdf` using 2d pandas data."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the test environment."""
 
         # Create temporary directory
@@ -768,7 +768,7 @@ class TestLoadNetCDF2DPandas(TestLoadNetCDF):
         self.loaded_inst = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
 
         pysat.params['data_dirs'] = self.saved_path
@@ -801,7 +801,7 @@ class TestNetCDF4Integration(object):
         del self.tempdir
         return
 
-    def setup(self):
+    def setup_method(self):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
@@ -814,7 +814,7 @@ class TestNetCDF4Integration(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
 
         del self.testInst, self.pformat
@@ -1274,7 +1274,7 @@ class TestNetCDF4Integration(object):
 class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
     """Integration tests for the netCDF4 I/O utils using xarray data."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
@@ -1291,7 +1291,7 @@ class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
 class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
     """Integration tests for the netCDF4 I/O utils using pandas2d Instrument."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
@@ -1308,7 +1308,7 @@ class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
 class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
     """Integration tests for the netCDF4 I/O utils using 2dxarray Instrument."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
@@ -1325,7 +1325,7 @@ class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
 class TestNetCDF4IntegrationXarrayModels(TestNetCDF4Integration):
     """Integration tests for the netCDF4 I/O utils using models Instrument."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
@@ -1342,7 +1342,7 @@ class TestNetCDF4IntegrationXarrayModels(TestNetCDF4Integration):
 class TestXarrayIO(object):
     """Unit tests for the Xarray I/O utilities."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a testing environment."""
 
         # Create an instrument object that has a meta with some
@@ -1355,7 +1355,7 @@ class TestXarrayIO(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
 
         del self.testInst, self.epoch_name
@@ -1466,7 +1466,7 @@ class TestXarrayIO(object):
 class TestMetaTranslation(object):
     """Unit tests for meta translation when writing/loading files."""
 
-    def setup(self):
+    def setup_method(self):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing', num_samples=5,
@@ -1478,7 +1478,7 @@ class TestMetaTranslation(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Cleanup test environment."""
 
         del self.test_inst, self.test_date, self.out, self.meta_dict
@@ -1750,7 +1750,7 @@ class TestMetaTranslation(object):
 class TestMetaTranslationXarray(TestMetaTranslation):
     """Test meta translation when writing/loading files xarray Instrument."""
 
-    def setup(self):
+    def setup_method(self):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing_xarray',
@@ -1763,7 +1763,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Cleanup test environment."""
 
         del self.test_inst, self.test_date, self.out, self.meta_dict
@@ -1774,7 +1774,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
 class TestMetaTranslation2DXarray(TestMetaTranslation):
     """Test meta translation when writing/loading files xarray2d Instrument."""
 
-    def setup(self):
+    def setup_method(self):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing2d_xarray',
@@ -1787,7 +1787,7 @@ class TestMetaTranslation2DXarray(TestMetaTranslation):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Cleanup test environment."""
 
         del self.test_inst, self.test_date, self.out, self.meta_dict
@@ -1798,7 +1798,7 @@ class TestMetaTranslation2DXarray(TestMetaTranslation):
 class TestMetaTranslation2DPandas(TestMetaTranslation):
     """Test meta translation when writing/loading files testing2d Instrument."""
 
-    def setup(self):
+    def setup_method(self):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing2d',
@@ -1810,7 +1810,7 @@ class TestMetaTranslation2DPandas(TestMetaTranslation):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Cleanup test environment."""
 
         del self.test_inst, self.test_date, self.out, self.meta_dict
@@ -1821,7 +1821,7 @@ class TestMetaTranslation2DPandas(TestMetaTranslation):
 class TestMetaTranslationModel(TestMetaTranslation):
     """Test meta translation when writing/loading files testmodel Instrument."""
 
-    def setup(self):
+    def setup_method(self):
         """Create test environment."""
 
         self.test_inst = pysat.Instrument('pysat', 'testmodel',
@@ -1833,7 +1833,7 @@ class TestMetaTranslationModel(TestMetaTranslation):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Cleanup test environment."""
 
         del self.test_inst, self.test_date, self.out, self.meta_dict

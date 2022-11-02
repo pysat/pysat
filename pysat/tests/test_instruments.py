@@ -150,13 +150,13 @@ class TestInstruments(InstLibTests):
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         warnings.simplefilter("always", DeprecationWarning)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         return

@@ -24,7 +24,7 @@ from pysat.utils import testing
 class TestParseDelimitedFilenames(object):
     """Unit tests for the `parse_delimited_filename` function."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.temporary_file_list = False
@@ -40,7 +40,7 @@ class TestParseDelimitedFilenames(object):
                           'revision': '{revision:02d}', 'cycle': '{cycle:2s}'}
         self.file_dict = {}
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.fkwargs, self.file_dict, self.kw_format
@@ -128,14 +128,14 @@ class TestParseDelimitedFilenames(object):
 class TestFileDirectoryTranslations(CICleanSetup):
     """Unit tests for file directory setup."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         # Module is only required for testing installations on CI servers
         import pysatSpaceWeather
 
         # Create clean environment on the CI server
-        CICleanSetup.setup(self)
+        CICleanSetup.setup_method(self)
         reload(pysat)
 
         # create temporary directory
@@ -178,11 +178,11 @@ class TestFileDirectoryTranslations(CICleanSetup):
             dates = pds.date_range(dates[0], dates[1], **kwargs)
             inst.download(date_array=dates)
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         # Clean environment
-        CICleanSetup.teardown(self)
+        CICleanSetup.teardown_method(self)
 
         self.tempdir.cleanup()
 
@@ -309,7 +309,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
 class TestFileUtils(CICleanSetup):
     """Unit tests for general file/path utilities."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         self.out = ''
 
@@ -332,7 +332,7 @@ class TestFileUtils(CICleanSetup):
         pysat.utils.files.check_and_make_path(self.testInst.files.data_path)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         pysat.params['data_dirs'] = self.data_paths
         self.tempdir.cleanup()

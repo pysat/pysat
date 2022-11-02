@@ -17,12 +17,12 @@ from pysat.utils import testing
 class TestTestingUtils(object):
     """Unit tests for `pysat.utils.testing` functions."""
 
-    def setup(self):
+    def setup_method(self):
         """Create a clean test environment."""
         warnings.simplefilter("always")
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
         warnings.resetwarnings()
         return
