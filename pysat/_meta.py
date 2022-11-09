@@ -483,9 +483,8 @@ class Meta(object):
                 child = in_dict.pop('children')
                 if child is not None:
                     # If there is data in the child object, assign it here
-                    self.ho_data[data_vars] = child
-                else:
                     self._warn_meta_children()
+                    self.ho_data[data_vars] = child
             # Remaining items are simply assigned via recursive call
             self[data_vars] = in_dict
 
