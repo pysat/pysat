@@ -529,7 +529,7 @@ class TestMeta(object):
 
     # TODO(#908): remove tests for deprecated instruments
     @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
-                                           "testing2d_xarray", "testing_xarray",
+                                           "ndtesting", "testing_xarray",
                                            "testmodel"])
     def test_equality_w_copy(self, inst_name):
         """Test that meta remains the same when copied.
@@ -641,7 +641,7 @@ class TestMeta(object):
 
     # TODO(#908): remove tests for deprecated instruments
     @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
-                                           "testing2d_xarray", "testing_xarray",
+                                           "ndtesting", "testing_xarray",
                                            "testmodel"])
     def test_pop(self, inst_name):
         """Test meta attributes are retained when extracted using pop.
@@ -2351,13 +2351,13 @@ class TestToDictXarray(TestToDict):
         return
 
 
-class TestToDictXarray2D(TestToDict):
+class TestToDictXarrayND(TestToDict):
     """Test `.to_dict` methods using pysat test Instruments."""
 
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
+        self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          num_samples=5, use_header=True)
         self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
         self.testInst.load(date=self.stime)

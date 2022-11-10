@@ -199,7 +199,7 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         """Set up the unit test environment for each method."""
 
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
+        self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          num_samples=12,
                                          clean_level='clean',
                                          use_header=True)

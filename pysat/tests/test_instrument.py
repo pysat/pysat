@@ -10,7 +10,7 @@ import xarray as xr
 import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing2d
-import pysat.instruments.pysat_testing2d_xarray
+import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing_xarray
 
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
@@ -145,8 +145,8 @@ class TestBasics2D(TestBasics):
         return
 
 
-class TestBasics2DXarray(TestBasics):
-    """Basic tests for 2D xarray `pysat.Instrument`.
+class TestBasicsNDXarray(TestBasics):
+    """Basic tests for ND xarray `pysat.Instrument`.
 
     Note
     ----
@@ -157,16 +157,16 @@ class TestBasics2DXarray(TestBasics):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing2d_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing2d_xarray',
+                                         name='ndtesting',
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = \
-            pysat.instruments.pysat_testing2d_xarray._test_dates['']['']
+            pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.ref_doy = 1
         self.out = None
         return
