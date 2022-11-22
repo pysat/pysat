@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed NEP29 compliance
   * Updated Github Actions versions
   * Improved docstrings
+  * Fixed a bug where a deprecation warning was thrown incorrectly
 
 [3.0.5] - 2022-10-14
 --------------------
