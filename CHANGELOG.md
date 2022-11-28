@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.X.X] - 2022-??-??
 --------------------
+* Bug Fix
+  * Ensure pysat tests do not store temporary directory to file
 * Maintenance
   * Updated pytest syntax to remove nose backwards-compatibility
   * Fixed NEP29 compliance
