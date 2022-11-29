@@ -8,9 +8,9 @@ import warnings
 import xarray as xr
 
 import pysat
+import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing2d
-import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing_xarray
 
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
