@@ -5,6 +5,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.X.X] - 2022-??-??
 --------------------
+* Deprecations
+  * `pysat_testing2d_xarray` instrument deprecated and replaced by
+    `pysat_ndtesting`
 * Maintenance
   * Updated pytest syntax to remove nose backwards-compatibility
   * Fixed NEP29 compliance
