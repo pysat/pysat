@@ -23,12 +23,10 @@ from pysat.instruments import pysat_ndtesting
 platform = 'pysat'
 name = 'testing2d_xarray'
 
-tags = {'': 'Regular testing data set'}
-sat_ids = {'': ['']}
-pandas_format = False
-tags = {'': 'Regular testing data set'}
-inst_ids = {'': ['']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+tags = pysat_ndtesting.tags
+inst_ids = pysat_ndtesting.inst_ids
+pandas_format = pysat_ndtesting.pandas_format
+_test_dates = pysat_ndtesting._test_dates
 
 
 # Init method
@@ -54,10 +52,10 @@ def init(self, test_init_kwarg=None):
 
 
 # Clean method
-clean = mm_test.clean
+clean = pysat_ndtesting.clean
 
 # Optional method, preprocess
-preprocess = mm_test.preprocess
+preprocess = pysat_ndtesting.preprocess
 
 load = pysat_ndtesting.load
 
