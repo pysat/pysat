@@ -13,6 +13,7 @@ pysat_testing
 An instrument with satellite-like data as a function of latitude, longitude,
 and altitude in a pandas format. See :ref:`api-pysat-testing` for more details.
 
+
 pysat_testing_xarray
 ^^^^^^^^^^^^^^^^^^^^
 An instrument with satellite-like data as a function of latitude, longitude,
@@ -25,6 +26,13 @@ pysat_testing2d
 An instrument with satellite-like data like :py:mod:`pysat_testing`, but with a
 2D data variable, 'profile', that is similar to Radio Occultation data. See
 :ref:`api-pysat-testing2d` for more details.
+
+
+pysat_ndtesting
+^^^^^^^^^^^^^^^
+An instrument with satellite-like data like :py:mod:`pysat_testing` that
+also has an imager-like 3D data variable. See :ref:`api-pysat-ndtesting`
+for more details.
 
 
 pysat_testing2d_xarray
