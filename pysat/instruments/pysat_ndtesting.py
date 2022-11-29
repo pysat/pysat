@@ -13,8 +13,6 @@ from pysat.instruments.methods import testing as mm_test
 platform = 'pysat'
 name = 'ndtesting'
 
-tags = {'': 'Regular testing data set'}
-sat_ids = {'': ['']}
 pandas_format = False
 tags = {'': 'Regular testing data set'}
 inst_ids = {'': ['']}
