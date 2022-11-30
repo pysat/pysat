@@ -111,13 +111,13 @@ class InstLibTests(object):
         # Use a temporary directory so that the user's setup is not altered.
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
-        pysat.params['data_dirs'] = self.tempdir.name
+        pysat.params._set_data_dirs(path=self.tempdir.name, store=False)
         return
 
     def teardown_class(self):
         """Clean up downloaded files and parameters from tests."""
 
-        pysat.params['data_dirs'] = self.saved_path
+        pysat.params._set_data_dirs(self.saved_path, store=False)
         self.tempdir.cleanup()
         del self.saved_path, self.tempdir
         return
