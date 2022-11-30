@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated Github Actions versions
   * Improved docstrings
   * Fixed a bug where a deprecation warning was thrown incorrectly
+  * Add pysatModels to pysat instrument count
 
 [3.0.5] - 2022-10-14
 --------------------
