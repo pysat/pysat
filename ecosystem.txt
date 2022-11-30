@@ -1,4 +1,5 @@
 pysatCDAAC instruments
 pysatMadrigal instruments
+pysatModels models
 pysatNASA instruments
 pysatSpaceWeather instruments
