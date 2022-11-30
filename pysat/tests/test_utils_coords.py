@@ -64,7 +64,7 @@ class TestUpdateLon(object):
         return
 
     @pytest.mark.parametrize("name", ["testing", "testing_xarray",
-                                      "testing2d_xarray", "testmodel"])
+                                      "ndtesting", "testmodel"])
     def test_update_longitude(self, name):
         """Test `update_longitude` successful run."""
 
@@ -200,7 +200,7 @@ class TestCalcSLT(object):
         return
 
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "testing2d_xarray"])
+                                      "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time(self, name):
         """Test calc_solar_local_time with longitude coordinates."""
 
@@ -217,7 +217,7 @@ class TestCalcSLT(object):
         return
 
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "testing2d_xarray"])
+                                      "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time_no_mod_multiday(self, name):
         """Test non modulated solar local time output for a 2 day range."""
 
@@ -236,7 +236,7 @@ class TestCalcSLT(object):
         return
 
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "testing2d_xarray"])
+                                      "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time_no_mod_ref_date(self, name):
         """Test non modulated SLT output for a 2 day range with a ref date."""
 
@@ -257,7 +257,7 @@ class TestCalcSLT(object):
         return
 
     @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "testing2d_xarray"])
+                                      "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time_no_mod(self, name):
         """Test SLT calc with longitude coordinates and no modulus."""
 

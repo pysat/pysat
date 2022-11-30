@@ -654,10 +654,10 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         pysat.params['data_dirs'] = self.tempdir.name
 
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing2d_xarray',
+                                         name='ndtesting',
                                          update_files=True, num_samples=100,
                                          use_header=True)
-        self.stime = pysat.instruments.pysat_testing2d_xarray._test_dates[
+        self.stime = pysat.instruments.pysat_ndtesting._test_dates[
             '']['']
         self.epoch_name = 'time'
 
@@ -1313,7 +1313,7 @@ class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
 
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
+        self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          num_samples=5, use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
@@ -1777,7 +1777,7 @@ class TestMetaTranslation2DXarray(TestMetaTranslation):
     def setup_method(self):
         """Create test environment."""
 
-        self.test_inst = pysat.Instrument('pysat', 'testing2d_xarray',
+        self.test_inst = pysat.Instrument('pysat', 'ndtesting',
                                           num_samples=5, use_header=True)
         self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
         self.test_date = self.test_date['']['']

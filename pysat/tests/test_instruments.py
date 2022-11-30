@@ -212,7 +212,8 @@ class TestDeprecation(object):
         assert "download" in mark_names
 
     @pytest.mark.parametrize("inst_module", ['pysat_testing2d',
-                                             'pysat_testing_xarray'])
+                                             'pysat_testing_xarray',
+                                             'pysat_testing2d_xarray'])
     def test_deprecated_instruments(self, inst_module):
         """Check that instantiating old instruments raises a DeprecationWarning.
 
