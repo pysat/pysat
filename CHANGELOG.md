@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Bug Fix
   * Ensure pysat tests do not store temporary directory to file
+  * Updated links for supported instruments in documentation
 * Deprecations
   * `pysat_testing2d_xarray` instrument deprecated and replaced by
     `pysat_ndtesting`
