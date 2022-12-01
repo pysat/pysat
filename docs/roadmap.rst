@@ -19,14 +19,14 @@ the feature.
 
 Generality
 ----------
-pysat's data support is currently focused on space-science data sets, however,
-pysat's feature set works well on other types of data as well. Where appropriate,
+pysat's data support is currently focused on space-science data sets. However,
+pysat's feature set also works well on other types of data. Where appropriate,
 space-science specific features will be generalized for a wider audience.
 
 Data Support
 ~~~~~~~~~~~~
-The Instrument class currently supports both pandas and xarray formats, covering
-one and multi-dimensional data that can be loaded into memory. Even larger data
+The :py:class:`Instrument` class currently supports both :py:class:`pandas.DataFrame` and :py:class:`xarray.Dataset` formats, covering
+1D time-series and multi-dimensional data that can be loaded into memory. Even larger data
 sets would require that pysat integrate a data format such as Dask. To cover the
 needs of any potential user, an ideal solution would be for pysat to implement
 a clear public mechanism for users to add their own data formats. Commonalities
@@ -48,7 +48,7 @@ Metapackage
 ~~~~~~~~~~~
 The minimal barriers to entry in open source software allows for a large
 variety of packages, each with its own approach to a problem. A disadvantage
-of the setup is the variety of packages may not have been developed with
+of the setup is the variety of packages have been developed without
 interoperability in mind, presenting challenges when attempting to combine
 these disparate packages towards a common goal. pysat's versatility when
 coupling to data sources may be used to connect these isolated packages
@@ -59,9 +59,10 @@ metapackage increases exponentially with every new connection.
 
 File Support
 ~~~~~~~~~~~~
-pysat currently supports tracking both data and metadata, as well as the ability
+:py:mod:`pysat` currently supports tracking both data and metadata, as well as the ability
 to create netCDF4 files, and is capable of maintaining compliance with NASA's
-Space Physics Data Facility (SPDF/ISTP) formatting requirements for NASA
+`Space Physics Data Facility <https://spdf.gsfc.nasa.gov/sp_use_of_cdf.html>`_
+(SPDF) formatting requirements for NASA
 satellite missions. Support for creating different types of files, as well as
 a variety of file standards, needs to be enhanced to support a broader array of
 research areas.
