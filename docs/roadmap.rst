@@ -25,13 +25,14 @@ space-science specific features will be generalized for a wider audience.
 
 Data Support
 ~~~~~~~~~~~~
-The :py:class:`Instrument` class currently supports both :py:class:`pandas.DataFrame` and :py:class:`xarray.Dataset` formats, covering
-1D time-series and multi-dimensional data that can be loaded into memory. Even larger data
-sets would require that pysat integrate a data format such as Dask. To cover the
-needs of any potential user, an ideal solution would be for pysat to implement
-a clear public mechanism for users to add their own data formats. Commonalities
-observed after integrating dask, pandas, and xarray should provide a viable path
-forward for this generalization.
+The :py:class:`Instrument` class currently supports both
+:py:class:`pandas.DataFrame` and :py:class:`xarray.Dataset` formats, covering
+1D time-series and multi-dimensional data that can be loaded into memory. Even
+larger data sets would require that pysat integrate a data format such as Dask.
+To cover the needs of any potential user, an ideal solution would be for pysat
+to implement a clear public mechanism for users to add their own data formats.
+Commonalities observed after integrating dask, pandas, and xarray should provide
+a viable path forward for this generalization.
 
 Multiple Data Sources
 ~~~~~~~~~~~~~~~~~~~~~
@@ -59,13 +60,13 @@ metapackage increases exponentially with every new connection.
 
 File Support
 ~~~~~~~~~~~~
-:py:mod:`pysat` currently supports tracking both data and metadata, as well as the ability
-to create netCDF4 files, and is capable of maintaining compliance with NASA's
+:py:mod:`pysat` currently supports tracking both data and metadata, as well as
+the ability to create netCDF4 files, and is capable of maintaining compliance
+with NASA's
 `Space Physics Data Facility <https://spdf.gsfc.nasa.gov/sp_use_of_cdf.html>`_
-(SPDF) formatting requirements for NASA
-satellite missions. Support for creating different types of files, as well as
-a variety of file standards, needs to be enhanced to support a broader array of
-research areas.
+(SPDF) formatting requirements for NASA satellite missions. Support for creating
+different types of files, as well as a variety of file standards, needs to be
+enhanced to support a broader array of research areas.
 
 Data Iteration
 ~~~~~~~~~~~~~~
