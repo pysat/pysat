@@ -24,7 +24,7 @@ data. Where appropriate, space-science specific features will be generalized for
 a wider audience.
 
 Data Support
--------------------
+------------
 The :py:class:`Instrument` class currently supports both
 :py:class:`pandas.DataFrame` and :py:class:`xarray.Dataset` formats, covering
 1D time-series and multi-dimensional data that can be loaded into memory. Even
