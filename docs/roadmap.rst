@@ -18,15 +18,13 @@ An item being on the roadmap does not necessarily mean that it will happen.
 During the implementation or testing periods we may discover issues that limit
 the feature.
 
-Generality
-----------
 Data support with :py:mod:`pysat` is currently focused on space-science data
 sets. However, the features within the module also work well on other types of
 data. Where appropriate, space-science specific features will be generalized for
 a wider audience.
 
 Data Support
-~~~~~~~~~~~~
+-------------------
 The :py:class:`Instrument` class currently supports both
 :py:class:`pandas.DataFrame` and :py:class:`xarray.Dataset` formats, covering
 1D time-series and multi-dimensional data that can be loaded into memory. Even
