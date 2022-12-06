@@ -18,6 +18,8 @@ An item being on the roadmap does not necessarily mean that it will happen.
 During the implementation or testing periods we may discover issues that limit
 the feature.
 
+Generality
+----------
 Data support with :py:mod:`pysat` is currently focused on space-science data
 sets. However, the features within the module also work well on other types of
 data. Where appropriate, space-science specific features will be generalized for
@@ -36,7 +38,7 @@ own data formats. Commonalities observed after integrating :py:mod:`dask`,
 this generalization.
 
 Multiple Data Sources
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 The Instrument class is designed to work on a single data source at a time. For
 multiple data sources :py:mod:`pysat` is developing a Constellation class that
 operates on multiple Instrument objects and will include methods designed to
@@ -47,7 +49,7 @@ always be possible. Long term, we intend on providing functionality that can
 merge a Constellation into a 'live' Instrument object for greatest compatibility.
 
 Metapackage
-~~~~~~~~~~~
+-----------
 The minimal barriers to entry in open source software allows for a large
 variety of packages, each with its own approach to a problem. A disadvantage
 of this setup is that many of these packages have been developed without
@@ -60,7 +62,7 @@ then that functionality becomes available to all packages that incorporate
 :py:mod:`pysat` metapackage increases exponentially with every new connection.
 
 File Support
-~~~~~~~~~~~~
+------------
 :py:mod:`pysat` currently supports tracking both data and metadata, as well as
 the ability to create netCDF4 files, and is capable of maintaining compliance
 with NASA's
@@ -70,7 +72,7 @@ different types of files, as well as a variety of file standards, needs to be
 enhanced to support a broader array of research areas.
 
 Data Iteration
-~~~~~~~~~~~~~~
+--------------
 :py:mod:`pysat` currently features orbit iteration, a feature that transparently
 provides complete orbits (across day/file breaks) calculated in real time. A
 variety of orbit types are supported, each of which maps to a method looking for
@@ -84,14 +86,14 @@ requires upgrading and generalizing the data cacheing in :py:mod:`pysat` as well
 as the orbit iteration interface.
 
 Performance
-~~~~~~~~~~~
+-----------
 While it is critical for scientific outputs to be correct, results that are
 equally correct but calculated quicker make it easier for scientists to fully
 explore a data set. A benchmarking solution will be implemented and used to
 identify areas with slow performance that could potentially be improved upon.
 
 Testing
-~~~~~~~
+-------
 Unit tests confirming :py:mod:`pysat` behaves as expected is fundamental to the
 scientific goals of the project. While unit test coverage is high, a general
 review of all the unit tests needs to be performed. In particular, unit tests
@@ -101,12 +103,12 @@ tests need to be expanded to ensure that more combinations of features are
 engaged at once to ensure interoperability.
 
 User Experience
-~~~~~~~~~~~~~~~
+---------------
 Providing a consistent, versatile, and easy to use interface is a core feature
 for :py:mod:`pysat`.
 
 Documentation
-~~~~~~~~~~~~~
+-------------
 Robust, accurate, consistent, comprehensive, and easy to understand
 documentation is essential for any project presented to the community to build
 upon. While great strides were made with the release of :py:mod:`pysat` v3.0,
@@ -114,7 +116,7 @@ additional review and expansion of examples and discussion would be helpful to
 users.
 
 pysatPenumbra Modules
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 The development of analysis packages built on :py:mod:`pysat` has historically
 revealed areas for improvement. Active engagement with these publicly developed
 packages helps ensure that solutions are practical and responsive to community
