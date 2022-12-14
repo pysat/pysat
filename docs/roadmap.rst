@@ -78,7 +78,7 @@ provides complete orbits (across day/file breaks) calculated in real time. A
 variety of orbit types are supported, each of which maps to a method looking for
 a particular signal in the data to trigger upon. However, the current variety of
 orbit types is insufficient to address community needs. The underlying class is
-capable of iterating over a wider variety conditions though this type of
+capable of iterating over a wider variety of conditions though this type of
 functionality is not currently available to users. Improving access to this
 area enables generalized real-time data pagination based upon custom user
 supplied conditions. Ensuring good performance under a variety of conditions
