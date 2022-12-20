@@ -17,7 +17,7 @@ jobs:
           - python-version: "3.8"
             numpy_ver: "1.20"
             os: ubuntu-latest
-          - python-version: "3.6.8"
+          - python-version: "pypy3.6"
             numpy_ver: "oldest-supported-numpy"
             os: ubuntu-latest
 
