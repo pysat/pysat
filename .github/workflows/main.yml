@@ -34,12 +34,13 @@ jobs:
       if: ${{ matrix.numpy_ver != 'latest'}}
       run: |
         pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
+        # Need to force install versions compliant with NEP29
+        pip install "pandas<1.5"
 
     - name: Install Operational dependencies
       if: ${{ matrix.python-version == '3.6.8'}}
       run: |
         # Need to force install versions compliant with operations
-        pip install "pandas<1.5"
         pip install "netCDF4<1.6.2"
 
     - name: Install standard dependencies and pysat
