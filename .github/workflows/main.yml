@@ -34,6 +34,7 @@ jobs:
       if: ${{ matrix.numpy_ver != 'latest'}}
       run: |
         pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
+        pip install netCDF<1.6.2
 
     - name: Install standard dependencies and pysat
       run: |
