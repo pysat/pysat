@@ -20,7 +20,7 @@ jobs:
           - python-version: "3.6.8"
             numpy_ver: "oldest-supported-numpy"
             os: "linux"
-	    platform-version: "16.04"
+            platform-version: "16.04"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
     runs-on: ${{ matrix.os }}
