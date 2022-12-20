@@ -10,8 +10,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.10"]
+        os: [ubuntu-latest] #, windows-latest]
+        python-version: ["3.9"] #, "3.10"]
         numpy_ver: ["latest"]
         include:
           - python-version: "3.8"
@@ -19,8 +19,7 @@ jobs:
             os: ubuntu-latest
           - python-version: "3.6.8"
             numpy_ver: "oldest-supported-numpy"
-            os: "linux"
-            platform-version: "16.04"
+            os: "ubuntu-20.04"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
     runs-on: ${{ matrix.os }}
