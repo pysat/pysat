@@ -279,9 +279,9 @@ profile data as a function of altitude at some distance from the satellite. It
 is similar to a Radio Occultation or other instruments that have altitude
 profiles.
 
-pysat_testing2d_xarray
+pysat_ndtesting
 ^^^^^^^^^^^^^^^^^^^^^^
-:ref:`api-pysat-testing2d_xarray` is a satellite-like object that returns all
+:ref:`api-pysat-ndtesting` is a satellite-like object that returns all
 of the above plus an imager-like data set, ie, remote data that is a function
 of time and two spatial dimensions.
 
@@ -307,11 +307,11 @@ values between 0 and 20.
 
   class TestCompare:
 
-    def setup(self):
+    def setup_method(self):
         self.inst = pysat.Instrument(platform='pysat', name='testing')
         self.inst.load(2009, 1)
 
-    def teardown(self):
+    def teardown_method(self):
         del self.inst
 
     def test_stats_mean(self):
@@ -351,5 +351,3 @@ necessary for a limited range of pysat versions.
                                       ' v3.0.2 or later.')))
   def test_new_feature(self):
      """Check a new feature that requires the develop pysat."""
-
-  

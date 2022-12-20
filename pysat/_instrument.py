@@ -73,10 +73,11 @@ class Instrument(object):
     file_format : str or NoneType
         File naming structure in string format.  Variables such as `year`,
         `month`, `day`, etc. will be filled in as needed using python
-        string formatting.  The default file format structure is supplied in the
-        instrument `list_files` routine. See
+        string formatting.  The default file format structure is supplied
+        in the instrument `list_files` routine. See
         `pysat.files.parse_delimited_filenames` and
         `pysat.files.parse_fixed_width_filenames` for more information.
+        The value will be None if not specified by the user at instantiation.
         (default=None)
     temporary_file_list : bool
         If true, the list of Instrument files will not be written to disk

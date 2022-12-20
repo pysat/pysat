@@ -194,6 +194,15 @@ General Instruments
 The following Instrument modules support I/O and analysis in pysat.
 
 
+.. _api-pysat-ndtesting:
+
+pysat_ndtesting
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pysat.instruments.pysat_ndtesting
+   :members:
+
+
 .. _api-pysat-netcdf:
 
 pysat_netcdf

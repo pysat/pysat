@@ -3,13 +3,30 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.X.X] - 2022-??-??
+--------------------
+* Bug Fix
+  * Ensure pysat tests do not store temporary directory to file
+  * Updated links for supported instruments in documentation
+* Deprecations
+  * `pysat_testing2d_xarray` instrument deprecated and replaced by
+    `pysat_ndtesting`
+* Maintenance
+  * Updated pytest syntax to remove nose backwards-compatibility
+  * Fixed NEP29 compliance
+  * Updated Github Actions versions
+  * Improved docstrings
+  * Fixed a bug where a deprecation warning was thrown incorrectly
+  * Add pysatModels to pysat instrument count
+  * Update contributing document
+
 [3.0.5] - 2022-10-14
 --------------------
 * Maintenance
   * Update usage of logger throughout code.
   * Update NEP29 minimum CI numpy version to 1.20
 * Bug Fix
-   * Updated meta.py so that internal assignment of None to children is not 
+   * Updated meta.py so that internal assignment of None to children is not
      converted to NaN when using pandas>=1.5.0
 
 [3.0.4] - 2022-08-29

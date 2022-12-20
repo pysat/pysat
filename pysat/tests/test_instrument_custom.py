@@ -38,7 +38,7 @@ def mult_data(inst, mult, dkey="mlt"):
 class TestLogging(object):
     """Unit tests for logging interface with custom functions."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
@@ -47,7 +47,7 @@ class TestLogging(object):
         self.out = ''
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out
@@ -69,7 +69,7 @@ class TestLogging(object):
 class TestBasics(object):
     """Unit tests for `pysat.instrument.custom_attach` with pandas data."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
@@ -82,7 +82,7 @@ class TestBasics(object):
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.custom_args
@@ -232,7 +232,7 @@ class TestBasics(object):
 class TestBasicsXarray(TestBasics):
     """Unit tests for `pysat.instrument.custom_attach` with an xarray inst."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
@@ -244,7 +244,7 @@ class TestBasicsXarray(TestBasics):
         self.custom_args = [2]
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.load_date, self.custom_args
@@ -254,7 +254,7 @@ class TestBasicsXarray(TestBasics):
 class TestConstellationBasics(object):
     """Unit tests for `pysat.instrument.custom_attach` with a constellation."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.testConst = pysat.Constellation(instruments=[
@@ -267,7 +267,7 @@ class TestConstellationBasics(object):
         self.custom_args = [2]
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testConst, self.load_date, self.custom_args

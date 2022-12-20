@@ -13,14 +13,14 @@ import pysat
 class TestMetaHeader(object):
     """Unit and integration tests for the MetaLabels class."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.meta_header = pysat.MetaHeader()
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.meta_header
         return

@@ -102,6 +102,7 @@ To set up `pysat` for local development:
 9. Submit a pull request through the GitHub website. Pull requests should be
    made to the ``develop`` branch.
 
+
 Pull Request Guidelines
 -----------------------
 
@@ -157,3 +158,5 @@ These include:
 * Block and inline comments should use proper English grammar and punctuation
   with the exception of single sentences in a block, which may then omit the
   final period
+* When casting is necessary, use `np.int64` and `np.float64` to ensure operating
+  system agnosticism

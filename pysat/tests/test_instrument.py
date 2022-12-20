@@ -8,9 +8,9 @@ import warnings
 import xarray as xr
 
 import pysat
+import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing2d
-import pysat.instruments.pysat_testing2d_xarray
 import pysat.instruments.pysat_testing_xarray
 
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
@@ -43,7 +43,7 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
         del self.testing_kwargs, self.xarray_epoch_name
         return
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -58,7 +58,7 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
@@ -68,7 +68,7 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
 class TestBasicsInstModule(TestBasics):
     """Basic tests for instrument instantiated via inst_module."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -84,7 +84,7 @@ class TestBasicsInstModule(TestBasics):
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
@@ -95,7 +95,7 @@ class TestBasicsInstModule(TestBasics):
 class TestBasicsXarray(TestBasics):
     """Basic tests for xarray `pysat.Instrument`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing_xarray)
@@ -112,7 +112,7 @@ class TestBasicsXarray(TestBasics):
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
@@ -123,7 +123,7 @@ class TestBasicsXarray(TestBasics):
 class TestBasics2D(TestBasics):
     """Basic tests for 2D pandas `pysat.Instrument`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing2d)
@@ -138,15 +138,15 @@ class TestBasics2D(TestBasics):
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
 
 
-class TestBasics2DXarray(TestBasics):
-    """Basic tests for 2D xarray `pysat.Instrument`.
+class TestBasicsNDXarray(TestBasics):
+    """Basic tests for ND xarray `pysat.Instrument`.
 
     Note
     ----
@@ -154,24 +154,24 @@ class TestBasics2DXarray(TestBasics):
 
     """
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing2d_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing2d_xarray',
+                                         name='ndtesting',
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = \
-            pysat.instruments.pysat_testing2d_xarray._test_dates['']['']
+            pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.ref_doy = 1
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
@@ -282,7 +282,7 @@ class TestBasics2DXarray(TestBasics):
 class TestBasicsShiftedFileDates(TestBasics):
     """Basic tests for pandas `pysat.Instrument` with shifted file dates."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -299,7 +299,7 @@ class TestBasicsShiftedFileDates(TestBasics):
         self.out = None
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
@@ -309,13 +309,13 @@ class TestBasicsShiftedFileDates(TestBasics):
 class TestInstGeneral(object):
     """Unit tests for empty instrument objects."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.empty_inst = pysat.Instrument()
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.empty_inst
@@ -383,7 +383,7 @@ class TestInstGeneral(object):
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         warnings.simplefilter("always", DeprecationWarning)
@@ -394,7 +394,7 @@ class TestDeprecation(object):
         self.war = ""
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         reload(pysat.instruments.pysat_testing)

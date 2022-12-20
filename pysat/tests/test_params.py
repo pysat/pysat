@@ -21,7 +21,7 @@ from pysat.utils import testing
 class TestBasics(object):
     """Unit tests for accessing and changing `pysat._params`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         # Store current pysat directory
         self.stored_params = copy.deepcopy(pysat.params)
@@ -33,7 +33,7 @@ class TestBasics(object):
         self.tempdir = tempfile.TemporaryDirectory()
         self.wd = os.getcwd()
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         pysat.params = copy.deepcopy(self.stored_params)
         pysat.params.store()

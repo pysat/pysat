@@ -13,7 +13,7 @@ from pysat.utils import testing
 class TestMethodsTesting(object):
     """Unit tests for testing methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.test_inst = pysat.Instrument('pysat', 'testing', use_header=True)
@@ -22,7 +22,7 @@ class TestMethodsTesting(object):
         self.fnames = [self.test_inst.files.files.values[0]]
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.test_inst, self.fnames
