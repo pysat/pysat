@@ -19,6 +19,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where a deprecation warning was thrown incorrectly
   * Add pysatModels to pysat instrument count
   * Update contributing document
+  * Added support for testing with python 3.6 to support operational use
 
 [3.0.5] - 2022-10-14
 --------------------
