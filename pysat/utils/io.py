@@ -1350,7 +1350,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # If decode_times False, apply our own calculation. If True,
     # datetime objects were created by xarray.
     if not decode_times:
-        edates = pds.to_datetime(data['time'], unit=epoch_unit,
+        edates = pds.to_datetime(data['time'].values, unit=epoch_unit,
                                  origin=epoch_origin)
         data['time'] = xr.DataArray(edates, coords=data['time'].coords)
 

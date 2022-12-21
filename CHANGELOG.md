@@ -19,7 +19,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where a deprecation warning was thrown incorrectly
   * Add pysatModels to pysat instrument count
   * Update contributing document
-  * Updated reported minimum supported Python version to 3.6.8
+  * Added support for testing with python 3.6, updated reported
+    minimum supported Python version to 3.6
 
 [3.0.5] - 2022-10-14
 --------------------
