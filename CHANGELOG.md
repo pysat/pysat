@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.0.6] - 2022-12-20
+[3.0.6] - 2022-12-21
 --------------------
 * Bug Fix
   * Ensure pysat tests do not store temporary directory to file
@@ -19,6 +19,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where a deprecation warning was thrown incorrectly
   * Add pysatModels to pysat instrument count
   * Update contributing document
+  * Updated reported minimum supported Python version to 3.6.8
 
 [3.0.5] - 2022-10-14
 --------------------
