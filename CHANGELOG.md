@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.X.X] - 2022-??-??
+[3.0.6] - 2022-12-20
 --------------------
 * Bug Fix
   * Ensure pysat tests do not store temporary directory to file
