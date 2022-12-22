@@ -12,7 +12,7 @@ from pysat.utils import testing
 class TestMalformedIndex(object):
     """Unit tests for pandas `pysat.Instrument` with malformed index."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
@@ -27,7 +27,7 @@ class TestMalformedIndex(object):
         self.ref_doy = 1
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy
@@ -45,7 +45,7 @@ class TestMalformedIndex(object):
 class TestMalformedIndexXArray(TestMalformedIndex):
     """Basic tests for xarray `pysat.Instrument` with shifted file dates."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing_xarray)
@@ -61,7 +61,7 @@ class TestMalformedIndexXArray(TestMalformedIndex):
         self.ref_doy = 1
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.ref_time, self.ref_doy

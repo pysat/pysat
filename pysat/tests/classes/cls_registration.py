@@ -22,7 +22,7 @@ from pysat.utils import testing
 class TestWithRegistration(object):
     """Test class for unit/integration tests with registered Instruments."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         # Define the modules and platforms
         self.modules = [('package1.module1', 'platname1', 'name1'),
@@ -47,7 +47,7 @@ class TestWithRegistration(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         pysat.utils.registry.remove(self.platforms, self.names)

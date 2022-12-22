@@ -31,7 +31,7 @@ class TestCIonly(object):
 
     """
 
-    def setup(self):
+    def setup_method(self):
         """Run to set up the test environment."""
 
         self.ci_env = (os.environ.get('CI') == 'true')
@@ -40,7 +40,7 @@ class TestCIonly(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
         del self.ci_env
         return
@@ -75,7 +75,7 @@ class TestCIonly(object):
 class TestScaleUnits(object):
     """Unit tests for `scale_units`."""
 
-    def setup(self):
+    def setup_method(self):
         """Run to set up the test environment."""
 
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
@@ -89,7 +89,7 @@ class TestScaleUnits(object):
         self.scale = 0.0
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
 
         del self.deg_units, self.dist_units, self.vel_units, self.scale
@@ -311,7 +311,7 @@ class TestIfyFunctions(object):
 class TestFmtCols(object):
     """Unit tests for `fmt_output_in_cols`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the test environment."""
 
         self.in_str = np.arange(0, 40, 1).astype(str)
@@ -324,7 +324,7 @@ class TestFmtCols(object):
 
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the test environment."""
 
         del self.in_str, self.in_kwargs, self.out_str, self.filler_row
@@ -512,7 +512,7 @@ class TestAvailableInst(TestWithRegistration):
 class TestNetworkLock(object):
     """Unit tests for NetworkLock class."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment."""
         # Create and write a temporary file
         self.fname = 'temp_lock_file.txt'
@@ -520,7 +520,7 @@ class TestNetworkLock(object):
             fh.write('spam and eggs')
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment."""
         # Remove the temporary file
         os.remove(self.fname)
@@ -561,7 +561,7 @@ class TestNetworkLock(object):
 class TestGenerateInstList(object):
     """Unit tests for `utils.generate_instrument_list`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment before each method."""
 
         self.user_info = {'pysat_testmodel': {'user': 'GideonNav',
@@ -570,7 +570,7 @@ class TestGenerateInstList(object):
             inst_loc=pysat.instruments, user_info=self.user_info)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.inst_list, self.user_info
@@ -681,12 +681,12 @@ class TestDeprecation(object):
 class TestMappedValue(object):
     """Unit tests for utility `get_mapped_value`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up a clean testing environment."""
         self.data_vals = ['one', 'two', 'three', 'four']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the current testing enviornment."""
         del self.data_vals
         return

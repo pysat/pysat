@@ -110,13 +110,13 @@ class TestParseDate(object):
 class TestCalcFreqRes(object):
     """Unit tests for `calc_res`, `freq_to_res`, and `calc_freq`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment before each method."""
         self.year = np.full(shape=4, dtype=int, fill_value=2001)
         self.month = np.ones(shape=4, dtype=int)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.year, self.month
         return
@@ -218,11 +218,11 @@ class TestCreateDateRange(object):
 class TestCreateDatetimeIndex(object):
     """Unit test `create_datetime_index`."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment before each method."""
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         return
 

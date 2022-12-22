@@ -86,7 +86,7 @@ class TestConstellationInitReg(TestWithRegistration):
 class TestConstellationInit(object):
     """Test the Constellation class."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.instruments = constellations.single_test.instruments
@@ -96,7 +96,7 @@ class TestConstellationInit(object):
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.const, self.instruments, self.in_kwargs, self.ref_time
@@ -250,7 +250,7 @@ class TestConstellationInit(object):
 class TestConstellationFunc(object):
     """Test the Constellation class attributes and methods."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.inst = list(constellations.testing.instruments)
@@ -262,7 +262,7 @@ class TestConstellationFunc(object):
                       "tomorrow", "variables"]
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         del self.inst, self.const, self.ref_time, self.attrs

@@ -150,13 +150,13 @@ class TestInstruments(InstLibTests):
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
 
         warnings.simplefilter("always", DeprecationWarning)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
         return
@@ -212,7 +212,8 @@ class TestDeprecation(object):
         assert "download" in mark_names
 
     @pytest.mark.parametrize("inst_module", ['pysat_testing2d',
-                                             'pysat_testing_xarray'])
+                                             'pysat_testing_xarray',
+                                             'pysat_testing2d_xarray'])
     def test_deprecated_instruments(self, inst_module):
         """Check that instantiating old instruments raises a DeprecationWarning.
 

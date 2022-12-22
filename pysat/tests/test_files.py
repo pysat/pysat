@@ -93,7 +93,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 class TestNoDataDir(object):
     """Test cases where data directory is not specified."""
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         self.temporary_file_list = False
 
@@ -104,7 +104,7 @@ class TestNoDataDir(object):
         reload(pysat._files)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         pysat.params.data['data_dirs'] = self.saved_data_path
         reload(pysat._files)
@@ -131,7 +131,7 @@ class TestBasics(object):
         del self.temporary_file_list, self.version
         return
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         self.out = ''
 
@@ -155,7 +155,7 @@ class TestBasics(object):
         create_dir(self.testInst)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         pysat.params['data_dirs'] = self.data_paths
         self.tempdir.cleanup()
@@ -700,7 +700,7 @@ class TestInstWithFiles(object):
         del self.temporary_file_list, self.version
         return
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
@@ -746,7 +746,7 @@ class TestInstWithFiles(object):
             temporary_file_list=self.temporary_file_list)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         del self.testInst
         reload(pysat.instruments.pysat_testing)
@@ -933,7 +933,7 @@ class TestInstWithFilesNonStandard(object):
         del self.temporary_file_list, self.version
         return
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
@@ -955,7 +955,7 @@ class TestInstWithFilesNonStandard(object):
             list_files, version=self.version)
         return
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         self.tempdir.cleanup()
         del self.tempdir
@@ -1235,7 +1235,7 @@ class TestFilesRaceCondition(object):
         del self.temporary_file_list
         return
 
-    def setup(self):
+    def setup_method(self):
         """Set up the unit test environment for each method."""
         # Store current pysat directory
         self.data_paths = pysat.params['data_dirs']
@@ -1279,7 +1279,7 @@ class TestFilesRaceCondition(object):
         print(' '.join(('initial files created in ',
                         self.testInst.files.data_path)))
 
-    def teardown(self):
+    def teardown_method(self):
         """Clean up the unit test environment after each method."""
         self.tempdir.cleanup()
         del self.testInst, self.tempdir
