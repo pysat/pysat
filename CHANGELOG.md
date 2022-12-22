@@ -3,6 +3,12 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.Y.Y] - 2023-??-??
+--------------------
+* Maintenance
+  * Added roadmap to readthedocs
+
+
 [3.X.X] - 2022-??-??
 --------------------
 * Bug Fix
@@ -19,7 +25,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where a deprecation warning was thrown incorrectly
   * Add pysatModels to pysat instrument count
   * Update contributing document
-  * Added roadmap to readthedocs
 
 [3.0.5] - 2022-10-14
 --------------------
