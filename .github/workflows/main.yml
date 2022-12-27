@@ -17,6 +17,9 @@ jobs:
           - python-version: "3.8"
             numpy_ver: "1.20"
             os: ubuntu-latest
+          - python-version: "3.6.8"
+            numpy_ver: "1.19.5"
+            os: "ubuntu-20.04"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
     runs-on: ${{ matrix.os }}
@@ -27,12 +30,10 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install NEP29 dependencies
+    - name: Install NEP29/Operational dependencies
       if: ${{ matrix.numpy_ver != 'latest'}}
       run: |
         pip install --no-binary :numpy: numpy==${{ matrix.numpy_ver }}
-        # Need to force install of pandas compliant with NEP29
-        pip install "pandas<1.5"
 
     - name: Install standard dependencies and pysat
       run: |

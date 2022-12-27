@@ -9,7 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added roadmap to readthedocs
 
 
-[3.X.X] - 2022-??-??
+[3.0.6] - 2022-12-21
 --------------------
 * Bug Fix
   * Ensure pysat tests do not store temporary directory to file
@@ -25,6 +25,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where a deprecation warning was thrown incorrectly
   * Add pysatModels to pysat instrument count
   * Update contributing document
+  * Added support for testing with python 3.6, updated reported
+    minimum supported Python version to 3.6
 
 [3.0.5] - 2022-10-14
 --------------------
