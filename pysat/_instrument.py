@@ -1066,16 +1066,41 @@ class Instrument(object):
                         self.data[key] = (epoch_name, in_data)
                     elif len(in_data) == 1:
                         # Only provided a single number in iterable.
-                        # Assign as coord.
-                        self.data.coords[key] = (key, [in_data[0]])
+                        if key in self.variables:
+                            # If it already exists, assign as defined.
+                            self.data[key] = in_data
+                        else:
+                            # Otherwise broadcast over time.
+                            pysat.logger.warning(
+                                ' '.join(('Input for {:} is a'.format(key),
+                                          'single value. Broadcast over',
+                                          'epoch.')))
+                            self.data[key] = (epoch_name,
+                                              [in_data] * len(self.index))
                     elif len(in_data) == 0:
                         # Provided an empty iterable, make everything NaN
+                        pysat.logger.warning(
+                            ' '.join(('Input for {:} is empty.'.format(key),
+                                      'Setting to NaN broadcast over epoch.')))
                         self.data[key] = (epoch_name,
                                           [np.nan] * len(self.index))
+                    else:
+                        raise ValueError(
+                            ' '.join(('Input for {:}'.format(key),
+                                      'does not match expected',
+                                      'dimensions. Value not set.')))
                 elif len(np.shape(in_data)) == 0:
                     # Not an iterable input, but a single number.
-                    # Assign as coord.
-                    self.data.coords[key] = (key, [in_data])
+                    if key in self.variables:
+                        # If it exists, assign as coord.
+                        self.data[key] = in_data
+                    else:
+                        # Otherwise broadcast over time.
+                        pysat.logger.warning(
+                            ' '.join(('Input for {:} is a'.format(key),
+                                      'value. Broadcast over epoch.')))
+                        self.data[key] = (epoch_name,
+                                          [in_data] * len(self.index))
                 else:
                     # Multidimensional input that is not an xarray.  The user
                     # needs to provide everything that is required for success.
