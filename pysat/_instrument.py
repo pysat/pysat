@@ -1073,7 +1073,7 @@ class Instrument(object):
                         self.data[key] = (epoch_name,
                                           [np.nan] * len(self.index))
                 elif len(np.shape(in_data)) == 0:
-                    # Not an iterable input, rather a single number.
+                    # Not an iterable input, but a single number.
                     # Assign as coord.
                     self.data.coords[key] = (key, [in_data])
                 else:
