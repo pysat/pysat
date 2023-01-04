@@ -1074,7 +1074,7 @@ class Instrument(object):
                                           [np.nan] * len(self.index))
                 elif len(np.shape(in_data)) == 0:
                     # Not an iterable input, but a single number.
-                    # Assign as coord.
+                    # To avoid padding over time, assign as a coord.
                     self.data.coords[key] = (key, [in_data])
                 else:
                     # Multidimensional input that is not an xarray.  The user

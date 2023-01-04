@@ -770,7 +770,7 @@ class InstAccessTests(object):
             # Pandas will broadcast to time array
             assert len(self.testInst['doubleMLT']) == len(self.testInst.index)
         else:
-            # Xarray will assign as coordinate
+            # Xarray will assign as a coordinate
             assert len(self.testInst['doubleMLT']) == 1
 
         self.testInst['nanMLT'] = np.nan
