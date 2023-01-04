@@ -765,7 +765,7 @@ class Instrument(object):
             # Slicing by date, inclusive.
             inst[datetime1:datetime2, 'name']
 
-            # Slicing by name and row/date
+            # Slicing by name and row/date (pandas only)
             inst[datetime1:datetime2, 'name1':'name2']
 
         """
@@ -845,10 +845,8 @@ class Instrument(object):
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
 
-            # Slicing by name and row/date
-            inst[datetime1:datetime2, 'name1':'name2']
-
         """
+
         if 'Epoch' in self.data.indexes:
             epoch_name = 'Epoch'
         elif 'time' in self.data.indexes:
