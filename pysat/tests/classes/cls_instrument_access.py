@@ -696,11 +696,24 @@ class InstAccessTests(object):
                       == self.testInst.data['mlt'][index])
         return
 
-    def test_data_access_by_row_slicing_and_name_slicing(self):
+    def test_data_access_by_row_slicing(self):
         """Check that each variable is downsampled."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
-        result = self.testInst[0:10, :]
+        result = self.testInst[0:10]
+        for variable, array in result.items():
+            assert len(array) == len(self.testInst.data[variable].values[0:10])
+            assert np.all(array == self.testInst.data[variable].values[0:10])
+        return
+
+    def test_data_access_by_row_slicing_and_name_slicing(self):
+        """Check that each variable is downsampled."""
+
+        if not self.testInst.pandas_format:
+            pytest.skip("name slicing not implemented for xarray")
+
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        result = self.testInst[0:10, 'uts':'mlt']
         for variable, array in result.items():
             assert len(array) == len(self.testInst.data[variable].values[0:10])
             assert np.all(array == self.testInst.data[variable].values[0:10])
