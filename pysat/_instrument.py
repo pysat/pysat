@@ -1067,7 +1067,7 @@ class Instrument(object):
                     elif len(in_data) == 1:
                         # Only provided a single number in iterable.
                         # Assign as coord.
-                        self.data.coords[key] = (key, in_data[0])
+                        self.data.coords[key] = (key, [in_data[0]])
                     elif len(in_data) == 0:
                         # Provided an empty iterable, make everything NaN
                         self.data[key] = (epoch_name,
@@ -1075,7 +1075,7 @@ class Instrument(object):
                 elif len(np.shape(in_data)) == 0:
                     # Not an iterable input, rather a single number.
                     # Assign as coord.
-                    self.data.coords[key] = (key, in_data)
+                    self.data.coords[key] = (key, [in_data])
                 else:
                     # Multidimensional input that is not an xarray.  The user
                     # needs to provide everything that is required for success.
