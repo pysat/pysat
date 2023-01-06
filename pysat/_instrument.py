@@ -1053,36 +1053,52 @@ class Instrument(object):
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
+                print('key! ', key, ' data props: ', np.shape(in_data),
+                      len(np.shape(in_data)))
                 # Assigning basic variables
                 if isinstance(in_data, xr.DataArray):
                     # If xarray input, take as is
                     self.data[key] = in_data
+                elif isinstance(in_data, tuple):
+                    # User provided a tuple for assignment
+                    if len(in_data) == 2:
+                        print('here we are!! ', in_data)
+                        self.data[key] = in_data
+                    else:
+                        estr = 'Tuple inputs must match (dims, data).'
+                        raise ValueError(estr)
                 elif len(np.shape(in_data)) == 1:
                     # If not an xarray input, but still iterable, then we
                     # go through to process the 1D input
+                    print('Length check shape loop.')
                     if len(in_data) == len(self.index):
                         # 1D input has the correct length for storage along
                         # 'Epoch'
+                        print('Index set!')
                         self.data[key] = (epoch_name, in_data)
                     elif len(in_data) == 1:
                         # Only provided a single number in iterable, make that
                         # the input for all times
+                        print('Single length set! ')
                         self.data[key] = (epoch_name,
                                           [in_data[0]] * len(self.index))
                     elif len(in_data) == 0:
+                        print('Empty set!')
                         # Provided an empty iterable, make everything NaN
                         self.data[key] = (epoch_name,
                                           [np.nan] * len(self.index))
                 elif len(np.shape(in_data)) == 0:
+                    print('Single set')
                     # Not an iterable input, rather a single number.  Make
                     # that number the input for all times.
                     self.data[key] = (epoch_name, [in_data] * len(self.index))
                 else:
+                    print('Failover set.')
                     # Multidimensional input that is not an xarray.  The user
                     # needs to provide everything that is required for success.
-                    if isinstance(in_data, tuple):
+                    try:
                         self.data[key] = in_data
-                    else:
+                    except BaseException:
                         raise ValueError(' '.join(('Must provide dimensions',
                                                    'for xarray multidim',
                                                    'data using input tuple.')))
