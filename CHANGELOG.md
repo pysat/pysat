@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Maintenance
   * Added roadmap to readthedocs
+  * Clarified documentation and tests for name slicing support in pandas
 
 
 [3.0.6] - 2022-12-21
