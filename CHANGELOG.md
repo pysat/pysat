@@ -6,8 +6,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 [3.Y.Y] - 2023-??-??
 --------------------
 * Maintenance
-   * Added roadmap to readthedocs
-   * Improved the documentation in `pysat.utils.files`
+  * Added roadmap to readthedocs
+  * Improved the documentation in `pysat.utils.files`
+  * Clarified documentation and tests for name slicing support in pandas
 
 [3.0.6] - 2022-12-21
 --------------------
