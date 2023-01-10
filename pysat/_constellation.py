@@ -810,7 +810,7 @@ class Constellation(object):
                         ivals = cinst[dvar].sel(sel_dict, method=fill_meth)
 
                     # Assign the interpolated data
-                    data = data.assign({dname: (cinst[dvar].dims, ivals)})
+                    data = data.assign({dname: (cinst[dvar].dims, ivals.data)})
 
         inst.data = data
         return inst
