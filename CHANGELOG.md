@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.Y.Y] - 2023-??-??
 --------------------
+* Enhancements
+  * Added `to_inst` method to the Constellation class
 * Maintenance
   * Added roadmap to readthedocs
   * Clarified documentation and tests for name slicing support in pandas
