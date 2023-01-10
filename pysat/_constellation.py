@@ -677,10 +677,10 @@ class Constellation(object):
                             # are not identical, we need to establish a common
                             # range and resolution.  Note that this will only
                             # happen if the coordinates share the same names.
-                            if (len(coords[new_coord])
-                                != len(cinst.data.coords[new_coord])
-                                or coords[new_coord].values
-                                != cinst.data.coords[new_coord].values):
+                            if(len(coords[new_coord])
+                               != len(cinst.data.coords[new_coord])
+                               or coords[new_coord].values
+                               != cinst.data.coords[new_coord].values):
                                 coords[new_coord] = establish_common_coord(
                                     [coords[new_coord].values,
                                      cinst.data.coords[new_coord].values],

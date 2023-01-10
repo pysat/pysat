@@ -481,7 +481,7 @@ class TestConstellationFunc(object):
                 var_name = '_'.join([var, cinst.platform, cinst.name])
                 assert (var in out_inst.variables
                         or var_name in out_inst.variables), \
-                        "missing variable: {:s} or {:s}".format(var, var_name)
+                    "missing variable: {:s} or {:s}".format(var, var_name)
 
         # Test the output instrument index
         testing.assert_lists_equal(list(out_inst.index), list(self.const.index))
