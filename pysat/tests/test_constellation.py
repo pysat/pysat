@@ -7,6 +7,7 @@
 
 import datetime as dt
 import logging
+import numpy as np
 import pandas as pds
 import pytest
 

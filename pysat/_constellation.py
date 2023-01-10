@@ -767,7 +767,7 @@ class Constellation(object):
                         for val in ivals.flatten():
                             dmask = val == val_inds
                             vmask = val == ivals
-                            ivals[val_mask] = cinst[dvar].values[val_mask]
+                            ivals[vmask] = cinst[dvar].values[dmask]
 
                     # Assign the interpolated data
                     data = data.assign({dname: (cinst[dvar].dims, ivals)})
