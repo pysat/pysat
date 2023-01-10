@@ -754,11 +754,14 @@ class Constellation(object):
                                 ivals = cinst_temp.sel(fill_coords,
                                                        method=fill_meth)
 
+                            # Get the data from the xarray object
+                            ivals = ivals.data
+
                     # Extend the data
                     if inst.pandas_format:
                         val_dict = {dname: ivals}
                     else:
-                        val_dict = {dname: (('time'), ivals.data)}
+                        val_dict = {dname: (('time'), ivals)}
                     data = data.assign(**val_dict)
                 elif dvar not in coords.keys():
                     sel_dict = {dim: coords[dim] for dim in cinst[dvar].dims}
