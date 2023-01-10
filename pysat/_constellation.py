@@ -758,7 +758,7 @@ class Constellation(object):
                     if inst.pandas_format:
                         val_dict = {dname: ivals}
                     else:
-                        val_dict = {dname: (('time'), ivals)}
+                        val_dict = {dname: (('time'), ivals.data)}
                     data = data.assign(**val_dict)
                 elif dvar not in coords.keys():
                     sel_dict = {dim: coords[dim] for dim in cinst[dvar].dims}
