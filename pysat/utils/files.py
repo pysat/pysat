@@ -27,8 +27,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     ----------
     stored : collections.orderedDict
         Ordered dictionary produced by `parse_fixed_width_filenames` or
-        `parse_delimited_filenames`, containing date, time, and version
-        information extracted from the filenames.
+        `parse_delimited_filenames`, containing date, time, version, and
+        other information extracted from the filenames.
     two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
@@ -127,7 +127,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
 
 def parse_fixed_width_filenames(files, format_str):
-    """Extract time/version info from a list of files with a fixed name width.
+    """Extract specified info from a list of files with a fixed name width.
 
     Parameters
     ----------
@@ -232,7 +232,7 @@ def parse_fixed_width_filenames(files, format_str):
 
 
 def parse_delimited_filenames(files, format_str, delimiter):
-    """Extract time/version info from a list of files with a varied name width.
+    """Extract specified info from a list of files using a delimiter.
 
     Will parse file using `delimiter` though the function does not require
     every parsed item to be a variable, and more than one variable
