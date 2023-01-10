@@ -737,6 +737,7 @@ class Constellation(object):
                                          if dtime not in cinst_temp.index]
                             fill_data = pds.Series(fill_val, index=new_times)
                             cinst_temp = pds.concat([cinst_temp, fill_data])
+                            cinst_temp = cinst_temp.sort_index()
                             ivals = cinst_temp[coords['time']]
                         else:
                             if cinst.pandas_format:
@@ -755,7 +756,8 @@ class Constellation(object):
                                                        method=fill_meth)
 
                             # Get the data from the xarray object
-                            ivals = ivals.data
+                            ivals = pds.Series(ivals.values,
+                                               index=coords['time'])
 
                     # Extend the data
                     if inst.pandas_format:
@@ -810,7 +812,8 @@ class Constellation(object):
                         ivals = cinst[dvar].sel(sel_dict, method=fill_meth)
 
                     # Assign the interpolated data
-                    data = data.assign({dname: (cinst[dvar].dims, ivals.data)})
+                    data = data.assign({dname: (cinst[dvar].dims,
+                                                ivals.values)})
 
         inst.data = data
         return inst
