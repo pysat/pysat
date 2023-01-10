@@ -433,11 +433,28 @@ class TestConstellationFunc(object):
                                "unknown method", ['not a method'])
         return
 
-    def test_to_inst(self):
-        """Test conversion of Constellation to Instrument."""
+    @pytest.mark.parametrize('common_coord', [True, False])
+    @pytest.mark.parametrize('fill_method', [None, 'nearest', 'linear'])
+    def test_to_inst(self, common_coord, fill_method):
+        """Test conversion of Constellation to Instrument.
+
+        Parameters
+        ----------
+        common_coord : bool
+            For Constellations with any xarray.Dataset Instruments, True to
+            include locations where all coordinate arrays cover, False to use
+            the maximum location range from the list of coordinates
+        fill_method : str or NoneType
+            Fill method if common data coordinates do not match exactly. If
+            one of 'nearest', 'pad'/'ffill', 'backfill'/'bfill', or None then
+            no interpolation will occur.  If 'linear', 'zero', 'slinear',
+            'quadratic', 'cubic', or 'polynomial' are used, then 1D or ND
+            interpolation will be used.
+
+        """
 
         self.const.load(date=self.ref_time)
-        out_inst = self.const.to_inst()
+        out_inst = self.const.to_inst(common_coord, fill_method)
 
         # Test the output instrument attributes
         assert not out_inst.pandas_format
@@ -450,20 +467,23 @@ class TestConstellationFunc(object):
         assert out_inst.doy == int(self.ref_time.strftime('%j'))
         assert np.all([out_inst.name.find(iname) >= 0
                        for iname in self.const.names])
-        assert len(out_inst.variables) in [len(self.const.variables),
-                                           len(self.const.variables) + 1]
-        assert np.all([var in out_inst.variables
-                       for var in self.const.variables])
-        if len(out_inst.variables) == len(self.const.variables) + 1:
-            assert 'time' in out_inst.variables
 
         # Test the output instrument data
-        assert np.all([dim in out_inst.data.dims for dim in self.dims])
-        assert np.all([dim in out_inst.data.coords for dim in self.dims])
-        assert np.all([coord in out_inst.data.coords for coord in
-                       ['variable_profile_height', 'image_lon', 'image_lat']])
+        testing.assert_lists_equal(self.dims, list(out_inst.data.dims.keys()))
+        testing.assert_list_contains(self.dims,
+                                     list(out_inst.data.coords.keys()))
+        testing.assert_list_contains(['variable_profile_height', 'image_lon',
+                                      'image_lat'],
+                                     list(out_inst.data.coords.keys()))
+
+        for cinst in self.const.instruments:
+            for var in cinst.variables:
+                var_name = '_'.join([var, cinst.platform, cinst.name])
+                assert (var in out_inst.variables
+                        or var_name in out_inst.variables), \
+                        "missing variable: {:s} or {:s}".format(var, var_name)
 
         # Test the output instrument index
-        assert out_inst.index == self.const.index
+        testing.assert_lists_equal(list(out_inst.index), list(self.const.index))
 
         return
