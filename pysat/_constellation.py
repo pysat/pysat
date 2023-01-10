@@ -15,8 +15,11 @@ Updated by AGB, May 2021, NRL
 import datetime as dt
 import numpy as np
 import pandas as pds
+from scipy import interpolate
+import xarray as xr
 
 import pysat
+from pysat.utils.coords import establish_common_coord
 
 
 class Constellation(object):
@@ -618,6 +621,159 @@ class Constellation(object):
         """Obtain time index of loaded data."""
 
         return self._index()
+
+    def to_inst(self, common_coord=True, interp='nearest'):
+        """Combine Constellation data into an Instrument.
+
+        Parameters
+        ----------
+        common_coord : bool
+            For Constellations with any xarray.Dataset Instruments, True to
+            include locations where all coordinate arrays cover, False to use
+            the maximum location range from the list of coordinates
+            (default=True)
+        interp : str
+            Interpolation method for data points not at common index times
+            (default='nearest')
+
+        Returns
+        -------
+        inst : pysat.Instrument
+            A pysat Instrument containing all data from the constellation at a
+            common time index
+
+        Note
+        ----
+        Uses the common index, `self.index`, that was defined using information
+        from the Constellation Instruments in combination with a potential
+        user-supplied resolution defined through `self.index_res`.
+
+        See Also
+        --------
+        scipy.interpolate.interp1d, scipy.interpolate.interpnd
+
+        """
+        # Establish the desired time index
+        coords = {'time': self.index}
+
+        # Initalize the pysat Instrument
+        inst = pysat.Instrument()
+        inst._assign_attrs_from_const(self)
+
+        # Initalize the common data object
+        if inst.pandas_format:
+            data = pds.DataFrame(data={}, index=coords['time'])
+        else:
+            # Get the common coordinates needed for all data
+            for cinst in self.instruments:
+                if not cinst.pandas_format:
+                    for new_coord in cinst.data.coords.keys():
+                        if new_coord not in coords.keys():
+                            coords[new_coord] = cinst.data.coords[new_coord]
+                        elif new_coord != 'time':
+                            # Two instruments have the same coordinate, if they
+                            # are not identical, we need to establish a common
+                            # range and resolution.  Note that this will only
+                            # happen if the coordinates share the same names.
+                            if (len(coords[new_coord])
+                                != len(cinst.data.coords[new_coord])
+                                or coords[new_coord] != cinst.data.coords[
+                                    new_coord]):
+                                coords[new_coord] = establish_common_coord(
+                                    [coords[new_coord].values,
+                                     cinst.data.coords[new_coord].values],
+                                    common=common_coord)
+
+            data = xr.Dataset(coords=coords)
+
+        # Add the data and metadata from each instrument
+        interp_types = [np.float64, np.int64, float, int]
+        for cinst in self.instruments:
+            cinst_str = '_'.join([attr for attr in [cinst.platform, cinst.name,
+                                                    cinst.tag, cinst.inst_id]
+                                  if len(attr) > 0])
+            for dvar in cinst.variables:
+                if dvar not in self.variables:
+                    dname = '_'.join([dvar, cinst_str])
+                else:
+                    dname = dvar
+
+                # Assign the metadata, if it exists (e.g., not 'time')
+                if dname in inst.meta:
+                    inst.meta[dname] = cinst.meta[dvar]
+                    fill_val = cinst.meta[dvar, cinst.meta.labels.fill_val]
+                else:
+                    fill_val = np.nan
+
+                # Interpolate the data onto the new common grid
+                interp_flag = cinst[dvar].dtype in interp_types
+                if cinst.pandas_format or (len(cinst[dvar].dims) == 1
+                                           and 'time' in cinst[dvar].dims):
+                    if interp_flag:
+                        # This is numeric data with a single dimension in time
+                        interp_func = interpolate.interp1d(
+                            cinst.index.to_julian_date(), cinst[dvar],
+                            fill_value=fill_val, bounds_error=False,
+                            kind=interp)
+                        ivals = [interp_func(tt)
+                                 for tt in coords['time'].to_julian_date()]
+                    else:
+                        # This data type can't be interpolated, get the
+                        # nearest data points
+                        interp_func = interpolate.interp1d(
+                            cinst.index.to_julian_date(),
+                            np.arange(0, len(cinst[dvar]), 1),
+                            bounds_error=False, kind='nearest')
+                        ivals = [cinst[dvar][int(interp_func(tt))]
+                                 for tt in coords['time'].to_julian_date()]
+
+                    # Extend the data
+                    if inst.pandas_format:
+                        val_dict = {dname: pds.Series(ivals, name=dname,
+                                                      index=coords['time'])}
+                    else:
+                        val_dict = {dname: (('time'),
+                                            pds.Series(ivals, name=dname,
+                                                       index=coords['time']))}
+                    data = data.assign(**val_dict)
+                elif dvar not in coords.keys():
+                    # Get the points and desired locations
+                    points = [cinst[ckey].to_index().to_julian_date().values
+                              if ckey == 'time' else cinst[ckey].values
+                              for ckey in cinst[dvar].dims]
+                    locs = [coords[ckey].to_julian_date().values
+                            if ckey == 'time' else coords[ckey].values
+                            for ckey in cinst[dvar].dims]
+                    ind = "xy" if len(locs) == 2 else "ij"
+                    iloc = np.array(np.meshgrid(*locs,
+                                                indexing=ind)).transpose()
+
+                    if interp_flag:
+                        # Interpolate the data at the desired location
+                        ivals = interpolate.interpn(points, cinst[dvar].values,
+                                                    iloc, fill_value=fill_val,
+                                                    bounds_error=False,
+                                                    method=interp)
+                        if ind == 'ij':
+                            ivals = ivals.transpose()
+                    else:
+                        # This data type can't be interpolated, select nearest
+                        val_shape = cinst[dvar].values.shape
+                        val_inds = np.arange(0, np.product(val_shape),
+                                             1).reshape(val_shape)
+                        ivals = interpolate.interpn(points, val_inds, iloc,
+                                                    bounds_error=False,
+                                                    method='nearest')
+                        for val in ivals.flatten():
+                            dmask = val == val_inds
+                            vmask = val == ivals
+                            ivals[val_mask] = cinst[dvar].values[val_mask]
+
+                    # Assign the interpolated data
+                    data = data.assign({dname: (cinst[dvar].dims, ivals)})
+
+        inst.data = data
+        return inst
 
     def today(self):
         """Obtain UTC date for today, see pysat.Instrument for details."""

@@ -1445,6 +1445,59 @@ class Instrument(object):
                                          '{:}'.format(missing)]))
         return
 
+    def _assign_attrs_from_const(self, const):
+        """Update Instrument attributes using Constellation data.
+
+        Parameters
+        ----------
+        const : pysat.Constellation
+            Data contained in a Constellation of Instruments
+
+        Note
+        ----
+        Updates the 'platform', 'name', 'tag', 'inst_id', 'clean_level',
+        'pad', 'clean_level', and 'pandas_format' attributes
+
+        """
+        # Define the reference variables
+        up_attrs = ['platform', 'name', 'tag', 'inst_id', 'clean_level', 'pad',
+                    'pandas_format', 'date', 'doy']
+        clean_rank = {'clean': 4, 'dusty': 3, 'dirty': 2, 'none': 1, None: 1}
+
+        for attr in up_attrs:
+            cattr = [getattr(cinst, attr) for cinst in const.instruments]
+            cattr = list(set(cattr))  # np.unique doesn't work with pad
+
+            if attr == 'pad':
+                # Set the pad value to the longest padding, if padding was set
+                cattr = [ca for ca in cattr if ca is not None]
+                if len(cattr) == 1:
+                    # There was only one set pad, use it
+                    setattr(self, attr, cattr[0])
+                elif len(cattr) > 1:
+                    # There are multiple pads, they can be reliably compared
+                    # using the `freqstr` attribute, which is lowest for the
+                    # longest pad period.
+                    long_pad = cattr[0]
+                    for i in range(1, len(cattr)):
+                        if long_pad.freqstr > cattr[i].freqstr:
+                            long_pad = cattr[i]
+                    setattr(self, attr, long_pad)
+            elif len(cattr) == 1:
+                # There is only one value, set it
+                setattr(self, attr, cattr[0])
+            elif attr == 'clean_level':
+                # Set the clean value to the lowest cleaning rank
+                crank = [clean_rank[cl] for cl in cattr]
+                setattr(self, attr, clean_rank[min(crank)])
+            elif attr == 'pandas_format':
+                # If there is a mix of pandas and xarray data, use xarray
+                setattr(self, attr, False)
+            else:
+                # Combine all unique attributes as a string
+                setattr(self, attr, '_'.join(cattr))
+        return
+
     def _load_data(self, date=None, fid=None, inc=None, load_kwargs=None):
         """Load data for an instrument on given date or filename index.
 
