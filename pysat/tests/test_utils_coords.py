@@ -321,7 +321,7 @@ class TestEstCommonCoord(object):
 
         assert self.short_coord.min() == out.min(), "unexpected minimum value"
         assert self.short_coord.max() == out.max(), "unexpected maximum value"
-        assert len(out_res) == 0, "inconsistend coordinate resolution"
+        assert len(out_res) == 1, "inconsistend coordinate resolution"
         assert out_res[0] == self.res, "unexpected coordinate resolution"
         return
 
@@ -334,6 +334,6 @@ class TestEstCommonCoord(object):
 
         assert self.long_coord.min() == out.min(), "unexpected minimum value"
         assert self.long_coord.max() == out.max(), "unexpected maximum value"
-        assert len(out_res) == 0, "inconsistend coordinate resolution"
+        assert len(out_res) == 1, "inconsistend coordinate resolution"
         assert out_res[0] == self.res, "unexpected coordinate resolution"
         return
