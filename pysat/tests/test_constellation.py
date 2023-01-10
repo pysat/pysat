@@ -260,12 +260,14 @@ class TestConstellationFunc(object):
                       "bounds", "empty", "empty_partial", "index_res",
                       "common_index", "date", "yr", "doy", "yesterday", "today",
                       "tomorrow", "variables"]
+        self.dims = ['time', 'x', 'y', 'z', 'profile_height', 'latitude',
+                     'longitude', 'altitude']
         return
 
     def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
-        del self.inst, self.const, self.ref_time, self.attrs
+        del self.inst, self.const, self.ref_time, self.attrs, self.dims
         return
 
     def test_has_required_attrs(self):
@@ -428,4 +430,39 @@ class TestConstellationFunc(object):
 
         testing.eval_bad_input(self.const._call_inst_method, AttributeError,
                                "unknown method", ['not a method'])
+        return
+
+    def test_to_inst(self):
+        """Test conversion of Constellation to Instrument."""
+
+        self.const.load(date=self.ref_time)
+        out_inst = self.const.to_inst()
+
+        # Test the output instrument attributes
+        assert not out_inst.pandas_format
+        assert out_inst.platform == 'pysat'
+        assert out_inst.tag == ''
+        assert out_inst.inst_id == ''
+        assert out_inst.clean_level == 'clean'
+        assert out_inst.pad is None
+        assert out_inst.date == self.ref_time
+        assert out_inst.doy == int(self.ref_time.strftime('%j'))
+        assert np.all([out_inst.name.find(iname) >= 0
+                       for iname in self.const.names])
+        assert len(out_inst.variables) in [len(self.const.variables),
+                                           len(self.const.variables) + 1]
+        assert np.all([var in out_inst.variables
+                       for var in self.const.variables])
+        if len(out_inst.variables) == len(self.const.variables) + 1:
+            assert 'time' in out_inst.variables
+
+        # Test the output instrument data
+        assert np.all([dim in out_inst.data.dims for dim in self.dims])
+        assert np.all([dim in out_inst.data.coords for dim in self.dims])
+        assert np.all([coord in out_inst.data.coords for coord in
+                       ['variable_profile_height', 'image_lon', 'image_lat']])
+
+        # Test the output instrument index
+        assert out_inst.index == self.const.index
+
         return

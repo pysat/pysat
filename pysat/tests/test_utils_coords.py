@@ -296,3 +296,44 @@ class TestCalcSLT(object):
         assert self.py_inst['slt'].min() >= 0.0
         assert self.py_inst['slt'].shape == self.py_inst.index.shape
         return
+
+
+class TestEstCommonCoord(object):
+    """Unit tests for the `establish_common_coord` function."""
+
+    def setup_method(self):
+        """Set up the unit test environment."""
+        self.res = 1.0
+        self.long_coord = np.arange(0, 360, self.res)
+        self.short_coord = np.arange(10, 350, 10.0 * self.res)
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment."""
+        del self.long_coord, self.short_coord, self.res
+        return
+
+    def test_establish_common_coord_overlap(self):
+        """Test `establish_common_coord` with common=True."""
+
+        out = coords.establish_common_coord([self.long_coord, self.short_coord])
+        out_res = np.unique(out[1:] - out[:-1])
+
+        assert self.short_coord.min() == out.min(), "unexpected minimum value"
+        assert self.short_coord.max() == out.max(), "unexpected maximum value"
+        assert len(out_res) == 0, "inconsistend coordinate resolution"
+        assert out_res[0] == self.res, "unexpected coordinate resolution"
+        return
+
+    def test_establish_common_coord_max_range(self):
+        """Test `establish_common_coord` with common=False."""
+
+        out = coords.establish_common_coord([self.long_coord, self.short_coord],
+                                            common=False)
+        out_res = np.unique(out[1:] - out[:-1])
+
+        assert self.long_coord.min() == out.min(), "unexpected minimum value"
+        assert self.long_coord.max() == out.max(), "unexpected maximum value"
+        assert len(out_res) == 0, "inconsistend coordinate resolution"
+        assert out_res[0] == self.res, "unexpected coordinate resolution"
+        return
