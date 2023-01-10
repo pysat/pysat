@@ -15,7 +15,6 @@ Updated by AGB, May 2021, NRL
 import datetime as dt
 import numpy as np
 import pandas as pds
-from scipy import interpolate
 import xarray as xr
 
 import pysat
@@ -622,7 +621,7 @@ class Constellation(object):
 
         return self._index()
 
-    def to_inst(self, common_coord=True, interp='nearest'):
+    def to_inst(self, common_coord=True, fill_method=None):
         """Combine Constellation data into an Instrument.
 
         Parameters
@@ -632,9 +631,12 @@ class Constellation(object):
             include locations where all coordinate arrays cover, False to use
             the maximum location range from the list of coordinates
             (default=True)
-        interp : str
-            Interpolation method for data points not at common index times
-            (default='nearest')
+        fill_method : str or NoneType
+            Fill method if common data coordinates do not match exactly. If
+            one of 'nearest', 'pad'/'ffill', 'backfill'/'bfill', or None then
+            no interpolation will occur.  If 'linear', 'zero', 'slinear',
+            'quadratic', 'cubic', or 'polynomial' are used, then 1D or ND
+            interpolation will be used. (default=None)
 
         Returns
         -------
@@ -648,13 +650,13 @@ class Constellation(object):
         from the Constellation Instruments in combination with a potential
         user-supplied resolution defined through `self.index_res`.
 
-        See Also
-        --------
-        scipy.interpolate.interp1d, scipy.interpolate.interpnd
-
         """
+        fill_methods = ['nearest', 'pad', 'ffill', 'backfill', 'bfill']
+        interp_type = [np.float64, np.int64, float, int]
+
         # Establish the desired time index
         coords = {'time': self.index}
+        fill_coords = {'time': coords['time']}
 
         # Initalize the pysat Instrument
         inst = pysat.Instrument()
@@ -677,8 +679,8 @@ class Constellation(object):
                             # happen if the coordinates share the same names.
                             if (len(coords[new_coord])
                                 != len(cinst.data.coords[new_coord])
-                                or coords[new_coord] != cinst.data.coords[
-                                    new_coord]):
+                                or coords[new_coord].values
+                                != cinst.data.coords[new_coord].values):
                                 coords[new_coord] = establish_common_coord(
                                     [coords[new_coord].values,
                                      cinst.data.coords[new_coord].values],
@@ -687,7 +689,6 @@ class Constellation(object):
             data = xr.Dataset(coords=coords)
 
         # Add the data and metadata from each instrument
-        interp_types = [np.float64, np.int64, float, int]
         for cinst in self.instruments:
             cinst_str = '_'.join([attr for attr in [cinst.platform, cinst.name,
                                                     cinst.tag, cinst.inst_id]
@@ -698,6 +699,16 @@ class Constellation(object):
                 else:
                     dname = dvar
 
+                # Determine whether or not this data type is interpolatable
+                fill_meth = fill_method
+                interp_flag = False
+                if cinst[dvar].dtype in interp_type:
+                    if fill_meth not in fill_methods and fill_meth is not None:
+                        interp_flag = True
+                else:
+                    if fill_meth not in fill_methods and fill_meth is not None:
+                        fill_meth = 'nearest'
+
                 # Assign the metadata, if it exists (e.g., not 'time')
                 if dname in inst.meta:
                     inst.meta[dname] = cinst.meta[dvar]
@@ -705,69 +716,95 @@ class Constellation(object):
                 else:
                     fill_val = np.nan
 
-                # Interpolate the data onto the new common grid
-                interp_flag = cinst[dvar].dtype in interp_types
+                # Populate the data on the common coordinates
                 if cinst.pandas_format or (len(cinst[dvar].dims) == 1
                                            and 'time' in cinst[dvar].dims):
-                    if interp_flag:
-                        # This is numeric data with a single dimension in time
-                        interp_func = interpolate.interp1d(
-                            cinst.index.to_julian_date(), cinst[dvar],
-                            fill_value=fill_val, bounds_error=False,
-                            kind=interp)
-                        ivals = [interp_func(tt)
-                                 for tt in coords['time'].to_julian_date()]
-                    else:
-                        # This data type can't be interpolated, get the
-                        # nearest data points
-                        interp_func = interpolate.interp1d(
-                            cinst.index.to_julian_date(),
-                            np.arange(0, len(cinst[dvar]), 1),
-                            bounds_error=False, kind='nearest')
-                        ivals = [cinst[dvar][int(interp_func(tt))]
-                                 for tt in coords['time'].to_julian_date()]
+                    try:
+                        if cinst.pandas_format:
+                            ivals = cinst[dvar][coords['time']]
+                        else:
+                            ivals = cinst[dvar].sel({'time': coords['time']})
+                    except KeyError:
+                        # Not all common times are present, need to fill
+                        # or interpolate
+                        if fill_meth is None:
+                            # Pad the data will fill values and then select
+                            if cinst.pandas_format:
+                                cinst_temp = cinst[dvar].copy()
+                            else:
+                                cinst_temp = cinst[dvar].to_pandas()
+                            new_times = [dtime for dtime in coords['time']
+                                         if dtime not in cinst_temp.index]
+                            fill_data = pds.Series(fill_val, index=new_times)
+                            cinst_temp = pds.concat([cinst_temp, fill_data])
+                            ivals = cinst_temp[coords['time']]
+                        else:
+                            if cinst.pandas_format:
+                                cinst_temp = cinst[dvar].to_xarray()
+                                if cinst[dvar].index.name != 'time':
+                                    cinst_temp = cinst_temp.rename({
+                                        cinst[dvar].index.name: 'time'})
+                            else:
+                                cinst_temp = cinst[dvar].copy()
+
+                            if interp_flag:
+                                ivals = cinst_temp.interp(coords=fill_coords,
+                                                          method=fill_meth)
+                            else:
+                                ivals = cinst_temp.sel(fill_coords,
+                                                       method=fill_meth)
 
                     # Extend the data
                     if inst.pandas_format:
-                        val_dict = {dname: pds.Series(ivals, name=dname,
-                                                      index=coords['time'])}
+                        val_dict = {dname: ivals}
                     else:
-                        val_dict = {dname: (('time'),
-                                            pds.Series(ivals, name=dname,
-                                                       index=coords['time']))}
+                        val_dict = {dname: (('time'), ivals)}
                     data = data.assign(**val_dict)
                 elif dvar not in coords.keys():
-                    # Get the points and desired locations
-                    points = [cinst[ckey].to_index().to_julian_date().values
-                              if ckey == 'time' else cinst[ckey].values
-                              for ckey in cinst[dvar].dims]
-                    locs = [coords[ckey].to_julian_date().values
-                            if ckey == 'time' else coords[ckey].values
-                            for ckey in cinst[dvar].dims]
-                    ind = "xy" if len(locs) == 2 else "ij"
-                    iloc = np.array(np.meshgrid(*locs,
-                                                indexing=ind)).transpose()
+                    sel_dict = {dim: coords[dim] for dim in cinst[dvar].dims}
 
-                    if interp_flag:
-                        # Interpolate the data at the desired location
-                        ivals = interpolate.interpn(points, cinst[dvar].values,
-                                                    iloc, fill_value=fill_val,
-                                                    bounds_error=False,
-                                                    method=interp)
-                        if ind == 'ij':
-                            ivals = ivals.transpose()
+                    if fill_meth is None:
+                        cinst_temp = cinst[dvar].copy()
+                        sel_key = ''
+                        while sel_key is not None:
+                            try:
+                                ivals = cinst_temp.sel(sel_dict,
+                                                       method=fill_meth)
+                                sel_key = None
+                            except KeyError as kerr:
+                                # Get the coordinate with values that need to
+                                # to be filled
+                                sel_key = str(kerr).split('index')[-1].split(
+                                    "'")[1]
+
+                                # Set the coordinates for filling
+                                new_coord = {sel_key: [
+                                    cc for cc in sel_dict[sel_key]
+                                    if cc not in cinst_temp.coords[sel_key]]}
+                                for dim in sel_dict.keys():
+                                    if dim not in new_coord.keys():
+                                        new_coord[dim] = sel_dict[dim]
+
+                                # Create a DataArray with fill data
+                                fill_data = xr.DataArray(data=fill_val,
+                                                         coords=new_coord,
+                                                         dims=cinst_temp.dims)
+
+                                if len(fill_data.coords.keys()) < len(
+                                        cinst_temp.coords.keys()):
+                                    fill_data = fill_data.assign_coords(
+                                        {ckey: cinst_temp.coords[ckey]
+                                         for ckey in cinst_temp.coords.keys()
+                                         if ckey not in sel_dict.keys()})
+
+                                # Merge the data objects
+                                cinst_temp = xr.concat([cinst_temp, fill_data],
+                                                       sel_key)
+                    elif interp_flag:
+                        ivals = cinst[dvar].interp(coords=sel_dict,
+                                                   method=fill_meth)
                     else:
-                        # This data type can't be interpolated, select nearest
-                        val_shape = cinst[dvar].values.shape
-                        val_inds = np.arange(0, np.product(val_shape),
-                                             1).reshape(val_shape)
-                        ivals = interpolate.interpn(points, val_inds, iloc,
-                                                    bounds_error=False,
-                                                    method='nearest')
-                        for val in ivals.flatten():
-                            dmask = val == val_inds
-                            vmask = val == ivals
-                            ivals[vmask] = cinst[dvar].values[dmask]
+                        ivals = cinst[dvar].sel(sel_dict, method=fill_meth)
 
                     # Assign the interpolated data
                     data = data.assign({dname: (cinst[dvar].dims, ivals)})
