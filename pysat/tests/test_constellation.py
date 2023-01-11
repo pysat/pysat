@@ -496,13 +496,14 @@ class TestConstellationFunc(object):
 
         return
 
-    def test_to_inst_pandas(self):
-        """Test conversion of Constellation of single type to pandas Instrument.
+    def test_to_inst_pandas_w_pad(self):
+        """Test Constellation `to_inst` with single, padded pandas Instrument.
 
         """
         # Redefine the Instrument and constellation
         self.inst = pysat.Instrument(
-            inst_module=pysat.instruments.pysat_testing, use_header=True)
+            inst_module=pysat.instruments.pysat_testing, use_header=True,
+            pad=pds.DateOffset(hours=1))
         self.const = pysat.Constellation(instruments=[self.inst],
                                          use_header=True)
 
@@ -529,5 +530,48 @@ class TestConstellationFunc(object):
 
         # Test the output instrument index
         testing.assert_lists_equal(list(out_inst.index), list(self.inst.index))
+
+        return
+
+    def test_to_inst_mult_pad_clean(self):
+        """Test Constellation `to_inst` with multiple clean levels and pads."""
+        # Redefine the Instrument and constellation
+        clean_level = 'dirty'
+        pad = pds.DateOffset(hours=1)
+        self.inst = [
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             use_header=True, pad=pad),
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             use_header=True, pad=2 * pad,
+                             clean_level=clean_level)]
+        self.const = pysat.Constellation(instruments=self.inst, use_header=True)
+
+        # Load the Instrument and Constellation data
+        self.inst[-1].load(date=self.ref_time)
+        self.const.load(date=self.ref_time)
+
+        # Convert the Constellation into an Instrument equivalent to `self.inst`
+        out_inst = self.const.to_inst()
+
+        # Test the output instrument attributes
+        assert out_inst.pandas_format
+
+        for iattr in self.inst_attrs:
+            assert getattr(out_inst, iattr) == getattr(self.inst[1], iattr), \
+                "Unexpected value for Instrument attribute {:}".format(iattr)
+
+        # Test the output instrument data and metadata
+        for var in self.inst[1].variables:
+            out_var = "_".join([var, self.inst[1].platform, self.inst[1].name])
+            assert out_var in out_inst.variables, \
+                "missing data variable: {:s}".format(out_var)
+            assert out_var in out_inst.meta, \
+                "missing metadata variable: {:s}".format(out_var)
+            assert np.all(out_inst[out_var] == self.inst[1][var]), \
+                "mismatched data for: {:s}".format(var)
+
+        # Test the output instrument index
+        testing.assert_lists_equal(list(out_inst.index),
+                                   list(self.inst[1].index))
 
         return
