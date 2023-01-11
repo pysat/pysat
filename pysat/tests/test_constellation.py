@@ -272,6 +272,7 @@ class TestConstellationFunc(object):
         """Clean up the unit test environment after each method."""
 
         del self.inst, self.const, self.ref_time, self.attrs, self.dims
+        del self.inst_attrs
         return
 
     def test_has_required_attrs(self):
