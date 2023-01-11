@@ -502,8 +502,8 @@ class TestConstellationFunc(object):
         # Redefine the Instrument and constellation
         self.inst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, use_header=True)
-        self.const = pysat.Constellation(
-            const_module=constellations.single_test, use_header=True)
+        self.const = pysat.Constellation(instruments=[self.inst],
+                                         use_header=True)
 
         # Load the data
         self.inst.load(date=self.ref_time)
