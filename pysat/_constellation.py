@@ -723,7 +723,10 @@ class Constellation(object):
                         if cinst.pandas_format:
                             ivals = cinst[dvar][coords['time']]
                         else:
-                            ivals = cinst[dvar].sel({'time': coords['time']})
+                            ivals = pds.Series(
+                                cinst[dvar].sel({'time':
+                                                 coords['time']}).values,
+                                index=coords['time'])
                     except KeyError:
                         # Not all common times are present, need to fill
                         # or interpolate
