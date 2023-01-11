@@ -1456,12 +1456,14 @@ class Instrument(object):
         Note
         ----
         Updates the 'platform', 'name', 'tag', 'inst_id', 'clean_level',
-        'pad', 'clean_level', and 'pandas_format' attributes
+        'pad', 'clean_level', 'date', 'doy', 'yr', 'acknowledgements',
+        'references', and 'pandas_format' attributes
 
         """
         # Define the reference variables
         up_attrs = ['platform', 'name', 'tag', 'inst_id', 'clean_level', 'pad',
-                    'pandas_format', 'date', 'doy']
+                    'pandas_format', 'date', 'doy', 'acknowledgements', 'yr',
+                    'references']
         clean_rank = {'clean': 4, 'dusty': 3, 'dirty': 2, 'none': 1, None: 1}
 
         for attr in up_attrs:
@@ -1495,7 +1497,9 @@ class Instrument(object):
                 setattr(self, attr, False)
             else:
                 # Combine all unique attributes as a string
-                setattr(self, attr, '_'.join(cattr))
+                astr = "\n" if attr in ['acknowledgements',
+                                        'references'] else "_"
+                setattr(self, attr, astr.join(cattr))
         return
 
     def _load_data(self, date=None, fid=None, inc=None, load_kwargs=None):
