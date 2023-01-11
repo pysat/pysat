@@ -239,7 +239,10 @@ def establish_common_coord(coord_vals, common=True):
             end_val = coord_spec[-1]
 
             # Determine the resolution
-            res = (coord_spec[1:] - coord_spec[:-1]).mean()
+            if start_val == end_val:
+                res = np.inf
+            else:
+                res = (coord_spec[1:] - coord_spec[:-1]).mean()
         else:
             # Adjust the start and stop time as appropriate
             if common:
