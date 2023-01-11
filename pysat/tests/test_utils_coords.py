@@ -328,7 +328,7 @@ class TestEstCommonCoord(object):
     def test_establish_common_coord_max_range(self):
         """Test `establish_common_coord` with common=False."""
 
-        out = coords.establish_common_coord([self.long_coord, self.short_coord],
+        out = coords.establish_common_coord([self.short_coord, self.long_coord],
                                             common=False)
         out_res = np.unique(out[1:] - out[:-1])
 
@@ -336,4 +336,26 @@ class TestEstCommonCoord(object):
         assert self.long_coord.max() == out.max(), "unexpected maximum value"
         assert len(out_res) == 1, "inconsistend coordinate resolution"
         assert out_res[0] == self.res, "unexpected coordinate resolution"
+        return
+
+    def test_establish_common_coord_single_val(self):
+        """Test `establish_common_coord` where one coordinate is a value."""
+
+        out = coords.establish_common_coord([self.short_coord[0],
+                                             self.long_coord], common=False)
+        out_res = np.unique(out[1:] - out[:-1])
+
+        assert self.long_coord.min() == out.min(), "unexpected minimum value"
+        assert self.long_coord.max() == out.max(), "unexpected maximum value"
+        assert len(out_res) == 1, "inconsistend coordinate resolution"
+        assert out_res[0] == self.res, "unexpected coordinate resolution"
+        return
+
+    def test_establish_common_coord_single_val_only(self):
+        """Test `establish_common_coord` where tje coordinate is a value."""
+
+        out = coords.establish_common_coord([self.short_coord[0]])
+
+        assert self.short_coord[0] == out[0], "unexpected value"
+        assert len(out) == 1, "unexpected coordinate length"
         return
