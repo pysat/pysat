@@ -710,7 +710,7 @@ class Constellation(object):
                         fill_meth = 'nearest'
 
                 # Assign the metadata, if it exists (e.g., not 'time')
-                if dname in inst.meta:
+                if dvar in cinst.meta:
                     inst.meta[dname] = cinst.meta[dvar]
                     fill_val = cinst.meta[dvar, cinst.meta.labels.fill_val]
                 else:
