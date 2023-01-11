@@ -1465,6 +1465,7 @@ class Instrument(object):
                     'pandas_format', 'date', 'doy', 'acknowledgements', 'yr',
                     'references']
         clean_rank = {'clean': 4, 'dusty': 3, 'dirty': 2, 'none': 1, None: 1}
+        clean_assign = {4: 'clean', 3: 'dusty', 2: 'dirty', 1: 'none'}
 
         for attr in up_attrs:
             cattr = [getattr(cinst, attr) for cinst in const.instruments]
@@ -1491,7 +1492,7 @@ class Instrument(object):
             elif attr == 'clean_level':
                 # Set the clean value to the lowest cleaning rank
                 crank = [clean_rank[cl] for cl in cattr]
-                setattr(self, attr, clean_rank[min(crank)])
+                setattr(self, attr, clean_assign[min(crank)])
             elif attr == 'pandas_format':
                 # If there is a mix of pandas and xarray data, use xarray
                 setattr(self, attr, False)
