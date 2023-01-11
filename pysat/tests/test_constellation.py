@@ -261,6 +261,9 @@ class TestConstellationFunc(object):
                       "bounds", "empty", "empty_partial", "index_res",
                       "common_index", "date", "yr", "doy", "yesterday", "today",
                       "tomorrow", "variables"]
+        self.inst_attrs = ['platform', 'name', 'tag', 'inst_id', 'clean_level',
+                           'pandas_format', "empty", "yr", 'pad', 'date',
+                           'doy', 'acknowledgements', 'references']
         self.dims = ['time', 'x', 'y', 'z', 'profile_height', 'latitude',
                      'longitude', 'altitude']
         return
@@ -435,8 +438,8 @@ class TestConstellationFunc(object):
 
     @pytest.mark.parametrize('common_coord', [True, False])
     @pytest.mark.parametrize('fill_method', [None, 'nearest', 'linear'])
-    def test_to_inst(self, common_coord, fill_method):
-        """Test conversion of Constellation to Instrument.
+    def test_to_inst_xarray(self, common_coord, fill_method):
+        """Test conversion of Constellation of mixed type to xarray Instrument.
 
         Parameters
         ----------
@@ -482,8 +485,48 @@ class TestConstellationFunc(object):
                 assert (var in out_inst.variables
                         or var_name in out_inst.variables), \
                     "missing variable: {:s} or {:s}".format(var, var_name)
+                assert (var == 'time' or var in out_inst.meta
+                        or var_name in out_inst.meta), \
+                    "missing variable in metadata: {:s} or {:s}".format(
+                        var, var_name)
 
         # Test the output instrument index
         testing.assert_lists_equal(list(out_inst.index), list(self.const.index))
+
+        return
+
+    def test_to_inst_pandas(self):
+        """Test conversion of Constellation of single type to pandas Instrument.
+
+        """
+        # Redefine the Instrument and constellation
+        self.inst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing, use_header=True)
+        self.const = pysat.Constellation(
+            const_module=constellations.single_test, use_header=True)
+
+        # Load the data
+        self.inst.load(date=self.ref_time)
+        self.const.load(date=self.ref_time)
+
+        # Convert the Constellation into an Instrument equivalent to `self.inst`
+        out_inst = self.const.to_inst()
+
+        # Test the output instrument attributes
+        assert out_inst.pandas_format
+
+        for iattr in self.inst_attrs:
+            assert getattr(out_inst, iattr) == getattr(self.inst, iattr), \
+                "Unexpected value for Instrument attribute {:}".format(iattr)
+
+        # Test the output instrument data
+        testing.assert_lists_equal(self.inst.variables, out_inst.variables)
+        assert np.all(out_inst.data == self.inst.data)
+
+        # Test the output instrument metadata
+        assert out_inst.meta == self.inst.meta
+
+        # Test the output instrument index
+        testing.assert_lists_equal(list(out_inst.index), list(self.inst.index))
 
         return
