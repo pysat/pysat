@@ -41,7 +41,7 @@ be instantiated with the instrument's platform and name:
 
 .. code-block:: python
 
-  inst = Instrument('myplatform', 'myname')
+  inst = pysat.Instrument('myplatform', 'myname')
 
 
 .. _rst_new_inst-libs:
@@ -125,7 +125,7 @@ be lowercase when defined in the instrument module.
           'fancy': 'A higher-level processing of the data.'}
 
   # Dictionary keyed by inst_id with a list of supported tags for each key
-  inst_ids = {'A': ['', 'fancy'], 'B': ['', 'fancy'], 'C': ['']}
+  inst_ids = {'a': ['', 'fancy'], 'b': ['', 'fancy'], 'c': ['']}
 
 Note that the possible tags that can be invoked are '' and 'fancy'.  The tags
 dictionary includes a short description for each of these tags.  A blank tag
@@ -135,7 +135,7 @@ The supported inst_ids should also be stored in a dictionary.  Each key name
 here points to a list of the possible tags that can be associated with that
 particular :py:attr:`inst_id`. Note that not all satellites in the example
 support every level of processing. In this case the 'fancy' processing is
-available for satellites A and B, but not C.
+available for satellites 'a' and 'b', but not 'c'.
 
 For a dataset that does not need multiple levels of tags and inst_ids, an empty
 string can be used. The code below only supports loading a single data set.
@@ -176,18 +176,18 @@ acknowledgements and references for an instrument.  These are simply defined as
 strings at the instrument level.  In the most basic case, these can be defined
 with the data information at the top.
 
-pysat also requires that a logger handle be defined and instrumentment
+pysat also requires that a logger handle be defined and instrument
 information pertaining to acknowledgements and references be included.  These
 ensure that people using the data know who to contact with questions and what
 they should reference when publishing their results.  The logging handle should
-be assigned to the pysat logger handle, while the references and acknowedgements
-are defined as instrument attributes within the initalization method.
+be assigned to the pysat logger handle, while the references and acknowledgments
+are defined as instrument attributes within the initialization method.
 
 .. code:: python
 
   platform = 'your_platform_name'
   name = 'name_of_instrument'
-  tags = {'tag1': 'tag1 Descripton',
+  tags = {'tag1': 'tag1 Description',
           'tag2': 'tag2 Description'}
   inst_ids = {'': [tag for tag in tags.keys()]}
 
