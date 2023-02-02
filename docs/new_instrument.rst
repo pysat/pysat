@@ -112,7 +112,8 @@ Naming Requirements in Instrument Module
 
 Each instrument file must include the platform and name as variables at the
 top-code-level of the file.  Additionally, the tags and inst_ids supported by
-the module must be stored as dictionaries.
+the module must be stored as dictionaries. Note that all required names should
+be lowercase when defined in the instrument module.
 
 .. code:: python
 
