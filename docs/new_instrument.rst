@@ -192,8 +192,8 @@ are defined as instrument attributes within the initialization method.
   inst_ids = {'': [tag for tag in tags.keys()]}
 
   def init(self):
-      """Initializes the Instrument object with instrument specific values.
-      """
+      """Initializes the Instrument object with instrument specific values."""
+
       self.acknowledgements = ''.join(['Ancillary data provided under ',
                                        'Radchaai grant PS31612.E3353A83'])
       if self.tag == 'tag1':
@@ -809,8 +809,7 @@ generally be put in the :py:func:`init` function of each instrument.
 .. code:: Python
 
     def init(self):
-        """Initializes the Instrument object with instrument specific values.
-        """
+        """Initializes the Instrument object with instrument specific values."""
 
         self.acknowledgements = acknowledgements_string
         self.references = references_string
