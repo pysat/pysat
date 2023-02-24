@@ -278,6 +278,41 @@ class TestBasicsNDXarray(TestBasics):
         self.testInst.data = data
         assert self.testInst.empty == target
 
+    @pytest.mark.parametrize("val,warn_msg",
+                             [([], "broadcast as NaN"),
+                              (27., "Broadcast over epoch")])
+    def test_set_xarray_single_value_warnings(self, val, warn_msg):
+        """Check for warning messages when setting xarray values.
+
+        Parameters
+        ----------
+        val : float or empty list
+            Value to be added as a new data variable.
+        warn_msg : str
+            Excerpt from expected warning message.
+
+        """
+
+        warnings.simplefilter("always")
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+
+        with warnings.catch_warnings(record=True) as self.war:
+            self.testInst["new_val"] = val
+        testing.eval_warnings(self.war, warn_msg, warn_type=UserWarning)
+
+    def test_set_xarray_single_value_broadcast(self):
+        """Check that single values are correctly broadcast."""
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.data = self.testInst.data.assign_coords(
+            {'preset_val': 1.0})
+
+        self.testInst['preset_val'] = 3.0
+        self.testInst['new_val'] = 3.0
+        assert len(self.testInst['preset_val']) == 1
+        assert len(self.testInst['new_val']) == len(self.testInst.index)
+
 
 class TestBasicsShiftedFileDates(TestBasics):
     """Basic tests for pandas `pysat.Instrument` with shifted file dates."""
