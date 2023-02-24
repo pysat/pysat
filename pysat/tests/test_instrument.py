@@ -310,8 +310,8 @@ class TestBasicsNDXarray(TestBasics):
 
         self.testInst['preset_val'] = 3.0
         self.testInst['new_val'] = 3.0
-        assert len(self.testInst['preset_val']) == 1
         # Existing coords should be not be broadcast
+        assert self.testInst['preset_val'].size == 1
         # New variables broadcast over time
         assert len(self.testInst['new_val']) == len(self.testInst.index)
 
