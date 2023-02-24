@@ -1091,7 +1091,7 @@ class Instrument(object):
                 elif len(np.shape(in_data)) == 0:
                     # Not an iterable input, but a single number.
                     if key in self.variables:
-                        # If it exists, assign as coord.
+                        # If it exists, assign to existing value.
                         self.data[key] = in_data
                     else:
                         # Otherwise broadcast over time.
