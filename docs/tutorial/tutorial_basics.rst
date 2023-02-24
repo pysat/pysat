@@ -330,12 +330,12 @@ the data at the :py:class:`pysat.Instrument` level that behaves the same whether
     # Assignment through datetime slicing
     dmsp[start:stop, 'ti'] = sub_array
 
-Note that a pandas data objects will hold to a strict time index, meaning that
-all variables must be the same length.  Assigning a single value to an array
-will broadcast that value over all coordinates, resulting in a constant value
-as a function of time. To allow for multiple dimensions, the xarray data object
-allows more flexibility.  If a single value is assigned to a new variable, it
-will be sent to the coords.
+Note that a :py:class:`pandas.DataFrame` will hold to a strict time index, 
+meaning that all variables must be the same length.  Assigning a single 
+value to an array will broadcast that value over all coordinates, resulting 
+in a constant value as a function of time. To allow for multiple dimensions, 
+the :py:class:`xarray.Dataset` allows more flexibility.  If a single value is 
+assigned to a new variable, it will be sent to the coords.
 
 Note that :py:func:`np.where` may be used to select a subset of data using
 either the convenient access or standard pandas or xarray selection methods.
