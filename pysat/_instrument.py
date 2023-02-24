@@ -1071,24 +1071,23 @@ class Instrument(object):
                             self.data[key] = in_data
                         else:
                             # Otherwise broadcast over time.
-                            pysat.logger.warning(
-                                ' '.join(('Input for {:} is a'.format(key),
-                                          'single value. Broadcast over',
-                                          'epoch.')))
+                            warnings.warn(' '.join(('Input for {:}'.format(key),
+                                                    'is a single value.',
+                                                    'Broadcast over epoch.')))
                             self.data[key] = (epoch_name,
                                               [in_data] * len(self.index))
                     elif len(in_data) == 0:
                         # Provided an empty iterable, make everything NaN
-                        pysat.logger.warning(
-                            ' '.join(('Input for {:} is empty.'.format(key),
-                                      'Setting to NaN broadcast over epoch.')))
+                        warnings.warn(' '.join(('Input for {:} is'.format(key),
+                                                'empty. Setting to broadcast',
+                                                'as NaN over epoch.')))
                         self.data[key] = (epoch_name,
                                           [np.nan] * len(self.index))
                     else:
-                        raise ValueError(
-                            ' '.join(('Input for {:}'.format(key),
-                                      'does not match expected',
-                                      'dimensions. Value not set.')))
+                        raise ValueError(' '.join(('Input for {:}'.format(key),
+                                                   'does not match expected',
+                                                   'dimensions. Value not',
+                                                   'set.')))
                 elif len(np.shape(in_data)) == 0:
                     # Not an iterable input, but a single number.
                     if key in self.variables:
@@ -1096,9 +1095,9 @@ class Instrument(object):
                         self.data[key] = in_data
                     else:
                         # Otherwise broadcast over time.
-                        pysat.logger.warning(
-                            ' '.join(('Input for {:} is a'.format(key),
-                                      'value. Broadcast over epoch.')))
+                        warnings.warn(' '.join(('Input for {:} is'.format(key),
+                                                'a single value. Broadcast',
+                                                'over epoch.')))
                         self.data[key] = (epoch_name,
                                           [in_data] * len(self.index))
                 else:
