@@ -766,12 +766,7 @@ class InstAccessTests(object):
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = 2.
         assert np.all(self.testInst['doubleMLT'] == 2.)
-        if self.testInst.pandas_format:
-            # Pandas will broadcast to time array
-            assert len(self.testInst['doubleMLT']) == len(self.testInst.index)
-        else:
-            # Xarray will assign as a coordinate
-            assert len(self.testInst['doubleMLT']) == 1
+        assert len(self.testInst['doubleMLT']) == len(self.testInst.index)
 
         self.testInst['nanMLT'] = np.nan
         assert np.all(np.isnan(self.testInst['nanMLT']))
