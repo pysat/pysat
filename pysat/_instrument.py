@@ -957,6 +957,10 @@ class Instrument(object):
             If tuple not used when assigning dimensions for new multidimensional
             data.
 
+        Warnings
+        --------
+        If a single new value is set, the value will be broadcast over time.
+
         Note
         ----
         If no metadata provided and if metadata for 'name' not already stored
