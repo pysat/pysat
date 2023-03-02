@@ -280,13 +280,14 @@ class TestBasicsNDXarray(TestBasics):
 
     @pytest.mark.parametrize("val,warn_msg",
                              [([], "broadcast as NaN"),
-                              (27., "Broadcast over epoch")])
+                              (27., "Broadcast over epoch"),
+                              (np.array(27.), "Broadcast over epoch")])
     def test_set_xarray_single_value_warnings(self, val, warn_msg):
         """Check for warning messages when setting xarray values.
 
         Parameters
         ----------
-        val : float or empty list
+        val : float or iterable
             Value to be added as a new data variable.
         warn_msg : str
             Excerpt from expected warning message.
