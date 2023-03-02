@@ -301,15 +301,23 @@ class TestBasicsNDXarray(TestBasics):
             self.testInst["new_val"] = val
         testing.eval_warnings(self.war, warn_msg, warn_type=UserWarning)
 
-    def test_set_xarray_single_value_broadcast(self):
-        """Check that single values are correctly broadcast."""
+    @pytest.mark.parametrize("new_val", [3.0, np.array(3.0)])
+    def test_set_xarray_single_value_broadcast(self, new_val):
+        """Check that single values are correctly broadcast.
+
+        Parameters
+        ----------
+        new_val : float or iterable
+            Should be a single value, potentially an array with one element.
+
+        """
 
         self.testInst.load(date=self.ref_time, use_header=True)
         self.testInst.data = self.testInst.data.assign_coords(
             {'preset_val': 1.0})
 
-        self.testInst['preset_val'] = 3.0
-        self.testInst['new_val'] = 3.0
+        self.testInst['preset_val'] = new_val
+        self.testInst['new_val'] = new_val
         # Existing coords should be not be broadcast
         assert self.testInst['preset_val'].size == 1
         # New variables broadcast over time
