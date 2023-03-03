@@ -278,6 +278,75 @@ class TestBasicsNDXarray(TestBasics):
         self.testInst.data = data
         assert self.testInst.empty == target
 
+    @pytest.mark.parametrize("val,warn_msg",
+                             [([], "broadcast as NaN"),
+                              (27., "Broadcast over epoch"),
+                              (np.array([27.]), "Broadcast over epoch")])
+    def test_set_xarray_single_value_warnings(self, val, warn_msg):
+        """Check for warning messages when setting xarray values.
+
+        Parameters
+        ----------
+        val : float or iterable
+            Value to be added as a new data variable.
+        warn_msg : str
+            Excerpt from expected warning message.
+
+        """
+
+        warnings.simplefilter("always")
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+
+        with warnings.catch_warnings(record=True) as self.war:
+            self.testInst["new_val"] = val
+        testing.eval_warnings(self.war, warn_msg, warn_type=UserWarning)
+
+    def test_set_xarray_single_value_errors(self):
+        """Check for warning messages when setting xarray values.
+
+        Parameters
+        ----------
+        val : float or iterable
+            Value to be added as a new data variable.
+        warn_msg : str
+            Excerpt from expected warning message.
+
+        """
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.data = self.testInst.data.assign_coords(
+            {'preset_val': np.array([1.0, 2.0])})
+
+        with pytest.raises(ValueError) as verr:
+            self.testInst['preset_val'] = 1.0
+
+        estr = 'Shape of input does not match'
+        assert str(verr).find(estr) > 0
+        return
+
+    @pytest.mark.parametrize("new_val", [3.0, np.array([3.0])])
+    def test_set_xarray_single_value_broadcast(self, new_val):
+        """Check that single values are correctly broadcast.
+
+        Parameters
+        ----------
+        new_val : float or iterable
+            Should be a single value, potentially an array with one element.
+
+        """
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.data = self.testInst.data.assign_coords(
+            {'preset_val': 1.0})
+
+        self.testInst['preset_val'] = new_val
+        self.testInst['new_val'] = new_val
+        # Existing coords should be not be broadcast
+        assert self.testInst['preset_val'].size == 1
+        # New variables broadcast over time
+        assert len(self.testInst['new_val']) == len(self.testInst.index)
+
 
 class TestBasicsShiftedFileDates(TestBasics):
     """Basic tests for pandas `pysat.Instrument` with shifted file dates."""

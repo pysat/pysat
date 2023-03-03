@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.Y.Y] - 2023-??-??
 --------------------
+* Bug Fix
+  * Fixed an issue with setting single variables in xarray coords (#988)
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
