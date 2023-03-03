@@ -59,14 +59,14 @@ line-of-sight winds).
 
 .. code:: python
 
-          import pysat
-          import pysatNASA
+    import pysat
+    import pysatNASA
 
-	  # Initalize the ICON Constellation using the ICON module
-	  icon = pysat.Constellation(cont_module=pysatNASA.constellations.icon)
+    # Initalize the ICON Constellation using the ICON module
+    icon = pysat.Constellation(cont_module=pysatNASA.constellations.icon)
 
-	  # Display the results
-	  print(icon)
+    # Display the results
+    print(icon)
 
 The last command will show that nine :py:class:`~pysat._instrument.Instrument`
 objects were loaded by the module: both IVM instruments, the EUV instrument, the
@@ -83,15 +83,15 @@ us use the ACE realtime data Constellation in this example.
 
 .. code:: python
 
-	  # Download today's data and load it into the Constellation
-	  ace_rt.download()
-	  ace_rt.load(date=ace_rt.today())
+    # Download today's data and load it into the Constellation
+    ace_rt.download()
+    ace_rt.load(date=ace_rt.today())
 
-	  # Convert the output to an Instrument
-	  rt_inst = ace_rt.to_inst()
-	  print(rt_inst)
+    # Convert the output to an Instrument
+    rt_inst = ace_rt.to_inst()
+    print(rt_inst)
 
-This yeilds:
+This yields:
 ::
 
   pysat Instrument object
