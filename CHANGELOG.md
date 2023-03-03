@@ -7,10 +7,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Enhancements
   * Added `to_inst` method to the Constellation class
+* Bug Fix
+  * Fixed an issue with setting single variables in xarray coords (#988)
 * Maintenance
   * Added roadmap to readthedocs
+  * Improved the documentation in `pysat.utils.files`
   * Clarified documentation and tests for name slicing support in pandas
-
+  * Clarified documentation for adding new instruments
 
 [3.0.6] - 2022-12-21
 --------------------
