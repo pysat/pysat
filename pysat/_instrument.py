@@ -3271,8 +3271,10 @@ class Instrument(object):
         """
 
         # Add the function kwargs
-        kwargs["start"] = start
-        kwargs["stop"] = stop
+        if 'start' not in kwargs.keys():
+            kwargs["start"] = start
+        if 'stop' not in kwargs.keys():
+            kwargs["stop"] = stop
 
         # Add the user-supplied kwargs
         rtn_key = 'list_remote_files'
