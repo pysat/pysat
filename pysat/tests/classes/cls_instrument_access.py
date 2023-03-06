@@ -93,7 +93,8 @@ class InstAccessTests(object):
         """
         # Test that the first loaded time matches the first requested time
         assert self.testInst.index[0] == self.ref_time, \
-            "First loaded time is incorrect"
+            "First loaded time is incorrect {:} != {:}".format(
+                self.testInst.index[0], self.ref_time)
 
         # Test that the Instrument date is set to the requested start date
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
