@@ -3,6 +3,7 @@
 
 from importlib import reload
 import numpy as np
+import pandas as pds
 import pytest
 import warnings
 import xarray as xr
@@ -63,6 +64,77 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
+
+
+class TestInstCadance(TestBasics):
+    """Unit tests for pysat.Instrument objects with the default file cadance."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.freq = 'D'
+
+        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
+                                    self.ref_time + pds.DateOffset(years=2)
+                                    - pds.DateOffset(days=1), freq=self.freq)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True,
+                                         use_header=True,
+                                         file_date_range=date_range,
+                                         **self.testing_kwargs)
+        self.ref_doy = int(self.ref_time.strftime('%j'))
+        self.out = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
+        return
+
+    def test_error_undefined_input_keywords(self):
+        """Expected failure, as Eval doesn't work with pds.DatetimeIndex."""
+        return
+
+    def test_no_stale_data_paths(self, caplog):
+        """Expected failure, as Eval doesn't work with pds.DatetimeIndex."""
+        return
+
+
+class TestInstMonthlyCadance(TestInstCadance):
+    """Unit tests for pysat.Instrument objects with a monthly file cadance."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.freq = 'MS'
+
+        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
+                                    self.ref_time + pds.DateOffset(years=2)
+                                    - pds.DateOffset(days=1), freq=self.freq)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True,
+                                         use_header=True,
+                                         file_date_range=date_range,
+                                         **self.testing_kwargs)
+        self.ref_doy = int(self.ref_time.strftime('%j'))
+        self.out = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
+        return
+
 
 
 class TestBasicsInstModule(TestBasics):
