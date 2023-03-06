@@ -61,12 +61,16 @@ class InstIterationTests(object):
         dates : bool
             If True, checks each date.  If False, checks against the _iter_list
             (default=False)
-        freq : int or NoneType
+        freq : str, int, or NoneType
             Frequency in days.  If None, use pandas default. (default=None)
 
         """
-
-        kwargs = {'freq': '{:}D'.format(freq)} if freq else {}
+        if freq is None:
+            kwargs = {}
+        elif type(freq) in [int, np.int32, np.int64]:
+            kwargs = {'freq': '{:}D'.format(freq)}
+        else:
+            kwargs = {'freq': freq}
 
         if isinstance(start, dt.datetime):
             out = pds.date_range(start, stop, **kwargs).tolist()
@@ -75,9 +79,8 @@ class InstIterationTests(object):
             for (istart, istop) in zip(start, stop):
                 out.extend(pds.date_range(istart, istop, **kwargs).tolist())
         if dates:
-            dates = []
-            for inst in self.testInst:
-                dates.append(inst.date)
+            dates = [inst.date for inst in self.testInst
+                     if inst.date in self.testInst.files.files.index]
             pysat.utils.testing.assert_lists_equal(dates, out)
         else:
             pysat.utils.testing.assert_lists_equal(self.testInst._iter_list,
@@ -870,35 +873,43 @@ class InstIterationTests(object):
     def test_set_bounds_by_fname_season(self):
         """Test set bounds by fname season."""
 
-        start = ['2009-01-01.nofile', '2009-02-01.nofile']
-        stop = ['2009-01-03.nofile', '2009-02-03.nofile']
+        start = [self.testInst.files.files[0], self.testInst.files.files[4]]
+        stop = [self.testInst.files.files[2], self.testInst.files.files[5]]
+        check_list = self.testInst.files.files[0:6].tolist()
+        check_list.pop(3)
         self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list
-                      == ['2009-01-01.nofile', '2009-01-02.nofile',
-                          '2009-01-03.nofile', '2009-02-01.nofile',
-                          '2009-02-02.nofile', '2009-02-03.nofile'])
+        pysat.utils.testing.assert_lists_equal(self.testInst._iter_list,
+                                               check_list)
         return
 
     def test_iterate_over_bounds_set_by_fname_season(self):
         """Test set bounds using multiple filenames."""
 
-        start = ['2009-01-01.nofile', '2009-02-01.nofile']
-        stop = ['2009-01-15.nofile', '2009-02-15.nofile']
-        start_d = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop_d = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
+        start = [self.testInst.files.files[0], self.testInst.files.files[4]]
+        stop = [self.testInst.files.files[2], self.testInst.files.files[5]]
+        start_d = [
+            pds.to_datetime(self.testInst.files.files.index[0]).to_pydatetime(),
+            pds.to_datetime(self.testInst.files.files.index[4]).to_pydatetime()]
+        stop_d = [
+            pds.to_datetime(self.testInst.files.files.index[2]).to_pydatetime(),
+            pds.to_datetime(self.testInst.files.files.index[5]).to_pydatetime()]
         self.testInst.bounds = (start, stop)
-        self.eval_iter_list(start_d, stop_d, dates=True)
+        self.eval_iter_list(start_d, stop_d, dates=True,
+                            freq=self.testInst.files.files.index.freqstr)
         return
 
     def test_set_bounds_fname_with_frequency(self):
         """Test set bounds using filenames and non-default step."""
 
-        start = '2009-01-01.nofile'
-        start_date = dt.datetime(2009, 1, 1)
-        stop = '2009-01-03.nofile'
-        stop_date = dt.datetime(2009, 1, 3)
+        start = self.testInst.files.files[2]
+        start_date = pds.to_datetime(
+            self.testInst.files.files.index[2]).to_pydatetime()
+        stop = self.testInst.files.files[5]
+        stop_date = pds.to_datetime(
+            self.testInst.files.files.index[5]).to_pydatetime()
         self.testInst.bounds = (start, stop, 2)
-        out = pds.date_range(start_date, stop_date, freq='2D').tolist()
+        freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
+        out = pds.date_range(start_date, stop_date, freq=freq).tolist()
 
         # Convert filenames in list to a date
         for i, item in enumerate(self.testInst._iter_list):
@@ -910,25 +921,32 @@ class InstIterationTests(object):
     def test_iterate_bounds_fname_with_frequency(self):
         """Test iterate over bounds using filenames and non-default step."""
 
-        start = '2009-01-01.nofile'
-        start_date = dt.datetime(2009, 1, 1)
-        stop = '2009-01-03.nofile'
-        stop_date = dt.datetime(2009, 1, 3)
+        start = self.testInst.files.files[2]
+        start_date = pds.to_datetime(
+            self.testInst.files.files.index[2]).to_pydatetime()
+        stop = self.testInst.files.files[5]
+        stop_date = pds.to_datetime(
+            self.testInst.files.files.index[5]).to_pydatetime()
+        freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         self.testInst.bounds = (start, stop, 2)
 
-        self.eval_iter_list(start_date, stop_date, dates=True, freq=2)
+        self.eval_iter_list(start_date, stop_date, dates=True, freq=freq)
         return
 
     def test_set_bounds_fname_with_frequency_and_width(self):
         """Test set fname bounds with step/width > 1."""
 
-        start = '2009-01-01.nofile'
-        start_date = dt.datetime(2009, 1, 1)
-        stop = '2009-01-03.nofile'
-        stop_date = dt.datetime(2009, 1, 3)
+        start = self.testInst.files.files[2]
+        start_date = pds.to_datetime(
+            self.testInst.files.files.index[2]).to_pydatetime()
+        stop = self.testInst.files.files[5]
+        stop_date = pds.to_datetime(
+            self.testInst.files.files.index[5]).to_pydatetime()
+        freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         self.testInst.bounds = (start, stop, 2, 2)
         out = pds.date_range(start_date, stop_date - dt.timedelta(days=1),
-                             freq='2D').tolist()
+                             freq=freq).tolist()
+
         # Convert filenames in list to a date
         date_list = []
         for item in self.testInst._iter_list:
@@ -946,8 +964,10 @@ class InstIterationTests(object):
         assert self.testInst.empty
 
         # Perform comprehension and ensure there are as many as there should be
-        insts = [inst for inst in self.testInst]
-        assert len(insts) == 10
+        insts = [inst for inst in self.testInst
+                 if inst.date in self.testInst.files.files.index]
+        assert len(insts) == 10, 'Found {:d} Instruments instead of 10'.format(
+            len(insts))
 
         # Get list of dates
         dates = pds.Series([inst.date for inst in insts])
