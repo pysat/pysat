@@ -589,8 +589,15 @@ class Instrument(object):
 
                     else:
                         # General check for everything else
-                        checks.append(np.all(self.__dict__[key]
-                                             == other.__dict__[key]))
+                        if isinstance(self.__dict__[key], dict):
+                            try:
+                                checks.append(str(self.__dict__[key])
+                                              == str(other.__dict__[key]))
+                            except AttributeError:
+                                return False
+                        else:
+                            checks.append(np.all(self.__dict__[key]
+                                                 == other.__dict__[key]))
 
                 else:
                     # Both objects don't have the same attached objects
@@ -655,7 +662,7 @@ class Instrument(object):
                            "', pad={:}, orbit_info=".format(self.pad),
                            "{:}, ".format(self.orbit_info),
                            "inst_module=", istr, ", custom=", cstr,
-                           ", **{:}".format(in_kwargs), ")"])
+                           ", **{:}".format(repr(in_kwargs)), ")"])
 
         return out_str
 
