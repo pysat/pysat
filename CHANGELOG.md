@@ -5,9 +5,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.Y.Y] - 2023-??-??
 --------------------
+* New Features
+  * Added unit tests for different file cadences in the Instrument class
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
+  * Allow equality assessments if optional kwargs are used in Instrument
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
