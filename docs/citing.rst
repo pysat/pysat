@@ -2,7 +2,7 @@ Citations in the pysat ecosystem
 ================================
 
 When referring to this software package, please cite the original paper by
-Stoneback et al [2018] `<https://onlinelibrary.wiley.com/doi/10.1029/2018JA025297>`_
+Stoneback et al [2018] `<https://ntrs.nasa.gov/citations/20190002337>`_
 as well as the package `<https://doi.org/10.5281/zenodo.1199703>`_. Note that
 this DOI will always point to the latest version of the code.  A list of DOIs
 for all versions can be found at the Zenodo page above.
