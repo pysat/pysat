@@ -1146,6 +1146,10 @@ class Instrument(object):
         elif self._iter_type == 'date':
             # Iterate over dates. A list of dates is generated whenever
             # bounds are set.
+
+            if len(self._iter_list) == 0:
+                raise IndexError('No dates to iterate over, check bounds')
+
             for date in self._iter_list:
                 # Use a copy trick, starting with null data in object
                 self.data = self._null_data
@@ -1977,6 +1981,13 @@ class Instrument(object):
                 # Default step size
                 if self._iter_step is None:
                     self._iter_step = 1
+
+                if type(self._iter_step) not in [int, np.int32, np.int64]:
+                    # Convert from a frequency string to an index
+                    soff = pds.tseries.frequencies.to_offset(self._iter_step)
+                    foff = pds.tseries.frequencies.to_offset(
+                        self.files.files.index.freq)
+                    self._iter_step = int(soff.n / foff.n)
 
                 # Default window size
                 if self._iter_width is None:
