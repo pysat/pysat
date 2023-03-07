@@ -190,6 +190,39 @@ class TestLoadNetCDF(object):
 
         return
 
+    @pytest.mark.parametrize("kwargs,target",
+                             [({}, True),
+                              ({'export_pysat_info': True}, True),
+                              ({'export_pysat_info': False}, False)])
+    def test_basic_write_and_read_netcdf_export_pysat_info(self, kwargs, target):
+        """Test basic netCDF4 read/write with optional pysat info export.
+
+        Parameters
+        ----------
+        kwargs : dict
+            Specify value of `export_pysat_info`. An empty dict sets to
+            default value.
+        target : bool
+            True is pysat info is expected to be written to file.
+        """
+        # Create a bunch of files by year and doy
+        outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
+        self.testInst.load(date=self.stime, use_header=True)
+
+        io.inst_to_netcdf(self.testInst, fname=outfile, preserve_meta_case=True,
+                          epoch_name=default_epoch_name, **kwargs)
+
+        tkwargs = decode_times_val(self.testInst.pandas_format)
+
+        self.loaded_inst, meta = io.load_netcdf(
+            outfile, pandas_format=self.testInst.pandas_format,
+            epoch_name=default_epoch_name, **tkwargs)
+
+        for key in ['platform', 'name', 'tag', 'inst_id']:
+            assert hasattr(meta.header, key) == target
+
+        return
+
     @pytest.mark.parametrize("add_path", [(''), ('unknown_dir')])
     def test_inst_write_and_read_netcdf(self, add_path):
         """Test Instrument netCDF4 read/write, including non-existent paths.
