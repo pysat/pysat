@@ -194,7 +194,8 @@ class TestLoadNetCDF(object):
                              [({}, True),
                               ({'export_pysat_info': True}, True),
                               ({'export_pysat_info': False}, False)])
-    def test_basic_write_and_read_netcdf_export_pysat_info(self, kwargs, target):
+    def test_basic_write_and_read_netcdf_export_pysat_info(self, kwargs,
+                                                           target):
         """Test basic netCDF4 read/write with optional pysat info export.
 
         Parameters
