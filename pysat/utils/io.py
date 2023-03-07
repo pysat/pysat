@@ -1530,8 +1530,8 @@ def xarray_all_vars(data):
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                    mode='w', zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, check_type=None, export_nan=None,
-                   unlimited_time=True, meta_translation=None,
-                   meta_processor=None):
+                   export_pysat_info=True, unlimited_time=True,
+                   meta_translation=None, meta_processor=None):
     """Store pysat data in a netCDF4 file.
 
     Parameters
@@ -1580,6 +1580,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         included will be written to the file. If not listed
         and a value is NaN then that attribute simply won't be included in
         the netCDF4 file. (default=None)
+    export_pysat_info : bool
+        If True, platform, name, tag, and inst_id will be appended to the
+        metadata.  (default=True)
     unlimited_time : bool
         Flag specifying whether or not the epoch/time dimension should be
         unlimited; it is when the flag is True. (default=True)
@@ -1699,10 +1702,11 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
             attrb_dict.pop(pitem)
 
     # Set the general file information
-    attrb_dict['platform'] = inst.platform
-    attrb_dict['name'] = inst.name
-    attrb_dict['tag'] = inst.tag
-    attrb_dict['inst_id'] = inst.inst_id
+    if export_pysat_info:
+        attrb_dict['platform'] = inst.platform
+        attrb_dict['name'] = inst.name
+        attrb_dict['tag'] = inst.tag
+        attrb_dict['inst_id'] = inst.inst_id
     attrb_dict['acknowledgements'] = inst.acknowledgements
     attrb_dict['references'] = inst.references
     attrb_dict['Date_End'] = dt.datetime.strftime(

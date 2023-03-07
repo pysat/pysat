@@ -3576,7 +3576,7 @@ class Instrument(object):
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name=None,
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
-                   unlimited_time=True, modify=False):
+                   export_pysat_info=True, unlimited_time=True, modify=False):
         """Store loaded data into a netCDF4 file.
 
         .. deprecated:: 3.0.2
@@ -3618,6 +3618,9 @@ class Instrument(object):
              included will be written to the file. If not listed
              and a value is NaN then that attribute simply won't be included in
              the netCDF4 file. (default=None)
+        export_pysat_info : bool
+            If True, platform, name, tag, and inst_id will be appended to the
+            metadata.  (default=True)
         unlimited_time : bool
              Flag specifying whether or not the epoch/time dimension should be
              unlimited; it is when the flag is True. (default=True)
@@ -3653,6 +3656,7 @@ class Instrument(object):
                                       complevel=complevel, shuffle=shuffle,
                                       preserve_meta_case=preserve_meta_case,
                                       export_nan=export_nan,
+                                      export_pysat_info=export_pysat_info,
                                       unlimited_time=unlimited_time)
 
         return
