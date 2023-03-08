@@ -63,7 +63,7 @@ line-of-sight winds).
     import pysatNASA
 
     # Initalize the ICON Constellation using the ICON module
-    icon = pysat.Constellation(cont_module=pysatNASA.constellations.icon)
+    icon = pysat.Constellation(const_module=pysatNASA.constellations.icon)
 
     # Display the results
     print(icon)
