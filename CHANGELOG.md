@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 [3.Y.Y] - 2023-??-??
 --------------------
 * Enhancements
+  * Added `to_inst` method to the Constellation class
   * Added `export_pysat_info` kwarg to `to_netcdf` routines to select whether
     pysat instrument info is writtent o files.
 * Bug Fix

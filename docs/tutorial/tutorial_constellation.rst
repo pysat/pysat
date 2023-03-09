@@ -47,3 +47,94 @@ The :py:attr:`~pysat._instrument.Instrument.name` values are: :py:data:`epam`,
 :py:data:`mag`, :py:data:`sis`, and :py:data:`swepam`.  The only
 :py:class:`~pysat._instrument.Instrument` defining attributes that are not
 unique are the :py:attr:`~pysat._instrument.Instrument.name` values.
+
+Use a Constellation sub-module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some pysatEcosystem packages, such as :py:mod:`pysatNASA`, contain sub-modules
+that specify commonly-used Constellations. This example uses the
+`ICON Instruments <https://pysatnasa.readthedocs.io/en/latest/supported_constellations.html#icon>`_
+to create a Constellation of ICON EUV, FUV, IVM, and MIGHTI data (excluding the
+line-of-sight winds).
+
+.. code:: python
+
+    import pysat
+    import pysatNASA
+
+    # Initalize the ICON Constellation using the ICON module
+    icon = pysat.Constellation(const_module=pysatNASA.constellations.icon)
+
+    # Display the results
+    print(icon)
+
+The last command will show that nine :py:class:`~pysat._instrument.Instrument`
+objects were loaded by the module: both IVM instruments, the EUV instrument, the
+day- and night-time FUV data, and four of the MIGHTI data products.
+
+Converting to an Instrument
+---------------------------
+
+At a certain point in your data analysis, it may be desirable to convert your
+:py:class:`~pysat._constellation.Constellation` into an
+:py:class:`~pysat._instrument.Instrument`. This functionality is supported by
+the class method :py:meth:`~pysat._constellation.Constellation.to_inst`.  Let
+us use the ACE realtime data Constellation in this example.
+
+.. code:: python
+
+    # Download today's data and load it into the Constellation
+    ace_rt.download()
+    ace_rt.load(date=ace_rt.today())
+
+    # Convert the output to an Instrument
+    rt_inst = ace_rt.to_inst()
+    print(rt_inst)
+
+This yields:
+::
+
+  pysat Instrument object
+  -----------------------
+  Platform: 'ace'
+  Name: 'swepam_mag_epam_sis'
+  Tag: 'realtime'
+  Instrument id: ''
+
+  Data Processing
+  ---------------
+  Cleaning Level: 'clean'
+  Data Padding: None
+  Keyword Arguments Passed to list_files: {}
+  Keyword Arguments Passed to load: {}
+  Keyword Arguments Passed to preprocess: {}
+  Keyword Arguments Passed to download: {}
+  Keyword Arguments Passed to list_remote_files: {}
+  Keyword Arguments Passed to clean: {}
+  Keyword Arguments Passed to init: {}
+  Custom Functions: 0 applied
+
+  Local File Statistics
+  ---------------------
+  Number of files: 0
+
+
+  Loaded Data Statistics
+  ----------------------
+  Date: 09 January 2023
+  DOY: 009
+  Time range: 09 January 2023 15:15:00 --- 09 January 2023 16:45:00
+  Number of Times: 91
+  Number of variables: 33
+
+  Variable Names:
+  jd_ace_epam_realtime  sec_ace_epam_realtime status_e              
+                               ...                                
+  sw_proton_dens        sw_bulk_speed         sw_ion_temp           
+
+  pysat Meta object
+  -----------------
+  Tracking 7 metadata values
+  Metadata for 33 standard variables
+  Metadata for 0 ND variables
+  Metadata for 0 global attributes
