@@ -195,3 +195,74 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
                            inst.meta.labels.fill_val: fill_val}
 
     return
+
+
+def establish_common_coord(coord_vals, common=True):
+    """Create a coordinate array that is appropriate for multiple data sets.
+
+    Parameters
+    ----------
+    coord_vals : list-like
+        A list of coordinate arrays of the same type: e.g., all geodetic
+        latitude in degrees
+    common : bool
+        True to include locations where all coordinate arrays cover, False to
+        use the maximum location range from the list of coordinates
+        (default=True)
+
+    Returns
+    -------
+    out_coord : array-like
+        An array appropriate for the list of coordinate values
+
+    Note
+    ----
+    Assumes that the supplied coordinates are distinct representations of
+    the same value in the same units and range (e.g., longitude in degrees
+    from 0-360).
+
+    """
+
+    start_val = None
+    end_val = None
+    res = None
+
+    for coord_spec in coord_vals:
+        # Ensure the coordinate specification is array-like
+        coord_spec = np.asarray(coord_spec)
+        if coord_spec.shape == ():
+            coord_spec = np.asarray([coord_spec])
+
+        if start_val is None:
+            # Initialize the start and stop values
+            start_val = coord_spec[0]
+            end_val = coord_spec[-1]
+
+            # Determine the resolution
+            if start_val == end_val:
+                res = np.inf
+            else:
+                res = (coord_spec[1:] - coord_spec[:-1]).mean()
+        else:
+            # Adjust the start and stop time as appropriate
+            if common:
+                if start_val < coord_spec[0]:
+                    start_val = coord_spec[0]
+                if end_val > coord_spec[-1]:
+                    end_val = coord_spec[-1]
+            else:
+                if start_val > coord_spec[0]:
+                    start_val = coord_spec[0]
+                if end_val < coord_spec[-1]:
+                    end_val = coord_spec[-1]
+
+            # Update the resolution
+            new_res = (coord_spec[1:] - coord_spec[:-1]).mean()
+            if new_res < res:
+                res = new_res
+
+    # Construct the common index
+    npnts = int((end_val - start_val) / res) + 1
+    out_coord = np.linspace(start_val, end_val, npnts)
+
+    return out_coord
