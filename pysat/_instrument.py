@@ -1819,20 +1819,22 @@ class Instrument(object):
         Parameters
         ----------
         start : dt.datetime, str, or NoneType
-            Start of iteration, if None uses first data date.
-            list-like collection also accepted. (default=None)
+            Start of iteration, disregarding any time of day information.
+            If None uses first data date. List-like collection also
+            accepted, allowing mutliple bound ranges. (default=None)
         stop :  dt.datetime, str, or None
-            Stop of iteration, inclusive. If None uses last data date.
-            list-like collection also accepted. (default=None)
+            Stop of iteration, inclusive of the entire day regardless of
+            time of day in the bounds. If None uses last data date.
+            List-like collection also accepted, allowing mutliple bound
+            ranges, though it must match `start`. (default=None)
         step : str, int, or NoneType
             Step size used when iterating from start to stop. Use a
-            Pandas frequency string ('3D', '1M') when setting bounds by date,
-            an integer when setting bounds by file. Defaults to a single
-            day/file (default='1D', 1).
+            Pandas frequency string ('3D', '1M') or an integer (will assume
+            a base frequency equal to the file frequency). If None, defaults to
+            a single unit of file frequency (typically 1 day) (default=None).
         width : pandas.DateOffset, int, or NoneType
-            Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=dt.timedelta(days=1),
-            1)
+            Data window used when loading data within iteration. If None,
+            defaults to a single file frequency (typically 1 day) (default=None)
 
         Raises
         ------
@@ -1923,12 +1925,14 @@ class Instrument(object):
             self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
             if self._iter_step is None:
-                self._iter_step = '1D'
+                self._iter_step = self.files.files.index.freqstr
             if self._iter_width is None:
-                self._iter_width = dt.timedelta(days=1)
+                self._iter_width = pds.tseries.frequencies.to_offset(
+                    self.files.files.index.freqstr)
             if self._iter_start[0] is not None:
                 # There are files. Use those dates.
-                ustops = [istop - self._iter_width + dt.timedelta(days=1)
+                ustops = [istop - self._iter_width
+                          + pds.tseries.frequencies.to_offset(self._iter_step)
                           for istop in self._iter_stop]
                 ufreq = self._iter_step
                 self._iter_list = pysat.utils.time.create_date_range(
@@ -2029,17 +2033,19 @@ class Instrument(object):
 
                 # Default step size
                 if self._iter_step is None:
-                    self._iter_step = '1D'
+                    self._iter_step = self.files.files.index.freqstr
 
                 # Default window size
                 if self._iter_width is None:
-                    self._iter_width = dt.timedelta(days=1)
+                    self._iter_width = pds.tseries.frequencies.to_offset(
+                        self.files.files.index.freqstr)
 
                 # Create list-like of dates for iteration
                 starts = pysat.utils.time.filter_datetime_input(starts)
                 stops = pysat.utils.time.filter_datetime_input(stops)
-                freq = self._iter_step
-                width = self._iter_width
+                step = pds.tseries.frequencies.to_offset(self._iter_step)
+                file_inc = pds.tseries.frequencies.to_offset(
+                    self.files.files.index.freqstr)
 
                 # Ensure inputs are in reasonable date order
                 for start, stop in zip(starts, stops):
@@ -2051,15 +2057,17 @@ class Instrument(object):
                                          stop.strftime('%d %B %Y')))
                         raise ValueError(estr)
 
-                # Account for width of load. Don't extend past bound.
-                ustops = [stop - width + dt.timedelta(days=1)
-                          for stop in stops]
+                # Account for width of load. Don't extend past bound. To
+                # avoid pandas shenanigans, only perform adjustments to the
+                # stop time if the file width and file increment are not equal
+                ustops = [stop if self._iter_width == file_inc else
+                          stop - self._iter_width + file_inc for stop in stops]
 
                 # Date range is inclusive, no need to pad.
-                self._iter_list = pysat.utils.time.create_date_range(starts,
-                                                                     ustops,
-                                                                     freq=freq)
-                # go back to time index
+                self._iter_list = pysat.utils.time.create_date_range(
+                    starts, ustops, freq=self._iter_step)
+
+                # Convert the date range back to a time index format
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
 
             else:
@@ -2418,38 +2426,34 @@ class Instrument(object):
             self.load(date=date, end_date=end_date, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
-            first = self.files.get_index(self._iter_list[0])
-            last = self.files.get_index(self._iter_list[-1])
-            step = self._iter_step
-            width = self._iter_width
             if self._fid is not None:
-                # Data already loaded in `.data`
-                if (self._fid < first) | (self._fid + step > last):
+                # Data already loaded in `.data`. Step size is always accounted
+                # for in the list of files. Get location of current file in
+                # iteration list.
+                idx = None
+                fname = self.files[self._fid]
+                for i, name in enumerate(self._iter_list):
+                    if name == fname:
+                        idx = i
+                        break
+
+                if idx is None:
+                    estr = ''.join(('Unable to find loaded filename in the ',
+                                    'supported iteration list. Please check ',
+                                    'the Instrument bounds, `self.bounds` for',
+                                    ' supported iteration ranges.'))
+                    raise StopIteration(estr)
+                elif idx >= len(self._iter_list) - 1:
                     raise StopIteration('Outside the set file boundaries.')
-                else:
-                    # Step size already accounted for in the list of files. Get
-                    # location of current file in iteration list.
-                    idx = None
-                    fname = self.files[self._fid]
-                    for i, name in enumerate(self._iter_list):
-                        if name == fname:
-                            idx = i
-                            break
-                    if idx is None:
-                        estr = ''.join(('Unable to find loaded filename ',
-                                        'in the supported iteration list. ',
-                                        'Please check the Instrument bounds, ',
-                                        '`self.bounds` for supported iteration',
-                                        'ranges.'))
-                        raise StopIteration(estr)
-                    fname = self._iter_list[idx + 1]
+
+                fname = self._iter_list[idx + 1]
             else:
                 # No data loaded yet, start with the first file
                 fname = self._iter_list[0]
 
             # Get location for second file. Note a width of 1 loads single file.
             # Load range of files.
-            nfid = self.files.get_index(fname) + width - 1
+            nfid = self.files.get_index(fname) + self._iter_width - 1
             self.load(fname=fname, stop_fname=self.files[nfid],
                       verifyPad=verifyPad)
 
@@ -2505,33 +2509,30 @@ class Instrument(object):
                 self.load(date=date, end_date=end_date, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
-            first = self.files.get_index(self._iter_list[0])
-            last = self.files.get_index(self._iter_list[-1])
-            step = self._iter_step
-            width = self._iter_width
             if self._fid is not None:
-                if (self._fid - step < first) or (self._fid > last):
+                # Find location of the desired file, recall that step size is
+                # already accounted for when createing the iteration file list
+                idx = None
+                fname = self.files[self._fid]
+                for i, name in enumerate(self._iter_list):
+                    if name == fname:
+                        idx = i
+                        break
+
+                if idx is None:
+                    estr = ''.join(('Unable to find loaded filename in the ',
+                                    'supported iteration list. Please check ',
+                                    'the Instrument bounds, `self.bounds` for',
+                                    ' supported iteration ranges.'))
+                    raise StopIteration(estr)
+                elif idx == 0:
                     raise StopIteration('Outside the set file boundaries.')
-                else:
-                    # Find location of the desired file
-                    idx = None
-                    fname = self.files[self._fid]
-                    for i, name in enumerate(self._iter_list):
-                        if name == fname:
-                            idx = i
-                            break
-                    if idx is None:
-                        estr = ''.join(('Unable to find loaded filename ',
-                                        'in the supported iteration list. ',
-                                        'Please check the Instrument bounds, ',
-                                        '`self.bounds` for supported iteration',
-                                        'ranges.'))
-                        raise StopIteration(estr)
-                    fname = self._iter_list[idx - 1]
+    
+                fname = self._iter_list[idx - 1]
             else:
                 fname = self._iter_list[-1]
 
-            nfid = self.files.get_index(fname) + width - 1
+            nfid = self.files.get_index(fname) + self._iter_width - 1
             self.load(fname=fname, stop_fname=self.files[nfid],
                       verifyPad=verifyPad)
 
