@@ -428,7 +428,7 @@ class TestBasicsInstModule(TestBasics):
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = imod._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -454,9 +454,9 @@ class TestBasicsXarray(TestBasics):
                                          update_files=True,
                                          use_header=True,
                                          **self.testing_kwargs)
-        self.ref_time = \
-            pysat.instruments.pysat_testing_xarray._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_testing_xarray._test_dates[
+            '']['']
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -482,7 +482,7 @@ class TestBasics2D(TestBasics):
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing2d._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -513,9 +513,8 @@ class TestBasicsNDXarray(TestBasics):
                                          update_files=True,
                                          use_header=True,
                                          **self.testing_kwargs)
-        self.ref_time = \
-            pysat.instruments.pysat_ndtesting._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_ndtesting._test_dates['']['']
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -712,7 +711,7 @@ class TestBasicsShiftedFileDates(TestBasics):
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
