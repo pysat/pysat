@@ -2043,7 +2043,6 @@ class Instrument(object):
                 # Create list-like of dates for iteration
                 starts = pysat.utils.time.filter_datetime_input(starts)
                 stops = pysat.utils.time.filter_datetime_input(stops)
-                step = pds.tseries.frequencies.to_offset(self._iter_step)
                 file_inc = pds.tseries.frequencies.to_offset(
                     self.files.files.index.freqstr)
 
@@ -2527,7 +2526,7 @@ class Instrument(object):
                     raise StopIteration(estr)
                 elif idx == 0:
                     raise StopIteration('Outside the set file boundaries.')
-    
+
                 fname = self._iter_list[idx - 1]
             else:
                 fname = self._iter_list[-1]
