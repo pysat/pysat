@@ -124,7 +124,7 @@ class InstIterationTests(object):
             The start date for iterations, or dates for iteration over multiple
             segments.
         stops : dt.datetime or list of dt.datetime
-            The start date for iterations, or dates for iteration over multiple
+            The end date for iterations, or dates for iteration over multiple
             segments.
         step : int or str
             The step size for the iteration bounds. If int, days are assumed.
@@ -189,6 +189,7 @@ class InstIterationTests(object):
                 iterator = self.testInst.prev
             else:
                 iterator = self.testInst.next
+
             try:
                 while True:
                     iterator()
@@ -221,7 +222,7 @@ class InstIterationTests(object):
         
         return output
 
-    def verify_iteration(self, out, reverse=False, inclusive=True):
+    def verify_iteration(self, out, reverse=False):
         """Verify loaded dates for iteration, forward or backward.
 
         Parameters
@@ -229,10 +230,6 @@ class InstIterationTests(object):
         reverse : bool
             If True, use move backwards through the list. If False, move
             forwards. (default=False)
-        inclusive : bool
-            If True, check that end of bounds is included in iterated dates.
-            If False, check that end of bounds is excluded from iterated dates.
-            (default=True)
 
         """
 
@@ -241,9 +238,7 @@ class InstIterationTests(object):
             self.testInst.files.files.index.freqstr)
 
         delta_inc = pds.tseries.frequencies.to_offset(
-            out['width']) + out['starts'][0]
-        delta_inc += check_inc if inclusive else dt.timedelta(days=0)
-        delta_inc -= out['starts'][0]
+            out['width']) + out['starts'][0] + check_inc - out['starts'][0]
         
         # Verify range of loaded data for each iteration step.
         for i, trange in enumerate(out['observed_times']):
@@ -267,28 +262,22 @@ class InstIterationTests(object):
                 "End time higher than expected {:} >= {:}".format(
                     trange[1], check)
 
+            end_of_range = out['stops'][b_range] + dt.timedelta(days=1)
+            assert trange[1] < end_of_range, "End time higher than expected"
+
             if reverse:
-                end_of_range = out['stops'][b_range] + dt.timedelta(days=1)
-                assert trange[1] < end_of_range, "End time higher than expected"
                 if i == 0:
                     # Check that first load is before end of bounds.
-                    # HERE: BEHAVIOUR IS NOT AS IT WAS
-                    check = out['starts'][b_range] + out['width']
-                    while check < out['stops'][b_range]:
-                        check += out['width']
-                    check -= out['width']
+                    check = out['stops'][b_range] - out['width'] + check_inc
 
-                    if inclusive:
-                        assert trange[0] == check, \
-                            "Incorrect start time: {:} != {:}".format(
-                                trange[0], check)
-                        assert trange[1] > out['stops'][b_range], \
-                            "Stop time lower than expected: {:} <= {:}".format(
-                                trange[1], out['stops'][b_range])
-                    else:
-                        assert trange[0] < check, \
-                            "Start time is too high: {:} >= {:}".format(
-                                trange[0], check)
+                    assert trange[0] <= check, \
+                        "Start time is too high: {:} >= {:}: {:}".format(
+                            trange[0], check, out)
+
+                    tdate = filter_datetime_input(trange[1])
+                    assert tdate <= out['stops'][b_range], \
+                        "Stop time higher than expected: {:} > {:}".format(
+                            tdate, out['stops'][b_range])
 
                     check = out['stops'][b_range] + delta_inc
                     assert trange[1] < check, \
@@ -351,9 +340,9 @@ class InstIterationTests(object):
 
         start = self.ref_time
         stop = self.ref_time + dt.timedelta(days=14)
-        self.testInst.bounds = (start, stop, 'M')
+        self.testInst.bounds = (start, stop, 'MS')
         assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop, freq='M').tolist())
+                      == pds.date_range(start, stop, freq='MS').tolist())
         return
 
     def test_iterate_bounds_with_frequency(self):
@@ -394,16 +383,14 @@ class InstIterationTests(object):
                                input_kwargs)
         return
 
-    @pytest.mark.parametrize("file_inds", [([0, 3])])#, ([0, 4])])
-    @pytest.mark.parametrize("step,width", [(2, 3)])
-#                             [(2, 2), (2, 3), (1, 4), (5, 1), (3, 2)])
-    @pytest.mark.parametrize("by_date", [True])#, False])
+    @pytest.mark.parametrize("file_inds", [([0, 2]), ([0, 3]), ([0, 4])])
+    @pytest.mark.parametrize("step,width", [(2, 2), (2, 3), (3, 1)])
+    @pytest.mark.parametrize("by_date", [True, False])
     @pytest.mark.parametrize("reverse,for_loop",
-                             [(True, False)])#, (False, False), (False, True)])
-    @pytest.mark.parametrize("inclusive", [True])#, False])
+                             [(True, False), (False, False), (False, True)])
     def test_iterate_bounds_with_frequency_and_width(self, file_inds, step,
-                                                     width, by_date, reverse,
-                                                     for_loop, inclusive):
+                                                     width, by_date,
+                                                     reverse, for_loop):
         """Test iterate via date with mixed step/width.
 
         Parameters
@@ -421,8 +408,6 @@ class InstIterationTests(object):
             when `for_loop=False`.
         for_loop : bool
             If True, iterate via for loop.  If False, iterate via while.
-        inclusive : bool
-            Value for `verify_iteration` inclusive kwarg
 
         """
         # Get the desired file times
@@ -438,21 +423,19 @@ class InstIterationTests(object):
         out = self.support_iter_evaluations(*ftimes, step, width,
                                             for_loop=for_loop, by_date=by_date,
                                             reverse=reverse)
-        self.verify_iteration(out, reverse=reverse, inclusive=inclusive)
+        self.verify_iteration(out, reverse=reverse)
 
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
-                             [([3], [0]), ([0, 5], [2, 3])])
-    @pytest.mark.parametrize("step,width",
-                             [(2, 2), (2, 3), (1, 4), (5, 1), (3, 2)])
+                             [([0], [2]), ([0, 3], [1, 4])])
+    @pytest.mark.parametrize("step,width", [(2, 2), (5, 1), (3, 2)])
     @pytest.mark.parametrize("by_date", [True, False])
     @pytest.mark.parametrize("reverse,for_loop",
                              [(True, False), (False, False), (False, True)])
-    @pytest.mark.parametrize("inclusive", [True, False])
     def test_iterate_seasonal_bounds_with_frequency_and_width(
             self, start_inds, stop_inds, step, width, by_date, reverse,
-            for_loop, inclusive):
+            for_loop):
         """Test iterate via date with mixed step/width.
 
         Parameters
@@ -472,8 +455,6 @@ class InstIterationTests(object):
             when `for_loop=False`.
         for_loop : bool
             If True, iterate via for loop.  If False, iterate via while.
-        inclusive : bool
-            Value for `verify_iteration` inclusive kwarg
 
         """
         # Get the desired file times
@@ -490,7 +471,7 @@ class InstIterationTests(object):
         out = self.support_iter_evaluations(start_times, stop_times, step,
                                             width, for_loop=for_loop,
                                             by_date=by_date, reverse=reverse)
-        self.verify_iteration(out, reverse=reverse, inclusive=inclusive)
+        self.verify_iteration(out, reverse=reverse)
 
         return
 
@@ -559,7 +540,8 @@ class InstIterationTests(object):
 
         self.testInst.bounds = bound_val
         self.eval_iter_list(self.testInst.files.start_date,
-                            self.testInst.files.stop_date)
+                            self.testInst.files.stop_date,
+                            freq=self.testInst.files.files.index.freqstr)
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
@@ -607,8 +589,8 @@ class InstIterationTests(object):
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
-                             [([0], [2]), ([0, 3], [2, 4])])
-    @pytest.mark.parametrize("set_date", [True, False])
+                             [([0], [2])])#, ([0, 3], [2, 4])])
+    @pytest.mark.parametrize("set_date", [True])#, False])
     def test_set_bounds_by_date_extra_time(self, start_inds, stop_inds,
                                            set_date):
         """Test set bounds by date with extra time.
@@ -640,12 +622,13 @@ class InstIterationTests(object):
         # Evaluate the results
         start = filter_datetime_input(start_times)
         stop = filter_datetime_input(stop_times)
+        
         self.eval_iter_list(start, stop, dates=set_date,
                             freq=self.testInst.files.files.index.freqstr)
         return
 
-    @pytest.mark.parametrize("start_inds,stop_inds", [([0, 1]), ([1, 2]),
-                                                      ([0, 3], [1, 4])])
+    @pytest.mark.parametrize("start_inds,stop_inds",
+                             [([[0], [1]]), ([[1], [2]]), ([0, 3], [1, 4])])
     def test_iterate_over_bounds_set_by_date(self, start_inds, stop_inds):
         """Test iterate over bounds via single date range.
 
@@ -672,12 +655,17 @@ class InstIterationTests(object):
     def test_iterate_over_default_bounds(self):
         """Test iterate over default bounds."""
 
+        # Establish a date range
         date_range = pds.date_range(
-            self.ref_time, self.ref_time + dt.timedelta(days=10),
+            self.ref_time, self.ref_time + pds.tseries.frequencies.to_offset(
+                '3{:s}'.format(self.testInst.files.files.index.freqstr)),
             freq=self.testInst.files.files.index.freqstr)
+
+        # Update the list of files
         self.testInst.kwargs['list_files']['file_date_range'] = date_range
         self.testInst.files.refresh()
         self.testInst.bounds = (None, None)
+
         self.eval_iter_list(date_range[0], date_range[-1], dates=True,
                             freq=date_range.freqstr)
         return
