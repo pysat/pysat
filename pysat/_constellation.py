@@ -896,7 +896,7 @@ class Constellation(object):
         argument.
 
         See Also
-        ---------
+        --------
         Instrument.custom_attach : base method for attaching custom functions
 
         """
@@ -914,7 +914,7 @@ class Constellation(object):
         """Clear the custom function list.
 
         See Also
-        ---------
+        --------
         Instrument.custom_clear : base method for clearing custom functions
 
         """
@@ -939,7 +939,7 @@ class Constellation(object):
             References a dict of input keyword arguments
 
         See Also
-        ---------
+        --------
         Instrument.load : base method for loading Instrument data
 
         """
@@ -969,7 +969,7 @@ class Constellation(object):
             References a dict of input keyword arguments
 
         See Also
-        ---------
+        --------
         Instrument.download : base method for loading Instrument data
 
         Note

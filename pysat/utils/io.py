@@ -515,7 +515,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     inst : pysat.Instrument
         Instrument object with data to be written to file.
     meta_dict : dict
-        Output starting from `Instrument.meta.to_dict() `supplying attribute
+        Output starting from `Instrument.meta.to_dict()` supplying attribute
         data.
     trans_table : dict or NoneType
         Keyed by current metalabels containing a list of
