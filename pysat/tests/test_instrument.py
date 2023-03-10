@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests the pysat Instrument object and methods."""
 
+import datetime as dt
 from importlib import reload
 import numpy as np
 import pandas as pds
@@ -66,7 +67,7 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
         return
 
 
-class TestInstCadance(TestBasics):
+class TestInstCadence(TestBasics):
     """Unit tests for pysat.Instrument objects with the default file cadance."""
 
     def setup_method(self):
@@ -105,7 +106,7 @@ class TestInstCadance(TestBasics):
         return
 
 
-class TestInstMonthlyCadance(TestInstCadance):
+class TestInstMonthlyCadence(TestInstCadence):
     """Unit tests for pysat.Instrument objects with a monthly file cadance."""
 
     def setup_method(self):
@@ -116,8 +117,9 @@ class TestInstMonthlyCadance(TestInstCadance):
         self.freq = 'MS'
 
         date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
-                                    self.ref_time + pds.DateOffset(years=2)
-                                    - pds.DateOffset(days=1), freq=self.freq)
+                                    self.ref_time
+                                    + pds.DateOffset(years=2, days=-1),
+                                    freq=self.freq)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=10,
                                          clean_level='clean',
@@ -135,11 +137,89 @@ class TestInstMonthlyCadance(TestInstCadance):
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
         return
 
-    def test_iterate_bounds_with_frequency_and_width(self):
-        """NEED TO FIX."""
-        warnings.warn('Fix this Test!')
+    def test_basic_instrument_load_leap_year(self):
+        """Fake files not available by day at a non-daily cadence."""
         return
 
+    @pytest.mark.parametrize("operator,ref_time",
+                             [('next', dt.datetime(2008, 1, 1)),
+                              ('prev', dt.datetime(2010, 12, 1))])
+    def test_file_load_default(self, operator, ref_time):
+        """Test if correct day loads by default when first invoking iteration.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+        ref_time : dt.datetime
+            Expected date to load when iteration is first invoked.
+
+        """
+
+        getattr(self.testInst, operator)()
+
+        # Modify ref time since iterator changes load date.
+        self.ref_time = ref_time
+        self.eval_successful_load()
+        return
+
+
+class TestInstYearlyCadence(TestInstCadence):
+    """Unit tests for pysat.Instrument objects with a monthly file cadance."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.freq = 'AS'
+
+        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
+                                    self.ref_time
+                                    + pds.DateOffset(years=2, days=-1),
+                                    freq=self.freq)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True,
+                                         use_header=True,
+                                         file_date_range=date_range,
+                                         **self.testing_kwargs)
+        self.ref_doy = int(self.ref_time.strftime('%j'))
+        self.out = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
+        return
+
+    def test_basic_instrument_load_leap_year(self):
+        """Fake files not available by day at a non-daily cadence."""
+        return
+
+    @pytest.mark.parametrize("operator,ref_time",
+                             [('next', dt.datetime(2008, 1, 1)),
+                              ('prev', dt.datetime(2010, 1, 1))])
+    def test_file_load_default(self, operator, ref_time):
+        """Test if correct day loads by default when first invoking iteration.
+
+        Parameters
+        ----------
+        operator : str
+            Name of iterator to use.
+        ref_time : dt.datetime
+            Expected date to load when iteration is first invoked.
+
+        """
+
+        getattr(self.testInst, operator)()
+
+        # Modify ref time since iterator changes load date.
+        self.ref_time = ref_time
+        self.eval_successful_load()
+        return
 
 
 class TestBasicsInstModule(TestBasics):
