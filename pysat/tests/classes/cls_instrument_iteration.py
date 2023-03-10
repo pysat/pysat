@@ -537,7 +537,7 @@ class InstIterationTests(object):
             check = self.testInst.files[0]
         else:
             assert self.testInst._iter_type == "date", "Not iterating by date"
-            check = self.testInst.files.files.index[0]
+            check = filter_datetime_input(self.testInst.files.files.index[0])
 
         # Evaluate the bounds starting value
         assert self.testInst.bounds[0][0] == check, "Unexpected starting bound"
@@ -565,7 +565,7 @@ class InstIterationTests(object):
             check = self.testInst.files[-1]
         else:
             assert self.testInst._iter_type == "date", "Not iterating by date"
-            check = self.testInst.files.files.index[-1]
+            check = filter_datetime_input(self.testInst.files.files.index[-1])
 
         assert self.testInst.bounds[1][0] == check, "Unexpeding ending bound"
         return
