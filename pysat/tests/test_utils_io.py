@@ -1576,7 +1576,7 @@ class TestMetaTranslation(object):
 
         # Apply translation
         testing.eval_bad_input(io.apply_table_translation_to_file,
-                               ValueError, 'There is a duplicated',
+                               ValueError, 'There are duplicated variable',
                                input_args=(self.test_inst, self.meta_dict,
                                            meta_trans))
 
