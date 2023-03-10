@@ -77,7 +77,7 @@ class InstIterationTests(object):
 
         return fnames, ftimes
 
-    def eval_iter_list(self, start, stop, dates=False, freq=None):
+    def eval_iter_list(self, start, stop, freq, dates=False):
         """Evaluate successful generation of iter_list for `self.testInst`.
 
         Parameters
@@ -86,19 +86,15 @@ class InstIterationTests(object):
             Start date for generating iter_list.
         stop : dt.datetime or list of dt.datetime
             start date for generating iter_list.
+        freq : str
+            Frequency string, following pandas conventions
         dates : bool
             If True, checks each date.  If False, checks against the _iter_list
             (default=False)
-        freq : str, int, or NoneType
-            Frequency in days.  If None, use pandas default. (default=None)
 
         """
-        if freq is None:
-            kwargs = {}
-        elif type(freq) in [int, np.int32, np.int64]:
-            kwargs = {'freq': '{:}D'.format(freq)}
-        else:
-            kwargs = {'freq': freq}
+        # Set the frequency
+        kwargs = {'freq': freq}
 
         if isinstance(start, dt.datetime):
             out = pds.date_range(start, stop, **kwargs).tolist()
@@ -313,8 +309,9 @@ class InstIterationTests(object):
 
         """
 
-        self.testInst.bounds = (None, None, '10000D',
-                                dt.timedelta(days=10000))
+        start_time = self.testInst.files.files.index[-1] + dt.timedelta(days=1)
+        end_time = start_time + dt.timedelta(days=1)
+        self.testInst.bounds = (start_time, end_time)
         testing.eval_bad_input(getattr(self.testInst, operator), StopIteration,
                                'File list is empty. ')
 
@@ -357,7 +354,7 @@ class InstIterationTests(object):
         stop = self.ref_time + dt.timedelta(days=15)
         freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         self.testInst.bounds = (start, stop, freq)
-        self.eval_iter_list(start, stop, dates=True, freq=freq)
+        self.eval_iter_list(start, stop, freq, dates=True)
         return
 
     def test_set_bounds_with_frequency_and_width(self):
@@ -496,7 +493,8 @@ class InstIterationTests(object):
                               ([dt.datetime(2009, 1, 1),
                                 dt.datetime(2009, 1, 1), '1D',
                                 dt.timedelta(days=1), False],
-                               'Too many input arguments.')])
+                               'Too many input arguments.'),
+                              ([1.0, 1.0], 'Input is not a known type')])
     def test_set_bounds_error_message(self, new_bounds, errmsg):
         """Test ValueError when setting bounds with wrong inputs.
 
@@ -516,20 +514,60 @@ class InstIterationTests(object):
         assert str(verr).find(errmsg) >= 0
         return
 
-    def test_set_bounds_string_default_start(self):
-        """Test set bounds with default start."""
+    @pytest.mark.parametrize("type_ind", [(0), (1)])
+    def test_set_bounds_default_start(self, type_ind):
+        """Test set bounds with default start.
 
-        fnames, _ = self.get_fnames_times([1])
-        self.testInst.bounds = [None, fnames[0]]
-        assert self.testInst.bounds[0][0] == self.testInst.files[0]
+        Parameters
+        ----------
+        type_ind : int
+            Index where 0 takes the file names and 1 takes the file times
+
+        """
+
+        # Get the desired ending time and file
+        fvals = self.get_fnames_times([1])
+
+        # Set the bounds with either the time or the value
+        self.testInst.bounds = [None, fvals[type_ind][0]]
+
+        # Get the first time or file and check the bounds iteration type
+        if type_ind == 0:
+            assert self.testInst._iter_type == "file", "Not iterating by file"
+            check = self.testInst.files[0]
+        else:
+            assert self.testInst._iter_type == "date", "Not iterating by date"
+            check = self.testInst.files.files.index[0]
+
+        # Evaluate the bounds starting value
+        assert self.testInst.bounds[0][0] == check, "Unexpected starting bound"
         return
 
-    def test_set_bounds_string_default_stop(self):
-        """Test set bounds with default stop."""
+    @pytest.mark.parametrize("type_ind", [(0), (1)])
+    def test_set_bounds_default_stop(self, type_ind):
+        """Test set bounds with default stop.
 
-        fnames, _ = self.get_fnames_times([1])
-        self.testInst.bounds = [fnames[0], None]
-        assert self.testInst.bounds[1][0] == self.testInst.files[-1]
+        Parameters
+        ----------
+        type_ind : int
+            Index where 0 takes the file names and 1 takes the file times
+
+        """
+        # Get the desired ending time and file
+        fvals = self.get_fnames_times([1])
+
+        # Set the bounds with either the time or the value
+        self.testInst.bounds = [fvals[type_ind][0], None]
+    
+        # Get the first time or file and check the bounds iteration type
+        if type_ind == 0:
+            assert self.testInst._iter_type == "file", "Not iterating by file"
+            check = self.testInst.files[-1]
+        else:
+            assert self.testInst._iter_type == "date", "Not iterating by date"
+            check = self.testInst.files.files.index[-1]
+        
+        assert self.testInst.bounds[1][0] == check, "Unexpeding ending bound"
         return
 
     @pytest.mark.parametrize("bound_val", [(None, None), None])
@@ -546,7 +584,7 @@ class InstIterationTests(object):
         self.testInst.bounds = bound_val
         self.eval_iter_list(self.testInst.files.start_date,
                             self.testInst.files.stop_date,
-                            freq=self.testInst.files.files.index.freqstr)
+                            self.testInst.files.files.index.freqstr)
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
@@ -567,7 +605,7 @@ class InstIterationTests(object):
 
         self.testInst.bounds = (start_times, stop_times)
         self.eval_iter_list(start_times, stop_times,
-                            freq=self.testInst.files.files.index.freqstr)
+                            self.testInst.files.files.index.freqstr)
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds", [([1], [0]),
@@ -628,8 +666,9 @@ class InstIterationTests(object):
         start = filter_datetime_input(start_times)
         stop = filter_datetime_input(stop_times)
 
-        self.eval_iter_list(start, stop, dates=set_date,
-                            freq=self.testInst.files.files.index.freqstr)
+        self.eval_iter_list(
+            start, stop, self.testInst.files.files.index.freqstr,
+            dates=set_date)
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
@@ -653,8 +692,9 @@ class InstIterationTests(object):
         # Filter time inputs.
         start = filter_datetime_input(start_times)
         stop = filter_datetime_input(stop_times)
-        self.eval_iter_list(start, stop, dates=True,
-                            freq=self.testInst.files.files.index.freqstr)
+        self.eval_iter_list(start, stop,
+                            self.testInst.files.files.index.freqstr, dates=True)
+
         return
 
     def test_iterate_over_default_bounds(self):
@@ -671,8 +711,8 @@ class InstIterationTests(object):
         self.testInst.files.refresh()
         self.testInst.bounds = (None, None)
 
-        self.eval_iter_list(date_range[0], date_range[-1], dates=True,
-                            freq=date_range.freqstr)
+        self.eval_iter_list(date_range[0], date_range[-1], date_range.freqstr,
+                            dates=True)
         return
 
     def test_iterate_over_bounds_set_by_fname(self):
@@ -680,8 +720,9 @@ class InstIterationTests(object):
 
         fnames, ftimes = self.get_fnames_times(inds=[0, 2])
         self.testInst.bounds = tuple(fnames)
-        self.eval_iter_list(*ftimes, dates=True,
-                            freq=self.testInst.files.files.index.freqstr)
+        self.eval_iter_list(*ftimes, self.testInst.files.files.index.freqstr,
+                            dates=True)
+
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
@@ -763,8 +804,9 @@ class InstIterationTests(object):
         start_d = [ftimes[0], ftimes[1]]
         stop_d = [ftimes[2], ftimes[3]]
         self.testInst.bounds = (start, stop)
-        self.eval_iter_list(start_d, stop_d, dates=True,
-                            freq=self.testInst.files.files.index.freqstr)
+        self.eval_iter_list(start_d, stop_d,
+                            self.testInst.files.files.index.freqstr, dates=True)
+
         return
 
     def test_set_bounds_fname_with_frequency(self):
@@ -789,7 +831,7 @@ class InstIterationTests(object):
         freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         self.testInst.bounds = (*fnames, 2)
 
-        self.eval_iter_list(*ftimes, dates=True, freq=freq)
+        self.eval_iter_list(*ftimes, freq, dates=True)
         return
 
     def test_set_bounds_fname_with_frequency_and_width(self):
