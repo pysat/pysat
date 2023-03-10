@@ -427,9 +427,7 @@ class InstAccessTests(object):
         self.eval_successful_load()
         return
 
-    @pytest.mark.parametrize("operator,direction",
-                             [('next', 1),
-                              ('prev', -1)])
+    @pytest.mark.parametrize("operator,direction", [('next', 1), ('prev', -1)])
     def test_fname_load_default(self, operator, direction):
         """Test correct day loads when moving by day, starting with `fname`.
 
@@ -449,7 +447,9 @@ class InstAccessTests(object):
         getattr(self.testInst, operator)()
 
         # Modify ref time since iterator changes load date.
-        self.ref_time = self.ref_time + direction * dt.timedelta(days=1)
+        foff = pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        self.ref_time = self.ref_time + direction * foff
         self.eval_successful_load()
         return
 
@@ -464,19 +464,23 @@ class InstAccessTests(object):
     def test_filenames_load(self):
         """Test if files are loadable by filename range."""
 
-        stop_fname = self.ref_time + dt.timedelta(days=1)
+        foff = pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        stop_fname = self.ref_time + foff
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
                            stop_fname=stop_fname, use_header=True)
         assert self.testInst.index[0] == self.ref_time
-        assert self.testInst.index[-1] >= self.ref_time + dt.timedelta(days=1)
-        assert self.testInst.index[-1] <= self.ref_time + dt.timedelta(days=2)
+        assert self.testInst.index[-1] >= self.ref_time + foff
+        assert self.testInst.index[-1] <= self.ref_time + (2 * foff)
         return
 
     def test_filenames_load_out_of_order(self):
         """Test error raised if fnames out of temporal order."""
 
-        stop_fname = self.ref_time + dt.timedelta(days=1)
+        foff = pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        stop_fname = self.ref_time + foff
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
         estr = '`stop_fname` must occur at a later date '
@@ -574,8 +578,10 @@ class InstAccessTests(object):
         """
 
         # Load a data set to concatonate
-        self.testInst.load(self.ref_time.year, self.ref_doy + 1,
-                           use_header=True)
+        ref_time2 = self.ref_time + pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        doy2 = int(ref_time2.strftime('%j'))
+        self.testInst.load(ref_time2.year, doy2, use_header=True)
         data2 = self.testInst.data
         len2 = len(self.testInst.index)
 
