@@ -50,7 +50,7 @@ class InstIterationTests(object):
         return fname.format(year=date.year, month=date.month, day=date.day)
 
     def get_fnames_times(self, inds=None):
-        """Get file names and times by index.
+        """Get file names and times (date only) by index.
 
         Parameters
         ----------
@@ -72,8 +72,8 @@ class InstIterationTests(object):
         if inds is not None:
             for i in inds:
                 fnames.append(self.testInst.files.files[i])
-                ftimes.append(pds.to_datetime(
-                    self.testInst.files.files.index[i]).to_pydatetime())
+                ftimes.append(filter_datetime_input(pds.to_datetime(
+                    self.testInst.files.files.index[i]).to_pydatetime()))
 
         return fnames, ftimes
 
@@ -106,9 +106,12 @@ class InstIterationTests(object):
             out = list()
             for (istart, istop) in zip(start, stop):
                 out.extend(pds.date_range(istart, istop, **kwargs).tolist())
+
         if dates:
+            file_dates = [filter_datetime_input(ftime)
+                          for ftime in self.testInst.files.files.index]
             dates = [inst.date for inst in self.testInst
-                     if inst.date in self.testInst.files.files.index]
+                     if inst.date in file_dates]
             testing.assert_lists_equal(dates, out)
         else:
             testing.assert_lists_equal(self.testInst._iter_list, out)
@@ -172,12 +175,14 @@ class InstIterationTests(object):
                 width = pds.tseries.frequencies.to_offset(wstr)
 
         # Iterate until we run out of bounds
+        file_dates = [filter_datetime_input(ftime)
+                      for ftime in self.testInst.files.files.index]
         dates = []
         time_range = []
         if for_loop:
             # Iterate via for loop option
             for inst in self.testInst:
-                if inst.date in self.testInst.files.files.index:
+                if inst.date in file_dates:
                     dates.append(inst.date)
                     if len(inst.index) > 0:
                         time_range.append((inst.index[0], inst.index[-1]))
@@ -206,7 +211,7 @@ class InstIterationTests(object):
         foff = pds.tseries.frequencies.to_offset(
             self.testInst.files.files.index.freqstr)
         for start, stop in zip(starts, stops):
-            if start in self.testInst.files.files.index:
+            if start in file_dates:
                 tdate = stop - width + foff
                 out.extend(pds.date_range(start, tdate, freq=step).tolist())
 
@@ -793,7 +798,9 @@ class InstIterationTests(object):
         fnames, ftimes = self.get_fnames_times(inds=[0, 2])
         freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         self.testInst.bounds = (*fnames, 2, 2)
-        out = pds.date_range(ftimes[0], ftimes[1] - dt.timedelta(days=1),
+        out = pds.date_range(filter_datetime_input(ftimes[0]),
+                             filter_datetime_input(ftimes[1]
+                                                   - dt.timedelta(days=1)),
                              freq=freq).tolist()
 
         # Convert filenames in list to a date
@@ -802,6 +809,7 @@ class InstIterationTests(object):
             snip = item.split('.')[0]
             date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
 
+        # Evaluate the date components of the files and bounds
         testing.assert_lists_equal(date_list, out)
         return
 
@@ -818,8 +826,9 @@ class InstIterationTests(object):
         assert self.testInst.empty
 
         # Perform comprehension and ensure there are as many as there should be
-        insts = [inst for inst in self.testInst
-                 if inst.date in self.testInst.files.files.index]
+        file_dates = [filter_datetime_input(ftime)
+                      for ftime in self.testInst.files.files.index]
+        insts = [inst for inst in self.testInst if inst.date in file_dates]
         assert len(insts) == last_ind + 1, \
             'Found {:d} Instruments instead of {:d}'.format(len(insts),
                                                             last_ind + 1)
