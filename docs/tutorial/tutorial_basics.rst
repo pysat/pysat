@@ -324,7 +324,7 @@ the data at the :py:class:`pysat.Instrument` level that behaves the same whether
     # Convenient data assignment
     dmsp['ti'] = new_array
 
-    # Convenient data broadcasting assignment, sets a single value to all times
+    # Data broadcasting assignment for new variables, sets a single value to all times
     dmsp['ti'] = single_value
 
     # Assignment through index slicing
@@ -332,7 +332,6 @@ the data at the :py:class:`pysat.Instrument` level that behaves the same whether
 
     # Assignment through datetime slicing
     dmsp[start:stop, 'ti'] = sub_array
-
 
 Note that :py:func:`np.where` may be used to select a subset of data using
 either the convenient access or standard pandas or xarray selection methods.

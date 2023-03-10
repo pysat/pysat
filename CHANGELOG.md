@@ -7,15 +7,21 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * New Features
   * Added unit tests for different file cadences in the Instrument class
+  * Added `to_inst` method to the Constellation class
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
   * Allow equality assessments if optional kwargs are used in Instrument
+  * Fixed an issue with setting single variables in xarray coords (#988)
+  * Fixed `pysat.Instrument.bounds` to handle all input types for `step`
+    and `width` regardless of `start` and `stop` time. Also fixed
+    seasonal bounds specified using file names.
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
   * Clarified documentation and tests for name slicing support in pandas
   * Clarified documentation for adding new instruments
+  * Fixed broken links in docs
 
 [3.0.6] - 2022-12-21
 --------------------

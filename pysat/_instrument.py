@@ -962,6 +962,10 @@ class Instrument(object):
             If tuple not used when assigning dimensions for new multidimensional
             data.
 
+        Warnings
+        --------
+        If a single new value is set, the value will be broadcast over time.
+
         Note
         ----
         If no metadata provided and if metadata for 'name' not already stored
@@ -1062,26 +1066,45 @@ class Instrument(object):
                 if isinstance(in_data, xr.DataArray):
                     # If xarray input, take as is
                     self.data[key] = in_data
-                elif len(np.shape(in_data)) == 1:
+                elif len(np.shape(in_data)) <= 1:
                     # If not an xarray input, but still iterable, then we
                     # go through to process the 1D input
-                    if len(in_data) == len(self.index):
+                    if np.shape(in_data) == np.shape(self.index):
                         # 1D input has the correct length for storage along
-                        # 'Epoch'
+                        # 'Epoch'.
                         self.data[key] = (epoch_name, in_data)
-                    elif len(in_data) == 1:
-                        # Only provided a single number in iterable, make that
-                        # the input for all times
-                        self.data[key] = (epoch_name,
-                                          [in_data[0]] * len(self.index))
+                    elif len(np.shape(in_data)) == 0 or len(in_data) == 1:
+                        # Only a single number, or single in iterable.
+                        if key in self.variables:
+                            # If it already exists, assign as defined.
+                            in_data = np.squeeze(in_data)
+                            if np.shape(self.data[key]) == np.shape(in_data):
+                                self.data[key] = in_data
+                            else:
+                                raise ValueError(' '.join(('Shape of input',
+                                                           'does not match',
+                                                           'existing shape of',
+                                                           key)))
+                        else:
+                            # Otherwise broadcast over time.
+                            warnings.warn(' '.join(('Input for {:}'.format(key),
+                                                    'is a single value.',
+                                                    'Broadcast over epoch.')))
+                            in_data = pysat.utils.listify(in_data)
+                            self.data[key] = (epoch_name,
+                                              in_data * len(self.index))
                     elif len(in_data) == 0:
                         # Provided an empty iterable, make everything NaN
+                        warnings.warn(' '.join(('Input for {:} is'.format(key),
+                                                'empty. Setting to broadcast',
+                                                'as NaN over epoch.')))
                         self.data[key] = (epoch_name,
                                           [np.nan] * len(self.index))
-                elif len(np.shape(in_data)) == 0:
-                    # Not an iterable input, rather a single number.  Make
-                    # that number the input for all times.
-                    self.data[key] = (epoch_name, [in_data] * len(self.index))
+                    else:
+                        raise ValueError(' '.join(('Input for {:}'.format(key),
+                                                   'does not match expected',
+                                                   'dimensions. Value not',
+                                                   'set.')))
                 else:
                     # Multidimensional input that is not an xarray.  The user
                     # needs to provide everything that is required for success.
@@ -1454,6 +1477,64 @@ class Instrument(object):
             pysat.logger.debug(' '.join(['These Instrument test attributes',
                                          'kept their default  values:',
                                          '{:}'.format(missing)]))
+        return
+
+    def _assign_attrs_from_const(self, const):
+        """Update Instrument attributes using Constellation data.
+
+        Parameters
+        ----------
+        const : pysat.Constellation
+            Data contained in a Constellation of Instruments
+
+        Note
+        ----
+        Updates the 'platform', 'name', 'tag', 'inst_id', 'clean_level',
+        'pad', 'clean_level', 'date', 'doy', 'yr', 'acknowledgements',
+        'references', and 'pandas_format' attributes
+
+        """
+        # Define the reference variables
+        up_attrs = ['platform', 'name', 'tag', 'inst_id', 'clean_level', 'pad',
+                    'pandas_format', 'date', 'doy', 'acknowledgements', 'yr',
+                    'references']
+        clean_rank = {'clean': 4, 'dusty': 3, 'dirty': 2, 'none': 1, None: 1}
+        clean_assign = {4: 'clean', 3: 'dusty', 2: 'dirty', 1: 'none'}
+
+        for attr in up_attrs:
+            cattr = [getattr(cinst, attr) for cinst in const.instruments]
+            cattr = list(set(cattr))  # np.unique doesn't work with pad
+
+            if attr == 'pad':
+                # Set the pad value to the longest padding, if padding was set
+                cattr = [ca for ca in cattr if ca is not None]
+                if len(cattr) == 1:
+                    # There was only one set pad, use it
+                    setattr(self, attr, cattr[0])
+                elif len(cattr) > 1:
+                    # There are multiple pads, they can be reliably compared
+                    # using the `freqstr` attribute, which is lowest for the
+                    # longest pad period.
+                    long_pad = cattr[0]
+                    for i in range(1, len(cattr)):
+                        if long_pad.freqstr > cattr[i].freqstr:
+                            long_pad = cattr[i]
+                    setattr(self, attr, long_pad)
+            elif len(cattr) == 1:
+                # There is only one value, set it
+                setattr(self, attr, cattr[0])
+            elif attr == 'clean_level':
+                # Set the clean value to the lowest cleaning rank
+                crank = [clean_rank[cl] for cl in cattr]
+                setattr(self, attr, clean_assign[min(crank)])
+            elif attr == 'pandas_format':
+                # If there is a mix of pandas and xarray data, use xarray
+                setattr(self, attr, False)
+            else:
+                # Combine all unique attributes as a string
+                astr = "\n" if attr in ['acknowledgements',
+                                        'references'] else "_"
+                setattr(self, attr, astr.join(cattr))
         return
 
     def _load_data(self, date=None, fid=None, inc=None, load_kwargs=None):
