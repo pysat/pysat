@@ -3,12 +3,12 @@
 Adding a New Instrument
 =======================
 
-pysat works by calling modules written for specific instruments
-that load and process the data consistent with the pysat standard. The
+:py:mod:`pysat` works by calling modules written for specific instruments that
+load and process the data consistent with the :py:mod:`pysat` standard. The
 name of the module corresponds to the combination 'platform_name' provided
-when initializing a pysat instrument object. The module should be placed in
-the pysat instruments directory or registered (see below) for automatic
-discovery. A compatible module may also be supplied directly using
+when initializing a :py:mod:`pysat` instrument object. The module should be
+placed in the :py:mod:`pysat` instruments directory or registered (see below)
+for automatic discovery. A compatible module may also be supplied directly using
 
 .. code:: Python
 
@@ -17,12 +17,13 @@ discovery. A compatible module may also be supplied directly using
 
 A general template has also been included to make starting any Instrument
 module easier at :py:mod:`pysat.instruments.templates.template_instrument`.
-Some data repositories have pysat templates prepared to assist in integrating a
-new instrument. See the associated pysat* package for that particular data
-source, such as pysatNASA for supporting additional NASA instruments.
+Some data repositories have :py:mod:`pysat` templates prepared to assist in
+integrating a new instrument. See the associated pysat* package for that
+particular data source, such as :py:mod:`pysatNASA` for supporting additional
+NASA instruments.
 
-External modules may be registered as
-part of pysat's user instrument registry using the following syntax:
+External modules may be registered as part of the :py:mod:`pysat` user
+instrument registry using the following syntax:
 
 .. code-block:: python
 
@@ -48,11 +49,11 @@ be instantiated with the instrument's platform and name:
 
 Instrument Libraries
 --------------------
-pysat instruments can reside in external libraries.  The registry methods
-described above can be used to provide links to these instrument libraries
-for rapid access. For instance, pysat instruments which handle the outputs
-of geophysical models (such as the TIE-GCM model) reside in the pysatModels
-package.
+:py:mod:`pysat` instruments can reside in external libraries.  The registry
+methods described above can be used to provide links to these instrument
+libraries for rapid access. For instance, :py:mod:`pysat` instruments that
+handle the outputs of geophysical models (such as the TIE-GCM model) reside in
+the :py:mod:`pysatModels` package.
 
 
 .. _rst_new_inst-naming:
@@ -60,8 +61,8 @@ package.
 Naming Conventions
 ------------------
 
-pysat uses a hierarchy of named variables to define each specific data product.
-In order this is:
+:py:mod:`pysat` uses a hierarchy of named variables to define each specific
+data product. In order this is:
 
 * platform
 * name
@@ -147,13 +148,14 @@ string can be used. The code below only supports loading a single data set.
   tags = {'': ''}
   inst_ids = {'': ['']}
 
-The DMSP IVM (dmsp_ivm) instrument module in pysatMadrigal is a practical
-example of a pysat instrument that uses all levels of variable names.  An
-:ref:`api-instrument-template` is also provided within pysat.
+The DMSP IVM (dmsp_ivm) instrument module in :py:mod:`pysatMadrigal` is a
+practical example of a :py:mod:`pysat` instrument that uses all levels of
+variable names. An :ref:`api-instrument-template` is also provided within
+:py:mod:`pysat`.
 
-Note that during instantiation of a :py:class:`pysat.Instrument`, pysat uses
-the :py:attr:`tags` and :py:attr:`inst_ids` above to determine if the values
-provided by a user are supported by the code.
+Note that during instantiation of a :py:class:`pysat.Instrument`,
+:py:mod:`pysat` uses the :py:attr:`tags` and :py:attr:`inst_ids` above to
+determine if the values provided by a user are supported by the code.
 
 .. _rst_new_inst-reqattrs:
 
@@ -171,17 +173,18 @@ they must be defined for every instrument.
   tags = {'': ''}
   inst_ids = {'': ['']}
 
-pysat also requires that instruments include information pertaining to
+:py:mod:`pysat` also requires that instruments include information pertaining to
 acknowledgements and references for an instrument.  These are simply defined as
 strings at the instrument level.  In the most basic case, these can be defined
 with the data information at the top.
 
-pysat also requires that a logger handle be defined and instrument
+:py:mod:`pysat` also requires that a logger handle be defined and instrument
 information pertaining to acknowledgements and references be included.  These
 ensure that people using the data know who to contact with questions and what
 they should reference when publishing their results.  The logging handle should
-be assigned to the pysat logger handle, while the references and acknowledgments
-are defined as instrument attributes within the initialization method.
+be assigned to the :py:mod:`pysat` logger handle, while the references and
+acknowledgments are defined as instrument attributes within the initialization
+method.
 
 .. code:: python
 
@@ -210,21 +213,21 @@ are defined as instrument attributes within the initialization method.
 Required Routines
 -----------------
 
-Three methods are required within a new instrument module to support pysat
-operations, with functionality to cover finding files, loading data from
-specified files, and downloading new files. While the methods below are
-sufficient to engage with pysat, additional optional methods are needed for
-full pysat support.
+Three methods are required within a new instrument module to support
+:py:mod:`pysat` operations, with functionality to cover finding files, loading
+data from specified files, and downloading new files. While the methods below
+are sufficient to engage with :py:mod:`pysat`, additional optional methods are
+needed for full :py:mod:`pysat` support.
 
-Note that these methods are not directly invoked by the user, but by pysat
-as needed in response to user inputs.
+Note that these methods are not directly invoked by the user, but by
+:py:mod:`pysat` as needed in response to user inputs.
 
 
 list_files
 ^^^^^^^^^^
 
-pysat maintains a list of files to enable data management functionality. To get
-this information pysat expects a module function
+:py:mod:`pysat` maintains a list of files to enable data management
+functionality. To get this information :py:mod:`pysat` expects a module function
 :py:func:`platform_name.list_files` to return a :py:class:`pandas.Series` of
 filenames indexed by time with a method signature of:
 
@@ -233,10 +236,11 @@ filenames indexed by time with a method signature of:
    def list_files(tag='', inst_id='', data_path='', format_str=None):
        return pandas.Series(files, index=datetime_index)
 
-:py:attr:`inst_id` and :py:attr:`tag` are passed in by pysat to select a
-specific subset of the available data. The location on the local filesystem to
-search for the files is passed in data_path. The list_files method must return
-a :py:class:`pandas.Series` of filenames indexed by datetime objects.
+:py:attr:`inst_id` and :py:attr:`tag` are passed in by :py:mod:`pysat` to
+select a specific subset of the available data. The location on the local
+filesystem to search for the files is passed in data_path. The
+:py:meth:`list_files` method must return a :py:class:`pandas.Series` of
+filenames indexed by datetime objects.
 
 A user must also supply a file template string suitable for locating files
 on their system at pysat.Instrument instantiation, passed via ``format_str``,
@@ -244,8 +248,9 @@ that must be supported. Sometimes users obtain files from non-traditional
 sources and ``format_str`` makes it easier for those users to use an existing
 instrument module to work with those files.
 
-pysat will by default store data in pysat_data_dir/platform/name/tag/inst_id,
-helpfully provided in data_path, where pysat_data_dir is specified by using
+:py:mod:`pysat` will by default store data in
+``pysat_data_dir/platform/name/tag/inst_id``, helpfully provided in
+``data_path``, where pysat_data_dir is specified by using
 ``pysat.params['data_dirs'] = pysat_data_dir``. Note that an alternative
 directory structure may be specified using the :py:class:`pysat.Instrument`
 keyword ``directory_format`` at instantiation. The default is recreated using
@@ -255,16 +260,17 @@ keyword ``directory_format`` at instantiation. The default is recreated using
     dformat = '{platform}/{name}/{tag}/{inst_id}'
     inst=pysat.Instrument(platform, name, directory_format=dformat)
 
-Note that pysat handles the path information thus instrument module developers
-do not need to do anything to support the ``directory_format`` keyword.
+Note that :py:mod:`pysat` handles the path information thus instrument module
+developers do not need to do anything to support the ``directory_format``
+keyword.
 
 Pre-Built list_files Methods and Support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Finding local files is generally similar across data sets thus pysat
+Finding local files is generally similar across data sets thus :py:mod:`pysat`
 includes a variety of methods to make supporting this functionality easier.
 The simplest way to construct a valid list_files method is to use one of these
-included pysat methods.
+included :py:mod:`pysat` methods.
 
 A complete method is available in
 :py:func:`pysat.instruments.methods.general.list_files` that may find broad use.
@@ -308,27 +314,27 @@ Given the range of compliance of filenames to a strict standard across the
 decades of space science parsing filenames with and without a ``delimiter``
 can typically generate the same results, even for filenames without a
 consistently applied delimiter. As such either parser will function for most
-situations however both remain within pysat to support currently unknown edge
-cases that users may encounter. More practically, parsing with a delimiter
-offers more support for the ``*`` wildcard than the fixed width parser.
-It is generally advised to limit use of the ``*`` wildcard to prevent
+situations however both remain within :py:mod:`pysat` to support currently
+unknown edge cases that users may encounter. More practically, parsing with a
+delimiter offers more support for the ``*`` wildcard than the fixed width
+parser. It is generally advised to limit use of the ``*`` wildcard to prevent
 potential false positives if a directory has more than one instrument within.
 
 If the constructor is not appropriate, then lower level methods within
 :py:class:`pysat.Files` may also be used to reduce the workload in adding a new
 instrument. Access to the values of user provided template variables is not
 available via :py:meth:`pysat.Files.from_os` and thus requires use of the
-same lower level methods in :py:method:`pysat.utils.files`.
+same lower level methods in :py:mod:`pysat.utils.files`.
 
 See :py:func:`pysat.utils.time.create_datetime_index` for creating a datetime
 index for an array of irregularly sampled times.
 
-pysat will invoke the list_files method the first time a particular instrument
-is instantiated. After the first instantiation, by default :ref:`tutorial-params`,
-pysat will not
-search for instrument files as some missions can produce a large number of
-files, which may take time to identify. The list of files associated
-with an Instrument may be updated by adding ``update_files=True`` to the kwargs.
+:py:mod:`pysat` will invoke the list_files method the first time a particular
+instrument is instantiated. After the first instantiation, by default
+:ref:`tutorial-params`, :py:mod:`pysat` will not search for instrument files as
+some missions can produce a large number of files, which may take time to
+identify. The list of files associated with an Instrument may be updated by
+adding ``update_files=True`` to the kwargs.
 
 .. code:: python
 
@@ -340,9 +346,9 @@ by calling :py:attr:`inst.files.files`.
 load
 ^^^^
 
-Loading data is a fundamental activity for data science and is
-required for all pysat instruments. The work invested by the instrument
-module author makes it possible for users to work with the data easily.
+Loading data is a fundamental activity for data science and is required for all
+:py:mod:`pysat` instruments. The work invested by the instrument module author
+makes it possible for users to work with the data easily.
 
 The load module method signature should appear as:
 
@@ -352,9 +358,9 @@ The load module method signature should appear as:
        return data, meta
 
 - :py:data:`fnames` contains a list of filenames with the complete data path
-  that pysat expects the routine to load data for. With most data sets
+  that :py:mod:`pysat` expects the routine to load data for. With most data sets
   the method should return the exact data that is within the file.
-  However, pysat is also currently optimized for working with
+  However, :py:mod:`pysat` is also currently optimized for working with
   data by day. This can present some issues for data sets that are stored
   by month or by year. See :ref:`instruments-sw` for examples of data sets
   stored by month(s).
@@ -436,9 +442,10 @@ directory_format
 ^^^^^^^^^^^^^^^^
 
 Allows the specification of a custom directory naming structure, where the files
-for this Instrument will be stored within the pysat data directory. If not set
-or if set to ``None``, it defaults to ``os.path.join('{platform}', '{name}', '{tag}', '{inst_id}')``.
-The string format understands the keys :py:data:`platform`, :py:data:`name`,
+for this Instrument will be stored within the :py:mod:`pysat` data directory.
+If not set or if set to ``None``, it defaults to
+``os.path.join('{platform}', '{name}', '{tag}', '{inst_id}')``. The string
+format understands the keys :py:data:`platform`, :py:data:`name`,
 :py:data:`tag`, and :py:data:`inst_id`. This may also be a function that takes
 :py:data:`tag` and :py:data:`inst_id` as input parameters and returns an
 appropriate string.
@@ -473,7 +480,7 @@ pandas_format
 
 This defaults to ``True`` and assumes the data are organized as a time series,
 allowing them to be stored as a :py:class:`pandas.DataFrame`. Setting this
-attribute to ``False`` tells pysat that the data will be stored in an
+attribute to ``False`` tells :py:mod:`pysat` that the data will be stored in an
 :py:class:`xarray.Dataset`.
 
 
@@ -485,7 +492,7 @@ Optional Routines and Support
 Custom Keywords in Support Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If provided, pysat supports the definition and use of keywords for an
+If provided, :py:mod:`pysat` supports the definition and use of keywords for an
 instrument module so that users may define their preferred default values. A
 custom keyword for an instrument module must be defined in each function that
 will receive that keyword argument if provided by the user. All instrument
@@ -503,13 +510,14 @@ arguments.
        return data, meta
 
 If a user provides :py:data:`custom1` or :py:data:`custom2` at instantiation,
-then pysat will pass those custom keyword arguments to :py:func:`load` with
-every call. All user provided custom keywords are copied into the
-Instrument object itself under :py:attr:`inst.kwargs` for use in other areas.
-All available keywords, including default values, are also grouped by relevant
-function in a dictionary, :py:attr:`inst.kwargs_supported`, attached to the
-:py:class:`Instrument` object. Updates to values in :py:attr:`inst.kwargs` will
-be propagated to the relevant function the next time that function is invoked.
+then :py:mod:`pysat` will pass those custom keyword arguments to :py:func:`load`
+with every call. All user provided custom keywords are copied into the
+:py:class:`~pysat.Instrument` object itself under :py:attr:`inst.kwargs` for
+use in other areas. All available keywords, including default values, are also
+grouped by relevant function in a dictionary, :py:attr:`inst.kwargs_supported`,
+attached to the :py:class:`Instrument` object. Updates to values in
+:py:attr:`inst.kwargs` will be propagated to the relevant function the next
+time that function is invoked.
 
 .. code:: python
 
@@ -524,18 +532,19 @@ be propagated to the relevant function the next time that function is invoked.
    # Show keywords reserved for use by pysat
    print(inst.kwargs_reserved)
 
-If a user supplies a keyword that is reserved or not supported by pysat, or by
-any specific instrument module function, then an error is raised. Reserved
-keywords are :py:data:`fnames`, :py:data:`inst_id`, :py:data:`tag`,
-:py:data:`date_array`, :py:data:`data_path`, :py:data:`format_str`,
-:py:data:`supported_tags`, :py:data:`start`, :py:data:`stop`, and
-:py:data:`freq`.
+If a user supplies a keyword that is reserved or not supported by
+:py:mod:`pysat`, or by any specific instrument module function, then an error is
+raised. Reserved keywords are :py:data:`fnames`, :py:data:`inst_id`,
+:py:data:`tag`, :py:data:`date_array`, :py:data:`data_path`,
+:py:data:`format_str`, :py:data:`supported_tags`, :py:data:`start`,
+:py:data:`stop`, and :py:data:`freq`.
 
 
 init
 ^^^^
 
-If present, the instrument init method runs once at instrument instantiation.
+If present, the instrument :py:meth:`init` method runs once at instrument
+instantiation.
 
 .. code:: python
 
@@ -544,10 +553,10 @@ If present, the instrument init method runs once at instrument instantiation.
        self.references = '2001: A Space Oddessy (1968)'
        return
 
-``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should modify
-``self`` in-place as needed; equivalent to a custom routine.  It is expected to
-attach the :py:attr:`acknowledgements` and :py:attr:`references` attributes
-to ``self``.
+``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should
+modify ``self`` in-place as needed; equivalent to a custom routine.  It is
+expected to attach the :py:attr:`acknowledgements` and :py:attr:`references`
+attributes to ``self``.
 
 
 preprocess
@@ -578,8 +587,8 @@ Cleans instrument for levels supplied in inst.clean_level.
    def clean(self):
        return
 
-``self`` is a :py:class:`pysat.Instrument` object. :py:func:`clean` should modify
-``self`` in-place as needed; equivalent to a custom routine.
+``self`` is a :py:class:`pysat.Instrument` object. :py:func:`clean` should
+modify ``self`` in-place as needed; equivalent to a custom routine.
 
 list_remote_files
 ^^^^^^^^^^^^^^^^^
@@ -587,17 +596,17 @@ list_remote_files
 Returns a list of available files on the remote server. This method is required
 for the Instrument module to support the :py:meth:`download_updated_files`
 method, which makes it trivial for users to ensure they always have the most up
-to date data. pysat developers highly encourage the development of this method,
-when possible.
+to date data. :py:mod:`pysat` developers highly encourage the development of
+this method, when possible.
 
 .. code:: python
 
     def list_remote_files(tag='', inst_id='', start=None, stop=None, ...):
         return list_like
 
-This method is called by several internal pysat functions, and can be directly
-called by the user through the :py:meth:`inst.remote_file_list` method.  The
-user can search for subsets of files through optional keywords, such as:
+This method is called by several internal :py:mod:`pysat` functions, and can be
+directly called by the user through the :py:meth:`inst.remote_file_list` method.
+The user can search for subsets of files through optional keywords, such as:
 
 .. code:: python
 
@@ -608,8 +617,8 @@ user can search for subsets of files through optional keywords, such as:
 Logging
 -------
 
-pysat is connected to the Python logging module. This allows users to set
-the desired level of direct feedback, as well as where feedback statements
+:py:mod:`pysat` is connected to the Python logging module. This allows users to
+set the desired level of direct feedback, as well as where feedback statements
 are delivered. The following line in each module is encouraged at the top-level
 so that the instrument module can provide feedback using the same mechanism
 
@@ -634,14 +643,14 @@ will direct information, warnings, and debug statements appropriately.
 Testing Support
 ===============
 All modules defined in the ``__init__.py`` for pysat/instruments are
-automatically tested when pysat code is tested. To support testing all of the
-required routines, additional information is required by pysat.
+automatically tested when :py:mod:`pysat` code is tested. To support testing all
+of the required routines, additional information is required by :py:mod:`pysat`.
 
-Below is example code from the pysatMadrigal Instrument module, dmsp_ivm.py. The
-attributes are set at the top level simply by defining variable names with the
-proper info. The various satellites within DMSP, F11, F12, F13 are separated
-out using the inst_id parameter. 'utd' is used as a tag to delineate that the
-data contains the UTD developed quality flags.
+Below is example code from the :py:mod:`pysatMadrigal` Instrument module,
+dmsp_ivm.py. The attributes are set at the top level simply by defining
+variable names with the proper info. The various satellites within DMSP, F11,
+F12, F13 are separated out using the inst_id parameter. 'utd' is used as a tag
+to delineate that the data contains the UTD developed quality flags.
 
 .. code:: python
 
@@ -683,12 +692,14 @@ will not be tested. The leading underscore in :py:attr:`_test_dates` ensures
 that this information is not added to the instrument's meta attributes, so it
 will not be present in Input/Output operations.
 
-The standardized pysat tests are available in pysat.tests.instrument_test_class.
-The test collection test_instruments.py imports this class, collects a list of
-all available instruments (including potential :py:data:`tag`/:py:data:`inst_id`
-combinations), and runs the tests using pytestmark.  By default, pysat assumes
-that your instrument has a fully functional download routine, and will run an
-end-to-end test.  If this is not the case, see the next section.
+The standardized :py:mod:`pysat` tests are available in
+:py:mod:`pysat.tests.instrument_test_class`. The test collection in
+test_instruments.py imports this class, collects a list of all available
+instruments (including potential :py:data:`tag`/:py:data:`inst_id`
+combinations), and runs the tests using pytestmark.  By default,
+:py:mod:`pysat` assumes that your instrument has a fully functional download
+routine, and will run an end-to-end test.  If this is not the case, see the next
+section.
 
 
 .. _rst_test-special:
@@ -705,8 +716,8 @@ locally generated.  To let the test routines know this is the case, the
 :py:attr:`_test_download` flag is used.  This flag uses the same dictionary
 structure as :py:attr:`_test_dates`.
 
-For instance, say we have an instrument team that wants to use pysat to
-manage their data products.  Level 1 data is locally generated by the team,
+For instance, say we have an instrument team that wants to use :py:mod:`pysat`
+to manage their data products.  Level 1 data is locally generated by the team,
 and Level 2 data is provided to a public repository.  The instrument should
 be set up as follows:
 
@@ -736,21 +747,21 @@ and supporting methods may be found at :py:mod:`pysat.instruments.methods`.
 General
 ^^^^^^^
 
-A general instrument template is included with pysat,
+A general instrument template is included with :py:mod:`pysat`,
 :py:mod:`pysat.instruments.templates.template_instrument`, that has the full set
 of required and optional methods, and docstrings, that may be used as a starting
-point for adding a new instrument to pysat.
+point for adding a new instrument to :py:mod:`pysat`.
 
 Note that there are general supporting methods for adding an Instrument.
 See :ref:`api-methods-general` for more.
 
-This tells the test routines to skip the download / load tests for Level 1 data.
-Instead, the download function for this flag will be tested to see if it has an
-appropriate user warning that downloads are not available.
+This tells the test routines to skip the download and load tests for Level 1
+data. Instead, the download function for this flag will be tested to see if it
+has an appropriate user warning that downloads are not available.
 
-Note that pysat assumes that this flag is True if no variable is present.
-Thus specifying only ``_test_download = {'': {'Level_1': False}}`` has the
-same effect, and Level 2 tests will still be run.
+Note that :py:mod:`pysat` assumes that this flag is True if no variable is
+present. Thus, specifying only ``_test_download = {'': {'Level_1': False}}``
+has the same effect, and Level 2 tests will still be run.
 
 FTP Access
 ^^^^^^^^^^
