@@ -22,6 +22,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Clarified documentation and tests for name slicing support in pandas
   * Clarified documentation for adding new instruments
   * Fixed broken links in docs
+  * Updated docstring header underline lengths and addressed documentation
+    build errors and warnings
 
 [3.0.6] - 2022-12-21
 --------------------
