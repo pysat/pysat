@@ -565,8 +565,8 @@ class InstIterationTests(object):
                             freq=self.testInst.files.files.index.freqstr)
         return
 
-    @pytest.mark.parametrize("start_inds,stop_inds", [([3], [0]),
-                                                      ([0, 4], [2, 3])])
+    @pytest.mark.parametrize("start_inds,stop_inds", [([1], [0]),
+                                                      ([0, 2], [1, 1])])
     def test_set_bounds_by_date_wrong_order(self, start_inds, stop_inds):
         """Test error if bounds assignment has stop date before start.
 
@@ -673,14 +673,14 @@ class InstIterationTests(object):
     def test_iterate_over_bounds_set_by_fname(self):
         """Test iterate over bounds set by fname."""
 
-        fnames, ftimes = self.get_fnames_times(inds=[0, 5])
+        fnames, ftimes = self.get_fnames_times(inds=[0, 2])
         self.testInst.bounds = tuple(fnames)
         self.eval_iter_list(*ftimes, dates=True,
                             freq=self.testInst.files.files.index.freqstr)
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
-                             [([3], [0]), ([0, 5], [2, 3])])
+                             [([2], [0]), ([0, 2], [1, 1])])
     def test_set_bounds_by_fname_wrong_order(self, start_inds, stop_inds):
         """Test for error if stop file before start file.
 
@@ -721,7 +721,7 @@ class InstIterationTests(object):
             Name of iterator to use.
 
         """
-        fnames, ftimes = self.get_fnames_times(inds=[0, 3])
+        fnames, ftimes = self.get_fnames_times(inds=[0, 1])
 
         self.testInst.bounds = tuple(fnames)
         dates = []
@@ -765,7 +765,7 @@ class InstIterationTests(object):
     def test_set_bounds_fname_with_frequency(self):
         """Test set bounds using filenames and non-default step."""
 
-        fnames, ftimes = self.get_fnames_times(inds=[2, 5])
+        fnames, ftimes = self.get_fnames_times(inds=[0, 2])
         self.testInst.bounds = (*fnames, 2)
         freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         out = pds.date_range(*ftimes, freq=freq).tolist()
@@ -780,7 +780,7 @@ class InstIterationTests(object):
     def test_iterate_bounds_fname_with_frequency(self):
         """Test iterate over bounds using filenames and non-default step."""
 
-        fnames, ftimes = self.get_fnames_times(inds=[2, 5])
+        fnames, ftimes = self.get_fnames_times(inds=[0, 2])
         freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         self.testInst.bounds = (*fnames, 2)
 
@@ -790,7 +790,7 @@ class InstIterationTests(object):
     def test_set_bounds_fname_with_frequency_and_width(self):
         """Test set fname bounds with step/width > 1."""
 
-        fnames, ftimes = self.get_fnames_times(inds=[2, 5])
+        fnames, ftimes = self.get_fnames_times(inds=[0, 2])
         freq = '2{:s}'.format(self.testInst.files.files.index.freqstr)
         self.testInst.bounds = (*fnames, 2, 2)
         out = pds.date_range(ftimes[0], ftimes[1] - dt.timedelta(days=1),
