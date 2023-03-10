@@ -2009,6 +2009,13 @@ class Instrument(object):
             # If available, get the file frequency string
             if hasattr(self.files.files.index, 'freqstr'):
                 file_freq = self.files.files.index.freqstr
+                if file_freq is None:
+                    if len(self.files.files.index) > 1:
+                        # The frequency needs to be calculated
+                        file_freq = pysat.utils.time.calc_freq(
+                            self.files.files.index)
+                    else:
+                        file_freq = '1D'  # This is the pysat default
             else:
                 file_freq = '1D'  # This is the pysat default
 
