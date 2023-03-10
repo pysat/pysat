@@ -16,6 +16,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed `pysat.Instrument.bounds` to handle all input types for `step`
     and `width` regardless of `start` and `stop` time. Also fixed
     seasonal bounds specified using file names.
+  * Fixed `pysat.utils.io.apply_table_translation_to_file` check for duplicates
+    in the meta translation table
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
