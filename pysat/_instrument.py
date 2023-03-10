@@ -1995,6 +1995,19 @@ class Instrument(object):
         else:
             raise ValueError('Too many input arguments.')
 
+        # Determine the value of the file frequency
+        if hasattr(self.files.files.index, "freqstr"):
+            file_freq = self.files.files.index.freqstr
+            if file_freq is None:
+                if len(self.files.files.index) > 1:
+                    # The frequency needs to be calculated
+                    file_freq = pysat.utils.time.calc_freq(
+                        self.files.files.index)
+                else:
+                    file_freq = '1D'  # This is the pysat default
+        else:
+            file_freq = '1D'  # This is the pysat default
+
         # Pull out start and stop times now that other optional items have
         # been checked out.
         start = value[0]
@@ -2005,19 +2018,6 @@ class Instrument(object):
             self._iter_start = [self.files.start_date]
             self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
-
-            # If available, get the file frequency string
-            if hasattr(self.files.files.index, 'freqstr'):
-                file_freq = self.files.files.index.freqstr
-                if file_freq is None:
-                    if len(self.files.files.index) > 1:
-                        # The frequency needs to be calculated
-                        file_freq = pysat.utils.time.calc_freq(
-                            self.files.files.index)
-                    else:
-                        file_freq = '1D'  # This is the pysat default
-            else:
-                file_freq = '1D'  # This is the pysat default
 
             # Set the hidden iteration parameters if not specified
             if self._iter_step is None:
@@ -2130,27 +2130,17 @@ class Instrument(object):
 
                 # Default step size
                 if self._iter_step is None:
-                    self._iter_step = self.files.files.index.freqstr
+                    self._iter_step = file_freq
 
                 # Default window size
                 if self._iter_width is None:
                     self._iter_width = pds.tseries.frequencies.to_offset(
-                        self.files.files.index.freqstr)
+                        file_freq)
 
                 # Create list-like of dates for iteration
                 starts = pysat.utils.time.filter_datetime_input(starts)
                 stops = pysat.utils.time.filter_datetime_input(stops)
-                file_inc = pds.tseries.frequencies.to_offset(
-                    self.files.files.index.freqstr)
-
-                # Ensure the file increment is not None
-                if file_inc is None:
-                    if len(self.files.files.index) > 1:
-                        # The frequency needs to be calculated
-                        file_freq = pysat.utils.time.calc_freq(
-                            self.files.files.index)
-                    else:
-                        file_freq = '1D'  # This is the pysat default
+                file_inc = pds.tseries.frequencies.to_offset(file_freq)
 
                 # Ensure inputs are in reasonable date order
                 for start, stop in zip(starts, stops):
