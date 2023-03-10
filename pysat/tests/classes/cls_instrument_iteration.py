@@ -219,7 +219,7 @@ class InstIterationTests(object):
         output = {'expected_times': out, 'observed_times': time_range,
                   'starts': starts, 'stops': stops, 'width': width,
                   'step': step}
-        
+
         return output
 
     def verify_iteration(self, out, reverse=False):
@@ -239,7 +239,7 @@ class InstIterationTests(object):
 
         delta_inc = pds.tseries.frequencies.to_offset(
             out['width']) + out['starts'][0] + check_inc - out['starts'][0]
-        
+
         # Verify range of loaded data for each iteration step.
         for i, trange in enumerate(out['observed_times']):
             # Determine the current range.
@@ -589,8 +589,8 @@ class InstIterationTests(object):
         return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
-                             [([0], [2])])#, ([0, 3], [2, 4])])
-    @pytest.mark.parametrize("set_date", [True])#, False])
+                             [([0], [2]), ([0, 1], [1, 2])])
+    @pytest.mark.parametrize("set_date", [True, False])
     def test_set_bounds_by_date_extra_time(self, start_inds, stop_inds,
                                            set_date):
         """Test set bounds by date with extra time.
@@ -622,7 +622,7 @@ class InstIterationTests(object):
         # Evaluate the results
         start = filter_datetime_input(start_times)
         stop = filter_datetime_input(stop_times)
-        
+
         self.eval_iter_list(start, stop, dates=set_date,
                             freq=self.testInst.files.files.index.freqstr)
         return
