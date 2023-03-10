@@ -386,10 +386,10 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(fname=self.testInst.files[12], use_header=True)
+        self.testInst.load(fname=self.testInst.files[1], use_header=True)
 
         # Set new bounds that do not include this date.
-        self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
+        self.testInst.bounds = (self.testInst.files[0], self.testInst.files[2],
                                 2, 1)
         testing.eval_bad_input(getattr(self.testInst, operator), StopIteration,
                                'Unable to find loaded filename ')
