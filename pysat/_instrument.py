@@ -2076,6 +2076,7 @@ class Instrument(object):
                 # with first/last, as appropriate.
                 if starts[0] is None:
                     starts = [self.files[0]]
+
                 if stops[0] is None:
                     stops = [self.files[-1]]
 
@@ -2137,36 +2138,53 @@ class Instrument(object):
                     self._iter_width = pds.tseries.frequencies.to_offset(
                         file_freq)
 
-                # Create list-like of dates for iteration
-                starts = pysat.utils.time.filter_datetime_input(starts)
-                stops = pysat.utils.time.filter_datetime_input(stops)
-                file_inc = pds.tseries.frequencies.to_offset(file_freq)
+                # Identify start/stop pairings that lie outside of the file list
+                good_bounds = list()
+                for i, start in enumerate(starts):
+                    # Ensure there are files
+                    if self.files.stop_date is not None:
+                        # Ensure the start and stop times intersect with
+                        # the file list
+                        if (start <= self.files.stop_date and stops[i]
+                            >= self.files.start_date):
+                            good_bounds.append(i)
 
-                # Ensure inputs are in reasonable date order
-                for start, stop in zip(starts, stops):
-                    if start > stop:
-                        estr = ' '.join(('Bounds must be set in increasing',
-                                         'date order.',
-                                         start.strftime('%d %B %Y'),
-                                         'is later than',
-                                         stop.strftime('%d %B %Y')))
-                        raise ValueError(estr)
+                if len(good_bounds) > 0:
+                    # Create list-like of dates for iteration
+                    starts = list(pysat.utils.time.filter_datetime_input(
+                        np.asarray(starts)[good_bounds]))
+                    stops = list(pysat.utils.time.filter_datetime_input(
+                        np.asarray(stops)[good_bounds]))
+                    file_inc = pds.tseries.frequencies.to_offset(file_freq)
 
-                # Account for width of load. Don't extend past bound. To
-                # avoid pandas shenanigans, only perform adjustments to the
-                # stop time if the file width and file increment are not equal
-                ustops = [stop if self._iter_width == file_inc else
-                          stop - self._iter_width + file_inc for stop in stops]
+                    # Ensure inputs are in reasonable date order
+                    for start, stop in zip(starts, stops):
+                        if start > stop:
+                            estr = ' '.join(('Bounds must be set in increasing',
+                                             'date order.',
+                                             start.strftime('%d %B %Y'),
+                                             'is later than',
+                                             stop.strftime('%d %B %Y')))
+                            raise ValueError(estr)
 
-                # Date range is inclusive, no need to pad.
-                self._iter_list = pysat.utils.time.create_date_range(
-                    starts, ustops, freq=self._iter_step)
+                    # Account for width of load. Don't extend past bound. To
+                    # avoid pandas shenanigans, only perform adjustments to the
+                    # stop time if the file width and file increment are unequal
+                    ustops = [stop if self._iter_width == file_inc else
+                              stop - self._iter_width + file_inc
+                              for stop in stops]
+
+                    # Date range is inclusive, no need to pad.
+                    self._iter_list = pysat.utils.time.create_date_range(
+                        starts, ustops, freq=self._iter_step)
+                else:
+                    self._iter_list = []
 
                 # Convert the date range back to a time index format
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
 
             else:
-                raise ValueError(' '.join(('Input is not a known type, string',
+                raise ValueError(' '.join(('Input is not a known type: string',
                                            'or datetime')))
             self._iter_start = starts
             self._iter_stop = stops
