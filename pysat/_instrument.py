@@ -2145,8 +2145,8 @@ class Instrument(object):
                     if self.files.stop_date is not None:
                         # Ensure the start and stop times intersect with
                         # the file list
-                        if (start <= self.files.stop_date and stops[i]
-                            >= self.files.start_date):
+                        if(start <= self.files.stop_date and stops[i]
+                           >= self.files.start_date):
                             good_bounds.append(i)
 
                 if len(good_bounds) > 0:

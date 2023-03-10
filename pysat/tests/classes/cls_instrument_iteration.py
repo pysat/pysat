@@ -558,7 +558,7 @@ class InstIterationTests(object):
 
         # Set the bounds with either the time or the value
         self.testInst.bounds = [fvals[type_ind][0], None]
-    
+
         # Get the first time or file and check the bounds iteration type
         if type_ind == 0:
             assert self.testInst._iter_type == "file", "Not iterating by file"
@@ -566,7 +566,7 @@ class InstIterationTests(object):
         else:
             assert self.testInst._iter_type == "date", "Not iterating by date"
             check = self.testInst.files.files.index[-1]
-        
+
         assert self.testInst.bounds[1][0] == check, "Unexpeding ending bound"
         return
 
