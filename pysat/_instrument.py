@@ -1924,11 +1924,20 @@ class Instrument(object):
             self._iter_start = [self.files.start_date]
             self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
+
+            # If available, get the file frequency string
+            if hasattr(self.files.files.index, 'freqstr'):
+                file_freq = self.files.files.index.freqstr
+            else:
+                file_freq = '1D'  # This is the pysat default
+
+            # Set the hidden iteration parameters if not specified
             if self._iter_step is None:
-                self._iter_step = self.files.files.index.freqstr
+                self._iter_step = file_freq
+
             if self._iter_width is None:
-                self._iter_width = pds.tseries.frequencies.to_offset(
-                    self.files.files.index.freqstr)
+                self._iter_width = pds.tseries.frequencies.to_offset(file_freq)
+
             if self._iter_start[0] is not None:
                 # There are files. Use those dates.
                 ustops = [istop - self._iter_width
