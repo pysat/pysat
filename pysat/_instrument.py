@@ -2143,6 +2143,15 @@ class Instrument(object):
                 file_inc = pds.tseries.frequencies.to_offset(
                     self.files.files.index.freqstr)
 
+                # Ensure the file increment is not None
+                if file_inc is None:
+                    if len(self.files.files.index) > 1:
+                        # The frequency needs to be calculated
+                        file_freq = pysat.utils.time.calc_freq(
+                            self.files.files.index)
+                    else:
+                        file_freq = '1D'  # This is the pysat default
+
                 # Ensure inputs are in reasonable date order
                 for start, stop in zip(starts, stops):
                     if start > stop:
