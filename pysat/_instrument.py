@@ -3269,11 +3269,11 @@ class Instrument(object):
         return a subset of available files.
 
         """
-
-        # Add the function kwargs
-        if 'start' not in kwargs.keys():
+        # Add the method kwargs if they are not set to defaults
+        if start is not None:
             kwargs["start"] = start
-        if 'stop' not in kwargs.keys():
+
+        if stop is not None:
             kwargs["stop"] = stop
 
         # Add the user-supplied kwargs
