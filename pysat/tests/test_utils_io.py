@@ -204,7 +204,8 @@ class TestLoadNetCDF(object):
             Specify value of `export_pysat_info`. An empty dict sets to
             default value.
         target : bool
-            True is pysat info is expected to be written to file.
+            True indicates that pysat info should be written to the file.
+
         """
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
