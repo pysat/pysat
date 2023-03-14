@@ -7,6 +7,7 @@ Base class stored here, but tests inherited by test_instrument.py
 """
 
 import datetime as dt
+import functools
 from importlib import reload
 import logging
 import numpy as np
@@ -17,6 +18,7 @@ import pytest
 import xarray as xr
 
 import pysat
+from pysat.instruments.methods import testing as ps_meth
 from pysat.utils import testing
 from pysat.utils.time import filter_datetime_input
 
@@ -145,6 +147,21 @@ class InstPropertyTests(object):
         assert filter_datetime_input(self.out[0]) == self.ref_time
         assert filter_datetime_input(self.out[-1]) == stop
         return
+
+    def test_remote_file_list_with_default_dates(self):
+        """Test setting the start / stop dates as default kwargs."""
+
+        # Set new defaults for kwargs
+        start=dt.datetime(2018, 1, 1)
+        stop=dt.datetime(2018, 2, 1)
+
+        # Update remote_file_list default dates
+        self.testInst._list_remote_files_rtn = functools.partial(
+            ps_meth.list_remote_files, start=start, stop=stop)
+
+        files = self.testInst.remote_file_list()
+        assert files.index[0] == start
+        assert files.index[-1] == stop
 
     @pytest.mark.parametrize("no_remote_files", [True, False])
     @pytest.mark.parametrize("download_keys", [
