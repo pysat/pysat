@@ -152,16 +152,16 @@ class InstPropertyTests(object):
         """Test setting the start / stop dates as default kwargs."""
 
         # Set new defaults for kwargs
-        start=dt.datetime(2018, 1, 1)
-        stop=dt.datetime(2018, 2, 1)
+        start = dt.datetime(2018, 1, 1)
+        stop = dt.datetime(2018, 2, 1)
 
         # Update remote_file_list default dates
         self.testInst._list_remote_files_rtn = functools.partial(
             ps_meth.list_remote_files, start=start, stop=stop)
 
         files = self.testInst.remote_file_list()
-        assert files.index[0] == start
-        assert files.index[-1] == stop
+        assert filter_datetime_input(files.index[0]) == start
+        assert filter_datetime_input(files.index[-1]) == stop
 
     @pytest.mark.parametrize("no_remote_files", [True, False])
     @pytest.mark.parametrize("download_keys", [
