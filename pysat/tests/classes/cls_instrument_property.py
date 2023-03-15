@@ -636,6 +636,9 @@ class InstPropertyTests(object):
     def test_error_undefined_input_keywords(self):
         """Test for error if undefined keywords provided at instantiation."""
 
+        if 'file_date_range' in self.testInst.kwargs['list_files']:
+            pytest.skip("Cannot run eval on pds.DatetimeIndex")
+
         # Add a new keyword
         self.testInst.kwargs['load']['undefined_keyword1'] = True
         self.testInst.kwargs['load']['undefined_keyword2'] = False

@@ -98,14 +98,6 @@ class TestInstCadence(TestBasics):
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
         return
 
-    def test_error_undefined_input_keywords(self):
-        """Expected failure, as Eval doesn't work with pds.DatetimeIndex."""
-        return
-
-    def test_no_stale_data_paths(self, caplog):
-        """Expected failure, as Eval doesn't work with pds.DatetimeIndex."""
-        return
-
 
 class TestInstMonthlyCadence(TestInstCadence):
     """Unit tests for pysat.Instrument objects with a monthly file cadance."""
@@ -136,10 +128,6 @@ class TestInstMonthlyCadence(TestInstCadence):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
-        return
-
-    def test_basic_instrument_load_leap_year(self):
-        """Fake files not available by day at a non-daily cadence."""
         return
 
     @pytest.mark.parametrize("operator,ref_time",
@@ -194,10 +182,6 @@ class TestInstYearlyCadence(TestInstCadence):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
-        return
-
-    def test_basic_instrument_load_leap_year(self):
-        """Fake files not available by day at a non-daily cadence."""
         return
 
     @pytest.mark.parametrize("operator,ref_time",

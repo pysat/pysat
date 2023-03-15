@@ -347,6 +347,11 @@ class InstAccessTests(object):
     def test_basic_instrument_load_leap_year(self):
         """Test if the correct day is being loaded (Leap-Year)."""
 
+        if hasattr(self, 'freq'):
+            min_freq = pds.tseries.frequencies.to_offset('D')
+            if pds.tseries.frequencies.to_offset(self.freq) != min_freq:
+                pytest.skip("Test only makes sense for daily cadence")
+
         self.ref_time = dt.datetime(2008, 12, 31)
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
