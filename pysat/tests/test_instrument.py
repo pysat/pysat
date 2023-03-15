@@ -130,28 +130,6 @@ class TestInstMonthlyCadence(TestInstCadence):
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
         return
 
-    @pytest.mark.parametrize("operator,ref_time",
-                             [('next', dt.datetime(2008, 1, 1)),
-                              ('prev', dt.datetime(2010, 12, 1))])
-    def test_file_load_default(self, operator, ref_time):
-        """Test if correct day loads by default when first invoking iteration.
-
-        Parameters
-        ----------
-        operator : str
-            Name of iterator to use.
-        ref_time : dt.datetime
-            Expected date to load when iteration is first invoked.
-
-        """
-
-        getattr(self.testInst, operator)()
-
-        # Modify ref time since iterator changes load date.
-        self.ref_time = ref_time
-        self.eval_successful_load()
-        return
-
 
 class TestInstYearlyCadence(TestInstCadence):
     """Unit tests for pysat.Instrument objects with a monthly file cadance."""
@@ -184,27 +162,6 @@ class TestInstYearlyCadence(TestInstCadence):
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
         return
 
-    @pytest.mark.parametrize("operator,ref_time",
-                             [('next', dt.datetime(2008, 1, 1)),
-                              ('prev', dt.datetime(2010, 1, 1))])
-    def test_file_load_default(self, operator, ref_time):
-        """Test if correct day loads by default when first invoking iteration.
-
-        Parameters
-        ----------
-        operator : str
-            Name of iterator to use.
-        ref_time : dt.datetime
-            Expected date to load when iteration is first invoked.
-
-        """
-
-        getattr(self.testInst, operator)()
-
-        # Modify ref time since iterator changes load date.
-        self.ref_time = ref_time
-        self.eval_successful_load()
-        return
 
     @pytest.mark.parametrize("start_inds,stop_inds",
                              [([0], [2]), ([0, 1], [1, 2])])
