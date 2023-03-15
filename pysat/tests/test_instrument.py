@@ -67,6 +67,16 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
 
+    def check_nonstandard_cadence(self):
+        """Check for nonstandard cadence in tests."""
+
+        if hasattr(self, 'freq'):
+            min_freq = pds.tseries.frequencies.to_offset('D')
+            return pds.tseries.frequencies.to_offset(self.freq) != min_freq
+        else:
+            # Uses standard frequency
+            return False
+
 
 class TestInstCadence(TestBasics):
     """Unit tests for pysat.Instrument objects with the default file cadance."""
@@ -141,9 +151,10 @@ class TestInstYearlyCadence(TestInstCadence):
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.freq = 'AS'
 
+        # Since these are yearly files, use a longer date range
         date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
                                     self.ref_time
-                                    + pds.DateOffset(years=2, days=-1),
+                                    + pds.DateOffset(years=5, days=-1),
                                     freq=self.freq)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=10,
