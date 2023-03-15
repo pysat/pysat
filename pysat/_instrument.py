@@ -3327,10 +3327,12 @@ class Instrument(object):
         return a subset of available files.
 
         """
+        # Add the method kwargs if they are not set to defaults
+        if start is not None:
+            kwargs["start"] = start
 
-        # Add the function kwargs
-        kwargs["start"] = start
-        kwargs["stop"] = stop
+        if stop is not None:
+            kwargs["stop"] = stop
 
         # Add the user-supplied kwargs
         rtn_key = 'list_remote_files'
