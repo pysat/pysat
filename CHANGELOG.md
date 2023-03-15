@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 --------------------
 * Enhancements
   * Added `to_inst` method to the Constellation class
+  * Added `export_pysat_info` kwarg to `to_netcdf` routines to select whether
+    pysat instrument info is writtent o files.
 * Bug Fix
   * Fixed an issue with setting single variables in xarray coords (#988)
   * Fixed an issue when passing dates through load_remote_files (#1022)
