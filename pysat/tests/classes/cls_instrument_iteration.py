@@ -239,7 +239,7 @@ class InstIterationTests(object):
             self.testInst.files.files.index.freqstr)
 
         # Arithmetic operations must be performed on datetime objects,
-        # not timedelta or DateOffset objects. 
+        # not timedelta or DateOffset objects.
         delta_inc = pds.tseries.frequencies.to_offset(
             out['width']) + out['starts'][0] + check_inc - out['starts'][0]
 
