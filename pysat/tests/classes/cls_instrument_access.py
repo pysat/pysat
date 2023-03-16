@@ -26,6 +26,7 @@ import xarray as xr
 
 import pysat
 from pysat.utils import testing
+from pysat.utils.time import filter_datetime_input
 
 
 class InstAccessTests(object):
@@ -347,31 +348,35 @@ class InstAccessTests(object):
     def test_basic_instrument_load_leap_year(self):
         """Test if the correct day is being loaded (Leap-Year)."""
 
+        if self.check_nonstandard_cadence():
+            pytest.skip("Test only makes sense for daily cadence")
+
         self.ref_time = dt.datetime(2008, 12, 31)
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.eval_successful_load()
         return
 
-    @pytest.mark.parametrize("operator,ref_time",
-                             [('next', dt.datetime(2008, 1, 1)),
-                              ('prev', dt.datetime(2010, 12, 31))])
-    def test_file_load_default(self, operator, ref_time):
+    @pytest.mark.parametrize("operator,ref_ind",
+                             [('next', 0),
+                              ('prev', -1)])
+    def test_file_load_default(self, operator, ref_ind):
         """Test if correct day loads by default when first invoking iteration.
 
         Parameters
         ----------
         operator : str
             Name of iterator to use.
-        ref_time : dt.datetime
-            Expected date to load when iteration is first invoked.
+        ref_time : int
+            Expected index to load when iteration is first invoked.
 
         """
 
         getattr(self.testInst, operator)()
 
         # Modify ref time since iterator changes load date.
-        self.ref_time = ref_time
+        self.ref_time = filter_datetime_input(
+            self.testInst.files.files.index[ref_ind])
         self.eval_successful_load()
         return
 

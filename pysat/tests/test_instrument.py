@@ -67,6 +67,16 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
 
+    def check_nonstandard_cadence(self):
+        """Check for nonstandard cadence in tests."""
+
+        if hasattr(self, 'freq'):
+            min_freq = pds.tseries.frequencies.to_offset('D')
+            return pds.tseries.frequencies.to_offset(self.freq) != min_freq
+        else:
+            # Uses standard frequency
+            return False
+
 
 class TestInstCadence(TestBasics):
     """Unit tests for pysat.Instrument objects with the default file cadance."""
@@ -96,14 +106,6 @@ class TestInstCadence(TestBasics):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
-        return
-
-    def test_error_undefined_input_keywords(self):
-        """Expected failure, as Eval doesn't work with pds.DatetimeIndex."""
-        return
-
-    def test_no_stale_data_paths(self, caplog):
-        """Expected failure, as Eval doesn't work with pds.DatetimeIndex."""
         return
 
 
@@ -138,32 +140,6 @@ class TestInstMonthlyCadence(TestInstCadence):
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
         return
 
-    def test_basic_instrument_load_leap_year(self):
-        """Fake files not available by day at a non-daily cadence."""
-        return
-
-    @pytest.mark.parametrize("operator,ref_time",
-                             [('next', dt.datetime(2008, 1, 1)),
-                              ('prev', dt.datetime(2010, 12, 1))])
-    def test_file_load_default(self, operator, ref_time):
-        """Test if correct day loads by default when first invoking iteration.
-
-        Parameters
-        ----------
-        operator : str
-            Name of iterator to use.
-        ref_time : dt.datetime
-            Expected date to load when iteration is first invoked.
-
-        """
-
-        getattr(self.testInst, operator)()
-
-        # Modify ref time since iterator changes load date.
-        self.ref_time = ref_time
-        self.eval_successful_load()
-        return
-
 
 class TestInstYearlyCadence(TestInstCadence):
     """Unit tests for pysat.Instrument objects with a monthly file cadance."""
@@ -175,9 +151,10 @@ class TestInstYearlyCadence(TestInstCadence):
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.freq = 'AS'
 
+        # Since these are yearly files, use a longer date range
         date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
                                     self.ref_time
-                                    + pds.DateOffset(years=2, days=-1),
+                                    + pds.DateOffset(years=5, days=-1),
                                     freq=self.freq)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          num_samples=10,
@@ -194,222 +171,6 @@ class TestInstYearlyCadence(TestInstCadence):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
-        return
-
-    def test_basic_instrument_load_leap_year(self):
-        """Fake files not available by day at a non-daily cadence."""
-        return
-
-    @pytest.mark.parametrize("operator,ref_time",
-                             [('next', dt.datetime(2008, 1, 1)),
-                              ('prev', dt.datetime(2010, 1, 1))])
-    def test_file_load_default(self, operator, ref_time):
-        """Test if correct day loads by default when first invoking iteration.
-
-        Parameters
-        ----------
-        operator : str
-            Name of iterator to use.
-        ref_time : dt.datetime
-            Expected date to load when iteration is first invoked.
-
-        """
-
-        getattr(self.testInst, operator)()
-
-        # Modify ref time since iterator changes load date.
-        self.ref_time = ref_time
-        self.eval_successful_load()
-        return
-
-    @pytest.mark.parametrize("start_inds,stop_inds",
-                             [([0], [2]), ([0, 1], [1, 2])])
-    def test_set_bounds_by_date(self, start_inds, stop_inds):
-        """Test setting bounds with datetimes over simple range and season.
-
-        Parameters
-        ----------
-        start_inds : list
-            The start indices of the new bounds.
-        stop_inds : list
-            The stop indices of the new bounds.
-
-        """
-        _, start_times = self.get_fnames_times(start_inds)
-        _, stop_times = self.get_fnames_times(stop_inds)
-
-        self.testInst.bounds = (start_times, stop_times)
-        self.eval_iter_list(start_times, stop_times,
-                            freq=self.testInst.files.files.index.freqstr)
-        return
-
-    @pytest.mark.parametrize("file_inds", [([0, 2])])
-    @pytest.mark.parametrize("step,width", [(2, 2), (2, 3), (3, 1)])
-    @pytest.mark.parametrize("by_date", [True, False])
-    @pytest.mark.parametrize("reverse,for_loop",
-                             [(True, False), (False, False), (False, True)])
-    def test_iterate_bounds_with_frequency_and_width(self, file_inds, step,
-                                                     width, by_date,
-                                                     reverse, for_loop):
-        """Test iterate via date with mixed step/width.
-
-        Parameters
-        ----------
-        file_inds : list
-            List of indices for the start and stop file times
-        step : int
-            The step size for the iteration bounds.
-        width : int
-            The width of the iteration bounds.
-        by_date : bool
-            If True, iterate by date.  If False, iterate by filename.
-        reverse : bool
-            If True, iterate backwards.  If False, iterate forwards. Only used
-            when `for_loop=False`.
-        for_loop : bool
-            If True, iterate via for loop.  If False, iterate via while.
-
-        """
-        # Get the desired file times
-        _, ftimes = self.get_fnames_times(inds=file_inds)
-
-        # Convert integer steps/widths to strings, allowing multiple freq types
-        step = '{:d}{:s}'.format(step, self.testInst.files.files.index.freqstr)
-        if by_date:
-            width = '{:d}{:s}'.format(width,
-                                      self.testInst.files.files.index.freqstr)
-
-        # Evaluate and verify the iterations
-        out = self.support_iter_evaluations(*ftimes, step, width,
-                                            for_loop=for_loop, by_date=by_date,
-                                            reverse=reverse)
-        self.verify_iteration(out, reverse=reverse)
-
-        return
-
-    @pytest.mark.parametrize("start_inds,stop_inds",
-                             [([0], [2]), ([0, 3], [1, 4])])
-    @pytest.mark.parametrize("step,width", [(2, 2), (5, 1), (3, 2)])
-    @pytest.mark.parametrize("by_date", [True, False])
-    @pytest.mark.parametrize("reverse,for_loop",
-                             [(True, False), (False, False), (False, True)])
-    def test_iterate_seasonal_bounds_with_frequency_and_width(
-            self, start_inds, stop_inds, step, width, by_date, reverse,
-            for_loop):
-        """Test iterate via date with mixed step/width.
-
-        Parameters
-        ----------
-        start_inds : list
-            The index(es) corresponding to the start file(s)
-        stop_inds : list
-            The index(es) corresponding to the stop file(s)
-        step : int
-            The step size for the iteration bounds.
-        width : int
-            The width of the iteration bounds.
-        by_date : bool
-            If True, iterate by date.  If False, iterate by filename.
-        reverse : bool
-            If True, iterate backwards.  If False, iterate forwards. Only used
-            when `for_loop=False`.
-        for_loop : bool
-            If True, iterate via for loop.  If False, iterate via while.
-
-        """
-        # Need to set a longer file period
-        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
-                                    self.ref_time
-                                    + pds.DateOffset(years=7, days=-1),
-                                    freq=self.freq)
-        self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=10,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         use_header=True,
-                                         file_date_range=date_range,
-                                         **self.testing_kwargs)
-
-        # Get the desired file times
-        _, start_times = self.get_fnames_times(inds=start_inds)
-        _, stop_times = self.get_fnames_times(inds=stop_inds)
-
-        # Convert integer steps/widths to strings, allowing multiple freq types
-        step = '{:d}{:s}'.format(step, self.testInst.files.files.index.freqstr)
-        if by_date:
-            width = '{:d}{:s}'.format(width,
-                                      self.testInst.files.files.index.freqstr)
-
-        # Evaluate and verify the iterations
-        out = self.support_iter_evaluations(start_times, stop_times, step,
-                                            width, for_loop=for_loop,
-                                            by_date=by_date, reverse=reverse)
-        self.verify_iteration(out, reverse=reverse)
-
-        return
-
-    @pytest.mark.parametrize("start_inds,stop_inds",
-                             [([[0], [1]]), ([[1], [2]]), ([0, 1], [1, 2])])
-    def test_iterate_over_bounds_set_by_date(self, start_inds, stop_inds):
-        """Test iterate over bounds via single date range.
-
-        Parameters
-        ----------
-        start_inds : list
-            The start indices of the new bounds.
-        stop_inds : list
-            The stop indices of the new bounds.
-
-        """
-        _, start_times = self.get_fnames_times(start_inds)
-        _, stop_times = self.get_fnames_times(stop_inds)
-
-        self.testInst.bounds = (start_times, stop_times)
-
-        # Filter time inputs.
-        start = filter_datetime_input(start_times)
-        stop = filter_datetime_input(stop_times)
-        self.eval_iter_list(start, stop, dates=True,
-                            freq=self.testInst.files.files.index.freqstr)
-        return
-
-    def test_iterate_over_bounds_set_by_fname_season(self):
-        """Test set bounds using multiple filenames."""
-        fnames, ftimes = self.get_fnames_times(inds=[0, 1, 1, 2])
-
-        start = [fnames[0], fnames[1]]
-        stop = [fnames[2], fnames[3]]
-        start_d = [ftimes[0], ftimes[1]]
-        stop_d = [ftimes[2], ftimes[3]]
-        self.testInst.bounds = (start, stop)
-        self.eval_iter_list(start_d, stop_d, dates=True,
-                            freq=self.testInst.files.files.index.freqstr)
-        return
-
-    def test_set_bounds_by_fname_season(self):
-        """Test set bounds by fname season."""
-        # Need to set a longer file period
-        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
-                                    self.ref_time
-                                    + pds.DateOffset(years=7, days=-1),
-                                    freq=self.freq)
-        self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=10,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         use_header=True,
-                                         file_date_range=date_range,
-                                         **self.testing_kwargs)
-
-        # Evaluate as before
-        fnames, _ = self.get_fnames_times(inds=[0, 4, 2, 5])
-        start = [fnames[0], fnames[1]]
-        stop = [fnames[2], fnames[3]]
-
-        check_list = self.testInst.files.files[0:6].tolist()
-        check_list.pop(3)
-        self.testInst.bounds = (start, stop)
-        testing.assert_lists_equal(self.testInst._iter_list, check_list)
         return
 
 
