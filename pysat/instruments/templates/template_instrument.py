@@ -377,7 +377,7 @@ def list_remote_files(tag, inst_id, user=None, password=None):
     a particular NASA CDAWeb dataset.
 
     Parameters
-    -----------
+    ----------
     tag : str
         Denotes type of file to load.  Accepted types are <tag strings>.
     inst_id : str

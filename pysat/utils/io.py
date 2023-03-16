@@ -515,7 +515,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     inst : pysat.Instrument
         Instrument object with data to be written to file.
     meta_dict : dict
-        Output starting from `Instrument.meta.to_dict() `supplying attribute
+        Output starting from `Instrument.meta.to_dict()` supplying attribute
         data.
     trans_table : dict or NoneType
         Keyed by current metalabels containing a list of
@@ -529,6 +529,11 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     export_dict : dict
         A dictionary of the metadata for each variable of an output file.
 
+    Raises
+    ------
+    ValueError
+        If there is a duplicated variable label in the translation table
+
     """
 
     export_dict = {}
@@ -537,13 +542,13 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
         trans_table = default_to_netcdf_translation_table(inst)
 
     # Confirm there are no duplicated translation labels
-    trans_labels = [trans_table[key] for key in trans_table.keys()]
-    for i in np.arange(len(trans_labels)):
-        item = trans_labels.pop(0)
-        if item in trans_labels:
-            estr = ''.join(['There is a duplicated variable label value in ',
-                            '`trans_table`: ', item])
-            raise ValueError(estr)
+    trans_labels = list()
+    for key in trans_table.keys():
+        trans_labels.extend(trans_table[key])
+
+    if np.unique(trans_labels).shape[0] != len(trans_labels):
+        raise ValueError(''.join(['There are duplicated variable label values',
+                                  ' in `trans_table`']))
 
     # Translate each metadata label if a translation is provided
     for key in meta_dict.keys():

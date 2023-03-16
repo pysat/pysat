@@ -26,6 +26,7 @@ import xarray as xr
 
 import pysat
 from pysat.utils import testing
+from pysat.utils.time import filter_datetime_input
 
 
 class InstAccessTests(object):
@@ -93,7 +94,8 @@ class InstAccessTests(object):
         """
         # Test that the first loaded time matches the first requested time
         assert self.testInst.index[0] == self.ref_time, \
-            "First loaded time is incorrect"
+            "First loaded time is incorrect {:} != {:}".format(
+                self.testInst.index[0], self.ref_time)
 
         # Test that the Instrument date is set to the requested start date
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
@@ -346,31 +348,35 @@ class InstAccessTests(object):
     def test_basic_instrument_load_leap_year(self):
         """Test if the correct day is being loaded (Leap-Year)."""
 
+        if self.check_nonstandard_cadence():
+            pytest.skip("Test only makes sense for daily cadence")
+
         self.ref_time = dt.datetime(2008, 12, 31)
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.eval_successful_load()
         return
 
-    @pytest.mark.parametrize("operator,ref_time",
-                             [('next', dt.datetime(2008, 1, 1)),
-                              ('prev', dt.datetime(2010, 12, 31))])
-    def test_file_load_default(self, operator, ref_time):
+    @pytest.mark.parametrize("operator,ref_ind",
+                             [('next', 0),
+                              ('prev', -1)])
+    def test_file_load_default(self, operator, ref_ind):
         """Test if correct day loads by default when first invoking iteration.
 
         Parameters
         ----------
         operator : str
             Name of iterator to use.
-        ref_time : dt.datetime
-            Expected date to load when iteration is first invoked.
+        ref_time : int
+            Expected index to load when iteration is first invoked.
 
         """
 
         getattr(self.testInst, operator)()
 
         # Modify ref time since iterator changes load date.
-        self.ref_time = ref_time
+        self.ref_time = filter_datetime_input(
+            self.testInst.files.files.index[ref_ind])
         self.eval_successful_load()
         return
 
@@ -385,10 +391,10 @@ class InstAccessTests(object):
 
         """
 
-        self.testInst.load(fname=self.testInst.files[12], use_header=True)
+        self.testInst.load(fname=self.testInst.files[1], use_header=True)
 
         # Set new bounds that do not include this date.
-        self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
+        self.testInst.bounds = (self.testInst.files[0], self.testInst.files[2],
                                 2, 1)
         testing.eval_bad_input(getattr(self.testInst, operator), StopIteration,
                                'Unable to find loaded filename ')
@@ -426,9 +432,7 @@ class InstAccessTests(object):
         self.eval_successful_load()
         return
 
-    @pytest.mark.parametrize("operator,direction",
-                             [('next', 1),
-                              ('prev', -1)])
+    @pytest.mark.parametrize("operator,direction", [('next', 1), ('prev', -1)])
     def test_fname_load_default(self, operator, direction):
         """Test correct day loads when moving by day, starting with `fname`.
 
@@ -448,7 +452,9 @@ class InstAccessTests(object):
         getattr(self.testInst, operator)()
 
         # Modify ref time since iterator changes load date.
-        self.ref_time = self.ref_time + direction * dt.timedelta(days=1)
+        foff = pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        self.ref_time = self.ref_time + direction * foff
         self.eval_successful_load()
         return
 
@@ -463,19 +469,23 @@ class InstAccessTests(object):
     def test_filenames_load(self):
         """Test if files are loadable by filename range."""
 
-        stop_fname = self.ref_time + dt.timedelta(days=1)
+        foff = pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        stop_fname = self.ref_time + foff
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
                            stop_fname=stop_fname, use_header=True)
         assert self.testInst.index[0] == self.ref_time
-        assert self.testInst.index[-1] >= self.ref_time + dt.timedelta(days=1)
-        assert self.testInst.index[-1] <= self.ref_time + dt.timedelta(days=2)
+        assert self.testInst.index[-1] >= self.ref_time + foff
+        assert self.testInst.index[-1] <= self.ref_time + (2 * foff)
         return
 
     def test_filenames_load_out_of_order(self):
         """Test error raised if fnames out of temporal order."""
 
-        stop_fname = self.ref_time + dt.timedelta(days=1)
+        foff = pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        stop_fname = self.ref_time + foff
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
         estr = '`stop_fname` must occur at a later date '
@@ -573,8 +583,10 @@ class InstAccessTests(object):
         """
 
         # Load a data set to concatonate
-        self.testInst.load(self.ref_time.year, self.ref_doy + 1,
-                           use_header=True)
+        ref_time2 = self.ref_time + pds.tseries.frequencies.to_offset(
+            self.testInst.files.files.index.freqstr)
+        doy2 = int(ref_time2.strftime('%j'))
+        self.testInst.load(ref_time2.year, doy2, use_header=True)
         data2 = self.testInst.data
         len2 = len(self.testInst.index)
 

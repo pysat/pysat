@@ -135,9 +135,11 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
                and out_month.year == emonth.year):
                 out_month = emonth
 
-            mrange = pds.date_range(start=out_month, periods=2, freq='MS')
-            irange = pds.date_range(*mrange.values, freq="D").values[:-1]
-            new_out[irange] = out.loc[out_month]
+            crange = pds.date_range(start=out_month, periods=2,
+                                    freq=file_cadence)
+            irange = pds.date_range(*crange.values, freq="D").values[:-1]
+            sel_range = new_out.index.intersection(irange)
+            new_out[sel_range] = out.loc[out_month]
 
         # Assign the non-NaN files to out and add days to the filenames
         out = new_out.dropna()
