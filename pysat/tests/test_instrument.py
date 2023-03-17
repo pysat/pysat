@@ -289,12 +289,12 @@ class TestBasicsNDXarray(TestBasics):
         """Test that xarray empty is False even if there is no time data."""
         # Load data and confirm it exists
         self.testInst.load(date=self.ref_time)
-        assert self.testInst.empty == False
+        assert not self.testInst.empty
 
         # Downselect to no time data
         self.testInst.data = self.testInst[self.ref_time + dt.timedelta(days=1):
                                            self.ref_time + dt.timedelta(days=2)]
-        assert self.testInst.empty == False
+        assert not self.testInst.empty
         assert len(self.testInst.index) == 0
         for dim in self.testInst.data.dims.keys():
             if dim != 'time':
