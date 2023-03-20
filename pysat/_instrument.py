@@ -3240,7 +3240,7 @@ class Instrument(object):
                 # and xarray
                 self.data = self._next_data.copy()
                 self.data = self[temp_time:last_pad]
-                if not self.empty:
+                if len(self.index) > 0:
                     if (self.index[0] == temp_time):
                         self.data = self[1:]
                     self.concat_data(stored_data, prepend=True)

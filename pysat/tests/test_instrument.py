@@ -285,6 +285,22 @@ class TestBasicsNDXarray(TestBasics):
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
 
+    def test_xarray_not_empty_notime(self):
+        """Test that xarray empty is False even if there is no time data."""
+        # Load data and confirm it exists
+        self.testInst.load(date=self.ref_time)
+        assert not self.testInst.empty
+
+        # Downselect to no time data
+        self.testInst.data = self.testInst[self.ref_time + dt.timedelta(days=1):
+                                           self.ref_time + dt.timedelta(days=2)]
+        assert not self.testInst.empty
+        assert len(self.testInst.index) == 0
+        for dim in self.testInst.data.dims.keys():
+            if dim != 'time':
+                assert len(self.testInst[dim]) > 0
+        return
+
     @pytest.mark.parametrize("index", [(0),
                                        ([0, 1, 2, 3]),
                                        (slice(0, 10)),
@@ -385,6 +401,7 @@ class TestBasicsNDXarray(TestBasics):
 
         self.testInst.data = data
         assert self.testInst.empty == target
+        return
 
     @pytest.mark.parametrize("val,warn_msg",
                              [([], "broadcast as NaN"),

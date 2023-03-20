@@ -21,6 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed `pysat.utils.io.apply_table_translation_to_file` check for duplicates
     in the meta translation table
   * Fixed an issue when passing dates through load_remote_files (#1022)
+  * Fixed a bug where data may not have any times, but still not be empty
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
