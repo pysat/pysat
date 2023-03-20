@@ -410,10 +410,11 @@ def generate_instrument_list(inst_loc, user_info=None):
         Dictionary with keys 'names', 'download', 'no_download' that contain
         lists with different information for each key:
         'names' - list of platform_name combinations
-        'download' - dict containing 'inst_module', 'tag', and 'inst_id' for
-        instruments with download routines
-        'no_download' - dict containing 'inst_module', 'tag', and 'inst_id' for
-        instruments without download routines
+        'download' - list of dicts containing 'inst_module', 'tag', and
+        'inst_id' for instruments with download routines
+        'load_options' - list of dicts containing load and download options
+        'no_download' - list of dicts containing 'inst_module', 'tag', and
+        'inst_id' for instruments without download routines
 
     Note
     ----
