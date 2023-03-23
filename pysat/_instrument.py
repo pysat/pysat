@@ -683,8 +683,10 @@ class Instrument(object):
         output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
         output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
         for routine in self.kwargs.keys():
-            output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
-            output_str += "{:s}\n".format(self.kwargs[routine].__str__())
+            output_str += 'Keyword Arguments Passed to {:s}: \n'.format(routine)
+            for key in self.kwargs[routine].keys():
+                output_str += "    '{:s}': {:s}\n".format(
+                    key, str(self.kwargs[routine][key]))
 
         num_funcs = len(self.custom_functions)
         output_str += "Custom Functions: {:d} applied\n".format(num_funcs)
