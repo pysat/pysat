@@ -3185,7 +3185,6 @@ class Instrument(object):
                 if not self._index(self._next_data).is_monotonic_increasing:
                     self._next_data = self._next_data.sortby('time')
 
-
             # Make tracking indexes consistent with new loads
             if self._load_by_date:
                 self._next_data_track = curr + self.load_step
