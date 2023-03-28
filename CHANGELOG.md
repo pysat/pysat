@@ -9,8 +9,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added unit tests for different file cadences in the Instrument class
   * Added `to_inst` method to the Constellation class
   * Added `export_pysat_info` kwarg to `to_netcdf` routines to select whether
-    pysat instrument info is writtent to files.
+    pysat instrument info is writtent to files
   * Added Constellation class examples to the docs tutorial
+  * Added links to the project standards repository to the docs
   * Improved formatting of custom kwargs when running `print` on an instrument
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file

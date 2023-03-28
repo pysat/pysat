@@ -50,3 +50,19 @@ The packages listed below provide useful tools for data analysis.
    analysis/pysatModels.rst
    analysis/pysatSeasons.rst
    analysis/pysatSpaceWeather.rst
+
+
+.. _eco_devel:
+
+Development Tools
+=================
+
+The packages listed below are repositories for pysat ecosystem tutorials, as
+well as development standards and tools.
+
+.. toctree::
+   :maxdepth: 2
+
+   devel/pysatEcosystem_Template.rst
+   devel/pysatTutorials.rst
+	      
