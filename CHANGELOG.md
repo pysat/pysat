@@ -257,6 +257,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
    * Cleaned up excess variables upon import
    * Removed `data_path` check from `pysat.instruments.methods.general.list_files`
    * Compatible with netCDF v1.6.0
+   * Updated default labels in load_netcdf routines to match core pysat metadata
 
 [3.0.1] - 2021-07-28
 --------------------
