@@ -1435,7 +1435,7 @@ def return_epoch_metadata(inst, epoch_name):
     basic_labels = [inst.meta.labels.units]
 
     for label in basic_labels:
-        if label not in new_dict or len(new_dict[label]) == 0:
+        if label not in new_dict or new_dict[label] == '':
             new_dict[label] = epoch_label
 
     # Assign name
