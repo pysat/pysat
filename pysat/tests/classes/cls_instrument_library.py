@@ -188,6 +188,8 @@ class InstLibTests(object):
         return instruments
 
     def load_data(self, inst, date):
+        """Load data even if strict_time is not maintained."""
+
         try:
             inst.load(date=date, use_header=True)
         except ValueError as verr:
