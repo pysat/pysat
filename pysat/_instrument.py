@@ -684,8 +684,8 @@ class Instrument(object):
         output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
 
         # Total kwargs passed to each routine.
-        num_kwargs = sum([len(ivm.kwargs[routine].keys())
-                          for routine in ivm.kwargs.keys()])
+        num_kwargs = sum([len(self.kwargs[routine].keys())
+                          for routine in self.kwargs.keys()])
         if num_kwargs > 0:
             output_str += 'Keyword Arguments Passed: \n'
 
