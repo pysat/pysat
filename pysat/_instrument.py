@@ -682,9 +682,20 @@ class Instrument(object):
         output_str += '---------------\n'
         output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
         output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
-        for routine in self.kwargs.keys():
-            output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
-            output_str += "{:s}\n".format(self.kwargs[routine].__str__())
+
+        # Total kwargs passed to each routine.
+        num_kwargs = sum([len(self.kwargs[routine].keys())
+                          for routine in self.kwargs.keys()])
+        if num_kwargs > 0:
+            output_str += 'Keyword Arguments Passed: \n'
+
+            for routine in self.kwargs.keys():
+                # Only output for routine if kwargs are present.
+                if len(self.kwargs[routine].keys()) > 0:
+                    output_str += "  To {:s}: \n".format(routine)
+                    for key in self.kwargs[routine].keys():
+                        output_str += "    '{:s}': {:s}\n".format(
+                            key, str(self.kwargs[routine][key]))
 
         num_funcs = len(self.custom_functions)
         output_str += "Custom Functions: {:d} applied\n".format(num_funcs)

@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     pysat instrument info is writtent to files
   * Added Constellation class examples to the docs tutorial
   * Added links to the project standards repository to the docs
+  * Improved formatting of custom kwargs when running `print` on an instrument
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
