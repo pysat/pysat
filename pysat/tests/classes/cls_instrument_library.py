@@ -373,6 +373,8 @@ class InstLibTests(object):
         """
 
         test_inst, date = initialize_test_inst_and_date(inst_dict)
+        if test_inst.platform == 'pysat' and test_inst.name == 'testing2d':
+            pytest.skip('Not maintaining deprecated module')
         if len(test_inst.files.files) > 0:
             self.load_data(test_inst, date)
 
@@ -384,7 +386,11 @@ class InstLibTests(object):
             data, meta = pysat.utils.io.load_netcdf(
                 fpath, pandas_format=test_inst.pandas_format)
 
-            assert data.equals(test_inst.data)
+            if test_inst.pandas_format:
+                # Convert to xarray tp sort variable names
+                assert data.to_xarray().equals(test_inst.data.to_xarray())
+            else:
+                assert data.equals(test_inst.data)
             assert meta == test_inst.meta
 
         else:
