@@ -2037,7 +2037,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                            * 1.0E-6).astype(np.int64)
 
         # Update 'time' dimension to `epoch_name`
-        xr_data = xr_data.rename({'time': epoch_name})
+        if epoch_name != 'time':
+            xr_data = xr_data.rename({'time': epoch_name})
 
         # Transfer metadata
         pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)
