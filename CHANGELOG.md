@@ -33,6 +33,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed broken links in docs
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
+  * Added standard test for `to_netcdf` for instrument libraries
 
 [3.0.6] - 2022-12-21
 --------------------
