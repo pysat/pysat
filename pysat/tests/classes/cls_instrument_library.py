@@ -373,8 +373,11 @@ class InstLibTests(object):
         """
 
         test_inst, date = initialize_test_inst_and_date(inst_dict)
+
+        # TODO(#913): Can remove the skip lines once this module is removed.
         if test_inst.platform == 'pysat' and test_inst.name == 'testing2d':
             pytest.skip('Not maintaining deprecated module')
+
         if len(test_inst.files.files) > 0:
             self.load_data(test_inst, date)
 
