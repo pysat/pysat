@@ -32,6 +32,7 @@ Examples
 
 import datetime as dt
 from importlib import import_module
+import os
 import tempfile
 import warnings
 
@@ -354,6 +355,41 @@ class InstLibTests(object):
             pytest.skip("Download data not available")
 
         return
+
+    @pytest.mark.second
+    @pytest.mark.download
+    def test_to_netcdf(self, inst_dict):
+        """Test that to_netcdf accurately writes data.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            Dictionary containing info to instantiate a specific instrument.
+            Set automatically from instruments['download'] when
+            `initialize_test_package` is run.
+
+        """
+
+        test_inst, date = initialize_test_inst_and_date(inst_dict)
+        if len(test_inst.files.files) > 0:
+            self.load_data(test_inst, date)
+
+            # Write data to tempdir
+            fpath = os.path.join(self.tempdir.name, 'test_data.nc')
+            test_inst.to_netcdf4(fpath)
+
+            # Load from netcdf
+            data, meta = pysat.utils.io.load_netcdf(
+                fpath, pandas_format=test_inst.pandas_format)
+
+            assert data.equals(test_inst.data)
+            assert meta == test_inst.meta
+
+        else:
+            pytest.skip("Download data not available")
+
+        return
+
 
     @pytest.mark.download
     def test_remote_file_list(self, inst_dict):
