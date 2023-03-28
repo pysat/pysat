@@ -186,6 +186,22 @@ class InstLibTests(object):
 
         return instruments
 
+    def load_data(self, inst, date):
+        try:
+            inst.load(date=date, use_header=True)
+        except ValueError as verr:
+            # Check if instrument is failing due to strict time flag
+            if str(verr).find('Loaded data') > 0:
+                inst.strict_time_flag = False
+                with warnings.catch_warnings(record=True) as war:
+                    inst.load(date=date, use_header=True)
+                assert len(war) >= 1
+                categories = [war[j].category for j in range(0, len(war))]
+                assert UserWarning in categories
+            else:
+                # If error message does not match, raise error anyway
+                raise(verr)
+
     @pytest.mark.all_inst
     def test_modules_standard(self, inst_name):
         """Test that modules are importable and have standard properties.
@@ -325,20 +341,7 @@ class InstLibTests(object):
             test_inst.clean_level = clean_level
             target = 'Fake Data to be cleared'
             test_inst.data = [target]
-            try:
-                test_inst.load(date=date, use_header=True)
-            except ValueError as verr:
-                # Check if instrument is failing due to strict time flag
-                if str(verr).find('Loaded data') > 0:
-                    test_inst.strict_time_flag = False
-                    with warnings.catch_warnings(record=True) as war:
-                        test_inst.load(date=date, use_header=True)
-                    assert len(war) >= 1
-                    categories = [war[j].category for j in range(0, len(war))]
-                    assert UserWarning in categories
-                else:
-                    # If error message does not match, raise error anyway
-                    raise(verr)
+            self.load_data(test_inst, date)
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
