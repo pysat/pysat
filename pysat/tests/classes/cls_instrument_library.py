@@ -401,7 +401,6 @@ class InstLibTests(object):
 
         return
 
-
     @pytest.mark.download
     def test_remote_file_list(self, inst_dict):
         """Test if optional list_remote_files routine exists and is callable.
