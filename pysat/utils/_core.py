@@ -694,17 +694,24 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
             variables = listify(variables)
 
         for var in variables:
-            # Get the old fill value
-            old_fill_val = inst.meta[var, inst.meta.labels.fill_val]
+            if var in inst.meta.keys():
+                # Get the old fill value
+                old_fill_val = inst.meta[var, inst.meta.labels.fill_val]
 
-            # Update the Meta data
-            inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
+                # Update the Meta data
+                inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
 
-            # Update the variable data
-            ifill = np.where(inst[var].values == old_fill_val)
+                # Update the variable data
+                try:
+                    if np.isnan(old_fill_val):
+                        ifill = np.where(np.isnan(inst[var].values))
+                    else:
+                        ifill = np.where(inst[var].values == old_fill_val)
+                except TypeError:
+                    ifill = np.where(inst[var].values == old_fill_val)
 
-            if len(ifill[0]) > 0:
-                inst[var].values[ifill] = new_fill_val
+                if len(ifill[0]) > 0:
+                    inst[var].values[ifill] = new_fill_val
 
     return
 
