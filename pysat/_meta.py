@@ -1618,19 +1618,22 @@ class MetaLabels(object):
     Parameters
     ----------
     units : tuple
-        Units label name and value type (default=('units', str))
+        Units label name and value type(s) (default=('units', str))
     name : tuple
-        Name label name and value type (default=('long_name', str))
+        Name label name and value type(s) (default=('long_name', str))
     notes : tuple
-        Notes label name and value type (default=('notes', str))
+        Notes label name and value type(s) (default=('notes', str))
     desc : tuple
-        Description label name and value type (default=('desc', str))
+        Description label name and value type(s) (default=('desc', str))
     min_val : tuple
-        Minimum value label name and value type (default=('value_min', float))
+        Minimum value label name and value type(s)
+        (default=('value_min', (int, float)))
     max_val : tuple
-        Maximum value label name and value type (default=('value_max', float))
+        Maximum value label name and value type(s)
+        (default=('value_max', (int, float)))
     fill_val : tuple
-        Fill value label name and value type (default=('fill', float))
+        Fill value label name and value type(s)
+        (default=('fill', (int, float, str)))
     kwargs : dict
         Dictionary containing optional label attributes, where the keys are the
         attribute names and the values are tuples containing the label name and
@@ -1696,9 +1699,9 @@ class MetaLabels(object):
 
     def __init__(self, metadata=None, units=('units', str),
                  name=('long_name', str), notes=('notes', str),
-                 desc=('desc', str), min_val=('value_min', float),
-                 max_val=('value_max', float), fill_val=('fill', float),
-                 **kwargs):
+                 desc=('desc', str), min_val=('value_min', (int, float)),
+                 max_val=('value_max', (int, float)),
+                 fill_val=('fill', (int, float, str)), **kwargs):
         """Initialize the MetaLabels class."""
 
         # Initialize the coupled metadata
