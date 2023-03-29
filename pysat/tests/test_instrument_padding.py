@@ -469,6 +469,31 @@ class TestDataPadding(object):
         return
 
 
+class TestDataPaddingNonMonotonic(TestDataPadding):
+    """Unit tests for non-montonic pandas `pysat.Instrument` with data pad."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         clean_level='clean',
+                                         pad={'minutes': 5},
+                                         non_monotonic_index=True,
+                                         update_files=True,
+                                         use_header=True)
+        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
+        return
+
+
 class TestDataPaddingXArray(TestDataPadding):
     """Unit tests for xarray `pysat.Instrument` with data padding."""
 
@@ -480,6 +505,32 @@ class TestDataPaddingXArray(TestDataPadding):
                                          name='testing_xarray',
                                          clean_level='clean',
                                          pad={'minutes': 5},
+                                         update_files=True,
+                                         use_header=True)
+        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
+        return
+
+
+class TestDataPaddingXArrayNonMonotonic(TestDataPadding):
+    """Unit tests for non-montonic xarray `pysat.Instrument` with data pad."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing_xarray)
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
+                                         clean_level='clean',
+                                         pad={'minutes': 5},
+                                         non_monotonic_index=True,
                                          update_files=True,
                                          use_header=True)
         self.ref_time = dt.datetime(2009, 1, 2)
