@@ -16,6 +16,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added a core utility to update fill values consistently in the data and
     metadata
   * Adapted `check_and_make_path` to treat an empty path as the current dir
+  * Added `meta_kwargs` attribute and kwarg to Instrument, allowing full custom
+    specification of the Meta class on instantiation
+  * Expanded MetaLabels type defaults for 'max_val', 'min_val', and 'fill_val'
+    to include more common data types
+  * Added `data_types` input to Meta and certain MetaLabels methods, allowing
+    the default values to be set to the specified data type when multiple types
+    are allowed
+* Deprecations
+   * Deprecated the Instrument kwarg `labels` in favor of `meta_kwargs` and
+     replaced the `meta_labels` attribute with the `meta_kwargs` attribute
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
