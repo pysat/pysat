@@ -605,6 +605,49 @@ class TestDeprecation(object):
         testing.eval_warnings(self.war, self.warn_msgs)
         return
 
+    def test_instrument_labels(self):
+        """Test deprecation of `labels` kwarg in Instrument."""
+        self.in_kwargs['labels'] = {
+            'units': ('units', str), 'name': ('long_name', str),
+            'notes': ('notes', str), 'desc': ('desc', str),
+            'min_val': ('value_min', float), 'max_val': ('value_max', float),
+            'fill_val': ('fill', float)}
+        
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as self.war:
+            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+
+        self.warn_msgs = np.array(["`labels` is deprecated, use `meta_kwargs`"])
+
+        # Evaluate the warning output
+        self.eval_warnings()
+
+        # Evaluate the performance
+        assert tinst.meta.labels.label_type['fill_val'] in [float]
+        return
+
+    def test_instrument_meta_labels(self):
+        """Test deprecation of `meta_labels` attribute in Instrument."""
+        self.in_kwargs['meta_kwargs'] = {'labels': {
+            'units': ('units', str), 'name': ('long_name', str),
+            'notes': ('notes', str), 'desc': ('desc', str),
+            'min_val': ('value_min', float), 'max_val': ('value_max', float),
+            'fill_val': ('fill', float)}}
+        
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as self.war:
+            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+            labels = tinst.meta_labels
+
+        self.warn_msgs = np.array(["Deprecated attribute, returns `meta_kwarg"])
+
+        # Evaluate the warning output
+        self.eval_warnings()
+
+        # Evaluate the performance
+        assert labels == self.in_kwargs['meta_kwargs']['labels']
+        return
+
     def test_generic_meta_translator(self):
         """Test deprecation of `generic_meta_translator`."""
 
