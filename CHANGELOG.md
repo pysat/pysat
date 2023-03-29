@@ -38,6 +38,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed broken links in docs
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
+  * Expanded MetaLabel default types for `min_val`, `max_val`, and `fill_val`
 
 [3.0.6] - 2022-12-21
 --------------------
