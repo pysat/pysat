@@ -100,7 +100,12 @@ def initialize_test_meta(epoch_name, data_keys):
 
     """
     # Create standard metadata for all parameters
-    meta = pysat.Meta()
+    test_labels = {'units': ('units', str), 'name': ('long_name', str),
+                   'notes': ('notes', str), 'desc': ('desc', str),
+                   'min_val': ('value_min', (int, float)),
+                   'max_val': ('value_max', (int, float)),
+                   'fill_val': ('fill', (float, int, str))}
+    meta = pysat.Meta(labels=test_labels)
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'desc': 'Number of seconds since mindight UT',
                    'value_min': 0.0, 'value_max': 86400.0}
