@@ -51,9 +51,10 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
 
                 # Cycle through all the pysat MetaData labels and transfer
                 for meta_key in pysat_meta[data_key].keys():
-                    # Assign attributes
-                    xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
-                        data_key][meta_key]
+                    # Assign attributes with values that are not None
+                    if pysat_meta[data_key][meta_key] is not None:
+                        xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
+                            data_key][meta_key]
 
             else:
                 wstr = ''.join(['Did not find data for metadata variable ',
@@ -64,9 +65,10 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
     # MetaData labels and transfer.
     if epoch_name in pysat_meta.keys():
         for meta_key in pysat_meta[epoch_name].keys():
-            # Assign attributes
-            xr_data[epoch_name].attrs[meta_key] = pysat_meta[epoch_name][
-                meta_key]
+            # Assign attributes that are not None
+            if pysat_meta[epoch_name][meta_key] is not None:
+                xr_data[epoch_name].attrs[meta_key] = pysat_meta[epoch_name][
+                    meta_key]
 
     return
 
