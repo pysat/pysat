@@ -843,9 +843,10 @@ class Meta(object):
             if not np.any(list(need_data_type.values())):
                 self._data.loc[var, labels] = default_vals
             else:
-                data_default = [self.labels.default_values_from_attr(
-                    lattrs[j], var_types[i]) if need_data_type[lattrs[j]]
-                                else val for j, val in enumerate(default_vals)]
+                data_default = [
+                    self.labels.default_values_from_attr(
+                        lattrs[j], var_types[i]) if need_data_type[lattrs[j]]
+                    else val for j, val in enumerate(default_vals)]
                 self._data.loc[var, labels] = data_default
 
         return

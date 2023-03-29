@@ -612,7 +612,7 @@ class TestDeprecation(object):
             'notes': ('notes', str), 'desc': ('desc', str),
             'min_val': ('value_min', float), 'max_val': ('value_max', float),
             'fill_val': ('fill', float)}
-        
+
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
             tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
@@ -633,7 +633,7 @@ class TestDeprecation(object):
             'notes': ('notes', str), 'desc': ('desc', str),
             'min_val': ('value_min', float), 'max_val': ('value_max', float),
             'fill_val': ('fill', float)}}
-        
+
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
             tinst = pysat.Instrument(use_header=True, **self.in_kwargs)

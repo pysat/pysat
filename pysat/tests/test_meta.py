@@ -1023,7 +1023,6 @@ class TestMeta(object):
             set_dict[slabel] = vals[i]
 
         # Initialize the Meta data using the new data type
-        
         self.testInst[self.dval] = set_dict
         self.meta = self.testInst.meta
 
