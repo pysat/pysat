@@ -13,6 +13,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added Constellation class examples to the docs tutorial
   * Added links to the project standards repository to the docs
   * Improved formatting of custom kwargs when running `print` on an instrument
+  * Added a core utility to update fill values consistently in the data and
+    metadata
+  * Adapted `check_and_make_path` to treat an empty path as the current dir
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
@@ -25,6 +28,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     in the meta translation table
   * Fixed an issue when passing dates through load_remote_files (#1022)
   * Fixed a bug where data may not have any times, but still not be empty
+  * Fixed a bug where metadata with values of None are assigned as useful
+    attributes when attaching metadata to xarray objects
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
