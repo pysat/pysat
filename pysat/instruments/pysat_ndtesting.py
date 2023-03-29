@@ -30,9 +30,9 @@ clean = mm_test.clean
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag='', inst_id='', malformed_index=False,
-         start_time=None, num_samples=864, test_load_kwarg=None,
-         max_latitude=90.):
+def load(fnames, tag='', inst_id='', non_monotonic_index=False,
+         malformed_index=False, start_time=None, num_samples=864,
+         test_load_kwarg=None, max_latitude=90.):
     """Load the test files.
 
     Parameters
@@ -45,6 +45,8 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     inst_id : str
         Instrument ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
+    non_monotonic_index : bool
+        If True, time index will be non-monotonic (default=False)
     malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
         (default=False)
@@ -82,14 +84,11 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
                                                start_time=start_time)
 
+    if malformed_index or non_monotonic_index:
+        index = mm_test.non_monotonic_index(index)
     if malformed_index:
-        index = index.tolist()
+        index = mm_test.non_unique_index(index)
 
-        # Create a non-monotonic index
-        index[0:3], index[3:6] = index[3:6], index[0:3]
-
-        # Create a non-unique index
-        index[6:9] = [index[6]] * 3
     data = xr.Dataset({'uts': ((epoch_name), uts)},
                       coords={epoch_name: index})
 

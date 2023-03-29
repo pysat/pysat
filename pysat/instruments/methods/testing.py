@@ -650,3 +650,47 @@ def create_files(inst, start, stop, freq='1D', use_doy=True,
                         if timeout is not None:
                             time.sleep(timeout)
     return
+
+def non_monotonic_index(index):
+    """Adjust the index to be non-monotonic.
+
+    Parameters
+    ----------
+    index : pds.DatetimeIndex
+        The index generated in an instrument test file.
+
+    Returns
+    -------
+    index : pds.DatetimeIndex
+        A non-montonic index
+
+    """
+
+    new_index = index.tolist()
+
+    # Create a non-monotonic index
+    new_index[6:9], new_index[3:6] = new_index[3:6], new_index[6:9]
+
+    return new_index
+
+def non_unique_index(index):
+    """Adjust the index to be non-unique.
+
+    Parameters
+    ----------
+    index : pds.DatetimeIndex
+        The index generated in an instrument test file.
+
+    Returns
+    -------
+    index : pds.DatetimeIndex
+        A non-montonic index
+
+    """
+
+    new_index = index.tolist()
+
+    # Create a non-monotonic index
+    new_index[1:3] = new_index[1] * 2
+
+    return new_index
