@@ -31,8 +31,8 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag='', inst_id='', non_monotonic_index=False,
-         malformed_index=False, start_time=None, num_samples=864,
-         test_load_kwarg=None, max_latitude=90.):
+         non_unique_index=False, malformed_index=False, start_time=None,
+         num_samples=864, test_load_kwarg=None, max_latitude=90.):
     """Load the test files.
 
     Parameters
@@ -47,8 +47,11 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
         This input is nominally provided by pysat itself. (default='')
     non_monotonic_index : bool
         If True, time index will be non-monotonic (default=False)
+    non_unique_index : bool
+        If True, time index will be non-unique (default=False)
     malformed_index : bool
-        If True, the time index will be non-unique and non-monotonic.
+        If True, the time index will be non-unique and non-monotonic. Deprecated
+        as of pysat 3.1.0.
         (default=False)
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
@@ -83,10 +86,15 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
                                                start_time=start_time)
-
-    if malformed_index or non_monotonic_index:
-        index = mm_test.non_monotonic_index(index)
     if malformed_index:
+        # Warn that kwarg is deprecated and set new kwargs.
+        mm_test._warn_malformed_kwarg()
+        non_monotonic_index = True
+        non_unique_index = True
+
+    if non_monotonic_index:
+        index = mm_test.non_monotonic_index(index)
+    if non_unique_index:
         index = mm_test.non_unique_index(index)
 
     data = xr.Dataset({'uts': ((epoch_name), uts)},

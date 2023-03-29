@@ -152,6 +152,7 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
     if malformed_index:
+        mm_test._warn_malformed_kwarg()
         index = mm_test.non_monotonic_index(index)
         index = mm_test.non_unique_index(index)
 
