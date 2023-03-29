@@ -672,6 +672,43 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
     return
 
 
+def update_fill_values(inst, variables=None, new_fill_val=np.nan):
+    """Update Instrument data so that the fill value is consistent with Meta.
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        Instrument object with data loaded
+    variables : str, list, or NoneType
+        List of variables to update or None to update all (default=None)
+    new_fill_val : any
+        New fill value to use (default=np.nan)
+
+    """
+
+    if not inst.empty:
+        # Get the variables (if needed) and ensure they are list-like
+        if variables is None:
+            variables = list(inst.variables)
+        else:
+            variables = listify(variables)
+
+        for var in variables:
+            # Get the old fill value
+            old_fill_val = inst.meta[var, inst.meta.labels.fill_val]
+
+            # Update the Meta data
+            inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
+
+            # Update the variable data
+            ifill = np.where(inst[var].values == old_fill_val)
+
+            if len(ifill[0]) > 0:
+                inst[var].values[ifill] = new_fill_val
+
+    return
+
+
 class NetworkLock(Lock):
     """Unit tests for NetworkLock manager."""
 
@@ -709,6 +746,7 @@ class NetworkLock(Lock):
 
         super(NetworkLock, self).__init__(timeout=timeout,
                                           *args, **kwargs)
+        return
 
     def release(self):
         """Release the Lock from the file system.
@@ -729,3 +767,4 @@ class NetworkLock(Lock):
             pass
 
         super(NetworkLock, self).release()
+        return
