@@ -1907,7 +1907,7 @@ class Instrument(object):
 
     @property
     def meta_labels(self):
-        """Deprecated attribute, returns `labels` specification for MetaLabels.
+        """Provide Meta input for labels kwarg, deprecated.
 
         Returns
         -------
