@@ -12,21 +12,20 @@ from pysat.utils import testing
 
 
 class TestIndex(object):
-    """Unit tests for pandas `pysat.Instrument` with bad index."""
+    """Unit tests for pandas `pysat.Instrument` index checks."""
 
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_testing)
         self.name = 'testing'
-        self.ref_time = dt.datetime(2009, 1, 1)
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
     def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy, self.name
+        del self.ref_time, self.name
         return
 
     @pytest.mark.parametrize("kwargs,msg",
@@ -34,42 +33,53 @@ class TestIndex(object):
                                'Loaded data is not monotonic'),
                               ({'non_unique_index': True},
                                'Loaded data is not unique')])
-    def test_ensure_good_index(self, kwargs, msg):
-        """Ensure that if Instrument index not-unique error is raised."""
+    def test_index_error_messages(self, kwargs, msg):
+        """Ensure that a bad Instrument index will raise correct error.
 
-        self.testInst = pysat.Instrument(platform='pysat',
-                                         name=self.name,
-                                         num_samples=10,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         strict_time_flag=True,
-                                         use_header=True,
-                                         **kwargs)
-        testing.eval_bad_input(self.testInst.load, ValueError, msg,
-                               input_args=[self.ref_time.year, self.ref_doy])
+        Parameters
+        ----------
+        kwargs : dict
+            Keywords and arguments to pass through for instrument instantiation.
+            Kwargs should trigger an error message when used on a test
+            instrument.
+        msg : str
+            Excerpt of expected error message.
+
+        """
+
+        test_inst = pysat.Instrument(platform='pysat',
+                                     name=self.name,
+                                     num_samples=10,
+                                     clean_level='clean',
+                                     update_files=True,
+                                     strict_time_flag=True,
+                                     use_header=True,
+                                     **kwargs)
+        year, doy = pysat.utils.time.getyrdoy(self.ref_time)
+        testing.eval_bad_input(test_inst.load, ValueError, msg,
+                               input_args=[year, doy])
         return
 
 
 class TestIndexXArray(TestIndex):
-    """Basic tests for xarray `pysat.Instrument` with shifted file dates."""
+    """Unit tests for xarray `pysat.Instrument` index checks."""
 
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
         self.name = 'ndtesting'
-        self.ref_time = dt.datetime(2009, 1, 1)
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
     def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
-        del self.testInst, self.ref_time, self.ref_doy, self.name
+        del self.ref_time, self.name
         return
 
 
 class TestDeprecation(object):
-    """Unit test for deprecation warnings."""
+    """Unit test for deprecation warnings for index."""
 
     def setup_method(self):
         """Set up the unit test environment for each method."""
@@ -99,7 +109,14 @@ class TestDeprecation(object):
     @pytest.mark.parametrize('name', ['testing', 'ndtesting', 'testing_xarray',
                                       'testing2d'])
     def test_kwarg_malformed_index(self, name):
-        """Test deprecation of `generic_meta_translator`."""
+        """Test deprecation of `malformed_index` kwarg.
+
+        Parameters
+        ----------
+        name : str
+            name of instrument that uses the deprecated `malformed_index` kwarg.
+
+        """
 
         test_inst = pysat.Instrument(platform='pysat',
                                      name=name,
@@ -117,7 +134,7 @@ class TestDeprecation(object):
         # Evaluate the warning output
         self.eval_warnings()
 
-        # Check that index is both non-monotonic and non-unique
+        # Check that resulting index is both non-monotonic and non-unique
         assert not test_inst.index.is_monotonic_increasing
         assert not test_inst.index.is_unique
         return
