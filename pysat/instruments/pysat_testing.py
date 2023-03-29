@@ -161,13 +161,12 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
-    # Activate for non-monotonic index
-    if non_monotonic_index and not malformed_index:
+    # Activate if non-monotonic index is needed.
+    if np.any([non_monotonic_index, malformed_index, (tag == 'non_strict')]):
         index = mm_test.non_monotonic_index(index)
 
-    # Activate for testing malformed_index, and for instrument_test_class.
-    if malformed_index or tag == 'non_strict':
-        index = mm_test.non_monotonic_index(index)
+    # Activate if non-unique index is needed.
+    if np.any([malformed_index, (tag == 'non_strict')]):
         index = mm_test.non_unique_index(index)
 
     data.index = index
