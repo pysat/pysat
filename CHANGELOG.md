@@ -35,6 +35,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed broken links in docs
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
+  * Additional unit tests for data padding when a data index is non-monotonic.
 
 [3.0.6] - 2022-12-21
 --------------------
