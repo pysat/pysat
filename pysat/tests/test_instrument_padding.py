@@ -571,6 +571,33 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
         return
 
 
+class TestMultiFileRightDataPaddingBasicsNonMonotonic(TestDataPadding):
+    """Tests for non-monotonic pandas `pysat.Instrument` with right data pad."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_right=True,
+                                         non_monotonic_index=True,
+                                         pad={'minutes': 5},
+                                         use_header=True)
+        self.testInst.multi_file_day = True
+        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
+        return
+
+
 class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     """Unit tests for xarray `pysat.Instrument` with right offset data pad."""
 
@@ -583,6 +610,34 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
+                                         pad={'minutes': 5},
+                                         use_header=True)
+        self.testInst.multi_file_day = True
+        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
+        return
+
+
+class TestMultiFileRightDataPaddingBasicsXarrayNonMonotonic(TestDataPadding):
+    """Tests for non-monotonic xarray `pysat.Instrument` with right data pad."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing_xarray)
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_right=True,
+                                         non_monotonic_index=True,
                                          pad={'minutes': 5},
                                          use_header=True)
         self.testInst.multi_file_day = True
@@ -625,6 +680,34 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
         return
 
 
+class TestMultiFileLeftDataPaddingBasicsNonMonotonic(TestDataPadding):
+    """Tests for non-monotonic pandas `pysat.Instrument` with left data pad."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing',
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_left=True,
+                                         non_monotonic_index=True,
+                                         pad={'minutes': 5},
+                                         use_header=True)
+        self.testInst.multi_file_day = True
+        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
+        return
+
+
 class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     """Unit tests for xarray `pysat.Instrument` with left offset data pad."""
 
@@ -637,6 +720,34 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
+                                         pad={'minutes': 5},
+                                         use_header=True)
+        self.testInst.multi_file_day = True
+        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_doy = 2
+        self.delta = dt.timedelta(minutes=5)
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.ref_time, self.ref_doy, self.delta
+        return
+
+
+class TestMultiFileLeftDataPaddingBasicsXarrayNonMonotonic(TestDataPadding):
+    """Tests for non-monotonic xarray `pysat.Instrument` with left data pad."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing_xarray)
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_left=True,
+                                         non_monotonic_index=True,
                                          pad={'minutes': 5},
                                          use_header=True)
         self.testInst.multi_file_day = True
