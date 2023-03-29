@@ -34,13 +34,17 @@ class Meta(object):
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
         'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', float), 'max_val': ('value_max', float),
-        'fill_val': ('fill', float)})
+        'min_val': ('value_min', (float, int)),
+        'max_val': ('value_max', (float, int)),
+        'fill_val': ('fill', (float, int, str))})
     export_nan : list or NoneType
         List of labels that should be exported even if their value is NaN or
         None for an empty list. When used, metadata with a value of NaN will
         be excluded from export. Will always allow NaN export for labels of
         the float type. (default=None)
+    data_types : dict or NoneType
+        Dict of data types for variables names or None to disregard.
+        (default=None)
 
     Attributes
     ----------
@@ -163,9 +167,10 @@ class Meta(object):
     def __init__(self, metadata=None, header_data=None,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'min_val': ('value_min', float),
-                         'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}, export_nan=None):
+                         'min_val': ('value_min', (float, int)),
+                         'max_val': ('value_max', (float, int)),
+                         'fill_val': ('fill', (float, int, str))},
+                 export_nan=None, data_types=None):
         """Initialize `pysat.Meta` object."""
         # Set mutability of Meta attributes.  This flag must be set before
         # anything else, or `__setattr__` breaks.
@@ -182,6 +187,9 @@ class Meta(object):
 
         # Set the labels
         self.labels = MetaLabels(metadata=self, **labels)
+
+        # Set the data types, if provided
+        self._data_types = data_types
 
         # Initialize higher order (nD) data structure container, a dict
         self._ho_data = {}
@@ -366,11 +374,18 @@ class Meta(object):
             data_vars = self.var_case_name(data_vars)
             meta_vars = list(self.keys())
             def_vars = list()
+            data_var_types = None if self._data_types is None else list()
             for var in data_vars:
                 if var not in meta_vars:
                     def_vars.append(var)
+                    if data_var_types is not None:
+                        if var in self._data_types.keys():
+                            data_var_types.append(self._data_types[var])
+                        else:
+                            data_var_types.append(None)
+
             if len(def_vars) > 0:
-                self._insert_default_values(def_vars)
+                self._insert_default_values(def_vars, data_var_types)
 
             # Check if input dict empty.  If so, no metadata was assigned by
             # the user.  This is an empty call and we can head out,
@@ -774,28 +789,39 @@ class Meta(object):
     # -----------------------------------------------------------------------
     # Define the hidden methods
 
-    def _insert_default_values(self, data_var):
+    def _insert_default_values(self, data_var, data_type=None):
         """Set the default label values for a data variable.
 
         Parameters
         ----------
         data_var : str or list
             Single or multiple data variable name(s).
+        data_type : type, list, or NoneType
+            Type for the data value(s) or None if not specified (default=None)
 
         Note
         ----
         Sets NaN for all float values, -1 for all int values, 'data_var' for
         names labels, '' for all other str values, and None for any other
-        data type.
+        data type. If there are multiple data types, sets the data type (if
+        included).  Otherwise, chooses the first type in the tuple.
 
         """
         # Cycle through each label type to create a list of label names
         # and label default values
         labels = list()
+        lattrs = list()
         default_vals = list()
         name_idx = None
+        need_data_type = dict()
         for i, lattr in enumerate(self.labels.label_type.keys()):
             labels.append(getattr(self.labels, lattr))
+            lattrs.append(lattr)
+            if(isinstance(self.labels.label_type[lattr], tuple)
+               and data_type is not None):
+                need_data_type[lattr] = True
+            else:
+                need_data_type[lattr] = False
 
             if lattr in ['name']:
                 default_vals.append('')
@@ -805,10 +831,22 @@ class Meta(object):
 
         # Assign the default values to the DataFrame for this data variable(s).
         data_vars = pysat.utils.listify(data_var)
-        for var in data_vars:
+        if data_type is None:
+            var_types = [None for dvar in data_vars]
+        else:
+            var_types = pysat.utils.listify(data_type)
+
+        for i, var in enumerate(data_vars):
             if name_idx is not None:
                 default_vals[name_idx] = var
-            self._data.loc[var, labels] = default_vals
+
+            if not np.any(list(need_data_type.values())):
+                self._data.loc[var, labels] = default_vals
+            else:
+                data_default = [self.labels.default_values_from_attr(
+                    lattrs[j], var_types[i]) if need_data_type[lattrs[j]]
+                                else val for j, val in enumerate(default_vals)]
+                self._data.loc[var, labels] = data_default
 
         return
 
@@ -1627,13 +1665,13 @@ class MetaLabels(object):
         Description label name and value type(s) (default=('desc', str))
     min_val : tuple
         Minimum value label name and value type(s)
-        (default=('value_min', (int, float)))
+        (default=('value_min', (float, int)))
     max_val : tuple
         Maximum value label name and value type(s)
-        (default=('value_max', (int, float)))
+        (default=('value_max', (float, int)))
     fill_val : tuple
         Fill value label name and value type(s)
-        (default=('fill', (int, float, str)))
+        (default=('fill', (float, int, str)))
     kwargs : dict
         Dictionary containing optional label attributes, where the keys are the
         attribute names and the values are tuples containing the label name and
@@ -1699,9 +1737,9 @@ class MetaLabels(object):
 
     def __init__(self, metadata=None, units=('units', str),
                  name=('long_name', str), notes=('notes', str),
-                 desc=('desc', str), min_val=('value_min', (int, float)),
-                 max_val=('value_max', (int, float)),
-                 fill_val=('fill', (int, float, str)), **kwargs):
+                 desc=('desc', str), min_val=('value_min', (float, int)),
+                 max_val=('value_max', (float, int)),
+                 fill_val=('fill', (float, int, str)), **kwargs):
         """Initialize the MetaLabels class."""
 
         # Initialize the coupled metadata
@@ -1831,13 +1869,15 @@ class MetaLabels(object):
 
         return valid
 
-    def default_values_from_type(self, val_type):
+    def default_values_from_type(self, val_type, data_type=None):
         """Retrieve the default values for each label based on their type.
 
         Parameters
         ----------
         val_type : type
             Variable type for the value to be assigned to a MetaLabel
+        data_type : type or NoneType
+            Type for the data values or None if not specified (default=None)
 
         Returns
         -------
@@ -1846,6 +1886,12 @@ class MetaLabels(object):
             all str values, and None for any other data type
 
         """
+
+        if isinstance(val_type, tuple):
+            if data_type in val_type:
+                val_type = data_type
+            else:
+                val_type = val_type[0]
 
         # Perform some pre-checks on type, checks that could error with
         # unexpected input.
@@ -1889,13 +1935,15 @@ class MetaLabels(object):
 
         return default_val
 
-    def default_values_from_attr(self, attr_name):
+    def default_values_from_attr(self, attr_name, data_type=None):
         """Retrieve the default values for each label based on their type.
 
         Parameters
         ----------
         attr_name : str
             Label attribute name (e.g., max_val)
+        data_type : type or NoneType
+            Type for the data values or None if not specified (default=None)
 
         Returns
         -------
@@ -1920,7 +1968,7 @@ class MetaLabels(object):
             default_val = 'linear'
         else:
             default_val = self.default_values_from_type(
-                self.label_type[attr_name])
+                self.label_type[attr_name], data_type=data_type)
             if default_val is None:
                 mstr = ' '.join(('A problem may have been',
                                  'encountered with the user',
