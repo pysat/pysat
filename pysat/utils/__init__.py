@@ -16,6 +16,7 @@ from pysat.utils._core import load_netcdf4
 from pysat.utils._core import NetworkLock
 from pysat.utils._core import scale_units
 from pysat.utils._core import stringify
+from pysat.utils._core import update_fill_values
 from pysat.utils import coords
 from pysat.utils import files
 from pysat.utils import io
