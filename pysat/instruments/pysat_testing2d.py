@@ -176,8 +176,8 @@ def load(fnames, tag='', inst_id='', malformed_index=False,
     series_profiles = []
 
     # Frame indexed by date times
-    frame = pds.DataFrame({'density': data.loc[data.index[0:num_profiles],
-                                               'mlt'].values.copy(),
+    frame = pds.DataFrame({'density':
+                           data.iloc[0:num_profiles]['mlt'].values.copy(),
                            'dummy_str': ['test'] * num_profiles,
                            'dummy_ustr': [u'test'] * num_profiles},
                           index=data.index[0:num_profiles],
