@@ -3171,20 +3171,19 @@ class Instrument(object):
 
             # Make sure datetime indices for all data is monotonic
             if self.pandas_format:
-                sort_method = "sort_index"
-                sort_args = []
-                sort_kwargs = {'inplace': True}
+                if not self._index(self._prev_data).is_monotonic_increasing:
+                    self._prev_data.sort_index(inplace=True)
+                if not self._index(self._curr_data).is_monotonic_increasing:
+                    self._curr_data.sort_index(inplace=True)
+                if not self._index(self._next_data).is_monotonic_increasing:
+                    self._next_data.sort_index(inplace=True)
             else:
-                sort_method = 'sortby'
-                sort_args = ['time']
-                sort_kwargs = {}
-
-            if not self._index(self._prev_data).is_monotonic_increasing:
-                getattr(self._prev_data, sort_method)(*sort_args, **sort_kwargs)
-            if not self._index(self._curr_data).is_monotonic_increasing:
-                getattr(self._curr_data, sort_method)(*sort_args, **sort_kwargs)
-            if not self._index(self._next_data).is_monotonic_increasing:
-                getattr(self._next_data, sort_method)(*sort_args, **sort_kwargs)
+                if not self._index(self._prev_data).is_monotonic_increasing:
+                    self._prev_data = self._prev_data.sortby('time')
+                if not self._index(self._curr_data).is_monotonic_increasing:
+                    self._curr_data = self._curr_data.sortby('time')
+                if not self._index(self._next_data).is_monotonic_increasing:
+                    self._next_data = self._next_data.sortby('time')
 
             # Make tracking indexes consistent with new loads
             if self._load_by_date:
