@@ -701,7 +701,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                         'max_val': ('value_max', np.float64),
                         'fill_val': ('fill', np.float64)},
                 meta_processor=None, meta_translation=None,
-                drop_meta_labels=None, decode_times=None):
+                drop_meta_labels=None, decode_times=None,
+                strict_dim_check=True):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -776,6 +777,10 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         then `epoch_name` will be converted to datetime using `epoch_unit`
         and `epoch_origin`. If None, will be set to False for backwards
         compatibility. For xarray only. (default=None)
+    strict_dim_check : bool
+        Used for xarray data (`pandas_format` is False). If True, warn the user
+        that the desired epoch is not present in `xarray.dims`.  If False,
+        no warning is raised. (default=True)
 
     Returns
     -------
@@ -824,7 +829,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels,
-                                        decode_times=decode_times)
+                                        decode_times=decode_times,
+                                        strict_dim_check=strict_dim_check)
 
     return data, meta
 
@@ -1209,7 +1215,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                                'max_val': ('value_max', np.float64),
                                'fill_val': ('fill', np.float64)},
                        meta_processor=None, meta_translation=None,
-                       drop_meta_labels=None, decode_times=False):
+                       drop_meta_labels=None, decode_times=False,
+                       strict_dim_check=True):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -1278,6 +1285,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         then `epoch_name` will be converted to datetime using `epoch_unit`
         and `epoch_origin`. If None, will be set to False for backwards
         compatibility. (default=None)
+    strict_dim_check : bool
+        Used for xarray data (`pandas_format` is False). If True, warn the user
+        that the desired epoch is not present in `xarray.dims`.  If False,
+        no warning is raised. (default=True)
 
     Returns
     -------
@@ -1341,9 +1352,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                 data = data.rename({epoch_name: 'time'})
             elif epoch_name in all_vars:
                 data = data.rename({epoch_name: 'time'})
-                wstr = ''.join(['Epoch label: "', epoch_name, '"',
-                                ' is not a dimension.'])
-                pysat.logger.warning(wstr)
+                if strict_dim_check:
+                    wstr = ''.join(['Epoch label: "', epoch_name, '"',
+                                    ' is not a dimension.'])
+                    pysat.logger.warning(wstr)
             else:
                 estr = ''.join(['Epoch label: "', epoch_name, '"',
                                 ' was not found in loaded dimensions [',
