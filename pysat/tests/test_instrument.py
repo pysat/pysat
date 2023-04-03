@@ -285,6 +285,14 @@ class TestBasicsNDXarray(TestBasics):
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
 
+    def test_setting_data_as_tuple(self):
+        """Test setting data by name."""
+
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        self.testInst['doubleMLT'] = ('time', 2. * self.testInst['mlt'].values)
+        assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
+        return
+
     def test_xarray_not_empty_notime(self):
         """Test that xarray empty is False even if there is no time data."""
         # Load data and confirm it exists
