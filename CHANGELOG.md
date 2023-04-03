@@ -36,6 +36,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
   * Additional unit tests for data padding when a data index is non-monotonic.
+  * Deprecated the `malformed_index` kwarg in the test instruments.  This is
+    replaced by `non_monotonic_index` and `non_unique_index`
 
 [3.0.6] - 2022-12-21
 --------------------
