@@ -86,6 +86,7 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
                                                start_time=start_time)
+    # TODO(#1094): Remove in pysat 3.2.0
     if malformed_index:
         # Warn that kwarg is deprecated and set new kwargs.
         mm_test._warn_malformed_kwarg()

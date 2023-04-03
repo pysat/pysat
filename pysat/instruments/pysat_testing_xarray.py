@@ -130,6 +130,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     else:
         root_date = dt.datetime(2009, 1, 1)
 
+    # TODO(#1094): Remove in pysat 3.2.0
     if malformed_index:
         # Warn that kwarg is deprecated and set new kwargs.
         mm_test._warn_malformed_kwarg()

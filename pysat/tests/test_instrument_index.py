@@ -106,6 +106,7 @@ class TestDeprecation(object):
         testing.eval_warnings(self.war, self.warn_msgs)
         return
 
+    # TODO(#1094): Remove in pysat 3.2.0, potentially with class
     @pytest.mark.parametrize('name', ['testing', 'ndtesting', 'testing_xarray',
                                       'testing2d'])
     def test_kwarg_malformed_index(self, name):

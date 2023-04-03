@@ -165,6 +165,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
+    # TODO(#1094): Remove in pysat 3.2.0
     if malformed_index:
         # Warn that kwarg is deprecated and set new kwargs.
         mm_test._warn_malformed_kwarg()
