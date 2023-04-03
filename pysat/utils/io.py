@@ -694,7 +694,8 @@ def meta_array_expander(meta_dict):
 
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 epoch_name=None, epoch_unit='ms', epoch_origin='unix',
-                pandas_format=True, decode_timedelta=False, combine='by_coords',
+                pandas_format=True, decode_timedelta=False,
+                combine_by_coords=True,
                 labels={'units': ('units', str), 'name': ('long_name', str),
                         'notes': ('notes', str), 'desc': ('desc', str),
                         'min_val': ('value_min', np.float64),
@@ -743,11 +744,10 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         Used for xarray data (`pandas_format` is False).  If True, variables
         with unit attributes that  are 'timelike' ('hours', 'minutes', etc) are
         converted to `np.timedelta64`. (default=False)
-    combine : str
-        Used for xarray data (`pandas_format` is False). When loading a
-        multi-file dataset, specifies whether to use `xarray.combine_by_coords`
-        or `xarray.combine_nested`. Accepts ["by_coords", "nested"].
-        (default='by_coords')
+    combine_by_coords : bool
+        Used for xarray data (`pandas_format` is False) when loading a
+        multi-file dataset. If True, uses `xarray.combine_by_coords`. If False,
+        uses `xarray.combine_nested`. (default=True)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -824,7 +824,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_unit=epoch_unit,
                                         epoch_origin=epoch_origin,
                                         decode_timedelta=decode_timedelta,
-                                        combine=combine,
+                                        combine_by_coords=combine_by_coords,
                                         labels=labels,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
@@ -1207,7 +1207,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                        epoch_name='time', epoch_unit='ms', epoch_origin='unix',
-                       decode_timedelta=False, combine='by_coords',
+                       decode_timedelta=False, combine_by_coords=True,
                        labels={'units': ('units', str),
                                'name': ('long_name', str),
                                'notes': ('notes', str), 'desc': ('desc', str),
@@ -1251,11 +1251,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     decode_timedelta : bool
         If True, variables with unit attributes that are 'timelike' ('hours',
         'minutes', etc) are converted to `np.timedelta64`. (default=False)
-    combine : str
-        Used for xarray data (`pandas_format` is False). When loading a
-        multi-file dataset, specifies whether to use `xarray.combine_by_coords`
-        or `xarray.combine_nested`. Accepts ["by_coords", "nested"].
-        (default='by_coords')
+    combine_by_coords : bool
+        Used for xarray data (`pandas_format` is False) when loading a
+        multi-file dataset. If True, uses `xarray.combine_by_coords`. If False,
+        uses `xarray.combine_nested`. (default=True)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -1334,13 +1333,18 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     else:
         drop_meta_labels = pysat.utils.listify(drop_meta_labels)
 
+    if combine_by_coords:
+        combine_kw = {'combine': 'by_coords'}
+    else:
+        combine_kw = {'combine': 'nested', 'concat_dim': epoch_name}
+
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
         data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta,
                                decode_times=decode_times)
     else:
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
-                                 combine=combine, decode_times=decode_times)
+                                 decode_times=decode_times, **combine_kw)
 
     # Need to get a list of all variables, dimensions, and coordinates.
     all_vars = xarray_all_vars(data)
