@@ -106,6 +106,7 @@ from pysat._meta import Meta
 from pysat._meta import MetaHeader
 from pysat._meta import MetaLabels
 from pysat._orbits import Orbits
+from pysat import constellations
 from pysat import instruments
 from pysat import utils
 
