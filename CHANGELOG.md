@@ -25,6 +25,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     in the meta translation table
   * Fixed an issue when passing dates through load_remote_files (#1022)
   * Fixed a bug where data may not have any times, but still not be empty
+  * Fixed a bug where a multi_file_day non-monotonic xarray index failed to
+    merge datasets (#1005)
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
@@ -33,6 +35,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed broken links in docs
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
+  * Additional unit tests for data padding when a data index is non-monotonic.
 
 [3.0.6] - 2022-12-21
 --------------------
