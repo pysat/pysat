@@ -1119,9 +1119,12 @@ class Instrument(object):
                 else:
                     # Multidimensional input that is not an xarray.  The user
                     # needs to provide everything that is required for success.
-                    raise ValueError(' '.join(('Must provide dimensions',
-                                               'for xarray multidim',
-                                               'data using input tuple.')))
+                    try:
+                        self.data[key] = in_data
+                    except BaseException:
+                        raise ValueError(' '.join(('Must provide dimensions',
+                                                   'for xarray multidim',
+                                                   'data using input tuple.')))
 
             elif hasattr(key, '__iter__'):
                 # Multiple input strings (keys) are provided, but not in tuple
