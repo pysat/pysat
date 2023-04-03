@@ -51,7 +51,7 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
         If True, time index will be non-unique (default=False)
     malformed_index : bool
         If True, the time index will be non-unique and non-monotonic. Deprecated
-        as of pysat 3.1.0.
+        and scheduled for removal in pysat 3.2.0.
         (default=False)
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
