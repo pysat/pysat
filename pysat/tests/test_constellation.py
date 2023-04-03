@@ -247,6 +247,27 @@ class TestConstellationInit(object):
             assert (inst['double_mlt'] == 2.0 * inst['mlt']).all()
         return
 
+    @pytest.mark.parametrize(
+        "in_kwargs", [{"instruments":
+                       constellations.testing_partial.instruments},
+                      {"const_module": constellations.testing_partial}])
+    def test_load_constellation_partial(self, in_kwargs):
+        """Test that constellation with partial data coverage loads.
+
+        Parameters
+        ----------
+        in_kwargs : dict
+            Dictionary of kwargs to initialize constellation.
+
+        """
+
+        self.const = pysat.Constellation(**self.in_kwargs)
+        self.const.load(date=self.ref_time, use_header=True)
+
+        out = self.const.__str__()
+
+        assert out.find('Some')
+
 
 class TestConstellationFunc(object):
     """Test the Constellation class attributes and methods."""
