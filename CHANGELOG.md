@@ -14,8 +14,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added links to the project standards repository to the docs
   * Improved formatting of custom kwargs when running `print` on an instrument
   * Added `strict_dim_check` for loading xarray datasets through netCDF
-  * Added `combine` kwarg to `io.load_netcdf` for use on multi-file xarray
-    datasets
+  * Added `combine_by_coords` kwarg to `io.load_netcdf` for use on multi-file
+    xarray datasets
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
