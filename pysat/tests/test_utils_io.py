@@ -381,8 +381,9 @@ class TestLoadNetCDF(object):
 
     @pytest.mark.parametrize("write_epoch,war_msg", [('epoch',
                                                       'is not a dimension.')])
+    @pytest.mark.parametrize("strict_dim_check", [True, False])
     def test_read_netcdf4_epoch_not_xarray_dimension(self, caplog, write_epoch,
-                                                     war_msg):
+                                                     war_msg, strict_dim_check):
         """Test netCDF4 load `epoch_name` not a dimension.
 
         Parameters
@@ -391,6 +392,8 @@ class TestLoadNetCDF(object):
             Label used for datetime data when writing file.
         war_msg : str
             Warning message to test for.
+        strict_dim_check : bool
+            If True, raises warning. If False, does not raise warning.
 
         """
 
@@ -409,10 +412,13 @@ class TestLoadNetCDF(object):
 
                 io.load_netcdf(outfile, epoch_name='slt',
                                pandas_format=self.testInst.pandas_format,
-                               **tkwargs)
+                               strict_dim_check=strict_dim_check, **tkwargs)
 
             self.out = caplog.text
-            assert self.out.find(war_msg)
+            if strict_dim_check:
+                assert self.out.find(war_msg)
+            else:
+                assert self.out.find(war_msg) < 0
         return
 
     @pytest.mark.parametrize("wkwargs, lkwargs", [
