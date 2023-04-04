@@ -932,7 +932,7 @@ class TestNetCDF4Integration(object):
         if dvar.find('int8') >= 0:
             data_type = bool
         else:
-            data_type = type(self.testInst[dvar][0])
+            data_type = type(self.testInst[dvar].values[0])
 
         # Get the filtered output
         with warnings.catch_warnings(record=True) as war:
@@ -984,12 +984,17 @@ class TestNetCDF4Integration(object):
                     assert mkey not in export_nan, \
                         "{:} should have been exported".format(repr(mkey))
             else:
-                if mkey in export_nan and np.isnan(mdict[mkey]):
+                if(mkey in export_nan and not np.issubdtype(data_type, str)
+                   and np.isnan(mdict[mkey])):
                     assert np.isnan(fdict[mkey])
                 else:
-                    assert fdict[mkey] == mdict[mkey], \
-                        "meta data {:} changed".format(repr(mkey))
-
+                    if mkey in check_type and fdict[mkey] != mdict[mkey]:
+                        assert fdict[mkey] == data_type(mdict[mkey]), \
+                            "unexpected recast meta data {:} value".format(
+                                repr(mkey))
+                    else:
+                        assert fdict[mkey] == mdict[mkey], \
+                            "meta data {:} changed".format(repr(mkey))
         return
 
     @pytest.mark.parametrize('missing', [True, False])
@@ -1643,9 +1648,13 @@ class TestMetaTranslation(object):
                                                       self.meta_dict)
 
         # Shift values of _FillValue but not FillVal
+        fkey = '_FillValue'
         for key in self.out.keys():
             if '_FillValue' in self.out[key].keys():
-                self.out[key]['_FillValue'] += 1
+                if isinstance(self.out[key][fkey], str):
+                    self.out[key][fkey] += 'shift'
+                else:
+                    self.out[key]['_FillValue'] += 1
 
         # Get default inverse translation
         from_trans = io.default_from_netcdf_translation_table(
