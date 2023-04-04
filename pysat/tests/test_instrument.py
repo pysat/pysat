@@ -631,7 +631,7 @@ class TestDeprecation(object):
         self.eval_warnings()
 
         # Evaluate the performance
-        assert tinst.meta.labels.label_type['fill_val'] in [float]
+        assert float in tinst.meta.labels.label_type['fill_val']
         return
 
     def test_instrument_meta_labels(self):
