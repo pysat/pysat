@@ -475,7 +475,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                     if not ci_skip:
                         # Check if instrument is configured for download tests.
                         if inst._test_download:
-                            instrument_download.append(in_dict)
+                            instrument_download.append(in_dict.copy())
                             if hasattr(module, '_test_load_opt'):
                                 # Add optional load tests
                                 try:
