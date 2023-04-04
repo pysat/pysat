@@ -22,10 +22,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     to include more common data types
   * Added `data_types` input to Meta and certain MetaLabels methods, allowing
     the default values to be set to the specified data type when multiple types
-    are allowed
+    are allowed, ensure these are updated when adding new data to an Instrument
+  * Added `_update_label_types` to MetaLabels, expanding the Python float/int
+    types to include all numpy float/int types
 * Deprecations
    * Deprecated the Instrument kwarg `labels` in favor of `meta_kwargs` and
      replaced the `meta_labels` attribute with the `meta_kwargs` attribute
+   * Deprecated the `labels` keyword arg in favor of `meta_kwargs` in the
+     netCDF I/O functions and Instrument sub-module.
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
