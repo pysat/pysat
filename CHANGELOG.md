@@ -27,6 +27,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where data may not have any times, but still not be empty
   * Fixed a bug where a multi_file_day non-monotonic xarray index failed to
     merge datasets (#1005)
+  * Fixed a bug when setting xarray data as a tuple
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`

@@ -1074,8 +1074,8 @@ class Instrument(object):
                 return
             elif isinstance(key, str):
                 # Assigning basic variables
-                if isinstance(in_data, xr.DataArray):
-                    # If xarray input, take as is
+                if isinstance(in_data, (xr.DataArray, tuple)):
+                    # If xarray or tuple input, take as is
                     self.data[key] = in_data
                 elif len(np.shape(in_data)) <= 1:
                     # If not an xarray input, but still iterable, then we
@@ -1119,12 +1119,9 @@ class Instrument(object):
                 else:
                     # Multidimensional input that is not an xarray.  The user
                     # needs to provide everything that is required for success.
-                    if isinstance(in_data, tuple):
-                        self.data[key] = in_data
-                    else:
-                        raise ValueError(' '.join(('Must provide dimensions',
-                                                   'for xarray multidim',
-                                                   'data using input tuple.')))
+                    # Passes the data through to get appropriate error from
+                    # xarray.
+                    self.data[key] = in_data
 
             elif hasattr(key, '__iter__'):
                 # Multiple input strings (keys) are provided, but not in tuple
