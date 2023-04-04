@@ -388,7 +388,7 @@ class TestMeta(object):
         assert 'Metadata with type' in str(war[0].message)
         assert 'Dropping input' in str(war[0].message)
 
-        # Check that meta is blank
+        # Check that meta is set to the expected default
         assert np.isnan(self.meta['fake_var']['value_max'])
         return
 
