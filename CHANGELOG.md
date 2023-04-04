@@ -25,11 +25,16 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     are allowed, ensure these are updated when adding new data to an Instrument
   * Added `_update_label_types` to MetaLabels, expanding the Python float/int
     types to include all numpy float/int types
+  * Added `strict_dim_check` for loading xarray Datasets through netCDF
+  * Added `combine_by_coords` kwarg to `io.load_netcdf` for use on multi-file
+    xarray Datasets
 * Deprecations
-   * Deprecated the Instrument kwarg `labels` in favor of `meta_kwargs` and
-     replaced the `meta_labels` attribute with the `meta_kwargs` attribute
-   * Deprecated the `labels` keyword arg in favor of `meta_kwargs` in the
-     netCDF I/O functions and Instrument sub-module.
+  * Deprecated the Instrument kwarg `labels` in favor of `meta_kwargs` and
+    replaced the `meta_labels` attribute with the `meta_kwargs` attribute
+  * Deprecated the `labels` keyword arg in favor of `meta_kwargs` in the
+    netCDF I/O functions and Instrument sub-module    
+  * Deprecated the `malformed_index` kwarg in the test instruments.  This is
+    replaced by `non_monotonic_index` and `non_unique_index`
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
@@ -44,6 +49,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where data may not have any times, but still not be empty
   * Fixed a bug where metadata with values of None are assigned as useful
     attributes when attaching metadata to xarray objects
+  * Fixed a bug where a multi_file_day non-monotonic xarray index failed to
+    merge datasets (#1005)
+  * Fixed a bug when setting xarray data as a tuple
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
@@ -53,6 +61,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
   * Expanded MetaLabel default types for `min_val`, `max_val`, and `fill_val`
+  * Additional unit tests for data padding when a data index is non-monotonic.
 
 [3.0.6] - 2022-12-21
 --------------------

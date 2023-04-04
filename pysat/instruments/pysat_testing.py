@@ -39,9 +39,9 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
-         sim_multi_file_left=False, root_date=None, malformed_index=False,
-         start_time=None, num_samples=86400, test_load_kwarg=None,
-         max_latitude=90.):
+         sim_multi_file_left=False, root_date=None, non_monotonic_index=False,
+         non_unique_index=False, malformed_index=False, start_time=None,
+         num_samples=86400, test_load_kwarg=None, max_latitude=90.):
     """Load the test files.
 
     Parameters
@@ -63,8 +63,13 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     root_date : NoneType
         Optional central date, uses _test_dates if not specified.
         (default=None)
+    non_monotonic_index : bool
+        If True, time index will be non-monotonic (default=False)
+    non_unique_index : bool
+        If True, time index will be non-unique (default=False)
     malformed_index : bool
-        If True, time index will be non-unique and non-monotonic (default=False)
+        If True, the time index will be non-unique and non-monotonic. Deprecated
+        and scheduled for removal in pysat 3.2.0. (default=False)
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
         will begin at midnight. (default=None)
@@ -159,15 +164,20 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
-    # Activate for testing malformed_index, and for instrument_test_class.
-    if malformed_index or tag == 'non_strict':
-        index = index.tolist()
+    # TODO(#1094): Remove in pysat 3.2.0
+    if malformed_index:
+        # Warn that kwarg is deprecated and set new kwargs.
+        mm_test._warn_malformed_kwarg()
+        non_monotonic_index = True
+        non_unique_index = True
 
-        # Create a non-monotonic index
-        index[0:3], index[3:6] = index[3:6], index[0:3]
+    # Activate if non-monotonic index is needed.
+    if np.any([non_monotonic_index, (tag == 'non_strict')]):
+        index = mm_test.non_monotonic_index(index)
 
-        # Create a non-unique index
-        index[6:9] = [index[6]] * 3
+    # Activate if non-unique index is needed.
+    if np.any([non_unique_index, (tag == 'non_strict')]):
+        index = mm_test.non_unique_index(index)
 
     data.index = index
     data.index.name = 'Epoch'
