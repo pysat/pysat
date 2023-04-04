@@ -286,7 +286,7 @@ class TestBasicsNDXarray(TestBasics):
         return
 
     def test_setting_data_as_tuple(self):
-        """Test setting data by name."""
+        """Test setting data as a tuple."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
         self.testInst['doubleMLT'] = ('time', 2. * self.testInst['mlt'].values)
