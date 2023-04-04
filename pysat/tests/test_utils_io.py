@@ -1895,9 +1895,8 @@ class TestIODeprecation(object):
         self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
         pysat.params['data_dirs'] = self.tempdir.name
-        
-        self.outfile = os.path.join(self.tempdir.name,
-                               'pysat_test_ncdf.nc')
+
+        self.outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
         self.in_kwargs = {'labels': {
             'units': ('units', str), 'name': ('long_name', str),
             'notes': ('notes', str), 'desc': ('desc', str),
