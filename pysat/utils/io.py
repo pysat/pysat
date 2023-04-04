@@ -1250,7 +1250,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     combine_by_coords : bool
         Used for xarray data (`pandas_format` is False) when loading a
         multi-file dataset. If True, uses `xarray.combine_by_coords`. If False,
-        uses `xarray.combine_nested`. (default=True)    meta_kwargs : dict or NoneType
+        uses `xarray.combine_nested`. (default=True)
+    meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
     labels : dict or NoneType
