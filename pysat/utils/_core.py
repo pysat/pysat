@@ -483,7 +483,9 @@ def generate_instrument_list(inst_loc, user_info=None):
                                     kw_list = pysat.utils.listify(kw_list)
                                     for kwargs in kw_list:
                                         in_dict['kwargs'] = kwargs
-                                        instrument_optional_load.append(in_dict)
+                                        # Append as copy so kwargs are unique.
+                                        instrument_optional_load.append(
+                                            in_dict.copy())
                                 except KeyError:
                                     # Option does not exist for tag/inst_id
                                     # combo
