@@ -13,6 +13,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added Constellation class examples to the docs tutorial
   * Added links to the project standards repository to the docs
   * Improved formatting of custom kwargs when running `print` on an instrument
+  * Added `strict_dim_check` for loading xarray Datasets through netCDF
+  * Added `combine_by_coords` kwarg to `io.load_netcdf` for use on multi-file
+    xarray Datasets
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
@@ -28,6 +31,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug where a multi_file_day non-monotonic xarray index failed to
     merge datasets (#1005)
   * Fixed a bug in testing for setting multiple optional load kwargs (#1097)
+  * Fixed a bug when setting xarray data as a tuple
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
@@ -37,6 +41,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
   * Additional unit tests for data padding when a data index is non-monotonic.
+  * Deprecated the `malformed_index` kwarg in the test instruments.  This is
+    replaced by `non_monotonic_index` and `non_unique_index`
 
 [3.0.6] - 2022-12-21
 --------------------

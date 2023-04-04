@@ -702,3 +702,13 @@ def non_unique_index(index):
     new_index = pds.to_datetime(new_index)
 
     return new_index
+
+
+def _warn_malformed_kwarg():
+    """Warn user that kwarg has been deprecated."""
+
+    dstr = ' '.join(['The kwarg malformed_index has been deprecated and',
+                     'will be removed in pysat 3.2.0+. Please use',
+                     'non_monotonic_index or non_unique_index to specify',
+                     'desired behaviour.'])
+    warnings.warn(dstr, DeprecationWarning, stacklevel=2)
