@@ -182,7 +182,8 @@ class Meta(object):
         # Set the NaN export list
         self._export_nan = [] if export_nan is None else export_nan
         for lvals in labels.values():
-            if lvals[0] not in self._export_nan and lvals[1] == float:
+            if(lvals[0] not in self._export_nan
+               and float in pysat.utils.listify(lvals[1])):
                 self._export_nan.append(lvals[0])
 
         # Set the labels
@@ -1757,6 +1758,9 @@ class MetaLabels(object):
                             min_val[0]: 'min_val', max_val[0]: 'max_val',
                             fill_val[0]: 'fill_val'}
 
+        # Ensure the label types include numpy 64 bit types when appropriate
+        self._update_label_types()
+
         # Ensure all standard label types are valid
         for label in self.label_type.keys():
             if not self._eval_label_type(self.label_type[label]):
@@ -1838,6 +1842,28 @@ class MetaLabels(object):
                                                  max_num=nlabels)
 
         return out_str
+
+    def _update_label_types(self):
+        """Update the `label_type` attribute, adjusting types as appropriate."""
+
+        # Update the types as necessary
+        for lkey in self.label_type.keys():
+            if self.label_type[lkey] == float:
+                self.label_type[lkey] = (float, np.float64, np.float32)
+            elif self.label_type[lkey] == int:
+                self.label_type[lkey] = (int, np.int64, np.int32, np.int16,
+                                         np.int8, bool)
+            elif isinstance(self.label_type[lkey], tuple):
+                ltypes = list(self.label_type[lkey])
+
+                if float in ltypes:
+                    ltypes.extend([np.float64, np.float32])
+
+                if int in ltypes:
+                    ltypes.extend([np.int64, np.int32, np.int16, np.int8, bool])
+
+                self.label_type[lkey] = tuple(set(ltypes))
+        return
 
     def _eval_label_type(self, val_type):
         """Evaluate the label type for validity.
