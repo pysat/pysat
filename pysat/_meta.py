@@ -1862,7 +1862,10 @@ class MetaLabels(object):
                 if int in ltypes:
                     ltypes.extend([np.int64, np.int32, np.int16, np.int8, bool])
 
-                self.label_type[lkey] = tuple(set(ltypes))
+                # This may result in duplicate numpy types, but order is more
+                # important than carrying around a duplicate type, as the first
+                # type in the provided tuple is the default type
+                self.label_type[lkey] = tuple(ltypes)
         return
 
     def _eval_label_type(self, val_type):
