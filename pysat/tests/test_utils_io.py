@@ -416,7 +416,7 @@ class TestLoadNetCDF(object):
 
             self.out = caplog.text
             if strict_dim_check:
-                assert self.out.find(war_msg)
+                assert self.out.find(war_msg) >= 0
             else:
                 assert self.out.find(war_msg) < 0
         return
