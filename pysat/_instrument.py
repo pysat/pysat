@@ -1003,9 +1003,7 @@ class Instrument(object):
                     # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
-                if len(self.data[key[1]].values) > 0:
-                    self.meta._data_types[key[1]] = type(
-                        self.data[key[1]].values[0])
+                self.meta._data_types[key[1]] = self.data[key[1]].values.dtype
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -1042,8 +1040,11 @@ class Instrument(object):
 
             # Assign data and any extra metadata
             self.data[key] = in_data
-            if len(self.data[key].values) > 0:
-                self.meta._data_types[key] = type(self.data[key].values[0])
+
+            for lkey in pysat.utils.listify(key):
+                if not isinstance(lkey, slice) and key in self.variables:
+                    self.meta._data_types[lkey] = self.data[lkey].values.dtype
+
             self.meta[key] = new
 
         else:
@@ -1077,9 +1078,7 @@ class Instrument(object):
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
 
-                if len(self.data[key[-1]].values) > 0:
-                    self.meta._data_types[key[-1]] = type(
-                        self.data[key[-1]].values[0])
+                self.meta._data_types[key[-1]] = self.data[key[-1]].values.dtype
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
@@ -1139,10 +1138,10 @@ class Instrument(object):
                 # individually.
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
+                    self.meta._data_types[keyname] = self.data[
+                        keyname].values.dtype
 
             # Attach metadata
-            if len(self.data[key].values) > 0:
-                self.meta._data_types[key] = type(self.data[key].values[0])
             self.meta[key] = new
 
         return
