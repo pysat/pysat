@@ -634,13 +634,22 @@ class TestDeprecation(object):
         assert float in tinst.meta.labels.label_type['fill_val']
         return
 
-    def test_instrument_meta_labels(self):
-        """Test deprecation of `meta_labels` attribute in Instrument."""
-        self.in_kwargs['meta_kwargs'] = {'labels': {
-            'units': ('units', str), 'name': ('long_name', str),
-            'notes': ('notes', str), 'desc': ('desc', str),
-            'min_val': ('value_min', float), 'max_val': ('value_max', float),
-            'fill_val': ('fill', float)}}
+    @pytest.mark.parametrize('use_kwargs', [(True, False)])
+    def test_instrument_meta_labels(self, use_kwargs):
+        """Test deprecation of `meta_labels` attribute in Instrument.
+
+        Parameters
+        ----------
+        use_kwargs : bool
+            If True, specify labels on input.  If False, use defaults.
+
+        """
+        if use_kwargs:
+            self.in_kwargs['meta_kwargs'] = {'labels': {
+                'units': ('units', str), 'name': ('long_name', str),
+                'notes': ('notes', str), 'desc': ('desc', str),
+                'min_val': ('value_min', float),
+                'max_val': ('value_max', float), 'fill_val': ('fill', float)}}
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
@@ -653,6 +662,13 @@ class TestDeprecation(object):
         self.eval_warnings()
 
         # Evaluate the performance
+        if not use_kwargs:
+            self.in_kwargs['meta_kwargs'] = {'labels': {
+                'units': ('units', str), 'name': ('long_name', str),
+                'notes': ('notes', str), 'desc': ('desc', str),
+                'min_val': ('value_min', float),
+                'max_val': ('value_max', float), 'fill_val': ('fill', float)}}
+
         assert labels == self.in_kwargs['meta_kwargs']['labels']
         return
 
