@@ -35,8 +35,7 @@ class TestUpdateFill(object):
         del self.ref_time, self.new_fill_val
         return
 
-    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testing_xarray",
-                                      "testmodel"])
+    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testmodel"])
     @pytest.mark.parametrize("variables", [('mlt'), (['mlt'])])
     def test_update_fill_values_numbers(self, name, variables):
         """Test `update_fill_values` for the desired behaviour.
@@ -71,8 +70,7 @@ class TestUpdateFill(object):
                 "filled data values not updated for {:}".format(var)
         return
 
-    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testing_xarray",
-                                      "testmodel"])
+    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testmodel"])
     def test_update_fill_values_by_type(self, name):
         """Test `update_fill_values` for the desired behaviour.
 
