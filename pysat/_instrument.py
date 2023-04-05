@@ -1003,7 +1003,8 @@ class Instrument(object):
                     # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
-                self.meta._data_types[key[1]] = self.data[key[1]].values.dtype
+                self.meta._data_types[key[1]] = self.data[
+                    key[1]].values.dtype.type
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -1042,8 +1043,9 @@ class Instrument(object):
             self.data[key] = in_data
 
             for lkey in pysat.utils.listify(key):
-                if not isinstance(lkey, slice) and key in self.variables:
-                    self.meta._data_types[lkey] = self.data[lkey].values.dtype
+                if not isinstance(lkey, slice) and lkey in self.variables:
+                    self.meta._data_types[lkey] = self.data[
+                        lkey].values.dtype.type
 
             self.meta[key] = new
 
@@ -1078,7 +1080,8 @@ class Instrument(object):
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
 
-                self.meta._data_types[key[-1]] = self.data[key[-1]].values.dtype
+                self.meta._data_types[key[-1]] = self.data[
+                    key[-1]].values.dtype.type
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
@@ -1139,7 +1142,7 @@ class Instrument(object):
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
                     self.meta._data_types[keyname] = self.data[
-                        keyname].values.dtype
+                        keyname].values.dtype.type
 
             # Attach metadata
             self.meta[key] = new
