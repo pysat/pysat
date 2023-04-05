@@ -483,6 +483,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                                     kw_list = pysat.utils.listify(kw_list)
                                     for kwargs in kw_list:
                                         in_dict['kwargs'] = kwargs
+
                                         # Append as copy so kwargs are unique.
                                         instrument_optional_load.append(
                                             in_dict.copy())
