@@ -633,6 +633,37 @@ class TestGenerateInstList(object):
             assert ('user_info' not in inst.keys())
         return
 
+    def test_list_kwargs_passthrough(self):
+        """Test that kwargs are passed through to lists correctly."""
+
+        # Iterate over unique instruments gathered
+        for inst in self.inst_list['download']:
+            # kwargs should not be passed to download
+            assert ('kwargs' not in inst.keys())
+
+            # Construct list of tests with optional load kwargs for this
+            # instrument.
+            list_kwargs = []
+            for opt_inst in self.inst_list['load_options']:
+                if inst['inst_module'] == opt_inst['inst_module']:
+                    if 'kwargs' in opt_inst.keys():
+                        list_kwargs.append(opt_inst['kwargs'].copy())
+
+            # Check if instrument has optional load kwargs
+            if hasattr(inst['inst_module'], '_test_load_opt'):
+                load_opt = getattr(inst['inst_module'], '_test_load_opt')
+                try:
+                    load_opt = load_opt[inst['inst_id']][inst['tag']]
+                    # Check that options specified in module match generated
+                    # test list.
+                    utils.testing.assert_lists_equal(list_kwargs, load_opt)
+                except KeyError:
+                    # Optional load kwargs not defined for this tag / inst_id
+                    # combination.
+                    pass
+
+        return
+
 
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""

@@ -475,7 +475,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                     if not ci_skip:
                         # Check if instrument is configured for download tests.
                         if inst._test_download:
-                            instrument_download.append(in_dict)
+                            instrument_download.append(in_dict.copy())
                             if hasattr(module, '_test_load_opt'):
                                 # Add optional load tests
                                 try:
@@ -483,7 +483,10 @@ def generate_instrument_list(inst_loc, user_info=None):
                                     kw_list = pysat.utils.listify(kw_list)
                                     for kwargs in kw_list:
                                         in_dict['kwargs'] = kwargs
-                                        instrument_optional_load.append(in_dict)
+
+                                        # Append as copy so kwargs are unique.
+                                        instrument_optional_load.append(
+                                            in_dict.copy())
                                 except KeyError:
                                     # Option does not exist for tag/inst_id
                                     # combo
