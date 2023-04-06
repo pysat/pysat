@@ -32,6 +32,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     merge datasets (#1005)
   * Fixed a bug in testing for setting multiple optional load kwargs (#1097)
   * Fixed a bug when setting xarray data as a tuple
+  * Fixed a bug when cleaning up temporary directories on windows during testing
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
