@@ -86,13 +86,22 @@ class TestUpdateFill(object):
         inst.load(date=self.ref_time)
 
         # Ensure there are fill values to check
-        num_types = [int, float, np.float64, np.int64]
-        num_vars = [var for var in inst.variables if var in inst.meta.keys()
-                    and inst[var].dtype in num_types
-                    and inst.meta[var, inst.meta.labels.fill_val] is not None]
         str_vars = [var for var in inst.variables if var in inst.meta.keys()
                     and isinstance(inst[var].values[0], str)
                     and inst.meta[var, inst.meta.labels.fill_val] is not None]
+        num_types = [int, float, np.float64, np.int64]
+        if inst.pandas_format:
+            num_vars = [var for var in inst.variables if var in inst.meta.keys()
+                        and inst[var].dtype.type in num_types
+                        and inst.meta[var, inst.meta.labels.fill_val]
+                        is not None]
+        else:
+            num_vars = [var for var in inst.variables if var in inst.meta.keys()
+                        and var not in inst.data.coords.keys()
+                        and inst[var].dtype.type in num_types
+                        and inst.meta[var, inst.meta.labels.fill_val]
+                        is not None]
+
         for var in num_vars:
             inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
 
