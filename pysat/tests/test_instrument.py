@@ -634,7 +634,7 @@ class TestDeprecation(object):
         assert float in tinst.meta.labels.label_type['fill_val']
         return
 
-    @pytest.mark.parametrize('use_kwargs', [(True, False)])
+    @pytest.mark.parametrize('use_kwargs', [True, False])
     def test_instrument_meta_labels(self, use_kwargs):
         """Test deprecation of `meta_labels` attribute in Instrument.
 
@@ -666,8 +666,9 @@ class TestDeprecation(object):
             self.in_kwargs['meta_kwargs'] = {'labels': {
                 'units': ('units', str), 'name': ('long_name', str),
                 'notes': ('notes', str), 'desc': ('desc', str),
-                'min_val': ('value_min', float),
-                'max_val': ('value_max', float), 'fill_val': ('fill', float)}}
+                'min_val': ('value_min', (float, int)),
+                'max_val': ('value_max', (float, int)),
+                'fill_val': ('fill', (float, int, str))}}
 
         assert labels == self.in_kwargs['meta_kwargs']['labels']
         return
