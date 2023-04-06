@@ -689,6 +689,11 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
     new_fill_val : any
         New fill value to use (default=np.nan)
 
+    Note
+    ----
+    On Windows OS, this function may not work for data variables that are also
+    xarray coordinates.
+
     """
 
     if not inst.empty:
