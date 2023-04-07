@@ -341,8 +341,9 @@ class TestConstellationFunc(object):
     def test_empty_flag_data_empty_partial_load(self):
         """Test the status of the empty flag for partially loaded data."""
 
-        # Load only one instrument and test the status flag
-        self.const.instruments[0].load(date=self.ref_time, use_header=True)
+        self.const = pysat.Constellation(
+            const_module=constellations.testing_partial, use_header=True)
+        self.const.load(date=self.ref_time)
         assert self.const.empty_partial
         assert not self.const.empty
         return
@@ -350,8 +351,9 @@ class TestConstellationFunc(object):
     def test_empty_flag_data_not_empty_partial_load(self):
         """Test the alt status of the empty flag for partially loaded data."""
 
-        # Load only one instrument and test the status flag for alternate flag
-        self.const.instruments[0].load(date=self.ref_time, use_header=True)
+        self.const = pysat.Constellation(
+            const_module=constellations.testing_partial, use_header=True)
+        self.const.load(date=self.ref_time)
         assert not self.const._empty(all_inst=False)
         return
 
