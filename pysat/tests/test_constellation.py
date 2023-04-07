@@ -505,7 +505,7 @@ class TestConstellationFunc(object):
         # Redefine the Instrument and constellation
         self.inst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, use_header=True,
-            pad=pds.DateOffset(hours=1))
+            pad=pds.DateOffset(hours=1), num_samples=10)
         self.const = pysat.Constellation(instruments=[self.inst],
                                          use_header=True)
 
@@ -542,10 +542,10 @@ class TestConstellationFunc(object):
         pad = pds.DateOffset(hours=1)
         self.inst = [
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             use_header=True, pad=pad),
+                             use_header=True, pad=pad, num_samples=10),
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              use_header=True, pad=2 * pad,
-                             clean_level=clean_level)]
+                             clean_level=clean_level, num_samples=10)]
         self.const = pysat.Constellation(instruments=self.inst, use_header=True)
 
         # Load the Instrument and Constellation data
