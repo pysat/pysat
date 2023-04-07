@@ -426,41 +426,42 @@ class Constellation(object):
             out_res = None
 
             for inst in self.instruments:
-                if stime is None:
-                    # Initialize the start and stop time
-                    stime = inst.index[0]
-                    etime = inst.index[-1]
+                if not inst.empty:
+                    if stime is None:
+                        # Initialize the start and stop time
+                        stime = inst.index[0]
+                        etime = inst.index[-1]
 
-                    # If desired, determine the resolution
-                    if self.index_res is None:
-                        if inst.index.freq is None:
-                            out_res = pysat.utils.time.calc_res(inst.index)
-                        else:
-                            out_res = pysat.utils.time.freq_to_res(
-                                inst.index.freq)
-                else:
-                    # Adjust the start and stop time as appropriate
-                    if self.common_index:
-                        if stime < inst.index[0]:
-                            stime = inst.index[0]
-                        if etime > inst.index[-1]:
-                            etime = inst.index[-1]
+                        # If desired, determine the resolution
+                        if self.index_res is None:
+                            if inst.index.freq is None:
+                                out_res = pysat.utils.time.calc_res(inst.index)
+                            else:
+                                out_res = pysat.utils.time.freq_to_res(
+                                    inst.index.freq)
                     else:
-                        if stime > inst.index[0]:
-                            stime = inst.index[0]
-                        if etime < inst.index[-1]:
-                            etime = inst.index[-1]
-
-                    # If desired, determine the resolution
-                    if self.index_res is None:
-                        if inst.index.freq is None:
-                            new_res = pysat.utils.time.calc_res(inst.index)
+                        # Adjust the start and stop time as appropriate
+                        if self.common_index:
+                            if stime < inst.index[0]:
+                                stime = inst.index[0]
+                            if etime > inst.index[-1]:
+                                etime = inst.index[-1]
                         else:
-                            new_res = pysat.utils.time.freq_to_res(
-                                inst.index.freq)
+                            if stime > inst.index[0]:
+                                stime = inst.index[0]
+                            if etime < inst.index[-1]:
+                                etime = inst.index[-1]
 
-                        if new_res < out_res:
-                            out_res = new_res
+                        # If desired, determine the resolution
+                        if self.index_res is None:
+                            if inst.index.freq is None:
+                                new_res = pysat.utils.time.calc_res(inst.index)
+                            else:
+                                new_res = pysat.utils.time.freq_to_res(
+                                    inst.index.freq)
+
+                            if new_res < out_res:
+                                out_res = new_res
 
             # If a resolution in seconds was supplied, calculate the frequency
             if self.index_res is not None:

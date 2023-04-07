@@ -53,6 +53,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     merge datasets (#1005)
   * Fixed a bug in testing for setting multiple optional load kwargs (#1097)
   * Fixed a bug when setting xarray data as a tuple
+  * Fixed a bug when loading constellations for partially empty instrument lists
   * Fixed a bug when cleaning up temporary directories on windows during testing
 * Maintenance
   * Added roadmap to readthedocs
@@ -64,6 +65,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     build errors and warnings
   * Expanded MetaLabel default types for `min_val`, `max_val`, and `fill_val`
   * Additional unit tests for data padding when a data index is non-monotonic.
+  * Deprecated the `malformed_index` kwarg in the test instruments.  This is
+    replaced by `non_monotonic_index` and `non_unique_index`
+  * Set the `instruments.pysat_testing` tag='no_download' to return an empty
+    pandas DataFrame for `load`
+  * Added `constellations.testing_partial`, which loads a partially empty
+    constellation dataset
+  * Reduced default num_samples for constellation test objects
 
 [3.0.6] - 2022-12-21
 --------------------

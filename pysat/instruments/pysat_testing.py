@@ -187,6 +187,8 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     if tag == 'default_meta':
         return data, pysat.Meta()
+    elif tag == 'no_download':
+        return pds.DataFrame(), pysat.Meta()
     else:
         return data, meta
 
