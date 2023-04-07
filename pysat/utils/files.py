@@ -781,6 +781,10 @@ def check_and_make_path(path, expand_path=False):
         path = os.path.expanduser(path)
         path = os.path.expandvars(path)
 
+    if len(path) == 0:
+        # The user wants to write to the current directory
+        path = os.getcwd()
+
     # Set the output
     made_dir = not os.path.exists(path)
 

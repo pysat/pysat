@@ -374,18 +374,30 @@ class TestFileUtils(CICleanSetup):
 
         return
 
-    def test_check_and_make_path_exists(self):
-        """Test successful pass at creating existing directory."""
+    @pytest.mark.parametrize("use_cwd", [True, False])
+    def test_check_and_make_path_exists(self, use_cwd):
+        """Test successful pass at creating existing directory.
 
-        # Create a temporary directory
-        tempdir = tempfile.TemporaryDirectory()
-        assert os.path.isdir(tempdir.name)
+        Parameters
+        ----------
+        use_cwd : bool
+            Use current working directory or a temporary directory
+
+        """
+        if use_cwd:
+            dir_name = ""
+        else:
+            # Create a temporary directory
+            tempdir = tempfile.TemporaryDirectory()
+            dir_name = tempdir.name
+            assert os.path.isdir(tempdir.name)
 
         # Assert check_and_make_path does not re-create the directory
-        assert not pysat.utils.files.check_and_make_path(tempdir.name)
+        assert not pysat.utils.files.check_and_make_path(dir_name)
 
-        # Clean up temporary directory
-        tempdir.cleanup()
+        if not use_cwd:
+            # Clean up temporary directory
+            tempdir.cleanup()
         return
 
     @pytest.mark.parametrize("trailer", [None, '', 'extra',

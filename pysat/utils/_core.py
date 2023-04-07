@@ -152,7 +152,12 @@ def listify(iterable):
     """
 
     # Cast as an array-like object
-    arr_iter = np.asarray(iterable)
+    try:
+        arr_iter = np.asarray(iterable)
+    except ValueError:
+        # This is necessary for Python 3.6 compatibility when using listify
+        # on slices
+        arr_iter = np.asarray([iterable])
 
     # Treat output differently based on the array shape
     if arr_iter.shape == ():
@@ -675,6 +680,55 @@ def display_available_instruments(inst_loc=None, show_inst_mod=None,
     return
 
 
+def update_fill_values(inst, variables=None, new_fill_val=np.nan):
+    """Update Instrument data so that the fill value is consistent with Meta.
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        Instrument object with data loaded
+    variables : str, list, or NoneType
+        List of variables to update or None to update all (default=None)
+    new_fill_val : any
+        New fill value to use (default=np.nan)
+
+    Note
+    ----
+    On Windows OS, this function may not work for data variables that are also
+    xarray coordinates.
+
+    """
+
+    if not inst.empty:
+        # Get the variables (if needed) and ensure they are list-like
+        if variables is None:
+            variables = list(inst.variables)
+        else:
+            variables = listify(variables)
+
+        for var in variables:
+            if var in inst.meta.keys():
+                # Get the old fill value
+                old_fill_val = inst.meta[var, inst.meta.labels.fill_val]
+
+                # Update the Meta data
+                inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
+
+                # Update the variable data
+                try:
+                    if np.isnan(old_fill_val):
+                        ifill = np.where(np.isnan(inst[var].values))
+                    else:
+                        ifill = np.where(inst[var].values == old_fill_val)
+                except TypeError:
+                    ifill = np.where(inst[var].values == old_fill_val)
+
+                if len(ifill[0]) > 0:
+                    inst[var].values[ifill] = new_fill_val
+
+    return
+
+
 class NetworkLock(Lock):
     """Unit tests for NetworkLock manager."""
 
@@ -712,6 +766,7 @@ class NetworkLock(Lock):
 
         super(NetworkLock, self).__init__(timeout=timeout,
                                           *args, **kwargs)
+        return
 
     def release(self):
         """Release the Lock from the file system.
@@ -732,3 +787,4 @@ class NetworkLock(Lock):
             pass
 
         super(NetworkLock, self).release()
+        return
