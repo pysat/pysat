@@ -90,13 +90,12 @@ class Instrument(object):
         of files found will be checked to ensure the filesizes are greater than
         zero. Empty files are removed from the stored list of files.
         (default=False)
-    labels : dict
+    labels : dict or NoneType
         Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order.
-        (default={'units': ('units', str), 'name': ('long_name', str),
-        'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', float),
-        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        that have the label values and value types in that order. If None uses
+        the Meta defaults. Deprecated, use `meta_kwargs` (default=None)
+    meta_kwargs : dict or NoneType
+        Dict to specify custom Meta initialization (default=None)
     custom : list or NoneType
         Input list containing dicts of inputs for `custom_attach` method inputs
         that may be applied or None (default=None)
@@ -148,8 +147,8 @@ class Instrument(object):
         day
     meta : pysat.Meta
         Class holding the instrument metadata
-    meta_labels : dict
-        Dict containing defaults for new Meta data labels
+    meta_kwargs : dict
+        Dict containing defaults for Meta data
     orbits : pysat.Orbits
         Interface to extracting data orbit-by-orbit
     pandas_format : bool
@@ -253,12 +252,7 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, data_dir='',
                  directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
-                 ignore_empty_files=False,
-                 labels={'units': ('units', str), 'name': ('long_name', str),
-                         'notes': ('notes', str), 'desc': ('desc', str),
-                         'min_val': ('value_min', np.float64),
-                         'max_val': ('value_max', np.float64),
-                         'fill_val': ('fill', np.float64)},
+                 ignore_empty_files=False, labels=None, meta_kwargs=None,
                  custom=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
@@ -429,8 +423,15 @@ class Instrument(object):
 
         # Create Meta instance with appropriate labels.  Meta class methods will
         # use Instrument definition of MetaLabels over the Metadata declaration.
-        self.meta_labels = labels
-        self.meta = pysat.Meta(labels=self.meta_labels)
+        self.meta_kwargs = {} if meta_kwargs is None else meta_kwargs
+
+        if labels is not None:
+            warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
+                                   "with the 'labels' key instead. Support ",
+                                   "for `labels` will be removed in v3.2.0+"]),
+                          DeprecationWarning, stacklevel=2)
+            self.meta_kwargs["labels"] = labels
+        self.meta = pysat.Meta(**self.meta_kwargs)
         self.meta.mutable = False
 
         # Nano-kernel processing variables. Feature processes data on each load.
@@ -1001,6 +1002,9 @@ class Instrument(object):
                     # for list, array. Assume key[0] is integer
                     # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
+
+                self.meta._data_types[key[1]] = self.data[
+                    key[1]].values.dtype.type
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -1031,12 +1035,18 @@ class Instrument(object):
                         # subvariables.  Meta can filter out empty metadata as
                         # needed, the check above reduces the need to create
                         # Meta instances.
-                        ho_meta = pysat.Meta(labels=self.meta_labels)
+                        ho_meta = pysat.Meta(**self.meta_kwargs)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
 
             # Assign data and any extra metadata
             self.data[key] = in_data
+
+            for lkey in pysat.utils.listify(key):
+                if not isinstance(lkey, slice) and lkey in self.variables:
+                    self.meta._data_types[lkey] = self.data[
+                        lkey].values.dtype.type
+
             self.meta[key] = new
 
         else:
@@ -1070,6 +1080,8 @@ class Instrument(object):
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
 
+                self.meta._data_types[key[-1]] = self.data[
+                    key[-1]].values.dtype.type
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
@@ -1129,6 +1141,8 @@ class Instrument(object):
                 # individually.
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
+                    self.meta._data_types[keyname] = self.data[
+                        keyname].values.dtype.type
 
             # Attach metadata
             self.meta[key] = new
@@ -1612,12 +1626,12 @@ class Instrument(object):
             except pds.errors.OutOfBoundsDatetime:
                 bad_datetime = True
                 data = self._null_data.copy()
-                mdata = pysat.Meta(labels=self.meta_labels)
+                mdata = pysat.Meta(**self.meta_kwargs)
 
         else:
             bad_datetime = False
             data = self._null_data.copy()
-            mdata = pysat.Meta(labels=self.meta_labels)
+            mdata = pysat.Meta(**self.meta_kwargs)
 
         output_str = '{platform} {name} {tag} {inst_id}'
         output_str = output_str.format(platform=self.platform,
@@ -1900,6 +1914,30 @@ class Instrument(object):
 
     # -----------------------------------------------------------------------
     # Define all accessible methods
+
+    @property
+    def meta_labels(self):
+        """Provide Meta input for labels kwarg, deprecated.
+
+        Returns
+        -------
+        dict
+            Either Meta default provided locally or custom value provided
+            by user and stored in `meta_kwargs['labels']`
+
+        """
+        warnings.warn("".join(["Deprecated attribute, returns `meta_kwargs",
+                               "['labels']` or Meta defaults if not set. Will",
+                               " be removed in pysat 3.2.0+"]),
+                      DeprecationWarning, stacklevel=2)
+        if 'labels' in self.meta_kwargs.keys():
+            return self.meta_kwargs['labels']
+        else:
+            return {'units': ('units', str), 'name': ('long_name', str),
+                    'notes': ('notes', str), 'desc': ('desc', str),
+                    'min_val': ('value_min', (float, int)),
+                    'max_val': ('value_max', (float, int)),
+                    'fill_val': ('fill', (float, int, str))}
 
     @property
     def bounds(self):

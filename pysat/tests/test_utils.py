@@ -21,6 +21,116 @@ from pysat.tests.classes.cls_registration import TestWithRegistration
 from pysat import utils
 
 
+class TestUpdateFill(object):
+    """Tests for the core utility `update_fill_values`."""
+
+    def setup_method(self):
+        """Set up the test enviroment."""
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.new_fill_val = -47.0
+        return
+
+    def teardown_method(self):
+        """Clean up the test environment."""
+        del self.ref_time, self.new_fill_val
+        return
+
+    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testmodel"])
+    @pytest.mark.parametrize("variables", [('mlt'), (['mlt'])])
+    def test_update_fill_values_numbers(self, name, variables):
+        """Test `update_fill_values` for the desired behaviour.
+
+        Parameters
+        ----------
+        name : str
+            Instrument name
+        variables : str or list-like
+            Variables to update (should be int or float type)
+
+        """
+
+        # Initalize the instrument
+        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst.load(date=self.ref_time)
+
+        # Ensure there are fill values to check
+        test_vars = pysat.utils.listify(variables)
+        for var in test_vars:
+            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+
+        # Update the fill values
+        pysat.utils.update_fill_values(inst, variables, self.new_fill_val)
+
+        # Ensure the fill values are updated
+        for var in test_vars:
+            assert inst.meta[var,
+                             inst.meta.labels.fill_val] == self.new_fill_val, \
+                "meta fill value not updated for {:}".format(var)
+            assert np.all(inst[var].values[0] == self.new_fill_val), \
+                "filled data values not updated for {:}".format(var)
+        return
+
+    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testmodel"])
+    def test_update_fill_values_by_type(self, name):
+        """Test `update_fill_values` for the desired behaviour.
+
+        Parameters
+        ----------
+        name : str
+            Instrument name
+
+        """
+
+        # Initalize the instrument
+        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst.load(date=self.ref_time)
+
+        # Ensure there are fill values to check
+        str_vars = [var for var in inst.variables if var in inst.meta.keys()
+                    and isinstance(inst[var].values[0], str)
+                    and inst.meta[var, inst.meta.labels.fill_val] is not None]
+        num_types = [int, float, np.float64, np.int64]
+        if inst.pandas_format:
+            num_vars = [var for var in inst.variables if var in inst.meta.keys()
+                        and inst[var].dtype.type in num_types
+                        and inst.meta[var, inst.meta.labels.fill_val]
+                        is not None]
+        else:
+            num_vars = [var for var in inst.variables if var in inst.meta.keys()
+                        and var not in inst.data.coords.keys()
+                        and inst[var].dtype.type in num_types
+                        and inst.meta[var, inst.meta.labels.fill_val]
+                        is not None]
+
+        for var in num_vars:
+            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+
+        for var in str_vars:
+            inst[var].values[0] = str(inst.meta[var, inst.meta.labels.fill_val])
+
+        # Update and check the numeric fill values
+        pysat.utils.update_fill_values(inst, num_vars, self.new_fill_val)
+
+        for var in num_vars:
+            assert inst.meta[var,
+                             inst.meta.labels.fill_val] == self.new_fill_val, \
+                "meta fill value not updated for {:}".format(var)
+            assert np.all(inst[var].values[0] == self.new_fill_val), \
+                "filled data values not updated for {:}".format(var)
+
+        # Update and check the string fill values
+        self.new_fill_val = 'fill'
+        pysat.utils.update_fill_values(inst, str_vars, self.new_fill_val)
+
+        for var in str_vars:
+            assert inst.meta[var,
+                             inst.meta.labels.fill_val] == self.new_fill_val, \
+                "meta fill value not updated for {:}".format(var)
+            assert np.all(inst[var].values[0] == self.new_fill_val), \
+                "filled data values not updated for {:}".format(var)
+        return
+
+
 class TestCIonly(object):
     """Tests where we mess with local settings.
 

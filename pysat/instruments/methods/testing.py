@@ -100,7 +100,14 @@ def initialize_test_meta(epoch_name, data_keys):
 
     """
     # Create standard metadata for all parameters
-    meta = pysat.Meta()
+    data_types = {'uts': float, 'mlt': float, 'slt': float, 'longitude': float,
+                  'latitude': float, 'altitude': float, 'orbit_num': int,
+                  'dummy1': int, 'dummy2': int, 'dummy3': int, 'dummy4': int,
+                  'unicode_dummy': str, 'string_dummy': str,
+                  'dummy_drifts': float, 'int8_dummy': int, 'int16_dummy': int,
+                  'int32_dummy': int, 'int64_dummy': int, 'profiles': int,
+                  'series_profiles': float}
+    meta = pysat.Meta(data_types=data_types)
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'desc': 'Number of seconds since mindight UT',
                    'value_min': 0.0, 'value_max': 86400.0}
@@ -171,6 +178,10 @@ def initialize_test_meta(epoch_name, data_keys):
 
     # Children metadata required for 2D pandas.
     # TODO(#789): Delete after removal of Meta children.
+    data_types = {'density': float, 'fraction': float, 'alt_profiles': float,
+                  'variable_profiles': float, 'profile_height': int,
+                  'variable_profile_height': int, 'images': int, 'x': int,
+                  'y': int, 'z': int, 'image_lat': float, 'image_lon': float}
     alt_profile_meta = pysat.Meta()
     alt_profile_meta['density'] = {'desc': 'Simulated density values.',
                                    'units': 'Log N/cc',
