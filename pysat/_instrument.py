@@ -1003,9 +1003,8 @@ class Instrument(object):
                     # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
-                if not np.isnan(new):
-                    self.meta._data_types[key[1]] = self.data[
-                        key[1]].values.dtype.type
+                self.meta._data_types[key[1]] = self.data[
+                    key[1]].values.dtype.type
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
