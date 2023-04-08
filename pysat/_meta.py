@@ -189,8 +189,8 @@ class Meta(object):
         # Set the labels
         self.labels = MetaLabels(metadata=self, **labels)
 
-        # Set the data types, if provided
-        self._data_types = data_types
+        # Set the data types. If not provided, empty dict
+        self._data_types = data_types if data_types else {}
 
         # Initialize higher order (nD) data structure container, a dict
         self._ho_data = {}
