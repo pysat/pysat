@@ -244,6 +244,31 @@ Note that these methods are not directly invoked by the user, but by
 :py:mod:`pysat` as needed in response to user inputs.
 
 
+init
+^^^^
+
+The instrument :py:meth:`init` method runs once at instrument instantiation,
+and handles the acknowledgement of the source of data.  Because this is key for
+scientific collaboration, acknowledgements and references are required for all
+:py:mod:`pysat` instruments.
+
+.. code:: Python
+
+    def init(self):
+        """Initializes the Instrument object with instrument specific values."""
+
+        self.acknowledgements = 'Follow the rules of the road by contacting PI'
+        self.references = '2001: A Space Oddessy (1968)'
+        pysat.logger.info(self.acknowledgements)
+
+        return
+
+``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should
+modify ``self`` in-place as needed; equivalent to a custom routine.  It is
+expected to attach the :py:attr:`acknowledgements` and :py:attr:`references`
+attributes to ``self``.
+
+
 list_files
 ^^^^^^^^^^
 
@@ -564,26 +589,6 @@ raised. Reserved keywords are :py:data:`fnames`, :py:data:`inst_id`,
 :py:data:`format_str`, :py:data:`supported_tags`, :py:data:`start`,
 :py:data:`stop`, and :py:data:`freq`.
 
-
-init
-^^^^
-
-If present, the instrument :py:meth:`init` method runs once at instrument
-instantiation.
-
-.. code:: python
-
-   def init(self):
-       self.acknowledgements = 'Thanks to Hal, for keeping me alive'
-       self.references = '2001: A Space Oddessy (1968)'
-       return
-
-``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should
-modify ``self`` in-place as needed; equivalent to a custom routine.  It is
-expected to attach the :py:attr:`acknowledgements` and :py:attr:`references`
-attributes to ``self``, as described in `rst_test-ackn`_.
-
-
 preprocess
 ^^^^^^^^^^
 
@@ -859,17 +864,3 @@ present.
 
 Data Acknowledgements
 ---------------------
-
-Acknowledging the source of data is key for scientific collaboration.  This can
-generally be put in the :py:func:`init` function of each instrument.
-
-.. code:: Python
-
-    def init(self):
-        """Initializes the Instrument object with instrument specific values."""
-
-        self.acknowledgements = acknowledgements_string
-        self.references = references_string
-        pysat.logger.info(self.acknowledgements)
-
-        return
