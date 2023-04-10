@@ -32,7 +32,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Deprecated the Instrument kwarg `labels` in favor of `meta_kwargs` and
     replaced the `meta_labels` attribute with the `meta_kwargs` attribute
   * Deprecated the `labels` keyword arg in favor of `meta_kwargs` in the
-    netCDF I/O functions and Instrument sub-module    
+    netCDF I/O functions and Instrument sub-module
   * Deprecated the `malformed_index` kwarg in the test instruments.  This is
     replaced by `non_monotonic_index` and `non_unique_index`
 * Bug Fix
