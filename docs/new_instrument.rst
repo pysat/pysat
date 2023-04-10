@@ -858,9 +858,3 @@ present.
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
    _password_req = {'': {'Level_1': False}}
-
-
-.. _rst_test-ackn:
-
-Data Acknowledgements
----------------------
