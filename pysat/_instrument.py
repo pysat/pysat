@@ -988,6 +988,7 @@ class Instrument(object):
 
         new = copy.deepcopy(new_data)
 
+        # Initialize as empty dict.
         if self.meta._data_types is None:
             mutable = self.meta.mutable
             self.meta.mutable = True
