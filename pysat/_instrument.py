@@ -988,6 +988,12 @@ class Instrument(object):
 
         new = copy.deepcopy(new_data)
 
+        if self.meta._data_types is None:
+            mutable = self.meta.mutable
+            self.meta.mutable = True
+            self.meta._data_types = {}
+            self.meta.mutable = mutable
+
         # Add data to main pandas.DataFrame, depending upon the input
         # slice, and a name
         if self.pandas_format:
