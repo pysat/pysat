@@ -3367,6 +3367,34 @@ class Instrument(object):
             else:
                 warnings.warn(message, stacklevel=2)
 
+        # Transfer any extra attributes in meta to the Instrument object.
+        # Metadata types need to be initialized before preprocess is run.
+        # TODO(#1020): Change the way this kwarg is handled
+        if use_header or ('use_header' in self.kwargs['load']
+                          and self.kwargs['load']['use_header']):
+            self.meta.transfer_attributes_to_header()
+        else:
+            warnings.warn(''.join(['Meta now contains a class for global ',
+                                   'metadata (MetaHeader). Default attachment ',
+                                   'of global attributes to Instrument will ',
+                                   'be Deprecated in pysat 3.2.0+. Set ',
+                                   '`use_header=True` in this load call or ',
+                                   'on Instrument instantiation to remove this',
+                                   ' warning.']), DeprecationWarning,
+                          stacklevel=2)
+            self.meta.transfer_attributes_to_instrument(self)
+
+        # Transfer loaded data types to meta.
+        self.meta.mutable = True
+        if self.meta._data_types is None:
+            self.meta._data_types = {}
+        for key in self.variables:
+            data_type = self.data[key].dtype.type
+            self.meta._data_types[key] = data_type
+
+        self.meta.mutable = False
+        sys.stdout.flush()
+
         # Apply the instrument preprocess routine, if data present
         if not self.empty:
             # Does not require self as input, as it is a partial func
@@ -3387,23 +3415,6 @@ class Instrument(object):
                 if (self.index[-1] == last_time) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # Transfer any extra attributes in meta to the Instrument object.
-        # TODO(#1020): Change the way this kwarg is handled
-        if use_header or ('use_header' in self.kwargs['load']
-                          and self.kwargs['load']['use_header']):
-            self.meta.transfer_attributes_to_header()
-        else:
-            warnings.warn(''.join(['Meta now contains a class for global ',
-                                   'metadata (MetaHeader). Default attachment ',
-                                   'of global attributes to Instrument will ',
-                                   'be Deprecated in pysat 3.2.0+. Set ',
-                                   '`use_header=True` in this load call or ',
-                                   'on Instrument instantiation to remove this',
-                                   ' warning.']), DeprecationWarning,
-                          stacklevel=2)
-            self.meta.transfer_attributes_to_instrument(self)
-        self.meta.mutable = False
-        sys.stdout.flush()
         return
 
     def remote_file_list(self, start=None, stop=None, **kwargs):
