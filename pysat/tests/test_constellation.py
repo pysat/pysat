@@ -341,8 +341,9 @@ class TestConstellationFunc(object):
     def test_empty_flag_data_empty_partial_load(self):
         """Test the status of the empty flag for partially loaded data."""
 
-        # Load only one instrument and test the status flag
-        self.const.instruments[0].load(date=self.ref_time, use_header=True)
+        self.const = pysat.Constellation(
+            const_module=constellations.testing_partial, use_header=True)
+        self.const.load(date=self.ref_time)
         assert self.const.empty_partial
         assert not self.const.empty
         return
@@ -350,8 +351,9 @@ class TestConstellationFunc(object):
     def test_empty_flag_data_not_empty_partial_load(self):
         """Test the alt status of the empty flag for partially loaded data."""
 
-        # Load only one instrument and test the status flag for alternate flag
-        self.const.instruments[0].load(date=self.ref_time, use_header=True)
+        self.const = pysat.Constellation(
+            const_module=constellations.testing_partial, use_header=True)
+        self.const.load(date=self.ref_time)
         assert not self.const._empty(all_inst=False)
         return
 
@@ -503,7 +505,7 @@ class TestConstellationFunc(object):
         # Redefine the Instrument and constellation
         self.inst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, use_header=True,
-            pad=pds.DateOffset(hours=1))
+            pad=pds.DateOffset(hours=1), num_samples=10)
         self.const = pysat.Constellation(instruments=[self.inst],
                                          use_header=True)
 
@@ -540,10 +542,10 @@ class TestConstellationFunc(object):
         pad = pds.DateOffset(hours=1)
         self.inst = [
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             use_header=True, pad=pad),
+                             use_header=True, pad=pad, num_samples=10),
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              use_header=True, pad=2 * pad,
-                             clean_level=clean_level)]
+                             clean_level=clean_level, num_samples=10)]
         self.const = pysat.Constellation(instruments=self.inst, use_header=True)
 
         # Load the Instrument and Constellation data

@@ -13,6 +13,28 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added Constellation class examples to the docs tutorial
   * Added links to the project standards repository to the docs
   * Improved formatting of custom kwargs when running `print` on an instrument
+  * Added a core utility to update fill values consistently in the data and
+    metadata
+  * Adapted `check_and_make_path` to treat an empty path as the current dir
+  * Added `meta_kwargs` attribute and kwarg to Instrument, allowing full custom
+    specification of the Meta class on instantiation
+  * Expanded MetaLabels type defaults for 'max_val', 'min_val', and 'fill_val'
+    to include more common data types
+  * Added `data_types` input to Meta and certain MetaLabels methods, allowing
+    the default values to be set to the specified data type when multiple types
+    are allowed, ensure these are updated when adding new data to an Instrument
+  * Added `_update_label_types` to MetaLabels, expanding the Python float/int
+    types to include all numpy float/int types
+  * Added `strict_dim_check` for loading xarray Datasets through netCDF
+  * Added `combine_by_coords` kwarg to `io.load_netcdf` for use on multi-file
+    xarray Datasets
+* Deprecations
+  * Deprecated the Instrument kwarg `labels` in favor of `meta_kwargs` and
+    replaced the `meta_labels` attribute with the `meta_kwargs` attribute
+  * Deprecated the `labels` keyword arg in favor of `meta_kwargs` in the
+    netCDF I/O functions and Instrument sub-module    
+  * Deprecated the `malformed_index` kwarg in the test instruments.  This is
+    replaced by `non_monotonic_index` and `non_unique_index`
 * Bug Fix
   * Allow `pysat.instruments.methods.general.list_files` to handle file
     cadences other than daily or monthly
@@ -25,6 +47,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     in the meta translation table
   * Fixed an issue when passing dates through load_remote_files (#1022)
   * Fixed a bug where data may not have any times, but still not be empty
+  * Fixed a bug where metadata with values of None are assigned as useful
+    attributes when attaching metadata to xarray objects
+  * Fixed a bug where a multi_file_day non-monotonic xarray index failed to
+    merge datasets (#1005)
+  * Fixed a bug in testing for setting multiple optional load kwargs (#1097)
+  * Fixed a bug when setting xarray data as a tuple
+  * Fixed a bug when loading constellations for partially empty instrument lists
+  * Fixed a bug when cleaning up temporary directories on windows during testing
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`
@@ -33,6 +63,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed broken links in docs
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
+  * Expanded MetaLabel default types for `min_val`, `max_val`, and `fill_val`
+  * Additional unit tests for data padding when a data index is non-monotonic.
+  * Deprecated the `malformed_index` kwarg in the test instruments.  This is
+    replaced by `non_monotonic_index` and `non_unique_index`
+  * Set the `instruments.pysat_testing` tag='no_download' to return an empty
+    pandas DataFrame for `load`
+  * Added `constellations.testing_partial`, which loads a partially empty
+    constellation dataset
+  * Reduced default num_samples for constellation test objects
   * Added standard test for `to_netcdf` for instrument libraries
 
 [3.0.6] - 2022-12-21

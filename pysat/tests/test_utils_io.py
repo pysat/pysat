@@ -381,8 +381,9 @@ class TestLoadNetCDF(object):
 
     @pytest.mark.parametrize("write_epoch,war_msg", [('epoch',
                                                       'is not a dimension.')])
+    @pytest.mark.parametrize("strict_dim_check", [True, False])
     def test_read_netcdf4_epoch_not_xarray_dimension(self, caplog, write_epoch,
-                                                     war_msg):
+                                                     war_msg, strict_dim_check):
         """Test netCDF4 load `epoch_name` not a dimension.
 
         Parameters
@@ -391,6 +392,8 @@ class TestLoadNetCDF(object):
             Label used for datetime data when writing file.
         war_msg : str
             Warning message to test for.
+        strict_dim_check : bool
+            If True, raises warning. If False, does not raise warning.
 
         """
 
@@ -409,10 +412,13 @@ class TestLoadNetCDF(object):
 
                 io.load_netcdf(outfile, epoch_name='slt',
                                pandas_format=self.testInst.pandas_format,
-                               **tkwargs)
+                               strict_dim_check=strict_dim_check, **tkwargs)
 
             self.out = caplog.text
-            assert self.out.find(war_msg)
+            if strict_dim_check:
+                assert self.out.find(war_msg) >= 0
+            else:
+                assert self.out.find(war_msg) < 0
         return
 
     @pytest.mark.parametrize("wkwargs, lkwargs", [
@@ -932,7 +938,7 @@ class TestNetCDF4Integration(object):
         if dvar.find('int8') >= 0:
             data_type = bool
         else:
-            data_type = type(self.testInst[dvar][0])
+            data_type = type(self.testInst[dvar].values[0])
 
         # Get the filtered output
         with warnings.catch_warnings(record=True) as war:
@@ -984,12 +990,17 @@ class TestNetCDF4Integration(object):
                     assert mkey not in export_nan, \
                         "{:} should have been exported".format(repr(mkey))
             else:
-                if mkey in export_nan and np.isnan(mdict[mkey]):
+                if(mkey in export_nan and not np.issubdtype(data_type, str)
+                   and np.isnan(mdict[mkey])):
                     assert np.isnan(fdict[mkey])
                 else:
-                    assert fdict[mkey] == mdict[mkey], \
-                        "meta data {:} changed".format(repr(mkey))
-
+                    if mkey in check_type and fdict[mkey] != mdict[mkey]:
+                        assert fdict[mkey] == data_type(mdict[mkey]), \
+                            "unexpected recast meta data {:} value".format(
+                                repr(mkey))
+                    else:
+                        assert fdict[mkey] == mdict[mkey], \
+                            "meta data {:} changed".format(repr(mkey))
         return
 
     @pytest.mark.parametrize('missing', [True, False])
@@ -1643,9 +1654,13 @@ class TestMetaTranslation(object):
                                                       self.meta_dict)
 
         # Shift values of _FillValue but not FillVal
+        fkey = '_FillValue'
         for key in self.out.keys():
             if '_FillValue' in self.out[key].keys():
-                self.out[key]['_FillValue'] += 1
+                if isinstance(self.out[key][fkey], str):
+                    self.out[key][fkey] += 'shift'
+                else:
+                    self.out[key]['_FillValue'] += 1
 
         # Get default inverse translation
         from_trans = io.default_from_netcdf_translation_table(
@@ -1873,4 +1888,69 @@ class TestMetaTranslationModel(TestMetaTranslation):
 
         del self.test_inst, self.test_date, self.out, self.meta_dict
 
+        return
+
+
+class TestIODeprecation(object):
+    """Unit tests for deprecation warnings in `utils.io`."""
+
+    def setup_method(self):
+        """Set up the test environment."""
+
+        # Create temporary directory
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.saved_path = pysat.params['data_dirs']
+        pysat.params['data_dirs'] = self.tempdir.name
+
+        self.outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
+        self.in_kwargs = {'labels': {
+            'units': ('units', str), 'name': ('long_name', str),
+            'notes': ('notes', str), 'desc': ('desc', str),
+            'min_val': ('value_min', float), 'max_val': ('value_max', float),
+            'fill_val': ('fill', float)}}
+
+        return
+
+    def teardown_method(self):
+        """Clean up the test environment."""
+
+        pysat.params['data_dirs'] = self.saved_path
+
+        # Remove the temporary directory
+        self.tempdir.cleanup()
+
+        # Clear the attributes
+        del self.tempdir, self.saved_path, self.outfile, self.in_kwargs
+        return
+
+    @pytest.mark.parametrize("inst_name,load_func", [
+        ("testing", io.load_netcdf_pandas),
+        ("ndtesting", io.load_netcdf_xarray)])
+    def test_load_netcdf_labels(self, inst_name, load_func):
+        """Test deprecation of `labels` kwarg in different load functions.
+
+        Parameters
+        ----------
+        inst_name : str
+            Instrument name for test Instrument
+        load_func : function
+            NetCDF load method with deprecation warning
+
+        """
+
+        # Create a test file
+        testInst = pysat.Instrument(platform='pysat', name=inst_name,
+                                    num_samples=100, update_files=True,
+                                    use_header=True)
+        testInst.load(date=testInst.inst_module._test_dates[''][''])
+        io.inst_to_netcdf(testInst, fname=self.outfile)
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as war:
+            load_func(self.outfile, **self.in_kwargs)
+
+        # Test the warnings
+        assert len(war) >= 1
+        testing.eval_warnings(war,
+                              ["`labels` is deprecated, use `meta_kwargs`"])
         return

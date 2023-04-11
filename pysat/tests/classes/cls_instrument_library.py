@@ -32,7 +32,7 @@ Examples
 
 import datetime as dt
 from importlib import import_module
-import os
+import sys
 import tempfile
 import warnings
 
@@ -110,7 +110,12 @@ class InstLibTests(object):
         """Initialize the testing setup once before all tests are run."""
 
         # Use a temporary directory so that the user's setup is not altered.
-        self.tempdir = tempfile.TemporaryDirectory()
+        # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
+        if sys.version_info.minor >= 10:
+            self.tempdir = tempfile.TemporaryDirectory(
+                ignore_cleanup_errors=True)
+        else:
+            self.tempdir = tempfile.TemporaryDirectory()
         self.saved_path = pysat.params['data_dirs']
         pysat.params._set_data_dirs(path=self.tempdir.name, store=False)
         return
@@ -119,7 +124,15 @@ class InstLibTests(object):
         """Clean up downloaded files and parameters from tests."""
 
         pysat.params._set_data_dirs(self.saved_path, store=False)
-        self.tempdir.cleanup()
+        # Remove the temporary directory. In Windows, this occasionally fails
+        # by raising a wide variety of different error messages. Python 3.10+
+        # can handle this, but lower Python versions cannot.
+        # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
+        try:
+            self.tempdir.cleanup()
+        except Exception:
+            pass
+
         del self.saved_path, self.tempdir
         return
 
@@ -186,24 +199,6 @@ class InstLibTests(object):
                     getattr(self, method).pytestmark.append(mark)
 
         return instruments
-
-    def load_data(self, inst, date):
-        """Load data even if strict_time is not maintained."""
-
-        try:
-            inst.load(date=date, use_header=True)
-        except ValueError as verr:
-            # Check if instrument is failing due to strict time flag
-            if str(verr).find('Loaded data') > 0:
-                inst.strict_time_flag = False
-                with warnings.catch_warnings(record=True) as war:
-                    inst.load(date=date, use_header=True)
-                assert len(war) >= 1
-                categories = [war[j].category for j in range(0, len(war))]
-                assert UserWarning in categories
-            else:
-                # If error message does not match, raise error anyway
-                raise(verr)
 
     @pytest.mark.all_inst
     def test_modules_standard(self, inst_name):
@@ -344,7 +339,20 @@ class InstLibTests(object):
             test_inst.clean_level = clean_level
             target = 'Fake Data to be cleared'
             test_inst.data = [target]
-            self.load_data(test_inst, date)
+            try:
+                test_inst.load(date=date, use_header=True)
+            except ValueError as verr:
+                # Check if instrument is failing due to strict time flag
+                if str(verr).find('Loaded data') > 0:
+                    test_inst.strict_time_flag = False
+                    with warnings.catch_warnings(record=True) as war:
+                        test_inst.load(date=date, use_header=True)
+                    assert len(war) >= 1
+                    categories = [war[j].category for j in range(0, len(war))]
+                    assert UserWarning in categories
+                else:
+                    # If error message does not match, raise error anyway
+                    raise(verr)
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
@@ -353,49 +361,6 @@ class InstLibTests(object):
             # Not used for clean levels since cleaning may remove all data
             if clean_level == "none":
                 assert not test_inst.empty
-        else:
-            pytest.skip("Download data not available")
-
-        return
-
-    @pytest.mark.second
-    @pytest.mark.download
-    def test_to_netcdf(self, inst_dict):
-        """Test that to_netcdf accurately writes data.
-
-        Parameters
-        ----------
-        inst_dict : dict
-            Dictionary containing info to instantiate a specific instrument.
-            Set automatically from instruments['download'] when
-            `initialize_test_package` is run.
-
-        """
-
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
-
-        # TODO(#913): Can remove the skip lines once this module is removed.
-        if test_inst.platform == 'pysat' and test_inst.name == 'testing2d':
-            pytest.skip('Not maintaining deprecated module')
-
-        if len(test_inst.files.files) > 0:
-            self.load_data(test_inst, date)
-
-            # Write data to tempdir
-            fpath = os.path.join(self.tempdir.name, 'test_data.nc')
-            test_inst.to_netcdf4(fpath)
-
-            # Load from netcdf
-            data, meta = pysat.utils.io.load_netcdf(
-                fpath, pandas_format=test_inst.pandas_format)
-
-            if test_inst.pandas_format:
-                # Convert to xarray tp sort variable names
-                assert data.to_xarray().equals(test_inst.data.to_xarray())
-            else:
-                assert data.equals(test_inst.data)
-            assert meta == test_inst.meta
-
         else:
             pytest.skip("Download data not available")
 

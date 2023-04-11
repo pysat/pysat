@@ -132,16 +132,9 @@ def download(date_array, tag, inst_id, data_path=None):
 
 def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
          epoch_name=None, epoch_unit='ms', epoch_origin='unix',
-         pandas_format=True, decode_timedelta=False,
-         load_labels={'units': ('units', str), 'name': ('long_name', str),
-                      'notes': ('notes', str), 'desc': ('desc', str),
-                      'plot': ('plot_label', str), 'axis': ('axis', str),
-                      'scale': ('scale', str),
-                      'min_val': ('value_min', np.float64),
-                      'max_val': ('value_max', np.float64),
-                      'fill_val': ('fill', np.float64)},
-         meta_processor=None,
-         meta_translation=None, drop_meta_labels=None, decode_times=None):
+         pandas_format=True, decode_timedelta=False, meta_kwargs=None,
+         load_labels=None, meta_processor=None, meta_translation=None,
+         drop_meta_labels=None, decode_times=None):
     """Load pysat-created NetCDF data and meta data.
 
     Parameters
@@ -187,13 +180,13 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
         Used for xarray data (`pandas_format` is False).  If True, variables
         with unit attributes that  are 'timelike' ('hours', 'minutes', etc) are
         converted to `np.timedelta64`. (default=False)
-    load_labels : dict
+    meta_kwargs : dict or NoneType
+        Dict to specify custom Meta initialization or None to use Meta
+        defaults (default=None)
+    load_labels : dict or NoneType
         Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order.
-        (default={'units': ('units', str), 'name': ('long_name', str),
-        'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', np.float64),
-        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+        that have the label values and value types in that order or None to use
+        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -234,6 +227,7 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                                              epoch_origin=epoch_origin,
                                              pandas_format=pandas_format,
                                              decode_timedelta=decode_timedelta,
+                                             meta_kwargs=meta_kwargs,
                                              labels=load_labels,
                                              meta_processor=meta_processor,
                                              meta_translation=meta_translation,
