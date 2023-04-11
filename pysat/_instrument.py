@@ -1003,8 +1003,10 @@ class Instrument(object):
                     # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
-                self.meta._data_types[key[1]] = self.data[
-                    key[1]].values.dtype.type
+                for lkey in pysat.utils.listify(key[1]):
+                    if not isinstance(lkey, slice) and lkey in self.variables:
+                        self.meta._data_types[lkey] = self.data[
+                            lkey].values.dtype.type
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
