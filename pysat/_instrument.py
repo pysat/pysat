@@ -1010,10 +1010,7 @@ class Instrument(object):
                     # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
-                for lkey in pysat.utils.listify(key[1]):
-                    if not isinstance(lkey, slice) and lkey in self.variables:
-                        self.meta._data_types[lkey] = self.data[
-                            lkey].values.dtype.type
+                self._update_data_types(key[1])
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -1050,11 +1047,7 @@ class Instrument(object):
 
             # Assign data and any extra metadata
             self.data[key] = in_data
-
-            for lkey in pysat.utils.listify(key):
-                if not isinstance(lkey, slice) and lkey in self.variables:
-                    self.meta._data_types[lkey] = self.data[
-                        lkey].values.dtype.type
+            self._update_data_types(key)
 
             self.meta[key] = new
 
@@ -3846,6 +3839,21 @@ class Instrument(object):
                                       export_pysat_info=export_pysat_info,
                                       unlimited_time=unlimited_time)
 
+        return
+
+    def _update_data_types(self, key):
+        """Update the data types in pysat.Meta object.
+
+        Parameters
+        ----------
+        key : str or list
+            key or list of keys to update.
+
+        """
+
+        for lkey in pysat.utils.listify(key):
+            if not isinstance(lkey, slice) and lkey in self.variables:
+                self.meta._data_types[lkey] = self.data[lkey].values.dtype.type
         return
 
 
