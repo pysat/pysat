@@ -1082,8 +1082,7 @@ class Instrument(object):
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
 
-                self.meta._data_types[key[-1]] = self.data[
-                    key[-1]].values.dtype.type
+                self._update_data_types(key[-1])
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
