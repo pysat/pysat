@@ -988,6 +988,13 @@ class Instrument(object):
 
         new = copy.deepcopy(new_data)
 
+        # Initialize as empty dict.
+        if self.meta._data_types is None:
+            mutable = self.meta.mutable
+            self.meta.mutable = True
+            self.meta._data_types = {}
+            self.meta.mutable = mutable
+
         # Add data to main pandas.DataFrame, depending upon the input
         # slice, and a name
         if self.pandas_format:
@@ -1003,8 +1010,7 @@ class Instrument(object):
                     # (including list or slice).
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
-                self.meta._data_types[key[1]] = self.data[
-                    key[1]].values.dtype.type
+                self._update_data_types(key[1])
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -1041,11 +1047,7 @@ class Instrument(object):
 
             # Assign data and any extra metadata
             self.data[key] = in_data
-
-            for lkey in pysat.utils.listify(key):
-                if not isinstance(lkey, slice) and lkey in self.variables:
-                    self.meta._data_types[lkey] = self.data[
-                        lkey].values.dtype.type
+            self._update_data_types(key)
 
             self.meta[key] = new
 
@@ -1080,8 +1082,7 @@ class Instrument(object):
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
 
-                self.meta._data_types[key[-1]] = self.data[
-                    key[-1]].values.dtype.type
+                self._update_data_types(key[-1])
                 self.meta[key[-1]] = new
                 return
             elif isinstance(key, str):
@@ -3367,6 +3368,34 @@ class Instrument(object):
             else:
                 warnings.warn(message, stacklevel=2)
 
+        # Transfer any extra attributes in meta to the Instrument object.
+        # Metadata types need to be initialized before preprocess is run.
+        # TODO(#1020): Change the way this kwarg is handled
+        if use_header or ('use_header' in self.kwargs['load']
+                          and self.kwargs['load']['use_header']):
+            self.meta.transfer_attributes_to_header()
+        else:
+            warnings.warn(''.join(['Meta now contains a class for global ',
+                                   'metadata (MetaHeader). Default attachment ',
+                                   'of global attributes to Instrument will ',
+                                   'be Deprecated in pysat 3.2.0+. Set ',
+                                   '`use_header=True` in this load call or ',
+                                   'on Instrument instantiation to remove this',
+                                   ' warning.']), DeprecationWarning,
+                          stacklevel=2)
+            self.meta.transfer_attributes_to_instrument(self)
+
+        # Transfer loaded data types to meta.
+        self.meta.mutable = True
+        if self.meta._data_types is None:
+            self.meta._data_types = {}
+        for key in self.variables:
+            data_type = self.data[key].dtype.type
+            self.meta._data_types[key] = data_type
+
+        self.meta.mutable = False
+        sys.stdout.flush()
+
         # Apply the instrument preprocess routine, if data present
         if not self.empty:
             # Does not require self as input, as it is a partial func
@@ -3387,23 +3416,6 @@ class Instrument(object):
                 if (self.index[-1] == last_time) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # Transfer any extra attributes in meta to the Instrument object.
-        # TODO(#1020): Change the way this kwarg is handled
-        if use_header or ('use_header' in self.kwargs['load']
-                          and self.kwargs['load']['use_header']):
-            self.meta.transfer_attributes_to_header()
-        else:
-            warnings.warn(''.join(['Meta now contains a class for global ',
-                                   'metadata (MetaHeader). Default attachment ',
-                                   'of global attributes to Instrument will ',
-                                   'be Deprecated in pysat 3.2.0+. Set ',
-                                   '`use_header=True` in this load call or ',
-                                   'on Instrument instantiation to remove this',
-                                   ' warning.']), DeprecationWarning,
-                          stacklevel=2)
-            self.meta.transfer_attributes_to_instrument(self)
-        self.meta.mutable = False
-        sys.stdout.flush()
         return
 
     def remote_file_list(self, start=None, stop=None, **kwargs):
@@ -3826,6 +3838,21 @@ class Instrument(object):
                                       export_pysat_info=export_pysat_info,
                                       unlimited_time=unlimited_time)
 
+        return
+
+    def _update_data_types(self, key):
+        """Update the data types in pysat.Meta object.
+
+        Parameters
+        ----------
+        key : str or list
+            key or list of keys to update.
+
+        """
+
+        for lkey in pysat.utils.listify(key):
+            if not isinstance(lkey, slice) and lkey in self.variables:
+                self.meta._data_types[lkey] = self.data[lkey].values.dtype.type
         return
 
 
