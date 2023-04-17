@@ -132,8 +132,16 @@ class InstAccessTests(object):
         self.eval_successful_load()
         return
 
-    def test_basic_instrument_load_no_data(self, caplog):
-        """Test Instrument load with no data for appropriate log messages."""
+    @pytest.mark.parametrize('pad', [None, dt.timedelta(days=1)])
+    def test_basic_instrument_load_no_data(self, caplog, pad):
+        """Test Instrument load with no data for appropriate log messages.
+
+        Parameters
+        ----------
+        pad : dt.timedelta, pds.DateOffset, NoneType
+            Pad input for load call
+
+        """
 
         # Get a date that is not covered by an Instrument object.
         no_data_d = self.testInst.files.files.index[0] - dt.timedelta(weeks=10)
@@ -144,7 +152,7 @@ class InstAccessTests(object):
             # Test doesn't check against loading by filename since that produces
             # an error if there is no file. Loading by yr, doy no different
             # than date in this case.
-            self.testInst.load(date=no_data_d, use_header=True)
+            self.testInst.load(date=no_data_d, pad=pad, use_header=True)
 
         # Confirm by checking against caplog that metadata was
         # not assigned.
