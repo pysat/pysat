@@ -32,7 +32,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Deprecated the Instrument kwarg `labels` in favor of `meta_kwargs` and
     replaced the `meta_labels` attribute with the `meta_kwargs` attribute
   * Deprecated the `labels` keyword arg in favor of `meta_kwargs` in the
-    netCDF I/O functions and Instrument sub-module    
+    netCDF I/O functions and Instrument sub-module
   * Deprecated the `malformed_index` kwarg in the test instruments.  This is
     replaced by `non_monotonic_index` and `non_unique_index`
 * Bug Fix
@@ -55,6 +55,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed a bug when setting xarray data as a tuple
   * Fixed a bug when loading constellations for partially empty instrument lists
   * Fixed a bug when cleaning up temporary directories on windows during testing
+  * Fixed a bug in Instrument loading with a pad, where RangeIndex slicing no
+    longer works on an empty series
 * Maintenance
   * Added roadmap to readthedocs
   * Improved the documentation in `pysat.utils.files`

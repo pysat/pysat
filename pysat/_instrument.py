@@ -3304,12 +3304,13 @@ class Instrument(object):
                 else:
                     self.data = stored_data
 
-            self.data = self[first_pad:last_pad]
+            if len(self.index) > 0:
+                self.data = self[first_pad:last_pad]
 
-            # Want exclusive end slicing behavior from above
-            if not self.empty:
-                if (self.index[-1] == last_pad) & (not want_last_pad):
-                    self.data = self[:-1]
+                # Want exclusive end slicing behavior from above
+                if not self.empty:
+                    if (self.index[-1] == last_pad) & (not want_last_pad):
+                        self.data = self[:-1]
 
         else:
             # If self.pad is False, load single day
