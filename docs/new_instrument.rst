@@ -84,6 +84,14 @@ ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite,
 a constellation of satellites, a ground-based observatory, or a collaboration
 of ground-based observatories.
 
+Sometimes it is not practicle to set a unique platform name for a data set. An
+example of this are many of the space weather indices managed by
+:py:mod:`pysatSpaceWeather`. In this case, the solar and geomagnetic indices are
+included in a common 'Space Weather' platform (sw), regardless of their origin.
+This allows users to access a given index using different :py:attr:`inst_id`
+and :py:attr:`tag` values, even if the mission or observatory that produce the
+indices differ.
+
 name
 ^^^^
 
@@ -108,6 +116,14 @@ identical or similar satellites, or multiple instruments on the same satellite
 with different look directions.  For example, the DMSP satellites carry similar
 instrument suites across multiple spacecraft.  These are labeled as f11-f18.
 
+:py:attr:`inst_id` is also commonly used to distinguish between the same data
+product at different sample rates. An example of this may be seen in the
+:py:mod:`pysatNASA.instruments.timed_guvi` data for the 'sdr-imaging' and
+'sdr-spectrograph' :py:attr:`tag` values. As a rule, when trying to decide if
+a characteristic should be assigned as a :py:attr:`tag` or :py:attr:`inst_id`
+attribute, the :py:attr:`inst_id` value should subdivide the :py:attr:`tag`
+data set in a clear way that does not require a long description.
+
 Naming Requirements in Instrument Module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -121,12 +137,12 @@ be lowercase when defined in the instrument module.
   platform = 'your_platform_name'
   name = 'name_of_instrument'
 
-  # Dictionary keyed by tag with a string description of that dataset
+  # Dictionary keyed by tag with a string description of that data set
   tags = {'': 'The standard processing for the data.  Loaded by default',
           'fancy': 'A higher-level processing of the data.'}
 
   # Dictionary keyed by inst_id with a list of supported tags for each key
-  inst_ids = {'a': ['', 'fancy'], 'b': ['', 'fancy'], 'c': ['']}
+  inst_ids = {'sat-a': ['', 'fancy'], 'sat-b': ['', 'fancy'], 'sat-c': ['']}
 
 Note that the possible tags that can be invoked are '' and 'fancy'.  The tags
 dictionary includes a short description for each of these tags.  A blank tag
@@ -136,10 +152,15 @@ The supported inst_ids should also be stored in a dictionary.  Each key name
 here points to a list of the possible tags that can be associated with that
 particular :py:attr:`inst_id`. Note that not all satellites in the example
 support every level of processing. In this case the 'fancy' processing is
-available for satellites 'a' and 'b', but not 'c'.
+available for satellites 'sat-a' and 'sat-b', but not 'sat-c'.
 
-For a dataset that does not need multiple levels of tags and inst_ids, an empty
-string can be used. The code below only supports loading a single data set.
+For a data set that does not need multiple levels of :py:attr:`tag` and
+:py:attr:`inst_id` attributes, an empty string can be used. The code below only
+supports loading a single data set.  However, using an empty string for the
+:py:attr:`tag` is discouraged if it is possible for the same platform to have
+another distinct version of this data set in the future. This is unlikely to
+be an issue for satellite data sets, but should be taken into account for
+ground-based platforms.
 
 .. code:: python
 
@@ -221,6 +242,31 @@ needed for full :py:mod:`pysat` support.
 
 Note that these methods are not directly invoked by the user, but by
 :py:mod:`pysat` as needed in response to user inputs.
+
+
+init
+^^^^
+
+The instrument :py:meth:`init` method runs once at instrument instantiation,
+and handles the acknowledgement of the source of data.  Because this is key for
+scientific collaboration, acknowledgements and references are required for all
+:py:mod:`pysat` instruments.
+
+.. code:: Python
+
+    def init(self):
+        """Initializes the Instrument object with instrument specific values."""
+
+        self.acknowledgements = 'Follow the rules of the road by contacting PI'
+        self.references = '2001: A Space Oddessy (1968)'
+        pysat.logger.info(self.acknowledgements)
+
+        return
+
+``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should
+modify ``self`` in-place as needed; equivalent to a custom routine.  It is
+expected to attach the :py:attr:`acknowledgements` and :py:attr:`references`
+attributes to ``self``.
 
 
 list_files
@@ -401,20 +447,23 @@ The load module method signature should appear as:
 
 .. code:: python
 
-   # Update units to meters, 'm' for variable
-   inst.meta[variable, inst.meta.labels.units] = 'm'
+   # Update units to meters, 'm' for variable `var`, other metadata are set to
+   # the defaults for this data type and label type
+   inst.meta[var] = {inst.meta.labels.units: 'm'}
 
 - If metadata is already stored with the file, creating the :py:class:`Meta`
   object is generally trivial. If this isn't the case, it can be tedious to
   fill out all information if there are many data parameters. In this case it
-  may be easier to fill out a text file. A basic convenience function is
-  provided for this situation. See :py:meth:`pysat.Meta.from_csv` for more
-  information.
+  may be easier to create a text file, though in many cases a separate function
+  is defined to provide metadata for specific data types (see
+  :py:func:`pysatSpaceWeather.instruments.methods.kp_ap.initialize_kp_metadata`).
+  A basic convenience function is provided if you decide to use a text file.
+  See :py:meth:`pysat.Meta.from_csv` for more information.
 
 download
 ^^^^^^^^
 
-Download support significantly lowers the hassle in dealing with any dataset.
+Download support significantly lowers the hassle in dealing with any data set.
 To fetch data from the internet the download method should have the signature
 
 .. code:: python
@@ -424,10 +473,11 @@ To fetch data from the internet the download method should have the signature
 
 * :py:data:`date_array`, a list of dates for which data will be downloaded
 * :py:data:`data_path`, the full path to the directory to store data
-* :py:data:`user`, a string for the remote database username
-* :py:data:`password`, a string for the remote database password
+* :py:data:`user`, an optional string for the remote database username
+* :py:data:`password`, an optional string for the remote database password
 
-The routine should download the data and write it to the disk at the data_path.
+The routine should download the data and write it to the disk at the location
+provided by 'data_path', which will be supplied by :py:mod:`pysat`.
 
 
 .. _rst_new_inst-optattr:
@@ -538,26 +588,6 @@ raised. Reserved keywords are :py:data:`fnames`, :py:data:`inst_id`,
 :py:data:`tag`, :py:data:`date_array`, :py:data:`data_path`,
 :py:data:`format_str`, :py:data:`supported_tags`, :py:data:`start`,
 :py:data:`stop`, and :py:data:`freq`.
-
-
-init
-^^^^
-
-If present, the instrument :py:meth:`init` method runs once at instrument
-instantiation.
-
-.. code:: python
-
-   def init(self):
-       self.acknowledgements = 'Thanks to Hal, for keeping me alive'
-       self.references = '2001: A Space Oddessy (1968)'
-       return
-
-``self`` is a  :py:class:`pysat.Instrument` object. :py:func:`init` should
-modify ``self`` in-place as needed; equivalent to a custom routine.  It is
-expected to attach the :py:attr:`acknowledgements` and :py:attr:`references`
-attributes to ``self``.
-
 
 preprocess
 ^^^^^^^^^^
@@ -763,6 +793,27 @@ Note that :py:mod:`pysat` assumes that this flag is True if no variable is
 present. Thus, specifying only ``_test_download = {'': {'Level_1': False}}``
 has the same effect, and Level 2 tests will still be run.
 
+Load Options
+^^^^^^^^^^^^
+
+As there may be different ways to load data using custom keyword arguments, the
+:py:attr:`_test_load_opt` attribute can be used to support testing of each
+custom keyword argument option.  These should be included as a list that is
+accessed through a dictionary with :py:attr:`inst_id` and :py:attr:`tag` keys.
+
+.. code:: python
+
+   platform = 'observatory'
+   name = 'data'
+   tags = {'historic': 'Historic data',
+           'newfangled': 'Newfangled data, has different formatting options'}
+   inst_ids = {'': ['historic', 'newfangled']}
+   _test_dates = {'': {'historic': dt.datetime(1900, 1, 1),
+                       'newfangled': dt.datetime(2000, 1, 1)}}
+   _test_load_opt = {'': {'newfangled': [{'historic_format': True},
+                                         {'historic_format': False}]}}
+
+
 FTP Access
 ^^^^^^^^^^
 
@@ -807,23 +858,3 @@ present.
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
    _password_req = {'': {'Level_1': False}}
-
-
-.. _rst_test-ackn:
-
-Data Acknowledgements
----------------------
-
-Acknowledging the source of data is key for scientific collaboration.  This can
-generally be put in the :py:func:`init` function of each instrument.
-
-.. code:: Python
-
-    def init(self):
-        """Initializes the Instrument object with instrument specific values."""
-
-        self.acknowledgements = acknowledgements_string
-        self.references = references_string
-        pysat.logger.info(self.acknowledgements)
-
-        return
