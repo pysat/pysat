@@ -1468,7 +1468,7 @@ def return_epoch_metadata(inst, epoch_name):
     basic_labels = [inst.meta.labels.units]
 
     for label in basic_labels:
-        if label not in new_dict or len(new_dict[label]) == 0:
+        if label not in new_dict or new_dict[label] == '':
             new_dict[label] = epoch_label
 
     # Assign name
@@ -2073,7 +2073,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                            * 1.0E-6).astype(np.int64)
 
         # Update 'time' dimension to `epoch_name`
-        xr_data = xr_data.rename({'time': epoch_name})
+        if epoch_name != 'time':
+            xr_data = xr_data.rename({'time': epoch_name})
 
         # Transfer metadata
         pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)

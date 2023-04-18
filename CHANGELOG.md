@@ -74,6 +74,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added `constellations.testing_partial`, which loads a partially empty
     constellation dataset
   * Reduced default num_samples for constellation test objects
+  * Improved consistency in metadata for test instruments
 
 [3.0.6] - 2022-12-21
 --------------------
