@@ -100,7 +100,14 @@ def initialize_test_meta(epoch_name, data_keys):
 
     """
     # Create standard metadata for all parameters
-    meta = pysat.Meta()
+    data_types = {'uts': float, 'mlt': float, 'slt': float, 'longitude': float,
+                  'latitude': float, 'altitude': float, 'orbit_num': int,
+                  'dummy1': int, 'dummy2': int, 'dummy3': int, 'dummy4': int,
+                  'unicode_dummy': str, 'string_dummy': str,
+                  'dummy_drifts': float, 'int8_dummy': int, 'int16_dummy': int,
+                  'int32_dummy': int, 'int64_dummy': int, 'profiles': int,
+                  'series_profiles': float}
+    meta = pysat.Meta(data_types=data_types)
     meta['uts'] = {'units': 's', 'long_name': 'Universal Time',
                    'desc': 'Number of seconds since mindight UT',
                    'value_min': 0.0, 'value_max': 86400.0}
@@ -171,6 +178,10 @@ def initialize_test_meta(epoch_name, data_keys):
 
     # Children metadata required for 2D pandas.
     # TODO(#789): Delete after removal of Meta children.
+    data_types = {'density': float, 'fraction': float, 'alt_profiles': float,
+                  'variable_profiles': float, 'profile_height': int,
+                  'variable_profile_height': int, 'images': int, 'x': int,
+                  'y': int, 'z': int, 'image_lat': float, 'image_lon': float}
     alt_profile_meta = pysat.Meta()
     alt_profile_meta['density'] = {'desc': 'Simulated density values.',
                                    'units': 'Log N/cc',
@@ -650,3 +661,65 @@ def create_files(inst, start, stop, freq='1D', use_doy=True,
                         if timeout is not None:
                             time.sleep(timeout)
     return
+
+
+def non_monotonic_index(index):
+    """Adjust the index to be non-monotonic.
+
+    Parameters
+    ----------
+    index : pds.DatetimeIndex
+        The index generated in an instrument test file.
+
+    Returns
+    -------
+    new_index : pds.DatetimeIndex
+        A non-montonic index
+
+    """
+
+    new_index = index.tolist()
+
+    # Create a non-monotonic index
+    new_index[6:9], new_index[3:6] = new_index[3:6], new_index[6:9]
+
+    # Convert back to DatetimeIndex
+    new_index = pds.to_datetime(new_index)
+
+    return new_index
+
+
+def non_unique_index(index):
+    """Adjust the index to be non-unique.
+
+    Parameters
+    ----------
+    index : pds.DatetimeIndex
+        The index generated in an instrument test file.
+
+    Returns
+    -------
+    new_index : pds.DatetimeIndex
+        A non-unique index
+
+    """
+
+    new_index = index.tolist()
+
+    # Create a non-unique index
+    new_index[1:3] = [new_index[1]] * 2
+
+    # Convert back to DatetimeIndex
+    new_index = pds.to_datetime(new_index)
+
+    return new_index
+
+
+def _warn_malformed_kwarg():
+    """Warn user that kwarg has been deprecated."""
+
+    dstr = ' '.join(['The kwarg malformed_index has been deprecated and',
+                     'will be removed in pysat 3.2.0+. Please use',
+                     'non_monotonic_index or non_unique_index to specify',
+                     'desired behaviour.'])
+    warnings.warn(dstr, DeprecationWarning, stacklevel=2)

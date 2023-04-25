@@ -51,9 +51,10 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
 
                 # Cycle through all the pysat MetaData labels and transfer
                 for meta_key in pysat_meta[data_key].keys():
-                    # Assign attributes
-                    xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
-                        data_key][meta_key]
+                    # Assign attributes with values that are not None
+                    if pysat_meta[data_key][meta_key] is not None:
+                        xr_data[xarr_vars[i]].attrs[meta_key] = pysat_meta[
+                            data_key][meta_key]
 
             else:
                 wstr = ''.join(['Did not find data for metadata variable ',
@@ -64,9 +65,10 @@ def pysat_meta_to_xarray_attr(xr_data, pysat_meta, epoch_name):
     # MetaData labels and transfer.
     if epoch_name in pysat_meta.keys():
         for meta_key in pysat_meta[epoch_name].keys():
-            # Assign attributes
-            xr_data[epoch_name].attrs[meta_key] = pysat_meta[epoch_name][
-                meta_key]
+            # Assign attributes that are not None
+            if pysat_meta[epoch_name][meta_key] is not None:
+                xr_data[epoch_name].attrs[meta_key] = pysat_meta[epoch_name][
+                    meta_key]
 
     return
 
@@ -515,7 +517,7 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     inst : pysat.Instrument
         Instrument object with data to be written to file.
     meta_dict : dict
-        Output starting from `Instrument.meta.to_dict() `supplying attribute
+        Output starting from `Instrument.meta.to_dict()` supplying attribute
         data.
     trans_table : dict or NoneType
         Keyed by current metalabels containing a list of
@@ -529,6 +531,11 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
     export_dict : dict
         A dictionary of the metadata for each variable of an output file.
 
+    Raises
+    ------
+    ValueError
+        If there is a duplicated variable label in the translation table
+
     """
 
     export_dict = {}
@@ -537,13 +544,13 @@ def apply_table_translation_to_file(inst, meta_dict, trans_table=None):
         trans_table = default_to_netcdf_translation_table(inst)
 
     # Confirm there are no duplicated translation labels
-    trans_labels = [trans_table[key] for key in trans_table.keys()]
-    for i in np.arange(len(trans_labels)):
-        item = trans_labels.pop(0)
-        if item in trans_labels:
-            estr = ''.join(['There is a duplicated variable label value in ',
-                            '`trans_table`: ', item])
-            raise ValueError(estr)
+    trans_labels = list()
+    for key in trans_table.keys():
+        trans_labels.extend(trans_table[key])
+
+    if np.unique(trans_labels).shape[0] != len(trans_labels):
+        raise ValueError(''.join(['There are duplicated variable label values',
+                                  ' in `trans_table`']))
 
     # Translate each metadata label if a translation is provided
     for key in meta_dict.keys():
@@ -690,15 +697,10 @@ def meta_array_expander(meta_dict):
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 epoch_name=None, epoch_unit='ms', epoch_origin='unix',
                 pandas_format=True, decode_timedelta=False,
-                labels={'units': ('units', str), 'name': ('long_name', str),
-                        'notes': ('notes', str), 'desc': ('desc', str),
-                        'plot': ('plot_label', str), 'axis': ('axis', str),
-                        'scale': ('scale', str),
-                        'min_val': ('value_min', np.float64),
-                        'max_val': ('value_max', np.float64),
-                        'fill_val': ('fill', np.float64)},
+                combine_by_coords=True, meta_kwargs=None, labels=None,
                 meta_processor=None, meta_translation=None,
-                drop_meta_labels=None, decode_times=None):
+                drop_meta_labels=None, decode_times=None,
+                strict_dim_check=True):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -739,13 +741,17 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         Used for xarray data (`pandas_format` is False).  If True, variables
         with unit attributes that  are 'timelike' ('hours', 'minutes', etc) are
         converted to `np.timedelta64`. (default=False)
-    labels : dict
+    combine_by_coords : bool
+        Used for xarray data (`pandas_format` is False) when loading a
+        multi-file dataset. If True, uses `xarray.combine_by_coords`. If False,
+        uses `xarray.combine_nested`. (default=True)
+    meta_kwargs : dict or NoneType
+        Dict to specify custom Meta initialization or None to use Meta
+        defaults (default=None)
+    labels : dict or NoneType
         Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order.
-        (default={'units': ('units', str), 'name': ('long_name', str),
-        'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', np.float64),
-        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+        that have the label values and value types in that order. None to use
+        meta defaults.  Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -768,6 +774,10 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         then `epoch_name` will be converted to datetime using `epoch_unit`
         and `epoch_origin`. If None, will be set to False for backwards
         compatibility. For xarray only. (default=None)
+    strict_dim_check : bool
+        Used for xarray data (`pandas_format` is False). If True, warn the user
+        that the desired epoch is not present in `xarray.dims`.  If False,
+        no warning is raised. (default=True)
 
     Returns
     -------
@@ -800,7 +810,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_name=epoch_name,
                                         epoch_unit=epoch_unit,
                                         epoch_origin=epoch_origin,
-                                        labels=labels,
+                                        meta_kwargs=meta_kwargs, labels=labels,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels)
@@ -811,27 +821,21 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_unit=epoch_unit,
                                         epoch_origin=epoch_origin,
                                         decode_timedelta=decode_timedelta,
-                                        labels=labels,
+                                        combine_by_coords=combine_by_coords,
+                                        meta_kwargs=meta_kwargs, labels=labels,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels,
-                                        decode_times=decode_times)
+                                        decode_times=decode_times,
+                                        strict_dim_check=strict_dim_check)
 
     return data, meta
 
 
 def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                        epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
-                       labels={'units': ('units', str),
-                               'name': ('long_name', str),
-                               'notes': ('notes', str), 'desc': ('desc', str),
-                               'plot': ('plot_label', str),
-                               'axis': ('axis', str), 'scale': ('scale', str),
-                               'min_val': ('value_min', np.float64),
-                               'max_val': ('value_max', np.float64),
-                               'fill_val': ('fill', np.float64)},
-                       meta_processor=None, meta_translation=None,
-                       drop_meta_labels=None):
+                       meta_kwargs=None, labels=None, meta_processor=None,
+                       meta_translation=None, drop_meta_labels=None):
     """Load netCDF-3/4 file produced by pysat in a pandas format.
 
     Parameters
@@ -863,13 +867,13 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
         Julian Calendar. Julian day number 0 is assigned to the day starting at
         noon on January 1, 4713 BC. (default='unix')
-    labels : dict
+    meta_kwargs : dict or NoneType
+        Dict to specify custom Meta initialization or None to use Meta
+        defaults (default=None)
+    labels : dict or NoneType
         Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order.
-        (default={'units': ('units', str), 'name': ('long_name', str),
-        'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', np.float64),
-        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+        that have the label values and value types in that order or None to use
+        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -926,7 +930,18 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     running_store = []
     two_d_keys = []
     two_d_dims = []
-    meta = pysat.Meta(labels=labels)
+
+    if meta_kwargs is None:
+        meta_kwargs = {}
+
+    if labels is not None:
+        warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
+                               "with the 'labels' key instead. Support ",
+                               "for `labels` will be removed in v3.2.0+"]),
+                      DeprecationWarning, stacklevel=2)
+        meta_kwargs['labels'] = labels
+
+    meta = pysat.Meta(**meta_kwargs)
 
     # Store all metadata in a dict that may be filtered before
     # assignment to `meta`.
@@ -1173,7 +1188,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     for key in filt_mdict:
         if 'meta' in filt_mdict[key].keys():
             # Higher order metadata
-            dim_meta = pysat.Meta(labels=labels)
+            dim_meta = pysat.Meta(**meta_kwargs)
             for skey in filt_mdict[key]['meta'].keys():
                 dim_meta[skey] = filt_mdict[key]['meta'][skey]
 
@@ -1194,18 +1209,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                        epoch_name='time', epoch_unit='ms', epoch_origin='unix',
-                       decode_timedelta=False,
-                       labels={'units': ('units', str),
-                               'name': ('long_name', str),
-                               'notes': ('notes', str), 'desc': ('desc', str),
-                               'plot': ('plot_label', str),
-                               'axis': ('axis', str),
-                               'scale': ('scale', str),
-                               'min_val': ('value_min', np.float64),
-                               'max_val': ('value_max', np.float64),
-                               'fill_val': ('fill', np.float64)},
-                       meta_processor=None, meta_translation=None,
-                       drop_meta_labels=None, decode_times=False):
+                       decode_timedelta=False, combine_by_coords=True,
+                       meta_kwargs=None, labels=None, meta_processor=None,
+                       meta_translation=None, drop_meta_labels=None,
+                       decode_times=False, strict_dim_check=True):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -1240,13 +1247,17 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     decode_timedelta : bool
         If True, variables with unit attributes that are 'timelike' ('hours',
         'minutes', etc) are converted to `np.timedelta64`. (default=False)
-    labels : dict
+    combine_by_coords : bool
+        Used for xarray data (`pandas_format` is False) when loading a
+        multi-file dataset. If True, uses `xarray.combine_by_coords`. If False,
+        uses `xarray.combine_nested`. (default=True)
+    meta_kwargs : dict or NoneType
+        Dict to specify custom Meta initialization or None to use Meta
+        defaults (default=None)
+    labels : dict or NoneType
         Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order.
-        (default={'units': ('units', str), 'name': ('long_name', str),
-        'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', np.float64),
-        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
+        that have the label values and value types in that order or None to use
+        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -1269,6 +1280,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         then `epoch_name` will be converted to datetime using `epoch_unit`
         and `epoch_origin`. If None, will be set to False for backwards
         compatibility. (default=None)
+    strict_dim_check : bool
+        Used for xarray data (`pandas_format` is False). If True, warn the user
+        that the desired epoch is not present in `xarray.dims`.  If False,
+        no warning is raised. (default=True)
 
     Returns
     -------
@@ -1298,7 +1313,17 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     file_format = file_format.upper()
 
     # Initialize local variables
-    meta = pysat.Meta(labels=labels)
+    if meta_kwargs is None:
+        meta_kwargs = {}
+
+    if labels is not None:
+        warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
+                               "with the 'labels' key instead. Support ",
+                               "for `labels` will be removed in v3.2.0+"]),
+                      DeprecationWarning, stacklevel=2)
+        meta_kwargs['labels'] = labels
+
+    meta = pysat.Meta(**meta_kwargs)
 
     # Store all metadata in a dict that may be filtered before
     # assignment to `meta`.
@@ -1314,13 +1339,18 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     else:
         drop_meta_labels = pysat.utils.listify(drop_meta_labels)
 
+    if combine_by_coords:
+        combine_kw = {'combine': 'by_coords'}
+    else:
+        combine_kw = {'combine': 'nested', 'concat_dim': epoch_name}
+
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
         data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta,
                                decode_times=decode_times)
     else:
         data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
-                                 combine='by_coords', decode_times=decode_times)
+                                 decode_times=decode_times, **combine_kw)
 
     # Need to get a list of all variables, dimensions, and coordinates.
     all_vars = xarray_all_vars(data)
@@ -1332,9 +1362,10 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                 data = data.rename({epoch_name: 'time'})
             elif epoch_name in all_vars:
                 data = data.rename({epoch_name: 'time'})
-                wstr = ''.join(['Epoch label: "', epoch_name, '"',
-                                ' is not a dimension.'])
-                pysat.logger.warning(wstr)
+                if strict_dim_check:
+                    wstr = ''.join(['Epoch label: "', epoch_name, '"',
+                                    ' is not a dimension.'])
+                    pysat.logger.warning(wstr)
             else:
                 estr = ''.join(['Epoch label: "', epoch_name, '"',
                                 ' was not found in loaded dimensions [',
@@ -1437,7 +1468,7 @@ def return_epoch_metadata(inst, epoch_name):
     basic_labels = [inst.meta.labels.units]
 
     for label in basic_labels:
-        if label not in new_dict or len(new_dict[label]) == 0:
+        if label not in new_dict or new_dict[label] == '':
             new_dict[label] = epoch_label
 
     # Assign name
@@ -1530,8 +1561,8 @@ def xarray_all_vars(data):
 def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                    mode='w', zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, check_type=None, export_nan=None,
-                   unlimited_time=True, meta_translation=None,
-                   meta_processor=None):
+                   export_pysat_info=True, unlimited_time=True,
+                   meta_translation=None, meta_processor=None):
     """Store pysat data in a netCDF4 file.
 
     Parameters
@@ -1580,6 +1611,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         included will be written to the file. If not listed
         and a value is NaN then that attribute simply won't be included in
         the netCDF4 file. (default=None)
+    export_pysat_info : bool
+        Appends the platform, name, tag, and inst_id to the metadata
+        if True. Otherwise these attributes are lost. (default=True)
     unlimited_time : bool
         Flag specifying whether or not the epoch/time dimension should be
         unlimited; it is when the flag is True. (default=True)
@@ -1699,10 +1733,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
             attrb_dict.pop(pitem)
 
     # Set the general file information
-    attrb_dict['platform'] = inst.platform
-    attrb_dict['name'] = inst.name
-    attrb_dict['tag'] = inst.tag
-    attrb_dict['inst_id'] = inst.inst_id
+    if export_pysat_info:
+        attrb_dict['platform'] = inst.platform
+        attrb_dict['name'] = inst.name
+        attrb_dict['tag'] = inst.tag
+        attrb_dict['inst_id'] = inst.inst_id
+
     attrb_dict['acknowledgements'] = inst.acknowledgements
     attrb_dict['references'] = inst.references
     attrb_dict['Date_End'] = dt.datetime.strftime(
@@ -1756,12 +1792,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         if key not in meta_translation:
             meta_translation[key] = def_meta_trans[key]
 
-    # Get current metadata in dictionary form
+    # Get current metadata in dictionary form and add epoch metadata
     export_meta = inst.meta.to_dict()
-
-    # Add in epoch metadata, not normally stored in meta.
-    epoch_meta = return_epoch_metadata(inst, epoch_name)
-    export_meta[epoch_name] = epoch_meta
+    export_meta[epoch_name] = return_epoch_metadata(inst, epoch_name)
 
     # Ensure the metadata is set and updated to netCDF4 standards
     export_meta = add_netcdf4_standards_to_metadict(inst, export_meta,
@@ -1861,10 +1894,17 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
 
                     # Use info in coltype to get real datatype of object
                     if coltype == str:
+                        if '_FillValue' in export_meta[lower_key].keys():
+                            str_fill = export_meta[lower_key]['_FillValue']
+                            del export_meta[lower_key]['_FillValue']
+                        else:
+                            str_fill = ''
+
                         cdfkey = out_data.createVariable(case_key, coltype,
                                                          dimensions=epoch_name,
                                                          complevel=complevel,
-                                                         shuffle=shuffle)
+                                                         shuffle=shuffle,
+                                                         fill_value=str_fill)
 
                         # Set metadata
                         cdfkey.setncatts(export_meta[lower_key])
@@ -1992,9 +2032,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         # for all of that fancy data.
 
                         # Get index information
-                        idx = good_data_loc
                         data, coltype, datetime_flag = inst._get_data_info(
-                            inst[key].iloc[idx].index)
+                            inst[key].iloc[good_data_loc].index)
 
                         # Create dimension variable to store index in netCDF4
                         cdfkey = out_data.createVariable(case_key, coltype,
@@ -2034,7 +2073,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                            * 1.0E-6).astype(np.int64)
 
         # Update 'time' dimension to `epoch_name`
-        xr_data = xr_data.rename({'time': epoch_name})
+        if epoch_name != 'time':
+            xr_data = xr_data.rename({'time': epoch_name})
 
         # Transfer metadata
         pysat_meta_to_xarray_attr(xr_data, export_meta, epoch_name)
@@ -2060,6 +2100,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
             # Account for possible type for unicode strings
             if vtype == np.dtype('<U4'):
                 vtype = str
+                # TODO(#1102): xarray does not yet support '_FillValue' for
+                # unicode strings (https://github.com/pydata/xarray/issues/1647)
+                if '_FillValue' in xr_data[var].attrs:
+                    del xr_data[var].attrs['_FillValue']
+            elif vtype == str:
+                encoding[var]['dtype'] = 'S1'
 
             if vtype == str:
                 encoding[var]['zlib'] = False

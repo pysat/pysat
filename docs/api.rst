@@ -39,6 +39,7 @@ Meta
 
 .. autoclass:: pysat.Meta
    :members:
+   :noindex:
 
 
 .. _api-metalabels:
@@ -57,6 +58,7 @@ MetaHeader
 
 .. autoclass:: pysat.MetaHeader
    :members:
+   :noindex:
 
 
 .. _api-orbits:

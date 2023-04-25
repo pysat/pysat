@@ -232,6 +232,7 @@ def eval_bad_input(func, error, err_msg, input_args=None, input_kwargs=None):
     # Call the function, catching only the expected error type
     try:
         func(*input_args, **input_kwargs)
+        raise AssertionError('no {:} raised'.format(repr(error)))
     except error as err:
         # Evaluate the error message
         assert str(err).find(err_msg) >= 0, \

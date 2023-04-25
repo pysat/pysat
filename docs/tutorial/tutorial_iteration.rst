@@ -3,15 +3,15 @@
 Iteration
 ---------
 
-pysat supports iterative loading of data at daily, orbital, and custom
-cadances. The examples below show you how this works and how to specify the
+:py:mod:`pysat` supports iterative loading of data at daily, orbital, and custom
+cadences. The examples below show you how this works and how to specify the
 loading limits.
-
 
 Daily Iteration
 ^^^^^^^^^^^^^^^
 
-By default, pysat will iteratively load data at a daily cadance.
+By default, :py:mod:`pysat` will iteratively load data at the instrument's file
+cadence. If this is not specified, :py:mod:`pysat` will assume a daily cadence.
 
 .. code:: python
 
@@ -94,7 +94,7 @@ Orbit Iteration
 ^^^^^^^^^^^^^^^
 
 You can iterate by orbit as well as day.  To do this, be sure to specify what
-type of orbit pysat should use.
+type of orbit :py:mod:`pysat` should use.
 
 .. code:: python
 
@@ -168,8 +168,8 @@ Now, the output is:
    Maximum meridional magnetic perturbation: 21.67 nT on 05 Jan 2010
 
 
-pysat iteration also supports loading more than a single day/file of data
-at a time as well as stepping through the data in daily increments larger
+:py:mod:`pysat` iteration also supports loading more than a single day/file of
+data at a time as well as stepping through the data in daily increments larger
 than a single day. Assignment of the data step size and width is also
 set via the bounds attribute.
 

@@ -7,6 +7,7 @@
 
 import datetime as dt
 import logging
+import numpy as np
 import pandas as pds
 import pytest
 
@@ -260,12 +261,18 @@ class TestConstellationFunc(object):
                       "bounds", "empty", "empty_partial", "index_res",
                       "common_index", "date", "yr", "doy", "yesterday", "today",
                       "tomorrow", "variables"]
+        self.inst_attrs = ['platform', 'name', 'tag', 'inst_id', 'clean_level',
+                           'pandas_format', "empty", "yr", 'pad', 'date',
+                           'doy', 'acknowledgements', 'references']
+        self.dims = ['time', 'x', 'y', 'z', 'profile_height', 'latitude',
+                     'longitude', 'altitude']
         return
 
     def teardown_method(self):
         """Clean up the unit test environment after each method."""
 
-        del self.inst, self.const, self.ref_time, self.attrs
+        del self.inst, self.const, self.ref_time, self.attrs, self.dims
+        del self.inst_attrs
         return
 
     def test_has_required_attrs(self):
@@ -334,8 +341,9 @@ class TestConstellationFunc(object):
     def test_empty_flag_data_empty_partial_load(self):
         """Test the status of the empty flag for partially loaded data."""
 
-        # Load only one instrument and test the status flag
-        self.const.instruments[0].load(date=self.ref_time, use_header=True)
+        self.const = pysat.Constellation(
+            const_module=constellations.testing_partial, use_header=True)
+        self.const.load(date=self.ref_time)
         assert self.const.empty_partial
         assert not self.const.empty
         return
@@ -343,8 +351,9 @@ class TestConstellationFunc(object):
     def test_empty_flag_data_not_empty_partial_load(self):
         """Test the alt status of the empty flag for partially loaded data."""
 
-        # Load only one instrument and test the status flag for alternate flag
-        self.const.instruments[0].load(date=self.ref_time, use_header=True)
+        self.const = pysat.Constellation(
+            const_module=constellations.testing_partial, use_header=True)
+        self.const.load(date=self.ref_time)
         assert not self.const._empty(all_inst=False)
         return
 
@@ -428,4 +437,143 @@ class TestConstellationFunc(object):
 
         testing.eval_bad_input(self.const._call_inst_method, AttributeError,
                                "unknown method", ['not a method'])
+        return
+
+    @pytest.mark.parametrize('common_coord', [True, False])
+    @pytest.mark.parametrize('fill_method', [None, 'nearest', 'linear'])
+    def test_to_inst_xarray(self, common_coord, fill_method):
+        """Test conversion of Constellation of mixed type to xarray Instrument.
+
+        Parameters
+        ----------
+        common_coord : bool
+            For Constellations with any xarray.Dataset Instruments, True to
+            include locations where all coordinate arrays cover, False to use
+            the maximum location range from the list of coordinates
+        fill_method : str or NoneType
+            Fill method if common data coordinates do not match exactly. If
+            one of 'nearest', 'pad'/'ffill', 'backfill'/'bfill', or None then
+            no interpolation will occur.  If 'linear', 'zero', 'slinear',
+            'quadratic', 'cubic', or 'polynomial' are used, then 1D or ND
+            interpolation will be used.
+
+        """
+
+        self.const.load(date=self.ref_time)
+        out_inst = self.const.to_inst(common_coord, fill_method)
+
+        # Test the output instrument attributes
+        assert not out_inst.pandas_format
+        assert out_inst.platform == 'pysat'
+        assert out_inst.tag == ''
+        assert out_inst.inst_id == ''
+        assert out_inst.clean_level == 'clean'
+        assert out_inst.pad is None
+        assert out_inst.date == self.ref_time
+        assert out_inst.doy == int(self.ref_time.strftime('%j'))
+        assert np.all([out_inst.name.find(iname) >= 0
+                       for iname in self.const.names])
+
+        # Test the output instrument data
+        testing.assert_lists_equal(self.dims, list(out_inst.data.dims.keys()))
+        testing.assert_list_contains(self.dims,
+                                     list(out_inst.data.coords.keys()))
+        testing.assert_list_contains(['variable_profile_height', 'image_lon',
+                                      'image_lat'],
+                                     list(out_inst.data.coords.keys()))
+
+        for cinst in self.const.instruments:
+            for var in cinst.variables:
+                var_name = '_'.join([var, cinst.platform, cinst.name])
+                assert (var in out_inst.variables
+                        or var_name in out_inst.variables), \
+                    "missing variable: {:s} or {:s}".format(var, var_name)
+                assert (var == 'time' or var in out_inst.meta
+                        or var_name in out_inst.meta), \
+                    "missing variable in metadata: {:s} or {:s}".format(
+                        var, var_name)
+
+        # Test the output instrument index
+        testing.assert_lists_equal(list(out_inst.index), list(self.const.index))
+
+        return
+
+    def test_to_inst_pandas_w_pad(self):
+        """Test Constellation `to_inst` with single, padded pandas Instrument.
+
+        """
+        # Redefine the Instrument and constellation
+        self.inst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_testing, use_header=True,
+            pad=pds.DateOffset(hours=1), num_samples=10)
+        self.const = pysat.Constellation(instruments=[self.inst],
+                                         use_header=True)
+
+        # Load the data
+        self.inst.load(date=self.ref_time)
+        self.const.load(date=self.ref_time)
+
+        # Convert the Constellation into an Instrument equivalent to `self.inst`
+        out_inst = self.const.to_inst()
+
+        # Test the output instrument attributes
+        assert out_inst.pandas_format
+
+        for iattr in self.inst_attrs:
+            assert getattr(out_inst, iattr) == getattr(self.inst, iattr), \
+                "Unexpected value for Instrument attribute {:}".format(iattr)
+
+        # Test the output instrument data
+        testing.assert_lists_equal(self.inst.variables, out_inst.variables)
+        assert np.all(out_inst.data == self.inst.data)
+
+        # Test the output instrument metadata
+        assert out_inst.meta == self.inst.meta
+
+        # Test the output instrument index
+        testing.assert_lists_equal(list(out_inst.index), list(self.inst.index))
+
+        return
+
+    def test_to_inst_mult_pad_clean(self):
+        """Test Constellation `to_inst` with multiple clean levels and pads."""
+        # Redefine the Instrument and constellation
+        clean_level = 'dirty'
+        pad = pds.DateOffset(hours=1)
+        self.inst = [
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             use_header=True, pad=pad, num_samples=10),
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             use_header=True, pad=2 * pad,
+                             clean_level=clean_level, num_samples=10)]
+        self.const = pysat.Constellation(instruments=self.inst, use_header=True)
+
+        # Load the Instrument and Constellation data
+        self.inst[-1].load(date=self.ref_time)
+        self.const.load(date=self.ref_time)
+
+        # Convert the Constellation into an Instrument equivalent to `self.inst`
+        out_inst = self.const.to_inst()
+
+        # Test the output instrument attributes
+        assert out_inst.pandas_format
+
+        for iattr in self.inst_attrs:
+            assert getattr(out_inst, iattr) == getattr(self.inst[1], iattr), \
+                "Unexpected value for Instrument attribute {:}".format(iattr)
+
+        # Test the output instrument data and metadata
+        for var in self.inst[1].variables:
+            out_var = "_".join([var, self.inst[1].platform, self.inst[1].name])
+            assert out_var in out_inst.variables, \
+                "missing data variable: {:s}".format(out_var)
+            assert out_var in out_inst.meta, \
+                "missing metadata variable: {:s}".format(out_var)
+            assert np.all(out_inst[out_var] == self.inst[1][var]), \
+                "mismatched data for: {:s}".format(var)
+
+        # Test the output instrument index
+        testing.assert_lists_equal(list(out_inst.index),
+                                   list(self.inst[1].index))
+
         return

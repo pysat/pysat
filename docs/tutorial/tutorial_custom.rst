@@ -110,8 +110,8 @@ the desired :py:attr:`instruments` using the :py:attr:`platform`,
 Attaching Custom Function to an Instrument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Custom functions must be attached to an :py:class:`Instrument` object for pysat
-to automatically apply the function upon every load.
+Custom functions must be attached to an :py:class:`Instrument` object for
+:py:mod:`pysat` to automatically apply the function upon every load.
 
 .. code:: python
 
@@ -212,8 +212,8 @@ functionality.
 
 Note the same result is obtained. The DMSP :py:class:`Instrument` object and
 analysis are performed at the same level, so there is no strict gain by using
-the pysat nano-kernel in this simple demonstration. However, we can use the
-nano-kernel to translate this daily mean into an versatile
+the :py:mod:`pysat` nano-kernel in this simple demonstration. However, we can
+use the nano-kernel to translate this daily mean into an versatile
 instrument-independent function.
 
 
@@ -245,10 +245,10 @@ Attaching Custom Function to a Constellation
 
 Attaching custom functions to :py:class:`Constellation` objects is done in the
 same way as for :py:class:`Instrument` objects. The only difference is the
-additional keyword argument :py:var:`apply_inst`, which defaults to
-:py:value:`True` and applies the custom function to all of the
-:py:class:`Constellation` :py:class:`Instrument` objects. This example assumes
-that the :py:mod:`pysatSpaceWeather` ACE Instruments have been registered.
+additional keyword argument ``apply_inst``, which defaults to ``True`` and
+applies the custom function to all of the :py:class:`Constellation`
+:py:class:`Instrument` objects. This example assumes that the
+:py:mod:`pysatSpaceWeather` ACE Instruments have been registered.
 
 .. code:: python
 

@@ -21,6 +21,116 @@ from pysat.tests.classes.cls_registration import TestWithRegistration
 from pysat import utils
 
 
+class TestUpdateFill(object):
+    """Tests for the core utility `update_fill_values`."""
+
+    def setup_method(self):
+        """Set up the test enviroment."""
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.new_fill_val = -47.0
+        return
+
+    def teardown_method(self):
+        """Clean up the test environment."""
+        del self.ref_time, self.new_fill_val
+        return
+
+    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testmodel"])
+    @pytest.mark.parametrize("variables", [('mlt'), (['mlt'])])
+    def test_update_fill_values_numbers(self, name, variables):
+        """Test `update_fill_values` for the desired behaviour.
+
+        Parameters
+        ----------
+        name : str
+            Instrument name
+        variables : str or list-like
+            Variables to update (should be int or float type)
+
+        """
+
+        # Initalize the instrument
+        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst.load(date=self.ref_time)
+
+        # Ensure there are fill values to check
+        test_vars = pysat.utils.listify(variables)
+        for var in test_vars:
+            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+
+        # Update the fill values
+        pysat.utils.update_fill_values(inst, variables, self.new_fill_val)
+
+        # Ensure the fill values are updated
+        for var in test_vars:
+            assert inst.meta[var,
+                             inst.meta.labels.fill_val] == self.new_fill_val, \
+                "meta fill value not updated for {:}".format(var)
+            assert np.all(inst[var].values[0] == self.new_fill_val), \
+                "filled data values not updated for {:}".format(var)
+        return
+
+    @pytest.mark.parametrize("name", ["ndtesting", "testing", "testmodel"])
+    def test_update_fill_values_by_type(self, name):
+        """Test `update_fill_values` for the desired behaviour.
+
+        Parameters
+        ----------
+        name : str
+            Instrument name
+
+        """
+
+        # Initalize the instrument
+        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst.load(date=self.ref_time)
+
+        # Ensure there are fill values to check
+        str_vars = [var for var in inst.variables if var in inst.meta.keys()
+                    and isinstance(inst[var].values[0], str)
+                    and inst.meta[var, inst.meta.labels.fill_val] is not None]
+        num_types = [int, float, np.float64, np.int64]
+        if inst.pandas_format:
+            num_vars = [var for var in inst.variables if var in inst.meta.keys()
+                        and inst[var].dtype.type in num_types
+                        and inst.meta[var, inst.meta.labels.fill_val]
+                        is not None]
+        else:
+            num_vars = [var for var in inst.variables if var in inst.meta.keys()
+                        and var not in inst.data.coords.keys()
+                        and inst[var].dtype.type in num_types
+                        and inst.meta[var, inst.meta.labels.fill_val]
+                        is not None]
+
+        for var in num_vars:
+            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+
+        for var in str_vars:
+            inst[var].values[0] = str(inst.meta[var, inst.meta.labels.fill_val])
+
+        # Update and check the numeric fill values
+        pysat.utils.update_fill_values(inst, num_vars, self.new_fill_val)
+
+        for var in num_vars:
+            assert inst.meta[var,
+                             inst.meta.labels.fill_val] == self.new_fill_val, \
+                "meta fill value not updated for {:}".format(var)
+            assert np.all(inst[var].values[0] == self.new_fill_val), \
+                "filled data values not updated for {:}".format(var)
+
+        # Update and check the string fill values
+        self.new_fill_val = 'fill'
+        pysat.utils.update_fill_values(inst, str_vars, self.new_fill_val)
+
+        for var in str_vars:
+            assert inst.meta[var,
+                             inst.meta.labels.fill_val] == self.new_fill_val, \
+                "meta fill value not updated for {:}".format(var)
+            assert np.all(inst[var].values[0] == self.new_fill_val), \
+                "filled data values not updated for {:}".format(var)
+        return
+
+
 class TestCIonly(object):
     """Tests where we mess with local settings.
 
@@ -631,6 +741,37 @@ class TestGenerateInstList(object):
         for inst in self.inst_list['no_download']:
             # `user_info` should not be in any of these
             assert ('user_info' not in inst.keys())
+        return
+
+    def test_list_kwargs_passthrough(self):
+        """Test that kwargs are passed through to lists correctly."""
+
+        # Iterate over unique instruments gathered
+        for inst in self.inst_list['download']:
+            # kwargs should not be passed to download
+            assert ('kwargs' not in inst.keys())
+
+            # Construct list of tests with optional load kwargs for this
+            # instrument.
+            list_kwargs = []
+            for opt_inst in self.inst_list['load_options']:
+                if inst['inst_module'] == opt_inst['inst_module']:
+                    if 'kwargs' in opt_inst.keys():
+                        list_kwargs.append(opt_inst['kwargs'].copy())
+
+            # Check if instrument has optional load kwargs
+            if hasattr(inst['inst_module'], '_test_load_opt'):
+                load_opt = getattr(inst['inst_module'], '_test_load_opt')
+                try:
+                    load_opt = load_opt[inst['inst_id']][inst['tag']]
+                    # Check that options specified in module match generated
+                    # test list.
+                    utils.testing.assert_lists_equal(list_kwargs, load_opt)
+                except KeyError:
+                    # Optional load kwargs not defined for this tag / inst_id
+                    # combination.
+                    pass
+
         return
 
 
