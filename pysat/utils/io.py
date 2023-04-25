@@ -1734,13 +1734,14 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
 
     # Set the general file information
     if export_pysat_info:
+        # For operational instruments, these should be set separately.
         attrb_dict['platform'] = inst.platform
         attrb_dict['name'] = inst.name
         attrb_dict['tag'] = inst.tag
         attrb_dict['inst_id'] = inst.inst_id
+        attrb_dict['acknowledgements'] = inst.acknowledgements
+        attrb_dict['references'] = inst.references
 
-    attrb_dict['acknowledgements'] = inst.acknowledgements
-    attrb_dict['references'] = inst.references
     attrb_dict['Date_End'] = dt.datetime.strftime(
         inst.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
     attrb_dict['Date_End'] = attrb_dict['Date_End'][:-3] + ' UTC'
