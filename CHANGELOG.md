@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.Y.Y] - 2023-??-??
+[3.1.0] - 2023-05-10
 --------------------
 * New Features
   * Added unit tests for different file cadences in the Instrument class
