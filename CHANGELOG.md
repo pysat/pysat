@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.Y.Y] - 2023-??-??
+[3.1.0] - 2023-05-10
 --------------------
 * New Features
   * Added unit tests for different file cadences in the Instrument class
@@ -75,6 +75,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     constellation dataset
   * Reduced default num_samples for constellation test objects
   * Improved consistency in metadata for test instruments
+  * Set upper version limit on `hacking` for flake8 tests
 
 [3.0.6] - 2022-12-21
 --------------------
