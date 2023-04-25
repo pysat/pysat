@@ -75,7 +75,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     constellation dataset
   * Reduced default num_samples for constellation test objects
   * Improved consistency in metadata for test instruments
-  * Set upper version limit on `hacking` for flake8 tests
 
 [3.0.6] - 2022-12-21
 --------------------
