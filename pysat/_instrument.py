@@ -3847,7 +3847,7 @@ class Instrument(object):
         Parameters
         ----------
         key : str or list-like
-            Data variable or list of these data variables for which the data 
+            Data variable or list of these data variables for which the data
             type should be updated.
 
         """
