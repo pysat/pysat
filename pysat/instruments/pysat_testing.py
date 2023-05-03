@@ -185,6 +185,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     # Set the meta data
     meta = mm_test.initialize_test_meta('Epoch', data.keys())
 
+    # TODO(#1120): Move logic up so that empty data is returned first.
     if tag == 'default_meta':
         return data, pysat.Meta()
     elif tag == 'no_download':
