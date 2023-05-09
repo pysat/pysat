@@ -43,7 +43,8 @@ class Meta(object):
         be excluded from export. Will always allow NaN export for labels of
         the float type. (default=None)
     data_types : dict or NoneType
-        Dict of data types for variables names or None to disregard.
+        Dict of data types for variables names or None to determine after
+        loading the data.
         (default=None)
 
     Attributes

@@ -426,7 +426,7 @@ class Constellation(object):
             out_res = None
 
             for inst in self.instruments:
-                if not inst.empty:
+                if len(inst.index) > 0:
                     if stime is None:
                         # Initialize the start and stop time
                         stime = inst.index[0]
