@@ -1722,6 +1722,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     if 'Text_Supplement' not in attrb_dict:
         attrb_dict['Text_Supplement'] = ''
 
+    # TODO(#1122): Evaluate whether pop is necessary for all these.
     # Remove any attributes with the names below. pysat is responsible
     # for including them in the file.
     pysat_items = ['Date_End', 'Date_Start', 'File', 'File_Date',
