@@ -1722,10 +1722,12 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     if 'Text_Supplement' not in attrb_dict:
         attrb_dict['Text_Supplement'] = ''
 
+    # TODO(#1122): Evaluate whether pop is necessary for all these.
     # Remove any attributes with the names below. pysat is responsible
     # for including them in the file.
     pysat_items = ['Date_End', 'Date_Start', 'File', 'File_Date',
-                   'Generation_Date', 'Logical_File_ID']
+                   'Generation_Date', 'Logical_File_ID', 'acknowledgements',
+                   'references']
     for pitem in pysat_items:
         if pitem in attrb_dict:
             pysat.logger.debug('Removing {} attribute and replacing.'.format(
@@ -1734,13 +1736,14 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
 
     # Set the general file information
     if export_pysat_info:
+        # For operational instruments, these should be set separately.
         attrb_dict['platform'] = inst.platform
         attrb_dict['name'] = inst.name
         attrb_dict['tag'] = inst.tag
         attrb_dict['inst_id'] = inst.inst_id
+        attrb_dict['acknowledgements'] = inst.acknowledgements
+        attrb_dict['references'] = inst.references
 
-    attrb_dict['acknowledgements'] = inst.acknowledgements
-    attrb_dict['references'] = inst.references
     attrb_dict['Date_End'] = dt.datetime.strftime(
         inst.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
     attrb_dict['Date_End'] = attrb_dict['Date_End'][:-3] + ' UTC'
