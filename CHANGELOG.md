@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.0] - 2023-05-10
+[3.1.0] - 2023-06-02
 --------------------
 * New Features
   * Added unit tests for different file cadences in the Instrument class
@@ -65,7 +65,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed broken links in docs
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
-  * Expanded MetaLabel default types for `min_val`, `max_val`, and `fill_val`
   * Additional unit tests for data padding when a data index is non-monotonic.
   * Deprecated the `malformed_index` kwarg in the test instruments.  This is
     replaced by `non_monotonic_index` and `non_unique_index`
