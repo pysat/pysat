@@ -84,12 +84,12 @@ ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite,
 a constellation of satellites, a ground-based observatory, or a collaboration
 of ground-based observatories.
 
-Sometimes it is not practicle to set a unique platform name for a data set. An
+Sometimes it is not practical to set a unique platform name for a data set. An
 example of this are many of the space weather indices managed by
 :py:mod:`pysatSpaceWeather`. In this case, the solar and geomagnetic indices are
 included in a common 'Space Weather' platform (sw), regardless of their origin.
 This allows users to access a given index using different :py:attr:`inst_id`
-and :py:attr:`tag` values, even if the mission or observatory that produce the
+and :py:attr:`tag` values, even if the mission or observatory that produced the
 indices differ.
 
 name
@@ -284,7 +284,7 @@ filenames indexed by time with a method signature of:
 
 :py:attr:`inst_id` and :py:attr:`tag` are passed in by :py:mod:`pysat` to
 select a specific subset of the available data. The location on the local
-filesystem to search for the files is passed in data_path. The
+filesystem to search for the files is passed in ``data_path``. The
 :py:meth:`list_files` method must return a :py:class:`pandas.Series` of
 filenames indexed by datetime objects.
 
