@@ -359,3 +359,151 @@ class TestEstCommonCoord(object):
         assert self.short_coord[0] == out[0], "unexpected value"
         assert len(out) == 1, "unexpected coordinate length"
         return
+
+
+class TestExpandXarrayDims(object):
+    """Unit tests for the `expand_xarray_dims` function."""
+
+    def setup_method(self):
+        """Set up the unit test environment."""
+        self.test_inst = pysat.Instrument(
+            inst_module=pysat.instruments.pysat_ndtesting, use_header=True)
+        self.start_time = pysat.instruments.pysat_ndtesting._test_dates['']['']
+        self.data_list = []
+        self.out = None
+        self.meta = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment."""
+        del self.test_inst, self.start_time, self.data_list, self.meta, self.out
+        return
+
+    def set_data_meta(self, dims_equal):
+        """Set the input data list and meta data.
+
+        Parameters
+        ----------
+        dims_equal : bool
+            If True, the dimension variables for the data sets should be the
+            same; if False they should have different dimensions apart from
+            the 'time' dimension
+
+        """
+
+        self.test_inst.load(date=self.start_time)
+        self.data_list.append(self.test_inst.data)
+        self.meta = self.test_inst.meta
+
+        # The second data set should have half the time samples
+        num_samples = int(self.test_inst.index.shape[0] / 2)
+
+        if dims_equal:
+            # Load a second data set with half the time samples
+            self.test_inst = pysat.Instrument(
+                inst_module=self.test_inst.inst_module,
+                num_samples=num_samples, use_header=True)
+        else:
+            # Load a second data set with different dimensions apart from time
+            self.test_inst = pysat.Instrument(
+                inst_module=pysat.instruments.pysat_testmodel,
+                num_samples=num_samples, use_header=True)
+
+        self.test_inst.load(date=self.start_time + dt.timedelta(days=1))
+        self.data_list.append(self.test_inst.data)
+
+        return
+
+    def eval_dims(self, dims_equal, exclude_dims=None):
+        """Set the input data list and meta data.
+
+        Parameters
+        ----------
+        dims_equal : bool
+            If True, the dimension variables for the data sets should be the
+            same; if False they should have different dimensions apart from
+            the 'time' dimension
+        exclude_dims : list-like or NoneType
+            A list of dimensions that have the same name, but can have different
+            values or None if all the dimensions with the same name should
+            have the same shape. (default=None)
+
+        """
+        if exclude_dims is None:
+            exclude_dims = []
+
+        # Define the reference Dataset
+        ref_dims = list(self.out[0].dims.keys())
+
+        # Cycle through the remaining Datasets
+        for i, xdata in enumerate(self.out[1:]):
+            test_dims = list(xdata.dims.keys())
+
+            # Test that the expected dimension names overlap between datasets
+            if dims_equal:
+                testing.assert_lists_equal(test_dims, ref_dims)
+            else:
+                for tdim in test_dims:
+                    assert (tdim == 'time' if tdim in ref_dims
+                            else tdim != 'time')
+
+            # Test the dimensions shapes for expected (lack of) differences
+            for tdim in test_dims:
+                if tdim in ref_dims:
+                    if tdim in exclude_dims:
+                        assert xdata[tdim].shape != self.out[0][tdim].shape
+                    else:
+                        assert xdata[tdim].shape == self.out[0][tdim].shape
+
+                        if xdata[tdim].shape != self.data_list[
+                                i + 1][tdim].shape:
+                            # This data set is smaller, test for fill values
+                            for dvar in xdata.data_vars.keys():
+                                if tdim in xdata[dvar].dims:
+                                    fill_val = self.meta[
+                                        dvar, self.meta.labels.fill_val]
+
+                                    try:
+                                        if np.isnan(fill_val):
+                                            assert np.isnan(
+                                                xdata[dvar].values).any()
+                                        else:
+                                            assert np.any(xdata[dvar].values
+                                                          == fill_val)
+                                    except TypeError:
+                                        # This is probably a string
+                                        assert np.any(xdata[dvar].values
+                                                      == fill_val)
+
+        return
+
+    @pytest.mark.parametrize('dims_equal', [True, False])
+    @pytest.mark.parametrize('exclude_dims', [None, ['time']])
+    def test_expand_xarray_dims(self, dims_equal, exclude_dims):
+        """Test successful padding of dimensions for xarray data.
+
+        Parameters
+        ----------
+        dims_equal : bool
+            If True, the dimension variables for the data sets should be the
+            same; if False they should have different dimensions apart from
+            the 'time' dimension
+        exclude_dims : list-like or NoneType
+            A list of dimensions that have the same name, but can have different
+            values or None if all the dimensions with the same name should
+            have the same shape. (default=None)
+
+        """
+
+        # Set the input parameters
+        self.set_data_meta(dims_equal)
+
+        # Run the dimension expansion
+        self.out = coords.expand_xarray_dims(self.data_list, self.meta,
+                                             dims_equal=dims_equal,
+                                             exclude_dims=exclude_dims)
+
+        # Test the results
+        self.eval_dims(dims_equal, exclude_dims)
+
+        return
