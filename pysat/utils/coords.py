@@ -345,9 +345,18 @@ def expand_xarray_dims(data_list, meta, dims_equal=False, exclude_dims=None):
                     idim = list(sdata[dvar].dims).index(dim)
                     new_shape[idim] = combo_dims[dim]
 
+                # Get the fill value
+                if dvar in meta:
+                    # If available, take it from the metadata
+                    fill_val = meta[dvar, meta.labels.fill_val]
+                else:
+                    # Otherwise, use the data type
+                    ftype = type(sdata[dvar].values.flatten()[0])
+                    fill_val = meta.labels.default_values_from_type(
+                        meta.labels.label_type['fill_val'], ftype)
+
                 # Set the new data for output
-                new_dat = np.full(shape=new_shape, fill_value=meta[
-                    dvar, meta.labels.fill_val])
+                new_dat = np.full(shape=new_shape, fill_value=fill_val)
                 new_dat[tuple(old_slice)] = sdata[dvar].values
                 new_data[dvar] = (sdata[dvar].dims, new_dat)
             else:
