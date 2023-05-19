@@ -414,7 +414,7 @@ class TestExpandXarrayDims(object):
 
         return
 
-    def eval_dims(self, dims_equal, exclude_dims=None):
+    def eval_dims(self, dims_equal, exclude_dims=None, default_fill_val=None):
         """Set the input data list and meta data.
 
         Parameters
@@ -427,6 +427,9 @@ class TestExpandXarrayDims(object):
             A list of dimensions that have the same name, but can have different
             values or None if all the dimensions with the same name should
             have the same shape. (default=None)
+        default_fill_val : any
+            The expected fill value for data variables not present in self.meta
+            (default=None)
 
         """
         if exclude_dims is None:
@@ -444,8 +447,8 @@ class TestExpandXarrayDims(object):
                 testing.assert_lists_equal(test_dims, ref_dims)
             else:
                 for tdim in test_dims:
-                    assert (tdim == 'time' if tdim in ref_dims
-                            else tdim != 'time')
+                    assert (tdim == 'time' if tdim in ref_dims else tdim
+                            != 'time'), "unexpected dimension: {:}".format(tdim)
 
             # Test the dimensions shapes for expected (lack of) differences
             for tdim in test_dims:
@@ -460,8 +463,11 @@ class TestExpandXarrayDims(object):
                             # This data set is smaller, test for fill values
                             for dvar in xdata.data_vars.keys():
                                 if tdim in xdata[dvar].dims:
-                                    fill_val = self.meta[
-                                        dvar, self.meta.labels.fill_val]
+                                    if dvar in self.meta:
+                                        fill_val = self.meta[
+                                            dvar, self.meta.labels.fill_val]
+                                    else:
+                                        fill_val = default_fill_val
 
                                     try:
                                         if np.isnan(fill_val):
@@ -471,9 +477,17 @@ class TestExpandXarrayDims(object):
                                             assert np.any(xdata[dvar].values
                                                           == fill_val)
                                     except TypeError:
-                                        # This is probably a string
-                                        assert np.any(xdata[dvar].values
-                                                      == fill_val)
+                                        # This is a string or object
+                                        estr = "".join([
+                                            "Bad or missing fill values for ",
+                                            dvar, ": ({:} not in {:})".format(
+                                                fill_val, xdata[dvar].values)])
+                                        if fill_val is None:
+                                            assert fill_val in xdata[
+                                                dvar].values, estr
+                                        else:
+                                            assert np.any(xdata[dvar].values
+                                                          == fill_val), estr
 
         return
 
@@ -505,5 +519,34 @@ class TestExpandXarrayDims(object):
 
         # Test the results
         self.eval_dims(dims_equal, exclude_dims)
+
+        return
+
+    @pytest.mark.parametrize('new_data_type', [int, float, str, bool, None])
+    def test_missing_meta(self, new_data_type):
+        """Test success if variable is missing from meta.
+
+        Parameters
+        ----------
+        new_data_type : type
+            Data type for the new data that will be missing from `self.meta`
+
+        """
+
+        # Set the input parameters
+        self.set_data_meta(True)
+
+        # Add a data variable to one of the data sets
+        self.data_list[1]['new_variable'] = self.data_list[1]['mlt'].astype(
+            new_data_type)
+
+        # Run the dimension expansion
+        self.out = coords.expand_xarray_dims(self.data_list, self.meta,
+                                             dims_equal=True)
+
+        # Test the results
+        fill_val = self.meta.labels.default_values_from_type(
+            self.meta.labels.label_type['fill_val'], new_data_type)
+        self.eval_dims(True, default_fill_val=fill_val)
 
         return
