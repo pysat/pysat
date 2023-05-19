@@ -1853,6 +1853,10 @@ class MetaLabels(object):
             elif self.label_type[lkey] == int:
                 self.label_type[lkey] = (int, np.int64, np.int32, np.int16,
                                          np.int8, bool)
+            elif self.label_type[lkey] == str:
+                self.label_type[lkey] = (str, np.str_)
+            elif self.label_type[lkey] == bool:
+                self.label_type[lkey] = (bool, np.bool_)
             elif isinstance(self.label_type[lkey], tuple):
                 ltypes = list(self.label_type[lkey])
 
@@ -1861,6 +1865,12 @@ class MetaLabels(object):
 
                 if int in ltypes:
                     ltypes.extend([np.int64, np.int32, np.int16, np.int8, bool])
+
+                if str in ltypes:
+                    ltypes.append(np.str_)
+
+                if bool in ltypes:
+                    ltypes.append(np.bool_)
 
                 # This may result in duplicate numpy types, but order is more
                 # important than carrying around a duplicate type, as the first
