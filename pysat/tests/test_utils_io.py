@@ -220,7 +220,8 @@ class TestLoadNetCDF(object):
             outfile, pandas_format=self.testInst.pandas_format,
             epoch_name=default_epoch_name, **tkwargs)
 
-        for key in ['platform', 'name', 'tag', 'inst_id']:
+        for key in ['platform', 'name', 'tag', 'inst_id', 'acknowledgements',
+                    'references']:
             assert hasattr(meta.header, key) == target
 
         return

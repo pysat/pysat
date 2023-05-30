@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.Y.Y] - 2023-??-??
+[3.1.0] - 2023-06-02
 --------------------
 * New Features
   * Added a utility to ensure two xarray Datasets can be concatonated, and
@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added unit tests for different file cadences in the Instrument class
   * Added `to_inst` method to the Constellation class
   * Added `export_pysat_info` kwarg to `to_netcdf` routines to select whether
-    pysat instrument info is writtent to files
+    pysat instrument info is written to files
   * Added Constellation class examples to the docs tutorial
   * Added links to the project standards repository to the docs
   * Improved formatting of custom kwargs when running `print` on an instrument
@@ -67,7 +67,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed broken links in docs
   * Updated docstring header underline lengths and addressed documentation
     build errors and warnings
-  * Expanded MetaLabel default types for `min_val`, `max_val`, and `fill_val`
   * Additional unit tests for data padding when a data index is non-monotonic.
   * Deprecated the `malformed_index` kwarg in the test instruments.  This is
     replaced by `non_monotonic_index` and `non_unique_index`
