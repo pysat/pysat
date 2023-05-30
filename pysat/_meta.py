@@ -44,8 +44,7 @@ class Meta(object):
         the float type. (default=None)
     data_types : dict or NoneType
         Dict of data types for variables names or None to determine after
-        loading the data.
-        (default=None)
+        loading the data. (default=None)
 
     Attributes
     ----------
