@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 [3.1.0] - 2023-06-02
 --------------------
 * New Features
+  * Added a utility to ensure two xarray Datasets can be concatonated, and
+    incorporated this utility into the Instrument file loading
   * Added unit tests for different file cadences in the Instrument class
   * Added `to_inst` method to the Constellation class
   * Added `export_pysat_info` kwarg to `to_netcdf` routines to select whether

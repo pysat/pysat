@@ -2389,9 +2389,24 @@ class Instrument(object):
                 kwargs['sort'] = False
             concat_func = pds.concat
         else:
+            # Ensure the dimensions are equal
+            equal_dims = True
+            idat = 0
+            while idat < len(new_data) - 1 and equal_dims:
+                if new_data[idat].dims != new_data[idat + 1].dims:
+                    equal_dims = False
+                idat += 1
+
+            if not equal_dims:
+                # Update the dimensions, padding data where necessary
+                new_data = pysat.utils.coords.expand_xarray_dims(
+                    new_data, self.meta, exclude_dims=['time'])
+
             # Specify the dimension, if not otherwise specified
             if 'dim' not in kwargs:
                 kwargs['dim'] = self.index.name
+
+            # Set the concat function
             concat_func = xr.concat
 
         # Assign the concatenated data to the instrument

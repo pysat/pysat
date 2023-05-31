@@ -411,8 +411,9 @@ class TestMeta(object):
 
         # Test the warning
         captured = caplog.text
-        assert captured.find('Metadata with type') >= 0
-        assert captured.find('Recasting input') >= 0
+        estr = "missing expected message in: {:}".format(captured)
+        assert captured.find('Metadata with type') >= 0, estr
+        assert captured.find('Recasting input') >= 0, estr
 
         # Check that meta is set
         if hasattr(bad_val, "__iter__"):
@@ -738,8 +739,8 @@ class TestMeta(object):
         self.dval = 'test_meta_dict_assignment'
         self.default_val = {
             getattr(self.meta.labels, mattr): ' '.join(['test', mattr])
-            if self.meta.labels.label_type[mattr] == str else -47
-            for mattr in self.meta.labels.label_type.keys()}
+            if str in pysat.utils.listify(self.meta.labels.label_type[mattr])
+            else -47 for mattr in self.meta.labels.label_type.keys()}
         self.default_name = []
         self.default_nan = []
 
@@ -771,9 +772,9 @@ class TestMeta(object):
         dvals = ['mult1', 'mult2']
         default_vals = {
             getattr(self.meta.labels, mattr): [
-                ' '.join(['test', mattr, self.dval])
-                if self.meta.labels.label_type[mattr] == str else -47
-                for self.dval in dvals]
+                ' '.join(['test', mattr, self.dval]) if str
+                in pysat.utils.listify(self.meta.labels.label_type[mattr])
+                else -47 for self.dval in dvals]
             for mattr in self.meta.labels.label_type.keys()}
         self.default_name = []
         self.default_nan = []
