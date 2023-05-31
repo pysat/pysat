@@ -10,4 +10,4 @@ instruments : list
 import pysat
 
 instruments = [pysat.Instrument('pysat', 'testing', clean_level='clean',
-                                update_files=True)]
+                                num_samples=10, update_files=True)]

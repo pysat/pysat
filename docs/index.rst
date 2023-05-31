@@ -20,5 +20,6 @@ Welcome to pysat's documentation!
    dependency.rst
    api.rst
    contributing.rst
+   roadmap.rst
    faq.rst
    release_notes.rst

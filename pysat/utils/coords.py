@@ -8,6 +8,7 @@
 import datetime as dt
 import numpy as np
 import pandas as pds
+import xarray as xr
 
 import pysat
 
@@ -195,3 +196,173 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
                            inst.meta.labels.fill_val: fill_val}
 
     return
+
+
+def establish_common_coord(coord_vals, common=True):
+    """Create a coordinate array that is appropriate for multiple data sets.
+
+    Parameters
+    ----------
+    coord_vals : list-like
+        A list of coordinate arrays of the same type: e.g., all geodetic
+        latitude in degrees
+    common : bool
+        True to include locations where all coordinate arrays cover, False to
+        use the maximum location range from the list of coordinates
+        (default=True)
+
+    Returns
+    -------
+    out_coord : array-like
+        An array appropriate for the list of coordinate values
+
+    Note
+    ----
+    Assumes that the supplied coordinates are distinct representations of
+    the same value in the same units and range (e.g., longitude in degrees
+    from 0-360).
+
+    """
+
+    start_val = None
+    end_val = None
+    res = None
+
+    for coord_spec in coord_vals:
+        # Ensure the coordinate specification is array-like
+        coord_spec = np.asarray(coord_spec)
+        if coord_spec.shape == ():
+            coord_spec = np.asarray([coord_spec])
+
+        if start_val is None:
+            # Initialize the start and stop values
+            start_val = coord_spec[0]
+            end_val = coord_spec[-1]
+
+            # Determine the resolution
+            if start_val == end_val:
+                res = np.inf
+            else:
+                res = (coord_spec[1:] - coord_spec[:-1]).mean()
+        else:
+            # Adjust the start and stop time as appropriate
+            if common:
+                if start_val < coord_spec[0]:
+                    start_val = coord_spec[0]
+                if end_val > coord_spec[-1]:
+                    end_val = coord_spec[-1]
+            else:
+                if start_val > coord_spec[0]:
+                    start_val = coord_spec[0]
+                if end_val < coord_spec[-1]:
+                    end_val = coord_spec[-1]
+
+            # Update the resolution
+            new_res = (coord_spec[1:] - coord_spec[:-1]).mean()
+            if new_res < res:
+                res = new_res
+
+    # Construct the common index
+    npnts = int((end_val - start_val) / res) + 1
+    out_coord = np.linspace(start_val, end_val, npnts)
+
+    return out_coord
+
+
+def expand_xarray_dims(data_list, meta, dims_equal=False, exclude_dims=None):
+    """Ensure that dimensions do not vary when concatenating data.
+
+    Parameters
+    ----------
+    data_list : list-like
+        List of xr.Dataset objects with the same dimensions and variables
+    meta : pysat.Meta
+        Metadata for the data in `data_list`
+    dims_equal : bool
+        Assert that all xr.Dataset objects have the same dimensions if True,
+        the Datasets in `data_list` may have differing dimensions if False.
+        (default=False)
+    exclude_dims : list-like or NoneType
+        Dimensions to exclude from evaluation or None (default=None)
+
+    Returns
+    -------
+    out_list : list-like
+        List of xr.Dataset objects with the same dimensions and variables,
+        and with dimensions that all have the same values and data padded when
+        needed.
+
+    """
+    # Get a list of the dimensions to exclude
+    if exclude_dims is None:
+        exclude_dims = []
+    else:
+        exclude_dims = pysat.utils.listify(exclude_dims)
+
+    # Get a list of all the dimensions
+    if dims_equal:
+        if len(data_list) > 0:
+            dims = [dim_key for dim_key in list(data_list[0].dims.keys())
+                    if dim_key not in exclude_dims]
+        else:
+            dims = []
+    else:
+        dims = list()
+        for sdata in data_list:
+            if len(dims) == 0:
+                dims = [dim_key for dim_key in list(sdata.dims.keys())
+                        if dim_key not in exclude_dims]
+            else:
+                for dim in list(sdata.dims.keys()):
+                    if dim not in dims and dim not in exclude_dims:
+                        dims.append(dim)
+
+    # After loading all the data, determine which dimensions may need to be
+    # expanded, as they could differ in dimensions from file to file
+    combo_dims = {dim: max([sdata.dims[dim] for sdata in data_list
+                            if dim in sdata.dims]) for dim in dims}
+
+    # Expand the data so that all dimensions are the same shape
+    out_list = list()
+    for i, sdata in enumerate(data_list):
+        # Determine which dimensions need to be updated
+        fix_dims = [dim for dim in sdata.dims.keys() if dim in combo_dims.keys()
+                    and sdata.dims[dim] < combo_dims[dim]]
+
+        new_data = {}
+        update_new = False
+        for dvar in sdata.data_vars.keys():
+            # See if any dimensions need to be updated
+            update_dims = list(set(sdata[dvar].dims) & set(fix_dims))
+
+            # Save the old data as is, or pad it to have the right dims
+            if len(update_dims) > 0:
+                update_new = True
+                new_shape = list(sdata[dvar].values.shape)
+                old_slice = [slice(0, ns) for ns in new_shape]
+
+                for dim in update_dims:
+                    idim = list(sdata[dvar].dims).index(dim)
+                    new_shape[idim] = combo_dims[dim]
+
+                # Get the fill value
+                if dvar in meta:
+                    # If available, take it from the metadata
+                    fill_val = meta[dvar, meta.labels.fill_val]
+                else:
+                    # Otherwise, use the data type
+                    ftype = type(sdata[dvar].values.flatten()[0])
+                    fill_val = meta.labels.default_values_from_type(
+                        meta.labels.label_type['fill_val'], ftype)
+
+                # Set the new data for output
+                new_dat = np.full(shape=new_shape, fill_value=fill_val)
+                new_dat[tuple(old_slice)] = sdata[dvar].values
+                new_data[dvar] = (sdata[dvar].dims, new_dat)
+            else:
+                new_data[dvar] = sdata[dvar]
+
+        # Get the updated dataset
+        out_list.append(xr.Dataset(new_data) if update_new else sdata)
+
+    return out_list

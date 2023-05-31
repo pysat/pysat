@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """Tests the pysat Instrument object and methods."""
 
+import datetime as dt
 from importlib import reload
 import numpy as np
+import pandas as pds
 import pytest
 import warnings
 import xarray as xr
@@ -18,6 +20,7 @@ from pysat.tests.classes.cls_instrument_integration import InstIntegrationTests
 from pysat.tests.classes.cls_instrument_iteration import InstIterationTests
 from pysat.tests.classes.cls_instrument_property import InstPropertyTests
 from pysat.utils import testing
+from pysat.utils.time import filter_datetime_input
 
 
 class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
@@ -64,6 +67,112 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
         del self.testInst, self.out, self.ref_time, self.ref_doy
         return
 
+    def check_nonstandard_cadence(self):
+        """Check for nonstandard cadence in tests."""
+
+        if hasattr(self, 'freq'):
+            min_freq = pds.tseries.frequencies.to_offset('D')
+            return pds.tseries.frequencies.to_offset(self.freq) != min_freq
+        else:
+            # Uses standard frequency
+            return False
+
+
+class TestInstCadence(TestBasics):
+    """Unit tests for pysat.Instrument objects with the default file cadance."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.freq = 'D'
+
+        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
+                                    self.ref_time + pds.DateOffset(years=2)
+                                    - pds.DateOffset(days=1), freq=self.freq)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True,
+                                         use_header=True,
+                                         file_date_range=date_range,
+                                         **self.testing_kwargs)
+        self.ref_doy = int(self.ref_time.strftime('%j'))
+        self.out = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
+        return
+
+
+class TestInstMonthlyCadence(TestInstCadence):
+    """Unit tests for pysat.Instrument objects with a monthly file cadance."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.freq = 'MS'
+
+        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
+                                    self.ref_time
+                                    + pds.DateOffset(years=2, days=-1),
+                                    freq=self.freq)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True,
+                                         use_header=True,
+                                         file_date_range=date_range,
+                                         **self.testing_kwargs)
+        self.ref_doy = int(self.ref_time.strftime('%j'))
+        self.out = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
+        return
+
+
+class TestInstYearlyCadence(TestInstCadence):
+    """Unit tests for pysat.Instrument objects with a monthly file cadance."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+
+        reload(pysat.instruments.pysat_testing)
+        self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
+        self.freq = 'AS'
+
+        # Since these are yearly files, use a longer date range
+        date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
+                                    self.ref_time
+                                    + pds.DateOffset(years=5, days=-1),
+                                    freq=self.freq)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         num_samples=10,
+                                         clean_level='clean',
+                                         update_files=True,
+                                         use_header=True,
+                                         file_date_range=date_range,
+                                         **self.testing_kwargs)
+        self.ref_doy = int(self.ref_time.strftime('%j'))
+        self.out = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.testInst, self.out, self.ref_time, self.ref_doy, self.freq
+        return
+
 
 class TestBasicsInstModule(TestBasics):
     """Basic tests for instrument instantiated via inst_module."""
@@ -80,7 +189,7 @@ class TestBasicsInstModule(TestBasics):
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = imod._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -106,9 +215,9 @@ class TestBasicsXarray(TestBasics):
                                          update_files=True,
                                          use_header=True,
                                          **self.testing_kwargs)
-        self.ref_time = \
-            pysat.instruments.pysat_testing_xarray._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_testing_xarray._test_dates[
+            '']['']
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -134,7 +243,7 @@ class TestBasics2D(TestBasics):
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing2d._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -165,9 +274,8 @@ class TestBasicsNDXarray(TestBasics):
                                          update_files=True,
                                          use_header=True,
                                          **self.testing_kwargs)
-        self.ref_time = \
-            pysat.instruments.pysat_ndtesting._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_time = pysat.instruments.pysat_ndtesting._test_dates['']['']
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -175,6 +283,30 @@ class TestBasicsNDXarray(TestBasics):
         """Clean up the unit test environment after each method."""
 
         del self.testInst, self.out, self.ref_time, self.ref_doy
+        return
+
+    def test_setting_data_as_tuple(self):
+        """Test setting data as a tuple."""
+
+        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        self.testInst['doubleMLT'] = ('time', 2. * self.testInst['mlt'].values)
+        assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
+        return
+
+    def test_xarray_not_empty_notime(self):
+        """Test that xarray empty is False even if there is no time data."""
+        # Load data and confirm it exists
+        self.testInst.load(date=self.ref_time)
+        assert not self.testInst.empty
+
+        # Downselect to no time data
+        self.testInst.data = self.testInst[self.ref_time + dt.timedelta(days=1):
+                                           self.ref_time + dt.timedelta(days=2)]
+        assert not self.testInst.empty
+        assert len(self.testInst.index) == 0
+        for dim in self.testInst.data.dims.keys():
+            if dim != 'time':
+                assert len(self.testInst[dim]) > 0
         return
 
     @pytest.mark.parametrize("index", [(0),
@@ -277,6 +409,76 @@ class TestBasicsNDXarray(TestBasics):
 
         self.testInst.data = data
         assert self.testInst.empty == target
+        return
+
+    @pytest.mark.parametrize("val,warn_msg",
+                             [([], "broadcast as NaN"),
+                              (27., "Broadcast over epoch"),
+                              (np.array([27.]), "Broadcast over epoch")])
+    def test_set_xarray_single_value_warnings(self, val, warn_msg):
+        """Check for warning messages when setting xarray values.
+
+        Parameters
+        ----------
+        val : float or iterable
+            Value to be added as a new data variable.
+        warn_msg : str
+            Excerpt from expected warning message.
+
+        """
+
+        warnings.simplefilter("always")
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+
+        with warnings.catch_warnings(record=True) as self.war:
+            self.testInst["new_val"] = val
+        testing.eval_warnings(self.war, warn_msg, warn_type=UserWarning)
+
+    def test_set_xarray_single_value_errors(self):
+        """Check for warning messages when setting xarray values.
+
+        Parameters
+        ----------
+        val : float or iterable
+            Value to be added as a new data variable.
+        warn_msg : str
+            Excerpt from expected warning message.
+
+        """
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.data = self.testInst.data.assign_coords(
+            {'preset_val': np.array([1.0, 2.0])})
+
+        with pytest.raises(ValueError) as verr:
+            self.testInst['preset_val'] = 1.0
+
+        estr = 'Shape of input does not match'
+        assert str(verr).find(estr) > 0
+        return
+
+    @pytest.mark.parametrize("new_val", [3.0, np.array([3.0])])
+    def test_set_xarray_single_value_broadcast(self, new_val):
+        """Check that single values are correctly broadcast.
+
+        Parameters
+        ----------
+        new_val : float or iterable
+            Should be a single value, potentially an array with one element.
+
+        """
+
+        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.data = self.testInst.data.assign_coords(
+            {'preset_val': 1.0})
+
+        self.testInst['preset_val'] = new_val
+        self.testInst['new_val'] = new_val
+        # Existing coords should be not be broadcast
+        assert self.testInst['preset_val'].size == 1
+        # New variables broadcast over time
+        assert len(self.testInst['new_val']) == len(self.testInst.index)
 
 
 class TestBasicsShiftedFileDates(TestBasics):
@@ -295,7 +497,7 @@ class TestBasicsShiftedFileDates(TestBasics):
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
-        self.ref_doy = 1
+        self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
 
@@ -409,6 +611,66 @@ class TestDeprecation(object):
 
         # Test the warning messages, ensuring each attribute is present.
         testing.eval_warnings(self.war, self.warn_msgs)
+        return
+
+    def test_instrument_labels(self):
+        """Test deprecation of `labels` kwarg in Instrument."""
+        self.in_kwargs['labels'] = {
+            'units': ('units', str), 'name': ('long_name', str),
+            'notes': ('notes', str), 'desc': ('desc', str),
+            'min_val': ('value_min', float), 'max_val': ('value_max', float),
+            'fill_val': ('fill', float)}
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as self.war:
+            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+
+        self.warn_msgs = np.array(["`labels` is deprecated, use `meta_kwargs`"])
+
+        # Evaluate the warning output
+        self.eval_warnings()
+
+        # Evaluate the performance
+        assert float in tinst.meta.labels.label_type['fill_val']
+        return
+
+    @pytest.mark.parametrize('use_kwargs', [True, False])
+    def test_instrument_meta_labels(self, use_kwargs):
+        """Test deprecation of `meta_labels` attribute in Instrument.
+
+        Parameters
+        ----------
+        use_kwargs : bool
+            If True, specify labels on input.  If False, use defaults.
+
+        """
+        if use_kwargs:
+            self.in_kwargs['meta_kwargs'] = {'labels': {
+                'units': ('units', str), 'name': ('long_name', str),
+                'notes': ('notes', str), 'desc': ('desc', str),
+                'min_val': ('value_min', float),
+                'max_val': ('value_max', float), 'fill_val': ('fill', float)}}
+
+        # Catch the warnings
+        with warnings.catch_warnings(record=True) as self.war:
+            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+            labels = tinst.meta_labels
+
+        self.warn_msgs = np.array(["Deprecated attribute, returns `meta_kwarg"])
+
+        # Evaluate the warning output
+        self.eval_warnings()
+
+        # Evaluate the performance
+        if not use_kwargs:
+            self.in_kwargs['meta_kwargs'] = {'labels': {
+                'units': ('units', str), 'name': ('long_name', str),
+                'notes': ('notes', str), 'desc': ('desc', str),
+                'min_val': ('value_min', (float, int)),
+                'max_val': ('value_max', (float, int)),
+                'fill_val': ('fill', (float, int, str))}}
+
+        assert labels == self.in_kwargs['meta_kwargs']['labels']
         return
 
     def test_generic_meta_translator(self):

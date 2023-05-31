@@ -13,7 +13,8 @@ are generally held fortnightly.
 Short version
 -------------
 
-* Submit bug reports and feature requests at [GitHub](https://github.com/pysat/pysat/issues)
+* Submit bug reports and feature requests at
+  [GitHub](https://github.com/pysat/pysat/issues)
 
 * Make pull requests to the ``develop`` branch
 
@@ -160,3 +161,14 @@ These include:
   final period
 * When casting is necessary, use `np.int64` and `np.float64` to ensure operating
   system agnosticism
+
+
+Ecosystem Style Guidelines
+--------------------------
+
+If you are creating a new project that you wish to incorporate into the pysat
+ecosystem: welcome!  We have a
+[template repository](https://github.com/pysat/pysatEcosystem_Template) that
+contains many of the common documents needed for a new project that you can use
+to get started. You may find this helpful when getting started, though this
+repository is under active development.

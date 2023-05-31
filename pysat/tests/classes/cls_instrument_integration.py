@@ -37,6 +37,9 @@ class InstIntegrationTests(object):
     def test_no_stale_data_paths(self, caplog):
         """Ensure stale data paths aren't retained by pysat.Instrument.files."""
 
+        if 'file_date_range' in self.testInst.kwargs['list_files']:
+            pytest.skip("Cannot run eval on pds.DatetimeIndex")
+
         inst_str = repr(self.testInst)
         inst_str = inst_str.replace('update_files=True', 'update_files=False')
         self.testInst = eval(inst_str)

@@ -596,12 +596,14 @@ class TestBasics(object):
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_'
                               'stuff_{month:02d}_{hour:02d}_{minute:02d}_'
                               '{second:02d}.pysat_testing_file'))
-        # create a bunch of files by year and doy
+
+        # Create a group of files by year and doy
         start = dt.datetime(2007, 12, 31)
         stop = dt.datetime(2008, 1, 10)
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False, root_fname=root_fname)
-        # create the same range of dates
+
+        # Create a DatetimeIndex with the same range of dates as the new files
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
 
         pysat.instruments.pysat_testing.list_files = functools.partial(

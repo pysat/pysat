@@ -15,8 +15,10 @@ Updated by AGB, May 2021, NRL
 import datetime as dt
 import numpy as np
 import pandas as pds
+import xarray as xr
 
 import pysat
+from pysat.utils.coords import establish_common_coord
 
 
 class Constellation(object):
@@ -424,41 +426,42 @@ class Constellation(object):
             out_res = None
 
             for inst in self.instruments:
-                if stime is None:
-                    # Initialize the start and stop time
-                    stime = inst.index[0]
-                    etime = inst.index[-1]
+                if len(inst.index) > 0:
+                    if stime is None:
+                        # Initialize the start and stop time
+                        stime = inst.index[0]
+                        etime = inst.index[-1]
 
-                    # If desired, determine the resolution
-                    if self.index_res is None:
-                        if inst.index.freq is None:
-                            out_res = pysat.utils.time.calc_res(inst.index)
-                        else:
-                            out_res = pysat.utils.time.freq_to_res(
-                                inst.index.freq)
-                else:
-                    # Adjust the start and stop time as appropriate
-                    if self.common_index:
-                        if stime < inst.index[0]:
-                            stime = inst.index[0]
-                        if etime > inst.index[-1]:
-                            etime = inst.index[-1]
+                        # If desired, determine the resolution
+                        if self.index_res is None:
+                            if inst.index.freq is None:
+                                out_res = pysat.utils.time.calc_res(inst.index)
+                            else:
+                                out_res = pysat.utils.time.freq_to_res(
+                                    inst.index.freq)
                     else:
-                        if stime > inst.index[0]:
-                            stime = inst.index[0]
-                        if etime < inst.index[-1]:
-                            etime = inst.index[-1]
-
-                    # If desired, determine the resolution
-                    if self.index_res is None:
-                        if inst.index.freq is None:
-                            new_res = pysat.utils.time.calc_res(inst.index)
+                        # Adjust the start and stop time as appropriate
+                        if self.common_index:
+                            if stime < inst.index[0]:
+                                stime = inst.index[0]
+                            if etime > inst.index[-1]:
+                                etime = inst.index[-1]
                         else:
-                            new_res = pysat.utils.time.freq_to_res(
-                                inst.index.freq)
+                            if stime > inst.index[0]:
+                                stime = inst.index[0]
+                            if etime < inst.index[-1]:
+                                etime = inst.index[-1]
 
-                        if new_res < out_res:
-                            out_res = new_res
+                        # If desired, determine the resolution
+                        if self.index_res is None:
+                            if inst.index.freq is None:
+                                new_res = pysat.utils.time.calc_res(inst.index)
+                            else:
+                                new_res = pysat.utils.time.freq_to_res(
+                                    inst.index.freq)
+
+                            if new_res < out_res:
+                                out_res = new_res
 
             # If a resolution in seconds was supplied, calculate the frequency
             if self.index_res is not None:
@@ -619,6 +622,206 @@ class Constellation(object):
 
         return self._index()
 
+    def to_inst(self, common_coord=True, fill_method=None):
+        """Combine Constellation data into an Instrument.
+
+        Parameters
+        ----------
+        common_coord : bool
+            For Constellations with any xarray.Dataset Instruments, True to
+            include locations where all coordinate arrays cover, False to use
+            the maximum location range from the list of coordinates
+            (default=True)
+        fill_method : str or NoneType
+            Fill method if common data coordinates do not match exactly. If
+            one of 'nearest', 'pad'/'ffill', 'backfill'/'bfill', or None then
+            no interpolation will occur.  If 'linear', 'zero', 'slinear',
+            'quadratic', 'cubic', or 'polynomial' are used, then 1D or ND
+            interpolation will be used. (default=None)
+
+        Returns
+        -------
+        inst : pysat.Instrument
+            A pysat Instrument containing all data from the constellation at a
+            common time index
+
+        Note
+        ----
+        Uses the common index, `self.index`, that was defined using information
+        from the Constellation Instruments in combination with a potential
+        user-supplied resolution defined through `self.index_res`.
+
+        """
+        fill_methods = ['nearest', 'pad', 'ffill', 'backfill', 'bfill']
+        interp_type = [np.float64, np.int64, float, int]
+
+        # Establish the desired time index
+        coords = {'time': self.index}
+        fill_coords = {'time': coords['time']}
+
+        # Initalize the pysat Instrument
+        inst = pysat.Instrument()
+        inst._assign_attrs_from_const(self)
+
+        # Initalize the common data object
+        if inst.pandas_format:
+            data = pds.DataFrame(data={}, index=coords['time'])
+        else:
+            # Get the common coordinates needed for all data
+            for cinst in self.instruments:
+                if not cinst.pandas_format:
+                    for new_coord in cinst.data.coords.keys():
+                        if new_coord not in coords.keys():
+                            coords[new_coord] = cinst.data.coords[new_coord]
+                        elif new_coord != 'time':
+                            # Two instruments have the same coordinate, if they
+                            # are not identical, we need to establish a common
+                            # range and resolution.  Note that this will only
+                            # happen if the coordinates share the same names.
+                            if(len(coords[new_coord])
+                               != len(cinst.data.coords[new_coord])
+                               or coords[new_coord].values
+                               != cinst.data.coords[new_coord].values):
+                                coords[new_coord] = establish_common_coord(
+                                    [coords[new_coord].values,
+                                     cinst.data.coords[new_coord].values],
+                                    common=common_coord)
+
+            data = xr.Dataset(coords=coords)
+
+        # Add the data and metadata from each instrument
+        for cinst in self.instruments:
+            cinst_str = '_'.join([attr for attr in [cinst.platform, cinst.name,
+                                                    cinst.tag, cinst.inst_id]
+                                  if len(attr) > 0])
+            for dvar in cinst.variables:
+                if dvar not in self.variables:
+                    dname = '_'.join([dvar, cinst_str])
+                else:
+                    dname = dvar
+
+                # Determine whether or not this data type is interpolatable
+                fill_meth = fill_method
+                interp_flag = False
+                if cinst[dvar].dtype in interp_type:
+                    if fill_meth not in fill_methods and fill_meth is not None:
+                        interp_flag = True
+                else:
+                    if fill_meth not in fill_methods and fill_meth is not None:
+                        fill_meth = 'nearest'
+
+                # Assign the metadata, if it exists (e.g., not 'time')
+                if dvar in cinst.meta:
+                    inst.meta[dname] = cinst.meta[dvar]
+                    fill_val = cinst.meta[dvar, cinst.meta.labels.fill_val]
+                else:
+                    fill_val = np.nan
+
+                # Populate the data on the common coordinates
+                if cinst.pandas_format or (len(cinst[dvar].dims) == 1
+                                           and 'time' in cinst[dvar].dims):
+                    try:
+                        if cinst.pandas_format:
+                            ivals = cinst[dvar][coords['time']]
+                        else:
+                            ivals = pds.Series(
+                                cinst[dvar].sel({'time':
+                                                 coords['time']}).values,
+                                index=coords['time'])
+                    except KeyError:
+                        # Not all common times are present, need to fill
+                        # or interpolate
+                        if fill_meth is None:
+                            # Pad the data will fill values and then select
+                            if cinst.pandas_format:
+                                cinst_temp = cinst[dvar].copy()
+                            else:
+                                cinst_temp = cinst[dvar].to_pandas()
+                            new_times = [dtime for dtime in coords['time']
+                                         if dtime not in cinst_temp.index]
+                            fill_data = pds.Series(fill_val, index=new_times)
+                            cinst_temp = pds.concat([cinst_temp, fill_data])
+                            cinst_temp = cinst_temp.sort_index()
+                            ivals = cinst_temp[coords['time']]
+                        else:
+                            if cinst.pandas_format:
+                                cinst_temp = cinst[dvar].to_xarray()
+                                if cinst[dvar].index.name != 'time':
+                                    cinst_temp = cinst_temp.rename({
+                                        cinst[dvar].index.name: 'time'})
+                            else:
+                                cinst_temp = cinst[dvar].copy()
+
+                            if interp_flag:
+                                ivals = cinst_temp.interp(coords=fill_coords,
+                                                          method=fill_meth)
+                            else:
+                                ivals = cinst_temp.sel(fill_coords,
+                                                       method=fill_meth)
+
+                            # Get the data from the xarray object
+                            ivals = pds.Series(ivals.values,
+                                               index=coords['time'])
+
+                    # Extend the data
+                    if inst.pandas_format:
+                        val_dict = {dname: ivals}
+                    else:
+                        val_dict = {dname: (('time'), ivals)}
+                    data = data.assign(**val_dict)
+                elif dvar not in coords.keys():
+                    sel_dict = {dim: coords[dim] for dim in cinst[dvar].dims}
+
+                    if fill_meth is None:
+                        cinst_temp = cinst[dvar].copy()
+                        sel_key = ''
+                        while sel_key is not None:
+                            try:
+                                ivals = cinst_temp.sel(sel_dict,
+                                                       method=fill_meth)
+                                sel_key = None
+                            except KeyError as kerr:
+                                # Get the coordinate with values that need to
+                                # to be filled
+                                sel_key = str(kerr).split('index')[-1].split(
+                                    "'")[1]
+
+                                # Set the coordinates for filling
+                                new_coord = {sel_key: [
+                                    cc for cc in sel_dict[sel_key]
+                                    if cc not in cinst_temp.coords[sel_key]]}
+                                for dim in sel_dict.keys():
+                                    if dim not in new_coord.keys():
+                                        new_coord[dim] = sel_dict[dim]
+
+                                # Create a DataArray with fill data
+                                fill_data = xr.DataArray(data=fill_val,
+                                                         coords=new_coord,
+                                                         dims=cinst_temp.dims)
+
+                                if len(fill_data.coords.keys()) < len(
+                                        cinst_temp.coords.keys()):
+                                    fill_data = fill_data.assign_coords(
+                                        {ckey: cinst_temp.coords[ckey]
+                                         for ckey in cinst_temp.coords.keys()
+                                         if ckey not in sel_dict.keys()})
+
+                                # Merge the data objects
+                                cinst_temp = xr.concat([cinst_temp, fill_data],
+                                                       sel_key)
+                    elif interp_flag:
+                        ivals = cinst[dvar].interp(coords=sel_dict,
+                                                   method=fill_meth)
+                    else:
+                        ivals = cinst[dvar].sel(sel_dict, method=fill_meth)
+
+                    # Assign the interpolated data
+                    data = data.assign({dname: (cinst[dvar].dims,
+                                                ivals.values)})
+
+        inst.data = data
+        return inst
+
     def today(self):
         """Obtain UTC date for today, see pysat.Instrument for details."""
 
@@ -694,7 +897,7 @@ class Constellation(object):
         argument.
 
         See Also
-        ---------
+        --------
         Instrument.custom_attach : base method for attaching custom functions
 
         """
@@ -712,7 +915,7 @@ class Constellation(object):
         """Clear the custom function list.
 
         See Also
-        ---------
+        --------
         Instrument.custom_clear : base method for clearing custom functions
 
         """
@@ -737,7 +940,7 @@ class Constellation(object):
             References a dict of input keyword arguments
 
         See Also
-        ---------
+        --------
         Instrument.load : base method for loading Instrument data
 
         """
@@ -767,7 +970,7 @@ class Constellation(object):
             References a dict of input keyword arguments
 
         See Also
-        ---------
+        --------
         Instrument.download : base method for loading Instrument data
 
         Note

@@ -164,8 +164,10 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     # Adjust metadata from overall defaults
     meta['dummy1'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
                       'fill': -2**32 + 1}
-    meta['dummy2'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
-                      'fill': -2**32 + 1}
+    if tag == '':
+        # Assign metadata unique to default tag
+        meta['dummy2'] = {'value_min': -2**32 + 2, 'value_max': 2**32 - 1,
+                          'fill': -2**32 + 1}
 
     if tag == 'pressure_levels':
         # Assigning new metadata for altitude since it differs from default info
@@ -180,14 +182,15 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
 
         # Assigning metadata for meridional ion drifts since it differs from
         # default info.
-        meta['iv_mer'] = {meta.labels.units: 'm/s',
-                          meta.labels.name: 'Meridional Ion Drift',
-                          meta.labels.min_val: -250.,
-                          meta.labels.max_val: 250.,
-                          meta.labels.desc: ' '.join(('Non-physical meridional',
-                                                      'ion drifts.')),
-                          meta.labels.notes: '',
-                          meta.labels.fill_val: np.nan}
+        meta['dummy_drifts'] = {meta.labels.units: 'm/s',
+                                meta.labels.name: 'Meridional Ion Drift',
+                                meta.labels.min_val: -250.,
+                                meta.labels.max_val: 250.,
+                                meta.labels.desc: ' '.join(('Non-physical',
+                                                            'meridional',
+                                                            'ion drifts.')),
+                                meta.labels.notes: '',
+                                meta.labels.fill_val: np.nan}
 
         # Assign metadata for the new coordinate axis here, `lev` and `ilev`.
         meta['lev'] = {meta.labels.units: '',

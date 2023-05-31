@@ -33,9 +33,9 @@ class TestMeta(object):
                             'name': ('Long_Name', str),
                             'desc': ('Desc', str),
                             'notes': ('Notes', str),
-                            'min_val': ('Minimum', np.float64),
-                            'max_val': ('Maximum', np.float64),
-                            'fill_val': ('Fill_Value', np.float64)}
+                            'min_val': ('Minimum', (float, int)),
+                            'max_val': ('Maximum', (float, int)),
+                            'fill_val': ('Fill_Value', (float, int, str))}
         self.dval = None
         self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']
@@ -79,8 +79,15 @@ class TestMeta(object):
                 self.meta.mutable = self.mutable
         return
 
-    def eval_meta_settings(self):
-        """Test the Meta settings for a specified value."""
+    def eval_meta_settings(self, isfloat=True):
+        """Test the Meta settings for a specified value.
+
+        Parameters
+        ----------
+        isfloat : bool
+            True if data type is float, False if it is int, str, or other
+
+        """
         # Test the Meta data for the data value, self.dval
         for lkey in self.default_name:
             assert self.meta[self.dval, lkey] == self.dval, \
@@ -381,7 +388,7 @@ class TestMeta(object):
         assert 'Metadata with type' in str(war[0].message)
         assert 'Dropping input' in str(war[0].message)
 
-        # Check that meta is blank
+        # Check that meta is set to the expected default
         assert np.isnan(self.meta['fake_var']['value_max'])
         return
 
@@ -404,8 +411,9 @@ class TestMeta(object):
 
         # Test the warning
         captured = caplog.text
-        assert captured.find('Metadata with type') >= 0
-        assert captured.find('Recasting input') >= 0
+        estr = "missing expected message in: {:}".format(captured)
+        assert captured.find('Metadata with type') >= 0, estr
+        assert captured.find('Recasting input') >= 0, estr
 
         # Check that meta is set
         if hasattr(bad_val, "__iter__"):
@@ -731,8 +739,8 @@ class TestMeta(object):
         self.dval = 'test_meta_dict_assignment'
         self.default_val = {
             getattr(self.meta.labels, mattr): ' '.join(['test', mattr])
-            if self.meta.labels.label_type[mattr] == str else -47
-            for mattr in self.meta.labels.label_type.keys()}
+            if str in pysat.utils.listify(self.meta.labels.label_type[mattr])
+            else -47 for mattr in self.meta.labels.label_type.keys()}
         self.default_name = []
         self.default_nan = []
 
@@ -764,9 +772,9 @@ class TestMeta(object):
         dvals = ['mult1', 'mult2']
         default_vals = {
             getattr(self.meta.labels, mattr): [
-                ' '.join(['test', mattr, self.dval])
-                if self.meta.labels.label_type[mattr] == str else -47
-                for self.dval in dvals]
+                ' '.join(['test', mattr, self.dval]) if str
+                in pysat.utils.listify(self.meta.labels.label_type[mattr])
+                else -47 for self.dval in dvals]
             for mattr in self.meta.labels.label_type.keys()}
         self.default_name = []
         self.default_nan = []
@@ -1015,7 +1023,7 @@ class TestMeta(object):
             self.default_val[slabel] = vals[i]
             set_dict[slabel] = vals[i]
 
-        # Initialize the Meta data
+        # Initialize the Meta data using the new data type
         self.testInst[self.dval] = set_dict
         self.meta = self.testInst.meta
 
@@ -1974,9 +1982,9 @@ class TestMetaImmutable(TestMeta):
                             'name': ('Long_Name', str),
                             'desc': ('Desc', str),
                             'notes': ('Notes', str),
-                            'min_val': ('Minimum', np.float64),
-                            'max_val': ('Maximum', np.float64),
-                            'fill_val': ('Fill_Value', np.float64)}
+                            'min_val': ('Minimum', (float, int)),
+                            'max_val': ('Maximum', (float, int)),
+                            'fill_val': ('Fill_Value', (float, int, str))}
         self.dval = None
         self.default_name = ['long_name']
         self.default_nan = ['fill', 'value_min', 'value_max']

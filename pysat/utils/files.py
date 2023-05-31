@@ -26,14 +26,14 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     Parameters
     ----------
     stored : collections.orderedDict
-        Dict produced by `parse_fixed_width_filenames` or
-        `parse_delimited_filenames`
+        Ordered dictionary produced by `parse_fixed_width_filenames` or
+        `parse_delimited_filenames`, containing date, time, version, and
+        other information extracted from the filenames.
     two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
-        If None, then four-digit years are assumed.
-        (default=None)
+        If None, then four-digit years are assumed. (default=None)
 
     Returns
     -------
@@ -46,6 +46,11 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     the file with the higher version/revision/cycle is used. Series returned
     only has one file per datetime. Version is required for this filtering,
     revision and cycle are optional.
+
+    See Also
+    --------
+    pysat.utils.files.parse_fixed_width_filenames,
+    pysat.utils.files.parse_delimited_filenames
 
     """
 
@@ -122,13 +127,13 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
 
 def parse_fixed_width_filenames(files, format_str):
-    """Parse list of files, extracting data identified by `format_str`.
+    """Extract specified info from a list of files with a fixed name width.
 
     Parameters
     ----------
     files : list
         List of files, typically provided by
-        `files.search_local_system_formatted_filename`.
+        `pysat.utils.files.search_local_system_formatted_filename`.
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
@@ -152,6 +157,10 @@ def parse_fixed_width_filenames(files, format_str):
     as well as the supplied lengths for template variables, to determine
     where to parse out information. Thus, support for the wildcard '*' is
     limited to locations before the first template variable.
+
+    See Also
+    --------
+    pysat.utils.files.search_local_system_formatted_filename
 
     """
 
@@ -223,7 +232,7 @@ def parse_fixed_width_filenames(files, format_str):
 
 
 def parse_delimited_filenames(files, format_str, delimiter):
-    """Parse list of files, extracting data identified by format_str.
+    """Extract specified info from a list of files using a delimiter.
 
     Will parse file using `delimiter` though the function does not require
     every parsed item to be a variable, and more than one variable
@@ -237,7 +246,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     ----------
     files : list
         List of files, typically provided by
-        `files.search_local_system_formatted_filename`.
+        `pysat.utils.files.search_local_system_formatted_filename`.
     format_str : str
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
@@ -264,6 +273,10 @@ def parse_delimited_filenames(files, format_str, delimiter):
     There can not be a mixture of a template variable and '*' without a
     delimiter in between, unless the '*' occurs after the variables. The
     '*' should not be used to replace the delimited character in the filename.
+
+    See Also
+    --------
+    pysat.utils.files.search_local_system_formatted_filename
 
     """
 
@@ -537,7 +550,6 @@ def update_data_directory_structure(new_template, test_run=True,
     from pysat import Instrument
 
     # Get a list of supported instruments
-    # Best solved with an upcoming method in pull #633
     insts = available_instruments()
 
     if test_run:
@@ -739,11 +751,12 @@ def check_and_make_path(path, expand_path=False):
     Parameters
     ----------
     path : str
-        Directory path without any file names. Creates all
-        necessary directories to complete the path.
+        String specifying a directory path without any file names. All
+        directories needed to create the full path will be created.
     expand_path : bool
         If True, input `path` will be processed through `os.path.expanduser`
-        and `os.path.expandvars`.
+        (accounting for `~` and `~user` constructs, if $HOME and user are known)
+        and `os.path.expandvars` (accounting for environment variables)
 
     Returns
     -------
@@ -753,21 +766,34 @@ def check_and_make_path(path, expand_path=False):
     Raises
     ------
     ValueError
-        If input path and internally constructed path are not equal, or
-        if an invalid path supplied.
+        If an invalid path is supplied.
+    RuntimeError
+        If the input path and internally constructed paths differ.
+
+    See Also
+    --------
+    os.path.expanduser, os.path.expandvars
 
     """
 
     if expand_path:
-        # Account for home references, multi-platform
+        # Account for home, user, and environment variables references
         path = os.path.expanduser(path)
         path = os.path.expandvars(path)
 
-    if not os.path.exists(path):
-        # Make path, checking to see that each level exists before attempting
+    if len(path) == 0:
+        # The user wants to write to the current directory
+        path = os.getcwd()
+
+    # Set the output
+    made_dir = not os.path.exists(path)
+
+    if made_dir:
+        # The directory(ies) need to be made, check to see whether or not each
+        # level exists before attempting to make each directory in the path
         root_path, local_dir = os.path.split(path)
 
-        # Check that we have a remotely valid path
+        # Check that we have a potentially valid path
         if len(root_path) == 0:
             raise ValueError('Invalid path specification.')
 
@@ -792,7 +818,7 @@ def check_and_make_path(path, expand_path=False):
         while len(make_dir) > 0:
             local_dir = make_dir.pop()
             root_path = os.path.join(root_path, local_dir)
-            if (local_dir != '..') and (local_dir != '.'):
+            if local_dir != '..' and local_dir != '.':
                 # Deal with case of path='... /path1/../final_path' or
                 # path='... /path1/./final_path'
                 os.mkdir(root_path)
@@ -801,15 +827,13 @@ def check_and_make_path(path, expand_path=False):
             estr = ''.join(['Desired and constructed paths unexpectedly differ',
                             '. Please post an issue at https://github.com/pysa',
                             't/pysat/issues'])
-            raise ValueError(estr)
+            raise RuntimeError(estr)
 
-        return True
-    else:
-        return False
+    return made_dir
 
 
 def get_file_information(paths, root_dir=''):
-    """Create a dict with values from `os.stat` attributes for input path(s).
+    """Retrieve system statistics for the input path(s).
 
     Parameters
     ----------
@@ -821,15 +845,17 @@ def get_file_information(paths, root_dir=''):
     Returns
     -------
     file_info : dict
-        Keyed by file attribute. Each attribute maps to a list
+        Keyed by file attribute, which uses names that mirror or are expanded
+        upon those used by `os.stat`. Each attribute maps to a list
         of values for each file in `paths`.
 
     See Also
     --------
-    os.stat : Get variety of file attributes
+    os.stat
 
     """
 
+    # Ensure the input is a list
     paths = listify(paths)
 
     # Mapping of output key to the attribute name returned by `os.stat`
