@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.0] - 2023-06-02
+[3.1.0] - 2023-05-31
 --------------------
 * New Features
   * Added a utility to ensure two xarray Datasets can be concatonated, and
