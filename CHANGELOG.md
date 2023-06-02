@@ -3,6 +3,11 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.1.X] - 2023-xx-xx
+--------------------
+* Maintenance
+  * Update link redirects in docs. 
+
 [3.1.0] - 2023-05-31
 --------------------
 * New Features
