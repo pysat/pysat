@@ -171,4 +171,4 @@ ecosystem: welcome!  We have a
 [template repository](https://github.com/pysat/pysatEcosystem_Template) that
 contains many of the common documents needed for a new project that you can use
 to get started. You may find this helpful when getting started, though this
-repository under active development.
+repository is under active development.

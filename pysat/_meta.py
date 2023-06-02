@@ -43,8 +43,8 @@ class Meta(object):
         be excluded from export. Will always allow NaN export for labels of
         the float type. (default=None)
     data_types : dict or NoneType
-        Dict of data types for variables names or None to disregard.
-        (default=None)
+        Dict of data types for variables names or None to determine after
+        loading the data. (default=None)
 
     Attributes
     ----------
@@ -428,7 +428,8 @@ class Meta(object):
                                 # If this is a disagreement between byte data
                                 # and an expected str, resolve it here
                                 if(isinstance(to_be_set, bytes)
-                                   and self.labels.label_type[iattr] == str):
+                                   and str in pysat.utils.listify(
+                                       self.labels.label_type[iattr])):
                                     to_be_set = core_utils.stringify(to_be_set)
                                 else:
                                     # This type is incorrect, try casting it
@@ -440,16 +441,18 @@ class Meta(object):
                                                         iattr])])
                                     try:
                                         if hasattr(to_be_set, '__iter__'):
-                                            if self.labels.label_type[
-                                                    iattr] == str:
+                                            if str in pysat.utils.listify(
+                                                    self.labels.label_type[
+                                                    iattr]):
                                                 to_be_set = '\n\n'.join(
                                                     [str(tval) for tval in
                                                      to_be_set])
                                             else:
                                                 raise TypeError("can't recast")
                                         else:
-                                            to_be_set = self.labels.label_type[
-                                                iattr](to_be_set)
+                                            to_be_set = pysat.utils.listify(
+                                                self.labels.label_type[
+                                                    iattr])[0](to_be_set)
 
                                         # Inform user data was recast
                                         pysat.logger.info(''.join((
@@ -838,17 +841,22 @@ class Meta(object):
             var_types = pysat.utils.listify(data_type)
 
         for i, var in enumerate(data_vars):
-            if name_idx is not None:
-                default_vals[name_idx] = var
-
+            # Use the label defaults if this variable doesn't need to consider
+            # the data type
             if not np.any(list(need_data_type.values())):
-                self._data.loc[var, labels] = default_vals
+                data_default = list(default_vals)
             else:
                 data_default = [
                     self.labels.default_values_from_attr(
                         lattrs[j], var_types[i]) if need_data_type[lattrs[j]]
                     else val for j, val in enumerate(default_vals)]
-                self._data.loc[var, labels] = data_default
+
+            # The default value for the name must be set after to be consistent
+            if name_idx is not None:
+                data_default[name_idx] = var
+
+            # Update the meta data to the desired defaults
+            self._data.loc[var, labels] = data_default
 
         return
 
@@ -1853,6 +1861,10 @@ class MetaLabels(object):
             elif self.label_type[lkey] == int:
                 self.label_type[lkey] = (int, np.int64, np.int32, np.int16,
                                          np.int8, bool)
+            elif self.label_type[lkey] == str:
+                self.label_type[lkey] = (str, np.str_)
+            elif self.label_type[lkey] == bool:
+                self.label_type[lkey] = (bool, np.bool_)
             elif isinstance(self.label_type[lkey], tuple):
                 ltypes = list(self.label_type[lkey])
 
@@ -1861,6 +1873,12 @@ class MetaLabels(object):
 
                 if int in ltypes:
                     ltypes.extend([np.int64, np.int32, np.int16, np.int8, bool])
+
+                if str in ltypes:
+                    ltypes.append(np.str_)
+
+                if bool in ltypes:
+                    ltypes.append(np.bool_)
 
                 # This may result in duplicate numpy types, but order is more
                 # important than carrying around a duplicate type, as the first

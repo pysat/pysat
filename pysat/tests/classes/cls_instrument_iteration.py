@@ -62,7 +62,7 @@ class InstIterationTests(object):
         fnames : list
             List of filenames
         ftimes : list
-            LIst of datetimes corresponding to the files
+            List of datetimes corresponding to the files
 
         """
 

@@ -366,8 +366,7 @@ class InstAccessTests(object):
         return
 
     @pytest.mark.parametrize("operator,ref_ind",
-                             [('next', 0),
-                              ('prev', -1)])
+                             [('next', 0), ('prev', -1)])
     def test_file_load_default(self, operator, ref_ind):
         """Test if correct day loads by default when first invoking iteration.
 

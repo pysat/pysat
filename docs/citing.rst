@@ -5,7 +5,10 @@ When referring to this software package, please cite the original paper by
 Stoneback et al [2018] `<https://ntrs.nasa.gov/citations/20190002337>`_
 as well as the package `<https://doi.org/10.5281/zenodo.1199703>`_. Note that
 this DOI will always point to the latest version of the code.  A list of DOIs
-for all versions can be found at the Zenodo page above.
+for all versions can be found at the Zenodo page above. Depending on
+usage, citation of the full ecosystem paper by Stoneback et al [2023] 
+`<https://www.frontiersin.org/articles/10.3389/fspas.2023.1119775/full>`_
+may also be appropriate.
 
 Example for citation in BibTex for a generalized version:
 
