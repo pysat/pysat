@@ -6,7 +6,7 @@ Installation
 
 Python and associated packages for science are freely available. Convenient
 science python package setups are available from `<https://www.python.org/>`_,
-`Anaconda <https://www.anaconda.com/products/individual/>`_, and other locations
+`Anaconda <https://www.anaconda.com/download/>`_, and other locations
 (some platform specific). Anaconda also includes a developer environment
 that works well with pysat. Core science packages such as numpy, scipy,
 matplotlib, pandas and many others may also be installed directly via the
