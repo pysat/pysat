@@ -619,6 +619,13 @@ Cleans instrument for levels supplied in inst.clean_level.
 
 ``self`` is a :py:class:`pysat.Instrument` object. :py:func:`clean` should
 modify ``self`` in-place as needed; equivalent to a custom routine.
+:py:func:`clean` is allowed to raise logger messages, warnings, and errors. If
+the routine does this, be sure to test them by assigning the necessary
+information to the :py:attr:`_clean_warn` attribute, described in Section
+rst_new_inst-test_. :py:func:`clean` may also re-assign the cleaning level if
+appropriate. If you do this, be sure to raise a logging warning, so that users
+are aware that this change is happening and why the clean level they requested
+is not appropriate.
 
 list_remote_files
 ^^^^^^^^^^^^^^^^^
@@ -731,7 +738,25 @@ combinations), and runs the tests using pytestmark.  By default,
 routine, and will run an end-to-end test.  If this is not the case, see the next
 section.
 
+Another important test is for warnings and the re-setting of clean levels that
+may come up when cleaning data. These may be specified using the
+:py:attr:`_clean_warn` attribute, which should point to a dictionary that has a
+tuple of four elements as the value. The first element should be 'logger',
+'warning', or 'error', specifying the method through which the warning is being
+reported. The second element specifies either the logging level (as a string)
+or the warning/error type (e.g., ``ValueError``). The third element provides the
+warning message as a string and the final element provides the expected clean
+level after running the clean routine.
 
+.. code:: python
+
+   # ------------------------------------------
+   # Instrument test attributes
+
+   _clean_warn = {'dusty': ('logger', 'WARN', "I am a warning!", 'clean')}
+
+
+   
 .. _rst_test-special:
 
 Special Test Configurations
