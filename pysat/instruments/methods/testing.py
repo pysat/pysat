@@ -56,11 +56,30 @@ def clean(self, test_clean_kwarg=None):
     Parameters
     ----------
     test_clean_kwarg : any
-        Testing keyword (default=None)
+        Testing keyword. If these keywords contain 'logger', 'warning', or
+        'error', the message entered as the value to that key will be returned
+        as a logging.WARNING, UserWarning, or ValueError, respectively. If the
+        'change' kwarg is set, the clean level will be changed to the specified
+        value. (default=None)
 
     """
 
     self.test_clean_kwarg = test_clean_kwarg
+
+    if test_clean_kwarg is None:
+        test_clean_kwarg = {}
+
+    if 'change' in test_clean_kwarg.keys():
+        self.clean_level = test_clean_kwarg['change']
+
+    if 'logger' in test_clean_kwarg.keys():
+        pysat.logger.warning(test_clean_kwarg['logger'])
+
+    if 'warning' in test_clean_kwarg.keys():
+        warnings.warn(test_clean_kwarg['warning'], UserWarning)
+
+    if 'error' in test_clean_kwarg.keys():
+        raise ValueError(test_clean_kwarg['error'])
 
     return
 

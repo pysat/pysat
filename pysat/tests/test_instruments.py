@@ -146,6 +146,60 @@ class TestInstruments(InstLibTests):
 
         return
 
+    @pytest.mark.second
+    @pytest.mark.parametrize("clean_level", ['clean', 'dusty', 'dirty'])
+    @pytest.mark.parametrize("change", [True, False])
+    @pytest.mark.parametrize('warn_type', ['logger', 'warning', 'error'])
+    @pytest.mark.parametrize("inst_dict", instruments['download'])
+    def test_clean_with_warnings(self, clean_level, change, warn_type,
+                                 inst_dict, caplog):
+        """Run `test_clean_warn` with different warning behaviours.
+
+        Parameters
+        ----------
+        clean_level : str
+            Cleanliness level for loaded instrument data; must run the clean
+            routine (not include 'none').
+        change : bool
+            Specify whether or not clean level should change.
+        warn_type : str
+            Desired type of warning or error to be raised.
+        inst_dict : dict
+            One of the dictionaries returned from
+            `InstLibTests.initialize_test_package` with instruments to test.
+
+        """
+        # Set the default values
+        warn_level = {'logger': 'WARN', 'warning': UserWarning,
+                      'error': ValueError}
+        warn_msg = 'Default warning message'
+        if change:
+            final_level = 'none' if clean_level == 'clean' else 'clean'
+        else:
+            final_level = clean_level
+
+        # Construct the expected warnings
+        inst_dict['inst_module']._clean_warn = {
+            clean_level: (warn_type, warn_level[warn_type], warn_msg,
+                          final_level)}
+
+        # Set the additional Instrument kwargs
+        if 'kwargs' in inst_dict.keys():
+            if 'test_clean_kwarg' in inst_dict['kwargs']:
+                inst_dict['kwargs']['test_clean_kwarg']['change'] = final_level
+                inst_dict['kwargs']['test_clean_kwarg'][warn_type] = warn_msg
+            else:
+                inst_dict['kwargs']['test_clean_kwarg'] = {
+                    'change': final_level, warn_type: warn_msg}
+        else:
+            inst_dict['kwargs'] = {'test_clean_kwarg': {'change': final_level,
+                                                        warn_type: warn_msg}}
+
+        # Run the test
+        self.test_clean_warn(clean_level, inst_dict, caplog)
+
+        return
+
 
 class TestDeprecation(object):
     """Unit test for deprecation warnings."""
