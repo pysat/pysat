@@ -622,7 +622,7 @@ modify ``self`` in-place as needed; equivalent to a custom routine.
 :py:func:`clean` is allowed to raise logger messages, warnings, and errors. If
 the routine does this, be sure to test them by assigning the necessary
 information to the :py:attr:`_clean_warn` attribute, described in
-:ref:`Testing Support <rst_new_inst-test>`_. :py:func:`clean` may also
+:ref:`Testing Support <rst_new_inst-test>`. :py:func:`clean` may also
 re-assign the cleaning level if appropriate. If you do this, be sure to raise a
 logging warning, so that users are aware that this change is happening and why
 the clean level they requested is not appropriate.
