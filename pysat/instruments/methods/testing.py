@@ -66,20 +66,18 @@ def clean(self, test_clean_kwarg=None):
 
     self.test_clean_kwarg = test_clean_kwarg
 
-    if test_clean_kwarg is None:
-        test_clean_kwarg = {}
+    if isinstance(test_clean_kwarg, dict):
+        if 'change' in test_clean_kwarg.keys():
+            self.clean_level = test_clean_kwarg['change']
 
-    if 'change' in test_clean_kwarg.keys():
-        self.clean_level = test_clean_kwarg['change']
+        if 'logger' in test_clean_kwarg.keys():
+            pysat.logger.warning(test_clean_kwarg['logger'])
 
-    if 'logger' in test_clean_kwarg.keys():
-        pysat.logger.warning(test_clean_kwarg['logger'])
+        if 'warning' in test_clean_kwarg.keys():
+            warnings.warn(test_clean_kwarg['warning'], UserWarning)
 
-    if 'warning' in test_clean_kwarg.keys():
-        warnings.warn(test_clean_kwarg['warning'], UserWarning)
-
-    if 'error' in test_clean_kwarg.keys():
-        raise ValueError(test_clean_kwarg['error'])
+        if 'error' in test_clean_kwarg.keys():
+            raise ValueError(test_clean_kwarg['error'])
 
     return
 
