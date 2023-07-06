@@ -437,7 +437,9 @@ class InstLibTests(object):
 
                             # Test the returned message
                             out_msg = caplog.text
-                            assert out_msg.find(clean_method_msg) >= 0
+                            assert out_msg.find(clean_method_msg) >= 0, \
+                                "{:s} not in output: {:s}".format(
+                                    clean_method_msg, out_msg)
                         elif clean_method == 'warning':
                             # A warning message is expected
                             with warnings.catch_warnings(record=True) as war:
