@@ -753,7 +753,7 @@ level after running the clean routine.
    # ------------------------------------------
    # Instrument test attributes
 
-   _clean_warn = {'dusty': ('logger', 'WARN', "I am a warning!", 'clean')}
+   _clean_warn = {inst_id: {tag: {'dusty': ('logger', 'WARN', "I am a warning!", 'clean')} for tag in inst_ids[inst_id]} for inst_id in inst_ids.keys()}
 
 
    
