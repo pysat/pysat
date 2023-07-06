@@ -181,11 +181,11 @@ class TestInstruments(InstLibTests):
 
         # Construct the expected warnings
         if warn_type == 'mult':
+            # Note that we cannot test errors along with other warnings
             inst_dict['inst_module']._clean_warn = {
                 inst_dict['inst_id']: {inst_dict['tag']: {clean_level: [
-                    ('logger', warn_level['logger'], warn_msg, final_level),
                     ('warning', warn_level['warning'], warn_msg, final_level),
-                    ('error', warn_level['error'], warn_msg, final_level)]}}}
+                    ('logger', warn_level['logger'], warn_msg, final_level)]}}}
         else:
             inst_dict['inst_module']._clean_warn = {
                 inst_dict['inst_id']: {inst_dict['tag']: {clean_level: [
@@ -194,18 +194,14 @@ class TestInstruments(InstLibTests):
 
         # Set the additional Instrument kwargs
         if 'kwargs' in inst_dict.keys():
-            if 'test_clean_kwarg' in inst_dict['kwargs']:
-                inst_dict['kwargs']['test_clean_kwarg']['change'] = final_level
-            else:
-                inst_dict['kwargs']['test_clean_kwarg'] = {'change':
-                                                           final_level}
+            # Ensure the test instrument cleaning kwarg is reset
+            inst_dict['kwargs']['test_clean_kwarg'] = {'change': final_level}
         else:
             inst_dict['kwargs'] = {'test_clean_kwarg': {'change': final_level}}
 
         if warn_type == 'mult':
             inst_dict['kwargs']['test_clean_kwarg']['logger'] = warn_msg
             inst_dict['kwargs']['test_clean_kwarg']['warning'] = warn_msg
-            inst_dict['kwargs']['test_clean_kwarg']['error'] = warn_msg
         else:
             inst_dict['kwargs']['test_clean_kwarg'][warn_type] = warn_msg
 
