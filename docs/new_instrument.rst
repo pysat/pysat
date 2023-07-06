@@ -622,7 +622,7 @@ modify ``self`` in-place as needed; equivalent to a custom routine.
 :py:func:`clean` is allowed to raise logger messages, warnings, and errors. If
 the routine does this, be sure to test them by assigning the necessary
 information to the :py:attr:`_clean_warn` attribute, described in
-:ref:`Testing Support <rst_new_inst-test>`. :py:func:`clean` may also
+:ref:`rst_test-clean`. :py:func:`clean` may also
 re-assign the cleaning level if appropriate. If you do this, be sure to raise a
 logging warning, so that users are aware that this change is happening and why
 the clean level they requested is not appropriate.
@@ -738,6 +738,22 @@ combinations), and runs the tests using pytestmark.  By default,
 routine, and will run an end-to-end test.  If this is not the case, see the next
 section.
 
+
+.. _rst_test-special:
+
+Special Test Configurations
+---------------------------
+
+The following test attributes may or may not be necessary for your new
+:py:class:`~pysat._instrument.Instrument`. The descriptions should provide
+insight into when and how they should be used.
+
+
+.. _rst_test-clean:
+
+Warnings in the Clean method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Another important test is for warnings and the re-setting of clean levels that
 may come up when cleaning data. These may be specified using the
 :py:attr:`_clean_warn` attribute, which should point to a dictionary that has a
@@ -764,11 +780,7 @@ allows multiple types of warning messages to be tested for a given
 	          for inst_id in inst_ids.keys()}
 
 
-   
-.. _rst_test-special:
-
-Special Test Configurations
----------------------------
+.. _rst_test-nodownload:
 
 No Download Available
 ^^^^^^^^^^^^^^^^^^^^^
