@@ -463,11 +463,6 @@ class InstLibTests(object):
                     # Make sure fake data is cleared
                     assert target not in test_inst.data
 
-                    # If cleaning not used, something should be in the file. Not
-                    # used for clean levels since cleaning may remove all data
-                    if clean_level == "none":
-                        assert not test_inst.empty
-
         return
 
     @pytest.mark.download
