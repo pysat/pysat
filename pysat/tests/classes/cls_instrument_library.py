@@ -388,7 +388,8 @@ class InstLibTests(object):
 
         """
         if hasattr(inst_dict['inst_module'], '_clean_warn'):
-            clean_warn = inst_dict['inst_module']._clean_warn
+            clean_warn = inst_dict['inst_module']._clean_warn[
+                inst_dict['inst_id']][inst_dict['tag']]
 
             if clean_level in clean_warn.keys():
                 # Only need to test if there are clean warnings for this level
