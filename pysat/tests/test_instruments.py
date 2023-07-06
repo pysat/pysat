@@ -149,7 +149,8 @@ class TestInstruments(InstLibTests):
     @pytest.mark.second
     @pytest.mark.parametrize("clean_level", ['clean', 'dusty', 'dirty'])
     @pytest.mark.parametrize("change", [True, False])
-    @pytest.mark.parametrize('warn_type', ['logger', 'warning', 'error'])
+    @pytest.mark.parametrize('warn_type', ['logger', 'warning', 'error',
+                                           'mult'])
     @pytest.mark.parametrize("inst_dict", instruments['download'])
     def test_clean_with_warnings(self, clean_level, change, warn_type,
                                  inst_dict, caplog):
@@ -179,21 +180,34 @@ class TestInstruments(InstLibTests):
             final_level = clean_level
 
         # Construct the expected warnings
-        inst_dict['inst_module']._clean_warn = {
-            clean_level: (warn_type, warn_level[warn_type], warn_msg,
-                          final_level)}
+        if warn_type == 'mult':
+            inst_dict['inst_module']._clean_warn = {
+                inst_dict['inst_id']: {inst_dict['tag']: {clean_level: [
+                    ('logger', warn_level['logger'], warn_msg, final_level),
+                    ('warning', warn_level['warning'], warn_msg, final_level),
+                    ('error', warn_level['error'], warn_msg, final_level)]}}}
+        else:
+            inst_dict['inst_module']._clean_warn = {
+                inst_dict['inst_id']: {inst_dict['tag']: {clean_level: [
+                    (warn_type, warn_level[warn_type], warn_msg,
+                     final_level)]}}}
 
         # Set the additional Instrument kwargs
         if 'kwargs' in inst_dict.keys():
             if 'test_clean_kwarg' in inst_dict['kwargs']:
                 inst_dict['kwargs']['test_clean_kwarg']['change'] = final_level
-                inst_dict['kwargs']['test_clean_kwarg'][warn_type] = warn_msg
             else:
-                inst_dict['kwargs']['test_clean_kwarg'] = {
-                    'change': final_level, warn_type: warn_msg}
+                inst_dict['kwargs']['test_clean_kwarg'] = {'change':
+                                                           final_level}
         else:
-            inst_dict['kwargs'] = {'test_clean_kwarg': {'change': final_level,
-                                                        warn_type: warn_msg}}
+            inst_dict['kwargs'] = {'test_clean_kwarg': {'change': final_level}}
+
+        if warn_type == 'mult':
+            inst_dict['kwargs']['test_clean_kwarg']['logger'] = warn_msg
+            inst_dict['kwargs']['test_clean_kwarg']['warning'] = warn_msg
+            inst_dict['kwargs']['test_clean_kwarg']['error'] = warn_msg
+        else:
+            inst_dict['kwargs']['test_clean_kwarg'][warn_type] = warn_msg
 
         # Run the test
         self.test_clean_warn(clean_level, inst_dict, caplog)

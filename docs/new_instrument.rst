@@ -732,7 +732,7 @@ will not be present in Input/Output operations.
 The standardized :py:mod:`pysat` tests are available in
 :py:mod:`pysat.tests.instrument_test_class`. The test collection in
 test_instruments.py imports this class, collects a list of all available
-instruments (including potential :py:data:`tag`/:py:data:`inst_id`
+instruments (including potential :py:attr:`tag`/:py:attr:`inst_id`
 combinations), and runs the tests using pytestmark.  By default,
 :py:mod:`pysat` assumes that your instrument has a fully functional download
 routine, and will run an end-to-end test.  If this is not the case, see the next
@@ -741,19 +741,27 @@ section.
 Another important test is for warnings and the re-setting of clean levels that
 may come up when cleaning data. These may be specified using the
 :py:attr:`_clean_warn` attribute, which should point to a dictionary that has a
-tuple of four elements as the value. The first element should be 'logger',
-'warning', or 'error', specifying the method through which the warning is being
-reported. The second element specifies either the logging level (as a string)
-or the warning/error type (e.g., ``ValueError``). The third element provides the
-warning message as a string and the final element provides the expected clean
-level after running the clean routine.
+list with tuples of four elements as the value. The first tuple element should
+be 'logger', 'warning', or 'error', specifying the method through which the
+warning is being reported. The second tuple element specifies either the logging
+level (as a string) or the warning/error type (e.g., ``ValueError``). The third
+tuple element provides the warning message as a string and the final element
+provides the expected clean level after running the clean routine. The list
+allows multiple types of warning messages to be tested for a given
+:py:attr:`inst_id`, :py:attr:`tag`, and :py:attr:`clean_level` combination.
 
 .. code:: python
 
    # ------------------------------------------
    # Instrument test attributes
 
-   _clean_warn = {inst_id: {tag: {'dusty': ('logger', 'WARN', "I am a warning!", 'clean')} for tag in inst_ids[inst_id]} for inst_id in inst_ids.keys()}
+   _clean_warn = {inst_id: {tag: {'dusty': [
+                                ('logger', 'WARN', "I am a warning!", 'clean'),
+                                ('warning', UserWarning,
+				 'I am a serios warning!', 'dusty'),
+                                ('error, ValueError, 'I am an error', 'dusty')]}
+	                    for tag in inst_ids[inst_id]}
+	          for inst_id in inst_ids.keys()}
 
 
    

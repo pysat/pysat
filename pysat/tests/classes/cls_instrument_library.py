@@ -393,75 +393,80 @@ class InstLibTests(object):
             if clean_level in clean_warn.keys():
                 # Only need to test if there are clean warnings for this level
                 test_inst, date = initialize_test_inst_and_date(inst_dict)
-                (clean_method, clean_method_level, clean_method_msg,
-                 final_level) = clean_warn[clean_level]
+                clean_warnings = clean_warn[clean_level]
 
-                if len(test_inst.files.files) > 0:
-                    # Set the clean level
-                    test_inst.clean_level = clean_level
-                    target = 'Fake Data to be cleared'
-                    test_inst.data = [target]
+                for (clean_method, clean_method_level, clean_method_msg,
+                     final_level) in clean_warnings:
+                    if len(test_inst.files.files) > 0:
+                        # Set the clean level
+                        test_inst.clean_level = clean_level
+                        target = 'Fake Data to be cleared'
+                        test_inst.data = [target]
 
-                    try:
-                        if clean_method == 'logger':
-                            # A logging message is expected
-                            with caplog.at_level(
-                                    getattr(logging, clean_method_level),
-                                    logger='pysat'):
-                                test_inst.load(date=date, use_header=True)
+                        try:
+                            if clean_method == 'logger':
+                                # A logging message is expected
+                                with caplog.at_level(
+                                        getattr(logging, clean_method_level),
+                                        logger='pysat'):
+                                    test_inst.load(date=date, use_header=True)
 
-                            # Test the returned message
-                            out_msg = caplog.text
-                            assert out_msg.find(clean_method_msg) >= 0
-                        elif clean_method == 'warning':
-                            # A warning message is expected
-                            with warnings.catch_warnings(record=True) as war:
-                                test_inst.load(date=date, use_header=True)
+                                # Test the returned message
+                                out_msg = caplog.text
+                                assert out_msg.find(clean_method_msg) >= 0
+                            elif clean_method == 'warning':
+                                # A warning message is expected
+                                with warnings.catch_warnings(
+                                        record=True) as war:
+                                    test_inst.load(date=date, use_header=True)
 
-                            # Test the warning output
-                            testing.eval_warnings(war, [clean_method_msg],
-                                                  clean_method_level)
-                        elif clean_method == 'error':
-                            # An error message is expected, evaluate error and
-                            # error message
-                            try:
-                                testing.eval_bad_input(
-                                    test_inst.load, clean_method_level,
-                                    clean_method_msg,
-                                    input_kwargs={'date': date,
-                                                  'use_header': True})
-                            except AssertionError as aerr:
-                                if str(aerr).find(
-                                        'Loaded data is not unique') >= 0:
-                                    pytest.skip('Cannot test multiple errors')
-                                else:
-                                    raise AssertionError(aerr)
-                        else:
-                            raise AttributeError(
-                                'unknown type of warning: {:}'.format(
-                                    clean_method))
-                    except ValueError as verr:
-                        # Check if instrument is failing due to strict time flag
-                        if str(verr).find('Loaded data') > 0:
-                            test_inst.strict_time_flag = False
-                            with warnings.catch_warnings(record=True) as war:
-                                test_inst.load(date=date, use_header=True)
-                            assert len(war) >= 1
-                            categories = [war[j].category
-                                          for j in range(0, len(war))]
-                            assert UserWarning in categories
-                        else:
-                            # If error message does not match, raise error
-                            raise ValueError(verr)
+                                # Test the warning output
+                                testing.eval_warnings(war, [clean_method_msg],
+                                                      clean_method_level)
+                            elif clean_method == 'error':
+                                # An error message is expected, evaluate error
+                                # and the error message
+                                try:
+                                    testing.eval_bad_input(
+                                        test_inst.load, clean_method_level,
+                                        clean_method_msg,
+                                        input_kwargs={'date': date,
+                                                      'use_header': True})
+                                except AssertionError as aerr:
+                                    if str(aerr).find(
+                                            'Loaded data is not unique') >= 0:
+                                        pytest.skip(
+                                            'Cannot test multiple errors')
+                                    else:
+                                        raise AssertionError(aerr)
+                            else:
+                                raise AttributeError(
+                                    'unknown type of warning: {:}'.format(
+                                        clean_method))
+                        except ValueError as verr:
+                            # Check if instrument is failing due to strict time
+                            # flag
+                            if str(verr).find('Loaded data') > 0:
+                                test_inst.strict_time_flag = False
+                                with warnings.catch_warnings(
+                                        record=True) as war:
+                                    test_inst.load(date=date, use_header=True)
+                                assert len(war) >= 1
+                                categories = [war[j].category
+                                              for j in range(0, len(war))]
+                                assert UserWarning in categories
+                            else:
+                                # If error message does not match, raise error
+                                raise ValueError(verr)
 
-                    # Test to see if the clean flag has the expected value
-                    # afterwards
-                    assert test_inst.clean_level == final_level, \
-                        "Clean level should now be {:s}, not {:s}".format(
-                            final_level, test_inst.clean_level)
+                        # Test to see if the clean flag has the expected value
+                        # afterwards
+                        assert test_inst.clean_level == final_level, \
+                            "Clean level should now be {:s}, not {:s}".format(
+                                final_level, test_inst.clean_level)
 
-                    # Make sure fake data is cleared
-                    assert target not in test_inst.data
+                        # Make sure fake data is cleared
+                        assert target not in test_inst.data
 
         return
 
