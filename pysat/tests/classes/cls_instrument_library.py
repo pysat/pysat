@@ -73,6 +73,50 @@ def initialize_test_inst_and_date(inst_dict):
     return test_inst, date
 
 
+def set_strict_time_flag(test_inst, date, raise_error=False):
+    """Ensure the strict time flag does not interfere with other tests.
+
+    Parameters
+    ----------
+    test_inst : pysat.Instrument
+        Test instrument
+    date : dt.datetime
+        Date for loading data
+    raise_error : bool
+        Raise the load error if it is not the strict time flag error
+        (default=False)
+
+    """
+
+    try:
+        test_inst.load(date=date, use_header=True)
+    except Exception as err:
+        # Catch all potential input errors, and only ensure that the one caused
+        # by the strict time flag is prevented from occurring on future load
+        # calls.
+        if str(err).find('Loaded data') > 0:
+            # Change the flags that may have caused the error to be raised, to
+            # see if it the strict time flag
+            test_inst.strict_time_flag = False
+            orig_clean_level = str(test_inst.clean_level)
+            test_inst.clean_level = 'none'
+
+            # Evaluate the warning
+            with warnings.catch_warnings(record=True) as war:
+                test_inst.load(date=date, use_header=True)
+
+            assert len(war) >= 1
+            categories = [war[j].category for j in range(len(war))]
+            assert UserWarning in categories
+
+            # Reset the clean level
+            test_inst.clean_level = orig_clean_level
+        elif raise_error:
+            raise err
+
+    return
+
+
 class InstLibTests(object):
     """Provide standardized tests for pysat instrument libraries.
 
@@ -340,20 +384,10 @@ class InstLibTests(object):
             test_inst.clean_level = clean_level
             target = 'Fake Data to be cleared'
             test_inst.data = [target]
-            try:
-                test_inst.load(date=date, use_header=True)
-            except ValueError as verr:
-                # Check if instrument is failing due to strict time flag
-                if str(verr).find('Loaded data') > 0:
-                    test_inst.strict_time_flag = False
-                    with warnings.catch_warnings(record=True) as war:
-                        test_inst.load(date=date, use_header=True)
-                    assert len(war) >= 1
-                    categories = [war[j].category for j in range(0, len(war))]
-                    assert UserWarning in categories
-                else:
-                    # If error message does not match, raise error anyway
-                    raise ValueError(verr)
+
+            # Make sure the strict time flag doesn't interfere with
+            # the cleaning tests
+            set_strict_time_flag(test_inst, date, raise_error=True)
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
@@ -372,7 +406,7 @@ class InstLibTests(object):
     # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
     @pytest.mark.download
-    @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty', 'clean'])
+    @pytest.mark.parametrize("clean_level", ['dirty', 'dusty', 'clean'])
     def test_clean_warn(self, clean_level, inst_dict, caplog):
         """Test that appropriate warnings and errors are raised when cleaning.
 
@@ -384,42 +418,27 @@ class InstLibTests(object):
             Dictionary containing info to instantiate a specific instrument.
             Set automatically from instruments['download'] when
             `initialize_test_package` is run.
-        **kwags : dict
 
         """
+        # Not all Instruments have warning messages to test, only run tests
+        # when the desired test attribute is defined
         if hasattr(inst_dict['inst_module'], '_clean_warn'):
             clean_warn = inst_dict['inst_module']._clean_warn[
                 inst_dict['inst_id']][inst_dict['tag']]
 
+            # Cleaning warnings may vary by clean level, test the warning
+            # messages at the current clean level, specified by `clean_level`
             if clean_level in clean_warn.keys():
                 # Only need to test if there are clean warnings for this level
                 test_inst, date = initialize_test_inst_and_date(inst_dict)
                 clean_warnings = clean_warn[clean_level]
 
-                try:
-                    test_inst.load(date=date, use_header=True)
-                except Exception as err:
-                    # Catch all potential input errors, and only ensure that
-                    # the one caused by the strict time flag is prevented from
-                    # occurring on future load calls.
-                    if str(err).find('Loaded data') > 0:
-                        # Change the flags that may have caused
-                        # the error to be raised, to see if it the
-                        # strict time flag
-                        test_inst.strict_time_flag = False
-                        test_inst.clean_level = 'none'
+                # Make sure the strict time flag doesn't interfere with
+                # the cleaning tests
+                set_strict_time_flag(test_inst, date)
 
-                        # Evaluate the warning
-                        with warnings.catch_warnings(record=True) as war:
-                            test_inst.load(date=date, use_header=True)
-
-                        assert len(war) >= 1
-                        categories = [war[j].category for j in range(len(war))]
-                        assert UserWarning in categories
-
-                        # Reset the clean level
-                        test_inst.clean_level = clean_level
-
+                # Cycle through each of the potential cleaning messages
+                # for this Instrument module, inst ID, tag, and clean level
                 for (clean_method, clean_method_level, clean_method_msg,
                      final_level) in clean_warnings:
                     if len(test_inst.files.files) > 0:
@@ -468,6 +487,19 @@ class InstLibTests(object):
 
                         # Make sure fake data is cleared
                         assert target not in test_inst.data
+                    else:
+                        pytest.skip("".join(["Can't test clean warnings for ",
+                                             "Instrument ",
+                                             repr(inst_dict['inst_module']),
+                                             " level ", clean_level,
+                                             " (no downloaded files)"]))
+            else:
+                pytest.skip("".join(["No clean warnings for Instrument ",
+                                     repr(inst_dict['inst_module']), " level ",
+                                     clean_level]))
+        else:
+            pytest.skip("No clean warnings for Instrument {:s}".format(
+                repr(inst_dict['inst_module'])))
 
         return
 
