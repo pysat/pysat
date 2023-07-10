@@ -774,8 +774,8 @@ allows multiple types of warning messages to be tested for a given
    _clean_warn = {inst_id: {tag: {'dusty': [
                                 ('logger', 'WARN', "I am a warning!", 'clean'),
                                 ('warning', UserWarning,
-				 'I am a serios warning!', 'dusty'),
-                                ('error', ValueError, 'I am an error', 'dusty')]}
+				 'I am a serious warning!', 'dusty'),
+                                ('error', ValueError, "I'm an error", 'dusty')]}
 	                    for tag in inst_ids[inst_id]}
 	          for inst_id in inst_ids.keys()}
 
