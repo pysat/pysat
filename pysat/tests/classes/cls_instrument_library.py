@@ -386,7 +386,7 @@ class InstLibTests(object):
             test_inst.data = [target]
 
             # Make sure the strict time flag doesn't interfere with
-            # the cleaning tests
+            # the load tests
             set_strict_time_flag(test_inst, date, raise_error=True)
 
             # Make sure fake data is cleared
