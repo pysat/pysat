@@ -73,7 +73,7 @@ def initialize_test_inst_and_date(inst_dict):
     return test_inst, date
 
 
-def set_strict_time_flag(test_inst, date, raise_error=False):
+def set_strict_time_flag(test_inst, date, raise_error=False, clean_off=True):
     """Ensure the strict time flag does not interfere with other tests.
 
     Parameters
@@ -85,6 +85,9 @@ def set_strict_time_flag(test_inst, date, raise_error=False):
     raise_error : bool
         Raise the load error if it is not the strict time flag error
         (default=False)
+    clean_off : bool
+        Turn off the clean method when re-loading data and testing the
+        strict time flag (default=True)
 
     """
 
@@ -98,8 +101,11 @@ def set_strict_time_flag(test_inst, date, raise_error=False):
             # Change the flags that may have caused the error to be raised, to
             # see if it the strict time flag
             test_inst.strict_time_flag = False
-            orig_clean_level = str(test_inst.clean_level)
-            test_inst.clean_level = 'none'
+
+            if clean_off:
+                # Turn the clean method off
+                orig_clean_level = str(test_inst.clean_level)
+                test_inst.clean_level = 'none'
 
             # Evaluate the warning
             with warnings.catch_warnings(record=True) as war:
@@ -109,8 +115,9 @@ def set_strict_time_flag(test_inst, date, raise_error=False):
             categories = [war[j].category for j in range(len(war))]
             assert UserWarning in categories
 
-            # Reset the clean level
-            test_inst.clean_level = orig_clean_level
+            if clean_off:
+                # Reset the clean level
+                test_inst.clean_level = orig_clean_level
         elif raise_error:
             raise err
 
@@ -380,14 +387,15 @@ class InstLibTests(object):
 
         test_inst, date = initialize_test_inst_and_date(inst_dict)
         if len(test_inst.files.files) > 0:
-            # Set Clean Level
+            # Set the clean level
             test_inst.clean_level = clean_level
             target = 'Fake Data to be cleared'
             test_inst.data = [target]
 
             # Make sure the strict time flag doesn't interfere with
-            # the load tests
-            set_strict_time_flag(test_inst, date, raise_error=True)
+            # the load tests, and re-run with desired clean level
+            set_strict_time_flag(test_inst, date, raise_error=True,
+                                 clean_off=False)
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
