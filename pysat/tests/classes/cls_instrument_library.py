@@ -73,7 +73,8 @@ def initialize_test_inst_and_date(inst_dict):
     return test_inst, date
 
 
-def load_and_set_strict_time_flag(test_inst, date, raise_error=False, clean_off=True):
+def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
+                                  clean_off=True):
     """Load data and set the strict time flag if needed for other tests.
 
     Parameters
