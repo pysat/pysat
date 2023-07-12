@@ -73,8 +73,8 @@ def initialize_test_inst_and_date(inst_dict):
     return test_inst, date
 
 
-def set_strict_time_flag(test_inst, date, raise_error=False, clean_off=True):
-    """Ensure the strict time flag does not interfere with other tests.
+def load_and_set_strict_time_flag(test_inst, date, raise_error=False, clean_off=True):
+    """Load data and set the strict time flag if needed for other tests.
 
     Parameters
     ----------
@@ -394,8 +394,8 @@ class InstLibTests(object):
 
             # Make sure the strict time flag doesn't interfere with
             # the load tests, and re-run with desired clean level
-            set_strict_time_flag(test_inst, date, raise_error=True,
-                                 clean_off=False)
+            load_and_set_strict_time_flag(test_inst, date, raise_error=True,
+                                          clean_off=False)
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
@@ -443,7 +443,7 @@ class InstLibTests(object):
 
                 # Make sure the strict time flag doesn't interfere with
                 # the cleaning tests
-                set_strict_time_flag(test_inst, date)
+                load_and_set_strict_time_flag(test_inst, date)
 
                 # Cycle through each of the potential cleaning messages
                 # for this Instrument module, inst ID, tag, and clean level
