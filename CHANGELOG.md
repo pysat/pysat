@@ -5,8 +5,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.1.X] - 2023-xx-xx
 --------------------
+* New Features
+  * Added tests for warnings, logging messages, and errors in the Instrument
+    clean method.
 * Maintenance
-  * Update link redirects in docs. 
+  * Update link redirects in docs.
 
 [3.1.0] - 2023-05-31
 --------------------

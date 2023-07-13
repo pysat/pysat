@@ -619,6 +619,13 @@ Cleans instrument for levels supplied in inst.clean_level.
 
 ``self`` is a :py:class:`pysat.Instrument` object. :py:func:`clean` should
 modify ``self`` in-place as needed; equivalent to a custom routine.
+:py:func:`clean` is allowed to raise logger messages, warnings, and errors. If
+the routine does this, be sure to test them by assigning the necessary
+information to the :py:attr:`_clean_warn` attribute, described in
+:ref:`rst_test-clean`. :py:func:`clean` may also
+re-assign the cleaning level if appropriate. If you do this, be sure to raise a
+logging warning, so that users are aware that this change is happening and why
+the clean level they requested is not appropriate.
 
 list_remote_files
 ^^^^^^^^^^^^^^^^^
@@ -725,7 +732,7 @@ will not be present in Input/Output operations.
 The standardized :py:mod:`pysat` tests are available in
 :py:mod:`pysat.tests.instrument_test_class`. The test collection in
 test_instruments.py imports this class, collects a list of all available
-instruments (including potential :py:data:`tag`/:py:data:`inst_id`
+instruments (including potential :py:attr:`tag`/:py:attr:`inst_id`
 combinations), and runs the tests using pytestmark.  By default,
 :py:mod:`pysat` assumes that your instrument has a fully functional download
 routine, and will run an end-to-end test.  If this is not the case, see the next
@@ -736,6 +743,44 @@ section.
 
 Special Test Configurations
 ---------------------------
+
+The following test attributes may or may not be necessary for your new
+:py:class:`~pysat._instrument.Instrument`. The descriptions should provide
+insight into when and how they should be used.
+
+
+.. _rst_test-clean:
+
+Warnings in the Clean method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another important test is for warnings and the re-setting of clean levels that
+may come up when cleaning data. These may be specified using the
+:py:attr:`_clean_warn` attribute, which should point to a dictionary that has a
+list with tuples of four elements as the value. The first tuple element should
+be 'logger', 'warning', or 'error', specifying the method through which the
+warning is being reported. The second tuple element specifies either the logging
+level (as a string) or the warning/error type (e.g., ``ValueError``). The third
+tuple element provides the warning message as a string and the final element
+provides the expected clean level after running the clean routine. The list
+allows multiple types of warning messages to be tested for a given
+:py:attr:`inst_id`, :py:attr:`tag`, and :py:attr:`clean_level` combination.
+
+.. code:: python
+
+   # ------------------------------------------
+   # Instrument test attributes
+
+   _clean_warn = {inst_id: {tag: {'dusty': [
+                                ('logger', 'WARN', "I am a warning!", 'clean'),
+                                ('warning', UserWarning,
+				 'I am a serious warning!', 'dusty'),
+                                ('error', ValueError, "I'm an error", 'dusty')]}
+	                    for tag in inst_ids[inst_id]}
+	          for inst_id in inst_ids.keys()}
+
+
+.. _rst_test-nodownload:
 
 No Download Available
 ^^^^^^^^^^^^^^^^^^^^^
