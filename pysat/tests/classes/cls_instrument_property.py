@@ -693,7 +693,7 @@ class InstPropertyTests(object):
         [({'inst_id': 'invalid_inst_id'},
           "'invalid_inst_id' is not one of the supported inst_ids."),
          ({'inst_id': '', 'tag': 'bad_tag'},
-          "'bad_tag' is not one of the supported tags.")])
+          "'bad_tag' is not one of the supported tags")])
     def test_error_bad_instrument_object(self, kwargs, estr):
         """Ensure instantiation with invalid inst_id or tag errors.
 

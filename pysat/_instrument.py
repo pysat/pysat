@@ -1396,10 +1396,12 @@ class Instrument(object):
             raise ValueError(estr)
 
         if self.tag not in self.inst_module.inst_ids[self.inst_id]:
-            tag_str = ', '.join([tkey.__repr__() for tkey
-                                 in self.inst_module.inst_ids[self.inst_id]])
+            tag_id_str = repr(self.inst_module.inst_ids[self.inst_id]).replace(
+                "{", "'inst ID': ['tag'] combinations are: ")
+            tag_id_str = tag_id_str.replace("}", "")
             estr = ''.join(("'", self.tag, "' is not one of the supported ",
-                            'tags. Supported tags are: ', tag_str, '.'))
+                            "tags for inst ID ['", self.inst_id, "']. ",
+                            'Supported ', tag_id_str))
             raise ValueError(estr)
 
         # Assign the Instrument methods

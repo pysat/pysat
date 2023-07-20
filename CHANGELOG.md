@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     clean method.
 * Maintenance
   * Update link redirects in docs.
+  * Improved Instrument ValueError messages.
 
 [3.1.0] - 2023-05-31
 --------------------
