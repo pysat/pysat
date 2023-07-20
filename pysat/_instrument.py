@@ -3309,6 +3309,7 @@ class Instrument(object):
                 # __getitem__ used below to get data from instrument object.
                 # Details for handling pandas and xarray are different and
                 # handled by __getitem__.
+                # TODO: fix data selection for other time indices
                 self.data = self[first_pad:temp_time]
                 if not self.empty:
                     if self.index[-1] == temp_time:
@@ -3324,6 +3325,7 @@ class Instrument(object):
                 # Pad data using access mechanisms that work for both pandas
                 # and xarray
                 self.data = self._next_data.copy()
+                # TODO: fix data selection for other time indices
                 self.data = self[temp_time:last_pad]
                 if len(self.index) > 0:
                     if (self.index[0] == temp_time):
@@ -3333,6 +3335,7 @@ class Instrument(object):
                     self.data = stored_data
 
             if len(self.index) > 0:
+                # TODO: fix data selection for other time indices
                 self.data = self[first_pad:last_pad]
 
                 # Want exclusive end slicing behavior from above
@@ -3439,6 +3442,7 @@ class Instrument(object):
 
         # Remove the excess data padding, if any applied
         if (self.pad is not None) & (not self.empty) & (not verifyPad):
+            # TODO: fix data selection for other time indices
             self.data = self[first_time: last_time]
             if not self.empty:
                 if (self.index[-1] == last_time) & (not want_last_pad):
