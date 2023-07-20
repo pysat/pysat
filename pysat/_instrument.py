@@ -322,7 +322,7 @@ class Instrument(object):
 
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
-                    'list_remote_files', 'clean', 'init']
+                    'list_remote_files', 'clean', 'init', 'concat_data']
         for fkey in exp_keys:
             func_name = _kwargs_keys_to_func_name(fkey)
             func = getattr(self, func_name)
@@ -568,7 +568,8 @@ class Instrument(object):
         # required their own path for equality, string comparisons!
         partial_funcs = ['_init_rtn', '_clean_rtn', '_preprocess_rtn',
                          '_list_files_rtn', '_download_rtn',
-                         '_list_remote_files_rtn', '_load_rtn']
+                         '_list_remote_files_rtn', '_load_rtn',
+                         '_concat_data_rtn']
 
         # If the type is the same then check everything that is attached to
         # the Instrument object. Includes attributes, methods, variables, etc.
@@ -1310,7 +1311,7 @@ class Instrument(object):
         methods
             init, preprocess, and clean
         functions
-            load, list_files, download, and list_remote_files
+            load, list_files, download, and list_remote_files, concat_data
         attributes
             directory_format, file_format, multi_file_day, orbit_info, and
             pandas_format
@@ -1320,7 +1321,7 @@ class Instrument(object):
         """
         # Declare the standard Instrument methods and attributes
         inst_methods = {'required': ['init', 'clean'],
-                        'optional': ['preprocess']}
+                        'optional': ['preprocess', 'concat_data']}
         inst_funcs = {'required': ['load', 'list_files', 'download'],
                       'optional': ['list_remote_files']}
         inst_attrs = {'directory_format': None, 'file_format': None,
@@ -2375,6 +2376,11 @@ class Instrument(object):
         except if the user includes a value for dim as a keyword argument.
 
         """
+        # Add any concat_data kwargs
+        for ckey in self.kwargs['concat_data'].keys():
+            if ckey not in kwargs.keys():
+                kwargs[ckey] = self.kwargs['concat_data'][ckey]
+
         # Order the data to be concatenated in a list
         if not isinstance(new_data, list):
             new_data = [new_data]
@@ -2383,36 +2389,41 @@ class Instrument(object):
             new_data.append(self.data)
         else:
             new_data.insert(0, self.data)
+    
+        if self._concat_data_rtn.__name__.find('_pass_method') == 0:
+            # There is no custom concat function, use the pysat standard method.
+            # Start by retrieving the appropriate concatenation function
+            if self.pandas_format:
+                # Specifically do not sort unless otherwise specified
+                if 'sort' not in kwargs:
+                    kwargs['sort'] = False
+                concat_func = pds.concat
+            else:
+                # Ensure the dimensions are equal
+                equal_dims = True
+                idat = 0
+                while idat < len(new_data) - 1 and equal_dims:
+                    if new_data[idat].dims != new_data[idat + 1].dims:
+                        equal_dims = False
+                    idat += 1
 
-        # Retrieve the appropriate concatenation function
-        if self.pandas_format:
-            # Specifically do not sort unless otherwise specified
-            if 'sort' not in kwargs:
-                kwargs['sort'] = False
-            concat_func = pds.concat
+                if not equal_dims:
+                    # Update the dimensions, padding data where necessary
+                    new_data = pysat.utils.coords.expand_xarray_dims(
+                        new_data, self.meta, exclude_dims=[self.index.name])
+
+                # Specify the dimension, if not otherwise specified
+                if 'dim' not in kwargs:
+                    kwargs['dim'] = self.index.name
+
+                # Set the concat function
+                concat_func = xr.concat
+
+            # Assign the concatenated data to the instrument
+            self.data = concat_func(new_data, **kwargs)
         else:
-            # Ensure the dimensions are equal
-            equal_dims = True
-            idat = 0
-            while idat < len(new_data) - 1 and equal_dims:
-                if new_data[idat].dims != new_data[idat + 1].dims:
-                    equal_dims = False
-                idat += 1
+            self._concat_data_rtn(new_data, **kwargs)
 
-            if not equal_dims:
-                # Update the dimensions, padding data where necessary
-                new_data = pysat.utils.coords.expand_xarray_dims(
-                    new_data, self.meta, exclude_dims=['time'])
-
-            # Specify the dimension, if not otherwise specified
-            if 'dim' not in kwargs:
-                kwargs['dim'] = self.index.name
-
-            # Set the concat function
-            concat_func = xr.concat
-
-        # Assign the concatenated data to the instrument
-        self.data = concat_func(new_data, **kwargs)
         return
 
     def custom_attach(self, function, at_pos='end', args=None, kwargs=None):
@@ -3328,7 +3339,6 @@ class Instrument(object):
                 if not self.empty:
                     if (self.index[-1] == last_pad) & (not want_last_pad):
                         self.data = self[:-1]
-
         else:
             # If self.pad is False, load single day
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
