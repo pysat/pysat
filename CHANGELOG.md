@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
     clean method.
+  * Allow Instruments to define custom `concat_data` methods.
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
