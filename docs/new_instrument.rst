@@ -546,10 +546,11 @@ If provided, :py:mod:`pysat` supports the definition and use of keywords for an
 instrument module so that users may define their preferred default values. A
 custom keyword for an instrument module must be defined in each function that
 will receive that keyword argument if provided by the user. All instrument
-functions, :py:func:`init`, :py:func:`preprocess`, :py:func:`load`,
-:py:func:`clean`, :py:func:`list_files`, :py:func:`list_remote_files`, and
-:py:func:`download` support custom keywords. The same keyword may be used in
-more than one function but the same value will be passed to each.
+functions, :py:func:`init`, :py:func:`preprocess`, :py:func:`concat_data`,
+:py:func:`load`, :py:func:`clean`, :py:func:`list_files`,
+:py:func:`list_remote_files`, and :py:func:`download` support custom keywords.
+The same keyword may be used in more than one function but the same value will
+be passed to each.
 
 An example :py:func:`load` function definition with two custom keyword
 arguments.
@@ -649,6 +650,25 @@ The user can search for subsets of files through optional keywords, such as:
 
     inst.remote_file_list(year=2019)
     inst.remote_file_list(year=2019, month=1, day=1)
+
+concat_data
+^^^^^^^^^^^
+
+Combines data from multiple Instruments of the same type, used internally to
+combine data from different load periods.  The default method concatonates data
+using the :py:attr:`inst.index` name.  However, some data sets have multiple
+different time indices along which data should be concatonated.  In such cases
+(e.g., TIMED-GUVI SDR-Imaging data from :py:mod:`pysatNASA`), a custom
+:py:meth:`concat_data` method must be supplied.  If available, this method
+will be used instead of the default
+:py:meth:`~pysat._instrument.Instrument.concat_data`, after the default
+method handles the prepending of the data that needs to be combined.
+
+.. code:: python
+
+   def concat_data(self, new_data, **kwargs):
+       # Perform custom concatonation here, updating self.data
+       return
 
 
 Logging
