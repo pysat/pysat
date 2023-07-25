@@ -950,7 +950,21 @@ class Instrument(object):
                     return self.data.isel(**key_dict)
                 except (KeyError, TypeError):
                     # Try to get a subset of time, using label based indexing
-                    return self.data.sel(**key_dict)
+                    try:
+                        return self.data.sel(**key_dict)
+                    except KeyError as kerr:
+                        if str(kerr).find('Timestamp') >= 0 and len(
+                                epoch_names) > 0:
+                            # The problem is probably coming from a limited
+                            # time range in the ancillery epochs, remove them
+                            # from selection
+                            pysat.logger.warning(
+                                ''.join(['Removing ', repr(epoch_names[1:]),
+                                         ' dimensions from data selection']))
+                            key_dict = {'indexers': {epoch_names[0]: key}}
+                            return self.data.sel(**key_dict)
+                        else:
+                            raise kerr
 
     def __setitem__(self, key, new_data):
         """Set data in `pysat.Instrument` object.
