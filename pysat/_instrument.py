@@ -868,11 +868,18 @@ class Instrument(object):
         """
 
         if 'Epoch' in self.data.indexes:
-            epoch_name = 'Epoch'
+            epoch_names = ['Epoch']
         elif 'time' in self.data.indexes:
-            epoch_name = 'time'
+            epoch_names = ['time']
         else:
             return xr.Dataset(None)
+
+        # Find secondary time indexes that may need to be sliced
+        if len(self.data.indexes) > 1:
+            for ind in self.data.indexes.keys():
+                if(ind != epoch_names[0] and self.data.indexes[ind].dtype
+                   == self.data.indexes[epoch_names[0]].dtype):
+                    epoch_names.append(ind)
 
         if isinstance(key, tuple):
             if len(key) == 2:
@@ -885,7 +892,8 @@ class Instrument(object):
                     data_subset = self.data[key[1]]
 
                 # If the input is a tuple, `key[0]` must be linked to the epoch.
-                key_dict = {'indexers': {epoch_name: key[0]}}
+                key_dict = {'indexers': {epoch_name: key[0]
+                                         for epoch_name in epoch_names}}
                 try:
                     # Assume key[0] is an integer
                     return data_subset.isel(**key_dict)
@@ -934,7 +942,8 @@ class Instrument(object):
             except (TypeError, KeyError, ValueError):
                 # If that didn't work, likely need to use `isel` or `sel`
                 # Link key to the epoch.
-                key_dict = {'indexers': {epoch_name: key}}
+                key_dict = {'indexers': {epoch_name: key
+                                         for epoch_name in epoch_names}}
                 try:
                     # Try to get all data variables, but for a subset of time
                     # using integer indexing
@@ -3309,7 +3318,6 @@ class Instrument(object):
                 # __getitem__ used below to get data from instrument object.
                 # Details for handling pandas and xarray are different and
                 # handled by __getitem__.
-                # TODO: fix data selection for other time indices
                 self.data = self[first_pad:temp_time]
                 if not self.empty:
                     if self.index[-1] == temp_time:
@@ -3325,7 +3333,6 @@ class Instrument(object):
                 # Pad data using access mechanisms that work for both pandas
                 # and xarray
                 self.data = self._next_data.copy()
-                # TODO: fix data selection for other time indices
                 self.data = self[temp_time:last_pad]
                 if len(self.index) > 0:
                     if (self.index[0] == temp_time):
@@ -3335,7 +3342,6 @@ class Instrument(object):
                     self.data = stored_data
 
             if len(self.index) > 0:
-                # TODO: fix data selection for other time indices
                 self.data = self[first_pad:last_pad]
 
                 # Want exclusive end slicing behavior from above
@@ -3442,7 +3448,6 @@ class Instrument(object):
 
         # Remove the excess data padding, if any applied
         if (self.pad is not None) & (not self.empty) & (not verifyPad):
-            # TODO: fix data selection for other time indices
             self.data = self[first_time: last_time]
             if not self.empty:
                 if (self.index[-1] == last_time) & (not want_last_pad):
