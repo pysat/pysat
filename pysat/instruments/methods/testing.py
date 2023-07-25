@@ -111,8 +111,11 @@ def concat_data(self, new_data, extra_time_dims=None, **kwargs):
         new_data = pysat.utils.coords.expand_xarray_dims(
             new_data, self.meta, exclude_dims=time_dims)
 
-        # Combine the data
-        self.data = xr.combine_by_coords(new_data, **kwargs)
+        # Specify the dimension, if not otherwise specified
+        if 'dim' not in kwargs:
+            kwargs['dim'] = self.index.name
+    
+        self.data = xr.concat(new_data, **kwargs)
     else:
         inners = None
         for ndata in new_data:
