@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pds
 import time
 import warnings
+import xarray as xr
 
 import pysat
 from pysat.utils import NetworkLock
@@ -82,7 +83,67 @@ def clean(self, test_clean_kwarg=None):
     return
 
 
-# Optional method
+# Optional methods
+def concat_data(self, new_data, extra_time_dims=None, **kwargs):
+    """Concatonate data to self.data for extra time dimensions.
+
+    Parameters
+    ----------
+    new_data : xarray.Dataset or list of such objects
+        New data objects to be concatonated
+    extra_time_dims : list-like or NoneType
+        List of extra time dimensions that require concatonation (default=None)
+    **kwargs : dict
+        Optional keyword arguments passed to xr.concat
+
+    """
+    # Establish the time dimensions
+    time_dims = [self.index.name]
+
+    if extra_time_dims is not None:
+        time_dims.extend(list(extra_time_dims))
+
+    # Concatonate using the appropriate method for the number of time
+    # dimensions
+    if len(time_dims) == 1:
+        # There is only one time dimensions, but other dimensions may
+        # need to be adjusted
+        new_data = pysat.utils.coords.expand_xarray_dims(
+            new_data, self.meta, exclude_dims=time_dims)
+
+        # Combine the data
+        self.data = xr.combine_by_coords(new_data, **kwargs)
+    else:
+        inners = None
+        for ndata in new_data:
+            # Separate into inner datasets
+            inner_keys = {dim: [key for key in ndata.keys()
+                                if dim in ndata[key].dims] for dim in time_dims}
+            inner_dat = {dim: ndata.get(inner_keys[dim]) for dim in time_dims}
+
+            # Add 'single_var's into 'time' dataset to keep track
+            sv_keys = [val.name for val in ndata.values()
+                       if 'single_var' in val.dims]
+            singlevar_set = ndata.get(sv_keys)
+            inner_dat[self.index.name] = xr.merge([inner_dat[self.index.name],
+                                                   singlevar_set])
+
+            # Concatenate along desired dimension with previous data
+            if inners is None:
+                # No previous data, assign the data separated by dimension
+                inners = dict(inner_dat)
+            else:
+                # Concatenate with existing data
+                inners = {dim: xr.concat([inners[dim], inner_dat[dim]],
+                                         dim=dim) for dim in time_dims}
+
+        # Combine all time dimensions
+        if inners is not None:
+            data_list = [inners[dim] for dim in time_dims]
+            self.data = xr.merge(data_list)
+    return
+
+
 def preprocess(self, test_preprocess_kwarg=None):
     """Perform standard preprocessing.
 
@@ -96,12 +157,12 @@ def preprocess(self, test_preprocess_kwarg=None):
         Testing keyword (default=None)
 
     """
-
     self.test_preprocess_kwarg = test_preprocess_kwarg
 
     return
 
 
+# Utility functions
 def initialize_test_meta(epoch_name, data_keys):
     """Initialize meta data for test instruments.
 
@@ -213,8 +274,12 @@ def initialize_test_meta(epoch_name, data_keys):
                             'units': 'km',
                             'meta': alt_profile_meta}
 
+    # Optional and standard metadata for xarray
+    for var in data_keys:
+        if var.find('variable_profiles') == 0:
+            meta[var] = {'desc': 'Profiles with variable altitude.'}
+
     # Standard metadata required for xarray.
-    meta['variable_profiles'] = {'desc': 'Profiles with variable altitude.'}
     meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1,
                               'desc': 'Altitude of profile data.'}
     meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
