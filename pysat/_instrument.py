@@ -2398,7 +2398,7 @@ class Instrument(object):
             new_data.append(self.data)
         else:
             new_data.insert(0, self.data)
-    
+
         if self._concat_data_rtn.__name__.find('_pass_method') == 0:
             # There is no custom concat function, use the pysat standard method.
             # Start by retrieving the appropriate concatenation function
