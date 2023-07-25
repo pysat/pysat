@@ -114,7 +114,7 @@ def concat_data(self, new_data, extra_time_dims=None, **kwargs):
         # Specify the dimension, if not otherwise specified
         if 'dim' not in kwargs:
             kwargs['dim'] = self.index.name
-    
+
         self.data = xr.concat(new_data, **kwargs)
     else:
         inners = None
