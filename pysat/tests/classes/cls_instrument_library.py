@@ -376,10 +376,7 @@ class InstLibTests(object):
         return
 
     @pytest.mark.second
-    # Need to maintain download mark for backwards compatibility.
-    # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
-    @pytest.mark.download
     @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty', 'clean'])
     def test_load(self, clean_level, inst_dict):
         """Test that instruments load at each cleaning level.
@@ -420,10 +417,7 @@ class InstLibTests(object):
         return
 
     @pytest.mark.second
-    # Need to maintain download mark for backwards compatibility.
-    # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
-    @pytest.mark.download
     def test_load_multiple_days(self, inst_dict):
         """Test that instruments load at each cleaning level.
 

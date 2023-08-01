@@ -266,15 +266,6 @@ class TestDeprecation(object):
         testing.eval_warnings(war, self.warn_msgs)
         return
 
-    def test_old_pytest_mark_presence(self):
-        """Test that pytest mark is backwards compatible."""
-
-        n_args = len(InstLibTests.test_load.pytestmark)
-        mark_names = [InstLibTests.test_load.pytestmark[j].name
-                      for j in range(0, n_args)]
-
-        assert "download" in mark_names
-
     @pytest.mark.parametrize("inst_module", ['pysat_testing2d',
                                              'pysat_testing_xarray',
                                              'pysat_testing2d_xarray'])
