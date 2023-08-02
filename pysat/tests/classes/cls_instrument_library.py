@@ -98,7 +98,7 @@ def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
     kwargs = {'use_header': True}
 
     if concat:
-        kwargs['end_date'] = date + dt.timedelta(days=1)
+        kwargs['end_date'] = date + dt.timedelta(days=2)
 
     try:
         test_inst.load(date=date, **kwargs)
