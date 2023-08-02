@@ -14,11 +14,9 @@ platform = 'pysat'
 name = 'ndtesting'
 
 pandas_format = False
-tags = {'': 'Regular testing data set'}
-inst_ids = {'': ['']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
-_test_load_opt = {'': {'': [{'num_extra_time_coords': 0},
-                            {'num_extra_time_coords': 1}]}}
+tags = {'': 'Regular testing data set', 'two_times': 'Two time indices'}
+inst_ids = {'': [tag for tag in tags.keys()]}
+_test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
 
 epoch_name = u'time'
 
@@ -35,8 +33,7 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag='', inst_id='', non_monotonic_index=False,
          non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=864, test_load_kwarg=None, max_latitude=90.0,
-         num_extra_time_coords=0):
+         num_samples=864, test_load_kwarg=None, max_latitude=90.0):
     """Load the test files.
 
     Parameters
@@ -70,8 +67,6 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     max_latitude : float
         Latitude simulated as `max_latitude` * cos(theta(t))`, where
         theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.0)
-    num_extra_time_coords : int
-        Number of extra time coordinates to include. (default=0)
 
     Returns
     -------
@@ -176,6 +171,7 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     data.coords['z'] = (('z'), np.arange(15))
 
     # Add extra time coords
+    num_extra_time_coords = 1 if tag == 'two_times' else 0
     for i in range(num_extra_time_coords):
         ckey = 'time{:d}'.format(i)
         tindex = data.indexes[epoch_name][:-1 * (i + 1)]
