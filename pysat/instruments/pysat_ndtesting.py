@@ -26,9 +26,24 @@ init = mm_test.init
 # Clean method
 clean = mm_test.clean
 
-# Optional method, preprocess
-concat_data = mm_test.concat_data
+# Optional methods
 preprocess = mm_test.preprocess
+
+
+def concat_data(self, new_data, **kwargs):
+    """Concatonate data using the appropriate method by tag.
+
+    Parameters
+    ----------
+    new_data : list-like
+        List of xarray Datasets
+
+    """
+    extra_time_dims = ['time1'] if self.tag == 'two_times' else None
+    mm_test.concat_data(self, new_data, extra_time_dims=extra_time_dims,
+                        **kwargs)
+
+    return
 
 
 def load(fnames, tag='', inst_id='', non_monotonic_index=False,
