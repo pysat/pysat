@@ -33,6 +33,7 @@ Examples
 import datetime as dt
 from importlib import import_module
 import logging
+import numpy as np
 import sys
 import tempfile
 import warnings
@@ -445,8 +446,8 @@ class InstLibTests(object):
 
             # Make sure fake data is cleared
             assert target not in test_inst.data
-
-            assert not test_inst.empty
+            # Make sure more than one day has been loaded
+            assert len(np.unique(test_inst.index.day)) > 1
         else:
             pytest.skip("Download data not available")
 
