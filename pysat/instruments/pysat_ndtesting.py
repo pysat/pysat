@@ -41,9 +41,13 @@ def concat_data(self, new_data, **kwargs):
         List of xarray Datasets
 
     """
-    extra_time_dims = ['time1'] if 'time1' in self.variables else None
-    mm_test.concat_data(self, new_data, extra_time_dims=extra_time_dims,
-                        **kwargs)
+    # Select the extra time variable names
+    time_vars = [var for var in self.variables
+                 if var.find('time') == 0 and var != 'time']
+    if len(time_vars) == 0:
+        time_vars = None
+
+    mm_test.concat_data(self, new_data, extra_time_dims=time_vars, **kwargs)
 
     return
 
