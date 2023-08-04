@@ -14,9 +14,11 @@ platform = 'pysat'
 name = 'ndtesting'
 
 pandas_format = False
-tags = {'': 'Regular testing data set', 'two_times': 'Two time indices'}
+tags = {'': 'Regular testing data set'}
 inst_ids = {'': [tag for tag in tags.keys()]}
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
+_test_load_opt = {'': {'': [{'num_extra_time_coords': 0},
+                            {'num_extra_time_coords': 1}]}}
 
 epoch_name = u'time'
 
@@ -39,7 +41,7 @@ def concat_data(self, new_data, **kwargs):
         List of xarray Datasets
 
     """
-    extra_time_dims = ['time1'] if self.tag == 'two_times' else None
+    extra_time_dims = ['time1'] if 'time1' in self.variables else None
     mm_test.concat_data(self, new_data, extra_time_dims=extra_time_dims,
                         **kwargs)
 
@@ -48,7 +50,8 @@ def concat_data(self, new_data, **kwargs):
 
 def load(fnames, tag='', inst_id='', non_monotonic_index=False,
          non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=864, test_load_kwarg=None, max_latitude=90.0):
+         num_samples=864, test_load_kwarg=None, max_latitude=90.0,
+         num_extra_time_coords=0):
     """Load the test files.
 
     Parameters
@@ -82,6 +85,8 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     max_latitude : float
         Latitude simulated as `max_latitude` * cos(theta(t))`, where
         theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.0)
+    num_extra_time_coords : int
+        Number of extra time coordinates to include. (default=0)
 
     Returns
     -------
@@ -186,7 +191,6 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     data.coords['z'] = (('z'), np.arange(15))
 
     # Add extra time coords
-    num_extra_time_coords = 1 if tag == 'two_times' else 0
     for i in range(num_extra_time_coords):
         ckey = 'time{:d}'.format(i)
         tindex = data.indexes[epoch_name][:-1 * (i + 1)]
