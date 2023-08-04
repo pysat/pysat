@@ -518,7 +518,7 @@ class InstLibTests(object):
     # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
     @pytest.mark.download
-    @pytest.mark.parametrize('pad', [{'day': 1}, dt.timedelta(days=1)])
+    @pytest.mark.parametrize('pad', [{'days': 1}, dt.timedelta(days=1)])
     def test_load_w_pad(self, pad, inst_dict):
         """Test that instruments load at each cleaning level.
 
