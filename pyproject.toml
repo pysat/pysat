@@ -69,8 +69,8 @@ doc = [
   "ipython",
   "m2r2",
   "numpydoc",
-  "sphinx<7.0",
-  "sphinx_rtd_theme"
+  "sphinx < 7.0",
+  "sphinx_rtd_theme >= 1.2.2"
 ]
 
 [project.urls]
