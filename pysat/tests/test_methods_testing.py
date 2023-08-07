@@ -83,3 +83,13 @@ class TestMethodsTesting(object):
         delta_time = [dt.timedelta(seconds=sec) for sec in uts]
         assert (index.to_pydatetime() - delta_time == dates).all
         return
+
+    def test_concat_bad_kwarg(self):
+        """Test `concat_data` errors with bad kwarg input."""
+
+        testing.eval_bad_input(mm_test.concat_data, ValueError,
+                               'unexpected number of time dimensions',
+                               input_args=(self.test_inst, self.test_inst),
+                               input_kwargs={'num_extra_time_coords': 10})
+        return
+        
