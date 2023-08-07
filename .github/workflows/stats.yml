@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
 
     name: Summary of instrument libraries
     steps:
@@ -25,10 +25,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        # Need to install pysat before ecosystem
-        python setup.py install
-        pip install -r test_requirements.txt
+        pip install .test
         pip install `awk '{print $1}' ecosystem.txt`
 
     - name: Set up pysat
