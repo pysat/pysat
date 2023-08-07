@@ -92,4 +92,3 @@ class TestMethodsTesting(object):
                                input_args=(self.test_inst, self.test_inst),
                                input_kwargs={'num_extra_time_coords': 10})
         return
-        
