@@ -29,27 +29,8 @@ init = mm_test.init
 clean = mm_test.clean
 
 # Optional methods
+concat_data = mm_test.concat_data
 preprocess = mm_test.preprocess
-
-
-def concat_data(self, new_data, **kwargs):
-    """Concatonate data using the appropriate method by tag.
-
-    Parameters
-    ----------
-    new_data : list-like
-        List of xarray Datasets
-
-    """
-    # Select the extra time variable names
-    time_vars = [var for var in self.variables
-                 if var.find('time') == 0 and var != 'time']
-    if len(time_vars) == 0:
-        time_vars = None
-
-    mm_test.concat_data(self, new_data, extra_time_dims=time_vars, **kwargs)
-
-    return
 
 
 def load(fnames, tag='', inst_id='', non_monotonic_index=False,
@@ -190,9 +171,9 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
                                    dtype=np.int64))
 
     # Add dummy coords
-    data.coords['x'] = (('x'), np.arange(17))
-    data.coords['y'] = (('y'), np.arange(17))
-    data.coords['z'] = (('z'), np.arange(15))
+    data.coords['x'] = (('x'), np.arange(7))
+    data.coords['y'] = (('y'), np.arange(7))
+    data.coords['z'] = (('z'), np.arange(5))
 
     # Add extra time coords
     for i in range(num_extra_time_coords):
@@ -206,27 +187,36 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     num = len(data['uts'])
     data['profiles'] = (
         (epoch_name, 'profile_height'),
-        data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['profile_height'] = ('profile_height', np.arange(15))
+        data['dummy3'].values[:, np.newaxis] * np.ones(
+            (num, data.coords['z'].shape[0])))
+    data.coords['profile_height'] = ('profile_height',
+                                     np.arange(len(data.coords['z'])))
 
     # Profiles that could have different altitude values
     data['variable_profiles'] = (
         (epoch_name, 'z'), data['dummy3'].values[:, np.newaxis]
-        * np.ones((num, 15)))
+        * np.ones((num, data.coords['z'].shape[0])))
     data.coords['variable_profile_height'] = (
-        (epoch_name, 'z'), np.arange(15)[np.newaxis, :] * np.ones((num, 15)))
+        (epoch_name, 'z'), np.arange(data.coords['z'].shape[0])[np.newaxis, :]
+        * np.ones((num, data.coords['z'].shape[0])))
 
     # Create fake image type data, projected to lat / lon at some location
     # from satellite.
     data['images'] = ((epoch_name, 'x', 'y'),
                       data['dummy3'].values[
-                          :, np.newaxis, np.newaxis] * np.ones((num, 17, 17)))
+                          :, np.newaxis, np.newaxis]
+                      * np.ones((num, data.coords['x'].shape[0],
+                                 data.coords['y'].shape[0])))
     data.coords['image_lat'] = ((epoch_name, 'x', 'y'),
-                                np.arange(17)[np.newaxis, np.newaxis, :]
-                                * np.ones((num, 17, 17)))
+                                np.arange(data.coords['x'].shape[0])[
+                                    np.newaxis, np.newaxis, :]
+                                * np.ones((num, data.coords['x'].shape[0],
+                                           data.coords['y'].shape[0])))
     data.coords['image_lon'] = ((epoch_name, 'x', 'y'),
-                                np.arange(17)[np.newaxis, np.newaxis, :]
-                                * np.ones((num, 17, 17)))
+                                np.arange(data.coords['x'].shape[0])[
+                                    np.newaxis, np.newaxis, :]
+                                * np.ones((num, data.coords['x'].shape[0],
+                                           data.coords['y'].shape[0])))
 
     # There may be data that depends on alternate time indices
     for i in range(num_extra_time_coords):

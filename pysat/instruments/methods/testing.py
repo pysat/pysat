@@ -84,24 +84,31 @@ def clean(self, test_clean_kwarg=None):
 
 
 # Optional methods
-def concat_data(self, new_data, extra_time_dims=None, **kwargs):
+def concat_data(self, new_data, num_extra_time_coords=0, **kwargs):
     """Concatonate data to self.data for extra time dimensions.
 
     Parameters
     ----------
     new_data : xarray.Dataset or list of such objects
         New data objects to be concatonated
-    extra_time_dims : list-like or NoneType
-        List of extra time dimensions that require concatonation (default=None)
+    num_extra_time_coords : int
+        Number of extra time dimensions that require concatonation (default=0)
     **kwargs : dict
         Optional keyword arguments passed to xr.concat
 
+    Note
+    ----
+    Expects the extra time dimensions to have a variable name that starts
+    with 'time', and no other dimensions to have a name that fits this format.
+
     """
     # Establish the time dimensions
-    time_dims = [self.index.name]
+    time_dims = [var for var in self.variables if var.find('time') == 0]
 
-    if extra_time_dims is not None:
-        time_dims.extend(list(extra_time_dims))
+    if len(time_dims) != num_extra_time_coords + 1:
+        raise ValueError(
+            'unexpected number of time dimensions: len({:}) != {:d}'.format(
+                time_dims, num_extra_time_coords + 1))
 
     # Concatonate using the appropriate method for the number of time
     # dimensions
