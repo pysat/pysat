@@ -102,8 +102,11 @@ def concat_data(self, new_data, num_extra_time_coords=0, **kwargs):
     with 'time', and no other dimensions to have a name that fits this format.
 
     """
-    # Establish the time dimensions
-    time_dims = [var for var in self.variables if var.find('time') == 0]
+    # Establish the time dimensions, ensuring the standard variable is included
+    # whether or not it is treated as a variable
+    time_dims = [self.index.name]
+    time_dims.extend([var for var in self.variables if var.find('time') == 0
+                      and var != self.index.name])
 
     if len(time_dims) != num_extra_time_coords + 1:
         raise ValueError(
