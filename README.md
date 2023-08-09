@@ -22,7 +22,7 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 
 [Citation Info](https://pysat.readthedocs.io/en/latest/citing.html)
 
-Come join us on Slack! An invitation to the pysat workspace is available 
+Come join us on Slack! An invitation to the pysat workspace is available
 in the 'About' section of the [pysat GitHub Repository.](https://github.com/pysat/pysat)
 Development meetings are generally held fortnightly.
 
@@ -66,7 +66,7 @@ pip install pysat
 ```
 git clone https://github.com/pysat/pysat.git
 cd pysat
-python setup.py install
+pip install .
 ```
 An advantage to installing through github is access to the development branches.
 The latest bugfixes can be found in the `develop` branch.  However, this branch
@@ -76,7 +76,7 @@ virtual environment or using `python setup.py develop`.
 git clone https://github.com/pysat/pysat.git
 cd pysat
 git checkout develop
-python setup.py develop
+pip install -e .
 ```
 * Note that pysat requires a number of packages for the install.  
   * dask
