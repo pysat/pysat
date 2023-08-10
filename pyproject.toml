@@ -78,7 +78,7 @@ Documentation = "https://pysat.readthedocs.io/en/latest/"
 Source = "https://github.com/pysat/pysat"
 
 [tool.coverage.report]
-omit = ["*/instruments/templates/"]
+omit = ["*/instruments/templates/*"]
 
 [tool.pytest.ini_options]
 addopts = "-vs --cov=pysatNASA"
