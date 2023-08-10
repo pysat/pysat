@@ -81,7 +81,7 @@ Source = "https://github.com/pysat/pysat"
 omit = ["*/instruments/templates/*"]
 
 [tool.pytest.ini_options]
-addopts = "-vs --cov=pysatNASA"
+addopts = "--cov=pysat"
 markers = [
   "all_inst",
   "download",
