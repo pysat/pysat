@@ -1598,7 +1598,7 @@ class Instrument(object):
         inc : dt.timedelta, int, or NoneType
             Increment of files or dates to load, starting from the
             root date or fid (default=None)
-        load_kwargs : dict
+        load_kwargs : dict or NoneType
             Dictionary of keywords that may be options for specific instruments.
             If None, uses `self.kwargs['load']`. (default=None)
 
@@ -1709,8 +1709,14 @@ class Instrument(object):
 
         return data, mdata
 
-    def _load_next(self):
+    def _load_next(self, load_kwargs=None):
         """Load the next days data (or file) without incrementing the date.
+
+        Parameters
+        ----------
+        load_kwargs : dict or NoneType
+            Dictionary of keywords that may be options for specific instruments.
+            If None, uses `self.kwargs['load']`. (default=None)
 
         Returns
         -------
@@ -1728,15 +1734,23 @@ class Instrument(object):
         or the file. Looks for `self._load_by_date` flag.
 
         """
-        if self._load_by_date:
-            next_date = self.date + self.load_step
-            return self._load_data(date=next_date, inc=self.load_step)
-        else:
-            next_id = self._fid + self.load_step + 1
-            return self._load_data(fid=next_id, inc=self.load_step)
+        load_data_kwargs = {'inc': self.load_step, 'load_kwargs': load_kwargs}
 
-    def _load_prev(self):
+        if self._load_by_date:
+            load_data_kwargs['date'] = self.date + self.load_step
+        else:
+            load_data_kwargs['fid'] = self._fid + self.load_step + 1
+
+        return self._load_data(**load_data_kwargs)
+
+    def _load_prev(self, load_kwargs=None):
         """Load the previous days data (or file) without decrementing the date.
+
+        Parameters
+        ----------
+        load_kwargs : dict or NoneType
+            Dictionary of keywords that may be options for specific instruments.
+            If None, uses `self.kwargs['load']`. (default=None)
 
         Returns
         -------
@@ -1754,14 +1768,14 @@ class Instrument(object):
         or the file. Looks for `self._load_by_date` flag.
 
         """
-        load_kwargs = {'inc': self.load_step}
+        load_data_kwargs = {'inc': self.load_step, 'load_kwargs': load_kwargs}
 
         if self._load_by_date:
-            load_kwargs['date'] = self.date - self.load_step
+            load_data_kwargs['date'] = self.date - self.load_step
         else:
-            load_kwargs['fid'] = self._fid - self.load_step - 1
+            load_data_kwargs['fid'] = self._fid - self.load_step - 1
 
-        return self._load_data(**load_kwargs)
+        return self._load_data(**load_data_kwargs)
 
     def _set_load_parameters(self, date=None, fid=None):
         """Set the necesssary load attributes.
@@ -3219,11 +3233,13 @@ class Instrument(object):
                 pysat.logger.debug('Initializing data cache.')
 
                 # Using current date or fid
-                self._prev_data, self._prev_meta = self._load_prev()
+                self._prev_data, self._prev_meta = self._load_prev(
+                    load_kwargs=kwargs)
                 self._curr_data, self._curr_meta = self._load_data(
                     date=self.date, fid=self._fid, inc=self.load_step,
                     load_kwargs=kwargs)
-                self._next_data, self._next_meta = self._load_next()
+                self._next_data, self._next_meta = self._load_next(
+                    load_kwargs=kwargs)
             else:
                 if self._next_data_track == curr:
                     pysat.logger.debug('Using data cache. Loading next.')
@@ -3233,7 +3249,8 @@ class Instrument(object):
                     self._prev_meta = self._curr_meta
                     self._curr_data = self._next_data
                     self._curr_meta = self._next_meta
-                    self._next_data, self._next_meta = self._load_next()
+                    self._next_data, self._next_meta = self._load_next(
+                        load_kwargs=kwargs)
                 elif self._prev_data_track == curr:
                     pysat.logger.debug('Using data cache. Loading previous.')
                     # Moving backward in time
@@ -3242,7 +3259,8 @@ class Instrument(object):
                     self._next_meta = self._curr_meta
                     self._curr_data = self._prev_data
                     self._curr_meta = self._prev_meta
-                    self._prev_data, self._prev_meta = self._load_prev()
+                    self._prev_data, self._prev_meta = self._load_prev(
+                        load_kwargs=kwargs)
                 else:
                     # Jumped in time/or switched from filebased to date based
                     # access
@@ -3250,11 +3268,13 @@ class Instrument(object):
                     del self._prev_data
                     del self._curr_data
                     del self._next_data
-                    self._prev_data, self._prev_meta = self._load_prev()
+                    self._prev_data, self._prev_meta = self._load_prev(
+                        load_kwargs=kwargs)
                     self._curr_data, self._curr_meta = self._load_data(
                         date=self.date, fid=self._fid, inc=self.load_step,
                         load_kwargs=kwargs)
-                    self._next_data, self._next_meta = self._load_next()
+                    self._next_data, self._next_meta = self._load_next(
+                        load_kwargs=kwargs)
 
             # Make sure datetime indices for all data is monotonic
             if self.pandas_format:
