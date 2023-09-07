@@ -84,15 +84,13 @@ def clean(self, test_clean_kwarg=None):
 
 
 # Optional methods
-def concat_data(self, new_data, num_extra_time_coords=0, **kwargs):
+def concat_data(self, new_data, **kwargs):
     """Concatonate data to self.data for extra time dimensions.
 
     Parameters
     ----------
     new_data : xarray.Dataset or list of such objects
         New data objects to be concatonated
-    num_extra_time_coords : int
-        Number of extra time dimensions that require concatonation (default=0)
     **kwargs : dict
         Optional keyword arguments passed to xr.concat
 
@@ -107,11 +105,6 @@ def concat_data(self, new_data, num_extra_time_coords=0, **kwargs):
     time_dims = [self.index.name]
     time_dims.extend([var for var in self.variables if var.find('time') == 0
                       and var != self.index.name])
-
-    if len(time_dims) != num_extra_time_coords + 1:
-        raise ValueError(
-            'unexpected number of time dimensions: len({:}) != {:d}'.format(
-                time_dims, num_extra_time_coords + 1))
 
     # Concatonate using the appropriate method for the number of time
     # dimensions
@@ -291,6 +284,10 @@ def initialize_test_meta(epoch_name, data_keys):
     for var in data_keys:
         if var.find('variable_profiles') == 0:
             meta[var] = {'desc': 'Profiles with variable altitude.'}
+
+            if len(var) > 17:
+                tvar = 'time{:s}'.format(var[17:])
+                meta[tvar] = {'desc': 'Additional time variable.'}
 
     # Standard metadata required for xarray.
     meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1,
