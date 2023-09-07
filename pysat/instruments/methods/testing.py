@@ -299,13 +299,13 @@ def initialize_test_meta(epoch_name, data_keys):
                       'notes': 'function of image_lat and image_lon'}
     meta['x'] = {'desc': 'x-value of image pixel',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 17, 'fill': -1}
+                 'value_min': 0, 'value_max': 7, 'fill': -1}
     meta['y'] = {'desc': 'y-value of image pixel',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 17, 'fill': -1}
+                 'value_min': 0, 'value_max': 7, 'fill': -1}
     meta['z'] = {'desc': 'z-value of profile height',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 15, 'fill': -1}
+                 'value_min': 0, 'value_max': 5, 'fill': -1}
     meta['image_lat'] = {'desc': 'Latitude of image pixel',
                          'notes': 'Dummy Variable',
                          'value_min': -90., 'value_max': 90.}
