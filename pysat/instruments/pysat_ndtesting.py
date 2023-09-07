@@ -89,8 +89,8 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    # Using 900s (15 min) frequency
-    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='900S',
+    # Using 100s frequency for compatibility with seasonal analysis unit tests
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
                                                start_time=start_time)
     # TODO(#1094): Remove in pysat 3.2.0
     if malformed_index:
