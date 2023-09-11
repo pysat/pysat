@@ -3356,7 +3356,9 @@ class Instrument(object):
                 pdata = self.__getitem__(slice(first_pad, self.index[0]),
                                          data=self._prev_data)
                 if not self._empty(pdata):
-                    if pdata[self.index.name][-1] == self.index[0]:
+                    # Test the data index, slicing if necessary
+                    pindex = self._index(data=pdata)
+                    if pindex[-1] == self.index[0]:
                         pdata = self.__getitem__(slice(-1), data=pdata)
                     self.concat_data(pdata, prepend=True)
                 del pdata
@@ -3367,7 +3369,9 @@ class Instrument(object):
                 ndata = self.__getitem__(slice(self.index[-1], last_pad),
                                          data=self._next_data)
                 if not self._empty(ndata):
-                    if ndata[self.index.name][0] == self.index[-1]:
+                    # Test the data index, slicing if necessary
+                    nindex = self._index(data=ndata)
+                    if nindex[0] == self.index[-1]:
                         ndata = self.__getitem__(
                             slice(1, len(ndata[self.index.name])), data=ndata)
                     self.concat_data(ndata, prepend=False)
