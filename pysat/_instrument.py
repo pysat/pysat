@@ -3364,7 +3364,6 @@ class Instrument(object):
             if not self._empty(self._next_data) and not self.empty:
                 # __getitem__ used to handle any pandas/xarray differences in
                 # data slicing
-                
                 ndata = self.__getitem__(slice(self.index[-1], last_pad),
                                          data=self._next_data)
                 if not self._empty(ndata):
