@@ -743,7 +743,7 @@ class Instrument(object):
 
         return output_str
 
-    def __getitem__(self, key):
+    def __getitem__(self, key, data=None):
         """Access data in `pysat.Instrument` object.
 
         Parameters
@@ -751,6 +751,8 @@ class Instrument(object):
         key : str, tuple, or dict
             Data variable name, tuple with a slice, or dict used to locate
             desired data.
+        data : pds.DataFrame, xr.Dataset, or NoneType
+            Desired data object to select from or None to use `data` attribute
 
         Raises
         ------
@@ -789,20 +791,22 @@ class Instrument(object):
             inst[datetime1:datetime2, 'name1':'name2']
 
         """
+        if data is None:
+            data = self.data
 
         if self.pandas_format:
             if isinstance(key, str):
-                return self.data[key]
+                return data[key]
             elif isinstance(key, tuple):
                 try:
                     # Pass keys directly through
-                    return self.data.loc[key[0], key[1]]
+                    return data.loc[key[0], key[1]]
                 except (KeyError, TypeError) as err1:
                     # TypeError for single integer. KeyError for list, array,
                     # slice of integers. Assume key[0] is integer
                     # (including list or slice).
                     try:
-                        return self.data.loc[self.data.index[key[0]], key[1]]
+                        return data.loc[data.index[key[0]], key[1]]
                     except IndexError as err2:
                         err_message = '\n'.join(("original messages:",
                                                  str(err1), str(err2)))
@@ -812,15 +816,15 @@ class Instrument(object):
             else:
                 try:
                     # Integer based indexing
-                    return self.data.iloc[key]
+                    return data.iloc[key]
                 except (TypeError, ValueError):
                     # If it's not an integer, TypeError is thrown. If it's a
                     # list, ValueError is thrown.
-                    return self.data[key]
+                    return data[key]
         else:
-            return self.__getitem_xarray__(key)
+            return self.__getitem_xarray__(key, data=data)
 
-    def __getitem_xarray__(self, key):
+    def __getitem_xarray__(self, key, data=None):
         """Access data in `pysat.Instrument` object with `xarray.Dataset`.
 
         Parameters
@@ -828,6 +832,8 @@ class Instrument(object):
         key : str, tuple, or dict
             Data variable name, tuple with a slice, or dict used to locate
             desired data
+        data : xr.Dataset or NoneType
+            Desired data object to select from or None to use `data` attribute
 
         Returns
         -------
@@ -866,19 +872,21 @@ class Instrument(object):
             inst[datetime1:datetime2, 'name']
 
         """
+        if data is None:
+            data = self.data
 
-        if 'Epoch' in self.data.indexes:
+        if 'Epoch' in data.indexes:
             epoch_names = ['Epoch']
-        elif 'time' in self.data.indexes:
+        elif 'time' in data.indexes:
             epoch_names = ['time']
         else:
             return xr.Dataset(None)
 
         # Find secondary time indexes that may need to be sliced
-        if len(self.data.indexes) > 1:
-            for ind in self.data.indexes.keys():
-                if(ind != epoch_names[0] and self.data.indexes[ind].dtype
-                   == self.data.indexes[epoch_names[0]].dtype):
+        if len(data.indexes) > 1:
+            for ind in data.indexes.keys():
+                if(ind != epoch_names[0] and data.indexes[ind].dtype
+                   == data.indexes[epoch_names[0]].dtype):
                     epoch_names.append(ind)
 
         if isinstance(key, tuple):
@@ -886,10 +894,10 @@ class Instrument(object):
                 # Support slicing time, variable name
                 if isinstance(key[1], slice):
                     # Extract subset of variables before epoch selection.
-                    data_subset = self.data[self.variables[key[1]]]
+                    data_subset = data[self.variables[key[1]]]
                 else:
                     # Extract single variable before epoch selection.
-                    data_subset = self.data[key[1]]
+                    data_subset = data[key[1]]
 
                 # If the input is a tuple, `key[0]` must be linked to the epoch.
                 key_dict = {'indexers': {epoch_name: key[0]
@@ -918,7 +926,7 @@ class Instrument(object):
                     for i, dim in enumerate(self[var_name].dims):
                         indict[dim] = key[0][i]
 
-                    return self.data[var_name][indict]
+                    return data[var_name][indict]
             else:
                 # Multidimensional indexing where the multiple dimensions are
                 # not contained within another object
@@ -934,11 +942,11 @@ class Instrument(object):
                 for i, dim in enumerate(self[var_name].dims):
                     indict[dim] = key[i]
 
-                return self.data[var_name][indict]
+                return data[var_name][indict]
         else:
             try:
                 # Grab a particular variable by name
-                return self.data[key]
+                return data[key]
             except (TypeError, KeyError, ValueError):
                 # If that didn't work, likely need to use `isel` or `sel`
                 # Link key to the epoch.
@@ -947,11 +955,11 @@ class Instrument(object):
                 try:
                     # Try to get all data variables, but for a subset of time
                     # using integer indexing
-                    return self.data.isel(**key_dict)
+                    return data.isel(**key_dict)
                 except (KeyError, TypeError):
                     # Try to get a subset of time, using label based indexing
                     try:
-                        return self.data.sel(**key_dict)
+                        return data.sel(**key_dict)
                     except KeyError as kerr:
                         if str(kerr).find('Timestamp') >= 0 and len(
                                 epoch_names) > 0:
@@ -962,7 +970,7 @@ class Instrument(object):
                                 ''.join(['Removing ', repr(epoch_names[1:]),
                                          ' dimensions from data selection']))
                             key_dict = {'indexers': {epoch_names[0]: key}}
-                            return self.data.sel(**key_dict)
+                            return data.sel(**key_dict)
                         else:
                             raise kerr
 
@@ -3210,8 +3218,7 @@ class Instrument(object):
         # Check for consistency between loading range and data padding, if any
         if self.pad is not None:
             if self._load_by_date:
-                tdate = dt.datetime(2009, 1, 1)
-                if tdate + self.load_step < tdate + loop_pad:
+                if date + self.load_step < date + loop_pad:
                     estr = ''.join(('Data padding window must be shorter than ',
                                     'data loading window. Load a greater ',
                                     'range of data or shorten the padding.'))
@@ -3262,7 +3269,7 @@ class Instrument(object):
                     self._prev_data, self._prev_meta = self._load_prev(
                         load_kwargs=kwargs)
                 else:
-                    # Jumped in time/or switched from filebased to date based
+                    # Jumped in time/or switched from file based to date based
                     # access
                     pysat.logger.debug('Resetting data cache.')
                     del self._prev_data
@@ -3294,14 +3301,16 @@ class Instrument(object):
                 self._next_data = getattr(self._next_data,
                                           sort_method)(*sort_args)
 
-            # Make tracking indexes consistent with new loads
+            # Make tracking indexes consistent with new loads, as date loading
+            # and file loading have to be treated differently due to change in
+            # inclusive/exclusive range end treatment. Loading by file is
+            # inclusive.
             if self._load_by_date:
+                # Arithmatic uses datetime or DateOffset objects
                 self._next_data_track = curr + self.load_step
                 self._prev_data_track = curr - self.load_step
             else:
-                # File and date loads have to be treated differently
-                # due to change in inclusive/exclusive range end
-                # treatment. Loading by file is inclusive.
+                # Aritmatic uses integers
                 self._next_data_track = curr + self.load_step + 1
                 self._prev_data_track = curr - self.load_step - 1
 
@@ -3341,46 +3350,36 @@ class Instrument(object):
                                            "by file.")))
 
             # Pad data based upon passed parameter
-            if (not self._empty(self._prev_data)) & (not self.empty):
-                stored_data = self.data  # .copy()
-                temp_time = copy.deepcopy(self.index[0])
+            if not self._empty(self._prev_data) and not self.empty:
+                # __getitem__ used to handle any pandas/xarray differences in
+                # data slicing
+                pdata = self.__getitem__(slice(first_pad, self.index[0]),
+                                         data=self._prev_data)
+                if not self._empty(pdata):
+                    if pdata[self.index.name][-1] == self.index[0]:
+                        pdata = self.__getitem__(slice(-1), data=pdata)
+                    self.concat_data(pdata, prepend=True)
+                del pdata
 
-                # Pad data using access mechanisms that works for both pandas
-                # and xarray
-                self.data = self._prev_data.copy()
-
-                # __getitem__ used below to get data from instrument object.
-                # Details for handling pandas and xarray are different and
-                # handled by __getitem__.
-                self.data = self[first_pad:temp_time]
-                if not self.empty:
-                    if self.index[-1] == temp_time:
-                        self.data = self[:-1]
-                    self.concat_data(stored_data, prepend=False)
-                else:
-                    self.data = stored_data
-
-            if (not self._empty(self._next_data)) & (not self.empty):
-                stored_data = self.data  # .copy()
-                temp_time = copy.deepcopy(self.index[-1])
-
-                # Pad data using access mechanisms that work for both pandas
-                # and xarray
-                self.data = self._next_data.copy()
-                self.data = self[temp_time:last_pad]
-                if len(self.index) > 0:
-                    if (self.index[0] == temp_time):
-                        self.data = self[1:]
-                    self.concat_data(stored_data, prepend=True)
-                else:
-                    self.data = stored_data
+            if not self._empty(self._next_data) and not self.empty:
+                # __getitem__ used to handle any pandas/xarray differences in
+                # data slicing
+                
+                ndata = self.__getitem__(slice(self.index[-1], last_pad),
+                                         data=self._next_data)
+                if not self._empty(ndata):
+                    if ndata[self.index.name][0] == self.index[-1]:
+                        ndata = self.__getitem__(
+                            slice(1, len(ndata[self.index.name])), data=ndata)
+                    self.concat_data(ndata, prepend=False)
+                del ndata
 
             if len(self.index) > 0:
                 self.data = self[first_pad:last_pad]
 
                 # Want exclusive end slicing behavior from above
                 if not self.empty:
-                    if (self.index[-1] == last_pad) & (not want_last_pad):
+                    if (self.index[-1] == last_pad) and (not want_last_pad):
                         self.data = self[:-1]
         else:
             # If self.pad is False, load single day
