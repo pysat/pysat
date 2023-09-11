@@ -10,6 +10,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     clean method.
   * Added loading test with padding for Instruments.
   * Allow Instruments to define custom `concat_data` methods.
+  * Added data kwarg to the Instrument class `__getitem__` method and reduced
+    memory usage in the `load` method.
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
