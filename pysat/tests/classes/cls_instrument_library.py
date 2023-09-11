@@ -518,7 +518,7 @@ class InstLibTests(object):
     # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
     @pytest.mark.download
-    @pytest.skipif(sys.version_info < (3, 7),
+    @pytest.skipif(sys.version_info.minor < 7,
                    reason='See if everything else passes without this test')
     @pytest.mark.parametrize('pad', [{'days': 1}, dt.timedelta(days=1)])
     def test_load_w_pad(self, pad, inst_dict):
