@@ -533,10 +533,11 @@ class InstLibTests(object):
 
         """
         # Skip all but one instrument for Python 3.6
-        if sys.version_info.minor < 7 and inst_dict[
-                'inst_module'].__name__.find('pysat_testing') == len(
-                    inst_dict['inst_module'].__name__) - len('pysat_testing'):
-            pytest.skip("skipping 'test_load_w_pad' for {:}".format(inst_dict))
+        if sys.version_info.minor < 7:
+            pytest.skip("skipping 3.6 for {:} ({:} =? {:})".format(
+                inst_dict, inst_dict['inst_module'].__name__.find(
+                    'pysat_testing'), len(inst_dict['inst_module'].__name__)
+                - len('pysat_testing')))
             return
 
         # Update the Instrument dict with the desired pad
