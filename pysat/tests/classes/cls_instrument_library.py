@@ -538,7 +538,7 @@ class InstLibTests(object):
                     inst_dict['inst_module'].__name__) - len('pysat_testing'):
             pytest.skip("skipping 'test_load_w_pad' for {:}".format(inst_dict))
             return
-        
+
         # Update the Instrument dict with the desired pad
         if 'kwargs' in inst_dict.keys():
             inst_dict['kwargs']['pad'] = pad
