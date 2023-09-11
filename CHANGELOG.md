@@ -13,6 +13,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
+  * Updated `Constellation.to_inst` method definition of coords, using dims
+    to combine common dimensions instead.
 
 [3.1.0] - 2023-05-31
 --------------------
