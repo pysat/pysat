@@ -35,7 +35,7 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag='', inst_id='', non_monotonic_index=False,
          non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=96, test_load_kwarg=None, max_latitude=90.0,
+         num_samples=864, test_load_kwarg=None, max_latitude=90.0,
          num_extra_time_coords=0):
     """Load the test files.
 
@@ -62,7 +62,7 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
         will begin at midnight. (default=None)
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
-        current day. (default=96)
+        current day. (default=864)
     test_load_kwarg : any
         Keyword used for pysat unit testing to ensure that functionality for
         custom keywords defined in instrument support functions is working
