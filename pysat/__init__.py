@@ -34,9 +34,10 @@ Main Features
 
 """
 
+import importlib
+
 import logging
 import os
-from portalocker import Lock
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
@@ -48,9 +49,13 @@ logger.setLevel(logging.WARNING)
 # Import and set user and pysat parameters object
 from pysat import _params
 
-# set version
-here = os.path.abspath(os.path.dirname(__file__))
-version_filename = os.path.join(here, 'version.txt')
+# Set version
+try:
+    __version__ = importlib.metadata.version('pysat')
+except AttributeError:
+    # Python 3.6 requires a different version
+    import importlib_metadata
+    __version__ = importlib_metadata.version('pysat')
 
 # Get home directory
 home_dir = os.path.expanduser('~')
@@ -59,6 +64,7 @@ home_dir = os.path.expanduser('~')
 pysat_dir = os.path.join(home_dir, '.pysat')
 
 # Set directory for test data
+here = os.path.abspath(os.path.dirname(__file__))
 test_data_path = os.path.join(here, 'tests', 'test_data')
 
 # Create a .pysat directory or parameters file if one doesn't exist.
@@ -96,9 +102,6 @@ else:
     # Load up existing parameters file
     params = _params.Parameters()
 
-# Load up version information
-with Lock(version_filename, 'r', params['file_timeout']) as version_file:
-    __version__ = version_file.read().strip()
 
 from pysat._files import Files
 from pysat._instrument import Instrument

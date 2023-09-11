@@ -5,22 +5,20 @@
 # Required
 version: 2
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.10"
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
-  configuration: docs/conf.py
+   configuration: docs/conf.py
 
-# Build documentation with MkDocs
-#mkdocs:
-#  configuration: mkdocs.yml
-
-# Optionally build your docs in additional formats such as PDF
-formats:
-  - pdf
-
-# Optionally set the version of Python and requirements
-# required to build your docs
+# Declare the Python requirements required to build your docs
+# This method includes a local build of the package
 python:
-  version: 3.7
-  install:
-    - requirements: docs/requirements.txt
-
+   install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - doc

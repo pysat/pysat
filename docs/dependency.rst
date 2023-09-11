@@ -31,8 +31,8 @@ could look something like:
   |   |   |-- __init__.py
   |   |   `-- test_instruments.py
   |   `-- __init__.py
-  |-- README.md
-  `-- setup.py
+  |-- pyproject.toml
+  `-- README.md
 
 
 The instruments folder includes a file for each instrument object.  The
@@ -53,7 +53,7 @@ suite of instrument tests to run on instruments.  These are imported from the
 ``test_instruments.py`` file can be copied directly into the library, updating
 the instrument library name as indicated.
 
-The ``setup.py`` file should include pysat as a dependency, as well as any
+The ``pyproject.toml`` file should include pysat as a dependency, as well as any
 other packages required by the instruments.
 
 A more complicated structure could include analysis routines,
@@ -84,8 +84,8 @@ The structure then could look like:
   |   |   |-- compare.py
   |   |   `-- contrast.py
   |   `-- __init__.py
-  |-- README.md
-  `-- setup.py
+  |-- pyproject.toml
+  `-- README.md
 
 
 .. _pysat-dep-testinst:
@@ -330,7 +330,7 @@ leap days.
 Tips and Tricks
 ---------------
 
-Remember to include pysat as a dependency in your setup.py or setup.cfg file.
+Remember to include pysat as a dependency in your pyproject.toml file.
 
 The CI environment will also need to be configured to install pysat and its
 dependencies.  You may need to install pysat from github rather than pip if
