@@ -1337,7 +1337,7 @@ class Instrument(object):
         if self.pandas_format:
             return data.index
         else:
-            epoch_names = self.get_epoch_name_from_data(data=data)
+            epoch_names = self._get_epoch_name_from_data(data=data)
 
             if len(epoch_names) == 0:
                 return pds.Index([])
