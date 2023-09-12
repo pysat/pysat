@@ -532,7 +532,9 @@ class InstLibTests(object):
             `initialize_test_package` is run.
 
         """
-        # Skip all but one instrument for Python 3.6
+        # Skip for Python 3.6, keeping information that will allow adding
+        # or skipping particular instruments.
+        # TODO(#1136): Remove skip once memory management is improved
         if sys.version_info.minor < 7:
             pytest.skip("skipping 3.6 for {:} ({:} =? {:})".format(
                 inst_dict, inst_dict['inst_module'].__name__.find(
