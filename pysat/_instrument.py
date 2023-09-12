@@ -875,11 +875,9 @@ class Instrument(object):
         if data is None:
             data = self.data
 
-        if 'Epoch' in data.indexes:
-            epoch_names = ['Epoch']
-        elif 'time' in data.indexes:
-            epoch_names = ['time']
-        else:
+        # Find the standard epoch index name(s)
+        epoch_names = self._get_epoch_name_from_data(data=data)
+        if len(epoch_names) == 0:
             return xr.Dataset(None)
 
         # Find secondary time indexes that may need to be sliced
@@ -1089,13 +1087,16 @@ class Instrument(object):
                 new = {'data': new}
             in_data = new.pop('data')
 
-            if 'Epoch' in self.data.indexes:
-                epoch_name = 'Epoch'
-            elif 'time' in self.data.indexes:
-                epoch_name = 'time'
-            else:
+            epoch_names = self._get_epoch_name_from_data()
+            if len(epoch_names) == 0:
                 raise ValueError(' '.join(('Unsupported time index name,',
                                            '"Epoch" or "time".')))
+            else:
+                if len(epoch_names) > 1:
+                    pysat.logger.error("".join(["Multiple standard time index ",
+                                                "names found, defaulting to ",
+                                                epoch_names[0]]))
+                epoch_name = epoch_names[0]
 
             if isinstance(key, tuple):
                 # User provided more than one thing in assignment location
@@ -1252,6 +1253,34 @@ class Instrument(object):
     # -----------------------------------------------------------------------
     # Define all hidden methods
 
+    def _get_epoch_name_from_data(self, data=None):
+        """Get the standard epoch name used in this data object.
+
+        Parameters
+        ----------
+        data : pds.DataFrame, xr.Dataset, or NoneType
+            Desired data object to select from or None to use `data` attribute
+
+        Returns
+        -------
+        epoch_names : list
+            List of standard epoch names included in the data indexes
+
+        """
+        # Initalize output
+        epoch_names = []
+
+        # If no data is provided, use the Instrument attribute
+        if data is None:
+            data = self.data
+
+        if hasattr(data, 'indexes'):
+            for ename in ['Epoch', 'time']:
+                if ename in data.indexes:
+                    epoch_names.append(ename)
+
+        return epoch_names
+
     def _empty(self, data=None):
         """Determine whether or not data has been loaded.
 
@@ -1308,12 +1337,13 @@ class Instrument(object):
         if self.pandas_format:
             return data.index
         else:
-            if 'time' in data.indexes:
-                return data.indexes['time']
-            elif 'Epoch' in data.indexes:
-                return data.indexes['Epoch']
-            else:
+            epoch_names = self.get_epoch_name_from_data(data=data)
+
+            if len(epoch_names) == 0:
                 return pds.Index([])
+            else:
+                # Xarray preferred epoch name order is opposite
+                return data.indexes[epoch_names[-1]]
 
     def _pass_method(*args, **kwargs):
         """Empty default method for updatable Instrument methods."""

@@ -12,6 +12,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Allow Instruments to define custom `concat_data` methods.
   * Added data kwarg to the Instrument class `__getitem__` method and reduced
     memory usage in the `load` method.
+  * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
+    reduce code duplication.
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
