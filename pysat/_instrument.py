@@ -3388,9 +3388,10 @@ class Instrument(object):
                 if not self._empty(pdata):
                     # Test the data index, slicing if necessary
                     pindex = self._index(data=pdata)
-                    if pindex[-1] == self.index[0]:
-                        pdata = self.__getitem__(slice(-1), data=pdata)
-                    self.concat_data(pdata, prepend=True)
+                    if len(pindex) > 0:
+                        if pindex[-1] == self.index[0]:
+                            pdata = self.__getitem__(slice(-1), data=pdata)
+                        self.concat_data(pdata, prepend=True)
                 del pdata
 
             if not self._empty(self._next_data) and not self.empty:
@@ -3401,10 +3402,12 @@ class Instrument(object):
                 if not self._empty(ndata):
                     # Test the data index, slicing if necessary
                     nindex = self._index(data=ndata)
-                    if nindex[0] == self.index[-1]:
-                        ndata = self.__getitem__(
-                            slice(1, len(ndata[self.index.name])), data=ndata)
-                    self.concat_data(ndata, prepend=False)
+                    if len(nindex) > 0:
+                        if nindex[0] == self.index[-1]:
+                            ndata = self.__getitem__(
+                                slice(1, len(ndata[self.index.name])),
+                                data=ndata)
+                        self.concat_data(ndata, prepend=False)
                 del ndata
 
             if len(self.index) > 0:
