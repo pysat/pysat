@@ -3336,11 +3336,11 @@ class Instrument(object):
             # inclusive/exclusive range end treatment. Loading by file is
             # inclusive.
             if self._load_by_date:
-                # Arithmatic uses datetime or DateOffset objects
+                # Arithmetic uses datetime or DateOffset objects
                 self._next_data_track = curr + self.load_step
                 self._prev_data_track = curr - self.load_step
             else:
-                # Aritmatic uses integers
+                # Arithmetic uses integers
                 self._next_data_track = curr + self.load_step + 1
                 self._prev_data_track = curr - self.load_step - 1
 
