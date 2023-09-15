@@ -8,9 +8,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
     clean method.
+  * Added loading test with padding for Instruments.
+  * Allow Instruments to define custom `concat_data` methods.
+  * Added data kwarg to the Instrument class `__getitem__` method and reduced
+    memory usage in the `load` method.
+  * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
+    reduce code duplication.
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
+  * Updated `Constellation.to_inst` method definition of coords, using dims
+    to combine common dimensions instead.
   * Implement pyproject to manage metadata
 
 [3.1.0] - 2023-05-31

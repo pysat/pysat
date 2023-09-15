@@ -37,6 +37,7 @@ import sys
 import tempfile
 import warnings
 
+import pandas as pds
 import pytest
 
 import pysat
@@ -509,6 +510,72 @@ class InstLibTests(object):
         else:
             pytest.skip("No clean warnings for Instrument {:s}".format(
                 repr(inst_dict['inst_module'])))
+
+        return
+
+    @pytest.mark.second
+    # Need to maintain download mark for backwards compatibility.
+    # Can remove once pysat 3.1.0 is released and libraries are updated.
+    @pytest.mark.load_options
+    @pytest.mark.download
+    @pytest.mark.parametrize('pad', [{'days': 1}, dt.timedelta(days=1)])
+    def test_load_w_pad(self, pad, inst_dict):
+        """Test that instruments load at each cleaning level.
+
+        Parameters
+        ----------
+        pad : pds.DateOffset, dict, or NoneType
+            Valid pad value for initializing an instrument
+        inst_dict : dict
+            Dictionary containing info to instantiate a specific instrument.
+            Set automatically from instruments['download'] when
+            `initialize_test_package` is run.
+
+        """
+        # Skip for Python 3.6, keeping information that will allow adding
+        # or skipping particular instruments.
+        # TODO(#1136): Remove skip once memory management is improved
+        if sys.version_info.minor < 7:
+            pytest.skip("skipping 3.6 for {:} ({:} =? {:})".format(
+                inst_dict, inst_dict['inst_module'].__name__.find(
+                    'pysat_testing'), len(inst_dict['inst_module'].__name__)
+                - len('pysat_testing')))
+            return
+
+        # Update the Instrument dict with the desired pad
+        if 'kwargs' in inst_dict.keys():
+            inst_dict['kwargs']['pad'] = pad
+        else:
+            inst_dict['kwargs'] = {'pad': pad}
+
+        # Assign the expected representation
+        if type(pad) in [dict]:
+            pad_repr = repr(pds.DateOffset(days=1))
+        elif type(pad) in [dt.timedelta]:
+            pad_repr = "1 day, 0:00:00"
+        else:
+            pad_repr = repr(pad)
+
+        test_inst, date = initialize_test_inst_and_date(inst_dict)
+        if len(test_inst.files.files) > 0:
+            # Make sure the strict time flag doesn't interfere with
+            # the load tests
+            load_and_set_strict_time_flag(test_inst, date, raise_error=True,
+                                          clean_off=False)
+
+            assert not test_inst.empty
+
+            # Evaluate the data index length
+            assert (test_inst.index[-1]
+                    - test_inst.index[0]).total_seconds() < 86400.0
+
+            # Evaluate the recorded pad
+            inst_str = test_inst.__str__()
+            assert inst_str.find(
+                'Data Padding: {:s}'.format(pad_repr)) > 0, "".join([
+                    "bad pad value: ", pad_repr, " not in ", inst_str])
+        else:
+            pytest.skip("Download data not available")
 
         return
 

@@ -322,7 +322,7 @@ class Instrument(object):
 
         # Expected function keywords
         exp_keys = ['list_files', 'load', 'preprocess', 'download',
-                    'list_remote_files', 'clean', 'init']
+                    'list_remote_files', 'clean', 'init', 'concat_data']
         for fkey in exp_keys:
             func_name = _kwargs_keys_to_func_name(fkey)
             func = getattr(self, func_name)
@@ -568,7 +568,8 @@ class Instrument(object):
         # required their own path for equality, string comparisons!
         partial_funcs = ['_init_rtn', '_clean_rtn', '_preprocess_rtn',
                          '_list_files_rtn', '_download_rtn',
-                         '_list_remote_files_rtn', '_load_rtn']
+                         '_list_remote_files_rtn', '_load_rtn',
+                         '_concat_data_rtn']
 
         # If the type is the same then check everything that is attached to
         # the Instrument object. Includes attributes, methods, variables, etc.
@@ -742,7 +743,7 @@ class Instrument(object):
 
         return output_str
 
-    def __getitem__(self, key):
+    def __getitem__(self, key, data=None):
         """Access data in `pysat.Instrument` object.
 
         Parameters
@@ -750,6 +751,8 @@ class Instrument(object):
         key : str, tuple, or dict
             Data variable name, tuple with a slice, or dict used to locate
             desired data.
+        data : pds.DataFrame, xr.Dataset, or NoneType
+            Desired data object to select from or None to use `data` attribute
 
         Raises
         ------
@@ -788,20 +791,22 @@ class Instrument(object):
             inst[datetime1:datetime2, 'name1':'name2']
 
         """
+        if data is None:
+            data = self.data
 
         if self.pandas_format:
             if isinstance(key, str):
-                return self.data[key]
+                return data[key]
             elif isinstance(key, tuple):
                 try:
                     # Pass keys directly through
-                    return self.data.loc[key[0], key[1]]
+                    return data.loc[key[0], key[1]]
                 except (KeyError, TypeError) as err1:
                     # TypeError for single integer. KeyError for list, array,
                     # slice of integers. Assume key[0] is integer
                     # (including list or slice).
                     try:
-                        return self.data.loc[self.data.index[key[0]], key[1]]
+                        return data.loc[data.index[key[0]], key[1]]
                     except IndexError as err2:
                         err_message = '\n'.join(("original messages:",
                                                  str(err1), str(err2)))
@@ -811,15 +816,15 @@ class Instrument(object):
             else:
                 try:
                     # Integer based indexing
-                    return self.data.iloc[key]
+                    return data.iloc[key]
                 except (TypeError, ValueError):
                     # If it's not an integer, TypeError is thrown. If it's a
                     # list, ValueError is thrown.
-                    return self.data[key]
+                    return data[key]
         else:
-            return self.__getitem_xarray__(key)
+            return self.__getitem_xarray__(key, data=data)
 
-    def __getitem_xarray__(self, key):
+    def __getitem_xarray__(self, key, data=None):
         """Access data in `pysat.Instrument` object with `xarray.Dataset`.
 
         Parameters
@@ -827,6 +832,8 @@ class Instrument(object):
         key : str, tuple, or dict
             Data variable name, tuple with a slice, or dict used to locate
             desired data
+        data : xr.Dataset or NoneType
+            Desired data object to select from or None to use `data` attribute
 
         Returns
         -------
@@ -865,26 +872,34 @@ class Instrument(object):
             inst[datetime1:datetime2, 'name']
 
         """
+        if data is None:
+            data = self.data
 
-        if 'Epoch' in self.data.indexes:
-            epoch_name = 'Epoch'
-        elif 'time' in self.data.indexes:
-            epoch_name = 'time'
-        else:
+        # Find the standard epoch index name(s)
+        epoch_names = self._get_epoch_name_from_data(data=data)
+        if len(epoch_names) == 0:
             return xr.Dataset(None)
+
+        # Find secondary time indexes that may need to be sliced
+        if len(data.indexes) > 1:
+            for ind in data.indexes.keys():
+                if(ind != epoch_names[0] and data.indexes[ind].dtype
+                   == data.indexes[epoch_names[0]].dtype):
+                    epoch_names.append(ind)
 
         if isinstance(key, tuple):
             if len(key) == 2:
                 # Support slicing time, variable name
                 if isinstance(key[1], slice):
                     # Extract subset of variables before epoch selection.
-                    data_subset = self.data[self.variables[key[1]]]
+                    data_subset = data[self.variables[key[1]]]
                 else:
                     # Extract single variable before epoch selection.
-                    data_subset = self.data[key[1]]
+                    data_subset = data[key[1]]
 
                 # If the input is a tuple, `key[0]` must be linked to the epoch.
-                key_dict = {'indexers': {epoch_name: key[0]}}
+                key_dict = {'indexers': {epoch_name: key[0]
+                                         for epoch_name in epoch_names}}
                 try:
                     # Assume key[0] is an integer
                     return data_subset.isel(**key_dict)
@@ -909,7 +924,7 @@ class Instrument(object):
                     for i, dim in enumerate(self[var_name].dims):
                         indict[dim] = key[0][i]
 
-                    return self.data[var_name][indict]
+                    return data[var_name][indict]
             else:
                 # Multidimensional indexing where the multiple dimensions are
                 # not contained within another object
@@ -925,22 +940,37 @@ class Instrument(object):
                 for i, dim in enumerate(self[var_name].dims):
                     indict[dim] = key[i]
 
-                return self.data[var_name][indict]
+                return data[var_name][indict]
         else:
             try:
                 # Grab a particular variable by name
-                return self.data[key]
+                return data[key]
             except (TypeError, KeyError, ValueError):
                 # If that didn't work, likely need to use `isel` or `sel`
                 # Link key to the epoch.
-                key_dict = {'indexers': {epoch_name: key}}
+                key_dict = {'indexers': {epoch_name: key
+                                         for epoch_name in epoch_names}}
                 try:
                     # Try to get all data variables, but for a subset of time
                     # using integer indexing
-                    return self.data.isel(**key_dict)
+                    return data.isel(**key_dict)
                 except (KeyError, TypeError):
                     # Try to get a subset of time, using label based indexing
-                    return self.data.sel(**key_dict)
+                    try:
+                        return data.sel(**key_dict)
+                    except KeyError as kerr:
+                        if str(kerr).find('Timestamp') >= 0 and len(
+                                epoch_names) > 0:
+                            # The problem is probably coming from a limited
+                            # time range in the ancillery epochs, remove them
+                            # from selection
+                            pysat.logger.warning(
+                                ''.join(['Removing ', repr(epoch_names[1:]),
+                                         ' dimensions from data selection']))
+                            key_dict = {'indexers': {epoch_names[0]: key}}
+                            return data.sel(**key_dict)
+                        else:
+                            raise kerr
 
     def __setitem__(self, key, new_data):
         """Set data in `pysat.Instrument` object.
@@ -1057,13 +1087,16 @@ class Instrument(object):
                 new = {'data': new}
             in_data = new.pop('data')
 
-            if 'Epoch' in self.data.indexes:
-                epoch_name = 'Epoch'
-            elif 'time' in self.data.indexes:
-                epoch_name = 'time'
-            else:
+            epoch_names = self._get_epoch_name_from_data()
+            if len(epoch_names) == 0:
                 raise ValueError(' '.join(('Unsupported time index name,',
                                            '"Epoch" or "time".')))
+            else:
+                if len(epoch_names) > 1:
+                    pysat.logger.error("".join(["Multiple standard time index ",
+                                                "names found, defaulting to ",
+                                                epoch_names[0]]))
+                epoch_name = epoch_names[0]
 
             if isinstance(key, tuple):
                 # User provided more than one thing in assignment location
@@ -1220,6 +1253,34 @@ class Instrument(object):
     # -----------------------------------------------------------------------
     # Define all hidden methods
 
+    def _get_epoch_name_from_data(self, data=None):
+        """Get the standard epoch name used in this data object.
+
+        Parameters
+        ----------
+        data : pds.DataFrame, xr.Dataset, or NoneType
+            Desired data object to select from or None to use `data` attribute
+
+        Returns
+        -------
+        epoch_names : list
+            List of standard epoch names included in the data indexes
+
+        """
+        # Initalize output
+        epoch_names = []
+
+        # If no data is provided, use the Instrument attribute
+        if data is None:
+            data = self.data
+
+        if hasattr(data, 'indexes'):
+            for ename in ['Epoch', 'time']:
+                if ename in data.indexes:
+                    epoch_names.append(ename)
+
+        return epoch_names
+
     def _empty(self, data=None):
         """Determine whether or not data has been loaded.
 
@@ -1276,12 +1337,13 @@ class Instrument(object):
         if self.pandas_format:
             return data.index
         else:
-            if 'time' in data.indexes:
-                return data.indexes['time']
-            elif 'Epoch' in data.indexes:
-                return data.indexes['Epoch']
-            else:
+            epoch_names = self._get_epoch_name_from_data(data=data)
+
+            if len(epoch_names) == 0:
                 return pds.Index([])
+            else:
+                # Xarray preferred epoch name order is opposite
+                return data.indexes[epoch_names[-1]]
 
     def _pass_method(*args, **kwargs):
         """Empty default method for updatable Instrument methods."""
@@ -1310,7 +1372,7 @@ class Instrument(object):
         methods
             init, preprocess, and clean
         functions
-            load, list_files, download, and list_remote_files
+            load, list_files, download, and list_remote_files, concat_data
         attributes
             directory_format, file_format, multi_file_day, orbit_info, and
             pandas_format
@@ -1320,7 +1382,7 @@ class Instrument(object):
         """
         # Declare the standard Instrument methods and attributes
         inst_methods = {'required': ['init', 'clean'],
-                        'optional': ['preprocess']}
+                        'optional': ['preprocess', 'concat_data']}
         inst_funcs = {'required': ['load', 'list_files', 'download'],
                       'optional': ['list_remote_files']}
         inst_attrs = {'directory_format': None, 'file_format': None,
@@ -1574,7 +1636,7 @@ class Instrument(object):
         inc : dt.timedelta, int, or NoneType
             Increment of files or dates to load, starting from the
             root date or fid (default=None)
-        load_kwargs : dict
+        load_kwargs : dict or NoneType
             Dictionary of keywords that may be options for specific instruments.
             If None, uses `self.kwargs['load']`. (default=None)
 
@@ -1685,8 +1747,14 @@ class Instrument(object):
 
         return data, mdata
 
-    def _load_next(self):
+    def _load_next(self, load_kwargs=None):
         """Load the next days data (or file) without incrementing the date.
+
+        Parameters
+        ----------
+        load_kwargs : dict or NoneType
+            Dictionary of keywords that may be options for specific instruments.
+            If None, uses `self.kwargs['load']`. (default=None)
 
         Returns
         -------
@@ -1704,15 +1772,23 @@ class Instrument(object):
         or the file. Looks for `self._load_by_date` flag.
 
         """
-        if self._load_by_date:
-            next_date = self.date + self.load_step
-            return self._load_data(date=next_date, inc=self.load_step)
-        else:
-            next_id = self._fid + self.load_step + 1
-            return self._load_data(fid=next_id, inc=self.load_step)
+        load_data_kwargs = {'inc': self.load_step, 'load_kwargs': load_kwargs}
 
-    def _load_prev(self):
+        if self._load_by_date:
+            load_data_kwargs['date'] = self.date + self.load_step
+        else:
+            load_data_kwargs['fid'] = self._fid + self.load_step + 1
+
+        return self._load_data(**load_data_kwargs)
+
+    def _load_prev(self, load_kwargs=None):
         """Load the previous days data (or file) without decrementing the date.
+
+        Parameters
+        ----------
+        load_kwargs : dict or NoneType
+            Dictionary of keywords that may be options for specific instruments.
+            If None, uses `self.kwargs['load']`. (default=None)
 
         Returns
         -------
@@ -1730,14 +1806,14 @@ class Instrument(object):
         or the file. Looks for `self._load_by_date` flag.
 
         """
-        load_kwargs = {'inc': self.load_step}
+        load_data_kwargs = {'inc': self.load_step, 'load_kwargs': load_kwargs}
 
         if self._load_by_date:
-            load_kwargs['date'] = self.date - self.load_step
+            load_data_kwargs['date'] = self.date - self.load_step
         else:
-            load_kwargs['fid'] = self._fid - self.load_step - 1
+            load_data_kwargs['fid'] = self._fid - self.load_step - 1
 
-        return self._load_data(**load_kwargs)
+        return self._load_data(**load_data_kwargs)
 
     def _set_load_parameters(self, date=None, fid=None):
         """Set the necesssary load attributes.
@@ -2375,6 +2451,11 @@ class Instrument(object):
         except if the user includes a value for dim as a keyword argument.
 
         """
+        # Add any concat_data kwargs
+        for ckey in self.kwargs['concat_data'].keys():
+            if ckey not in kwargs.keys():
+                kwargs[ckey] = self.kwargs['concat_data'][ckey]
+
         # Order the data to be concatenated in a list
         if not isinstance(new_data, list):
             new_data = [new_data]
@@ -2384,35 +2465,40 @@ class Instrument(object):
         else:
             new_data.insert(0, self.data)
 
-        # Retrieve the appropriate concatenation function
-        if self.pandas_format:
-            # Specifically do not sort unless otherwise specified
-            if 'sort' not in kwargs:
-                kwargs['sort'] = False
-            concat_func = pds.concat
+        if self._concat_data_rtn.__name__.find('_pass_method') == 0:
+            # There is no custom concat function, use the pysat standard method.
+            # Start by retrieving the appropriate concatenation function
+            if self.pandas_format:
+                # Specifically do not sort unless otherwise specified
+                if 'sort' not in kwargs:
+                    kwargs['sort'] = False
+                concat_func = pds.concat
+            else:
+                # Ensure the dimensions are equal
+                equal_dims = True
+                idat = 0
+                while idat < len(new_data) - 1 and equal_dims:
+                    if new_data[idat].dims != new_data[idat + 1].dims:
+                        equal_dims = False
+                    idat += 1
+
+                if not equal_dims:
+                    # Update the dimensions, padding data where necessary
+                    new_data = pysat.utils.coords.expand_xarray_dims(
+                        new_data, self.meta, exclude_dims=[self.index.name])
+
+                # Specify the dimension, if not otherwise specified
+                if 'dim' not in kwargs:
+                    kwargs['dim'] = self.index.name
+
+                # Set the concat function
+                concat_func = xr.concat
+
+            # Assign the concatenated data to the instrument
+            self.data = concat_func(new_data, **kwargs)
         else:
-            # Ensure the dimensions are equal
-            equal_dims = True
-            idat = 0
-            while idat < len(new_data) - 1 and equal_dims:
-                if new_data[idat].dims != new_data[idat + 1].dims:
-                    equal_dims = False
-                idat += 1
+            self._concat_data_rtn(new_data, **kwargs)
 
-            if not equal_dims:
-                # Update the dimensions, padding data where necessary
-                new_data = pysat.utils.coords.expand_xarray_dims(
-                    new_data, self.meta, exclude_dims=['time'])
-
-            # Specify the dimension, if not otherwise specified
-            if 'dim' not in kwargs:
-                kwargs['dim'] = self.index.name
-
-            # Set the concat function
-            concat_func = xr.concat
-
-        # Assign the concatenated data to the instrument
-        self.data = concat_func(new_data, **kwargs)
         return
 
     def custom_attach(self, function, at_pos='end', args=None, kwargs=None):
@@ -3162,8 +3248,7 @@ class Instrument(object):
         # Check for consistency between loading range and data padding, if any
         if self.pad is not None:
             if self._load_by_date:
-                tdate = dt.datetime(2009, 1, 1)
-                if tdate + self.load_step < tdate + loop_pad:
+                if date + self.load_step < date + loop_pad:
                     estr = ''.join(('Data padding window must be shorter than ',
                                     'data loading window. Load a greater ',
                                     'range of data or shorten the padding.'))
@@ -3185,11 +3270,13 @@ class Instrument(object):
                 pysat.logger.debug('Initializing data cache.')
 
                 # Using current date or fid
-                self._prev_data, self._prev_meta = self._load_prev()
+                self._prev_data, self._prev_meta = self._load_prev(
+                    load_kwargs=kwargs)
                 self._curr_data, self._curr_meta = self._load_data(
                     date=self.date, fid=self._fid, inc=self.load_step,
                     load_kwargs=kwargs)
-                self._next_data, self._next_meta = self._load_next()
+                self._next_data, self._next_meta = self._load_next(
+                    load_kwargs=kwargs)
             else:
                 if self._next_data_track == curr:
                     pysat.logger.debug('Using data cache. Loading next.')
@@ -3199,7 +3286,8 @@ class Instrument(object):
                     self._prev_meta = self._curr_meta
                     self._curr_data = self._next_data
                     self._curr_meta = self._next_meta
-                    self._next_data, self._next_meta = self._load_next()
+                    self._next_data, self._next_meta = self._load_next(
+                        load_kwargs=kwargs)
                 elif self._prev_data_track == curr:
                     pysat.logger.debug('Using data cache. Loading previous.')
                     # Moving backward in time
@@ -3208,19 +3296,22 @@ class Instrument(object):
                     self._next_meta = self._curr_meta
                     self._curr_data = self._prev_data
                     self._curr_meta = self._prev_meta
-                    self._prev_data, self._prev_meta = self._load_prev()
+                    self._prev_data, self._prev_meta = self._load_prev(
+                        load_kwargs=kwargs)
                 else:
-                    # Jumped in time/or switched from filebased to date based
+                    # Jumped in time/or switched from file based to date based
                     # access
                     pysat.logger.debug('Resetting data cache.')
                     del self._prev_data
                     del self._curr_data
                     del self._next_data
-                    self._prev_data, self._prev_meta = self._load_prev()
+                    self._prev_data, self._prev_meta = self._load_prev(
+                        load_kwargs=kwargs)
                     self._curr_data, self._curr_meta = self._load_data(
                         date=self.date, fid=self._fid, inc=self.load_step,
                         load_kwargs=kwargs)
-                    self._next_data, self._next_meta = self._load_next()
+                    self._next_data, self._next_meta = self._load_next(
+                        load_kwargs=kwargs)
 
             # Make sure datetime indices for all data is monotonic
             if self.pandas_format:
@@ -3240,14 +3331,16 @@ class Instrument(object):
                 self._next_data = getattr(self._next_data,
                                           sort_method)(*sort_args)
 
-            # Make tracking indexes consistent with new loads
+            # Make tracking indexes consistent with new loads, as date loading
+            # and file loading have to be treated differently due to change in
+            # inclusive/exclusive range end treatment. Loading by file is
+            # inclusive.
             if self._load_by_date:
+                # Arithmetic uses datetime or DateOffset objects
                 self._next_data_track = curr + self.load_step
                 self._prev_data_track = curr - self.load_step
             else:
-                # File and date loads have to be treated differently
-                # due to change in inclusive/exclusive range end
-                # treatment. Loading by file is inclusive.
+                # Arithmetic uses integers
                 self._next_data_track = curr + self.load_step + 1
                 self._prev_data_track = curr - self.load_step - 1
 
@@ -3287,48 +3380,43 @@ class Instrument(object):
                                            "by file.")))
 
             # Pad data based upon passed parameter
-            if (not self._empty(self._prev_data)) & (not self.empty):
-                stored_data = self.data  # .copy()
-                temp_time = copy.deepcopy(self.index[0])
+            if not self._empty(self._prev_data) and not self.empty:
+                # __getitem__ used to handle any pandas/xarray differences in
+                # data slicing
+                pdata = self.__getitem__(slice(first_pad, self.index[0]),
+                                         data=self._prev_data)
+                if not self._empty(pdata):
+                    # Test the data index, slicing if necessary
+                    pindex = self._index(data=pdata)
+                    if len(pindex) > 0:
+                        if pindex[-1] == self.index[0]:
+                            pdata = self.__getitem__(slice(-1), data=pdata)
+                        self.concat_data(pdata, prepend=True)
+                del pdata
 
-                # Pad data using access mechanisms that works for both pandas
-                # and xarray
-                self.data = self._prev_data.copy()
-
-                # __getitem__ used below to get data from instrument object.
-                # Details for handling pandas and xarray are different and
-                # handled by __getitem__.
-                self.data = self[first_pad:temp_time]
-                if not self.empty:
-                    if self.index[-1] == temp_time:
-                        self.data = self[:-1]
-                    self.concat_data(stored_data, prepend=False)
-                else:
-                    self.data = stored_data
-
-            if (not self._empty(self._next_data)) & (not self.empty):
-                stored_data = self.data  # .copy()
-                temp_time = copy.deepcopy(self.index[-1])
-
-                # Pad data using access mechanisms that work for both pandas
-                # and xarray
-                self.data = self._next_data.copy()
-                self.data = self[temp_time:last_pad]
-                if len(self.index) > 0:
-                    if (self.index[0] == temp_time):
-                        self.data = self[1:]
-                    self.concat_data(stored_data, prepend=True)
-                else:
-                    self.data = stored_data
+            if not self._empty(self._next_data) and not self.empty:
+                # __getitem__ used to handle any pandas/xarray differences in
+                # data slicing
+                ndata = self.__getitem__(slice(self.index[-1], last_pad),
+                                         data=self._next_data)
+                if not self._empty(ndata):
+                    # Test the data index, slicing if necessary
+                    nindex = self._index(data=ndata)
+                    if len(nindex) > 0:
+                        if nindex[0] == self.index[-1]:
+                            ndata = self.__getitem__(
+                                slice(1, len(ndata[self.index.name])),
+                                data=ndata)
+                        self.concat_data(ndata, prepend=False)
+                del ndata
 
             if len(self.index) > 0:
                 self.data = self[first_pad:last_pad]
 
                 # Want exclusive end slicing behavior from above
                 if not self.empty:
-                    if (self.index[-1] == last_pad) & (not want_last_pad):
+                    if (self.index[-1] == last_pad) and (not want_last_pad):
                         self.data = self[:-1]
-
         else:
             # If self.pad is False, load single day
             self.data, meta = self._load_data(date=self.date, fid=self._fid,

@@ -478,9 +478,6 @@ class TestConstellationFunc(object):
         testing.assert_lists_equal(self.dims, list(out_inst.data.dims.keys()))
         testing.assert_list_contains(self.dims,
                                      list(out_inst.data.coords.keys()))
-        testing.assert_list_contains(['variable_profile_height', 'image_lon',
-                                      'image_lat'],
-                                     list(out_inst.data.coords.keys()))
 
         for cinst in self.const.instruments:
             for var in cinst.variables:

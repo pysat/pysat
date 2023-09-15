@@ -670,22 +670,24 @@ class Constellation(object):
             # Get the common coordinates needed for all data
             for cinst in self.instruments:
                 if not cinst.pandas_format:
-                    for new_coord in cinst.data.coords.keys():
-                        if new_coord not in coords.keys():
-                            coords[new_coord] = cinst.data.coords[new_coord]
-                        elif new_coord != 'time':
-                            # Two instruments have the same coordinate, if they
-                            # are not identical, we need to establish a common
-                            # range and resolution.  Note that this will only
-                            # happen if the coordinates share the same names.
-                            if(len(coords[new_coord])
-                               != len(cinst.data.coords[new_coord])
-                               or coords[new_coord].values
-                               != cinst.data.coords[new_coord].values):
-                                coords[new_coord] = establish_common_coord(
-                                    [coords[new_coord].values,
-                                     cinst.data.coords[new_coord].values],
-                                    common=common_coord)
+                    for new_coord in cinst.data.dims.keys():
+                        if new_coord in cinst.data.coords.keys():
+                            if new_coord not in coords.keys():
+                                coords[new_coord] = cinst.data.coords[new_coord]
+                            elif new_coord != 'time':
+                                # Two instruments have the same coordinate, if
+                                # they are not identical, we need to establish
+                                # a common range and resolution. Note that
+                                # this will only happen if the coordinates
+                                # share the same names.
+                                if(len(coords[new_coord])
+                                   != len(cinst.data.coords[new_coord])
+                                   or coords[new_coord].values
+                                   != cinst.data.coords[new_coord].values):
+                                    coords[new_coord] = establish_common_coord(
+                                        [coords[new_coord].values,
+                                         cinst.data.coords[new_coord].values],
+                                        common=common_coord)
 
             data = xr.Dataset(coords=coords)
 
