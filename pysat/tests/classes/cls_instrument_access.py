@@ -574,7 +574,8 @@ class InstAccessTests(object):
 
     @pytest.mark.parametrize("prepend, sort_dim_toggle",
                              [(True, True), (True, False), (False, False)])
-    def test_concat_data(self, prepend, sort_dim_toggle):
+    @pytest.mark.parametrize("include", [True, False])
+    def test_concat_data(self, prepend, sort_dim_toggle, include):
         """Test `pysat.Instrument.data` concatenation.
 
         Parameters
@@ -586,6 +587,8 @@ class InstAccessTests(object):
             If True, sort variable names in pandas before concatenation.  If
             False, do not sort for pandas objects.  For xarray objects, rename
             the epoch if True.
+        include : bool
+            Use `include` kwarg instead of `prepend` for the same behaviour.
 
         """
 
@@ -611,6 +614,9 @@ class InstAccessTests(object):
                 data2 = data2.rename({self.xarray_epoch_name: 'Epoch2'})
                 self.testInst.data = self.testInst.data.rename(
                     {self.xarray_epoch_name: 'Epoch2'})
+        if include:
+            # To prepend new data, put existing data at end and vice versa
+            kwargs['include'] = 1 if prepend else 0
 
         # Concat together
         self.testInst.concat_data(data2, **kwargs)
