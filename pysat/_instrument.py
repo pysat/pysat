@@ -2469,7 +2469,7 @@ class Instrument(object):
         # Order the data to be concatenated in a list
         if not isinstance(new_data, list):
             new_data = [new_data]
-            
+
         if include is None:
             if prepend:
                 new_data.append(self.data)
