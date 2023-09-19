@@ -2427,7 +2427,7 @@ class Instrument(object):
 
         return inst_copy
 
-    def concat_data(self, new_data, prepend=False, **kwargs):
+    def concat_data(self, new_data, prepend=False, include=None, **kwargs):
         """Concatonate data to self.data for xarray or pandas as needed.
 
         Parameters
@@ -2437,6 +2437,9 @@ class Instrument(object):
         prepend : bool
             If True, assign new data before existing data; if False append new
             data (default=False)
+        include : int or NoneType
+            Index at which `self.data` should be included in `new_data` or None
+            to use `prepend` (default=None)
         **kwargs : dict
             Optional keyword arguments passed to pds.concat or xr.concat
 
@@ -2450,6 +2453,13 @@ class Instrument(object):
         For xarray, `dim=Instrument.index.name` is passed along to xarray.concat
         except if the user includes a value for dim as a keyword argument.
 
+        Examples
+        --------
+        ::
+
+            # Concatonate data before and after the existing Instrument data
+            inst.concat_data([prev_data, next_data], include=1)
+
         """
         # Add any concat_data kwargs
         for ckey in self.kwargs['concat_data'].keys():
@@ -2460,10 +2470,13 @@ class Instrument(object):
         if not isinstance(new_data, list):
             new_data = [new_data]
 
-        if prepend:
-            new_data.append(self.data)
+        if include is None:
+            if prepend:
+                new_data.append(self.data)
+            else:
+                new_data.insert(0, self.data)
         else:
-            new_data.insert(0, self.data)
+            new_data.insert(include, self.data)
 
         if self._concat_data_rtn.__name__.find('_pass_method') == 0:
             # There is no custom concat function, use the pysat standard method.
@@ -3380,8 +3393,10 @@ class Instrument(object):
                                            "by file.")))
 
             # Pad data based upon passed parameter
+            cdata = list()
+            include = None
             if not self._empty(self._prev_data) and not self.empty:
-                # __getitem__ used to handle any pandas/xarray differences in
+                # __getitem__ is used to handle any pandas/xarray differences in
                 # data slicing
                 pdata = self.__getitem__(slice(first_pad, self.index[0]),
                                          data=self._prev_data)
@@ -3391,11 +3406,11 @@ class Instrument(object):
                     if len(pindex) > 0:
                         if pindex[-1] == self.index[0]:
                             pdata = self.__getitem__(slice(-1), data=pdata)
-                        self.concat_data(pdata, prepend=True)
-                del pdata
+                        cdata.append(pdata)
+                        include = 1
 
             if not self._empty(self._next_data) and not self.empty:
-                # __getitem__ used to handle any pandas/xarray differences in
+                # __getitem__ is used to handle any pandas/xarray differences in
                 # data slicing
                 ndata = self.__getitem__(slice(self.index[-1], last_pad),
                                          data=self._next_data)
@@ -3407,8 +3422,13 @@ class Instrument(object):
                             ndata = self.__getitem__(
                                 slice(1, len(ndata[self.index.name])),
                                 data=ndata)
-                        self.concat_data(ndata, prepend=False)
-                del ndata
+                        cdata.append(ndata)
+                        if include is None:
+                            include = 0
+
+            # Concatonate the current, previous, and next data
+            if len(cdata) > 0:
+                self.concat_data(cdata, include=include)
 
             if len(self.index) > 0:
                 self.data = self[first_pad:last_pad]

@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     clean method.
   * Added loading test with padding for Instruments.
   * Allow Instruments to define custom `concat_data` methods.
+  * Added `include` kwarg to `Instrument.concat_data` to expand allowed inputs.
   * Added data kwarg to the Instrument class `__getitem__` method and reduced
     memory usage in the `load` method.
   * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
