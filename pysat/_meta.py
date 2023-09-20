@@ -2082,7 +2082,7 @@ class MetaLabels(object):
         return default_val
 
     def drop(self, names):
-        """Removes data from MetaLabels.
+        """Remove data from MetaLabels.
 
         Parameters
         ----------
