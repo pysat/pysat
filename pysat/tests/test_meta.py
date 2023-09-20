@@ -510,6 +510,25 @@ class TestMeta(object):
             assert out.find('ND Metadata variables:') < 0
         return
 
+    @pytest.mark.parametrize("del_key", ["uts", "units"])
+    def test_del(self, del_key):
+        """Test deletion of Meta data.
+
+        Parameters
+        ----------
+        del_key : str
+            Key for Meta data, MetaHeater attribute, or MetaLabels label
+
+        """
+        # Set the meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        del self.meta[del_key]
+
+        assert del_key not in self.meta.data.index
+        assert del_key not in self.meta.data.columns
+        return
+
     def test_self_equality(self):
         """Test Meta equality for the same object."""
 

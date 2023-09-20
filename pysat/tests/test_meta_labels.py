@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 import pysat
+from pysat.utils import listify
 from pysat.utils import testing
 
 
@@ -185,6 +186,24 @@ class TestMetaLabels(object):
 
         return
 
+    @pytest.mark.parametrize("drop_labels", [["units", "fill_val"], "units"])
+    def test_drop(self, drop_labels):
+        """Test successfull drop from MetaLabels.
+
+        Parameters
+        ----------
+        drop_labels : str or list-like
+            Label or labels to drop
+
+        """
+        # Drop the desired label(s)
+        self.meta_labels.drop(drop_labels)
+
+        # Ensure the labels are missing
+        for dlabel in listify(drop_labels):
+            assert not hasattr(self.meta_labels, dlabel)
+        return
+
     def test_update(self):
         """Test successful update of MetaLabels."""
         self.meta_labels.update('new_label', 'new_name', int)
@@ -196,6 +215,17 @@ class TestMetaLabels(object):
 
     # ----------------------------------------
     # Test the integration with the Meta class
+
+    def test_del_from_meta(self):
+        """Test successfull deletion of MetaLabels attribute from Meta."""
+        # Delete the desired label
+        del_label = list(self.meta_labels.label_type.keys())[0]
+        del self.meta[del_label]
+
+        # Ensure the label is missing
+        assert not hasattr(self.meta.labels, del_label)
+        assert del_label not in self.meta.data.columns
+        return
 
     def test_change_case_of_meta_labels(self):
         """Test changing case of meta labels after initialization."""

@@ -121,12 +121,29 @@ class TestMetaHeader(object):
         assert header_data == out_dict
         return
 
+    def test_drop(self):
+        """Test the MetaHeader.drop method."""
+        # Get the current output dict
+        out_dict = self.meta_header.to_dict()
+
+        # Add an attribute
+        self.meta_header.PI = "pysat development team"
+        assert "PI" in self.meta_header.global_attrs
+        assert out_dict != self.meta_header.to_dict()
+
+        # Remove the attribute
+        self.meta_header.drop('PI')
+
+        # Ensure the current output matches the original output
+        assert out_dict == self.meta_header.to_dict()
+        return
+
     # ----------------------------------------
     # Test the integration with the Meta class
 
     @pytest.mark.parametrize("header_data", [{}, {"test": "value"}])
     def test_init_metaheader_in_meta(self, header_data):
-        """Test changing case of meta labels after initialization.
+        """Test changing case of MetaHeader after Meta initialization.
 
         Parameters
         ----------
@@ -141,4 +158,32 @@ class TestMetaHeader(object):
 
         # Ensure both initialization methods work the same
         assert meta.header == self.meta_header
+        return
+
+    def test_get_metaheader_in_meta(self):
+        """Test MetaHeader attribute retrieval from Meta."""
+        
+        # Initalize the header data through the meta object
+        test_attr = "PI"
+        test_val = "pysat development team"
+        meta = pysat.Meta(header_data={test_attr: test_val})
+
+        # Test value retrieval from Meta and MetaHeader
+        assert getattr(meta.header, test_attr) == test_val
+        assert meta[test_attr] == test_val
+        return
+
+    def test_delete_metaheader_in_meta(self):
+        """Test MetaHeader attribute deletion from Meta."""
+        
+        # Initalize the header data through the meta object
+        test_attr = "PI"
+        test_val = "pysat development team"
+        meta = pysat.Meta(header_data={test_attr: test_val})
+
+        # Delete MetaHeader data
+        del meta[test_attr]
+
+        # Test for empty MetaHeader
+        assert meta.header.to_dict() == {}
         return
