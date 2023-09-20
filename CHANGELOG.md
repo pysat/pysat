@@ -15,6 +15,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     memory usage in the `load` method.
   * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
     reduce code duplication.
+  * Added `__delitem__` to Meta and `drop` to MetaHeader and MetaLabels classes.
+  * Modified Meta to allow MetaHeader attribute access directly from Meta.
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
