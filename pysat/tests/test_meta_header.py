@@ -162,7 +162,6 @@ class TestMetaHeader(object):
 
     def test_get_metaheader_in_meta(self):
         """Test MetaHeader attribute retrieval from Meta."""
-        
         # Initalize the header data through the meta object
         test_attr = "PI"
         test_val = "pysat development team"
@@ -175,7 +174,6 @@ class TestMetaHeader(object):
 
     def test_delete_metaheader_in_meta(self):
         """Test MetaHeader attribute deletion from Meta."""
-        
         # Initalize the header data through the meta object
         test_attr = "PI"
         test_val = "pysat development team"
