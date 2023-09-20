@@ -13,6 +13,7 @@ import warnings
 
 import pysat
 import pysat.utils._core as core_utils
+from pysat.utils import listify
 from pysat.utils import testing
 
 
@@ -674,12 +675,63 @@ class Meta(object):
                     meta_row.at['children'] = ''
                     meta_row.at['children'] = None
                 return meta_row
+            elif key in self.header.global_attrs:
+                return getattr(self.header, key)
             else:
                 raise KeyError("Key '{:}' not found in MetaData".format(key))
         else:
             raise NotImplementedError("".join(["No way to handle MetaData key ",
                                                "{}; ".format(key.__repr__()),
                                                "expected tuple, list, or str"]))
+
+    def __delitem__(self, key):
+        """Remove metadata.
+
+        Maps to pandas DataFrame methods.
+
+        Parameters
+        ----------
+        key : str, tuple, or list
+            A single variable name, a tuple, or a list
+
+        Raises
+        ------
+        KeyError
+            If a properly formatted key is not present
+
+        Examples
+        --------
+        ::
+
+            import pysat
+            inst = pysat.Instrument('pysat', 'testing2d')
+            inst.load(date=inst.inst_module._test_dates[''][''])
+            meta = inst.meta
+
+            # Any data or label of Meta, including the top-level header
+            # attributes may be removed using `del`
+            del meta['uts']
+
+        """
+
+        try:
+            # This is a data variable
+            self.drop(key)
+        except KeyError:
+            keys = listify(key)
+
+            for key in keys:
+                if key in self.data.columns:
+                    # This is a metadata label
+                    self.data = self.data.drop(key, axis=1)
+
+                    # Also drop this from Labels
+                    self.labels.drop(key)
+                elif key in self.header.global_attrs:
+                    self.header.drop(key)
+                else:
+                    raise KeyError("{:} not found in Meta".format(repr(key)))
+        return
 
     def __contains__(self, data_var):
         """Check variable name, not distinguishing by case.
@@ -2029,6 +2081,37 @@ class MetaLabels(object):
 
         return default_val
 
+    def drop(self, names):
+        """Removes data from MetaLabels.
+
+        Parameters
+        ----------
+        names : str or list-like
+            Attribute or MetaData name(s)
+
+        Raises
+        ------
+        AttributeError or KeyError
+            If any part of `names` is missing and cannot be dropped
+
+        """
+        # Ennsure the input is list-likee
+        names = listify(names)
+
+        # Cycle through each name to drop
+        for name in names:
+            if name in self.label_attrs.keys():
+                lname = self.label_attrs[name]
+                delattr(self, lname)
+                del self.label_type[lname]
+                del self.label_attrs[name]
+            else:
+                lname = getattr(self, name)
+                delattr(self, name)
+                del self.label_type[name]
+                del self.label_attrs[lname]
+        return
+
     def update(self, lattr, lname, ltype):
         """Update MetaLabels with a new label.
 
@@ -2206,6 +2289,25 @@ class MetaHeader(object):
                 return False
 
         return True
+
+    def drop(self, names):
+        """Drop variables (names) from MetaHeader.
+
+        Parameters
+        ----------
+        names : list-like
+            List of strings specifying the variable names to drop
+
+        """
+        names = listify(names)
+
+        for name in names:
+            # Delete the attribute
+            delattr(self, name)
+
+            # Remove the attribute from the attribute list
+            self.global_attrs.pop(self.global_attrs.index(name))
+        return
 
     def to_dict(self):
         """Convert the header data to a dictionary.
