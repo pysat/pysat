@@ -188,7 +188,7 @@ class TestMetaLabels(object):
 
     @pytest.mark.parametrize("drop_labels", [["units", "fill_val"], "units"])
     def test_drop(self, drop_labels):
-        """Test successfull drop from MetaLabels.
+        """Test successful drop from MetaLabels.
 
         Parameters
         ----------
@@ -217,7 +217,7 @@ class TestMetaLabels(object):
     # Test the integration with the Meta class
 
     def test_del_from_meta(self):
-        """Test successfull deletion of MetaLabels attribute from Meta."""
+        """Test successful deletion of MetaLabels attribute from Meta."""
         # Delete the desired label
         del_label = list(self.meta_labels.label_type.keys())[0]
         del self.meta[del_label]
