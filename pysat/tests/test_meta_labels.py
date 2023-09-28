@@ -216,11 +216,11 @@ class TestMetaLabels(object):
     # ----------------------------------------
     # Test the integration with the Meta class
 
-    def test_del_from_meta(self):
+    def test_drop_from_meta(self):
         """Test successful deletion of MetaLabels attribute from Meta."""
         # Delete the desired label
         del_label = list(self.meta_labels.label_type.keys())[0]
-        del self.meta[del_label]
+        self.meta.drop(del_label)
 
         # Ensure the label is missing
         assert not hasattr(self.meta.labels, del_label)

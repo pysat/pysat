@@ -172,7 +172,7 @@ class TestMetaHeader(object):
         assert meta[test_attr] == test_val
         return
 
-    def test_delete_metaheader_in_meta(self):
+    def test_drop_metaheader_in_meta(self):
         """Test MetaHeader attribute deletion from Meta."""
         # Initalize the header data through the meta object
         test_attr = "PI"
@@ -180,7 +180,7 @@ class TestMetaHeader(object):
         meta = pysat.Meta(header_data={test_attr: test_val})
 
         # Delete MetaHeader data
-        del meta[test_attr]
+        meta.drop(test_attr)
 
         # Test for empty MetaHeader
         assert meta.header.to_dict() == {}
