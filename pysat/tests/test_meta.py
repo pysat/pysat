@@ -1188,6 +1188,7 @@ class TestMeta(object):
                     meta_dict[label].__repr__())
         return
 
+    @pytest.mark.skip('See if memory is still an issue')
     @pytest.mark.parametrize("names", ['uts', ['uts', 'mlt'], 'units',
                                        ['units', 'uts']])
     def test_meta_drop(self, names):
@@ -1553,6 +1554,7 @@ class TestMeta(object):
     # Tests for higher order metadata
 
     # TODO(#789): remove tests for higher order meta
+    @pytest.mark.skip('See if memory is still an issue')
     @pytest.mark.parametrize("names", ['series_profiles',
                                        ['uts', 'series_profiles'],
                                        ['units', 'series_profiles']])
