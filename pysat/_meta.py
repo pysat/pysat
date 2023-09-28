@@ -684,17 +684,6 @@ class Meta(object):
                                                "{}; ".format(key.__repr__()),
                                                "expected tuple, list, or str"]))
 
-    def __delitem__(self, key):
-        """Remove metadata.
-
-        Raises
-        ------
-        NotImplementedError
-            Redirects the user to use `drop`
-
-        """
-        raise NotImplementedError('`del` not supported, use `Meta.drop`')
-
     def __contains__(self, data_var):
         """Check variable name, not distinguishing by case.
 

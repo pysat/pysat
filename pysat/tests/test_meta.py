@@ -510,23 +510,6 @@ class TestMeta(object):
             assert out.find('ND Metadata variables:') < 0
         return
 
-    def test_delitem(self):
-        """Test deletion of Meta data informs user of correct path.
-
-        Parameters
-        ----------
-        del_key : str
-            Key for Meta data, MetaHeater attribute, or MetaLabels label
-
-        """
-        # Set the meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-
-        with pytest.raises(NotImplementedError,
-                           match='`del` not supported, use `Meta.drop`'):
-            del self.meta['uts']
-        return
-
     def test_self_equality(self):
         """Test Meta equality for the same object."""
 
