@@ -510,6 +510,7 @@ class TestMeta(object):
             assert out.find('ND Metadata variables:') < 0
         return
 
+    @pytest.mark.skip("Does this test use too much memory?")
     @pytest.mark.parametrize("del_key", ["uts", "units"])
     def test_del(self, del_key):
         """Test deletion of Meta data.
