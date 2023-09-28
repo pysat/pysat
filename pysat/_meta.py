@@ -1036,7 +1036,7 @@ class Meta(object):
 
                 # Also drop this from Labels
                 self.labels.drop(name)
-            elif key in self.header.global_attrs:
+            elif name in self.header.global_attrs:
                 self.header.drop(name)
             else:
                 raise KeyError("{:} not found in Meta".format(repr(name)))
