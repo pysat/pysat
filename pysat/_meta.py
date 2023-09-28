@@ -687,51 +687,13 @@ class Meta(object):
     def __delitem__(self, key):
         """Remove metadata.
 
-        Maps to pandas DataFrame methods.
-
-        Parameters
-        ----------
-        key : str, tuple, or list
-            A single variable name, a tuple, or a list
-
         Raises
         ------
-        KeyError
-            If a properly formatted key is not present
-
-        Examples
-        --------
-        ::
-
-            import pysat
-            inst = pysat.Instrument('pysat', 'testing2d')
-            inst.load(date=inst.inst_module._test_dates[''][''])
-            meta = inst.meta
-
-            # Any data or label of Meta, including the top-level header
-            # attributes may be removed using `del`
-            del meta['uts']
+        NotImplementedError
+            Redirects the user to use `drop`
 
         """
-
-        try:
-            # This is a data variable
-            self.drop(key)
-        except KeyError:
-            keys = listify(key)
-
-            for key in keys:
-                if key in self.data.columns:
-                    # This is a metadata label
-                    self.data = self.data.drop(key, axis=1)
-
-                    # Also drop this from Labels
-                    self.labels.drop(key)
-                elif key in self.header.global_attrs:
-                    self.header.drop(key)
-                else:
-                    raise KeyError("{:} not found in Meta".format(repr(key)))
-        return
+        raise NotImplementedError('`del` not supported, use `Meta.drop`')
 
     def __contains__(self, data_var):
         """Check variable name, not distinguishing by case.
@@ -1047,18 +1009,37 @@ class Meta(object):
 
         Parameters
         ----------
-        names : list-like
-            List of strings specifying the variable names to drop
+        names : str or list-like
+            String or list of strings specifying the variable names to drop
+
+        Raises
+        ------
+        KeyError
+            If any of the keys provided in `names` is not found in the
+            lower dimensional data, higher dimensional data, labels, or
+            header data
 
         """
-
-        # Drop the lower dimension data
-        self.data = self._data.drop(names, axis=0)
-
-        # Drop the higher dimension data
+        # Ensure the input is list-like
+        names = listify(names)
         for name in names:
             if name in self._ho_data:
+                # Drop the higher dimension data
                 self._ho_data.pop(name)
+
+            if name in self.keys():
+                # Drop the lower dimension data
+                self.data = self._data.drop(name, axis=0)
+            elif name in self.data.columns:
+                # This is a metadata label
+                self.data = self._data.drop(name, axis=1)
+
+                # Also drop this from Labels
+                self.labels.drop(name)
+            elif key in self.header.global_attrs:
+                self.header.drop(name)
+            else:
+                raise KeyError("{:} not found in Meta".format(repr(name)))
         return
 
     def keep(self, keep_names):
