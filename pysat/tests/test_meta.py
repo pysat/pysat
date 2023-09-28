@@ -510,10 +510,8 @@ class TestMeta(object):
             assert out.find('ND Metadata variables:') < 0
         return
 
-    @pytest.mark.skip("Does this test use too much memory?")
-    @pytest.mark.parametrize("del_key", ["uts", "units"])
-    def test_del(self, del_key):
-        """Test deletion of Meta data.
+    def test_delitem(self):
+        """Test deletion of Meta data informs user of correct path.
 
         Parameters
         ----------
@@ -524,10 +522,9 @@ class TestMeta(object):
         # Set the meta data
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
-        del self.meta[del_key]
-
-        assert del_key not in self.meta.data.index
-        assert del_key not in self.meta.data.columns
+        with pytest.raises(NotImplementedError,
+                           match='`del` not supported, use `Meta.drop`'):
+            del self.meta['uts']
         return
 
     def test_self_equality(self):
@@ -1208,8 +1205,33 @@ class TestMeta(object):
                     meta_dict[label].__repr__())
         return
 
+    @pytest.mark.parametrize("names", ['uts', ['uts', 'mlt'], 'units',
+                                       ['units', 'uts']])
+    def test_meta_drop(self, names):
+        """Test successful deletion of meta data for different types of data.
+
+        Parameters
+        ----------
+        names : int
+            Number of variables to drop in a single go.
+
+        """
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Drop the values
+        self.meta.drop(names)
+
+        # Test the successful deletion
+        for name in pysat.utils.listify(names):
+            if name in self.testInst.variables:
+                assert name not in self.meta.keys(), "didn't drop variable"
+            else:
+                assert name not in self.meta.data.columns, "didn't drop label"
+        return
+
     @pytest.mark.parametrize("num_drop", [0, 1, 3])
-    def test_meta_drop(self, num_drop):
+    def test_meta_num_drop(self, num_drop):
         """Test successful deletion of meta data for specific values.
 
         Parameters
@@ -1546,6 +1568,35 @@ class TestMeta(object):
 
     # -------------------------------
     # Tests for higher order metadata
+
+    # TODO(#789): remove tests for higher order meta
+    @pytest.mark.parametrize("names", ['series_profiles',
+                                       ['uts', 'series_profiles'],
+                                       ['units', 'series_profiles']])
+    def test_meta_drop_higher_order(self, names):
+        """Test successful deletion of meta data for different types of data.
+
+        Parameters
+        ----------
+        names : str or list
+            Variables or labels to drop from metadata.
+
+        """
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
+
+        # Drop the values
+        self.meta.drop(names)
+
+        # Test the successful deletion
+        for name in pysat.utils.listify(names):
+            if name in self.testInst.variables:
+                assert name not in self.meta.keys(), "didn't drop LO variable"
+                assert name not in self.meta.ho_data.keys(), \
+                    "didn't drop HO variable"
+            else:
+                assert name not in self.meta.data.columns, "didn't drop label"
+        return
 
     # TODO(#789): remove tests for higher order meta
     @pytest.mark.parametrize('meta_dict', [
