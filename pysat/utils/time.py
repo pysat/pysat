@@ -364,8 +364,8 @@ def filter_datetime_input(date):
         if hasattr(date, '__iter__'):
             out_date = []
             for in_date in date:
-                if(in_date.tzinfo is not None
-                   and in_date.utcoffset() is not None):
+                if all([in_date.tzinfo is not None,
+                        in_date.utcoffset() is not None]):
                     in_date = in_date.astimezone(tz=dt.timezone.utc)
 
                 out_date.append(dt.datetime(in_date.year, in_date.month,

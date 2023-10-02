@@ -182,8 +182,8 @@ class Meta(object):
         # Set the NaN export list
         self._export_nan = [] if export_nan is None else export_nan
         for lvals in labels.values():
-            if(lvals[0] not in self._export_nan
-               and float in pysat.utils.listify(lvals[1])):
+            if all([lvals[0] not in self._export_nan,
+                    float in pysat.utils.listify(lvals[1])]):
                 self._export_nan.append(lvals[0])
 
         # Set the labels
@@ -427,9 +427,9 @@ class Meta(object):
                                     to_be_set, self.labels.label_type[iattr]):
                                 # If this is a disagreement between byte data
                                 # and an expected str, resolve it here
-                                if(isinstance(to_be_set, bytes)
-                                   and str in pysat.utils.listify(
-                                       self.labels.label_type[iattr])):
+                                if all([isinstance(to_be_set, bytes),
+                                        str in pysat.utils.listify(
+                                        self.labels.label_type[iattr])]):
                                     to_be_set = core_utils.stringify(to_be_set)
                                 else:
                                     # This type is incorrect, try casting it
@@ -612,8 +612,8 @@ class Meta(object):
                     return self.data.loc[new_index, new_name]
                 except KeyError as kerr:
                     # This may instead be a child variable, check for children
-                    if(hasattr(self[new_index], 'children')
-                       and self[new_index].children is None):
+                    if all([hasattr(self[new_index], 'children'),
+                            self[new_index].children is None]):
                         raise kerr
 
                     try:
@@ -821,8 +821,8 @@ class Meta(object):
         for i, lattr in enumerate(self.labels.label_type.keys()):
             labels.append(getattr(self.labels, lattr))
             lattrs.append(lattr)
-            if(isinstance(self.labels.label_type[lattr], tuple)
-               and data_type is not None):
+            if all([isinstance(self.labels.label_type[lattr], tuple),
+                    data_type is not None]):
                 need_data_type[lattr] = True
             else:
                 need_data_type[lattr] = False
