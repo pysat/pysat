@@ -586,7 +586,8 @@ class TestBasics(object):
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
         reload(pysat.instruments.pysat_testing)
-        assert(inst.files.files.empty)
+        assert inst.files.files.empty
+
         return
 
     def test_instrument_has_files(self):
