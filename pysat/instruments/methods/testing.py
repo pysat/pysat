@@ -247,39 +247,6 @@ def initialize_test_meta(epoch_name, data_keys):
                             'Note the value_max is largest netCDF4 supports, ',
                             'but is lower than actual 64-bit int limit.'])}
 
-    # Children metadata required for 2D pandas.
-    # TODO(#789): Delete after removal of Meta children.
-    series_profile_meta = pysat.Meta()
-    series_profile_meta['series_profiles'] = {'desc': 'Testing series data.',
-                                              'value_min': 0,
-                                              'value_max': np.inf,
-                                              'units': 'm/s'}
-    meta['series_profiles'] = {'meta': series_profile_meta,
-                               'value_min': 0., 'value_max': 25., 'units': 'km',
-                               'fill': np.nan,
-                               'desc': ''.join(['Testing series profiles ',
-                                                'indexed by float.'])}
-
-    # Children metadata required for 2D pandas.
-    # TODO(#789): Delete after removal of Meta children.
-    data_types = {'density': float, 'fraction': float, 'alt_profiles': float,
-                  'variable_profiles': float, 'profile_height': int,
-                  'variable_profile_height': int, 'images': int, 'x': int,
-                  'y': int, 'z': int, 'image_lat': float, 'image_lon': float}
-    alt_profile_meta = pysat.Meta()
-    alt_profile_meta['density'] = {'desc': 'Simulated density values.',
-                                   'units': 'Log N/cc',
-                                   'value_min': 0, 'value_max': np.inf}
-    alt_profile_meta['fraction'] = {'value_min': 0., 'value_max': 1.,
-                                    'desc': ''.join(['Simulated fractional O+ ',
-                                                     'composition.'])}
-    meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
-                            'desc': ''.join([
-                                'Testing profile multi-dimensional data ',
-                                'indexed by float.']),
-                            'units': 'km',
-                            'meta': alt_profile_meta}
-
     # Optional and standard metadata for xarray
     for var in data_keys:
         if var.find('variable_profiles') == 0:
