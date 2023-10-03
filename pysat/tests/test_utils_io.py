@@ -284,8 +284,7 @@ class TestLoadNetCDF(object):
                   and var not in updated_attrs]
 
         tvars = [var for var in self.testInst.meta.keys()
-                 if var not in self.testInst.meta.keys_nD()
-                 and var.lower() not in ["epoch", "time"]]
+                 if var.lower() not in ["epoch", "time"]]
         fvars = [var for var in netcdf_inst.meta.keys()
                  if var.lower() not in ["epoch", "time"]]
 

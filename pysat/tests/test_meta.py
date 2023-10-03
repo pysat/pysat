@@ -106,61 +106,7 @@ class TestMeta(object):
                     self.default_val[lkey].__repr__())
 
         assert 'children' not in self.meta.data.columns
-        assert self.dval not in self.meta.keys_nD()
         return
-
-    def eval_ho_meta_settings(self, meta_dict):
-        """Test the Meta settings for higher order data.
-
-        Parameters
-        ----------
-        meta_dict : dict
-            Dict with meta data labels as keys and values to test against
-
-        """
-
-        # Test the ND metadata results
-        testing.assert_list_contains(self.frame_list,
-                                     list(self.meta.ho_data[self.dval].keys()))
-        testing.assert_list_contains(
-            self.frame_list, list(self.meta[self.dval]['children'].keys()))
-
-        # Test the meta settings at the base and nD level
-        for label in meta_dict.keys():
-            if label == 'meta':
-                testing.assert_lists_equal(
-                    list(self.meta[self.dval]['children'].attrs()),
-                    list(meta_dict[label].attrs()))
-                testing.assert_lists_equal(
-                    list(self.meta[self.dval]['children'].keys()),
-                    list(meta_dict[label].keys()))
-
-                for lvar in self.meta[self.dval]['children'].attrs():
-                    for dvar in self.meta[self.dval]['children'].keys():
-                        if lvar in self.default_nan:
-                            assert np.isnan(
-                                self.meta[self.dval]['children'][dvar, lvar]), \
-                                "{:s} child {:s} {:s} value {:} != NaN".format(
-                                    self.dval.__repr__(), dvar.__repr__(),
-                                    lvar.__repr__(),
-                                    self.meta[self.dval]['children'][
-                                        dvar, lvar].__repr__())
-                        else:
-                            assert (self.meta[self.dval]['children'][dvar, lvar]
-                                    == meta_dict[label][dvar, lvar]), \
-                                "{:s} child {:s} {:s} value {:} != {:}".format(
-                                    self.dval.__repr__(), dvar.__repr__(),
-                                    lvar.__repr__(),
-                                    self.meta[self.dval]['children'][
-                                        dvar, lvar].__repr__(),
-                                    meta_dict[label][dvar, lvar].__repr__())
-            else:
-                assert self.meta[self.dval]['children'].hasattr_case_neutral(
-                    label)
-                assert self.meta[self.dval, label] == meta_dict[label], \
-                    "{:s} label value {:} != {:}".format(
-                        label, self.meta[self.dval, label].__repr__(),
-                        meta_dict[label].__repr__())
 
         return
 
@@ -425,7 +371,6 @@ class TestMeta(object):
         # Evaluate the common parts of the output string
         assert out.find('pysat Meta object') >= 0
         assert out.find('standard variables') > 0
-        assert out.find('ND variables') > 0
         assert out.find('global attributes') > 0
 
         # Evaluate the extra parts of the long output string
@@ -441,10 +386,8 @@ class TestMeta(object):
             else:
                 assert out.find('Standard Metadata variables:') < 0
 
-            assert out.find('ND Metadata variables:') < 0
         else:
             assert out.find('Standard Metadata variables:') < 0
-            assert out.find('ND Metadata variables:') < 0
         return
 
     def test_self_equality(self):
@@ -573,16 +516,12 @@ class TestMeta(object):
 
             # Test the popped object labels
             pop_attrs = list(mpop.keys())
-            pop_attrs.pop(pop_attrs.index('children'))
             testing.assert_lists_equal(pop_attrs, list(self.meta.attrs()))
 
             # Test the popped object values
             pop_values = [mpop[pattr] for pattr in pop_attrs]
             comp_values = [mcomp[pattr] for pattr in pop_attrs]
             testing.assert_lists_equal(pop_values, comp_values)
-
-            if mpop['children'] is not None:
-                assert mpop['children'] == mcomp['children']
 
             # Test that the popped variable is no longer in the main object
             assert dvar not in self.meta.keys(), "pop did not remove metadata"
@@ -720,20 +659,6 @@ class TestMeta(object):
         mvals = [getattr(self.meta.labels, mattr)
                  for mattr in list(self.meta_labels.keys())[:num_mvals]]
 
-        # If dvals is greater than zero and there is higher order data,
-        # make sure at least one is included
-        nd_inds = list()
-        if len(dvals) > 0:
-            nd_vals = [key for key in self.meta.keys_nD()]
-
-            if len(nd_vals) > 0:
-                nd_inds = [dvals.index(self.dval) for self.dval in nd_vals
-                           if self.dval in dvals]
-
-                if len(nd_inds) == 0:
-                    dvals[0] = nd_vals[0]
-                    nd_inds = [0]
-
         # Retrieve meta data for desired values
         sel_meta = self.meta[dvals, mvals]
 
@@ -741,21 +666,6 @@ class TestMeta(object):
         assert isinstance(sel_meta, pds.DataFrame)
         testing.assert_lists_equal(dvals, list(sel_meta.index))
         testing.assert_lists_equal(mvals, list(sel_meta.columns))
-
-        # If there is higher order data, test the retrieval
-        for pind in nd_inds:
-            # Get the desired number of child variables
-            self.dval = dvals[pind]
-            cvals = [kk for kk in self.meta[self.dval].children.keys()][
-                :num_dvals]
-
-        # Retrieve meta data for desired values
-            sel_meta = self.meta[self.dval, cvals, mvals]
-
-            # Evaluate retrieved data
-            assert isinstance(sel_meta, pds.DataFrame)
-            testing.assert_lists_equal(cvals, list(sel_meta.index))
-            testing.assert_lists_equal(mvals, list(sel_meta.columns))
 
         return
 
@@ -1456,32 +1366,18 @@ class TestMetaImmutable(TestMeta):
         del self.mutable
         return
 
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize("prop,set_val", [('data', pds.DataFrame())])
-    def test_meta_mutable_properties(self, prop, set_val):
-        """Test that @properties are always mutable.
-
-        Parameters
-        ----------
-        prop : str
-            Attribute on `self.meta` to be tested
-        set_val : any
-            Value to be assigned to `prop` on `self.meta`
-
-        """
+    def test_meta_mutable_properties(self):
+        """Test that @properties are always mutable."""
 
         # Set anything that can be immutable to be immutable
         self.meta.mutable = self.mutable
 
         # Test that data and label values can be updated
-        for prop, set_val in [('data', pds.DataFrame()), ('ho_data', {})]:
-            try:
-                # Pandas does not support dataframe equality
-                setattr(self.meta, prop, set_val)
-            except AttributeError:
-                raise AssertionError(
-                    "Couldn't update mutable property {:}".format(
-                        prop.__repr__()))
+        try:
+            # Pandas does not support dataframe equality
+            setattr(self.meta, 'data', pds.DataFrame())
+        except AttributeError:
+            raise AssertionError("Couldn't update mutable property 'data'")
 
     @pytest.mark.parametrize("label", ['units', 'name', 'desc', 'notes',
                                        'min_val', 'max_val', 'fill_val'])
@@ -1691,40 +1587,26 @@ class TestToDict(object):
         # Confirm type
         assert isinstance(self.out, dict)
 
-        # Check for higher order products
-        ho_vars = []
-        for var in self.testInst.meta.keys():
-            if 'children' in self.testInst.meta[var]:
-                if self.testInst.meta[var]['children'] is not None:
-                    for subvar in self.testInst.meta[var]['children'].keys():
-                        ho_vars.append('_'.join([var, subvar]))
-
         # Confirm the contents of the output for variables
         for var in self.out.keys():
-            if var not in ho_vars:
-                for label in self.out[var]:
-                    assert label in self.testInst.meta.data.columns
-                    assert testing.nan_equal(self.out[var][label],
-                                             self.testInst.meta[var][label]), \
-                        'Differing values.'
+            for label in self.out[var]:
+                assert label in self.testInst.meta.data.columns
+                assert testing.nan_equal(self.out[var][label],
+                                         self.testInst.meta[var][label]), \
+                    'Differing values.'
 
         # Confirm case
         if not preserve_case:
             # Outputs should all be lower case
             for key in self.out.keys():
                 assert key == key.lower(), 'Output not lower case.'
-            for key in ho_vars:
-                assert key == key.lower(), 'Output not lower case.'
-                assert key.lower() in self.out, 'Missing output variable.'
         else:
             # Case should be preserved
             for key in self.out.keys():
                 assert key == self.testInst.meta.var_case_name(key), \
                     'Output case different.'
-            for key in ho_vars:
-                assert key in self.out, 'Output case different, or missing.'
 
-        num_target_vars = len(ho_vars) + len(list(self.testInst.meta.keys()))
+        num_target_vars = len(list(self.testInst.meta.keys()))
         assert num_target_vars == len(self.out), \
             'Different number of variables.'
 

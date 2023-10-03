@@ -216,15 +216,6 @@ def remove_leading_text(inst, target=None):
 
         inst.meta.data = inst.meta.data.rename(
             index=lambda x: x.split(prepend_str)[-1])
-        orig_keys = [kk for kk in inst.meta.keys_nD()]
-
-        for keynd in orig_keys:
-            if keynd.find(prepend_str) >= 0:
-                new_key = keynd.split(prepend_str)[-1]
-                new_meta = inst.meta.pop(keynd)
-                new_meta.data = new_meta.data.rename(
-                    index=lambda x: x.split(prepend_str)[-1])
-                inst.meta[new_key] = new_meta
 
     return
 
