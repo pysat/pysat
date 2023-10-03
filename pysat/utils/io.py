@@ -928,8 +928,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     saved_meta = None
     running_idx = 0
     running_store = []
-    two_d_keys = []
-    two_d_dims = []
 
     if meta_kwargs is None:
         meta_kwargs = {}
@@ -956,12 +954,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         drop_meta_labels = []
     else:
         drop_meta_labels = pysat.utils.listify(drop_meta_labels)
-
-    # Need to use name label later to identify variables with long_name 'Epoch'
-    name_label = meta.labels.name
-    for key in meta_translation.keys():
-        if meta.labels.name in meta_translation[key]:
-            name_label = key
 
     # Load data for each file
     for fname in fnames:
