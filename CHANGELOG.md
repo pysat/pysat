@@ -22,7 +22,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated `Constellation.to_inst` method definition of coords, using dims
     to combine common dimensions instead.
   * Implement pyproject to manage metadata
-  * Updated docstring references to `pysat.utils.files` in other modules.
+* Updated docstring references to `pysat.utils.files` in other modules.
+  * Remove Sphinx cap
+  * Add pandas cap
 
 [3.1.0] - 2023-05-31
 --------------------
