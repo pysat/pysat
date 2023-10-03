@@ -500,47 +500,9 @@ class Meta(object):
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
                 child = in_dict.pop('children')
-                if child is not None:
-                    # If there is data in the child object, assign it here
-                    self._warn_meta_children()
-                    self.ho_data[data_vars] = child
             # Remaining items are simply assigned via recursive call
             self[data_vars] = in_dict
 
-        elif isinstance(input_data, Meta):
-            # Dealing with a higher order data set
-            self._warn_meta_children()
-            # `data_vars` is only a single name here (by choice for support)
-            if (data_vars in self._ho_data) and input_data.empty:
-                # No actual metadata provided and there is already some
-                # higher order metadata in self
-                return
-
-            # Get Meta approved variable data names
-            new_item_name = self.var_case_name(data_vars)
-
-            # Ensure that Meta labels of object to be assigned are
-            # consistent with self.  input_data accepts self's labels.
-            input_data.accept_default_labels(self)
-
-            # Go through and ensure Meta object to be added has variable and
-            # attribute names consistent with other variables and attributes
-            # this covers custom attributes not handled by default routine
-            # above
-            attr_names = [item for item in input_data.attrs()]
-            input_data.data.columns = self.attr_case_name(attr_names)
-
-            # Same thing for variables
-            input_data.data.index = self.var_case_name(input_data.data.index)
-
-            # Assign Meta object now that things are consistent with Meta
-            # object settings, but first make sure there are lower dimension
-            # metadata parameters, passing in an empty dict fills in defaults
-            # if there is no existing metadata info.
-            self[new_item_name] = {}
-
-            # Now add to higher order data
-            self._ho_data[new_item_name] = input_data
         return
 
     def __getitem__(self, key):
@@ -565,7 +527,7 @@ class Meta(object):
         ::
 
             import pysat
-            inst = pysat.Instrument('pysat', 'testing2d')
+            inst = pysat.Instrument('pysat', 'testing')
             inst.load(date=inst.inst_module._test_dates[''][''])
             meta = inst.meta
 
@@ -1568,26 +1530,6 @@ class Meta(object):
             for orig_key in meta_dict:
                 export_dict[case_key][orig_key] = meta_dict[orig_key]
 
-        # Higher Order Data
-        # TODO(#789): remove in pysat 3.2.0
-        for key in self.ho_data:
-            if preserve_case:
-                case_key = self.var_case_name(key)
-            else:
-                case_key = key.lower()
-
-            if case_key not in export_dict:
-                export_dict[case_key] = {}
-            for ho_key in self.ho_data[key].data.index:
-                if preserve_case:
-                    case_ho_key = self.var_case_name(ho_key)
-                else:
-                    case_ho_key = ho_key.lower()
-
-                new_key = '_'.join((case_key, case_ho_key))
-                export_dict[new_key] = \
-                    self.ho_data[key].data.loc[ho_key].to_dict()
-
         return export_dict
 
     @classmethod
@@ -1649,15 +1591,6 @@ class Meta(object):
         else:
             raise ValueError(''.join(['Unable to retrieve information from ',
                                       filename]))
-
-    # TODO(#789): remove in pysat 3.2.0
-    def _warn_meta_children(self):
-        """Warn the user that higher order metadata is deprecated."""
-
-        warnings.warn(" ".join(["Support for higher order metadata has been",
-                                "deprecated and will be removed in 3.2.0+."]),
-                      DeprecationWarning, stacklevel=2)
-        return
 
 
 class MetaLabels(object):
