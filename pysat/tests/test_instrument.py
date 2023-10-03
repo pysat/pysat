@@ -12,7 +12,6 @@ import xarray as xr
 import pysat
 import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing
-import pysat.instruments.pysat_testing2d
 import pysat.instruments.pysat_testing_xarray
 
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
@@ -217,32 +216,6 @@ class TestBasicsXarray(TestBasics):
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing_xarray._test_dates[
             '']['']
-        self.ref_doy = int(self.ref_time.strftime('%j'))
-        self.out = None
-        return
-
-    def teardown_method(self):
-        """Clean up the unit test environment after each method."""
-
-        del self.testInst, self.out, self.ref_time, self.ref_doy
-        return
-
-
-# TODO(#908): remove below class when pysat_testing2d is removed.
-class TestBasics2D(TestBasics):
-    """Basic tests for 2D pandas `pysat.Instrument`."""
-
-    def setup_method(self):
-        """Set up the unit test environment for each method."""
-
-        reload(pysat.instruments.pysat_testing2d)
-        self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
-                                         num_samples=50,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         use_header=True,
-                                         **self.testing_kwargs)
-        self.ref_time = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
@@ -814,24 +787,4 @@ class TestDeprecation(object):
 
         # Evaluate the warning output
         self.eval_warnings()
-        return
-
-    def test_set_2d_pandas_data(self):
-        """Check that setting 2D data for pandas raises a DeprecationWarning."""
-
-        test_inst = pysat.Instrument('pysat', 'testing2d', use_header=True)
-        test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
-        test_inst.load(date=test_date)
-        with warnings.catch_warnings(record=True) as war:
-            test_inst['new_profiles'] = 2 * test_inst['profiles']
-
-        warn_msgs = [" ".join(["Support for 2D pandas instrument",
-                               "data has been deprecated and will",
-                               "be removed in 3.2.0+."])]
-
-        # Ensure the minimum number of warnings were raised.
-        assert len(war) >= len(warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present.
-        testing.eval_warnings(war, warn_msgs)
         return

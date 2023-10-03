@@ -772,8 +772,8 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
                 "Variable {:} not loaded correctly".format(var)
         return
 
-    def test_load_netcdf_pandas_3d_error(self):
-        """Test load_netcdf error with a pandas 3D file."""
+    def test_load_netcdf_pandas_2d_error(self):
+        """Test load_netcdf error with a pandas 2D file."""
         # Create a bunch of files by year and doy
         outfile = os.path.join(self.tempdir.name,
                                'pysat_test_ncdf.nc')
@@ -783,46 +783,9 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Evaluate the error raised and the expected message
         testing.eval_bad_input(
             io.load_netcdf, ValueError,
-            "only supports 1D and 2D data in pandas", input_args=[outfile],
+            "only supports 1D data in pandas", input_args=[outfile],
             input_kwargs={"epoch_name": 'time', "pandas_format": True})
 
-        return
-
-
-class TestLoadNetCDF2DPandas(TestLoadNetCDF):
-    """Unit tests for `load_netcdf` using 2d pandas data."""
-
-    def setup_method(self):
-        """Set up the test environment."""
-
-        # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
-        pysat.params['data_dirs'] = self.tempdir.name
-
-        self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
-                                         update_files=True, num_samples=100,
-                                         use_header=True)
-        self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
-        self.epoch_name = 'time'
-
-        # Initialize the loaded data object
-        self.loaded_inst = None
-        return
-
-    def teardown_method(self):
-        """Clean up the test environment."""
-
-        pysat.params['data_dirs'] = self.saved_path
-
-        # Clear the attributes with data in them
-        del self.loaded_inst, self.testInst, self.stime, self.epoch_name
-
-        # Remove the temporary directory
-        self.tempdir.cleanup()
-
-        # Clear the directory attributes
-        del self.tempdir, self.saved_path
         return
 
 
@@ -1048,17 +1011,6 @@ class TestNetCDF4Integration(object):
             for label in new_labels:
                 assert label not in init_meta[var]
                 assert label in new_meta[var]
-
-            if self.testInst.name == 'testing2D':
-                assert 'Depend_1' not in init_meta[var]
-
-        # Check for higher dimensional data properties
-        if self.testInst.name == 'testing2D':
-            for var in self.testInst.vars_no_time:
-                if self.testInst.meta[var].children is not None:
-                    assert 'Depend_1' in new_meta[var]
-                else:
-                    assert 'Depend_1' not in new_meta[var]
 
         return
 
@@ -1328,23 +1280,6 @@ class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
         # variables allowed to be nan within metadata when exporting.
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          num_samples=5, use_header=True)
-        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
-                           use_header=True)
-        self.pformat = self.testInst.pandas_format
-
-        return
-
-
-class TestNetCDF4IntegrationPandas2D(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils using pandas2d Instrument."""
-
-    def setup_method(self):
-        """Create a testing environment."""
-
-        # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testing2d', num_samples=5,
-                                         use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
         self.pformat = self.testInst.pandas_format
@@ -1832,29 +1767,6 @@ class TestMetaTranslation2DXarray(TestMetaTranslation):
                                           num_samples=5, use_header=True)
         self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
         self.test_date = self.test_date['']['']
-        self.test_inst.load(date=self.test_date)
-        self.meta_dict = self.test_inst.meta.to_dict()
-        self.out = None
-
-        return
-
-    def teardown_method(self):
-        """Cleanup test environment."""
-
-        del self.test_inst, self.test_date, self.out, self.meta_dict
-
-        return
-
-
-class TestMetaTranslation2DPandas(TestMetaTranslation):
-    """Test meta translation when writing/loading files testing2d Instrument."""
-
-    def setup_method(self):
-        """Create test environment."""
-
-        self.test_inst = pysat.Instrument('pysat', 'testing2d',
-                                          num_samples=5, use_header=True)
-        self.test_date = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.test_inst.load(date=self.test_date)
         self.meta_dict = self.test_inst.meta.to_dict()
         self.out = None
