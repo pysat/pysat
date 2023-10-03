@@ -498,6 +498,8 @@ class Meta(object):
             # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict.
             in_dict = input_data.to_dict()
+            if 'children' in in_dict:
+                child = in_dict.pop('children')  # noqa: F841
             # Remaining items are simply assigned via recursive call
             self[data_vars] = in_dict
 
