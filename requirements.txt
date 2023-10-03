@@ -1,7 +1,7 @@
 dask
 netCDF4
 numpy>=1.12
-pandas
+pandas<2.1.1
 portalocker
 pytest
 scipy
