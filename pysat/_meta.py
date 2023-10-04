@@ -401,86 +401,72 @@ class Meta(object):
 
             # Time to actually add the metadata
             for ikey in input_data:
-                if ikey not in ['children', 'meta']:
-                    for i, var in enumerate(data_vars):
-                        to_be_set = input_data[ikey][i]
-                        good_set = True
+                for i, var in enumerate(data_vars):
+                    to_be_set = input_data[ikey][i]
+                    good_set = True
 
-                        # See if this meta data key has already been defined
-                        # in MetaLabels
-                        if ikey in self.labels.label_attrs.keys():
-                            iattr = self.labels.label_attrs[ikey]
-                            if not isinstance(
-                                    to_be_set, self.labels.label_type[iattr]):
-                                # If this is a disagreement between byte data
-                                # and an expected str, resolve it here
-                                if(isinstance(to_be_set, bytes)
-                                   and str in pysat.utils.listify(
-                                       self.labels.label_type[iattr])):
-                                    to_be_set = core_utils.stringify(to_be_set)
-                                else:
-                                    # This type is incorrect, try casting it
-                                    wmsg = ''.join(['Metadata with type ',
-                                                    repr(type(to_be_set)),
-                                                    ' does not match expected ',
-                                                    'type ',
-                                                    repr(self.labels.label_type[
-                                                        iattr])])
-                                    try:
-                                        if hasattr(to_be_set, '__iter__'):
-                                            if str in pysat.utils.listify(
-                                                    self.labels.label_type[
-                                                    iattr]):
-                                                to_be_set = '\n\n'.join(
-                                                    [str(tval) for tval in
-                                                     to_be_set])
-                                            else:
-                                                raise TypeError("can't recast")
+                    # See if this meta data key has already been defined
+                    # in MetaLabels
+                    if ikey in self.labels.label_attrs.keys():
+                        iattr = self.labels.label_attrs[ikey]
+                        if not isinstance(
+                                to_be_set, self.labels.label_type[iattr]):
+                            # If this is a disagreement between byte data
+                            # and an expected str, resolve it here
+                            if(isinstance(to_be_set, bytes)
+                               and str in pysat.utils.listify(
+                                   self.labels.label_type[iattr])):
+                                to_be_set = core_utils.stringify(to_be_set)
+                            else:
+                                # This type is incorrect, try casting it
+                                wmsg = ''.join(['Metadata with type ',
+                                                repr(type(to_be_set)),
+                                                ' does not match expected ',
+                                                'type ',
+                                                repr(self.labels.label_type[
+                                                    iattr])])
+                                try:
+                                    if hasattr(to_be_set, '__iter__'):
+                                        if str in pysat.utils.listify(
+                                                self.labels.label_type[iattr]):
+                                            to_be_set = '\n\n'.join(
+                                                [str(tval) for tval in
+                                                 to_be_set])
                                         else:
-                                            to_be_set = pysat.utils.listify(
-                                                self.labels.label_type[
-                                                    iattr])[0](to_be_set)
+                                            raise TypeError("can't recast")
+                                    else:
+                                        to_be_set = pysat.utils.listify(
+                                            self.labels.label_type[
+                                                iattr])[0](to_be_set)
 
-                                        # Inform user data was recast
-                                        pysat.logger.info(''.join((
-                                            wmsg, '. Recasting input for ',
-                                            repr(var), ' with key ',
-                                            repr(ikey))))
-                                    except (TypeError, ValueError):
-                                        # Warn user data was dropped
-                                        warnings.warn(''.join((
-                                            wmsg, '. Dropping input for ',
-                                            repr(var), ' with key ',
-                                            repr(ikey))))
-                                        good_set = False
-                        else:
-                            # Extend the meta labels. Ensure the attribute
-                            # name has no spaces and that bytes are used instead
-                            # of strings.
-                            iattr = ikey.replace(" ", "_")
-                            itype = type(to_be_set)
-                            if itype == bytes:
-                                itype = str
+                                    # Inform user data was recast
+                                    pysat.logger.info(''.join((
+                                        wmsg, '. Recasting input for ',
+                                        repr(var), ' with key ', repr(ikey))))
+                                except (TypeError, ValueError):
+                                    # Warn user data was dropped
+                                    warnings.warn(''.join((
+                                        wmsg, '. Dropping input for ',
+                                        repr(var), ' with key ',
+                                        repr(ikey))))
+                                    good_set = False
+                    else:
+                        # Extend the meta labels. Ensure the attribute
+                        # name has no spaces and that bytes are used instead
+                        # of strings.
+                        iattr = ikey.replace(" ", "_")
+                        itype = type(to_be_set)
+                        if itype == bytes:
+                            itype = str
 
-                            # Update the MetaLabels object and the existing
-                            # metadata to ensure all data have all labels
-                            self.labels.update(iattr, ikey, itype)
-                            self._label_setter(ikey, ikey, type(to_be_set))
+                        # Update the MetaLabels object and the existing
+                        # metadata to ensure all data have all labels
+                        self.labels.update(iattr, ikey, itype)
+                        self._label_setter(ikey, ikey, type(to_be_set))
 
-                        # Set the data
-                        if good_set:
-                            self._data.loc[var, ikey] = to_be_set
-                else:
-                    # Key is 'meta' or 'children', providing higher order
-                    # metadata. Meta inputs could be part of a larger multiple
-                    # parameter assignment, so not all names may actually have
-                    # a 'meta' object to add.
-                    for item, val in zip(data_vars, input_data['meta']):
-                        if val is not None:
-                            # Assign meta data, using a recursive call...
-                            # Heads to if Meta instance call.
-                            self[item] = val
-
+                    # Set the data
+                    if good_set:
+                        self._data.loc[var, ikey] = to_be_set
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict.
@@ -1061,8 +1047,6 @@ class Meta(object):
 
         # Create a list of all attribute names and lower case attribute names
         self_keys = [key for key in self.attrs()]
-        # for key in list(self.keys_nD()):
-        #     self_keys.extend(self.ho_data[key].data.columns)
         lower_self_keys = [key.lower() for key in self_keys]
 
         case_names = []

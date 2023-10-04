@@ -105,15 +105,7 @@ class TestLoadNetCDF(object):
         # Test the data values for each variable
         for dkey in keys:
             lkey = dkey.lower()
-            if lkey in ['profiles', 'alt_profiles', 'series_profiles']:
-                # Test the loaded higher-dimension data
-                for tframe, lframe in zip(self.testInst[dkey],
-                                          self.loaded_inst[dkey]):
-                    assert np.all(tframe == lframe), "unequal {:s} data".format(
-                        dkey)
-            else:
-                # Test the standard data structures
-                assert np.all(self.testInst[dkey] == self.loaded_inst[dkey])
+            assert np.all(self.testInst[dkey] == self.loaded_inst[dkey])
 
         # Check that names are lower case when written
         pysat.utils.testing.assert_lists_equal(keys, new_keys, test_case=False)
@@ -1232,14 +1224,6 @@ class TestNetCDF4Integration(object):
     def test_missing_metadata(self):
         """Test writing file with no metadata."""
 
-        # Collect a list of higher order meta
-        ho_vars = []
-        for var in self.testInst.meta.keys():
-            if 'children' in self.testInst.meta[var]:
-                if self.testInst.meta[var]['children'] is not None:
-                    for subvar in self.testInst.meta[var]['children'].keys():
-                        ho_vars.append((subvar, var))
-
         # Drop all metadata
         self.testInst.meta.keep([])
 
@@ -1256,12 +1240,6 @@ class TestNetCDF4Integration(object):
 
         # Test the warning
         testing.eval_warnings(war, exp_warns, warn_type=UserWarning)
-
-        # Test warning for higher order data as well (pandas)
-        for (svar, var) in ho_vars:
-            wstr = ''.join(['Unable to find MetaData for ',
-                            svar, ' subvariable of ', var])
-            exp_warns.append(wstr)
 
         # Test the warning
         testing.eval_warnings(war, exp_warns, warn_type=UserWarning)
@@ -1701,8 +1679,7 @@ class TestMetaTranslation(object):
         # Enforcing netcdf4 standards removes 'fill', min, and max information
         # for string variables. This is not re-added by the `remove_` function
         # call since, strictly speaking, we don't know what to add back in.
-        # Also exepmting a check on long_name for higher order data with a time
-        # index. When loading files, pysat specifically checks for 'Epoch' as
+        # When loading files, pysat specifically checks for 'Epoch' as
         # the long_name. So, ensuring long_name for such variables is written
         # could break loading for existent files. I could fake it, and assign
         # the standard name as long_name when loading, and while that would
@@ -1712,11 +1689,6 @@ class TestMetaTranslation(object):
             assert var in filt_meta, 'Lost metadata variable {}'.format(var)
 
             for key in self.meta_dict[var].keys():
-                # Creating exception for time-index of higher order data. The
-                # long_name comes out differently.
-                if var == 'profiles' and (key == 'long_name'):
-                    continue
-
                 # Test remaining variables accounting for possible exceptions
                 # for string variables.
                 if key not in ['fill', 'value_min', 'value_max']:
