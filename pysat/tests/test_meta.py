@@ -105,9 +105,6 @@ class TestMeta(object):
                     lkey.__repr__(), self.meta[self.dval, lkey].__repr__(),
                     self.default_val[lkey].__repr__())
 
-        assert 'children' not in self.meta.data.columns
-        return
-
         return
 
     # -----------------------

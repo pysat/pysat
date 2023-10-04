@@ -117,11 +117,6 @@ class Meta(object):
         meta2['var_name42'] = {'long_name': 'name2of4', 'units': 'Units2'}
         meta['var_name4'] = {'meta': meta2}
 
-        # An alternative method to achieve the same result is:
-        meta['var_name4'] = meta2
-        meta['var_name4'].children['name41']
-        meta['var_name4'].children['name42']
-
         # Meta data may be assigned from another Meta object using dict-like
         # assignments
         key1 = 'var_name'
@@ -454,14 +449,6 @@ class Meta(object):
                     # Set the data
                     if good_set:
                         self._data.loc[var, ikey] = to_be_set
-        elif isinstance(input_data, pds.Series):
-            # Outputs from Meta object are a Series. Thus, this takes in input
-            # from a Meta object. Set data using standard assignment via a dict.
-            in_dict = input_data.to_dict()
-            if 'children' in in_dict:
-                child = in_dict.pop('children')  # noqa: F841
-            # Remaining items are simply assigned via recursive call
-            self[data_vars] = in_dict
 
         return
 
