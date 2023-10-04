@@ -104,7 +104,6 @@ class TestLoadNetCDF(object):
 
         # Test the data values for each variable
         for dkey in keys:
-            lkey = dkey.lower()
             assert np.all(self.testInst[dkey] == self.loaded_inst[dkey])
 
         # Check that names are lower case when written
