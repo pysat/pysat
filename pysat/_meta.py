@@ -67,10 +67,6 @@ class Meta(object):
     but the original case is preserved. Case preseveration is built in to
     support writing files with a desired case to meet standards.
 
-    Metadata for higher order data objects, those that have
-    multiple products under a single variable name in a `pysat.Instrument`
-    object, are stored by providing a Meta object under the single name.
-
     Supports any custom metadata values in addition to the expected metadata
     attributes (units, name, notes, desc, value_min, value_max, and fill).
     These base attributes may be used to programatically access and set types
@@ -125,15 +121,6 @@ class Meta(object):
         meta['var_name4'] = meta2
         meta['var_name4'].children['name41']
         meta['var_name4'].children['name42']
-
-        # You may, of course, have a mixture of 1D and nD data
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        meta2 = pysat.Meta()
-        meta2[['higher', 'lower']] = {'meta': [meta, None],
-                                      'units': [None, 'boo'],
-                                      'long_name': [None, 'boohoo']}
 
         # Meta data may be assigned from another Meta object using dict-like
         # assignments
@@ -794,8 +781,6 @@ class Meta(object):
 
         """
 
-        # Only need to check on lower data since lower data
-        # is set when higher metadata assigned.
         if self.data.empty:
             return True
         else:
@@ -813,7 +798,6 @@ class Meta(object):
 
         for key in other.keys():
             if key not in self:
-                # Copies over both lower and higher dimensional data
                 self[key] = other[key]
         return
 
@@ -999,10 +983,6 @@ class Meta(object):
             True if the case-insensitive check for attribute name is successful,
             False if no attribute name is present.
 
-        Note
-        ----
-        Does not check higher order meta objects
-
         """
 
         if attr_name.lower() in [dcol.lower() for dcol in self.data.columns]:
@@ -1025,11 +1005,9 @@ class Meta(object):
 
         Note
         ----
-        Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures. If not found, returns
-        supplied name as it is available for use. Intended to be used to help
-        ensure that the same case is applied to all repetitions of a given
-        variable name.
+        Checks first within standard attributes. If not found, returns supplied
+        name as it is available for use. Intended to be used to help ensure that
+        the same case is applied to all repetitions of a given variable name.
 
         """
 
@@ -1074,18 +1052,11 @@ class Meta(object):
             Dictionary with old names as keys and new names as variables or
             a function to apply to all names
 
-        Raises
-        ------
-        ValueError
-            When normal data is treated like higher-order data in dict mapping.
-
         Note
         ----
-        Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures. If not found, returns
-        supplied name as it is available for use. Intended to be used to help
-        ensure that the same case is applied to all repetitions of a given
-        variable name.
+        Checks first within standard attributes. If not found, returns supplied
+        name as it is available for use. Intended to be used to help ensure that
+        the same case is applied to all repetitions of a given variable name.
 
         """
 

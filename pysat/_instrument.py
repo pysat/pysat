@@ -2814,33 +2814,6 @@ class Instrument(object):
             inst.rename(str.upper)
 
 
-        If using a pandas-type Instrument with higher-order data and a
-        dictionary mapper, the upper-level data key must contain a dictionary
-        for renaming the dependent data variables.  The upper-level data key
-        cannot be renamed. Note that this rename will be invoked individually
-        for all times in the dataset.
-        ::
-
-            # Applies to higher-order datasets that are loaded into pandas
-            inst = pysat.Instrument('pysat', 'testing2D')
-            inst.load(2009, 1)
-            mapper = {'uts': 'pysat_uts',
-                      'profiles': {'density': 'pysat_density'}}
-            inst.rename(mapper)
-            print(inst[0, 'profiles'].columns)  # 'density' will be updated
-
-            # To rename higher-order data at both levels using a dictionary,
-            # you need two calls
-            mapper2 = {'profiles': 'pysat_profile'}
-            inst.rename(mapper2)
-            print(inst[0, 'pysat_profile'].columns)
-
-            # A function will affect both standard and higher-order data.
-            # Remember this function also updates the Meta data.
-            inst.rename(str.capitalize)
-            print(inst.meta['Pysat_profile']['children'])
-
-
         pysat supports differing case for variable labels across the data and
         metadata objects attached to an Instrument. Since Meta is
         case-preserving (on assignment) but case-insensitive to access, the
@@ -2850,10 +2823,9 @@ class Instrument(object):
         ::
 
             # Example with lowercase_data_labels
-            inst = pysat.Instrument('pysat', 'testing2D')
+            inst = pysat.Instrument('pysat', 'testing')
             inst.load(2009, 1)
-            mapper = {'uts': 'Pysat_UTS',
-                     'profiles': {'density': 'PYSAT_density'}}
+            mapper = {'uts': 'Pysat_UTS'}
             inst.rename(mapper, lowercase_data_labels=True)
 
             # Note that 'Pysat_UTS' was applied to data as 'pysat_uts'
@@ -2886,7 +2858,7 @@ class Instrument(object):
             # Initialize dict for renaming normal pandas data
             pdict = {}
 
-            # Collect normal variables and rename higher order variables
+            # Collect and rename variables
             for vkey in self.variables:
                 map_key = pysat.utils.get_mapped_value(vkey, mapper)
 
