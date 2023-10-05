@@ -223,7 +223,7 @@ def register_by_module(module, overwrite=False):
         attached as sub-modules to the input `module`
     overwrite : bool
         If True, an existing registration will be updated
-        with the new module information.
+        with the new module information. (default=False)
 
     Raises
     ------
