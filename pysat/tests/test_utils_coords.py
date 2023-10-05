@@ -63,8 +63,7 @@ class TestUpdateLon(object):
         del self.py_inst, self.inst_time
         return
 
-    @pytest.mark.parametrize("name", ["testing", "testing_xarray",
-                                      "ndtesting", "testmodel"])
+    @pytest.mark.parametrize("name", ["testing", "ndtesting", "testmodel"])
     def test_update_longitude(self, name):
         """Test `update_longitude` successful run."""
 
@@ -119,7 +118,7 @@ class TestCalcSLT(object):
         del self.py_inst, self.inst_time
         return
 
-    @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
+    @pytest.mark.parametrize("name", ["testing", "ndtesting"])
     def test_calc_solar_local_time(self, name):
         """Test SLT calculation with longitudes from 0-360 deg for 0 UTH."""
 
@@ -143,7 +142,7 @@ class TestCalcSLT(object):
         assert np.min(np.abs(cos_diff)) > 1.0 - 1.0e-6
         return
 
-    @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
+    @pytest.mark.parametrize("name", ["testing", "ndtesting"])
     def test_calc_solar_local_time_inconsistent_keywords(self, name, caplog):
         """Test that ref_date only works when apply_modulus=False."""
 
@@ -274,7 +273,7 @@ class TestCalcSLT(object):
         """Test calc_solar_local_time with a single longitude value."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing_xarray",
+        self.py_inst = pysat.Instrument(platform='pysat', name="ndtesting",
                                         use_header=True)
         self.py_inst.load(date=self.inst_time)
         lon_name = 'lon2'

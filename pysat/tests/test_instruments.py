@@ -274,32 +274,3 @@ class TestDeprecation(object):
                       for j in range(0, n_args)]
 
         assert "download" in mark_names
-
-    @pytest.mark.parametrize("inst_module", ['pysat_testing_xarray',
-                                             'pysat_testing2d_xarray'])
-    def test_deprecated_instruments(self, inst_module):
-        """Check that instantiating old instruments raises a DeprecationWarning.
-
-        Parameters
-        ----------
-        inst_module : str
-            name of deprecated module.
-
-        """
-
-        with warnings.catch_warnings(record=True) as war:
-            pysat.Instrument(inst_module=getattr(pysat.instruments,
-                                                 inst_module),
-                             use_header=True)
-
-        warn_msgs = [" ".join(["The instrument module",
-                               "`{:}`".format(inst_module),
-                               "has been deprecated and will be removed",
-                               "in 3.2.0+."])]
-
-        # Ensure the minimum number of warnings were raised.
-        assert len(war) >= len(warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present.
-        testing.eval_warnings(war, warn_msgs)
-        return
