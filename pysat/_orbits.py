@@ -474,8 +474,11 @@ class Orbits(object):
                     # Iterate over samples and check.
                     for sub_tidx in tidx:
                         # Look at time change vs local time change
-                        if(ut_diff[sub_idx].iloc[sub_tidx] * orbit_index_period
-                           < lt_diff[sub_idx].iloc[sub_tidx] * self.orbit_period):
+                        false_alarm = (
+                            ut_diff[sub_idx].iloc[sub_tidx] * orbit_index_period
+                            < lt_diff[sub_idx].iloc[sub_tidx]
+                            * self.orbit_period)
+                        if false_alarm:
 
                             # The change in UT is small compared to the change
                             # in the orbit index this is flagged as a false
