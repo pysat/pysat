@@ -449,6 +449,10 @@ class Meta(object):
                     # Set the data
                     if good_set:
                         self._data.loc[var, ikey] = to_be_set
+        elif isinstance(input_data, pds.Series):
+            # Outputs from Meta object are a Series. Thus, this takes in input
+            # from a Meta object. Set data using standard assignment via a dict.
+            self[data_vars] = input_data.to_dict()
 
         return
 
