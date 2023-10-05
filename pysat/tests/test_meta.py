@@ -1373,8 +1373,12 @@ class TestMetaImmutable(TestMeta):
         try:
             # Pandas does not support dataframe equality
             setattr(self.meta, 'data', pds.DataFrame())
+            
+            # Test that data is empty
+            assert self.meta.data.empty, "`meta.data` not updated correctly"
         except AttributeError:
             raise AssertionError("Couldn't update mutable property 'data'")
+        return
 
     @pytest.mark.parametrize("label", ['units', 'name', 'desc', 'notes',
                                        'min_val', 'max_val', 'fill_val'])
