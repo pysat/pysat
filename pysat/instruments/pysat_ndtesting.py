@@ -5,6 +5,7 @@ import datetime as dt
 import functools
 import numpy as np
 
+import pandas as pds
 import xarray as xr
 
 import pysat
@@ -163,6 +164,13 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
     data['altitude'] = ((epoch_name), altitude)
+
+    # Fake orbit number
+    fake_delta = dates[0] - (_test_dates[''][''] - pds.DateOffset(years=1))
+    data['orbit_num'] = ((epoch_name),
+                         mm_test.generate_fake_data(fake_delta.total_seconds(),
+                                                    uts, period=iperiod['lt'],
+                                                    cyclic=False))
 
     # Create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int).data
