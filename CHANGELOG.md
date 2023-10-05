@@ -15,12 +15,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     memory usage in the `load` method.
   * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
     reduce code duplication.
+  * Added the overwrite kwarg to `utils.registry.register_by_module`
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
   * Updated `Constellation.to_inst` method definition of coords, using dims
     to combine common dimensions instead.
   * Implement pyproject to manage metadata
+* Updated docstring references to `pysat.utils.files` in other modules.
   * Remove Sphinx cap
   * Add pandas cap
 

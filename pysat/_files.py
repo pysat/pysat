@@ -46,8 +46,8 @@ class Files(object):
         `month`, `day`, etc. will be filled in as needed using python
         string formatting.  The default file format structure is supplied in the
         instrument `list_files` routine. See
-        `pysat.files.parse_delimited_filenames` and
-        `pysat.files.parse_fixed_width_filenames` for more information.
+        `pysat.utils.files.parse_delimited_filenames` and
+        `pysat.utils.files.parse_fixed_width_filenames` for more information.
         (default=None)
     write_to_disk : bool
         If true, the list of Instrument files will be written to disk.
