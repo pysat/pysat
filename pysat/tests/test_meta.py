@@ -1373,7 +1373,7 @@ class TestMetaImmutable(TestMeta):
         try:
             # Pandas does not support dataframe equality
             setattr(self.meta, 'data', pds.DataFrame())
-            
+
             # Test that data is empty
             assert self.meta.data.empty, "`meta.data` not updated correctly"
         except AttributeError:
