@@ -506,6 +506,7 @@ class Meta(object):
                 # If tuple length is 2, index, column
                 new_index = match_name(self.var_case_name, key[0],
                                        self.data.index)
+
                 # Assume this is a label name
                 new_name = match_name(self.attr_case_name, key[1],
                                       self.data.columns)
