@@ -232,24 +232,6 @@ pysat_testing
    :members:
 
 
-.. _api-pysat-testing_xarray:
-
-pysat_testing_xarray
-^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pysat.instruments.pysat_testing_xarray
-   :members:
-
-
-.. _api-pysat-testing2d_xarray:
-
-pysat_testing2d_xarray
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pysat.instruments.pysat_testing2d_xarray
-   :members:
-
-
 .. _api-pysat-testmodel:
 
 pysat_testmodel
