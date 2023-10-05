@@ -8,5 +8,5 @@ numpydoc
 pysatSpaceWeather
 pytest-cov
 pytest-ordering
-sphinx<7.0
-sphinx_rtd_theme
+sphinx
+sphinx_rtd_theme>=1.2.2
