@@ -92,7 +92,7 @@ def register(module_names, overwrite=False):
         specify package name and instrument modules
     overwrite : bool
         If True, an existing registration will be updated
-        with the new module information.
+        with the new module information. (default=False)
 
     Raises
     ------
