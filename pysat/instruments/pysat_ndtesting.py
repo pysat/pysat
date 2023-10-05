@@ -33,10 +33,11 @@ concat_data = mm_test.concat_data
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag='', inst_id='', non_monotonic_index=False,
+def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
+         sim_multi_file_left=False, non_monotonic_index=False,
          non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=864, test_load_kwarg=None, max_latitude=90.0,
-         num_extra_time_coords=0):
+         num_samples=864, sample_rate='100S', test_load_kwarg=None,
+         max_latitude=90.0, num_extra_time_coords=0):
     """Load the test files.
 
     Parameters
@@ -49,6 +50,12 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     inst_id : str
         Instrument ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
+    sim_multi_file_right : bool
+        Adjusts date range to be 12 hours in the future or twelve hours beyond
+        `root_date`. (default=False)
+    sim_multi_file_left : bool
+        Adjusts date range to be 12 hours in the past or twelve hours before
+        `root_date`. (default=False)
     non_monotonic_index : bool
         If True, time index will be non-monotonic (default=False)
     non_unique_index : bool
@@ -63,6 +70,8 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=864)
+    sample_rate : str
+        Frequency of data points, using pandas conventions. (default='100s')
     test_load_kwarg : any
         Keyword used for pysat unit testing to ensure that functionality for
         custom keywords defined in instrument support functions is working
@@ -90,8 +99,16 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     drange = mm_test.define_range()
 
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
+                                               freq=sample_rate,
                                                start_time=start_time)
+    if sim_multi_file_right:
+        root_date = dt.datetime(2009, 1, 1, 12)
+    elif sim_multi_file_left:
+        root_date = dt.datetime(2008, 12, 31, 12)
+    else:
+        root_date = dt.datetime(2009, 1, 1)
+
     # TODO(#1094): Remove in pysat 3.2.0
     if malformed_index:
         # Warn that kwarg is deprecated and set new kwargs.
@@ -112,7 +129,7 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     # the root start a measurement is and use that info to create a signal
     # that is continuous from that start. Going to presume there are 5820
     # seconds per orbit (97 minute period).
-    time_delta = dates[0] - dt.datetime(2009, 1, 1)
+    time_delta = dates[0] - root_date
 
     # MLT runs 0-24 each orbit
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
