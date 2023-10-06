@@ -75,8 +75,8 @@ class Instrument(object):
         `month`, `day`, etc. will be filled in as needed using python
         string formatting.  The default file format structure is supplied
         in the instrument `list_files` routine. See
-        `pysat.files.parse_delimited_filenames` and
-        `pysat.files.parse_fixed_width_filenames` for more information.
+        `pysat.utils.files.parse_delimited_filenames` and
+        `pysat.utils.files.parse_fixed_width_filenames` for more information.
         The value will be None if not specified by the user at instantiation.
         (default=None)
     temporary_file_list : bool
