@@ -1369,7 +1369,7 @@ class TestMetaImmutable(TestMeta):
             setattr(self.meta, 'data', pds.DataFrame())
 
             # Test that data is empty
-            assert self.meta.data.empty, "`meta.data` not updated correctly"
+            assert self.meta.empty, "`meta.data` not updated correctly"
         except AttributeError:
             raise AssertionError("Couldn't update mutable property 'data'")
         return
