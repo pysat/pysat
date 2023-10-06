@@ -148,43 +148,6 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
     return out
 
 
-def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='time'):
-    """Use datetime instead of timestamp for Epoch.
-
-    .. deprecated:: 3.0.2
-        This routine has been deprecated with the addition of the kwargs
-        `epoch_unit` and `epoch_origin` to `pysat.utils.io.load_netcdf4`.
-        This routing will be removed in 3.2.0.
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        associated pysat.Instrument object
-    sec_mult : float
-        Multiplier needed to convert epoch time to seconds (default=1.0)
-    epoch_name : str
-        variable name for instrument index (default='Epoch')
-
-    Note
-    ----
-    If the variable represented by epoch_name is not a float64, data is passed
-    through unchanged.
-
-    """
-
-    warnings.warn(" ".join(["New kwargs added to `pysat.utils.io.load_netCDF4`",
-                            "for generalized handling, deprecated",
-                            "function will be removed in pysat 3.2.0+"]),
-                  DeprecationWarning, stacklevel=2)
-
-    if inst.data[epoch_name].dtype == 'float64':
-        inst.data[epoch_name] = pds.to_datetime(
-            [dt.datetime.utcfromtimestamp(int(np.floor(epoch_time * sec_mult)))
-             for epoch_time in inst.data[epoch_name]])
-
-    return
-
-
 def remove_leading_text(inst, target=None):
     """Remove leading text on variable names.
 
