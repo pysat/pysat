@@ -26,11 +26,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Implement pyproject to manage metadata
   * Remove Sphinx cap
   * Add pandas cap
-  * Remove deprecated `pysat_testing2d` instrument
-  * Remove deprecated meta children info
-  * Remove deprecated `pysat_testing_xarray` instrument
-  * Remove deprecated `pysat_testing2d_xarray` instrument
-  * Remove deprecated `instrument_test_class`
+  * Removed deprecated `pysat_testing2d` instrument
+  * Removed deprecated meta children info
+  * Removed deprecated `pysat_testing_xarray` instrument
+  * Removed deprecated `pysat_testing2d_xarray` instrument
+  * Removed deprecated `instrument_test_class`
+  * Removed deprecated `malformed_index` kwarg in test instrumennts
+  * Removed deprecated `convert_timestamp_to_datetime` function
+  * Removed deprecated `_test_download_travis` flag
+  * Removed deprecated `freq` kwarg from `download`
 
 [3.1.0] - 2023-05-31
 --------------------
