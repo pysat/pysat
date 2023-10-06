@@ -30,6 +30,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Remove deprecated meta children info
   * Remove deprecated `pysat_testing_xarray` instrument
   * Remove deprecated `pysat_testing2d_xarray` instrument
+  * Remove deprecated `instrument_test_class`
 
 [3.1.0] - 2023-05-31
 --------------------
