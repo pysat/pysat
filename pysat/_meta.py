@@ -395,9 +395,9 @@ class Meta(object):
                                 to_be_set, self.labels.label_type[iattr]):
                             # If this is a disagreement between byte data
                             # and an expected str, resolve it here
-                            if(isinstance(to_be_set, bytes)
-                               and str in pysat.utils.listify(
-                                   self.labels.label_type[iattr])):
+                            if all([isinstance(to_be_set, bytes),
+                                    str in pysat.utils.listify(
+                                    self.labels.label_type[iattr])]):
                                 to_be_set = core_utils.stringify(to_be_set)
                             else:
                                 # This type is incorrect, try casting it
