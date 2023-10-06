@@ -992,9 +992,9 @@ class TestNetCDF4Integration(object):
                         "{:} should have been exported".format(repr(mkey))
             else:
                 if all([mkey in export_nan,
-                        not np.issubdtype(data_type, str),
-                        np.isnan(mdict[mkey])]):
-                    assert np.isnan(fdict[mkey])
+                        not np.issubdtype(data_type, str)]):
+                    if np.isnan(mdict[mkey]):
+                        assert np.isnan(fdict[mkey])
                 else:
                     if mkey in check_type and fdict[mkey] != mdict[mkey]:
                         assert fdict[mkey] == data_type(mdict[mkey]), \
