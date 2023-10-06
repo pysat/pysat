@@ -21,13 +21,6 @@ and altitude in a xarray format. See :ref:`api-pysat-testing_xarray` for more
 details.
 
 
-pysat_testing2d
-^^^^^^^^^^^^^^^
-An instrument with satellite-like data like :py:mod:`pysat_testing`, but with a
-2D data variable, 'profile', that is similar to Radio Occultation data. See
-:ref:`api-pysat-testing2d` for more details.
-
-
 pysat_ndtesting
 ^^^^^^^^^^^^^^^
 An instrument with satellite-like data like :py:mod:`pysat_testing` that

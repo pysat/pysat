@@ -150,7 +150,7 @@ as fill, _FillValue, and FillVal.
 When writing files pysat processes metadata for both xarray and pandas before
 writing the file. For xarray, pysat leverages xarray's built-in file writing
 capabilities. For pandas, pysat interfaces with netCDF4 directly to translate
-both 1D and higher dimensional data into netCDF4.
+data into netCDF4.
 
 
 .. _tutorial-files-meta:

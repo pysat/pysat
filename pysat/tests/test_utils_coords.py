@@ -199,8 +199,7 @@ class TestCalcSLT(object):
 
         return
 
-    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "ndtesting"])
+    @pytest.mark.parametrize("name", ["testmodel", "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time(self, name):
         """Test calc_solar_local_time with longitude coordinates."""
 
@@ -216,8 +215,7 @@ class TestCalcSLT(object):
         assert self.py_inst['slt'].min() >= 0.0
         return
 
-    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "ndtesting"])
+    @pytest.mark.parametrize("name", ["testmodel", "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time_no_mod_multiday(self, name):
         """Test non modulated solar local time output for a 2 day range."""
 
@@ -235,8 +233,7 @@ class TestCalcSLT(object):
         assert self.py_inst['slt'].min() >= 0.0
         return
 
-    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "ndtesting"])
+    @pytest.mark.parametrize("name", ["testmodel", "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time_no_mod_ref_date(self, name):
         """Test non modulated SLT output for a 2 day range with a ref date."""
 
@@ -256,8 +253,7 @@ class TestCalcSLT(object):
         assert self.py_inst['slt'].min() >= 24.0
         return
 
-    @pytest.mark.parametrize("name", ["testmodel", "testing2d",
-                                      "ndtesting"])
+    @pytest.mark.parametrize("name", ["testmodel", "ndtesting"])
     def test_lon_broadcasting_calc_solar_local_time_no_mod(self, name):
         """Test SLT calc with longitude coordinates and no modulus."""
 

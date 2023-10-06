@@ -105,63 +105,6 @@ class TestMeta(object):
                     lkey.__repr__(), self.meta[self.dval, lkey].__repr__(),
                     self.default_val[lkey].__repr__())
 
-        assert 'children' not in self.meta.data.columns
-        assert self.dval not in self.meta.keys_nD()
-        return
-
-    def eval_ho_meta_settings(self, meta_dict):
-        """Test the Meta settings for higher order data.
-
-        Parameters
-        ----------
-        meta_dict : dict
-            Dict with meta data labels as keys and values to test against
-
-        """
-
-        # Test the ND metadata results
-        testing.assert_list_contains(self.frame_list,
-                                     list(self.meta.ho_data[self.dval].keys()))
-        testing.assert_list_contains(
-            self.frame_list, list(self.meta[self.dval]['children'].keys()))
-
-        # Test the meta settings at the base and nD level
-        for label in meta_dict.keys():
-            if label == 'meta':
-                testing.assert_lists_equal(
-                    list(self.meta[self.dval]['children'].attrs()),
-                    list(meta_dict[label].attrs()))
-                testing.assert_lists_equal(
-                    list(self.meta[self.dval]['children'].keys()),
-                    list(meta_dict[label].keys()))
-
-                for lvar in self.meta[self.dval]['children'].attrs():
-                    for dvar in self.meta[self.dval]['children'].keys():
-                        if lvar in self.default_nan:
-                            assert np.isnan(
-                                self.meta[self.dval]['children'][dvar, lvar]), \
-                                "{:s} child {:s} {:s} value {:} != NaN".format(
-                                    self.dval.__repr__(), dvar.__repr__(),
-                                    lvar.__repr__(),
-                                    self.meta[self.dval]['children'][
-                                        dvar, lvar].__repr__())
-                        else:
-                            assert (self.meta[self.dval]['children'][dvar, lvar]
-                                    == meta_dict[label][dvar, lvar]), \
-                                "{:s} child {:s} {:s} value {:} != {:}".format(
-                                    self.dval.__repr__(), dvar.__repr__(),
-                                    lvar.__repr__(),
-                                    self.meta[self.dval]['children'][
-                                        dvar, lvar].__repr__(),
-                                    meta_dict[label][dvar, lvar].__repr__())
-            else:
-                assert self.meta[self.dval]['children'].hasattr_case_neutral(
-                    label)
-                assert self.meta[self.dval, label] == meta_dict[label], \
-                    "{:s} label value {:} != {:}".format(
-                        label, self.meta[self.dval, label].__repr__(),
-                        meta_dict[label].__repr__())
-
         return
 
     # -----------------------
@@ -201,31 +144,6 @@ class TestMeta(object):
         assert str(ierr).find('expected tuple, list, or str') >= 0
         return
 
-    # TODO(#913): remove tests for 2D metadata
-    @pytest.mark.parametrize("parent_child", [
-        (['alt_profiles', 'profiles'], 'density'),
-        (['alt_profiles', 'profiles'], ['density', 'dummy_str']),
-        (['alt_profiles', 'profiles'], 'density', 'units'),
-        (['alt_profiles', 'profiles'], 'density', ['units', 'long_name'])])
-    def test_getitem_w_ho_child_slicing(self, parent_child):
-        """Test raises NotImplementedError with parent/child slicing.
-
-        Parameters
-        ----------
-        parent_child : list
-            List of inputs with unsupported parent/child slicing options
-
-        """
-
-        # Set the meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
-        with pytest.raises(NotImplementedError) as ierr:
-            self.meta[parent_child]
-
-        assert str(ierr).find("retrieve child meta data from multiple") >= 0
-        return
-
     def test_concat_strict_w_collision(self):
         """Test raises KeyError when new meta names overlap."""
 
@@ -242,25 +160,6 @@ class TestMeta(object):
             'Duplicated keys (variable names) in Meta.keys()',
             input_args=[concat_meta], input_kwargs={'strict': True})
 
-        return
-
-    # TODO(#913): remove tests for 2d metadata
-    def test_concat_strict_w_ho_collision(self):
-        """Test raises KeyError when higher-order variable nams overlap."""
-
-        # Set the meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
-        # Create a second object with the same higher-order data variables
-        concat_meta = pysat.Meta()
-        for dvar in self.meta.keys_nD():
-            concat_meta[dvar] = self.meta[dvar]
-
-        # Test the error message
-        testing.eval_bad_input(
-            self.meta.concat, KeyError,
-            'Duplicated keys (variable names) in Meta.keys()', [concat_meta],
-            {'strict': True})
         return
 
     def test_multiple_meta_assignment_error(self):
@@ -316,20 +215,6 @@ class TestMeta(object):
         # Raise the expected error and test the message
         testing.eval_bad_input(self.meta.from_csv, ValueError, err_msg,
                                input_kwargs=kwargs)
-        return
-
-    # TODO(#913): remove tests for 2D metadata
-    def test_meta_rename_bad_ho_input(self):
-        """Test raises ValueError when treating normal data like HO data."""
-
-        # Initialize the meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
-        # Set a bad mapping dictionary
-        mapper = {'mlt': {'mlt_profile': 'mlt_density_is_not_real'}}
-
-        testing.eval_bad_input(self.meta.rename, ValueError,
-                               "unknown mapped value at 'mlt'", [mapper])
         return
 
     # -------------------------
@@ -459,11 +344,9 @@ class TestMeta(object):
         assert out.find('Meta(') >= 0
         return
 
-    # TODO(#913): remove tests for 2d metadata
     @pytest.mark.parametrize('long_str', [True, False])
     @pytest.mark.parametrize('inst_kwargs',
-                             [None, {'platform': 'pysat', 'name': 'testing'},
-                              {'platform': 'pysat', 'name': 'testing2d'}])
+                             [None, {'platform': 'pysat', 'name': 'testing'}])
     def test_str(self, long_str, inst_kwargs):
         """Test long string output with custom meta data.
 
@@ -485,7 +368,6 @@ class TestMeta(object):
         # Evaluate the common parts of the output string
         assert out.find('pysat Meta object') >= 0
         assert out.find('standard variables') > 0
-        assert out.find('ND variables') > 0
         assert out.find('global attributes') > 0
 
         # Evaluate the extra parts of the long output string
@@ -501,13 +383,8 @@ class TestMeta(object):
             else:
                 assert out.find('Standard Metadata variables:') < 0
 
-            if inst_kwargs is not None and inst_kwargs['name'] == 'testing2d':
-                assert out.find('ND Metadata variables:') > 0
-            else:
-                assert out.find('ND Metadata variables:') < 0
         else:
             assert out.find('Standard Metadata variables:') < 0
-            assert out.find('ND Metadata variables:') < 0
         return
 
     def test_self_equality(self):
@@ -536,7 +413,7 @@ class TestMeta(object):
         return
 
     # TODO(#908): remove tests for deprecated instruments
-    @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
+    @pytest.mark.parametrize("inst_name", ["testing",
                                            "ndtesting", "testing_xarray",
                                            "testmodel"])
     def test_equality_w_copy(self, inst_name):
@@ -576,41 +453,6 @@ class TestMeta(object):
         assert emeta != self.meta, "meta equality not detectinng differences"
         return
 
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize('val_dict', [
-        {'units': 'U', 'long_name': 'HO Val', 'radn': 'raiden'},
-        {'units': 'MetaU', 'long_name': 'HO Val'}])
-    def test_inequality_with_higher_order_meta(self, val_dict):
-        """Test inequality with higher order metadata.
-
-        Parameters
-        ----------
-        val_dict : dict
-            Information to be added to higher order metadata variable
-
-        """
-
-        meta_dict = {'units': {'ho_val': 'U', 'ho_prof': 'e-'},
-                     'long_name': {'ho_val': 'HO Val', 'ho_prof': 'HO Profile'}}
-
-        # Set the default meta object
-        self.meta['ho_data'] = pysat.Meta(pds.DataFrame(meta_dict))
-
-        # Set the altered meta object
-        cmeta = pysat.Meta()
-
-        for vkey in val_dict.keys():
-            if vkey in meta_dict.keys():
-                meta_dict[vkey]['ho_val'] = val_dict[vkey]
-            else:
-                meta_dict[vkey] = {'ho_val': val_dict[vkey]}
-
-        cmeta['ho_data'] = pysat.Meta(pds.DataFrame(meta_dict))
-
-        # Evaluate the inequality
-        assert cmeta != self.meta
-        return
-
     @pytest.mark.parametrize("label_key", ["units", "name", "notes", "desc",
                                            "min_val", "max_val", "fill_val"])
     def test_value_inequality(self, label_key):
@@ -648,7 +490,7 @@ class TestMeta(object):
         return
 
     # TODO(#908): remove tests for deprecated instruments
-    @pytest.mark.parametrize("inst_name", ["testing", "testing2d",
+    @pytest.mark.parametrize("inst_name", ["testing",
                                            "ndtesting", "testing_xarray",
                                            "testmodel"])
     def test_pop(self, inst_name):
@@ -671,16 +513,12 @@ class TestMeta(object):
 
             # Test the popped object labels
             pop_attrs = list(mpop.keys())
-            pop_attrs.pop(pop_attrs.index('children'))
             testing.assert_lists_equal(pop_attrs, list(self.meta.attrs()))
 
             # Test the popped object values
             pop_values = [mpop[pattr] for pattr in pop_attrs]
             comp_values = [mcomp[pattr] for pattr in pop_attrs]
             testing.assert_lists_equal(pop_values, comp_values)
-
-            if mpop['children'] is not None:
-                assert mpop['children'] == mcomp['children']
 
             # Test that the popped variable is no longer in the main object
             assert dvar not in self.meta.keys(), "pop did not remove metadata"
@@ -793,8 +631,7 @@ class TestMeta(object):
             self.eval_meta_settings()
         return
 
-    # TODO(#913): remove tests for 2D metadata
-    @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
+    @pytest.mark.parametrize('inst_name', ['testing'])
     @pytest.mark.parametrize('num_mvals', [0, 1, 3])
     @pytest.mark.parametrize('num_dvals', [0, 1, 3])
     def test_selected_meta_retrieval(self, inst_name, num_mvals, num_dvals):
@@ -819,20 +656,6 @@ class TestMeta(object):
         mvals = [getattr(self.meta.labels, mattr)
                  for mattr in list(self.meta_labels.keys())[:num_mvals]]
 
-        # If dvals is greater than zero and there is higher order data,
-        # make sure at least one is included
-        nd_inds = list()
-        if len(dvals) > 0:
-            nd_vals = [key for key in self.meta.keys_nD()]
-
-            if len(nd_vals) > 0:
-                nd_inds = [dvals.index(self.dval) for self.dval in nd_vals
-                           if self.dval in dvals]
-
-                if len(nd_inds) == 0:
-                    dvals[0] = nd_vals[0]
-                    nd_inds = [0]
-
         # Retrieve meta data for desired values
         sel_meta = self.meta[dvals, mvals]
 
@@ -840,21 +663,6 @@ class TestMeta(object):
         assert isinstance(sel_meta, pds.DataFrame)
         testing.assert_lists_equal(dvals, list(sel_meta.index))
         testing.assert_lists_equal(mvals, list(sel_meta.columns))
-
-        # If there is higher order data, test the retrieval
-        for pind in nd_inds:
-            # Get the desired number of child variables
-            self.dval = dvals[pind]
-            cvals = [kk for kk in self.meta[self.dval].children.keys()][
-                :num_dvals]
-
-        # Retrieve meta data for desired values
-            sel_meta = self.meta[self.dval, cvals, mvals]
-
-            # Evaluate retrieved data
-            assert isinstance(sel_meta, pds.DataFrame)
-            testing.assert_lists_equal(cvals, list(sel_meta.index))
-            testing.assert_lists_equal(mvals, list(sel_meta.columns))
 
         return
 
@@ -962,8 +770,7 @@ class TestMeta(object):
 
         return
 
-    # TODO(#913): remove tests for 2D metadata
-    @pytest.mark.parametrize('inst_name', ['testing', 'testing2d'])
+    @pytest.mark.parametrize('inst_name', ['testing'])
     def test_assign_nonstandard_metalabels(self, inst_name):
         """Test labels do not conform to the standard values if set that way.
 
@@ -1524,449 +1331,6 @@ class TestMeta(object):
 
         return
 
-    # -------------------------------
-    # Tests for higher order metadata
-
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize('meta_dict', [
-        None, {'units': 'V', 'long_name': 'test name'},
-        {'units': 'V', 'long_name': 'test name',
-         'meta': pysat.Meta(metadata=pds.DataFrame(
-             {'units': {'dummy_frame1': 'A', 'dummy_frame2': ''},
-              'desc': {'dummy_frame1': '',
-                       'dummy_frame2': 'A filler description'},
-              'long_name': {'dummy_frame1': 'Dummy 1',
-                            'dummy_frame2': 'Dummy 2'}}))},
-        {'units': 'V', 'long_name': 'test name', 'bananas': 0,
-         'meta': pysat.Meta(metadata=pds.DataFrame(
-             {'units': {'dummy_frame1': 'A', 'dummy_frame2': ''},
-              'desc': {'dummy_frame1': '',
-                       'dummy_frame2': 'A filler description'},
-              'long_name': {'dummy_frame1': 'Dummy 1',
-                            'dummy_frame2': 'Dummy 2'},
-              'bananas': {'dummy_frame1': 1, 'dummy_frame2': 2}}))}])
-    def test_inst_ho_data_assignment(self, meta_dict):
-        """Test the assignment of the higher order metadata.
-
-        Parameters
-        ----------
-        meta_dict : dict or NoneType
-            Dictionary used to create test metadata
-
-        """
-
-        # Initialize the Meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-
-        # Alter the Meta data
-        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
-                              columns=self.frame_list)
-        inst_data = [frame for i in range(self.testInst.index.shape[0])]
-        self.dval = 'test_val'
-
-        if meta_dict is None:
-            self.testInst[self.dval] = inst_data
-            meta_dict = {'units': '', 'long_name': self.dval, 'desc': ''}
-        else:
-            meta_dict.update({'data': inst_data})
-            self.testInst[self.dval] = meta_dict
-
-            # Remove data key for evaluation
-            del meta_dict['data']
-
-        self.meta = self.testInst.meta
-
-        # Test the ND metadata results
-        self.eval_ho_meta_settings(meta_dict)
-        return
-
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize("num_ho, num_lo", [(1, 1), (2, 2)])
-    def test_assign_mult_higher_order_meta_from_dict(self, num_ho, num_lo):
-        """Test assign higher order metadata from dict with multiple types.
-
-        Parameters
-        ----------
-        num_ho : int
-            Number of higher order data values to initialize
-        num_lo : int
-            Number of lower order data valuess to initialize
-
-        """
-
-        # Initialize the lower order evaluation data
-        self.default_val['units'] = 'U'
-
-        # Initialize the higher-order meta data
-        ho_meta = pysat.Meta()
-        for flist in self.frame_list:
-            ho_meta[flist] = {'units': 'U', 'long_name': flist}
-
-        # Initialize the meta dict for setting the data values
-        dvals = ['higher_{:d}'.format(i) for i in range(num_ho)]
-        dvals.extend(['lower_{:d}'.format(i) for i in range(num_lo)])
-
-        meta_dict = {'units': ['U' for i in range(len(dvals))],
-                     'long_name': [val for val in dvals],
-                     'meta': [ho_meta for i in range(num_ho)]}
-        meta_dict['meta'].extend([None for i in range(num_lo)])
-
-        # Assign and test the meta data
-        self.meta[dvals] = meta_dict
-
-        for i, self.dval in enumerate(dvals):
-            if i < num_ho:
-                eval_dict = {label: meta_dict[label][i]
-                             for label in meta_dict.keys()}
-                self.eval_ho_meta_settings(eval_dict)
-            else:
-                self.eval_meta_settings()
-        return
-
-    # TODO(#789): remove tests for higher order meta
-    def test_inst_ho_data_assign_meta_then_data(self):
-        """Test assignment of higher order metadata before assigning data."""
-
-        # Initialize the Meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
-
-        # Alter the Meta data
-        frame = pds.DataFrame({fkey: np.arange(10) for fkey in self.frame_list},
-                              columns=self.frame_list)
-        inst_data = [frame for i in range(self.testInst.index.shape[0])]
-        meta_dict = {'data': inst_data, 'units': 'V', 'long_name': 'The Doors',
-                     'meta': pysat.Meta(metadata=pds.DataFrame(
-                         {'units': {dvar: "{:d}".format(i)
-                                    for i, dvar in enumerate(self.frame_list)},
-                          'desc': {dvar: "{:s} desc".format(dvar)
-                                   for dvar in self.frame_list},
-                          'long_name': {dvar: dvar
-                                        for dvar in self.frame_list}}))}
-        self.dval = 'test_data'
-
-        # Assign the metadata
-        self.testInst[self.dval] = meta_dict
-
-        # Alter the data
-        self.testInst[self.dval] = inst_data
-
-        # Test the ND metadata results
-        self.meta = self.testInst.meta
-        del meta_dict['data']
-        self.eval_ho_meta_settings(meta_dict)
-        return
-
-    # TODO(#913): remove tests for 2D metadata
-    def test_inst_ho_data_assign_meta_different_labels(self):
-        """Test the higher order assignment of custom metadata labels."""
-
-        # Initialize the Meta data
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
-        # Alter the higher order metadata
-        ho_meta = pysat.Meta(labels={'units': ('barrels', str),
-                                     'desc': ('Monkeys', str),
-                                     'meta': ('meta', object)})
-        self.frame_list = list(
-            self.testInst.meta['profiles']['children'].keys())
-        for dvar in self.frame_list:
-            if dvar == 'density':
-                ho_meta[dvar] = {'barrels': 'A'}
-            else:
-                ho_meta[dvar] = {'Monkeys': 'are fun', 'bananas': 2}
-
-        # The 'units', 'desc' and other labels used on self.testInst are
-        # applied to the input metadata to ensure everything remains
-        # consistent across the object.
-        self.testInst['profiles'] = {'data': self.testInst.data['profiles'],
-                                     'units': 'V', 'long_name': 'The Doors',
-                                     'meta': ho_meta}
-        self.meta = self.testInst.meta
-
-        # Test the nD metadata
-        assert self.testInst.meta['profiles', 'long_name'] == 'The Doors'
-        testing.assert_list_contains(self.frame_list,
-                                     self.meta.ho_data['profiles'])
-        testing.assert_list_contains(self.frame_list,
-                                     self.meta['profiles']['children'])
-
-        for label in ['units', 'desc']:
-            assert self.meta['profiles']['children'].hasattr_case_neutral(label)
-
-        assert self.meta['profiles']['children']['density', 'units'] == 'A'
-        assert self.meta['profiles']['children']['density', 'desc'] == ''
-
-        for dvar in ['dummy_str', 'dummy_ustr']:
-            assert self.meta['profiles']['children'][dvar, 'desc'] == 'are fun'
-            assert self.meta['profiles']['children'][dvar, 'bananas'] == 2
-        return
-
-    # TODO(#789): remove tests for higher order meta
-    def test_concat_w_ho(self):
-        """Test `meta.concat` adds new meta objects with higher order data."""
-
-        # Create meta data to concatenate
-        meta2 = pysat.Meta()
-        meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        meta2['new4'] = pysat.Meta(pds.DataFrame({
-            'units': {'new41': 'hey4'}, 'long_name': {'new41': 'crew_brew'},
-            'bob_level': {'new41': 'max'}}))
-
-        # Perform and test for successful concatenation
-        self.meta = self.meta.concat(meta2)
-        assert self.meta['new3'].units == 'hey3'
-        assert self.meta['new4'].children['new41'].units == 'hey4'
-        return
-
-    # TODO(#913): remove tests for 2d metadata
-    def test_concat_not_strict_w_ho_collision(self):
-        """Test non-strict concat with overlapping higher-order data."""
-
-        # Set the meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
-        # Create a second object with the same higher-order data variables
-        concat_meta = pysat.Meta()
-        for dvar in self.meta.keys_nD():
-            concat_meta[dvar] = self.meta[dvar]
-
-            # Change the units of the HO data variables
-            for cvar in concat_meta[dvar].children.keys():
-                # HERE FIX, DOESN'T WORK
-                concat_meta[dvar].children[cvar] = {
-                    concat_meta.labels.units: "UpdatedUnits"}
-
-        # Concatenate the data
-        self.meta = self.meta.concat(concat_meta, strict=False)
-
-        # Test that the Meta data kept the original values
-        testing.assert_list_contains(list(concat_meta.keys_nD()),
-                                     list(self.meta.keys_nD()))
-
-        for dvar in concat_meta.keys_nD():
-            testing.assert_lists_equal(list(concat_meta[dvar].children.keys()),
-                                       list(self.meta[dvar].children.keys()))
-
-            for cvar in concat_meta[dvar].children.keys():
-                assert self.meta[dvar].children[
-                    cvar, self.meta.labels.units].find('Updated') >= 0
-        return
-
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
-                                       'MeTa_lAbEl'])
-    def test_ho_attribute_name_case(self, label):
-        """Test that `meta.attribute_case_name` preserves the HO stored case.
-
-        Parameters
-        ----------
-        label : str
-            Label name
-
-        """
-
-        # Only set `label` in the child data variable
-        self.dval = 'test_val'
-        self.meta[self.dval] = self.default_val
-        cmeta = pysat.Meta()
-        cval = "_".join([self.dval, "child"])
-        cmeta[cval] = {label: 'Test meta data for child meta label'}
-        self.meta[self.dval] = cmeta
-
-        # Test the meta method using different input variations
-        assert self.meta.attr_case_name(label.upper()) == label
-        assert self.meta.attr_case_name(label.lower()) == label
-        assert self.meta.attr_case_name(label.capitalize()) == label
-        assert self.meta.attr_case_name(label) == label
-        return
-
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
-                                       'MeTa_lAbEl'])
-    def test_ho_hasattr_case_neutral(self, label):
-        """Test `meta.hasattr_case_neutral` identifies the HO label name.
-
-        Parameters
-        ----------
-        label : str
-            Label name
-
-        """
-
-        # Only set `label` in the child data variable
-        self.dval = 'test_val'
-        self.meta[self.dval] = self.default_val
-        cmeta = pysat.Meta()
-        cval = "_".join([self.dval, "child"])
-        cmeta[cval] = {label: 'Test meta data for child meta label'}
-        self.meta[self.dval] = cmeta
-
-        # Test the meta method using different input variations
-        assert self.meta[self.dval].children.hasattr_case_neutral(label.upper())
-        assert self.meta[self.dval].children.hasattr_case_neutral(label.lower())
-        assert self.meta[self.dval].children.hasattr_case_neutral(
-            label.capitalize())
-        assert self.meta[self.dval].children.hasattr_case_neutral(label)
-        return
-
-    # TODO(#913): remove tests for 2D metadata
-    def test_ho_meta_rename_function(self):
-        """Test `meta.rename` method with ho data using a function."""
-
-        # Set the meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
-        # Rename the meta variables to be all upper case, this will differ
-        # from the Instrument variables, as pysat defaults to lower case
-        self.meta.rename(str.upper)
-
-        for dvar in self.testInst.vars_no_time:
-            mvar = dvar.upper()
-
-            # Test the lower order variables
-            assert dvar not in self.meta.keys(), \
-                "variable not renamed: {:}".format(repr(dvar))
-            assert mvar in self.meta.keys(), \
-                "renamed variable missing: {:}".format(repr(mvar))
-
-            if mvar in self.meta.keys_nD():
-                # Get the variable names from the children
-                if hasattr(self.testInst[dvar][0], 'columns'):
-                    columns = getattr(self.testInst[dvar][0], 'columns')
-                else:
-                    columns = [dvar]
-
-                # Test the higher order variables
-                for cvar in columns:
-                    cmvar = cvar.upper()
-                    assert cmvar in self.meta[mvar].children, \
-                        "renamed HO variable missing: {:} ({:})".format(
-                            repr(cmvar), repr(mvar))
-
-        return
-
-    # TODO(#913): remove tests for 2D metadata
-    def test_ho_meta_rename_dict(self):
-        """Test `meta.rename` method with ho data using a dict."""
-
-        # Set the meta object
-        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing2d'})
-
-        # Create a renaming dictionary, which only changes up to four of the
-        # variable names
-        rename_dict = {dvar: dvar.upper()
-                       for i, dvar in enumerate(self.testInst.vars_no_time)
-                       if i < 3 or dvar == 'profiles'}
-        rename_dict['profiles'] = {'density': 'DeNsItY'}
-
-        # Rename the meta variables to be all upper case, this will differ
-        # from the Instrument variables, as pysat defaults to lower case
-        self.meta.rename(rename_dict)
-
-        for dvar in self.testInst.vars_no_time:
-            # Test the lower order variables
-            if dvar in rename_dict.keys():
-                mvar = rename_dict[dvar]
-
-                if isinstance(mvar, dict):
-                    assert dvar in self.meta.keys_nD()
-
-                    # Get the variable names from the children
-                    if hasattr(self.testInst[dvar][0], 'columns'):
-                        columns = getattr(self.testInst[dvar][0], 'columns')
-                    else:
-                        columns = [dvar]
-
-                    # Test the higher order variables.
-                    for cvar in columns:
-                        if cvar in mvar.keys():
-                            cmvar = mvar[cvar]
-                            assert cmvar in self.meta[dvar].children.keys(), \
-                                "renamed HO variable missing: {:} ({:})".format(
-                                    repr(cmvar), repr(dvar))
-                        else:
-                            assert cvar in self.meta[dvar].children.keys(), \
-                                "unmapped HO var altered: {:} ({:})".format(
-                                    repr(cvar), repr(dvar))
-                else:
-                    assert dvar not in self.meta.keys(), \
-                        "variable not renamed: {:}".format(repr(dvar))
-                    assert mvar in self.meta.keys(), \
-                        "renamed variable missing: {:}".format(repr(mvar))
-            else:
-                mvar = dvar
-                assert dvar in self.meta.keys(), \
-                    "unmapped variable renamed: {:}".format(repr(dvar))
-
-        return
-
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize("label", ['meta_label', 'META_LABEL', 'Meta_Label',
-                                       'MeTa_lAbEl'])
-    def test_get_attribute_name_case_preservation_w_higher_order_list_in(self,
-                                                                         label):
-        """Test that get attribute names preserves the case with ho metadata.
-
-        Parameters
-        ----------
-        label : str
-            String label used for testing metadata
-
-        """
-
-        # Set a meta data variable
-        self.dval = 'test_val'
-        self.meta[self.dval] = self.default_val
-
-        # Set an attribute with case in `label`
-        cval = ''.join([self.dval, '21'])
-        meta2 = pysat.Meta()
-        meta2[cval] = {label: 'Test meta data for meta label'}
-
-        # Attach child metadata to root meta
-        dval2 = ''.join([self.dval, '2'])
-        self.meta[dval2] = meta2
-
-        # Attempt to assign to same label at root but potentially different
-        # case.
-        self.meta[self.dval] = {label.lower(): 'Test meta data for meta label'}
-
-        # Create inputs and get the attribute case names
-        ins = [label.upper(), label.lower(), label.capitalize(),
-               label]
-        outputs = self.meta.attr_case_name(ins)
-
-        targets = [label] * len(ins)
-
-        # Confirm original input case retained.
-        assert np.all(outputs == targets)
-
-        return
-
-    # TODO(#789): remove tests for higher order meta
-    def test_ho_data_retrieval_case_insensitive(self):
-        """Test that higher order data variables are case insensitive."""
-
-        # Initalize the meta data
-        self.dval = "test_val"
-        self.meta[self.dval] = self.default_val
-
-        cmeta = pysat.Meta()
-        cval = '_'.join([self.dval, 'child'])
-        cmeta[cval] = self.default_val
-        self.meta[self.dval] = cmeta
-
-        # Test that the data value is present using real key and upper-case
-        # version of that key
-        assert self.dval in self.meta.keys()
-
-        # Test the child variable, which should only be present through the
-        # children attribute. Cannot specify keys for case-insensitive look-up.
-        assert cval not in self.meta.keys()
-        assert cval in self.meta[self.dval].children.keys()
-        assert cval.upper() in self.meta[self.dval].children
-        return
-
 
 class TestMetaImmutable(TestMeta):
     """Unit tests for immutable metadata."""
@@ -1999,33 +1363,22 @@ class TestMetaImmutable(TestMeta):
         del self.mutable
         return
 
-    # TODO(#789): remove tests for higher order meta
-    @pytest.mark.parametrize("prop,set_val", [('data', pds.DataFrame()),
-                                              ('ho_data', {})])
-    def test_meta_mutable_properties(self, prop, set_val):
-        """Test that @properties are always mutable.
-
-        Parameters
-        ----------
-        prop : str
-            Attribute on `self.meta` to be tested
-        set_val : any
-            Value to be assigned to `prop` on `self.meta`
-
-        """
+    def test_meta_mutable_properties(self):
+        """Test that @properties are always mutable."""
 
         # Set anything that can be immutable to be immutable
         self.meta.mutable = self.mutable
 
         # Test that data and label values can be updated
-        for prop, set_val in [('data', pds.DataFrame()), ('ho_data', {})]:
-            try:
-                # Pandas does not support dataframe equality
-                setattr(self.meta, prop, set_val)
-            except AttributeError:
-                raise AssertionError(
-                    "Couldn't update mutable property {:}".format(
-                        prop.__repr__()))
+        try:
+            # Pandas does not support dataframe equality
+            setattr(self.meta, 'data', pds.DataFrame())
+
+            # Test that data is empty
+            assert self.meta.empty, "`meta.data` not updated correctly"
+        except AttributeError:
+            raise AssertionError("Couldn't update mutable property 'data'")
+        return
 
     @pytest.mark.parametrize("label", ['units', 'name', 'desc', 'notes',
                                        'min_val', 'max_val', 'fill_val'])
@@ -2197,73 +1550,6 @@ class TestMetaMutable(object):
         return
 
 
-class TestDeprecation(object):
-    """Unit tests for DeprecationWarnings in the Meta class."""
-
-    def setup_method(self):
-        """Set up the unit test environment for each method."""
-
-        warnings.simplefilter("always", DeprecationWarning)
-        self.meta = pysat.Meta()
-        self.warn_msgs = []
-        return
-
-    def teardown_method(self):
-        """Clean up the unit test environment after each method."""
-
-        del self.meta, self.warn_msgs
-        return
-
-    def test_higher_order_meta_deprecation(self):
-        """Test that setting higher order meta raises DeprecationWarning."""
-
-        # Initialize higher-order metadata to add to the main meta object
-        ho_meta = pysat.Meta()
-        ho_meta['series_profiles'] = {'long_name': 'series'}
-
-        # Raise and catch warnings
-        with warnings.catch_warnings(record=True) as war:
-            self.meta['series_profiles'] = {'meta': ho_meta,
-                                            'long_name': 'series'}
-
-        # Evaluate warnings
-        self.warn_msgs = ["Support for higher order metadata has been"]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, self.warn_msgs)
-
-        return
-
-    def test_higher_order_meta_rename_deprecation(self):
-        """Test that renaming higher order meta raises DeprecationWarning."""
-
-        # Initialize higher-order metadata to add to the main meta object
-        ho_meta = pysat.Meta()
-        ho_meta['series_profiles'] = {'long_name': 'series'}
-        self.meta['series_profiles'] = {'meta': ho_meta,
-                                        'long_name': 'series'}
-
-        # Raise and catch warnings
-        with warnings.catch_warnings(record=True) as war:
-            self.meta.rename(str.upper)
-
-        # Evaluate warnings
-        self.warn_msgs = ["Support for higher order metadata has been"]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, self.warn_msgs)
-
-        return
-
-
 class TestToDict(object):
     """Test `.to_dict` method using pysat test Instruments."""
 
@@ -2302,40 +1588,26 @@ class TestToDict(object):
         # Confirm type
         assert isinstance(self.out, dict)
 
-        # Check for higher order products
-        ho_vars = []
-        for var in self.testInst.meta.keys():
-            if 'children' in self.testInst.meta[var]:
-                if self.testInst.meta[var]['children'] is not None:
-                    for subvar in self.testInst.meta[var]['children'].keys():
-                        ho_vars.append('_'.join([var, subvar]))
-
         # Confirm the contents of the output for variables
         for var in self.out.keys():
-            if var not in ho_vars:
-                for label in self.out[var]:
-                    assert label in self.testInst.meta.data.columns
-                    assert testing.nan_equal(self.out[var][label],
-                                             self.testInst.meta[var][label]), \
-                        'Differing values.'
+            for label in self.out[var]:
+                assert label in self.testInst.meta.data.columns
+                assert testing.nan_equal(self.out[var][label],
+                                         self.testInst.meta[var][label]), \
+                    'Differing values.'
 
         # Confirm case
         if not preserve_case:
             # Outputs should all be lower case
             for key in self.out.keys():
                 assert key == key.lower(), 'Output not lower case.'
-            for key in ho_vars:
-                assert key == key.lower(), 'Output not lower case.'
-                assert key.lower() in self.out, 'Missing output variable.'
         else:
             # Case should be preserved
             for key in self.out.keys():
                 assert key == self.testInst.meta.var_case_name(key), \
                     'Output case different.'
-            for key in ho_vars:
-                assert key in self.out, 'Output case different, or missing.'
 
-        num_target_vars = len(ho_vars) + len(list(self.testInst.meta.keys()))
+        num_target_vars = len(list(self.testInst.meta.keys()))
         assert num_target_vars == len(self.out), \
             'Different number of variables.'
 
@@ -2368,23 +1640,6 @@ class TestToDictXarrayND(TestToDict):
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          num_samples=5, use_header=True)
         self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
-        self.testInst.load(date=self.stime)
-
-        # For output
-        self.out = None
-
-        return
-
-
-class TestToDictPandas2D(TestToDict):
-    """Test `.to_dict` methods using pysat test Instruments."""
-
-    def setup_method(self):
-        """Set up the unit test environment for each method."""
-
-        self.testInst = pysat.Instrument('pysat', 'testing2d',
-                                         num_samples=5, use_header=True)
-        self.stime = pysat.instruments.pysat_testing2d._test_dates['']['']
         self.testInst.load(date=self.stime)
 
         # For output
