@@ -23,6 +23,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Implement pyproject to manage metadata
   * Remove Sphinx cap
   * Add pandas cap
+  * Update usage of whitespace and if statements (E275)
+  * Remove hacking cap
 
 [3.1.0] - 2023-05-31
 --------------------
