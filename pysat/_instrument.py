@@ -75,8 +75,8 @@ class Instrument(object):
         `month`, `day`, etc. will be filled in as needed using python
         string formatting.  The default file format structure is supplied
         in the instrument `list_files` routine. See
-        `pysat.files.parse_delimited_filenames` and
-        `pysat.files.parse_fixed_width_filenames` for more information.
+        `pysat.utils.files.parse_delimited_filenames` and
+        `pysat.utils.files.parse_fixed_width_filenames` for more information.
         The value will be None if not specified by the user at instantiation.
         (default=None)
     temporary_file_list : bool
@@ -1051,30 +1051,6 @@ class Instrument(object):
             # Input dict must have data in 'data',
             # the rest of the keys are presumed to be metadata
             in_data = new.pop('data')
-
-            # TODO(#908): remove code below with removal of 2D pandas support.
-            if hasattr(in_data, '__iter__'):
-                if not isinstance(in_data, pds.DataFrame) and isinstance(
-                        next(iter(in_data), None), pds.DataFrame):
-                    # Input is a list_like of frames, denoting higher order data
-                    warnings.warn(" ".join(["Support for 2D pandas instrument",
-                                            "data has been deprecated and will",
-                                            "be removed in 3.2.0+.  Please",
-                                            "either raise an issue with the",
-                                            "developers or modify the load",
-                                            "statement to use an",
-                                            "xarray.Dataset."]),
-                                  DeprecationWarning, stacklevel=2)
-
-                    if ('meta' not in new) and (key not in self.meta.keys_nD()):
-                        # Create an empty Meta instance but with variable names.
-                        # This will ensure the correct defaults for all
-                        # subvariables.  Meta can filter out empty metadata as
-                        # needed, the check above reduces the need to create
-                        # Meta instances.
-                        ho_meta = pysat.Meta(**self.meta_kwargs)
-                        ho_meta[in_data[0].columns] = {}
-                        self.meta[key] = ho_meta
 
             # Assign data and any extra metadata
             self.data[key] = in_data
@@ -2839,33 +2815,6 @@ class Instrument(object):
             inst.rename(str.upper)
 
 
-        If using a pandas-type Instrument with higher-order data and a
-        dictionary mapper, the upper-level data key must contain a dictionary
-        for renaming the dependent data variables.  The upper-level data key
-        cannot be renamed. Note that this rename will be invoked individually
-        for all times in the dataset.
-        ::
-
-            # Applies to higher-order datasets that are loaded into pandas
-            inst = pysat.Instrument('pysat', 'testing2D')
-            inst.load(2009, 1)
-            mapper = {'uts': 'pysat_uts',
-                      'profiles': {'density': 'pysat_density'}}
-            inst.rename(mapper)
-            print(inst[0, 'profiles'].columns)  # 'density' will be updated
-
-            # To rename higher-order data at both levels using a dictionary,
-            # you need two calls
-            mapper2 = {'profiles': 'pysat_profile'}
-            inst.rename(mapper2)
-            print(inst[0, 'pysat_profile'].columns)
-
-            # A function will affect both standard and higher-order data.
-            # Remember this function also updates the Meta data.
-            inst.rename(str.capitalize)
-            print(inst.meta['Pysat_profile']['children'])
-
-
         pysat supports differing case for variable labels across the data and
         metadata objects attached to an Instrument. Since Meta is
         case-preserving (on assignment) but case-insensitive to access, the
@@ -2875,10 +2824,9 @@ class Instrument(object):
         ::
 
             # Example with lowercase_data_labels
-            inst = pysat.Instrument('pysat', 'testing2D')
+            inst = pysat.Instrument('pysat', 'testing')
             inst.load(2009, 1)
-            mapper = {'uts': 'Pysat_UTS',
-                     'profiles': {'density': 'PYSAT_density'}}
+            mapper = {'uts': 'Pysat_UTS'}
             inst.rename(mapper, lowercase_data_labels=True)
 
             # Note that 'Pysat_UTS' was applied to data as 'pysat_uts'
@@ -2911,82 +2859,18 @@ class Instrument(object):
             # Initialize dict for renaming normal pandas data
             pdict = {}
 
-            # Collect normal variables and rename higher order variables
+            # Collect and rename variables
             for vkey in self.variables:
                 map_key = pysat.utils.get_mapped_value(vkey, mapper)
 
                 if map_key is not None:
-                    # Treat higher-order pandas and normal pandas separately
-                    if vkey in self.meta.keys_nD():
-                        # Variable name is in higher order list
-                        hdict = {}
-                        if isinstance(map_key, dict):
-                            # Changing a variable name within a higher order
-                            # object using a dictionary. First ensure the
-                            # variable exist.
-                            for hkey in map_key.keys():
-                                if hkey not in self.meta[
-                                        vkey]['children'].keys():
-                                    estr = ' '.join(
-                                        ('cannot rename', repr(hkey),
-                                         'because it is not a known ',
-                                         'higher-order variable under',
-                                         repr(vkey), '.'))
-                                    raise ValueError(estr)
-                            hdict = map_key
-                        else:
-                            # This is either a value or a mapping function
-                            for hkey in self.meta[vkey]['children'].keys():
-                                hmap = pysat.utils.get_mapped_value(hkey,
-                                                                    mapper)
-                                if hmap is not None:
-                                    hdict[hkey] = hmap
-
-                            pdict[vkey] = map_key
-
-                        # Check for lowercase flag
-                        change = True
-                        if lowercase_data_labels:
-                            gdict = {hkey: hdict[hkey].lower()
-                                     for hkey in hdict.keys()
-                                     if hkey != hdict[hkey].lower()}
-
-                            if len(list(gdict.keys())) == 0:
-                                change = False
-                        else:
-                            gdict = hdict
-
-                        # Change the higher-order variable names frame-by-frame
-                        if change:
-                            for i in np.arange(len(self.index)):
-                                if isinstance(self[i, vkey], pds.Series):
-                                    if self[i, vkey].name in gdict:
-                                        new_name = gdict[self[i, vkey].name]
-                                        self[i, vkey].rename(new_name,
-                                                             inplace=True)
-                                    else:
-                                        tkey = list(gdict.keys())[0]
-                                        if self[i, vkey].name != gdict[tkey]:
-                                            estr = ' '.join(
-                                                ('cannot rename', hkey,
-                                                 'because, it is not a known'
-                                                 'known higher-order ',
-                                                 'variable under', vkey, 'at',
-                                                 'index {:d}.'.format(i)))
-                                            raise ValueError(estr)
-                                else:
-                                    self[i, vkey].rename(columns=gdict,
-                                                         inplace=True)
-
+                    # Add to the pandas renaming dictionary after accounting
+                    # for the `lowercase_data_labels` flag.
+                    if lowercase_data_labels:
+                        if vkey != map_key.lower():
+                            pdict[vkey] = map_key.lower()
                     else:
-                        # This is a normal variable. Add it to the pandas
-                        # renaming dictionary after accounting for the
-                        # `lowercase_data_labels` flag.
-                        if lowercase_data_labels:
-                            if vkey != map_key.lower():
-                                pdict[vkey] = map_key.lower()
-                        else:
-                            pdict[vkey] = map_key
+                        pdict[vkey] = map_key
 
             # Change variable names for attached data object
             self.data.rename(columns=pdict, inplace=True)

@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.X] - 2023-xx-xx
+[3.2.0] - 2023-xx-xx
 --------------------
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
@@ -15,16 +15,20 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     memory usage in the `load` method.
   * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
     reduce code duplication.
+  * Added the overwrite kwarg to `utils.registry.register_by_module`
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
   * Updated `Constellation.to_inst` method definition of coords, using dims
     to combine common dimensions instead.
   * Implement pyproject to manage metadata
+* Updated docstring references to `pysat.utils.files` in other modules.
   * Remove Sphinx cap
   * Add pandas cap
   * Update usage of whitespace and if statements (E275)
   * Remove hacking cap
+  * Remove deprecated `pysat_testing2d` instrument
+  * Remove deprecated meta children info
 
 [3.1.0] - 2023-05-31
 --------------------
