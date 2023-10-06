@@ -58,7 +58,7 @@ test = [
   "coveralls < 3.3",
   "flake8",
   "flake8-docstrings",
-  "hacking >= 1.0,
+  "hacking >= 1.0",
   "pysatSpaceWeather",
   "pytest",
   "pytest-cov",
