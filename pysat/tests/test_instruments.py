@@ -16,7 +16,6 @@ import pytest
 import pysat
 import pysat.tests.classes.cls_instrument_library as cls_inst_lib
 from pysat.tests.classes.cls_instrument_library import InstLibTests
-import pysat.tests.instrument_test_class as itc
 from pysat.utils import testing
 
 # Optional code to pass through user and password info to test instruments
@@ -209,68 +208,3 @@ class TestInstruments(InstLibTests):
         self.test_clean_warn(clean_level, inst_dict, caplog)
 
         return
-
-
-class TestDeprecation(object):
-    """Unit test for deprecation warnings."""
-
-    def setup_method(self):
-        """Set up the unit test environment for each method."""
-
-        warnings.simplefilter("always", DeprecationWarning)
-        return
-
-    def teardown_method(self):
-        """Clean up the unit test environment after each method."""
-
-        return
-
-    def test_subclass_inst_test_class(self):
-        """Check that subclass of old instrument library tests is deprecated."""
-
-        with warnings.catch_warnings(record=True) as war:
-
-            class OldClass(itc.InstTestClass):
-                """Dummy subclass."""
-
-                pass
-
-        self.warn_msgs = ["`InstTestClass` has been deprecated",
-                          "`test_load` now uses `@pytest.mark.load_options`"]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, self.warn_msgs)
-        return
-
-    def test_old_initialize_inst_and_date(self):
-        """Check that subclass of old instrument library tests is deprecated."""
-
-        with warnings.catch_warnings(record=True) as war:
-            try:
-                itc.initialize_test_inst_and_date({})
-            except KeyError:
-                # empty dict produces KeyError
-                pass
-
-        self.warn_msgs = ["`initialize_test_inst_and_date` has been moved to"]
-        self.warn_msgs = np.array(self.warn_msgs)
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(self.warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        testing.eval_warnings(war, self.warn_msgs)
-        return
-
-    def test_old_pytest_mark_presence(self):
-        """Test that pytest mark is backwards compatible."""
-
-        n_args = len(InstLibTests.test_load.pytestmark)
-        mark_names = [InstLibTests.test_load.pytestmark[j].name
-                      for j in range(0, n_args)]
-
-        assert "download" in mark_names
