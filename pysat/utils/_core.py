@@ -443,7 +443,7 @@ def generate_instrument_list(inst_loc, user_info=None):
             # If this can't be imported, we can't pull out the info for the
             # download / no_download tests.  Leaving in basic tests for all
             # instruments, but skipping the rest.  The import error will be
-            # caught as part of the pytest.mark.all_inst tests in InstTestClass
+            # caught as part of the pytest.mark.all_inst tests in InstLibTests
             pass
         else:
             # try to grab basic information about the module so we
@@ -453,7 +453,7 @@ def generate_instrument_list(inst_loc, user_info=None):
             except AttributeError:
                 # If a module does not have a test date, add it anyway for
                 # other tests.  This will be caught later by
-                # InstTestClass.test_instrument_test_dates
+                # InstLibTests.test_instrument_test_dates
                 info = {}
                 info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
