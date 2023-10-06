@@ -3597,10 +3597,6 @@ class Instrument(object):
                  **kwargs):
         """Download data for given Instrument object from start to stop.
 
-        .. deprecated:: 3.2.0
-           `freq`, which sets the step size for downloads, will be removed in
-            the 3.2.0+ release.
-
         Parameters
         ----------
         start : pandas.datetime or NoneType
@@ -3635,17 +3631,9 @@ class Instrument(object):
         pandas.DatetimeIndex
 
         """
-        # Test for deprecated kwargs
-        if 'freq' in kwargs.keys():
-            warnings.warn("".join(["`pysat.Instrument.download` kwarg `freq` ",
-                                   "has been deprecated and will be removed ",
-                                   "in pysat 3.2.0+. Use `date_array` for ",
-                                   "non-daily frequencies instead."]),
-                          DeprecationWarning, stacklevel=2)
-            freq = kwargs['freq']
-            del kwargs['freq']
-        else:
-            freq = 'D'
+
+        # Set frequency to daily.
+        freq = 'D'
 
         # Make sure directories are there, otherwise create them
         try:
