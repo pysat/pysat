@@ -1588,34 +1588,24 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         # Not datetime data, just store as is.
                         cdfkey[:] = data.values.astype(coltype)
                 else:
-                    # It is a Series of objects.  First, figure out what the
-                    # individual object types are.  Then, act as needed.
-
-                    # Use info in coltype to get real datatype of object
-                    if coltype == str:
-                        if '_FillValue' in export_meta[lower_key].keys():
-                            str_fill = export_meta[lower_key]['_FillValue']
-                            del export_meta[lower_key]['_FillValue']
-                        else:
-                            str_fill = ''
-
-                        cdfkey = out_data.createVariable(case_key, coltype,
-                                                         dimensions=epoch_name,
-                                                         complevel=complevel,
-                                                         shuffle=shuffle,
-                                                         fill_value=str_fill)
-
-                        # Set metadata
-                        cdfkey.setncatts(export_meta[lower_key])
-
-                        # Time to actually write the data now
-                        cdfkey[:] = data.values
-
+                    if '_FillValue' in export_meta[lower_key].keys():
+                        str_fill = export_meta[lower_key]['_FillValue']
+                        del export_meta[lower_key]['_FillValue']
                     else:
-                        raise ValueError(' '.join(('Recursive data detected.',
-                                                   'Please ensure that the',
-                                                   'DataFrame does not contain',
-                                                   'other pandas objects.')))
+                        str_fill = ''
+
+                    cdfkey = out_data.createVariable(case_key, coltype,
+                                                     dimensions=epoch_name,
+                                                     complevel=complevel,
+                                                     shuffle=shuffle,
+                                                     fill_value=str_fill)
+
+                    # Set metadata
+                    cdfkey.setncatts(export_meta[lower_key])
+
+                    # Time to actually write the data now
+                    cdfkey[:] = data.values
+
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
         # the Instrument data object is unchanged.
