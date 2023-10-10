@@ -414,7 +414,8 @@ class Instrument(object):
                         self.file_format.find("}") < 0]):
                     raise ValueError(''.join(['file format set to default, ',
                                               'supplied string must be ',
-                                              'iterable [{',
+                                              'iterable string with key ',
+                                              'formatting [{',
                                               self.file_format, '}]']))
             else:
                 raise ValueError(''.join(['file format set to default, ',
