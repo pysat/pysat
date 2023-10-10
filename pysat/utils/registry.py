@@ -52,7 +52,7 @@ import importlib
 import logging
 
 import pysat
-import pysat.tests.instrument_test_class as itc
+import pysat.tests.classes.cls_instrument_library as itc
 
 
 def load_saved_modules():
@@ -147,7 +147,7 @@ def register(module_names, overwrite=False):
             raise
 
         # Second, check that module is itself pysat compatible
-        validate = itc.InstTestClass()
+        validate = itc.InstLibTests()
 
         # Work with test code, create dummy structure to make things work
         class Foo(object):
