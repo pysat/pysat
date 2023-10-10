@@ -1247,24 +1247,7 @@ class TestNetCDF4Integration(object):
 
 
 class TestNetCDF4IntegrationXarray(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils using xarray data."""
-
-    def setup_method(self):
-        """Create a testing environment."""
-
-        # Create an instrument object that has a meta with some
-        # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
-                                         num_samples=5, use_header=True)
-        self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
-                           use_header=True)
-        self.pformat = self.testInst.pandas_format
-
-        return
-
-
-class TestNetCDF4Integration2DXarray(TestNetCDF4Integration):
-    """Integration tests for the netCDF4 I/O utils using 2dxarray Instrument."""
+    """Integration tests for the netCDF4 I/O utils using xarray Instrument."""
 
     def setup_method(self):
         """Create a testing environment."""
@@ -1305,7 +1288,7 @@ class TestXarrayIO(object):
 
         # Create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting.
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          num_samples=5, use_header=True)
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''],
                            use_header=True)
@@ -1709,34 +1692,9 @@ class TestMetaTranslationXarray(TestMetaTranslation):
     def setup_method(self):
         """Create test environment."""
 
-        self.test_inst = pysat.Instrument('pysat', 'testing_xarray',
-                                          num_samples=5, use_header=True)
-        self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
-        self.test_date = self.test_date['']['']
-        self.test_inst.load(date=self.test_date)
-        self.meta_dict = self.test_inst.meta.to_dict()
-        self.out = None
-
-        return
-
-    def teardown_method(self):
-        """Cleanup test environment."""
-
-        del self.test_inst, self.test_date, self.out, self.meta_dict
-
-        return
-
-
-class TestMetaTranslation2DXarray(TestMetaTranslation):
-    """Test meta translation when writing/loading files xarray2d Instrument."""
-
-    def setup_method(self):
-        """Create test environment."""
-
         self.test_inst = pysat.Instrument('pysat', 'ndtesting',
                                           num_samples=5, use_header=True)
-        self.test_date = pysat.instruments.pysat_testing_xarray._test_dates
-        self.test_date = self.test_date['']['']
+        self.test_date = pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.test_inst.load(date=self.test_date)
         self.meta_dict = self.test_inst.meta.to_dict()
         self.out = None

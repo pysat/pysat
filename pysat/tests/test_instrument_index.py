@@ -107,7 +107,7 @@ class TestDeprecation(object):
         return
 
     # TODO(#1094): Remove in pysat 3.2.0, potentially with class
-    @pytest.mark.parametrize('name', ['testing', 'ndtesting', 'testing_xarray'])
+    @pytest.mark.parametrize('name', ['testing', 'ndtesting'])
     def test_kwarg_malformed_index(self, name):
         """Test deprecation of `malformed_index` kwarg.
 

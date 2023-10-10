@@ -67,7 +67,7 @@ installations.
     print(inst.data)
 
     # Testing out the xarray installation
-    inst = pysat.Instrument('pysat', 'testing_xarray')
+    inst = pysat.Instrument('pysat', 'ndtesting')
     inst.load(2009, 1)
     print(inst.data)
 
