@@ -409,11 +409,17 @@ class Instrument(object):
         # Check to make sure value is reasonable
         if self.file_format is not None:
             # Check if it is an iterable string
-            if any([(not isinstance(self.file_format, str)),
-                    (self.file_format.find("{") < 0),
-                    (self.file_format.find("}") < 0)]):
+            if isinstance(self.file_format, str):
+                if any([self.file_format.find("{") < 0,
+                        self.file_format.find("}") < 0]):
+                    raise ValueError(''.join(['file format set to default, ',
+                                              'supplied string must be ',
+                                              'iterable [{',
+                                              self.file_format, '}]']))
+            else:
                 raise ValueError(''.join(['file format set to default, ',
-                                          'supplied string must be iterable ',
+                                          'supplied format must be iterable ',
+                                          'string',
                                           '[{:}]'.format(self.file_format)]))
 
         # Set up empty data and metadata.
