@@ -39,10 +39,6 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
          non_unique_index=False, start_time=None, num_samples=864,
          sample_rate='100S', test_load_kwarg=None, max_latitude=90.0,
          num_extra_time_coords=0):
-         sim_multi_file_left=False, root_date=None, non_monotonic_index=False,
-         non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=864, sample_rate='100S', test_load_kwarg=None,
-         max_latitude=90.0, num_extra_time_coords=0):
     """Load the test files.
 
     Parameters
