@@ -1694,8 +1694,7 @@ class TestMetaTranslationXarray(TestMetaTranslation):
 
         self.test_inst = pysat.Instrument('pysat', 'ndtesting',
                                           num_samples=5, use_header=True)
-        self.test_date = pysat.instruments.pysat_ndtesting._test_dates
-        self.test_date = self.test_date['']['']
+        self.test_date = pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.test_inst.load(date=self.test_date)
         self.meta_dict = self.test_inst.meta.to_dict()
         self.out = None

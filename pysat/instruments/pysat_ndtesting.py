@@ -35,10 +35,14 @@ preprocess = mm_test.preprocess
 
 
 def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
-         sim_multi_file_left=False, non_monotonic_index=False,
+         sim_multi_file_left=False, root_date=None, non_monotonic_index=False,
          non_unique_index=False, start_time=None, num_samples=864,
          sample_rate='100S', test_load_kwarg=None, max_latitude=90.0,
          num_extra_time_coords=0):
+         sim_multi_file_left=False, root_date=None, non_monotonic_index=False,
+         non_unique_index=False, malformed_index=False, start_time=None,
+         num_samples=864, sample_rate='100S', test_load_kwarg=None,
+         max_latitude=90.0, num_extra_time_coords=0):
     """Load the test files.
 
     Parameters
@@ -57,6 +61,9 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     sim_multi_file_left : bool
         Adjusts date range to be 12 hours in the past or twelve hours before
         `root_date`. (default=False)
+    root_date : NoneType
+        Optional central date, uses _test_dates if not specified.
+        (default=None)
     non_monotonic_index : bool
         If True, time index will be non-monotonic (default=False)
     non_unique_index : bool
@@ -99,12 +106,15 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq=sample_rate,
                                                start_time=start_time)
+
+    # Specify the date tag locally and determine the desired date range
+    pds_offset = dt.timedelta(hours=12)
     if sim_multi_file_right:
-        root_date = dt.datetime(2009, 1, 1, 12)
+        root_date = root_date or _test_dates[''][''] + pds_offset
     elif sim_multi_file_left:
-        root_date = dt.datetime(2008, 12, 31, 12)
+        root_date = root_date or _test_dates[''][''] - pds_offset
     else:
-        root_date = dt.datetime(2009, 1, 1)
+        root_date = root_date or _test_dates['']['']
 
     if non_monotonic_index:
         index = mm_test.non_monotonic_index(index)
