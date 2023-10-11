@@ -68,10 +68,6 @@ class Meta(object):
     but the original case is preserved. Case preseveration is built in to
     support writing files with a desired case to meet standards.
 
-    Metadata for higher order data objects, those that have
-    multiple products under a single variable name in a `pysat.Instrument`
-    object, are stored by providing a Meta object under the single name.
-
     Supports any custom metadata values in addition to the expected metadata
     attributes (units, name, notes, desc, value_min, value_max, and fill).
     These base attributes may be used to programatically access and set types
@@ -121,20 +117,6 @@ class Meta(object):
         meta2['var_name41'] = {'long_name': 'name1of4', 'units': 'Units1'}
         meta2['var_name42'] = {'long_name': 'name2of4', 'units': 'Units2'}
         meta['var_name4'] = {'meta': meta2}
-
-        # An alternative method to achieve the same result is:
-        meta['var_name4'] = meta2
-        meta['var_name4'].children['name41']
-        meta['var_name4'].children['name42']
-
-        # You may, of course, have a mixture of 1D and nD data
-        meta = pysat.Meta()
-        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
-        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
-        meta2 = pysat.Meta()
-        meta2[['higher', 'lower']] = {'meta': [meta, None],
-                                      'units': [None, 'boo'],
-                                      'long_name': [None, 'boohoo']}
 
         # Meta data may be assigned from another Meta object using dict-like
         # assignments
@@ -193,9 +175,6 @@ class Meta(object):
         # Set the data types, if provided
         self._data_types = data_types
 
-        # Initialize higher order (nD) data structure container, a dict
-        self._ho_data = {}
-
         # Use any user provided data to instantiate object with data.
         # Attributes unit and name labels are called within.
         if metadata is not None:
@@ -250,23 +229,17 @@ class Meta(object):
         """
         # Get the desired variables as lists
         labs = [var for var in self.attrs()]
-        vdim = [var for var in self.keys() if var not in self.keys_nD()]
-        nchild = {var: len([kk for kk in self[var]['children'].keys()])
-                  for var in self.keys_nD()}
-        ndim = ["{:} -> {:d} children".format(var, nchild[var])
-                for var in self.keys_nD()]
+        vdim = [var for var in self.keys()]
 
         # Get the lengths of each list
         nlabels = len(labs)
         nvdim = len(vdim)
-        nndim = len(ndim)
 
         # Print the short output
         out_str = "pysat Meta object\n"
         out_str += "-----------------\n"
         out_str += "Tracking {:d} metadata values\n".format(nlabels)
         out_str += "Metadata for {:d} standard variables\n".format(nvdim)
-        out_str += "Metadata for {:d} ND variables\n".format(nndim)
 
         # Print the global meta data. `max_num` should be divisible by 2 and
         # `ncol`.
@@ -283,10 +256,6 @@ class Meta(object):
             if nvdim > 0:
                 out_str += "\nStandard Metadata variables:\n"
                 out_str += core_utils.fmt_output_in_cols(vdim, ncols=ncol,
-                                                         max_num=max_num)
-            if nndim > 0:
-                out_str += "\nND Metadata variables:\n"
-                out_str += core_utils.fmt_output_in_cols(ndim, ncols=ncol,
                                                          max_num=max_num)
 
         return out_str
@@ -415,133 +384,77 @@ class Meta(object):
 
             # Time to actually add the metadata
             for ikey in input_data:
-                if ikey not in ['children', 'meta']:
-                    for i, var in enumerate(data_vars):
-                        to_be_set = input_data[ikey][i]
-                        good_set = True
+                for i, var in enumerate(data_vars):
+                    to_be_set = input_data[ikey][i]
+                    good_set = True
 
-                        # See if this meta data key has already been defined
-                        # in MetaLabels
-                        if ikey in self.labels.label_attrs.keys():
-                            iattr = self.labels.label_attrs[ikey]
-                            if not isinstance(
-                                    to_be_set, self.labels.label_type[iattr]):
-                                # If this is a disagreement between byte data
-                                # and an expected str, resolve it here
-                                if(isinstance(to_be_set, bytes)
-                                   and str in pysat.utils.listify(
-                                       self.labels.label_type[iattr])):
-                                    to_be_set = core_utils.stringify(to_be_set)
-                                else:
-                                    # This type is incorrect, try casting it
-                                    wmsg = ''.join(['Metadata with type ',
-                                                    repr(type(to_be_set)),
-                                                    ' does not match expected ',
-                                                    'type ',
-                                                    repr(self.labels.label_type[
-                                                        iattr])])
-                                    try:
-                                        if hasattr(to_be_set, '__iter__'):
-                                            if str in pysat.utils.listify(
-                                                    self.labels.label_type[
-                                                    iattr]):
-                                                to_be_set = '\n\n'.join(
-                                                    [str(tval) for tval in
-                                                     to_be_set])
-                                            else:
-                                                raise TypeError("can't recast")
+                    # See if this meta data key has already been defined
+                    # in MetaLabels
+                    if ikey in self.labels.label_attrs.keys():
+                        iattr = self.labels.label_attrs[ikey]
+                        if not isinstance(
+                                to_be_set, self.labels.label_type[iattr]):
+                            # If this is a disagreement between byte data
+                            # and an expected str, resolve it here
+                            if(isinstance(to_be_set, bytes)
+                               and str in pysat.utils.listify(
+                                   self.labels.label_type[iattr])):
+                                to_be_set = core_utils.stringify(to_be_set)
+                            else:
+                                # This type is incorrect, try casting it
+                                wmsg = ''.join(['Metadata with type ',
+                                                repr(type(to_be_set)),
+                                                ' does not match expected ',
+                                                'type ',
+                                                repr(self.labels.label_type[
+                                                    iattr])])
+                                try:
+                                    if hasattr(to_be_set, '__iter__'):
+                                        if str in pysat.utils.listify(
+                                                self.labels.label_type[iattr]):
+                                            to_be_set = '\n\n'.join(
+                                                [str(tval) for tval in
+                                                 to_be_set])
                                         else:
-                                            to_be_set = pysat.utils.listify(
-                                                self.labels.label_type[
-                                                    iattr])[0](to_be_set)
+                                            raise TypeError("can't recast")
+                                    else:
+                                        to_be_set = pysat.utils.listify(
+                                            self.labels.label_type[
+                                                iattr])[0](to_be_set)
 
-                                        # Inform user data was recast
-                                        pysat.logger.info(''.join((
-                                            wmsg, '. Recasting input for ',
-                                            repr(var), ' with key ',
-                                            repr(ikey))))
-                                    except (TypeError, ValueError):
-                                        # Warn user data was dropped
-                                        warnings.warn(''.join((
-                                            wmsg, '. Dropping input for ',
-                                            repr(var), ' with key ',
-                                            repr(ikey))))
-                                        good_set = False
-                        else:
-                            # Extend the meta labels. Ensure the attribute
-                            # name has no spaces and that bytes are used instead
-                            # of strings.
-                            iattr = ikey.replace(" ", "_")
-                            itype = type(to_be_set)
-                            if itype == bytes:
-                                itype = str
+                                    # Inform user data was recast
+                                    pysat.logger.info(''.join((
+                                        wmsg, '. Recasting input for ',
+                                        repr(var), ' with key ', repr(ikey))))
+                                except (TypeError, ValueError):
+                                    # Warn user data was dropped
+                                    warnings.warn(''.join((
+                                        wmsg, '. Dropping input for ',
+                                        repr(var), ' with key ',
+                                        repr(ikey))))
+                                    good_set = False
+                    else:
+                        # Extend the meta labels. Ensure the attribute
+                        # name has no spaces and that bytes are used instead
+                        # of strings.
+                        iattr = ikey.replace(" ", "_")
+                        itype = type(to_be_set)
+                        if itype == bytes:
+                            itype = str
 
-                            # Update the MetaLabels object and the existing
-                            # metadata to ensure all data have all labels
-                            self.labels.update(iattr, ikey, itype)
-                            self._label_setter(ikey, ikey, type(to_be_set))
+                        # Update the MetaLabels object and the existing
+                        # metadata to ensure all data have all labels
+                        self.labels.update(iattr, ikey, itype)
+                        self._label_setter(ikey, ikey, type(to_be_set))
 
-                        # Set the data
-                        if good_set:
-                            self._data.loc[var, ikey] = to_be_set
-                else:
-                    # Key is 'meta' or 'children', providing higher order
-                    # metadata. Meta inputs could be part of a larger multiple
-                    # parameter assignment, so not all names may actually have
-                    # a 'meta' object to add.
-                    for item, val in zip(data_vars, input_data['meta']):
-                        if val is not None:
-                            # Assign meta data, using a recursive call...
-                            # Heads to if Meta instance call.
-                            self[item] = val
-
+                    # Set the data
+                    if good_set:
+                        self._data.loc[var, ikey] = to_be_set
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict.
-            in_dict = input_data.to_dict()
-            if 'children' in in_dict:
-                child = in_dict.pop('children')
-                if child is not None:
-                    # If there is data in the child object, assign it here
-                    self._warn_meta_children()
-                    self.ho_data[data_vars] = child
-            # Remaining items are simply assigned via recursive call
-            self[data_vars] = in_dict
+            self[data_vars] = input_data.to_dict()
 
-        elif isinstance(input_data, Meta):
-            # Dealing with a higher order data set
-            self._warn_meta_children()
-            # `data_vars` is only a single name here (by choice for support)
-            if (data_vars in self._ho_data) and input_data.empty:
-                # No actual metadata provided and there is already some
-                # higher order metadata in self
-                return
-
-            # Get Meta approved variable data names
-            new_item_name = self.var_case_name(data_vars)
-
-            # Ensure that Meta labels of object to be assigned are
-            # consistent with self.  input_data accepts self's labels.
-            input_data.accept_default_labels(self)
-
-            # Go through and ensure Meta object to be added has variable and
-            # attribute names consistent with other variables and attributes
-            # this covers custom attributes not handled by default routine
-            # above
-            attr_names = [item for item in input_data.attrs()]
-            input_data.data.columns = self.attr_case_name(attr_names)
-
-            # Same thing for variables
-            input_data.data.index = self.var_case_name(input_data.data.index)
-
-            # Assign Meta object now that things are consistent with Meta
-            # object settings, but first make sure there are lower dimension
-            # metadata parameters, passing in an empty dict fills in defaults
-            # if there is no existing metadata info.
-            self[new_item_name] = {}
-
-            # Now add to higher order data
-            self._ho_data[new_item_name] = input_data
         return
 
     def __getitem__(self, key):
@@ -566,7 +479,7 @@ class Meta(object):
         ::
 
             import pysat
-            inst = pysat.Instrument('pysat', 'testing2d')
+            inst = pysat.Instrument('pysat', 'testing')
             inst.load(date=inst.inst_module._test_dates[''][''])
             meta = inst.meta
 
@@ -578,14 +491,6 @@ class Meta(object):
             meta[['uts', 'mlt'], ['units', 'long_name']]
             meta[:, 'units']
             meta[:, ['units', 'long_name']]
-
-            # For higher order data, slicing is not supported for multiple
-            # parents with any children
-            meta['profiles', 'density', 'units']
-            meta['profiles', 'density', ['units', 'long_name']]
-            meta['profiles', ['density', 'dummy_str'], ['units', 'long_name']]
-            meta['profiles', ('units', 'long_name')]
-            meta[['series_profiles', 'profiles'], ('units', 'long_name')]
 
         """
         # Define a local convenience function
@@ -606,43 +511,11 @@ class Meta(object):
                 # If tuple length is 2, index, column
                 new_index = match_name(self.var_case_name, key[0],
                                        self.data.index)
-                try:
-                    # Assume this is a label name
-                    new_name = match_name(self.attr_case_name, key[1],
-                                          self.data.columns)
-                    return self.data.loc[new_index, new_name]
-                except KeyError as kerr:
-                    # This may instead be a child variable, check for children
-                    if(hasattr(self[new_index], 'children')
-                       and self[new_index].children is None):
-                        raise kerr
 
-                    try:
-                        new_child_index = match_name(
-                            self.attr_case_name, key[1],
-                            self[new_index].children.data.index)
-                        return self.ho_data[new_index].data.loc[new_child_index]
-                    except AttributeError:
-                        raise NotImplementedError(
-                            ''.join(['Cannot retrieve child meta data ',
-                                     'from multiple parents']))
-
-            elif len(key) == 3:
-                # If tuple length is 3, index, child_index, column
-                new_index = match_name(self.var_case_name, key[0],
-                                       self.data.index)
-                try:
-                    new_child_index = match_name(
-                        self.attr_case_name, key[1],
-                        self[new_index].children.data.index)
-                except AttributeError:
-                    raise NotImplementedError(
-                        'Cannot retrieve child meta data from multiple parents')
-
-                new_name = match_name(self.attr_case_name, key[2],
+                # Assume this is a label name
+                new_name = match_name(self.attr_case_name, key[1],
                                       self.data.columns)
-                return self.ho_data[new_index].data.loc[new_child_index,
-                                                        new_name]
+                return self.data.loc[new_index, new_name]
 
         elif isinstance(key, list):
             # If key is a list, selection works as-is
@@ -666,14 +539,6 @@ class Meta(object):
                 #  above and commented .copy code below have been kept. Remove
                 #  for any subsequent releases if things are still ok.
                 meta_row = self.data.loc[new_key]  # .copy()
-                if new_key in self.keys_nD():
-                    meta_row.at['children'] = self.ho_data[new_key]  # .copy()
-                else:
-                    # Not higher order meta. Assign value of None. First, we
-                    # assign a string, and then None. Ensures column is not
-                    # a numeric data type.
-                    meta_row.at['children'] = ''
-                    meta_row.at['children'] = None
                 return meta_row
             elif key in self.header.global_attrs:
                 return getattr(self.header, key)
@@ -703,10 +568,6 @@ class Meta(object):
 
         if data_var.lower() in [ikey.lower() for ikey in self.keys()]:
             does_contain = True
-
-        if not does_contain:
-            if data_var.lower() in [ikey.lower() for ikey in self.keys_nD()]:
-                does_contain = True
 
         return does_contain
 
@@ -756,39 +617,6 @@ class Meta(object):
                 if not testing.nan_equal(self[key, attr],
                                          other_meta[key, attr]):
                     return False
-
-        # Check the higher order products. Recursive call into this function
-        # didn't work, so spell out the details.
-        keys1 = [key for key in self.keys_nD()]
-        keys2 = [key for key in other_meta.keys_nD()]
-        try:
-            testing.assert_lists_equal(keys1, keys2)
-        except AssertionError:
-            return False
-
-        # Check the higher order variables within each nD key are the same.
-        # NaN is treated as equal, though mathematically NaN is not equal
-        # to anything.
-        for key in self.keys_nD():
-            for iter1, iter2 in [(self[key].children.keys(),
-                                  other_meta[key].children.keys()),
-                                 (self[key].children.attrs(),
-                                  other_meta[key].children.attrs())]:
-                list1 = [value for value in iter1]
-                list2 = [value for value in iter2]
-
-                try:
-                    testing.assert_lists_equal(list1, list2)
-                except AssertionError:
-                    return False
-
-            # Check if all elements are individually equal
-            for ckey in self[key].children.keys():
-                for cattr in self[key].children.attrs():
-                    if not testing.nan_equal(
-                            self[key].children[ckey, cattr],
-                            other_meta[key].children[ckey, cattr]):
-                        return False
 
         # If we made it this far, things are good
         return True
@@ -916,12 +744,6 @@ class Meta(object):
                                              'Meta instantiation.'))
                             pysat.logger.info(mstr)
 
-            # Check higher order structures and recursively change labels
-            for key in self.keys_nD():
-                # Update children
-                self.ho_data[key]._label_setter(new_label, current_label,
-                                                default_type, use_names_default)
-
         return
 
     # -----------------------------------------------------------------------
@@ -944,22 +766,6 @@ class Meta(object):
         return
 
     @property
-    def ho_data(self):
-        """Retrieve higher order data.
-
-        May be set using `ho_data.setter(new_dict)`, where `new_dict` is a
-        dict containing the higher order metadata.
-
-        """
-        return self._ho_data
-
-    @ho_data.setter
-    def ho_data(self, new_dict):
-        # Set the ho_data property.  See docstring for property above.
-        self._ho_data = new_dict
-        return
-
-    @property
     def empty(self):
         """Return boolean True if there is no metadata.
 
@@ -970,8 +776,6 @@ class Meta(object):
 
         """
 
-        # Only need to check on lower data since lower data
-        # is set when higher metadata assigned.
         if self.data.empty:
             return True
         else:
@@ -989,7 +793,6 @@ class Meta(object):
 
         for key in other.keys():
             if key not in self:
-                # Copies over both lower and higher dimensional data
                 self[key] = other[key]
         return
 
@@ -1051,6 +854,7 @@ class Meta(object):
 
         # Drop names not specified in keep_names list
         self.drop(drop_names)
+
         return
 
     def apply_meta_labels(self, other_meta):
@@ -1179,11 +983,6 @@ class Meta(object):
         for ikey in self.data.index:
             yield ikey
 
-    def keys_nD(self):
-        """Yield keys for higher order metadata."""
-        for ndkey in self.ho_data:
-            yield ndkey
-
     def attrs(self):
         """Yield metadata products stored for each variable name."""
         for dcol in self.data.columns:
@@ -1202,10 +1001,6 @@ class Meta(object):
         has_name : bool
             True if the case-insensitive check for attribute name is successful,
             False if no attribute name is present.
-
-        Note
-        ----
-        Does not check higher order meta objects
 
         """
 
@@ -1229,11 +1024,9 @@ class Meta(object):
 
         Note
         ----
-        Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures. If not found, returns
-        supplied name as it is available for use. Intended to be used to help
-        ensure that the same case is applied to all repetitions of a given
-        variable name.
+        Checks first within standard attributes. If not found, returns supplied
+        name as it is available for use. Intended to be used to help ensure that
+        the same case is applied to all repetitions of a given variable name.
 
         """
 
@@ -1251,8 +1044,6 @@ class Meta(object):
 
         # Create a list of all attribute names and lower case attribute names
         self_keys = [key for key in self.attrs()]
-        for key in list(self.keys_nD()):
-            self_keys.extend(self.ho_data[key].data.columns)
         lower_self_keys = [key.lower() for key in self_keys]
 
         case_names = []
@@ -1280,18 +1071,11 @@ class Meta(object):
             Dictionary with old names as keys and new names as variables or
             a function to apply to all names
 
-        Raises
-        ------
-        ValueError
-            When normal data is treated like higher-order data in dict mapping.
-
         Note
         ----
-        Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures. If not found, returns
-        supplied name as it is available for use. Intended to be used to help
-        ensure that the same case is applied to all repetitions of a given
-        variable name.
+        Checks first within standard attributes. If not found, returns supplied
+        name as it is available for use. Intended to be used to help ensure that
+        the same case is applied to all repetitions of a given variable name.
 
         """
 
@@ -1300,37 +1084,14 @@ class Meta(object):
             # Update the attribute name
             map_var = core_utils.get_mapped_value(var, mapper)
             if map_var is not None:
-                if isinstance(map_var, dict):
-                    if var in self.keys_nD():
-                        child_meta = self[var].children.copy()
-                        child_meta.rename(map_var)
-                        self.ho_data[var] = child_meta
-                    else:
-                        raise ValueError('unknown mapped value at {:}'.format(
-                            repr(var)))
-                else:
-                    # Get and update the meta data
-                    hold_meta = self[var].copy()
-                    hold_meta.name = map_var
+                hold_meta = self[var].copy()
+                hold_meta.name = map_var
 
-                    # Remove the metadata under the previous variable name
-                    self.drop(var)
-                    if var in self.ho_data:
-                        del self.ho_data[var]
+                # Remove the metadata under the previous variable name
+                self.drop(var)
 
-                    # Re-add the meta data with the updated variable name
-                    self[map_var] = hold_meta
-
-                    # Determine if the attribute is present in higher order
-                    # structures
-                    if map_var in self.keys_nD():
-                        # The children attribute is a Meta class object.
-                        # Recursively call the current routine. The only way to
-                        # avoid Meta undoing the renaming process is to assign
-                        # the meta data to `ho_data`.
-                        child_meta = self[map_var].children.copy()
-                        child_meta.rename(mapper)
-                        self.ho_data[map_var] = child_meta
+                # Re-add the meta data with the updated variable name
+                self[map_var] = hold_meta
 
         return
 
@@ -1374,13 +1135,9 @@ class Meta(object):
         other_meta_updated = other_meta.copy()
         other_meta_updated.labels = self.labels
 
-        # Concat 1D metadata in data frames to copy of current metadata
+        # Concat metadata in data frames to copy of current metadata
         for key in other_meta_updated.keys():
             mdata.data.loc[key] = other_meta.data.loc[key]
-
-        # Combine the higher order meta data
-        for key in other_meta_updated.keys_nD():
-            mdata.ho_data[key] = other_meta.ho_data[key]
 
         return mdata
 
@@ -1411,8 +1168,6 @@ class Meta(object):
             if new_name in self.keys():
                 output = self[new_name]
                 self.data = self.data.drop(new_name, axis=0)
-            else:
-                output = self.ho_data.pop(new_name)
         else:
             raise KeyError('Key not present in metadata variables')
 
@@ -1590,26 +1345,6 @@ class Meta(object):
             for orig_key in meta_dict:
                 export_dict[case_key][orig_key] = meta_dict[orig_key]
 
-        # Higher Order Data
-        # TODO(#789): remove in pysat 3.2.0
-        for key in self.ho_data:
-            if preserve_case:
-                case_key = self.var_case_name(key)
-            else:
-                case_key = key.lower()
-
-            if case_key not in export_dict:
-                export_dict[case_key] = {}
-            for ho_key in self.ho_data[key].data.index:
-                if preserve_case:
-                    case_ho_key = self.var_case_name(ho_key)
-                else:
-                    case_ho_key = ho_key.lower()
-
-                new_key = '_'.join((case_key, case_ho_key))
-                export_dict[new_key] = \
-                    self.ho_data[key].data.loc[ho_key].to_dict()
-
         return export_dict
 
     @classmethod
@@ -1671,15 +1406,6 @@ class Meta(object):
         else:
             raise ValueError(''.join(['Unable to retrieve information from ',
                                       filename]))
-
-    # TODO(#789): remove in pysat 3.2.0
-    def _warn_meta_children(self):
-        """Warn the user that higher order metadata is deprecated."""
-
-        warnings.warn(" ".join(["Support for higher order metadata has been",
-                                "deprecated and will be removed in 3.2.0+."]),
-                      DeprecationWarning, stacklevel=2)
-        return
 
 
 class MetaLabels(object):
@@ -1749,10 +1475,6 @@ class MetaLabels(object):
     data thereafter is case insensitive. In practice, use is case insensitive
     but the original case is preserved. Case preservation is built in to
     support writing files with a desired case to meet standards.
-
-    Metadata for higher order data objects, those that have
-    multiple products under a single variable name in a `pysat.Instrument`
-    object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
     attributes (units, name, notes, desc, value_min, value_max, and fill).

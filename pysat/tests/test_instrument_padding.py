@@ -10,8 +10,6 @@ import pytest
 import pysat
 import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing
-import pysat.instruments.pysat_testing2d
-import pysat.instruments.pysat_testing_xarray
 from pysat.utils import testing
 from pysat.utils.time import filter_datetime_input
 
@@ -144,9 +142,11 @@ class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True,
@@ -154,7 +154,9 @@ class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
 
         self.rawInst = pysat.Instrument(platform='pysat',
-                                        name='testing_xarray',
+                                        name='ndtesting',
+                                        num_samples=86400,
+                                        sample_rate='1s',
                                         clean_level='clean',
                                         update_files=True,
                                         use_header=True)
@@ -206,16 +208,20 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
                                          pad={'minutes': 5},
                                          use_header=True)
         self.rawInst = pysat.Instrument(platform='pysat',
-                                        name='testing_xarray',
+                                        name='ndtesting',
+                                        num_samples=86400,
+                                        sample_rate='1s',
                                         clean_level='clean',
                                         update_files=True,
                                         sim_multi_file_right=True,
@@ -500,9 +506,11 @@ class TestDataPaddingXArray(TestDataPadding):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True,
@@ -525,9 +533,11 @@ class TestDataPaddingXArrayNonMonotonic(TestDataPadding):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          non_monotonic_index=True,
@@ -604,9 +614,11 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
@@ -631,9 +643,11 @@ class TestMultiFileRightDataPaddingBasicsXarrayNonMonotonic(TestDataPadding):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
@@ -714,9 +728,11 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
@@ -741,11 +757,13 @@ class TestMultiFileLeftDataPaddingBasicsXarrayNonMonotonic(TestDataPadding):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        reload(pysat.instruments.pysat_testing_xarray)
+        reload(pysat.instruments.pysat_ndtesting)
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='ndtesting',
                                          clean_level='clean',
                                          update_files=True,
+                                         num_samples=86400,
+                                         sample_rate='1s',
                                          sim_multi_file_left=True,
                                          non_monotonic_index=True,
                                          pad={'minutes': 5},

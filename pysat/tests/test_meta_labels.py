@@ -241,29 +241,3 @@ class TestMetaLabels(object):
         assert (self.meta['new2'].Units == 'hey2')
         assert (self.meta['new2'].Long_Name == 'boo2')
         return
-
-    def test_case_change_of_meta_labels_w_ho(self):
-        """Test change case of meta labels after initialization with HO data."""
-
-        # Set the initial labels
-        self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        meta2 = pysat.Meta(labels=self.meta_labels)
-
-        # Set meta data values
-        meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = meta2
-
-        # Change the label name
-        self.meta.labels.units = 'Units'
-        self.meta.labels.name = 'Long_Name'
-
-        # Evaluate the results in the main data
-        assert (self.meta['new'].Units == 'hey')
-        assert (self.meta['new'].Long_Name == 'boo')
-
-        # Evaluate the results in the higher order data
-        assert (self.meta['new2'].children['new21'].Units == 'hey2')
-        assert (self.meta['new2'].children['new21'].Long_Name == 'boo2')
-        return

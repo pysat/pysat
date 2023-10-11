@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.X] - 2023-xx-xx
+[3.2.0] - 2023-xx-xx
 --------------------
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
@@ -17,14 +17,24 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     reduce code duplication.
   * Added `__delitem__` to Meta and `drop` to MetaHeader and MetaLabels classes.
   * Modified Meta to allow MetaHeader attribute access directly from Meta.
+  * Added options to customize `pysat_ndtesting` instrument with sample rate,
+    shift in time.
+  * Added orbit number to `pysat_ndtesting`.
+  * Added the overwrite kwarg to `utils.registry.register_by_module`
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
   * Updated `Constellation.to_inst` method definition of coords, using dims
     to combine common dimensions instead.
   * Implement pyproject to manage metadata
+* Updated docstring references to `pysat.utils.files` in other modules.
   * Remove Sphinx cap
   * Add pandas cap
+  * Remove deprecated `pysat_testing2d` instrument
+  * Remove deprecated meta children info
+  * Remove deprecated `pysat_testing_xarray` instrument
+  * Remove deprecated `pysat_testing2d_xarray` instrument
+  * Remove deprecated `instrument_test_class`
 
 [3.1.0] - 2023-05-31
 --------------------

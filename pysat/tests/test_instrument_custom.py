@@ -235,10 +235,10 @@ class TestBasicsXarray(TestBasics):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          num_samples=10, clean_level='clean',
                                          use_header=True)
-        self.load_date = pysat.instruments.pysat_testing_xarray._test_dates
+        self.load_date = pysat.instruments.pysat_ndtesting._test_dates
         self.load_date = self.load_date['']['']
         self.testInst.load(date=self.load_date)
         self.custom_args = [2]
