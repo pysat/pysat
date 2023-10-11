@@ -36,9 +36,9 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, non_monotonic_index=False,
-         non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=864, sample_rate='100S', test_load_kwarg=None,
-         max_latitude=90.0, num_extra_time_coords=0):
+         non_unique_index=False, start_time=None, num_samples=864,
+         sample_rate='100S', test_load_kwarg=None, max_latitude=90.0,
+         num_extra_time_coords=0):
     """Load the test files.
 
     Parameters
@@ -64,10 +64,6 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
         If True, time index will be non-monotonic (default=False)
     non_unique_index : bool
         If True, time index will be non-unique (default=False)
-    malformed_index : bool
-        If True, the time index will be non-unique and non-monotonic. Deprecated
-        and scheduled for removal in pysat 3.2.0.
-        (default=False)
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
         will begin at midnight. (default=None)
@@ -115,13 +111,6 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
         root_date = root_date or _test_dates[''][''] - pds_offset
     else:
         root_date = root_date or _test_dates['']['']
-
-    # TODO(#1094): Remove in pysat 3.2.0
-    if malformed_index:
-        # Warn that kwarg is deprecated and set new kwargs.
-        mm_test._warn_malformed_kwarg()
-        non_monotonic_index = True
-        non_unique_index = True
 
     if non_monotonic_index:
         index = mm_test.non_monotonic_index(index)
