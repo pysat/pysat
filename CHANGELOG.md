@@ -15,6 +15,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     memory usage in the `load` method.
   * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
     reduce code duplication.
+  * Added options to customize `pysat_ndtesting` instrument with sample rate,
+    shift in time.
+  * Added orbit number to `pysat_ndtesting`.
   * Added the overwrite kwarg to `utils.registry.register_by_module`
 * Maintenance
   * Update link redirects in docs.
@@ -27,8 +30,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Add pandas cap
   * Update usage of whitespace and if statements (E275)
   * Remove hacking cap
-  * Remove deprecated `pysat_testing2d` instrument
-  * Remove deprecated meta children info
+  * Removed deprecated `pysat_testing2d` instrument
+  * Removed deprecated meta children info
+  * Removed deprecated `pysat_testing_xarray` instrument
+  * Removed deprecated `pysat_testing2d_xarray` instrument
+  * Removed deprecated `instrument_test_class`
+  * Removed deprecated `malformed_index` kwarg in test instrumennts
+  * Removed deprecated `convert_timestamp_to_datetime` function
+  * Removed deprecated `_test_download_travis` flag
+  * Removed deprecated `freq` kwarg from `download`
 
 [3.1.0] - 2023-05-31
 --------------------

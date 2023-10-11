@@ -412,10 +412,7 @@ class TestMeta(object):
         assert cmeta == self.meta, "identical meta objects differ"
         return
 
-    # TODO(#908): remove tests for deprecated instruments
-    @pytest.mark.parametrize("inst_name", ["testing",
-                                           "ndtesting", "testing_xarray",
-                                           "testmodel"])
+    @pytest.mark.parametrize("inst_name", ["testing", "ndtesting", "testmodel"])
     def test_equality_w_copy(self, inst_name):
         """Test that meta remains the same when copied.
 
@@ -489,10 +486,7 @@ class TestMeta(object):
             "differences not detected in label {:s}".format(label_key)
         return
 
-    # TODO(#908): remove tests for deprecated instruments
-    @pytest.mark.parametrize("inst_name", ["testing",
-                                           "ndtesting", "testing_xarray",
-                                           "testmodel"])
+    @pytest.mark.parametrize("inst_name", ["testing", "ndtesting", "testmodel"])
     def test_pop(self, inst_name):
         """Test meta attributes are retained when extracted using pop.
 
@@ -1614,23 +1608,6 @@ class TestToDict(object):
         return
 
 
-class TestToDictXarray(TestToDict):
-    """Test `.to_dict` methods using pysat test Instruments."""
-
-    def setup_method(self):
-        """Set up the unit test environment for each method."""
-
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
-                                         num_samples=5, use_header=True)
-        self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
-        self.testInst.load(date=self.stime)
-
-        # For output
-        self.out = None
-
-        return
-
-
 class TestToDictXarrayND(TestToDict):
     """Test `.to_dict` methods using pysat test Instruments."""
 
@@ -1639,7 +1616,7 @@ class TestToDictXarrayND(TestToDict):
 
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          num_samples=5, use_header=True)
-        self.stime = pysat.instruments.pysat_testing_xarray._test_dates['']['']
+        self.stime = pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.testInst.load(date=self.stime)
 
         # For output

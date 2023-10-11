@@ -267,11 +267,6 @@ pysat_testing
 object with 1D data as a function of latitude, longitude, and altitude in a
 pandas format.  Most similar to in situ data.
 
-pysat_testing_xarray
-^^^^^^^^^^^^^^^^^^^^
-:ref:`api-pysat-testing_xarray` returns a satellite-like object with 1D data as
-a function of latitude, longitude, and altitude in a xarray format.
-
 pysat_ndtesting
 ^^^^^^^^^^^^^^^^^^^^^^
 :ref:`api-pysat-ndtesting` is a satellite-like object that returns all

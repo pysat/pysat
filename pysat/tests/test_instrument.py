@@ -12,7 +12,6 @@ import xarray as xr
 import pysat
 import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing
-import pysat.instruments.pysat_testing_xarray
 
 from pysat.tests.classes.cls_instrument_access import InstAccessTests
 from pysat.tests.classes.cls_instrument_integration import InstIntegrationTests
@@ -188,34 +187,6 @@ class TestBasicsInstModule(TestBasics):
                                          use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = imod._test_dates['']['']
-        self.ref_doy = int(self.ref_time.strftime('%j'))
-        self.out = None
-        return
-
-    def teardown_method(self):
-        """Clean up the unit test environment after each method."""
-
-        del self.testInst, self.out, self.ref_time, self.ref_doy
-        return
-
-
-# TODO(#908): remove below class when pysat_testing_xarray is removed.
-class TestBasicsXarray(TestBasics):
-    """Basic tests for xarray `pysat.Instrument`."""
-
-    def setup_method(self):
-        """Set up the unit test environment for each method."""
-
-        reload(pysat.instruments.pysat_testing_xarray)
-        self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
-                                         num_samples=10,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         use_header=True,
-                                         **self.testing_kwargs)
-        self.ref_time = pysat.instruments.pysat_testing_xarray._test_dates[
-            '']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
         self.out = None
         return
@@ -548,7 +519,7 @@ class TestInstGeneral(object):
                                 num_samples=10, clean_level='clean',
                                 update_files=True, use_header=True)
 
-        obj2 = pysat.Instrument(platform='pysat', name='testing_xarray',
+        obj2 = pysat.Instrument(platform='pysat', name='ndtesting',
                                 num_samples=10, clean_level='clean',
                                 update_files=True, use_header=True)
         assert not (obj1 == obj2)
@@ -656,46 +627,6 @@ class TestDeprecation(object):
 
         self.warn_msgs = np.array(["".join(["This function has been deprecated",
                                             ". Please see "])])
-
-        # Evaluate the warning output
-        self.eval_warnings()
-        return
-
-    def test_download_freq_kwarg(self):
-        """Test deprecation of download kwarg `freq`."""
-
-        # Catch the warnings
-        with warnings.catch_warnings(record=True) as self.war:
-            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
-            tinst.download(start=self.ref_time, freq='D')
-
-        self.warn_msgs = np.array(["".join(["`pysat.Instrument.download` kwarg",
-                                            " `freq` has been deprecated and ",
-                                            "will be removed in pysat ",
-                                            "3.2.0+"])])
-
-        # Evaluate the warning output
-        self.eval_warnings()
-        return
-
-    def test_download_travis_attr(self):
-        """Test deprecation of instrument attribute `_test_download_travis`."""
-
-        inst_module = pysat.instruments.pysat_testing
-        # Add deprecated attribute.
-        inst_module._test_download_travis = {'': {'': False}}
-
-        self.warn_msgs = np.array([" ".join(["`_test_download_travis` has been",
-                                             "deprecated and will be replaced",
-                                             "by `_test_download_ci` in",
-                                             "3.2.0+"])])
-
-        # Catch the warnings.
-        with warnings.catch_warnings(record=True) as self.war:
-            tinst = pysat.Instrument(inst_module=inst_module, use_header=True)
-
-        # Ensure attributes set properly.
-        assert tinst._test_download_ci is False
 
         # Evaluate the warning output
         self.eval_warnings()
