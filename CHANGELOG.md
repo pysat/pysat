@@ -28,6 +28,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Updated docstring references to `pysat.utils.files` in other modules.
   * Remove Sphinx cap
   * Add pandas cap
+  * Update usage of whitespace and if statements (E275)
+  * Remove hacking cap
   * Removed deprecated `pysat_testing2d` instrument
   * Removed deprecated meta children info
   * Removed deprecated `pysat_testing_xarray` instrument

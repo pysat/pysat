@@ -409,11 +409,16 @@ class Instrument(object):
         # Check to make sure value is reasonable
         if self.file_format is not None:
             # Check if it is an iterable string
-            if(not isinstance(self.file_format, str)
-               or (self.file_format.find("{") < 0)
-               or (self.file_format.find("}") < 0)):
-                raise ValueError(''.join(['file format set to default, ',
-                                          'supplied string must be iterable ',
+            if isinstance(self.file_format, str):
+                if any([self.file_format.find("{") < 0,
+                        self.file_format.find("}") < 0]):
+                    raise ValueError(''.join(['Supplied format string must be ',
+                                              'iterable string with key ',
+                                              'formatting [{',
+                                              self.file_format, '}]']))
+            else:
+                raise ValueError(''.join(['Supplied format string must be ',
+                                          'iterable string',
                                           '[{:}]'.format(self.file_format)]))
 
         # Set up empty data and metadata.
@@ -883,8 +888,9 @@ class Instrument(object):
         # Find secondary time indexes that may need to be sliced
         if len(data.indexes) > 1:
             for ind in data.indexes.keys():
-                if(ind != epoch_names[0] and data.indexes[ind].dtype
-                   == data.indexes[epoch_names[0]].dtype):
+                if all([ind != epoch_names[0],
+                        data.indexes[ind].dtype
+                        == data.indexes[epoch_names[0]].dtype]):
                     epoch_names.append(ind)
 
         if isinstance(key, tuple):
@@ -2228,8 +2234,8 @@ class Instrument(object):
                     if self.files.stop_date is not None:
                         # Ensure the start and stop times intersect with
                         # the file list
-                        if(start <= self.files.stop_date
-                           and stops[i] >= self.files.start_date):
+                        if all([start <= self.files.stop_date,
+                                stops[i] >= self.files.start_date]):
                             good_bounds.append(i)
 
                 if len(good_bounds) > 0:
@@ -3697,8 +3703,8 @@ class Instrument(object):
                 # Get current bounds
                 curr_bound = self.bounds
                 if self._iter_type == 'date':
-                    if(curr_bound[0][0] == first_date
-                       and curr_bound[1][0] == last_date):
+                    if all([curr_bound[0][0] == first_date,
+                            curr_bound[1][0] == last_date]):
                         pysat.logger.info(' '.join(('Updating instrument',
                                                     'object bounds by date')))
                         self.bounds = (self.files.start_date,
@@ -3713,8 +3719,8 @@ class Instrument(object):
                     dsel2 = slice(last_date, last_date
                                   + dt.timedelta(hours=23, minutes=59,
                                                  seconds=59))
-                    if(curr_bound[0][0] == self.files[dsel1][0]
-                       and curr_bound[1][0] == self.files[dsel2][-1]):
+                    if all([curr_bound[0][0] == self.files[dsel1][0],
+                            curr_bound[1][0] == self.files[dsel2][-1]]):
                         pysat.logger.info(' '.join(('Updating instrument',
                                                     'object bounds by file')))
                         dsel1 = slice(self.files.start_date,

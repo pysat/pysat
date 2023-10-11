@@ -131,8 +131,8 @@ def list_files(tag='', inst_id='', data_path='', format_str=None,
         new_out = out.asfreq('D')
 
         for i, out_month in enumerate(out.index):
-            if(out_month.month == emonth.month
-               and out_month.year == emonth.year):
+            if all([out_month.month == emonth.month,
+                    out_month.year == emonth.year]):
                 out_month = emonth
 
             crange = pds.date_range(start=out_month, periods=2,

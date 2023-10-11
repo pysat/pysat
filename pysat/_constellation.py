@@ -680,10 +680,10 @@ class Constellation(object):
                                 # a common range and resolution. Note that
                                 # this will only happen if the coordinates
                                 # share the same names.
-                                if(len(coords[new_coord])
-                                   != len(cinst.data.coords[new_coord])
-                                   or coords[new_coord].values
-                                   != cinst.data.coords[new_coord].values):
+                                if any([len(cinst.data.coords[new_coord])
+                                        != len(coords[new_coord]),
+                                        cinst.data.coords[new_coord].values
+                                        != coords[new_coord].values]):
                                     coords[new_coord] = establish_common_coord(
                                         [coords[new_coord].values,
                                          cinst.data.coords[new_coord].values],
