@@ -412,15 +412,13 @@ class Instrument(object):
             if isinstance(self.file_format, str):
                 if any([self.file_format.find("{") < 0,
                         self.file_format.find("}") < 0]):
-                    raise ValueError(''.join(['file format set to default, ',
-                                              'supplied string must be ',
+                    raise ValueError(''.join(['Supplied format string must be ',
                                               'iterable string with key ',
                                               'formatting [{',
                                               self.file_format, '}]']))
             else:
-                raise ValueError(''.join(['file format set to default, ',
-                                          'supplied format must be iterable ',
-                                          'string',
+                raise ValueError(''.join(['Supplied format string must be ',
+                                          'iterable string',
                                           '[{:}]'.format(self.file_format)]))
 
         # Set up empty data and metadata.

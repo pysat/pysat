@@ -1087,7 +1087,7 @@ class TestInstWithFilesNonStandard(object):
                      'temporary_file_list': self.temporary_file_list}
 
         testing.eval_bad_input(pysat.Instrument, ValueError,
-                               'file format set to default',
+                               'Supplied format string',
                                input_kwargs=in_kwargs)
         return
 
