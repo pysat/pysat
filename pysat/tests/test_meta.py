@@ -1014,23 +1014,28 @@ class TestMeta(object):
                     meta_dict[label].__repr__())
         return
 
-    @pytest.mark.skip('See if memory is still an issue')
     @pytest.mark.parametrize("names", ['uts', ['uts', 'mlt'], 'units',
                                        ['units', 'uts']])
-    def test_meta_drop(self, names):
+    @pytest.mark.parametrize("is_drop", [True, False])
+    def test_meta_drop(self, names, is_drop):
         """Test successful deletion of meta data for different types of data.
 
         Parameters
         ----------
         names : int
             Number of variables to drop in a single go.
+        is_drop : bool
+            Use `drop` if True, use `del` if False.
 
         """
         # Set meta data
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
 
         # Drop the values
-        self.meta.drop(names)
+        if is_drop:
+            self.meta.drop(names)
+        else:
+            del self.meta[names]
 
         # Test the successful deletion
         for name in pysat.utils.listify(names):
@@ -1041,13 +1046,16 @@ class TestMeta(object):
         return
 
     @pytest.mark.parametrize("num_drop", [0, 1, 3])
-    def test_meta_num_drop(self, num_drop):
+    @pytest.mark.parametrize("is_drop", [True, False])
+    def test_meta_num_drop(self, num_drop, is_drop):
         """Test successful deletion of meta data for specific values.
 
         Parameters
         ----------
         num_drop : int
             Number of variables to drop in a single go.
+        is_drop : bool
+            Use `drop` if True, use `del` if False.
 
         """
 
@@ -1060,7 +1068,10 @@ class TestMeta(object):
                                      [val for val in self.meta.keys()])
 
         # Drop the values
-        self.meta.drop(self.dval)
+        if is_drop:
+            self.meta.drop(self.dval)
+        else:
+            del self.meta[self.dval]
 
         # Test the successful deletion
         meta_vals = [val for val in self.meta.keys()]
