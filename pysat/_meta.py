@@ -807,31 +807,51 @@ class Meta(object):
         Raises
         ------
         KeyError
-            If any of the keys provided in `names` is not found in the
-            lower dimensional data, higher dimensional data, labels, or
-            header data
+            If all of the keys provided in `names` is not found in the
+            standard metadata, labels, or header metadata.  If a subset is
+            missing, a logger warning is issued instead.
 
         """
         # Ensure the input is list-like
         names = listify(names)
+
+        # Divide the names by category
+        data_names = []
+        label_names = []
+        header_names = []
+        bad_names = []
         for name in names:
-            if name in self._ho_data:
-                # Drop the higher dimension data
-                self._ho_data.pop(name)
-
             if name in self.keys():
-                # Drop the lower dimension data
-                self.data = self._data.drop(name, axis=0)
+                data_names.append(name)
             elif name in self.data.columns:
-                # This is a metadata label
-                self.data = self._data.drop(name, axis=1)
-
-                # Also drop this from Labels
-                self.labels.drop(name)
+                label_names.append(name)
             elif name in self.header.global_attrs:
-                self.header.drop(name)
+                header_names.append(name)
             else:
-                raise KeyError("{:} not found in Meta".format(repr(name)))
+                bad_names.append(name)
+
+        # Drop the data
+        if len(data_names) > 0:
+            # Drop the lower dimension data
+            self.data = self._data.drop(data_names, axis=0)
+
+        if len(label_names) > 0:
+            # This is a metadata label
+            self.data = self._data.drop(label_names, axis=1)
+
+            # Also drop this from Labels
+            self.labels.drop(label_names)
+
+        if len(header_names) > 0:
+            # There is header metadata to drop
+            self.header.drop(header_names)
+
+        if len(bad_names) > 0:
+            estr = "{:} not found in Meta".format(repr(bad_names))
+            if len(data_names) + len(label_names) + len(header_names) == 0:
+                raise KeyError(estr)
+            else:
+                pysat.logger.warning(estr)
         return
 
     def keep(self, keep_names):
