@@ -1518,24 +1518,6 @@ class Instrument(object):
             else:
                 missing.append(iattr)
 
-        # Check and see if this instrument has deprecated _test_download_travis
-        # TODO(#807): Remove this check once _test_download_travis is removed.
-        if hasattr(self.inst_module, '_test_download_travis'):
-            local_attr = getattr(self.inst_module, '_test_download_travis')
-
-            # Test to see that this attribute is set for the desired
-            # `inst_id` and `tag`.
-            if self.inst_id in local_attr.keys():
-                if self.tag in local_attr[self.inst_id].keys():
-                    # Update the test attribute value
-                    setattr(self, '_test_download_ci',
-                            local_attr[self.inst_id][self.tag])
-                    warnings.warn(" ".join(["`_test_download_travis` has been",
-                                            "deprecated and will be replaced",
-                                            "by `_test_download_ci` in",
-                                            "3.2.0+"]),
-                                  DeprecationWarning, stacklevel=2)
-
         if len(missing) > 0:
             pysat.logger.debug(' '.join(['These Instrument test attributes',
                                          'kept their default  values:',
@@ -3615,10 +3597,6 @@ class Instrument(object):
                  **kwargs):
         """Download data for given Instrument object from start to stop.
 
-        .. deprecated:: 3.2.0
-           `freq`, which sets the step size for downloads, will be removed in
-            the 3.2.0+ release.
-
         Parameters
         ----------
         start : pandas.datetime or NoneType
@@ -3653,17 +3631,9 @@ class Instrument(object):
         pandas.DatetimeIndex
 
         """
-        # Test for deprecated kwargs
-        if 'freq' in kwargs.keys():
-            warnings.warn("".join(["`pysat.Instrument.download` kwarg `freq` ",
-                                   "has been deprecated and will be removed ",
-                                   "in pysat 3.2.0+. Use `date_array` for ",
-                                   "non-daily frequencies instead."]),
-                          DeprecationWarning, stacklevel=2)
-            freq = kwargs['freq']
-            del kwargs['freq']
-        else:
-            freq = 'D'
+
+        # Set frequency to daily.
+        freq = 'D'
 
         # Make sure directories are there, otherwise create them
         try:
