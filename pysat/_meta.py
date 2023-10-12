@@ -571,6 +571,24 @@ class Meta(object):
 
         return does_contain
 
+    def __delitem__(self, key):
+        """Delete a key by calling `drop` method.
+
+        Parameters
+        ----------
+        key : str or list-like
+            A meta data variable, label, or MetaHeader attribute; which are
+            considered in that order.
+
+        Raises
+        ------
+        KeyError
+            If all key values are unavailable
+
+        """
+        self.drop(key)
+        return
+
     def __eq__(self, other_meta):
         """Check equality between Meta instances.
 
