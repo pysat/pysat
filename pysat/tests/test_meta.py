@@ -126,6 +126,13 @@ class TestMeta(object):
                                input_args=['not_a_key'])
         return
 
+    def test_drop_w_bad_name(self):
+        """Test that a bad name will raise a KeyError for `meta.drop`."""
+
+        testing.eval_bad_input(self.meta.drop, KeyError, 'not found in Meta',
+                               input_args=['not_a_name'])
+        return
+
     def test_getitem_w_bad_key(self):
         """Test that a bad key will raise a KeyError in meta access."""
 
@@ -279,6 +286,24 @@ class TestMeta(object):
 
     # -------------------------
     # Test the logging messages
+
+    def test_drop_with_some_bad_names(self, caplog):
+        """Test a logger warning is raised if not all names can be dropped."""
+
+        with caplog.at_level(logging.WARN, logger='pysat'):
+            self.meta.drop(['uts', 'units', 'fake_var'])
+
+        # Test the warning
+        captured = caplog.text
+        estr = "missing expected message in: {:}".format(captured)
+        assert captured.find('not found in Meta') >= 0, estr
+
+        # Check that correct meta data and labels were dropped
+        assert 'uts' not in self.meta.keys(), 'Did not drop metadata'
+        assert not hasattr(self.meta.labels, 'units'), 'Did not drop MetaLabel'
+        assert 'units' not in self.meta.data.columns, 'Did not drop meta label'
+
+        return
 
     @pytest.mark.parametrize('bad_val', [[1, 2], 1, 2.0, True, None])
     def test_set_meta_with_wrong_type_cast(self, bad_val, caplog):
