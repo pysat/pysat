@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     reduce code duplication.
   * Added `__delitem__` to Meta and `drop` to MetaHeader and MetaLabels classes.
   * Modified Meta to allow MetaHeader attribute access directly from Meta.
+  * Expanded `Meta.drop` to traverse attached MetaLabel and MetaHeader data.
   * Added options to customize `pysat_ndtesting` instrument with sample rate,
     shift in time.
   * Added orbit number to `pysat_ndtesting`.
