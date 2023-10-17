@@ -28,7 +28,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated `Constellation.to_inst` method definition of coords, using dims
     to combine common dimensions instead.
   * Implement pyproject to manage metadata
-* Updated docstring references to `pysat.utils.files` in other modules.
+  * Updated docstring references to `pysat.utils.files` in other modules.
   * Remove Sphinx cap
   * Add pandas cap
   * Update usage of whitespace and if statements (E275)
@@ -42,6 +42,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed deprecated `convert_timestamp_to_datetime` function
   * Removed deprecated `_test_download_travis` flag
   * Removed deprecated `freq` kwarg from `download`
+  * Removed deprecated `use_header` kwarg from `load` and changed default
+    behaviour to `use_header=True`
 
 [3.1.0] - 2023-05-31
 --------------------
