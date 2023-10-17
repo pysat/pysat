@@ -333,8 +333,7 @@ class Instrument(object):
             # Expand the dict to include method keywords for load.
             # TODO(#1020): Remove this if statement when `use_header` is removed
             if fkey == 'load':
-                meth = getattr(self, fkey)
-                default_kwargs.update(_get_supported_keywords(meth))
+                default_kwargs['use_header'] = True
 
             # Confirm there are no reserved keywords present
             for kwarg in kwargs.keys():
