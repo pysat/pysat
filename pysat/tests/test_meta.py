@@ -126,6 +126,13 @@ class TestMeta(object):
                                input_args=['not_a_key'])
         return
 
+    def test_drop_w_bad_name(self):
+        """Test that a bad name will raise a KeyError for `meta.drop`."""
+
+        testing.eval_bad_input(self.meta.drop, KeyError, 'not found in Meta',
+                               input_args=['not_a_name'])
+        return
+
     def test_getitem_w_bad_key(self):
         """Test that a bad key will raise a KeyError in meta access."""
 
@@ -279,6 +286,24 @@ class TestMeta(object):
 
     # -------------------------
     # Test the logging messages
+
+    def test_drop_with_some_bad_names(self, caplog):
+        """Test a logger warning is raised if not all names can be dropped."""
+
+        with caplog.at_level(logging.WARN, logger='pysat'):
+            self.meta.drop(['uts', 'units', 'fake_var'])
+
+        # Test the warning
+        captured = caplog.text
+        estr = "missing expected message in: {:}".format(captured)
+        assert captured.find('not found in Meta') >= 0, estr
+
+        # Check that correct meta data and labels were dropped
+        assert 'uts' not in self.meta.keys(), 'Did not drop metadata'
+        assert not hasattr(self.meta.labels, 'units'), 'Did not drop MetaLabel'
+        assert 'units' not in self.meta.data.columns, 'Did not drop meta label'
+
+        return
 
     @pytest.mark.parametrize('bad_val', [[1, 2], 1, 2.0, True, None])
     def test_set_meta_with_wrong_type_cast(self, bad_val, caplog):
@@ -989,14 +1014,48 @@ class TestMeta(object):
                     meta_dict[label].__repr__())
         return
 
+    @pytest.mark.parametrize("names", ['uts', ['uts', 'mlt'], 'units',
+                                       ['units', 'uts']])
+    @pytest.mark.parametrize("is_drop", [True, False])
+    def test_meta_drop(self, names, is_drop):
+        """Test successful deletion of meta data for different types of data.
+
+        Parameters
+        ----------
+        names : int
+            Number of variables to drop in a single go.
+        is_drop : bool
+            Use `drop` if True, use `del` if False.
+
+        """
+        # Set meta data
+        self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing'})
+
+        # Drop the values
+        if is_drop:
+            self.meta.drop(names)
+        else:
+            del self.meta[names]
+
+        # Test the successful deletion
+        for name in pysat.utils.listify(names):
+            if name in self.testInst.variables:
+                assert name not in self.meta.keys(), "didn't drop variable"
+            else:
+                assert name not in self.meta.data.columns, "didn't drop label"
+        return
+
     @pytest.mark.parametrize("num_drop", [0, 1, 3])
-    def test_meta_drop(self, num_drop):
+    @pytest.mark.parametrize("is_drop", [True, False])
+    def test_meta_num_drop(self, num_drop, is_drop):
         """Test successful deletion of meta data for specific values.
 
         Parameters
         ----------
         num_drop : int
             Number of variables to drop in a single go.
+        is_drop : bool
+            Use `drop` if True, use `del` if False.
 
         """
 
@@ -1009,7 +1068,10 @@ class TestMeta(object):
                                      [val for val in self.meta.keys()])
 
         # Drop the values
-        self.meta.drop(self.dval)
+        if is_drop:
+            self.meta.drop(self.dval)
+        else:
+            del self.meta[self.dval]
 
         # Test the successful deletion
         meta_vals = [val for val in self.meta.keys()]
