@@ -114,7 +114,7 @@ class TestRemoveLeadText(object):
 
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
-                                         clean_level='clean', use_header=True)
+                                         clean_level='clean')
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
         return
@@ -199,10 +199,8 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         """Set up the unit test environment for each method."""
 
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'ndtesting',
-                                         num_samples=12,
-                                         clean_level='clean',
-                                         use_header=True)
+        self.testInst = pysat.Instrument('pysat', 'ndtesting', num_samples=12,
+                                         clean_level='clean')
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
         return

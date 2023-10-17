@@ -148,8 +148,7 @@ class TestBasics(object):
 
         self.testInst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, clean_level='clean',
-            temporary_file_list=self.temporary_file_list, update_files=True,
-            use_header=True)
+            temporary_file_list=self.temporary_file_list, update_files=True)
 
         # Create instrument directories in tempdir
         create_dir(self.testInst)
@@ -215,7 +214,7 @@ class TestBasics(object):
     def test_equality_with_copy_with_data(self):
         """Test that copy is the same as original, loaded `inst.data`."""
         # Load data
-        self.testInst.load(date=self.start, use_header=True)
+        self.testInst.load(date=self.start)
 
         # Make copy
         self.out = self.testInst.files.copy()

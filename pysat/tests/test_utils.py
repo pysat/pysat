@@ -50,7 +50,7 @@ class TestUpdateFill(object):
         """
 
         # Initalize the instrument
-        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst = pysat.Instrument('pysat', name)
         inst.load(date=self.ref_time)
 
         # Ensure there are fill values to check
@@ -82,7 +82,7 @@ class TestUpdateFill(object):
         """
 
         # Initalize the instrument
-        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst = pysat.Instrument('pysat', name)
         inst.load(date=self.ref_time)
 
         # Ensure there are fill values to check
