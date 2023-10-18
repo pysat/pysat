@@ -22,6 +22,130 @@ from pysat.utils import files as futils
 from pysat.utils import testing
 
 
+class TestConstructSearchstring(object):
+    """Unit tests for the `construct_searchstring_from_format` function."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+        self.out_dict = {}
+        self.num_fmt = None
+        self.str_len = None
+        self.fill_len = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.out_dict, self.num_fmt, self.str_len, self.fill_len
+        return
+
+    def eval_output(self):
+        """Evaluate the output dictionary."""
+
+        testing.assert_lists_equal(['search_string', 'keys', 'lengths',
+                                    'string_blocks'],
+                                   list(self.out_dict.keys()))
+
+        assert len(self.out_dict['keys']) == self.num_fmt
+        assert len(''.join(self.out_dict['string_blocks'])) == self.str_len
+        assert sum(self.out_dict['lengths']) == self.fill_len
+
+        if self.out_dict['search_string'].find('*') < 0:
+            assert len(
+                self.out_dict['search_string']) == self.fill_len + self.str_len
+        else:
+            assert len(
+                self.out_dict['search_string']) <= self.fill_len + self.str_len
+        return
+
+    @pytest.mark.parametrize("format_str,nfmt,slen,flen", [
+        ("", 0, 0, 0), ("test", 0, 4, 0), ("{year:02d}{month:02d}", 2, 0, 4),
+        ("test_{year:04d}.ext", 1, 9, 4)])
+    def test_searchstring_success(self, format_str, nfmt, slen, flen):
+        """Test successful construction of a searchable string.
+
+        Parameters
+        ----------
+        format_str : str
+            The naming pattern of the instrument files and the locations of
+            date/version/revision/cycle information needed to create an ordered
+            list.
+        nfmt : int
+            Number of formatting options included in the format string
+        slen : int
+            Length of non-formatted string segments
+        flen : int
+            Length of formatted segments
+
+        """
+        # Set the evaluation criteria
+        self.num_fmt = nfmt
+        self.str_len = slen
+        self.fill_len = flen
+
+        # Get the streachstring dictionary
+        self.out_dict = futils.construct_searchstring_from_format(format_str)
+
+        # Evaluate the output
+        self.eval_output()
+        return
+
+    @pytest.mark.parametrize("format_str,nfmt,slen,flen, nwc", [
+        ("", 0, 0, 0, 0), ("test", 0, 4, 0, 0),
+        ("{year:02d}{month:02d}", 2, 0, 4, 2),
+        ("test_{year:04d}_{month:02d}.ext", 2, 10, 6, 2)])
+    def test_searchstring_w_wildcard(self, format_str, nfmt, slen, flen, nwc):
+        """Test successful construction of a searchable string with wildcards.
+
+        Parameters
+        ----------
+        format_str : str
+            The naming pattern of the instrument files and the locations of
+            date/version/revision/cycle information needed to create an ordered
+            list.
+        nfmt : int
+            Number of formatting options included in the format string
+        slen : int
+            Length of non-formatted string segments
+        flen : int
+            Length of formatted segments
+        nwc : int
+            Number of wildcard (*) symbols
+
+        """
+        # Set the evaluation criteria
+        self.num_fmt = nfmt
+        self.str_len = slen
+        self.fill_len = flen
+
+        # Get the streachstring dictionary
+        self.out_dict = futils.construct_searchstring_from_format(format_str,
+                                                                  True)
+
+        # Evaluate the output
+        self.eval_output()
+        assert len(self.out_dict['search_string'].split('*')) == nwc + 1
+        return
+
+    def test_searchstring_noformat(self):
+        """Test failure if the input argument is NoneType."""
+
+        testing.eval_bad_input(futils.construct_searchstring_from_format,
+                               ValueError,
+                               'Must supply a filename template (format_str).',
+                               input_args=[None])
+        return
+
+    def test_searchstring_bad_wildcard(self):
+        """Test failure if unsupported wildcard use is encountered."""
+
+        testing.eval_bad_input(futils.construct_searchstring_from_format,
+                               ValueError,
+                               "Couldn't determine formatting width, check",
+                               input_args=["test{year:02d}{month:d}.txt"])
+        return
+
+
 class TestParseFilenames(object):
     """Unit tests for the file parsing functions."""
 
