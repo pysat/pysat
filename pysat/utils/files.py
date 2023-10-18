@@ -23,7 +23,7 @@ from pysat.utils.time import create_datetime_index
 
 
 def _init_parse_filenames(files, format_str):
-    """Initalize the output for the file parsing functions.
+    """Set the initial output for the file parsing functions.
 
     Parameters
     ----------
