@@ -6,6 +6,7 @@
 """Tests the `pysat.utils.files` functions."""
 
 import datetime as dt
+from collections import OrderedDict
 from importlib import reload
 import numpy as np
 import os
@@ -47,17 +48,9 @@ class TestParseFilenames(object):
         del self.temporary_file_list
 
     def eval_parsed_filenames(self):
-        """Evaluate the output of a `parse_delimited_filename` unit test.
-
-        Returns
-        -------
-        bool
-            True if there is data to evalute, False if data dict is empty
-
-        """
+        """Evaluate the output of a `parse_delimited_filename` unit test."""
         # Evaluate the returned data dict
-        if len(self.file_dict.keys()) < 2:
-            return False
+        assert len(self.file_dict.keys()) >= 2, "insufficient keys in file dict"
 
         # Extract the test lists
         if len(self.fkwargs) > 0:
@@ -78,7 +71,7 @@ class TestParseFilenames(object):
                 assert self.file_dict[fkey] is None, \
                     "unused format key has a value"
 
-        return True
+        return
 
     @pytest.mark.parametrize("sep_char,flead,good_kwargs", [
         ("_", "test_", ['year', 'month', 'day', 'hour', 'minute', 'version']),
@@ -117,7 +110,7 @@ class TestParseFilenames(object):
                                                           sep_char)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     def test_parse_delimited_filename_empty(self):
@@ -132,7 +125,7 @@ class TestParseFilenames(object):
         self.file_dict = futils.parse_delimited_filenames([], fname, sep_char)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     @pytest.mark.parametrize("sep_char,flead,good_kwargs", [
@@ -171,7 +164,7 @@ class TestParseFilenames(object):
         self.file_dict = futils.parse_fixed_width_filenames(file_list, fname)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     def test_parse_fixed_width_filename_empty(self):
@@ -185,7 +178,7 @@ class TestParseFilenames(object):
         self.file_dict = futils.parse_fixed_width_filenames([], fname)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     def test_init_parse_filename_empty(self):
@@ -199,7 +192,7 @@ class TestParseFilenames(object):
         self.file_dict, sdict = futils._init_parse_filenames([], fname)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         assert len(sdict.keys()) == 0, "Search dict was defined unnecessarily"
         return
 
@@ -260,6 +253,123 @@ class TestParseFilenames(object):
                     testing.assert_isinstance(self.file_dict[fkey][0], str)
                 else:
                     testing.assert_isinstance(self.file_dict[fkey][0], np.int64)
+        return
+
+
+class TestProcessParsedFilenames(object):
+    """Unit tests for `process_parsed_filenames` function."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+        self.stored = OrderedDict({'year': np.full(shape=3, fill_value=2001),
+                                   'month': np.full(shape=3, fill_value=2),
+                                   'day': np.ones(shape=3, dtype=np.int64),
+                                   'hour': np.zeros(shape=3, dtype=np.int64),
+                                   'minute': np.zeros(shape=3, dtype=np.int64),
+                                   'second': np.arange(0, 3, 1),
+                                   'version': np.arange(0, 3, 1),
+                                   'revision': np.arange(3, 0, -1),
+                                   'cycle': np.array([1, 3, 2])})
+        self.format_str = "_".join(["test", "{year:04d}", "{month:02d}",
+                                    "{day:02d}", "{hour:02d}", "{minute:02d}",
+                                    "{second:02d}", "v{version:02d}",
+                                    "r{revision:02d}", "c{cycle:02d}.cdf"])
+
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment for each method."""
+
+        del self.stored, self.format_str
+        return
+
+    def complete_stored(self):
+        """Add the 'files' and 'format_str' kwargs to the `stored` dict."""
+
+        file_list = []
+        for ind in range(len(self.stored['year'])):
+            ind_dict = {skey: self.stored[skey][ind]
+                        for skey in self.stored.keys()}
+            file_list.append(self.format_str.format(**ind_dict))
+
+        self.stored['files'] = file_list
+        self.stored['format_str'] = self.format_str
+        return
+
+    @pytest.mark.parametrize("year_break", [0, 50])
+    def test_two_digit_years(self, year_break):
+        """Test the results of using different year breaks for YY formats."""
+        # Complete the ordered dict of file information
+        self.stored['year'] -= 2000
+        self.format_str = self.format_str.replace('year:04', 'year:02')
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(
+            self.stored, two_digit_year_break=year_break)
+
+        # Test the series year
+        test_year = series.index.max().year
+        century = 1900 if year_break == 0 else 2000
+        assert test_year - century < 100, "year break caused wrong century"
+
+        # Test that the series length is correct and all filenames are unique
+        assert series.shape == self.stored['year'].shape
+        assert np.unique(series.values).shape == self.stored['year'].shape
+        return
+
+    def test_version_selection(self):
+        """Test version selection dominates when time is the same."""
+        # Complete the ordered dict of file information
+        self.stored['second'] = np.zeros(shape=self.stored['year'].shape,
+                                         dtype=np.int64)
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(self.stored)
+
+        # Ensure there is only one file and that it has the highest version
+        ver_num = "v{:02d}".format(self.stored['version'].max())
+        assert series.shape == (1, )
+        assert series.values[0].find(ver_num) > 0
+        return
+
+    def test_revision_selection(self):
+        """Test revision selection dominates after time and version."""
+        # Complete the ordered dict of file information
+        self.stored['second'] = np.zeros(shape=self.stored['year'].shape,
+                                         dtype=np.int64)
+        self.stored['version'] = np.zeros(shape=self.stored['year'].shape,
+                                          dtype=np.int64)
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(self.stored)
+
+        # Ensure there is only one file and that it has the highest version
+        rev_num = "r{:02d}".format(self.stored['revision'].max())
+        assert series.shape == (1, )
+        assert series.values[0].find(rev_num) > 0
+        return
+
+    def test_cycle_selection(self):
+        """Test cycle selection dominates after time, version, and revision."""
+        # Complete the ordered dict of file information
+        self.stored['second'] = np.zeros(shape=self.stored['year'].shape,
+                                         dtype=np.int64)
+        self.stored['version'] = np.zeros(shape=self.stored['year'].shape,
+                                          dtype=np.int64)
+        self.stored['revision'] = np.zeros(shape=self.stored['year'].shape,
+                                           dtype=np.int64)
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(self.stored)
+
+        # Ensure there is only one file and that it has the highest version
+        cyc_num = "c{:02d}".format(self.stored['cycle'].max())
+        assert series.shape == (1, )
+        assert series.values[0].find(cyc_num) > 0
         return
 
 
