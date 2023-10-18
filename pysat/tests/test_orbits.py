@@ -140,7 +140,6 @@ class TestOrbitsUserInterface(object):
         """
 
         self.in_kwargs['orbit_info'] = info
-        self.in_kwargs['use_header'] = True
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         self.testInst.load(date=self.stime)
 
@@ -168,7 +167,6 @@ class TestOrbitsUserInterface(object):
         """
 
         self.in_kwargs['orbit_info'] = info
-        self.in_kwargs['use_header'] = True
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
 
         # Force index to None beforee loading and iterating
@@ -182,7 +180,6 @@ class TestOrbitsUserInterface(object):
         """Test the Orbit representation."""
 
         self.in_kwargs['orbit_info'] = {'index': 'mlt'}
-        self.in_kwargs['use_header'] = True
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         out_str = self.testInst.orbits.__repr__()
 
@@ -193,7 +190,6 @@ class TestOrbitsUserInterface(object):
         """Test the Orbit string representation with data."""
 
         self.in_kwargs['orbit_info'] = {'index': 'mlt'}
-        self.in_kwargs['use_header'] = True
         self.testInst = pysat.Instrument(*self.in_args, **self.in_kwargs)
         self.testInst.load(date=self.stime)
         out_str = self.testInst.orbits.__str__()
@@ -212,8 +208,7 @@ class TestSpecificUTOrbits(object):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.inc_min = 97
         self.etime = None
@@ -391,8 +386,7 @@ class TestGeneralOrbitsMLT(object):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
@@ -592,8 +586,7 @@ class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_ndtesting._test_dates['']['']
         return
 
@@ -620,8 +613,7 @@ class TestGeneralOrbitsNonStandardIteration(object):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.testInst.bounds = (self.testInst.files.files.index[0],
                                 self.testInst.files.files.index[11],
                                 '2D', dt.timedelta(days=3))
@@ -683,8 +675,7 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
@@ -705,8 +696,7 @@ class TestGeneralOrbitsLongXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'longitude',
                                                      'kind': 'longitude'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
@@ -727,8 +717,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
@@ -749,8 +738,7 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
                                                      'kind': 'orbit'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_ndtesting._test_dates['']['']
         return
 
@@ -771,8 +759,7 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         return
 
@@ -793,8 +780,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
                                          clean_level='clean',
                                          orbit_info={'index': 'latitude',
                                                      'kind': 'polar'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_ndtesting._test_dates['']['']
         return
 
@@ -835,8 +821,7 @@ class TestOrbitsGappyData(object):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
@@ -877,8 +862,7 @@ class TestOrbitsGappyDataXarray(TestOrbitsGappyData):
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
@@ -919,8 +903,7 @@ class TestOrbitsGappyData2(object):
 
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
-                                         orbit_info={'index': 'mlt'},
-                                         use_header=True)
+                                         orbit_info={'index': 'mlt'})
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.custom_attach(filter_data, kwargs={'times': self.times})
         return
@@ -948,8 +931,7 @@ class TestOrbitsGappyData2Xarray(TestOrbitsGappyData2):
 
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          clean_level='clean',
-                                         orbit_info={'index': 'mlt'},
-                                         use_header=True)
+                                         orbit_info={'index': 'mlt'})
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.custom_attach(filter_data, kwargs={'times': self.times})
         return
@@ -970,8 +952,7 @@ class TestOrbitsGappyLongData(TestOrbitsGappyData):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'longitude',
-                                                     'kind': 'longitude'},
-                                         use_header=True)
+                                                     'kind': 'longitude'})
 
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime
@@ -994,8 +975,7 @@ class TestOrbitsGappyLongDataXarray(TestOrbitsGappyData):
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          clean_level='clean',
                                          orbit_info={'index': 'longitude',
-                                                     'kind': 'longitude'},
-                                         use_header=True)
+                                                     'kind': 'longitude'})
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
@@ -1017,8 +997,7 @@ class TestOrbitsGappyOrbitNumData(TestOrbitsGappyData):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
-                                                     'kind': 'orbit'},
-                                         use_header=True)
+                                                     'kind': 'orbit'})
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
@@ -1040,8 +1019,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestOrbitsGappyData):
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          clean_level='clean',
                                          orbit_info={'index': 'orbit_num',
-                                                     'kind': 'orbit'},
-                                         use_header=True)
+                                                     'kind': 'orbit'})
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime
         self.testInst.custom_attach(filter_data, kwargs={'times': self.gaps})
@@ -1063,8 +1041,7 @@ class TestOrbitsGappyOrbitLatData(TestOrbitsGappyData):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'latitude',
-                                                     'kind': 'polar'},
-                                         use_header=True)
+                                                     'kind': 'polar'})
 
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime
@@ -1087,8 +1064,7 @@ class TestOrbitsGappyOrbitLatDataXarray(TestOrbitsGappyData):
         self.testInst = pysat.Instrument('pysat', 'ndtesting',
                                          clean_level='clean',
                                          orbit_info={'index': 'latitude',
-                                                     'kind': 'polar'},
-                                         use_header=True)
+                                                     'kind': 'polar'})
 
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.gaps = self.stime + self.deltime

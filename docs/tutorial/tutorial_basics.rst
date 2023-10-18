@@ -518,15 +518,16 @@ the instrument PI, etc.  Previous versions of pysat stored this data as custom
 attributes attached to the :py:class:`pysat.Instrument`, instead of keeping all
 metadata in the :py:class:`pysat.Meta` object.
 
-To avoid breaking existing workflows, global metadata is only loaded into
-:py:class:`pysat.MetaHeader` through completely internal pysat processes or
-after setting the :py:data:`use_header` keyword argument.
+Global metadata is loaded into the :py:class:`pysat.MetaHeader` by default, but
+to avoid breaking existing workflows, loading this metadata directly into the
+:py:class:`~pysat._instrument.Instrument` by setting the :py:data:`use_header`
+keyword argument.
 
 .. code:: python
 
-   # This will show: Metadata for 0 global attributes
-   dmsp.load(date=start, use_header=True)
-   print(dmsp.meta.header)
+   # This will raise a warning that future releases will require use of
+   # the MetaHeader class
+   dmsp.load(date=start, use_header=False)
 
 
 You can manually add global metadata the same way you would assign an attribute.

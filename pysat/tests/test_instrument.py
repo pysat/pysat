@@ -49,10 +49,8 @@ class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
 
         reload(pysat.instruments.pysat_testing)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=10,
-                                         clean_level='clean',
+                                         num_samples=10, clean_level='clean',
                                          update_files=True,
-                                         use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
@@ -90,10 +88,8 @@ class TestInstCadence(TestBasics):
                                     self.ref_time + pds.DateOffset(years=2)
                                     - pds.DateOffset(days=1), freq=self.freq)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=10,
-                                         clean_level='clean',
+                                         num_samples=10, clean_level='clean',
                                          update_files=True,
-                                         use_header=True,
                                          file_date_range=date_range,
                                          **self.testing_kwargs)
         self.ref_doy = int(self.ref_time.strftime('%j'))
@@ -122,10 +118,8 @@ class TestInstMonthlyCadence(TestInstCadence):
                                     + pds.DateOffset(years=2, days=-1),
                                     freq=self.freq)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=10,
-                                         clean_level='clean',
+                                         num_samples=10, clean_level='clean',
                                          update_files=True,
-                                         use_header=True,
                                          file_date_range=date_range,
                                          **self.testing_kwargs)
         self.ref_doy = int(self.ref_time.strftime('%j'))
@@ -155,10 +149,8 @@ class TestInstYearlyCadence(TestInstCadence):
                                     + pds.DateOffset(years=5, days=-1),
                                     freq=self.freq)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=10,
-                                         clean_level='clean',
+                                         num_samples=10, clean_level='clean',
                                          update_files=True,
-                                         use_header=True,
                                          file_date_range=date_range,
                                          **self.testing_kwargs)
         self.ref_doy = int(self.ref_time.strftime('%j'))
@@ -180,11 +172,8 @@ class TestBasicsInstModule(TestBasics):
 
         reload(pysat.instruments.pysat_testing)
         imod = pysat.instruments.pysat_testing
-        self.testInst = pysat.Instrument(inst_module=imod,
-                                         num_samples=10,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         use_header=True,
+        self.testInst = pysat.Instrument(inst_module=imod, num_samples=10,
+                                         clean_level='clean', update_files=True,
                                          **self.testing_kwargs)
         self.ref_time = imod._test_dates['']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
@@ -211,12 +200,9 @@ class TestBasicsNDXarray(TestBasics):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_ndtesting)
-        self.testInst = pysat.Instrument(platform='pysat',
-                                         name='ndtesting',
-                                         num_samples=10,
-                                         clean_level='clean',
+        self.testInst = pysat.Instrument(platform='pysat', name='ndtesting',
+                                         num_samples=10, clean_level='clean',
                                          update_files=True,
-                                         use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
@@ -232,7 +218,7 @@ class TestBasicsNDXarray(TestBasics):
     def test_setting_data_as_tuple(self):
         """Test setting data as a tuple."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = ('time', 2. * self.testInst['mlt'].values)
         assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         return
@@ -267,7 +253,7 @@ class TestBasicsNDXarray(TestBasics):
 
         """
 
-        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        self.testInst.load(self.ref_time.year, self.ref_doy)
         assert np.all(self.testInst[index, index, 'profiles']
                       == self.testInst.data['profiles'][index, index])
         return
@@ -275,7 +261,7 @@ class TestBasicsNDXarray(TestBasics):
     def test_data_access_by_2d_tuple_indices_and_name(self):
         """Check that variables and be accessed by multi-dim tuple index."""
 
-        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.load(date=self.ref_time)
         index = ([0, 1, 2, 3], [0, 1, 2, 3])
         assert np.all(self.testInst[index, 'profiles']
                       == self.testInst.data['profiles'][index[0], index[1]])
@@ -284,7 +270,7 @@ class TestBasicsNDXarray(TestBasics):
     def test_data_access_bad_dimension_tuple(self):
         """Test raises ValueError for mismatched tuple index and data dims."""
 
-        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.load(date=self.ref_time)
         index = ([0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3])
 
         with pytest.raises(ValueError) as verr:
@@ -297,7 +283,7 @@ class TestBasicsNDXarray(TestBasics):
     def test_data_access_bad_dimension_for_multidim(self):
         """Test raises ValueError for mismatched index and data dimensions."""
 
-        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.load(date=self.ref_time)
         index = [0, 1, 2, 3]
 
         with pytest.raises(ValueError) as verr:
@@ -324,7 +310,7 @@ class TestBasicsNDXarray(TestBasics):
 
         """
 
-        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleProfile'] = 2. * self.testInst['profiles']
         self.testInst[changed, changed, 'doubleProfile'] = 0
         assert np.all(np.all(self.testInst[fixed, fixed, 'doubleProfile']
@@ -373,7 +359,7 @@ class TestBasicsNDXarray(TestBasics):
 
         warnings.simplefilter("always")
 
-        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.load(date=self.ref_time)
 
         with warnings.catch_warnings(record=True) as self.war:
             self.testInst["new_val"] = val
@@ -391,7 +377,7 @@ class TestBasicsNDXarray(TestBasics):
 
         """
 
-        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.load(date=self.ref_time)
         self.testInst.data = self.testInst.data.assign_coords(
             {'preset_val': np.array([1.0, 2.0])})
 
@@ -413,7 +399,7 @@ class TestBasicsNDXarray(TestBasics):
 
         """
 
-        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.load(date=self.ref_time)
         self.testInst.data = self.testInst.data.assign_coords(
             {'preset_val': 1.0})
 
@@ -433,12 +419,10 @@ class TestBasicsShiftedFileDates(TestBasics):
 
         reload(pysat.instruments.pysat_testing)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_samples=10,
-                                         clean_level='clean',
+                                         num_samples=10, clean_level='clean',
                                          update_files=True,
                                          mangle_file_dates=True,
                                          strict_time_flag=True,
-                                         use_header=True,
                                          **self.testing_kwargs)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.ref_doy = int(self.ref_time.strftime('%j'))
@@ -517,11 +501,11 @@ class TestInstGeneral(object):
 
         obj1 = pysat.Instrument(platform='pysat', name='testing',
                                 num_samples=10, clean_level='clean',
-                                update_files=True, use_header=True)
+                                update_files=True)
 
         obj2 = pysat.Instrument(platform='pysat', name='ndtesting',
                                 num_samples=10, clean_level='clean',
-                                update_files=True, use_header=True)
+                                update_files=True)
         assert not (obj1 == obj2)
         return
 
@@ -567,7 +551,7 @@ class TestDeprecation(object):
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
-            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+            tinst = pysat.Instrument(**self.in_kwargs)
 
         self.warn_msgs = np.array(["`labels` is deprecated, use `meta_kwargs`"])
 
@@ -597,7 +581,7 @@ class TestDeprecation(object):
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
-            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+            tinst = pysat.Instrument(**self.in_kwargs)
             labels = tinst.meta_labels
 
         self.warn_msgs = np.array(["Deprecated attribute, returns `meta_kwarg"])
@@ -622,7 +606,7 @@ class TestDeprecation(object):
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
-            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+            tinst = pysat.Instrument(**self.in_kwargs)
             tinst.generic_meta_translator(tinst.meta)
 
         self.warn_msgs = np.array(["".join(["This function has been deprecated",
@@ -637,8 +621,8 @@ class TestDeprecation(object):
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
-            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
-            tinst.load(date=self.ref_time, use_header=True)
+            tinst = pysat.Instrument(**self.in_kwargs)
+            tinst.load(date=self.ref_time)
             mdata_dict = tinst.meta._data.to_dict()
             tinst._filter_netcdf4_metadata(mdata_dict,
                                            coltype='str')
@@ -659,7 +643,7 @@ class TestDeprecation(object):
 
         # Catch the warnings
         with warnings.catch_warnings(record=True) as self.war:
-            tinst = pysat.Instrument(use_header=True, **self.in_kwargs)
+            tinst = pysat.Instrument(**self.in_kwargs)
             try:
                 tinst.to_netcdf4()
             except ValueError:
@@ -686,7 +670,7 @@ class TestDeprecation(object):
         """
 
         with warnings.catch_warnings(record=True) as self.war:
-            pysat.Instrument('pysat', 'testing', use_header=True, **kwargs)
+            pysat.Instrument('pysat', 'testing', **kwargs)
 
         self.warn_msgs = np.array(["".join(["The usage of None in `tag` and ",
                                             "`inst_id` has been deprecated ",
@@ -697,19 +681,20 @@ class TestDeprecation(object):
         self.eval_warnings()
         return
 
+    # TODO(#1020): Remove test when keyword `use_header` is removed.
     def test_load_use_header(self):
         """Test that user is informed of MetaHeader on load."""
 
         # Determine the expected warnings
         self.warn_msgs = np.array(["".join(['Meta now contains a class for ',
                                             'global metadata (MetaHeader). ',
-                                            'Default attachment of global ',
-                                            'attributes to Instrument will be',
-                                            ' Deprecated in pysat 3.2.0+. Set ',
-                                            '`use_header=True` in this load ',
-                                            'call or on Instrument ',
-                                            'instantiation to remove this',
-                                            ' warning.'])])
+                                            'Allowing attachment of global ',
+                                            'attributes to Instrument through',
+                                            ' `use_header=False` will be ',
+                                            'Deprecated in pysat 3.3.0+. ',
+                                            'Remove `use_header` kwarg (now ',
+                                            'same as `use_header=True`) to ',
+                                            'stop this warning.'])])
 
         # Capture the warnings
         with warnings.catch_warnings(record=True) as self.war:

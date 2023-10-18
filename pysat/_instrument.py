@@ -331,10 +331,9 @@ class Instrument(object):
             default_kwargs = _get_supported_keywords(func)
 
             # Expand the dict to include method keywords for load.
-            # TODO(#1020): Remove this if statement for the 3.2.0+ release
+            # TODO(#1020): Remove this if statement when `use_header` is removed
             if fkey == 'load':
-                meth = getattr(self, fkey)
-                default_kwargs.update(_get_supported_keywords(meth))
+                default_kwargs['use_header'] = True
 
             # Confirm there are no reserved keywords present
             for kwarg in kwargs.keys():
@@ -2920,7 +2919,7 @@ class Instrument(object):
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
-             use_header=False, **kwargs):
+             **kwargs):
         """Load the instrument data and metadata.
 
         Parameters
@@ -2957,9 +2956,6 @@ class Instrument(object):
         verifyPad : bool
             If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
-        use_header : bool
-            If True, moves custom Meta attributes to MetaHeader instead of
-            Instrument (default=False)
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments.
 
@@ -3017,6 +3013,22 @@ class Instrument(object):
             inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
+        # If the `use_header` kwarg is included, set it here. Otherwise set
+        # it to True.
+        # TODO(#1020): removed this logic after kwarg not supported.
+        if 'use_header' in kwargs.keys():
+            use_header = kwargs['use_header']
+            warnings.warn(''.join(['Meta now contains a class for global ',
+                                   'metadata (MetaHeader). Allowing attachment',
+                                   ' of global attributes to Instrument ',
+                                   'through `use_header=False` will be ',
+                                   'Deprecated in pysat 3.3.0+. Remove ',
+                                   '`use_header` kwarg (now same as ',
+                                   '`use_header=True`) to stop this warning.']),
+                          DeprecationWarning, stacklevel=2)
+        else:
+            use_header = True
+
         # Add the load kwargs from initialization those provided on input
         for lkey in self.kwargs['load'].keys():
             # Only use the initialized kwargs if a request hasn't been
@@ -3368,19 +3380,11 @@ class Instrument(object):
 
         # Transfer any extra attributes in meta to the Instrument object.
         # Metadata types need to be initialized before preprocess is run.
-        # TODO(#1020): Change the way this kwarg is handled
+        # TODO(#1020): Remove warning and logic when kwarg is removed
         if use_header or ('use_header' in self.kwargs['load']
                           and self.kwargs['load']['use_header']):
             self.meta.transfer_attributes_to_header()
         else:
-            warnings.warn(''.join(['Meta now contains a class for global ',
-                                   'metadata (MetaHeader). Default attachment ',
-                                   'of global attributes to Instrument will ',
-                                   'be Deprecated in pysat 3.2.0+. Set ',
-                                   '`use_header=True` in this load call or ',
-                                   'on Instrument instantiation to remove this',
-                                   ' warning.']), DeprecationWarning,
-                          stacklevel=2)
             self.meta.transfer_attributes_to_instrument(self)
 
         # Transfer loaded data types to meta.

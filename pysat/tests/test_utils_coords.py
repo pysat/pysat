@@ -67,8 +67,7 @@ class TestUpdateLon(object):
     def test_update_longitude(self, name):
         """Test `update_longitude` successful run."""
 
-        self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time)
 
         # Test instruments initially define longitude between 0-360 deg
@@ -85,8 +84,7 @@ class TestUpdateLon(object):
     def test_bad_lon_name_update_longitude(self):
         """Test update_longitude with a bad longitude name."""
 
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing",
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing")
         self.py_inst.load(date=self.inst_time)
 
         testing.eval_bad_input(coords.update_longitude, ValueError,
@@ -124,7 +122,7 @@ class TestCalcSLT(object):
 
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        num_samples=1, use_header=True)
+                                        num_samples=1)
         self.py_inst.load(date=self.inst_time)
 
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -148,7 +146,7 @@ class TestCalcSLT(object):
 
         # Instantiate instrument and load data
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        num_samples=1, use_header=True)
+                                        num_samples=1)
         self.py_inst.load(date=self.inst_time)
 
         # Apply solar local time method and capture logging output
@@ -167,8 +165,7 @@ class TestCalcSLT(object):
         """Test calc_solar_local_time with longitudes from -180 to 180 deg."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing",
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing")
         self.py_inst.load(date=self.inst_time)
 
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -186,8 +183,7 @@ class TestCalcSLT(object):
         """Test raises ValueError with a bad longitude name."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name="testing",
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name="testing")
         self.py_inst.load(date=self.inst_time)
 
         # Test that the correct Exception and error message are raised
@@ -203,8 +199,7 @@ class TestCalcSLT(object):
         """Test calc_solar_local_time with longitude coordinates."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time)
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt')
@@ -219,8 +214,7 @@ class TestCalcSLT(object):
         """Test non modulated solar local time output for a 2 day range."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time,
                           end_date=self.inst_time + dt.timedelta(days=2))
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -237,8 +231,7 @@ class TestCalcSLT(object):
         """Test non modulated SLT output for a 2 day range with a ref date."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time, end_date=self.inst_time
                           + dt.timedelta(days=2))
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
@@ -257,8 +250,7 @@ class TestCalcSLT(object):
         """Test SLT calc with longitude coordinates and no modulus."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name)
         self.py_inst.load(date=self.inst_time)
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt', apply_modulus=False)
@@ -273,8 +265,7 @@ class TestCalcSLT(object):
         """Test calc_solar_local_time with a single longitude value."""
 
         # Instantiate instrument and load data
-        self.py_inst = pysat.Instrument(platform='pysat', name="ndtesting",
-                                        use_header=True)
+        self.py_inst = pysat.Instrument(platform='pysat', name="ndtesting")
         self.py_inst.load(date=self.inst_time)
         lon_name = 'lon2'
 
@@ -362,7 +353,7 @@ class TestExpandXarrayDims(object):
     def setup_method(self):
         """Set up the unit test environment."""
         self.test_inst = pysat.Instrument(
-            inst_module=pysat.instruments.pysat_ndtesting, use_header=True)
+            inst_module=pysat.instruments.pysat_ndtesting)
         self.start_time = pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.data_list = []
         self.out = None
@@ -397,12 +388,12 @@ class TestExpandXarrayDims(object):
             # Load a second data set with half the time samples
             self.test_inst = pysat.Instrument(
                 inst_module=self.test_inst.inst_module,
-                num_samples=num_samples, use_header=True)
+                num_samples=num_samples)
         else:
             # Load a second data set with different dimensions apart from time
             self.test_inst = pysat.Instrument(
                 inst_module=pysat.instruments.pysat_testmodel,
-                num_samples=num_samples, use_header=True)
+                num_samples=num_samples)
 
         self.test_inst.load(date=self.start_time + dt.timedelta(days=1))
         self.data_list.append(self.test_inst.data)

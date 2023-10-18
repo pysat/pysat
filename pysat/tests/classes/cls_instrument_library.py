@@ -68,7 +68,7 @@ def initialize_test_inst_and_date(inst_dict):
                                  tag=inst_dict['tag'],
                                  inst_id=inst_dict['inst_id'],
                                  temporary_file_list=True, update_files=True,
-                                 use_header=True, **kwargs)
+                                 **kwargs)
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
@@ -94,7 +94,7 @@ def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
     """
 
     try:
-        test_inst.load(date=date, use_header=True)
+        test_inst.load(date=date)
     except Exception as err:
         # Catch all potential input errors, and only ensure that the one caused
         # by the strict time flag is prevented from occurring on future load
@@ -111,7 +111,7 @@ def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
 
             # Evaluate the warning
             with warnings.catch_warnings(record=True) as war:
-                test_inst.load(date=date, use_header=True)
+                test_inst.load(date=date)
 
             assert len(war) >= 1
             categories = [war[j].category for j in range(len(war))]
@@ -279,7 +279,7 @@ class InstLibTests(object):
         for inst_id in module.inst_ids.keys():
             for tag in module.inst_ids[inst_id]:
                 inst = pysat.Instrument(inst_module=module, tag=tag,
-                                        inst_id=inst_id, use_header=True)
+                                        inst_id=inst_id)
 
                 # Test to see that the class parameters were passed in
                 testing.assert_isinstance(inst, pysat.Instrument)
@@ -462,7 +462,7 @@ class InstLibTests(object):
                             with caplog.at_level(
                                     getattr(logging, clean_method_level),
                                     logger='pysat'):
-                                test_inst.load(date=date, use_header=True)
+                                test_inst.load(date=date)
 
                             # Test the returned message
                             out_msg = caplog.text
@@ -472,7 +472,7 @@ class InstLibTests(object):
                         elif clean_method == 'warning':
                             # A warning message is expected
                             with warnings.catch_warnings(record=True) as war:
-                                test_inst.load(date=date, use_header=True)
+                                test_inst.load(date=date)
 
                             # Test the warning output
                             testing.eval_warnings(war, [clean_method_msg],
@@ -482,8 +482,7 @@ class InstLibTests(object):
                             # and the error message
                             testing.eval_bad_input(
                                 test_inst.load, clean_method_level,
-                                clean_method_msg,
-                                input_kwargs={'date': date, 'use_header': True})
+                                clean_method_msg, input_kwargs={'date': date})
                         else:
                             raise AttributeError(
                                 'unknown type of warning: {:}'.format(

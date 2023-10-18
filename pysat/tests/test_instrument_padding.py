@@ -23,15 +23,11 @@ class TestDataPaddingbyFile(object):
         reload(pysat.instruments.pysat_testing)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
-                                         pad={'minutes': 5},
-                                         update_files=True,
-                                         use_header=True)
+                                         pad={'minutes': 5}, update_files=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
 
         self.rawInst = pysat.Instrument(platform='pysat', name='testing',
-                                        clean_level='clean',
-                                        update_files=True,
-                                        use_header=True)
+                                        clean_level='clean', update_files=True)
         self.rawInst.bounds = self.testInst.bounds
         self.delta = dt.timedelta(seconds=0)
         return
@@ -143,23 +139,15 @@ class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_ndtesting)
-        self.testInst = pysat.Instrument(platform='pysat',
-                                         name='ndtesting',
-                                         num_samples=86400,
-                                         sample_rate='1s',
+        self.testInst = pysat.Instrument(platform='pysat', name='ndtesting',
+                                         num_samples=86400, sample_rate='1s',
                                          clean_level='clean',
-                                         pad={'minutes': 5},
-                                         update_files=True,
-                                         use_header=True)
+                                         pad={'minutes': 5}, update_files=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
 
-        self.rawInst = pysat.Instrument(platform='pysat',
-                                        name='ndtesting',
-                                        num_samples=86400,
-                                        sample_rate='1s',
-                                        clean_level='clean',
-                                        update_files=True,
-                                        use_header=True)
+        self.rawInst = pysat.Instrument(platform='pysat', name='ndtesting',
+                                        num_samples=86400, sample_rate='1s',
+                                        clean_level='clean', update_files=True)
         self.rawInst.bounds = self.testInst.bounds
         self.delta = dt.timedelta(seconds=0)
         return
@@ -182,14 +170,11 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.rawInst = pysat.Instrument(platform='pysat', name='testing',
-                                        tag='',
-                                        clean_level='clean',
+                                        tag='', clean_level='clean',
                                         update_files=True,
-                                        sim_multi_file_right=True,
-                                        use_header=True)
+                                        sim_multi_file_right=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
         self.delta = dt.timedelta(seconds=0)
@@ -216,16 +201,11 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
-        self.rawInst = pysat.Instrument(platform='pysat',
-                                        name='ndtesting',
-                                        num_samples=86400,
-                                        sample_rate='1s',
-                                        clean_level='clean',
-                                        update_files=True,
-                                        sim_multi_file_right=True,
-                                        use_header=True)
+                                         pad={'minutes': 5})
+        self.rawInst = pysat.Instrument(platform='pysat', name='ndtesting',
+                                        num_samples=86400, sample_rate='1s',
+                                        clean_level='clean', update_files=True,
+                                        sim_multi_file_right=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
         self.delta = dt.timedelta(seconds=0)
@@ -246,16 +226,12 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
 
         reload(pysat.instruments.pysat_testing)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         clean_level='clean',
-                                         update_files=True,
+                                         clean_level='clean', update_files=True,
                                          sim_multi_file_left=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.rawInst = pysat.Instrument(platform='pysat', name='testing',
-                                        clean_level='clean',
-                                        update_files=True,
-                                        sim_multi_file_left=True,
-                                        use_header=True)
+                                        clean_level='clean', update_files=True,
+                                        sim_multi_file_left=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
         self.delta = dt.timedelta(seconds=0)
@@ -278,8 +254,7 @@ class TestDataPadding(object):
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad={'minutes': 5},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
         self.delta = dt.timedelta(minutes=5)
@@ -319,8 +294,7 @@ class TestDataPadding(object):
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad=pad,
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.eval_index_start_end()
         return
@@ -354,8 +328,7 @@ class TestDataPadding(object):
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad={'days': 2},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
 
         testing.eval_bad_input(self.testInst.load, ValueError,
                                'Data padding window must be shorter than ',
@@ -486,8 +459,7 @@ class TestDataPaddingNonMonotonic(TestDataPadding):
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          non_monotonic_index=True,
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
         self.delta = dt.timedelta(minutes=5)
@@ -513,8 +485,7 @@ class TestDataPaddingXArray(TestDataPadding):
                                          sample_rate='1s',
                                          clean_level='clean',
                                          pad={'minutes': 5},
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
         self.delta = dt.timedelta(minutes=5)
@@ -541,8 +512,7 @@ class TestDataPaddingXArrayNonMonotonic(TestDataPadding):
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          non_monotonic_index=True,
-                                         update_files=True,
-                                         use_header=True)
+                                         update_files=True)
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
         self.delta = dt.timedelta(minutes=5)
@@ -566,8 +536,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
@@ -593,8 +562,7 @@ class TestMultiFileRightDataPaddingBasicsNonMonotonic(TestDataPadding):
                                          update_files=True,
                                          sim_multi_file_right=True,
                                          non_monotonic_index=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
@@ -622,8 +590,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
@@ -652,8 +619,7 @@ class TestMultiFileRightDataPaddingBasicsXarrayNonMonotonic(TestDataPadding):
                                          update_files=True,
                                          sim_multi_file_right=True,
                                          non_monotonic_index=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
@@ -679,8 +645,7 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
@@ -707,8 +672,7 @@ class TestMultiFileLeftDataPaddingBasicsNonMonotonic(TestDataPadding):
                                          update_files=True,
                                          sim_multi_file_left=True,
                                          non_monotonic_index=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
@@ -736,8 +700,7 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2
@@ -758,16 +721,12 @@ class TestMultiFileLeftDataPaddingBasicsXarrayNonMonotonic(TestDataPadding):
         """Set up the unit test environment for each method."""
 
         reload(pysat.instruments.pysat_ndtesting)
-        self.testInst = pysat.Instrument(platform='pysat',
-                                         name='ndtesting',
-                                         clean_level='clean',
-                                         update_files=True,
-                                         num_samples=86400,
-                                         sample_rate='1s',
+        self.testInst = pysat.Instrument(platform='pysat', name='ndtesting',
+                                         clean_level='clean', update_files=True,
+                                         num_samples=86400, sample_rate='1s',
                                          sim_multi_file_left=True,
                                          non_monotonic_index=True,
-                                         pad={'minutes': 5},
-                                         use_header=True)
+                                         pad={'minutes': 5})
         self.testInst.multi_file_day = True
         self.ref_time = dt.datetime(2009, 1, 2)
         self.ref_doy = 2

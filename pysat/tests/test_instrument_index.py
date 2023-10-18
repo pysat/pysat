@@ -47,13 +47,9 @@ class TestIndex(object):
 
         """
 
-        test_inst = pysat.Instrument(platform='pysat',
-                                     name=self.name,
-                                     num_samples=10,
-                                     clean_level='clean',
-                                     update_files=True,
-                                     strict_time_flag=True,
-                                     use_header=True,
+        test_inst = pysat.Instrument(platform='pysat', name=self.name,
+                                     num_samples=10, clean_level='clean',
+                                     update_files=True, strict_time_flag=True,
                                      **kwargs)
         year, doy = pysat.utils.time.getyrdoy(self.ref_time)
         testing.eval_bad_input(test_inst.load, ValueError, msg,

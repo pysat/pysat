@@ -67,7 +67,7 @@ class TestMeta(object):
         """
         if inst_kwargs is not None:
             # Load the test Instrument
-            self.testInst = pysat.Instrument(**inst_kwargs, use_header=True)
+            self.testInst = pysat.Instrument(**inst_kwargs)
             stime = self.testInst.inst_module._test_dates['']['']
             self.testInst.load(date=stime)
 
@@ -1476,8 +1476,7 @@ class TestMetaMutable(object):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         use_header=True)
+        self.testInst = pysat.Instrument(platform='pysat', name='testing')
         self.testInst.load(date=self.testInst.inst_module._test_dates[''][''])
         self.meta = self.testInst.meta
         self.meta.mutable = True
@@ -1612,8 +1611,7 @@ class TestToDict(object):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5,
-                                         use_header=True)
+        self.testInst = pysat.Instrument('pysat', 'testing', num_samples=5)
         self.stime = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.load(date=self.stime)
 
@@ -1676,8 +1674,7 @@ class TestToDictXarrayND(TestToDict):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'ndtesting',
-                                         num_samples=5, use_header=True)
+        self.testInst = pysat.Instrument('pysat', 'ndtesting', num_samples=5)
         self.stime = pysat.instruments.pysat_ndtesting._test_dates['']['']
         self.testInst.load(date=self.stime)
 
@@ -1693,8 +1690,7 @@ class TestToDictXarrayModel(TestToDict):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'testmodel',
-                                         num_samples=5, use_header=True)
+        self.testInst = pysat.Instrument('pysat', 'testmodel', num_samples=5)
         self.stime = pysat.instruments.pysat_testmodel._test_dates['']['']
         self.testInst.load(date=self.stime)
 
