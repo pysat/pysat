@@ -178,14 +178,14 @@ class TestParseFilenames(object):
         return
 
     def test_init_parse_filename_empty(self):
-        """Check the `init_parse_filenames` output with no files."""
+        """Check the `_init_parse_filenames` output with no files."""
         # Format the test input
         fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
                          '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
         self.fkwargs = []
 
         # Get the test results
-        self.file_dict, sdict = futils.init_parse_filenames([], fname)
+        self.file_dict, sdict = futils._init_parse_filenames([], fname)
 
         # Test each of the return values
         assert self.eval_parsed_filenames()
@@ -193,7 +193,7 @@ class TestParseFilenames(object):
         return
 
     def test_init_parse_filename_with_files(self):
-        """Check the `init_parse_filenames` output with files."""
+        """Check the `_init_parse_filenames` output with files."""
         # Format the test input
         fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
                          '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
@@ -202,7 +202,7 @@ class TestParseFilenames(object):
         file_list = [fname.format(**kwargs) for kwargs in self.fkwargs]
 
         # Get the test results
-        self.file_dict, sdict = futils.init_parse_filenames(file_list, fname)
+        self.file_dict, sdict = futils._init_parse_filenames(file_list, fname)
 
         # Test the initalized dictionaries
         testing.assert_lists_equal(['search_string', 'keys', 'lengths',
@@ -220,7 +220,7 @@ class TestParseFilenames(object):
         return
 
     def test_finish_parsed_filenames(self):
-        """Test output restucturing for `finish_parsed_filenames`."""
+        """Test output restucturing for `_finish_parsed_filenames`."""
         # Format the test input
         fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
                          '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
@@ -231,8 +231,8 @@ class TestParseFilenames(object):
                           'str': ['hi']}
 
         # Get the test results
-        self.file_dict = futils.finish_parse_filenames(self.file_dict,
-                                                       file_list, fname)
+        self.file_dict = futils._finish_parse_filenames(self.file_dict,
+                                                        file_list, fname)
 
         # Test the output
         for fkey in self.file_dict:
