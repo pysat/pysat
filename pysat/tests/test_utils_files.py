@@ -85,7 +85,18 @@ class TestParseFilenames(object):
         ('-', "test", ['year', 'day', 'hour', 'minute', 'second', 'cycle',
                        'revision']), ('fun', 'test', [])])
     def test_parse_delimited_filename(self, sep_char, flead, good_kwargs):
-        """Check ability to parse list of delimited files."""
+        """Check ability to parse list of delimited files.
+
+        Parameters
+        ----------
+        sep_char : str
+            Separation character to use in joining the filename
+        flead : str
+            File prefix
+        good_kwargs : list
+            List of kwargs to include in the file format
+
+        """
         # Format the test input
         fname = '{:s}{:s}.cdf'.format(flead, sep_char.join(
             [self.kw_format[fkey] for fkey in good_kwargs]))
