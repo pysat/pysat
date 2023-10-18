@@ -21,8 +21,8 @@ from pysat.utils import files as futils
 from pysat.utils import testing
 
 
-class TestParseDelimitedFilenames(object):
-    """Unit tests for the `parse_delimited_filename` function."""
+class TestParseFilenames(object):
+    """Unit tests for the file parsing functions."""
 
     def setup_method(self):
         """Set up the unit test environment for each method."""
@@ -46,7 +46,7 @@ class TestParseDelimitedFilenames(object):
         del self.fkwargs, self.file_dict, self.kw_format
         del self.temporary_file_list
 
-    def eval_parse_delimited_filename(self):
+    def eval_parsed_filenames(self):
         """Evaluate the output of a `parse_delimited_filename` unit test.
 
         Returns
@@ -106,7 +106,7 @@ class TestParseDelimitedFilenames(object):
                                                           sep_char)
 
         # Test each of the return values
-        assert self.eval_parse_delimited_filename()
+        assert self.eval_parsed_filenames()
         return
 
     def test_parse_delimited_filename_empty(self):
@@ -121,7 +121,134 @@ class TestParseDelimitedFilenames(object):
         self.file_dict = futils.parse_delimited_filenames([], fname, sep_char)
 
         # Test each of the return values
-        assert self.eval_parse_delimited_filename()
+        assert self.eval_parsed_filenames()
+        return
+
+    @pytest.mark.parametrize("sep_char,flead,good_kwargs", [
+        ("_", "*_", ['year', 'month', 'day', 'hour', 'minute', 'version']),
+        ('?', "test", ['year', 'day', 'hour', 'minute', 'second', 'cycle',
+                       'revision']), ('fun', '*', [])])
+    def test_parse_fixed_filename(self, sep_char, flead, good_kwargs):
+        """Check ability to parse list of fixed width files.
+
+        Parameters
+        ----------
+        sep_char : str
+            Separation character to use in joining the filename
+        flead : str
+            File prefix
+        good_kwargs : list
+            List of kwargs to include in the file format
+
+        """
+        # Format the test input
+        fname = '{:s}{:s}.cdf'.format(flead, sep_char.join(
+            [self.kw_format[fkey] for fkey in good_kwargs]))
+
+        # Adjust the test input/comparison data for this run
+        bad_kwargs = [fkey for fkey in self.fkwargs[0]
+                      if fkey not in good_kwargs]
+
+        for kwargs in self.fkwargs:
+            for fkey in bad_kwargs:
+                del kwargs[fkey]
+
+        # Create the input file list
+        file_list = [fname.format(**kwargs) for kwargs in self.fkwargs]
+
+        # Get the test results
+        self.file_dict = futils.parse_fixed_width_filenames(file_list, fname)
+
+        # Test each of the return values
+        assert self.eval_parsed_filenames()
+        return
+
+    def test_parse_fixed_width_filename_empty(self):
+        """Check ability to parse list of fixed-width files with no files."""
+        # Format the test input
+        fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
+                         '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
+        self.fkwargs = []
+
+        # Get the test results
+        self.file_dict = futils.parse_fixed_width_filenames([], fname)
+
+        # Test each of the return values
+        assert self.eval_parsed_filenames()
+        return
+
+    def test_init_parse_filename_empty(self):
+        """Check the `init_parse_filenames` output with no files."""
+        # Format the test input
+        fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
+                         '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
+        self.fkwargs = []
+
+        # Get the test results
+        self.file_dict, sdict = futils.init_parse_filenames([], fname)
+
+        # Test each of the return values
+        assert self.eval_parsed_filenames()
+        assert len(sdict.keys()) == 0, "Search dict was defined unnecessarily"
+        return
+
+    def test_init_parse_filename_with_files(self):
+        """Check the `init_parse_filenames` output with files."""
+        # Format the test input
+        fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
+                         '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
+
+        # Create the input file list
+        file_list = [fname.format(**kwargs) for kwargs in self.fkwargs]
+
+        # Get the test results
+        self.file_dict, sdict = futils.init_parse_filenames(file_list, fname)
+
+        # Test the initalized dictionaries
+        testing.assert_lists_equal(['search_string', 'keys', 'lengths',
+                                    'string_blocks'], list(sdict.keys()))
+
+        for skey in sdict['keys']:
+            assert skey in self.file_dict.keys(), "Missing key {:}".format(skey)
+
+        for fkey in self.file_dict.keys():
+            assert self.file_dict[fkey] is None, "File dict not initalized"
+
+        assert "files" not in self.file_dict.keys(), "'files' key set early"
+        assert "format_str" not in self.file_dict.keys(), \
+            "'format_str' key set early"
+        return
+
+    def test_finish_parsed_filenames(self):
+        """Test output restucturing for `finish_parsed_filenames`."""
+        # Format the test input
+        fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
+                         '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
+
+        # Create the input file list and dict
+        file_list = [fname.format(**kwargs) for kwargs in self.fkwargs]
+        self.file_dict = {'int': [1], 'none': None, 'float': [1.0],
+                          'str': ['hi']}
+
+        # Get the test results
+        self.file_dict = futils.finish_parse_filenames(self.file_dict,
+                                                       file_list, fname)
+
+        # Test the output
+        for fkey in self.file_dict:
+            if fkey == 'none':
+                assert self.file_dict[fkey] is None
+            elif fkey == 'files':
+                testing.assert_lists_equal(file_list, self.file_dict[fkey])
+            elif fkey == 'format_str':
+                assert fname == self.file_dict[fkey]
+            else:
+                testing.assert_isinstance(self.file_dict[fkey], np.ndarray)
+
+                if fkey == 'str':
+                    testing.assert_isinstance(self.file_dict[fkey][0], str)
+                else:
+                    testing.assert_isinstance(self.file_dict[fkey][0], np.int64)
         return
 
 
