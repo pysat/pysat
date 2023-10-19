@@ -15,8 +15,8 @@ def test_filename_creator():
     """Test the `filename_creator` placeholder."""
 
     testing.eval_bad_input(gen.filename_creator, NotImplementedError,
-                               'This feature has not been implemented yet',
-                               input_args=[0.0])
+                           'This feature has not been implemented yet',
+                           input_args=[0.0])
     return
 
 
