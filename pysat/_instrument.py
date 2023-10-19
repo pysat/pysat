@@ -1307,7 +1307,7 @@ class Instrument(object):
 
         Returns
         -------
-        pds.Series
+        index : pds.Series
             Series containing the time indices for the Instrument data
 
         """
@@ -1316,15 +1316,17 @@ class Instrument(object):
             data = self.data
 
         if self.pandas_format:
-            return data.index
+            index = data.index
         else:
             epoch_names = self._get_epoch_name_from_data(data=data)
 
             if len(epoch_names) == 0:
-                return pds.Index([])
+                index = pds.Index([])
             else:
                 # Xarray preferred epoch name order is opposite
-                return data.indexes[epoch_names[-1]]
+                index = data.indexes[epoch_names[-1]]
+
+        return index
 
     def _pass_method(*args, **kwargs):
         """Empty default method for updatable Instrument methods."""
@@ -3301,11 +3303,10 @@ class Instrument(object):
                 if not self._empty(ndata):
                     # Test the data index, slicing if necessary
                     nindex = self._index(data=ndata)
-                    if len(nindex) > 0:
+                    if len(nindex) > 1:
                         if nindex[0] == self.index[-1]:
                             ndata = self.__getitem__(
-                                slice(1, len(ndata[self.index.name])),
-                                data=ndata)
+                                slice(1, len(nindex)), data=ndata)
                         cdata.append(ndata)
                         if include is None:
                             include = 0
