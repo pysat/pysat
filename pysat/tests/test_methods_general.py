@@ -11,6 +11,15 @@ from pysat.instruments.methods import general as gen
 from pysat.utils import testing
 
 
+def test_filename_creator():
+    """Test the `filename_creator` placeholder."""
+
+    testing.eval_bad_input(gen.filename_creator, NotImplementedError,
+                               'This feature has not been implemented yet',
+                               input_args=[0.0])
+    return
+
+
 class TestListFiles(object):
     """Unit tests for `pysat.instrument.methods.general.list_files`."""
 
@@ -268,7 +277,7 @@ class TestLoadCSVData(object):
         return
 
     def test_load_single_file(self):
-        """Test the CVS data load with a single file."""
+        """Test the CSV data load with a single file."""
 
         self.data = gen.load_csv_data(self.csv_file)
         assert isinstance(self.data.index, pds.RangeIndex)
@@ -277,7 +286,7 @@ class TestLoadCSVData(object):
         return
 
     def test_load_file_list(self):
-        """Test the CVS data load with multiple files."""
+        """Test the CSV data load with multiple files."""
 
         self.data = gen.load_csv_data([self.csv_file, self.csv_file])
         assert self.data.index.dtype == 'int64'
@@ -286,7 +295,7 @@ class TestLoadCSVData(object):
         return
 
     def test_load_file_with_kwargs(self):
-        """Test the CVS data load with kwargs."""
+        """Test the CSV data load with kwargs."""
 
         self.data = gen.load_csv_data([self.csv_file],
                                       read_csv_kwargs={"parse_dates": True,
@@ -294,4 +303,13 @@ class TestLoadCSVData(object):
         assert isinstance(self.data.index, pds.DatetimeIndex)
         self.eval_data_cols()
         assert len(self.data.columns) == len(self.data_cols)
+        return
+
+    def test_load_empty_filelist(self):
+        """Test the CSV data loading with an empty file list."""
+
+        self.data = gen.load_csv_data([])
+
+        # Evaluate the empty output
+        assert self.data.empty
         return
