@@ -730,9 +730,8 @@ class TestFileUtils(CICleanSetup):
         prefix = "test_me"
         suffix = "tstfile"
         searchstr = "*".join([prefix, suffix])
-        with tempfile.NamedTemporaryFile(
-                dir=self.testInst.files.data_path, prefix=prefix,
-                suffix=suffix) as temp:
+        with tempfile.NamedTemporaryFile(dir=self.testInst.files.data_path,
+                                         prefix=prefix, suffix=suffix):
             files = futils.search_local_system_formatted_filename(
                 self.testInst.files.data_path, searchstr)
 
