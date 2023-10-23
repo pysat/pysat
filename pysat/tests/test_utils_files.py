@@ -5,10 +5,10 @@
 # ----------------------------------------------------------------------------
 """Tests the `pysat.utils.files` functions."""
 
+from collections import OrderedDict
 import datetime as dt
 from importlib import reload
 import numpy as np
-from collections import OrderedDict
 import os
 import pandas as pds
 import platform
