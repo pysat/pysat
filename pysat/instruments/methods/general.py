@@ -256,5 +256,12 @@ def load_csv_data(fnames, read_csv_kwargs=None):
     for fname in fnames:
         fdata.append(pds.read_csv(fname, **read_csv_kwargs))
 
-    data = pds.DataFrame() if len(fdata) == 0 else pds.concat(fdata, axis=0)
+    if len(fdata) == 0:
+        data = pds.DataFrame()
+    else:
+        data = pds.concat(fdata, axis=0)
+
+        if data.index.name is None:
+            data.index.name = "Epoch"
+
     return data

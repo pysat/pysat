@@ -562,17 +562,25 @@ class InstLibTests(object):
             load_and_set_strict_time_flag(test_inst, date, raise_error=True,
                                           clean_off=False)
 
-            assert not test_inst.empty
+            if test_inst.empty:
+                # This will be empty if this is a forecast file that doesn't
+                # include the load date
+                test_inst.pad = None
+                load_and_set_strict_time_flag(test_inst, date, raise_error=True,
+                                              clean_off=False)
+                assert not test_inst.empty, "No data on {:}".format(date)
+                assert test_inst.index.max() < date, \
+                    "Padding should have left data and didn't"
+            else:
+                # Padding was successful, evaluate the data index length
+                assert (test_inst.index[-1]
+                        - test_inst.index[0]).total_seconds() < 86400.0
 
-            # Evaluate the data index length
-            assert (test_inst.index[-1]
-                    - test_inst.index[0]).total_seconds() < 86400.0
-
-            # Evaluate the recorded pad
-            inst_str = test_inst.__str__()
-            assert inst_str.find(
-                'Data Padding: {:s}'.format(pad_repr)) > 0, "".join([
-                    "bad pad value: ", pad_repr, " not in ", inst_str])
+                # Evaluate the recorded pad
+                inst_str = test_inst.__str__()
+                assert inst_str.find(
+                    'Data Padding: {:s}'.format(pad_repr)) > 0, "".join([
+                        "bad pad value: ", pad_repr, " not in ", inst_str])
         else:
             pytest.skip("Download data not available")
 
