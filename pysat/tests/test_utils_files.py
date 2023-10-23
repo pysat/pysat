@@ -6,9 +6,9 @@
 """Tests the `pysat.utils.files` functions."""
 
 import datetime as dt
-from collections import OrderedDict
 from importlib import reload
 import numpy as np
+from collections import OrderedDict
 import os
 import pandas as pds
 import platform
