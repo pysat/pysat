@@ -709,6 +709,40 @@ class TestFileUtils(CICleanSetup):
         del self.testInst, self.out, self.tempdir, self.start, self.stop
         return
 
+    def test_updating_directories_no_registration(self, capsys):
+        """Test directory structure update method without registered insts."""
+        # New Template
+        templ = '{platform}'
+
+        # Convert directories to simpler platform structure, to get output
+        futils.update_data_directory_structure(new_template=templ,
+                                               full_breakdown=True)
+
+        # Capture printouts and test the results
+        captured = capsys.readouterr()
+        assert captured.find("No registered instruments detected.") >= 0, \
+            "Expected output not captured in: {:}".format(captured)
+        return
+
+    def test_search_local_system_formatted_filename(self):
+        """Test `search_local_system_formatted_filename` success."""
+        # Create a temporary file with a unique, searchable name
+        prefix = "test_me"
+        suffix = "tstfile"
+        searchstr = "*".join([prefix, suffix])
+        with tempfile.NamedTemporaryFile(
+                dir=self.testInst.files.data_path, prefix=prefix,
+                suffix=suffix) as temp:
+            files = futils.search_local_system_formatted_filename(
+                self.testInst.files.data_path, searchstr)
+
+        assert len(files) == 1, "unexpected number of files in search results"
+        assert files[0].find(
+            prefix) >= 0, "unexpected file prefix in search results"
+        assert files[0].find(
+            suffix) > 0, "unexpected file extension in search results"
+        return
+
     def test_get_file_information(self):
         """Test `utils.files.get_file_information` success with existing files.
 
