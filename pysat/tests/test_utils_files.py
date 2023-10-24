@@ -709,19 +709,19 @@ class TestFileUtils(CICleanSetup):
         del self.testInst, self.out, self.tempdir, self.start, self.stop
         return
 
+    @pytest.mark.skipif(os.environ.get('CI') != 'true', reason="CI test only")
     def test_updating_directories_no_registration(self, capsys):
         """Test directory structure update method without registered insts."""
-        # New Template
-        templ = '{platform}'
-
         # Convert directories to simpler platform structure, to get output
+        templ = '{platform}'
         futils.update_data_directory_structure(new_template=templ,
                                                full_breakdown=True)
 
         # Capture printouts and test the results
         captured = capsys.readouterr()
-        assert captured.find("No registered instruments detected.") >= 0, \
-            "Expected output not captured in: {:}".format(captured)
+        captxt = captured.out
+        assert captxt.find("No registered instruments detected.") >= 0, \
+            "Expected output not captured in STDOUT: {:}".format(captxt)
         return
 
     def test_search_local_system_formatted_filename(self):
