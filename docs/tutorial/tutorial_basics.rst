@@ -439,13 +439,13 @@ Explorer `(ICON) <https://icon.ssl.berkeley.edu>`_.
    # Retrieve units using general labels
    dmsp.meta['ti', dmsp.meta.labels.units]
 
-   # Update units for ion temperature
-   dmsp.meta['ti'] = {dmsp.meta.labels.units: 'Kelvin'}
+   # Update units for ion temperature using direct assignment
+   dmsp.meta['ti', dmsp.meta.labels.units] = 'Kelvin'
 
-   # Update display name for ion temperature, using LaTeX notation
+   # Update display name for ion temp, using dict assignment and LaTeX notation
    dmsp.meta['ti'] = {dmsp.meta.labels.name: 'T$_i$'}
 
-   # Add new meta data
+   # Add new meta data for multiple labels using dict assignment
    dmsp.meta['new'] = {dmsp.meta.labels.units: 'unitless',
                        dmsp.meta.labels.name: 'New display name'}
 
