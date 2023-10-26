@@ -142,6 +142,16 @@ class TestMeta(object):
         assert str(kerr).find('not found in MetaData') >= 0
         return
 
+    def test_setitem_w_bad_input_combo(self):
+        """Test that bad input calls will raise ValueError when setting data."""
+
+        with pytest.raises(ValueError) as verr:
+            self.meta[['uts', 'units']] = 'seconds'
+
+        assert str(verr).find(
+            "unexpected input combination, can't set metadata") >= 0
+        return
+
     def test_getitem_w_index(self):
         """Test raises NotImplementedError with an integer index."""
 
@@ -576,6 +586,22 @@ class TestMeta(object):
         assert self.meta.labels.label_type == other_meta_labels.label_type
         assert self.meta.labels.label_attrs == other_meta_labels.label_attrs
 
+        return
+
+    def test_meta_assign_single_val(self):
+        """Test basic assignment of a single metadata value."""
+        # Ensure the data has not been set already
+        data_name = 'special_data'
+        label_name = self.meta.labels.notes
+        meta_val = "test me"
+        assert data_name not in self.meta.keys(), "bad testing set up"
+
+        # Assign notes metadata
+        self.meta[data_name, label_name] = meta_val
+
+        # Test the assigned metadata
+        assert data_name in self.meta.keys()
+        assert self.meta[data_name, label_name] == meta_val
         return
 
     @pytest.mark.parametrize("custom_attr", [None, 'custom_meta'])
