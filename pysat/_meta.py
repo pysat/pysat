@@ -318,13 +318,17 @@ class Meta(object):
 
         Parameters
         ----------
-        data_vars : str, list
+        data_vars : str, list, tuple
             Data variable names for the input metadata
-        input_dat : dict, pds.Series, or Meta
+        input_dat : dict, pds.Series, Meta, int, float, str, bool, or NoneType
             Input metadata to be assigned
 
-        """
+        Raises
+        ------
+        ValueError
+            For unexpected input type that does not allow metadata to be set.
 
+        """
         input_data = deepcopy(input_dat)
 
         if isinstance(input_data, dict):
@@ -454,6 +458,14 @@ class Meta(object):
             # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict.
             self[data_vars] = input_data.to_dict()
+        else:
+            # The input data is a value, this only works if `data_vars` is
+            # a tuple that contains the data variable and the metadata label
+            if isinstance(data_vars, tuple) and len(data_vars) == 2:
+                self[data_vars[0]] = {data_vars[1]: input_data}
+            else:
+                raise ValueError(
+                    "unexpected input combination, can't set metadata")
 
         return
 
