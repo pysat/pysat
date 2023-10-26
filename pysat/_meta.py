@@ -320,7 +320,7 @@ class Meta(object):
         ----------
         data_vars : str, list, tuple
             Data variable names for the input metadata
-        input_dat : dict, pds.Series, or Meta
+        input_dat : dict, pds.Series, Meta, int, float, str, bool, or NoneType
             Input metadata to be assigned
 
         Raises
