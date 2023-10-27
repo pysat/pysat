@@ -632,7 +632,7 @@ class Constellation(object):
         good_inst_names = [list() for inst in self.instruments]
         bad_names = list()
         inst_strs = ['_'.join([attr for attr in [inst.platform, inst.name,
-                                                   inst.tag, inst.inst_id]
+                                                 inst.tag, inst.inst_id]
                                if len(attr) > 0]) for inst in self.instruments]
         for name in names:
             got_name = False
