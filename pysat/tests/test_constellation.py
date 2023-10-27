@@ -572,3 +572,91 @@ class TestConstellationFunc(object):
                                    list(self.inst[1].index))
 
         return
+
+    @pytest.mark.parametrize("method", ["del", "drop"])
+    def test_delitem_all_inst(self, method):
+        """Test Constellation deletion of data variables from all instruments.
+
+        Parameters
+        ----------
+        method : str
+            String specifying the deletion method
+
+        """
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        # Delete the UTS data from all instruments
+        dvar = "uts"
+        if method == "del":
+            del self.const[dvar]
+        else:
+            self.const.drop(dvar)
+
+        # Test that this variable is gone from all Instruments
+        for inst in self.const.instruments:
+            assert dvar not in inst.variables
+
+        # Test that the constellation variable list has been updated
+        for var in self.const.variables:
+            assert var.find(dvar) != 0
+
+        return
+
+    @pytest.mark.parametrize("method", ["del", "drop"])
+    def test_delitem_one_inst(self, method):
+        """Test Constellation deletion of data variables from one instrument.
+
+        Parameters
+        ----------
+        method : str
+            String specifying the deletion method
+
+        """
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        # Delete the UTS data from all instruments
+        dvar = "uts_pysat_testing"
+        if method == "del":
+            del self.const[dvar]
+        else:
+            self.const.drop(dvar)
+
+        # Test that this variable is gone from only the desired Instrument
+        for inst in self.const.instruments:
+            if inst.platform == "pysat" and inst.name == "testing":
+                assert "uts" not in inst.variables
+            else:
+                assert "uts" in inst.variables
+
+        # Test that the constellation variable list has been updated
+        assert dvar not in self.const.variables
+
+        return
+
+    def test_bad_var_drop(self):
+        """Check for error when deleting absent data variable."""
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        # Test that the correct error is raised
+        testing.eval_bad_input(self.const.drop, KeyError,
+                               "not found in Constellation",
+                               input_args=["not_a_data_variable"])
+        return
+
+    def test_partial_bad_var_drop(self, caplog):
+        """Check for log warning when deleting present and absent variables."""
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        dvars = [self.const.variables[0], "not_a_data_var"]
+
+        # Test that the correct warning is raised
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.const.drop(dvars)
+
+        captured = caplog.text
+        assert captured.find("not found in Constellation") > 0
+        return

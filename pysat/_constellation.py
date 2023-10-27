@@ -378,6 +378,23 @@ class Constellation(object):
 
         return output_str
 
+    def __delitem__(self, key):
+        """Delete a key by calling `drop` method.
+
+        Parameters
+        ----------
+        key : str or list-like
+            A Constellation variable or list of variables.
+
+        Raises
+        ------
+        KeyError
+            If all key values are unavailable
+
+        """
+        self.drop(key)
+        return
+
     # -----------------------------------------------------------------------
     # Define all hidden methods
 
@@ -591,6 +608,61 @@ class Constellation(object):
             return pysat.utils.time.filter_datetime_input(self.index[0])
         else:
             return None
+
+    def drop(self, names):
+        """Drop variables (names) from metadata.
+
+        Parameters
+        ----------
+        names : str or list-like
+            String or list of strings specifying the variable names to drop
+
+        Raises
+        ------
+        KeyError
+            If all of the keys provided in `names` is not found in the
+            standard metadata, labels, or header metadata.  If a subset is
+            missing, a logger warning is issued instead.
+
+        """
+        # Ensure the input is list-like
+        names = pysat.utils.listify(names)
+
+        # Divide the names by instrument
+        good_inst_names = [list() for inst in self.instruments]
+        bad_names = list()
+        inst_strs = ['_'.join([attr for attr in [inst.platform, inst.name,
+                                                 inst.tag, inst.inst_id]
+                               if len(attr) > 0]) for inst in self.instruments]
+        for name in names:
+            got_name = False
+            for i, inst in enumerate(self.instruments):
+                if name in inst.variables:
+                    good_inst_names[i].append(name)
+                    got_name = True
+                elif name in self.variables and name.find(inst_strs[i]) > 0:
+                    good_inst_names[i].append(name.split("_{:s}".format(
+                        inst_strs[i]))[0])
+                    got_name = True
+
+            if not got_name:
+                bad_names.append(name)
+
+        # If there are no good names, raise a KeyError
+        if len(bad_names) == len(names):
+            raise KeyError('{:} not found in Constellation'.format(names))
+
+        # Drop names by instrument
+        for i, inst in enumerate(self.instruments):
+            if len(good_inst_names[i]) > 0:
+                inst.drop(good_inst_names[i])
+
+        # If there are some bad names, raise a logging warning
+        if len(bad_names) > 0:
+            pysat.logger.warning('{:} not found in Constellation'.format(
+                bad_names))
+
+        return
 
     @property
     def empty(self):

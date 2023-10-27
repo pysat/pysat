@@ -130,6 +130,66 @@ class InstAccessTests(object):
         self.eval_successful_load()
         return
 
+    @pytest.mark.parametrize("method", ["del", "drop"])
+    @pytest.mark.parametrize("del_all", [True, False])
+    def test_basic_instrument_del(self, method, del_all):
+        """Test that data can be deleted from an Instrument.
+
+        Parameters
+        ----------
+        method : str
+            String specifying the deletion method
+        del_all : bool
+            Delete a single variable if False, delete all if True
+
+        """
+
+        # Load data by year and day of year
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+
+        # Get a variable name(s) to delete
+        var = self.testInst.variables if del_all else self.testInst.variables[0]
+
+        # Delete the variable
+        if method == 'del':
+            del self.testInst[var]
+        else:
+            self.testInst.drop(var)
+
+        # Test that the absence of the desired variable(s)
+        if del_all:
+            assert self.testInst.empty
+            assert len(self.testInst.variables) == 0
+        else:
+            assert var not in self.testInst.variables
+        return
+
+    def test_basic_instrument_bad_var_drop(self):
+        """Check for error when deleting absent data variable."""
+        # Load data by year and day of year
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+
+        # Test that the correct error is raised
+        testing.eval_bad_input(self.testInst.drop, KeyError,
+                               "not found in Instrument variables",
+                               input_args=["not_a_data_variable"])
+        return
+
+    def test_basic_instrument_partial_bad_var_drop(self, caplog):
+        """Check for log warning when deleting present and absent variables."""
+        # Load data by year and day of year
+        self.testInst.load(self.ref_time.year, self.ref_doy)
+
+        dvars = [self.testInst.variables[0], "not_a_data_var"]
+
+        # Test that the correct warning is raised
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.testInst.drop(dvars)
+
+        captured = caplog.text
+        assert captured.find("not found in Instrument variables") > 0
+        return
+
     @pytest.mark.parametrize('pad', [None, dt.timedelta(days=1)])
     def test_basic_instrument_load_no_data(self, caplog, pad):
         """Test Instrument load with no data for appropriate log messages.

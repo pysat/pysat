@@ -1164,6 +1164,24 @@ class Instrument(object):
 
         return
 
+    def __delitem__(self, key):
+        """Delete a key by calling `drop` method.
+
+        Parameters
+        ----------
+        key : str or list-like
+            A meta data variable, label, or MetaHeader attribute; which are
+            considered in that order.
+
+        Raises
+        ------
+        KeyError
+            If all key values are unavailable
+
+        """
+        self.drop(key)
+        return
+
     def __iter__(self):
         """Load data for subsequent days or files.
 
@@ -2578,6 +2596,48 @@ class Instrument(object):
         self.custom_functions = []
         self.custom_args = []
         self.custom_kwargs = []
+        return
+
+    def drop(self, names):
+        """Drop variables from Instrument.
+
+        Parameters
+        ----------
+        names : str or list-like
+            String or list of strings specifying the variables names to drop
+
+        Raises
+        ------
+        KeyError
+            If all of the variable names provided in `names` are not found
+            in the variable list. If a subset is missing, a logger warning is
+            issued instead.
+
+        """
+        # Ensure the input is list-like
+        names = pysat.utils.listify(names)
+
+        # Ensure the names are present in the list of variables
+        good_names = [name for name in names if name in self.variables]
+
+        if len(good_names) > 0:
+            # Drop the Instrument data using the appropriate methods
+            if self.pandas_format:
+                self.data = self.data.drop(columns=good_names)
+            else:
+                self.data = self.data.drop_vars(good_names)
+
+            # Drop the meta data associated with this variable
+            self.meta.drop(good_names)
+
+        if len(good_names) < len(names):
+            if len(good_names) == 0:
+                raise KeyError("{:} not found in Instrument variables".format(
+                    names))
+            else:
+                pysat.logger.warning(
+                    "{:} not found in Instrument variables".format(
+                        [name for name in names if name not in good_names]))
         return
 
     def today(self):
