@@ -1,12 +1,12 @@
 coveralls<3.3
 flake8
 flake8-docstrings
-hacking>=1.0,<6.0
+hacking>=1.0
 ipython
 m2r2
 numpydoc
 pysatSpaceWeather
 pytest-cov
 pytest-ordering
-sphinx<7.0
-sphinx_rtd_theme
+sphinx
+sphinx_rtd_theme>=1.2.2

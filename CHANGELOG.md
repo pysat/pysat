@@ -3,16 +3,56 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.1.X] - 2023-xx-xx
+[3.2.0] - 2023-xx-xx
 --------------------
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
     clean method.
+  * Added loading test with padding for Instruments.
   * Allow Instruments to define custom `concat_data` methods.
-  * Added test for loading multiple files and concatenating.
+  * Added `include` kwarg to `Instrument.concat_data` to expand allowed inputs.
+  * Added data kwarg to the Instrument class `__getitem__` method and reduced
+    memory usage in the `load` method.
+  * Added a hidden method the Instrument class `_get_epoch_name_from_data` to
+    reduce code duplication.
+  * Added `__delitem__` to Meta and `drop` to MetaHeader and MetaLabels classes.
+  * Modified Meta to allow MetaHeader attribute access directly from Meta.
+  * Expanded `Meta.drop` to traverse attached MetaLabel and MetaHeader data.
+  * Added `__delitem__` and `drop` to Instrument and Constellation classes.
+  * Added options to customize `pysat_ndtesting` instrument with sample rate,
+    shift in time.
+  * Added orbit number to `pysat_ndtesting`.
+  * Added the overwrite kwarg to `utils.registry.register_by_module`.
+  * Added unit tests for all file parsing functions in `utils.files`.
+  * Reduced code duplication in the `utils.files.parse_fixed_width_filenames`
+    and `utils.files.parse_delimited_filenames` functions
+  * Added ability to set Meta data using `meta['data_var', 'label'] = value`
+    structure.
+  * Added test for loading multiple days of data.
+* Bug Fix
+  * Fixed `utils.files.parse_fixed_width_filenames` output for empty file list
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
+  * Updated `Constellation.to_inst` method definition of coords, using dims
+    to combine common dimensions instead.
+  * Implement pyproject to manage metadata
+  * Updated docstring references to `pysat.utils.files` in other modules.
+  * Remove Sphinx cap
+  * Add pandas cap
+  * Update usage of whitespace and if statements (E275)
+  * Remove hacking cap
+  * Removed deprecated `pysat_testing2d` instrument
+  * Removed deprecated meta children info
+  * Removed deprecated `pysat_testing_xarray` instrument
+  * Removed deprecated `pysat_testing2d_xarray` instrument
+  * Removed deprecated `instrument_test_class`
+  * Removed deprecated `malformed_index` kwarg in test instrumennts
+  * Removed deprecated `convert_timestamp_to_datetime` function
+  * Removed deprecated `_test_download_travis` flag
+  * Removed deprecated `freq` kwarg from `download`
+  * Removed deprecated `use_header` kwarg from `load` and changed default
+    behaviour to `use_header=True`
 
 [3.1.0] - 2023-05-31
 --------------------

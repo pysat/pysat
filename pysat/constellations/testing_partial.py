@@ -9,6 +9,6 @@ instruments : list
 import pysat
 
 instruments = [pysat.Instrument('pysat', 'testing', clean_level='clean',
-                                num_samples=10, use_header=True),
+                                num_samples=10),
                pysat.Instrument('pysat', 'testing', tag='no_download',
-                                clean_level='clean', use_header=True)]
+                                clean_level='clean')]

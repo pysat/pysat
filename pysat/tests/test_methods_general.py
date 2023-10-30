@@ -11,6 +11,15 @@ from pysat.instruments.methods import general as gen
 from pysat.utils import testing
 
 
+def test_filename_creator():
+    """Test the `filename_creator` placeholder."""
+
+    testing.eval_bad_input(gen.filename_creator, NotImplementedError,
+                           'This feature has not been implemented yet',
+                           input_args=[0.0])
+    return
+
+
 class TestListFiles(object):
     """Unit tests for `pysat.instrument.methods.general.list_files`."""
 
@@ -114,7 +123,7 @@ class TestRemoveLeadText(object):
 
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=12,
-                                         clean_level='clean', use_header=True)
+                                         clean_level='clean')
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
         return
@@ -199,10 +208,8 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         """Set up the unit test environment for each method."""
 
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'ndtesting',
-                                         num_samples=12,
-                                         clean_level='clean',
-                                         use_header=True)
+        self.testInst = pysat.Instrument('pysat', 'ndtesting', num_samples=12,
+                                         clean_level='clean')
         self.testInst.load(2009, 1)
         self.npts = len(self.testInst['uts'])
         return
@@ -270,7 +277,7 @@ class TestLoadCSVData(object):
         return
 
     def test_load_single_file(self):
-        """Test the CVS data load with a single file."""
+        """Test the CSV data load with a single file."""
 
         self.data = gen.load_csv_data(self.csv_file)
         assert isinstance(self.data.index, pds.RangeIndex)
@@ -279,7 +286,7 @@ class TestLoadCSVData(object):
         return
 
     def test_load_file_list(self):
-        """Test the CVS data load with multiple files."""
+        """Test the CSV data load with multiple files."""
 
         self.data = gen.load_csv_data([self.csv_file, self.csv_file])
         assert self.data.index.dtype == 'int64'
@@ -288,7 +295,7 @@ class TestLoadCSVData(object):
         return
 
     def test_load_file_with_kwargs(self):
-        """Test the CVS data load with kwargs."""
+        """Test the CSV data load with kwargs."""
 
         self.data = gen.load_csv_data([self.csv_file],
                                       read_csv_kwargs={"parse_dates": True,
@@ -298,37 +305,11 @@ class TestLoadCSVData(object):
         assert len(self.data.columns) == len(self.data_cols)
         return
 
+    def test_load_empty_filelist(self):
+        """Test the CSV data loading with an empty file list."""
 
-class TestDeprecation(object):
-    """Unit tests for deprecated methods."""
+        self.data = gen.load_csv_data([])
 
-    def setup_method(self):
-        """Set up the unit test environment for each method."""
-
-        warnings.simplefilter("always", DeprecationWarning)
-        return
-
-    def teardown_method(self):
-        """Clean up the unit test environment after each method."""
-
-        return
-
-    def test_convert_timestamp_to_datetime(self):
-        """Test that convert_timestamp_to_datetime is deprecated."""
-
-        warn_msgs = [" ".join(
-            ["New kwargs added to `pysat.utils.io.load_netCDF4`",
-             "for generalized handling, deprecated",
-             "function will be removed in pysat 3.2.0+"])]
-
-        test = pysat.Instrument('pysat', 'testing', use_header=True)
-        test.load(2009, 1)
-        with warnings.catch_warnings(record=True) as war:
-            gen.convert_timestamp_to_datetime(test, epoch_name='uts')
-
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        pysat.utils.testing.eval_warnings(war, warn_msgs)
+        # Evaluate the empty output
+        assert self.data.empty
         return

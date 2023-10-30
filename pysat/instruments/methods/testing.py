@@ -84,24 +84,27 @@ def clean(self, test_clean_kwarg=None):
 
 
 # Optional methods
-def concat_data(self, new_data, extra_time_dims=None, **kwargs):
+def concat_data(self, new_data, **kwargs):
     """Concatonate data to self.data for extra time dimensions.
 
     Parameters
     ----------
     new_data : xarray.Dataset or list of such objects
         New data objects to be concatonated
-    extra_time_dims : list-like or NoneType
-        List of extra time dimensions that require concatonation (default=None)
     **kwargs : dict
         Optional keyword arguments passed to xr.concat
 
-    """
-    # Establish the time dimensions
-    time_dims = [self.index.name]
+    Note
+    ----
+    Expects the extra time dimensions to have a variable name that starts
+    with 'time', and no other dimensions to have a name that fits this format.
 
-    if extra_time_dims is not None:
-        time_dims.extend(list(extra_time_dims))
+    """
+    # Establish the time dimensions, ensuring the standard variable is included
+    # whether or not it is treated as a variable
+    time_dims = [self.index.name]
+    time_dims.extend([var for var in self.variables if var.find('time') == 0
+                      and var != self.index.name])
 
     # Concatonate using the appropriate method for the number of time
     # dimensions
@@ -244,43 +247,14 @@ def initialize_test_meta(epoch_name, data_keys):
                             'Note the value_max is largest netCDF4 supports, ',
                             'but is lower than actual 64-bit int limit.'])}
 
-    # Children metadata required for 2D pandas.
-    # TODO(#789): Delete after removal of Meta children.
-    series_profile_meta = pysat.Meta()
-    series_profile_meta['series_profiles'] = {'desc': 'Testing series data.',
-                                              'value_min': 0,
-                                              'value_max': np.inf,
-                                              'units': 'm/s'}
-    meta['series_profiles'] = {'meta': series_profile_meta,
-                               'value_min': 0., 'value_max': 25., 'units': 'km',
-                               'fill': np.nan,
-                               'desc': ''.join(['Testing series profiles ',
-                                                'indexed by float.'])}
-
-    # Children metadata required for 2D pandas.
-    # TODO(#789): Delete after removal of Meta children.
-    data_types = {'density': float, 'fraction': float, 'alt_profiles': float,
-                  'variable_profiles': float, 'profile_height': int,
-                  'variable_profile_height': int, 'images': int, 'x': int,
-                  'y': int, 'z': int, 'image_lat': float, 'image_lon': float}
-    alt_profile_meta = pysat.Meta()
-    alt_profile_meta['density'] = {'desc': 'Simulated density values.',
-                                   'units': 'Log N/cc',
-                                   'value_min': 0, 'value_max': np.inf}
-    alt_profile_meta['fraction'] = {'value_min': 0., 'value_max': 1.,
-                                    'desc': ''.join(['Simulated fractional O+ ',
-                                                     'composition.'])}
-    meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
-                            'desc': ''.join([
-                                'Testing profile multi-dimensional data ',
-                                'indexed by float.']),
-                            'units': 'km',
-                            'meta': alt_profile_meta}
-
     # Optional and standard metadata for xarray
     for var in data_keys:
         if var.find('variable_profiles') == 0:
             meta[var] = {'desc': 'Profiles with variable altitude.'}
+
+            if len(var) > 17:
+                tvar = 'time{:s}'.format(var[17:])
+                meta[tvar] = {'desc': 'Additional time variable.'}
 
     # Standard metadata required for xarray.
     meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1,
@@ -292,13 +266,13 @@ def initialize_test_meta(epoch_name, data_keys):
                       'notes': 'function of image_lat and image_lon'}
     meta['x'] = {'desc': 'x-value of image pixel',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 17, 'fill': -1}
+                 'value_min': 0, 'value_max': 7, 'fill': -1}
     meta['y'] = {'desc': 'y-value of image pixel',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 17, 'fill': -1}
+                 'value_min': 0, 'value_max': 7, 'fill': -1}
     meta['z'] = {'desc': 'z-value of profile height',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 15, 'fill': -1}
+                 'value_min': 0, 'value_max': 5, 'fill': -1}
     meta['image_lat'] = {'desc': 'Latitude of image pixel',
                          'notes': 'Dummy Variable',
                          'value_min': -90., 'value_max': 90.}
@@ -310,8 +284,6 @@ def initialize_test_meta(epoch_name, data_keys):
     for var in meta.keys():
         if var not in data_keys:
             meta.drop(var)
-            if var in meta.keys_nD():
-                meta.ho_data.pop(var)
 
     return meta
 
@@ -798,13 +770,3 @@ def non_unique_index(index):
     new_index = pds.to_datetime(new_index)
 
     return new_index
-
-
-def _warn_malformed_kwarg():
-    """Warn user that kwarg has been deprecated."""
-
-    dstr = ' '.join(['The kwarg malformed_index has been deprecated and',
-                     'will be removed in pysat 3.2.0+. Please use',
-                     'non_monotonic_index or non_unique_index to specify',
-                     'desired behaviour.'])
-    warnings.warn(dstr, DeprecationWarning, stacklevel=2)

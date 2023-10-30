@@ -52,7 +52,7 @@ import importlib
 import logging
 
 import pysat
-import pysat.tests.instrument_test_class as itc
+import pysat.tests.classes.cls_instrument_library as itc
 
 
 def load_saved_modules():
@@ -92,7 +92,7 @@ def register(module_names, overwrite=False):
         specify package name and instrument modules
     overwrite : bool
         If True, an existing registration will be updated
-        with the new module information.
+        with the new module information. (default=False)
 
     Raises
     ------
@@ -147,7 +147,7 @@ def register(module_names, overwrite=False):
             raise
 
         # Second, check that module is itself pysat compatible
-        validate = itc.InstTestClass()
+        validate = itc.InstLibTests()
 
         # Work with test code, create dummy structure to make things work
         class Foo(object):
@@ -208,7 +208,7 @@ def register(module_names, overwrite=False):
     return
 
 
-def register_by_module(module):
+def register_by_module(module, overwrite=False):
     """Register all sub-modules attached to input module.
 
     Enables instantiation of a third-party Instrument module using
@@ -221,6 +221,9 @@ def register_by_module(module):
     module : Python module
         Module with one or more pysat.Instrument support modules
         attached as sub-modules to the input `module`
+    overwrite : bool
+        If True, an existing registration will be updated
+        with the new module information. (default=False)
 
     Raises
     ------
@@ -249,7 +252,7 @@ def register_by_module(module):
     module_names = [module.__name__ + '.' + mod for mod in module_names]
 
     # Register all of the sub-modules
-    register(module_names)
+    register(module_names, overwrite=overwrite)
 
     return
 
