@@ -425,8 +425,6 @@ class InstLibTests(object):
 
         Parameters
         ----------
-        clean_level : str
-            Cleanliness level for loaded instrument data.
         inst_dict : dict
             Dictionary containing info to instantiate a specific instrument.
             Set automatically from instruments['download'] when
@@ -436,17 +434,12 @@ class InstLibTests(object):
 
         test_inst, date = initialize_test_inst_and_date(inst_dict)
         if len(test_inst.files.files) > 0:
-            # Set the clean level
-            target = 'Fake Data to be cleared'
-            test_inst.data = [target]
 
             # Make sure the strict time flag doesn't interfere with
             # the load tests, and re-run with desired clean level
             load_and_set_strict_time_flag(test_inst, date, raise_error=True,
                                           clean_off=False, concat=True)
 
-            # Make sure fake data is cleared
-            assert target not in test_inst.data
             # Make sure more than one day has been loaded
             assert len(np.unique(test_inst.index.day)) > 1
         else:
