@@ -414,6 +414,9 @@ The load module method signature should appear as:
   commmonly specify the data set to be loaded
 - The :py:func:`load` routine should return a tuple with :py:attr:`data` as the
   first element and a :py:class:`pysat.Meta` object as the second element.
+  If there is no data to load, :py:attr:`data` should return an empty
+  :py:class:`pandas.DataFrame` or :py:class:`xarray.Dataset` and :py:attr:`meta`
+  should return an empty :py:class:`pysat.Meta` object.
 - For simple time-series data sets, :py:attr:`data` is a
   :py:class:`pandas.DataFrame`, column names are the data labels, rows are
   indexed by :py:class:`datetime.datetime` objects.
