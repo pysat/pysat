@@ -76,7 +76,7 @@ def initialize_test_inst_and_date(inst_dict):
 
 
 def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
-                                  clean_off=True, concat=False):
+                                  clean_off=True, set_end_date=False):
     """Load data and set the strict time flag if needed for other tests.
 
     Parameters
@@ -91,15 +91,15 @@ def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
     clean_off : bool
         Turn off the clean method when re-loading data and testing the
         strict time flag (default=True)
-    concat : bool
-        If True, load multiple days to concat. If False, load single day.
+    set_end_date : bool
+        If True, load with setting the end date. If False, load single day.
         (default=False)
 
     """
 
-    kwargs = {'use_header': True}
+    kwargs = {}
 
-    if concat:
+    if set_end_date:
         kwargs['end_date'] = date + dt.timedelta(days=2)
 
     try:
