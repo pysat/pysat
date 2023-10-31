@@ -93,6 +93,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     # Support keyword testing
     pysat.logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
+    # If no download should be simulated, return empty `data` and `meta` objects
+    if tag == 'no_download':
+        return pds.DataFrame(), pysat.Meta()
+
     # Create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
@@ -172,16 +176,14 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     data.index = index
     data.index.name = 'Epoch'
 
+    # If we only want data and not metadata stop now
+    if tag == 'default_meta':
+        return data, pysat.Meta()
+
     # Set the meta data
     meta = mm_test.initialize_test_meta('Epoch', data.keys())
 
-    # TODO(#1120): Move logic up so that empty data is returned first.
-    if tag == 'default_meta':
-        return data, pysat.Meta()
-    elif tag == 'no_download':
-        return pds.DataFrame(), pysat.Meta()
-    else:
-        return data, meta
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
