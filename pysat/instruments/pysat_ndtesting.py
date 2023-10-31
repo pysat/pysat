@@ -98,7 +98,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     # If no download should be simulated, return empty `data` and `meta` objects
     if tag == 'no_download':
-        return xr.Dataset(), pysat.Meta()    
+        return xr.Dataset(), pysat.Meta()
 
     # Create an artificial satellite data set
     iperiod = mm_test.define_period()
