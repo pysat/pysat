@@ -33,6 +33,7 @@ Examples
 import datetime as dt
 from importlib import import_module
 import logging
+import numpy as np
 import sys
 import tempfile
 import warnings
@@ -76,7 +77,7 @@ def initialize_test_inst_and_date(inst_dict):
 
 
 def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
-                                  clean_off=True):
+                                  clean_off=True, set_end_date=False):
     """Load data and set the strict time flag if needed for other tests.
 
     Parameters
@@ -91,11 +92,19 @@ def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
     clean_off : bool
         Turn off the clean method when re-loading data and testing the
         strict time flag (default=True)
+    set_end_date : bool
+        If True, load with setting the end date. If False, load single day.
+        (default=False)
 
     """
 
+    kwargs = {}
+
+    if set_end_date:
+        kwargs['end_date'] = date + dt.timedelta(days=2)
+
     try:
-        test_inst.load(date=date)
+        test_inst.load(date=date, **kwargs)
     except Exception as err:
         # Catch all potential input errors, and only ensure that the one caused
         # by the strict time flag is prevented from occurring on future load
@@ -112,7 +121,7 @@ def load_and_set_strict_time_flag(test_inst, date, raise_error=False,
 
             # Evaluate the warning
             with warnings.catch_warnings(record=True) as war:
-                test_inst.load(date=date)
+                test_inst.load(date=date, **kwargs)
 
             assert len(war) >= 1
             categories = [war[j].category for j in range(len(war))]
@@ -364,15 +373,13 @@ class InstLibTests(object):
             dl_dict = inst_dict['user_info']
         else:
             dl_dict = {}
-        test_inst.download(date, date, **dl_dict)
+        # Note this will download two consecutive days
+        test_inst.download(date, **dl_dict)
         assert len(test_inst.files.files) > 0
         return
 
     @pytest.mark.second
-    # Need to maintain download mark for backwards compatibility.
-    # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
-    @pytest.mark.download
     @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty', 'clean'])
     def test_load(self, clean_level, inst_dict):
         """Test that instruments load at each cleaning level.
@@ -449,7 +456,35 @@ class InstLibTests(object):
     # Need to maintain download mark for backwards compatibility.
     # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
-    @pytest.mark.download
+    def test_load_multiple_days(self, inst_dict):
+        """Test that instruments load at each cleaning level.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            Dictionary containing info to instantiate a specific instrument.
+            Set automatically from instruments['download'] when
+            `initialize_test_package` is run.
+
+        """
+
+        test_inst, date = initialize_test_inst_and_date(inst_dict)
+        if len(test_inst.files.files) > 0:
+
+            # Make sure the strict time flag doesn't interfere with
+            # the load tests, and re-run with desired clean level
+            load_and_set_strict_time_flag(test_inst, date, raise_error=True,
+                                          clean_off=False, set_end_date=True)
+
+            # Make sure more than one day has been loaded
+            assert len(np.unique(test_inst.index.day)) > 1
+        else:
+            pytest.skip("Download data not available")
+
+        return
+
+    @pytest.mark.second
+    @pytest.mark.load_options
     @pytest.mark.parametrize("clean_level", ['dirty', 'dusty', 'clean'])
     def test_clean_warn(self, clean_level, inst_dict, caplog):
         """Test that appropriate warnings and errors are raised when cleaning.
@@ -547,10 +582,7 @@ class InstLibTests(object):
         return
 
     @pytest.mark.second
-    # Need to maintain download mark for backwards compatibility.
-    # Can remove once pysat 3.1.0 is released and libraries are updated.
     @pytest.mark.load_options
-    @pytest.mark.download
     @pytest.mark.parametrize('pad', [{'days': 1}, dt.timedelta(days=1)])
     def test_load_w_pad(self, pad, inst_dict):
         """Test that instruments load at each cleaning level.

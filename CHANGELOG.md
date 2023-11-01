@@ -27,7 +27,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Reduced code duplication in the `utils.files.parse_fixed_width_filenames`
     and `utils.files.parse_delimited_filenames` functions
   * Added ability to set Meta data using `meta['data_var', 'label'] = value`
-    structure
+    structure.
+  * Added test for loading multiple days of data.
 * Bug Fix
   * Fixed `utils.files.parse_fixed_width_filenames` output for empty file list
 * Maintenance
