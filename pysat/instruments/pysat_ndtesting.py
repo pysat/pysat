@@ -15,11 +15,9 @@ platform = 'pysat'
 name = 'ndtesting'
 
 pandas_format = False
-tags = {'': 'Regular testing data set',
-        'no_download': 'simulate an instrument without download support'}
+tags = {'': 'Regular testing data set'}
 inst_ids = {'': [tag for tag in tags.keys()]}
 _test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
-_test_download = {'': {'no_download': False}}
 _test_load_opt = {'': {'': [{'num_extra_time_coords': 0},
                             {'num_extra_time_coords': 1}]}}
 
@@ -95,10 +93,6 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     # Support keyword testing
     pysat.logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
-
-    # If no download should be simulated, return empty `data` and `meta` objects
-    if tag == 'no_download':
-        return xr.Dataset(), pysat.Meta()
 
     # Create an artificial satellite data set
     iperiod = mm_test.define_period()
