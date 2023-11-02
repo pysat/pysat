@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
     clean method.
-  * Added loading test with padding for Instruments.
+  * Added Instrument loading test with padding and for times without data.
   * Allow Instruments to define custom `concat_data` methods.
   * Added `include` kwarg to `Instrument.concat_data` to expand allowed inputs.
   * Added data kwarg to the Instrument class `__getitem__` method and reduced

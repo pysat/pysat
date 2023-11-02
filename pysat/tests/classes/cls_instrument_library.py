@@ -40,6 +40,7 @@ import warnings
 
 import pandas as pds
 import pytest
+import xarray as xr
 
 import pysat
 from pysat.utils import generate_instrument_list
@@ -415,6 +416,39 @@ class InstLibTests(object):
                 assert not test_inst.empty
         else:
             pytest.skip("Download data not available")
+
+        return
+
+    @pytest.mark.second
+    @pytest.mark.load_options
+    def test_load_empty(self, inst_dict):
+        """Test that instruments load empty objects if no data is available.
+
+        Parameters
+        ----------
+        inst_dict : dict
+            Dictionary containing info to instantiate a specific instrument.
+            Set automatically from instruments['download'] when
+            `initialize_test_package` is run.
+
+        """
+
+        # Get the instrument information and update the date to be in the future
+        test_inst, date = initialize_test_inst_and_date(inst_dict)
+        date = dt.datetime(dt.datetime.utcnow().year + 100, 1, 1)
+
+        # Make sure the strict time flag doesn't interfere with the load test
+        load_and_set_strict_time_flag(test_inst, date, raise_error=True)
+
+        # Check the empty status
+        assert test_inst.empty, "Data was loaded for a far-future time"
+        assert test_inst.meta == pysat.Meta(), "Meta data is not empty"
+        if test_inst.pandas_format:
+            assert all(test_inst.data == pds.DataFrame()), "Data not empty"
+        else:
+            assert test_inst.data.dims == xr.Dataset().dims, "Dims not empty"
+            assert test_inst.data.data_vars == xr.Dataset().data_vars, \
+                "Data variables not empty"
 
         return
 
