@@ -1295,8 +1295,6 @@ class TestFilesRaceCondition(object):
                          temporary_file_list=self.temporary_file_list)
         pysat.params['data_dirs'] = self.data_paths
 
-    # TODO(#871): This needs to be replaced or expanded based on the tests that
-    # portalocker uses
     def test_race_condition(self):
         """Test that multiple instances of pysat instrument creation run."""
         processes = 5
