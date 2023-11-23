@@ -13,6 +13,7 @@ import os
 import portalocker
 import pytest
 import shutil
+import sys
 import tempfile
 import warnings
 
@@ -624,19 +625,22 @@ class TestNetworkLock(object):
 
     def setup_method(self):
         """Set up the unit test environment."""
+        # Use a temporary directory so that the user's setup is not altered.
+        self.temp_dir = tempfile.TemporaryDirectory()
+
         # Create and write a temporary file
-        self.fname = 'temp_lock_file.txt'
+        self.fname = os.path.join(self.temp_dir.name, 'temp_lock_file.txt')
         with open(self.fname, 'w') as fh:
             fh.write('spam and eggs')
         return
 
     def teardown_method(self):
         """Clean up the unit test environment."""
-        # Remove the temporary file
-        os.remove(self.fname)
+        # Remove the temporary directory.
+        self.temp_dir.cleanup()
 
         # Delete the test class attributes
-        del self.fname
+        del self.fname, self.temp_dir
         return
 
     def test_with_timeout(self):
