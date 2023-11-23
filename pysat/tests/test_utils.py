@@ -13,7 +13,6 @@ import os
 import portalocker
 import pytest
 import shutil
-import sys
 import tempfile
 import warnings
 
