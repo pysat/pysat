@@ -69,3 +69,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: coveralls --rcfile=pyproject.toml --service=github
+      continue-on-error: true
