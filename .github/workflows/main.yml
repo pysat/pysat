@@ -68,5 +68,4 @@ jobs:
     - name: Publish results to coveralls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: coveralls --rcfile=pyproject.toml --service=github
-      continue-on-error: true
+      uses: coverallsapp/github-action@v2
