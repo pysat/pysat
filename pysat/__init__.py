@@ -67,9 +67,12 @@ pysat_dir = os.path.join(home_dir, '.pysat')
 if resources is None:
     test_data_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
                                   'tests', 'test_data')
+    citation = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                            'citation.txt')
 else:
     test_data_path = str(resources.files(__package__).joinpath('tests',
                                                                'test_data'))
+    citation = str(resources.files(__package__).joinpath('citation.txt'))
 
 # Create a .pysat directory or parameters file if one doesn't exist.
 # pysat_settings did not exist pre v3 thus this provides a check against
