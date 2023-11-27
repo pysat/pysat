@@ -68,4 +68,17 @@ jobs:
     - name: Publish results to coveralls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      uses: coverallsapp/github-action@v2
+        COVERALLS_PARALLEL: true
+      run: coveralls --rcfile=pyproject.toml --service=github
+
+  finish:
+    name: Finish Coverage Analysis
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        pip install --upgrade coveralls
+        coveralls --service=github --finish
