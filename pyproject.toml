@@ -48,6 +48,7 @@ dependencies = [
   "pandas < 2.1.1",
   "portalocker",
   "pytest",
+  "scipy",
   "toolz",
   "xarray"
 ]

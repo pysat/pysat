@@ -43,6 +43,7 @@ needed by the installer:
 #. pandas
 #. portalocker
 #. pytest
+#. scipy
 #. toolz
 #. xarray
 
