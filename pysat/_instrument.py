@@ -1107,10 +1107,11 @@ class Instrument(object):
                 elif len(np.shape(in_data)) <= 1:
                     # If not an xarray input, but still iterable, then we
                     # go through to process the input
-                    if np.shape(in_data) == np.shape(self.data[key]):
+                    if key in self.variables and (
+                            np.shape(in_data) == np.shape(self.data[key])):
                         # The ND input has the same shape as the current data
                         # and can be assigned directly without adjusting the
-                        # dimensions
+                        # dimensions. Only works with existing data.
                         self.data[key] = (self.data[key].dims, in_data)
                     elif np.shape(in_data) == np.shape(self.index):
                         # 1D input has the correct length for storage along
