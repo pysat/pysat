@@ -6,7 +6,6 @@ ipython
 m2r2
 numpydoc
 pysatSpaceWeather
-pytest
 pytest-cov
 pytest-ordering
 sphinx

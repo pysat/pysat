@@ -65,6 +65,7 @@ Space Physics community.  This module officially supports Python 3.X+.
 | numpy >= 1.12  |                   |
 | pandas < 2.1.1 |                   |
 | portalocker    |                   |
+| pytest         |                   |
 | toolz          |                   |
 | xarray         |                   |
 

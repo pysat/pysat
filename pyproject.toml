@@ -47,6 +47,7 @@ dependencies = [
   "numpy >= 1.12",
   "pandas < 2.1.1",
   "portalocker",
+  "pytest",
   "toolz",
   "xarray"
 ]
@@ -58,7 +59,6 @@ test = [
   "flake8-docstrings",
   "hacking >= 1.0",
   "pysatSpaceWeather",
-  "pytest",
   "pytest-cov",
   "pytest-ordering"
 ]
