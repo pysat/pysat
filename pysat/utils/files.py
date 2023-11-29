@@ -19,8 +19,8 @@ from pysat.utils._core import available_instruments
 from pysat.utils._core import listify
 from pysat.utils.time import create_datetime_index
 
-# Define hidden support functions
 
+# Define hidden support functions
 
 def _init_parse_filenames(files, format_str):
     """Set the initial output for the file parsing functions.
@@ -464,7 +464,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         `instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf`
     wildcard : bool
         If True, replaces each '?' sequence that would normally
-        be returned with a single '*'.
+        be returned with a single '*'. (default=False)
 
     Returns
     -------
@@ -531,10 +531,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                             out_dict['search_string'] += '*'
                         break
             else:
-                estr = ''.join(["Couldn't determine formatting width. ",
-                                "This may be due to the use of unsupported ",
-                                "wildcard characters."])
-                raise ValueError(estr)
+                raise ValueError(
+                    ''.join(["Couldn't determine formatting width, check ",
+                             "formatting length specification (e.g., ",
+                             "{day:03d} for day of year)."]))
 
     return out_dict
 

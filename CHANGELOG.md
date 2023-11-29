@@ -23,7 +23,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     shift in time.
   * Added orbit number to `pysat_ndtesting`.
   * Added the overwrite kwarg to `utils.registry.register_by_module`.
-  * Added unit tests for all file parsing functions in `utils.files`.
+  * Added unit tests for all functions in `utils.files`.
   * Reduced code duplication in the `utils.files.parse_fixed_width_filenames`
     and `utils.files.parse_delimited_filenames` functions
   * Added ability to set Meta data using `meta['data_var', 'label'] = value`
