@@ -198,6 +198,19 @@ class InstLibTests(object):
         del self.saved_path, self.tempdir
         return
 
+    def setup_method(self):
+        """Initialize parameters before each method."""
+
+        return
+
+    def teardown_method(self):
+        """Clean up any instruments that were initialized."""
+
+        if hasattr(self, "test_inst"):
+            del self.test_inst
+
+        return
+
     def initialize_test_package(self, inst_loc, user_info=None):
         """Generate custom instrument lists for each category of tests.
 
@@ -366,7 +379,7 @@ class InstLibTests(object):
 
         """
 
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
 
         # Check for username.
         if 'user_info' in inst_dict.keys():
@@ -374,8 +387,8 @@ class InstLibTests(object):
         else:
             dl_dict = {}
         # Note this will download two consecutive days
-        test_inst.download(date, **dl_dict)
-        assert len(test_inst.files.files) > 0
+        self.test_inst.download(date, **dl_dict)
+        assert len(self.test_inst.files.files) > 0
         return
 
     @pytest.mark.second
@@ -395,25 +408,25 @@ class InstLibTests(object):
 
         """
 
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
-        if len(test_inst.files.files) > 0:
+        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        if len(self.test_inst.files.files) > 0:
             # Set the clean level
-            test_inst.clean_level = clean_level
+            self.test_inst.clean_level = clean_level
             target = 'Fake Data to be cleared'
-            test_inst.data = [target]
+            self.test_inst.data = [target]
 
             # Make sure the strict time flag doesn't interfere with
             # the load tests, and re-run with desired clean level
-            load_and_set_strict_time_flag(test_inst, date, raise_error=True,
-                                          clean_off=False)
+            load_and_set_strict_time_flag(self.test_inst, date,
+                                          raise_error=True, clean_off=False)
 
             # Make sure fake data is cleared
-            assert target not in test_inst.data
+            assert target not in self.test_inst.data
 
             # If cleaning not used, something should be in the file
             # Not used for clean levels since cleaning may remove all data
             if clean_level == "none":
-                assert not test_inst.empty
+                assert not self.test_inst.empty
         else:
             pytest.skip("Download data not available")
 
@@ -434,20 +447,21 @@ class InstLibTests(object):
         """
 
         # Get the instrument information and update the date to be in the future
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
         date = dt.datetime(dt.datetime.utcnow().year + 100, 1, 1)
 
         # Make sure the strict time flag doesn't interfere with the load test
-        load_and_set_strict_time_flag(test_inst, date, raise_error=True)
+        load_and_set_strict_time_flag(self.test_inst, date, raise_error=True)
 
         # Check the empty status
-        assert test_inst.empty, "Data was loaded for a far-future time"
-        assert test_inst.meta == pysat.Meta(), "Meta data is not empty"
-        if test_inst.pandas_format:
-            assert all(test_inst.data == pds.DataFrame()), "Data not empty"
+        assert self.test_inst.empty, "Data was loaded for a far-future time"
+        assert self.test_inst.meta == pysat.Meta(), "Meta data is not empty"
+        if self.test_inst.pandas_format:
+            assert all(self.test_inst.data == pds.DataFrame()), "Data not empty"
         else:
-            assert test_inst.data.dims == xr.Dataset().dims, "Dims not empty"
-            assert test_inst.data.data_vars == xr.Dataset().data_vars, \
+            assert self.test_inst.data.dims == xr.Dataset().dims, \
+                "Dims not empty"
+            assert self.test_inst.data.data_vars == xr.Dataset().data_vars, \
                 "Data variables not empty"
 
         return
@@ -466,16 +480,17 @@ class InstLibTests(object):
 
         """
 
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
-        if len(test_inst.files.files) > 0:
+        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        if len(self.test_inst.files.files) > 0:
 
             # Make sure the strict time flag doesn't interfere with
             # the load tests, and re-run with desired clean level
-            load_and_set_strict_time_flag(test_inst, date, raise_error=True,
+            load_and_set_strict_time_flag(self.test_inst, date,
+                                          raise_error=True,
                                           clean_off=False, set_end_date=True)
 
             # Make sure more than one day has been loaded
-            assert len(np.unique(test_inst.index.day)) > 1
+            assert len(np.unique(self.test_inst.index.day)) > 1
         else:
             pytest.skip("Download data not available")
 
@@ -507,29 +522,29 @@ class InstLibTests(object):
             # messages at the current clean level, specified by `clean_level`
             if clean_level in clean_warn.keys():
                 # Only need to test if there are clean warnings for this level
-                test_inst, date = initialize_test_inst_and_date(inst_dict)
+                self.test_inst, date = initialize_test_inst_and_date(inst_dict)
                 clean_warnings = clean_warn[clean_level]
 
                 # Make sure the strict time flag doesn't interfere with
                 # the cleaning tests
-                load_and_set_strict_time_flag(test_inst, date)
+                load_and_set_strict_time_flag(self.test_inst, date)
 
                 # Cycle through each of the potential cleaning messages
                 # for this Instrument module, inst ID, tag, and clean level
                 for (clean_method, clean_method_level, clean_method_msg,
                      final_level) in clean_warnings:
-                    if len(test_inst.files.files) > 0:
+                    if len(self.test_inst.files.files) > 0:
                         # Set the clean level
-                        test_inst.clean_level = clean_level
+                        self.test_inst.clean_level = clean_level
                         target = 'Fake Data to be cleared'
-                        test_inst.data = [target]
+                        self.test_inst.data = [target]
 
                         if clean_method == 'logger':
                             # A logging message is expected
                             with caplog.at_level(
                                     getattr(logging, clean_method_level),
                                     logger='pysat'):
-                                test_inst.load(date=date)
+                                self.test_inst.load(date=date)
 
                             # Test the returned message
                             out_msg = caplog.text
@@ -539,7 +554,7 @@ class InstLibTests(object):
                         elif clean_method == 'warning':
                             # A warning message is expected
                             with warnings.catch_warnings(record=True) as war:
-                                test_inst.load(date=date)
+                                self.test_inst.load(date=date)
 
                             # Test the warning output
                             testing.eval_warnings(war, [clean_method_msg],
@@ -548,7 +563,7 @@ class InstLibTests(object):
                             # An error message is expected, evaluate error
                             # and the error message
                             testing.eval_bad_input(
-                                test_inst.load, clean_method_level,
+                                self.test_inst.load, clean_method_level,
                                 clean_method_msg, input_kwargs={'date': date})
                         else:
                             raise AttributeError(
@@ -557,12 +572,12 @@ class InstLibTests(object):
 
                         # Test to see if the clean flag has the expected value
                         # afterwards
-                        assert test_inst.clean_level == final_level, \
+                        assert self.test_inst.clean_level == final_level, \
                             "Clean level should now be {:s}, not {:s}".format(
-                                final_level, test_inst.clean_level)
+                                final_level, self.test_inst.clean_level)
 
                         # Make sure fake data is cleared
-                        assert target not in test_inst.data
+                        assert target not in self.test_inst.data
                     else:
                         pytest.skip("".join(["Can't test clean warnings for ",
                                              "Instrument ",
@@ -619,29 +634,29 @@ class InstLibTests(object):
         else:
             pad_repr = repr(pad)
 
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
-        if len(test_inst.files.files) > 0:
+        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        if len(self.test_inst.files.files) > 0:
             # Make sure the strict time flag doesn't interfere with
             # the load tests
-            load_and_set_strict_time_flag(test_inst, date, raise_error=True,
-                                          clean_off=False)
+            load_and_set_strict_time_flag(self.test_inst, date,
+                                          raise_error=True, clean_off=False)
 
-            if test_inst.empty:
+            if self.test_inst.empty:
                 # This will be empty if this is a forecast file that doesn't
                 # include the load date
-                test_inst.pad = None
-                load_and_set_strict_time_flag(test_inst, date, raise_error=True,
-                                              clean_off=False)
-                assert not test_inst.empty, "No data on {:}".format(date)
-                assert test_inst.index.max() < date, \
+                self.test_inst.pad = None
+                load_and_set_strict_time_flag(self.test_inst, date,
+                                              raise_error=True, clean_off=False)
+                assert not self.test_inst.empty, "No data on {:}".format(date)
+                assert self.test_inst.index.max() < date, \
                     "Padding should have left data and didn't"
             else:
                 # Padding was successful, evaluate the data index length
-                assert (test_inst.index[-1]
-                        - test_inst.index[0]).total_seconds() < 86400.0
+                assert (self.test_inst.index[-1]
+                        - self.test_inst.index[0]).total_seconds() < 86400.0
 
                 # Evaluate the recorded pad
-                inst_str = test_inst.__str__()
+                inst_str = self.test_inst.__str__()
                 assert inst_str.find(
                     'Data Padding: {:s}'.format(pad_repr)) > 0, "".join([
                         "bad pad value: ", pad_repr, " not in ", inst_str])
@@ -663,11 +678,11 @@ class InstLibTests(object):
 
         """
 
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
-        name = '_'.join((test_inst.platform, test_inst.name))
+        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        name = '_'.join((self.test_inst.platform, self.test_inst.name))
 
         if hasattr(getattr(self.inst_loc, name), 'list_remote_files'):
-            assert callable(test_inst.remote_file_list)
+            assert callable(self.test_inst.remote_file_list)
 
             # Check for username
             if 'user_info' in inst_dict.keys():
@@ -675,7 +690,8 @@ class InstLibTests(object):
             else:
                 dl_dict = {}
 
-            files = test_inst.remote_file_list(start=date, stop=date, **dl_dict)
+            files = self.test_inst.remote_file_list(start=date, stop=date,
+                                                    **dl_dict)
 
             # If test date is correctly chosen, files should exist
             assert len(files) > 0
