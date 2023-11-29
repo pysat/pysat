@@ -90,10 +90,6 @@ class Instrument(object):
         of files found will be checked to ensure the filesizes are greater than
         zero. Empty files are removed from the stored list of files.
         (default=False)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order. If None uses
-        the Meta defaults. Deprecated, use `meta_kwargs` (default=None)
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization (default=None)
     custom : list or NoneType
@@ -252,7 +248,7 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, data_dir='',
                  directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
-                 ignore_empty_files=False, labels=None, meta_kwargs=None,
+                 ignore_empty_files=False, meta_kwargs=None,
                  custom=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
@@ -429,12 +425,6 @@ class Instrument(object):
         # use Instrument definition of MetaLabels over the Metadata declaration.
         self.meta_kwargs = {} if meta_kwargs is None else meta_kwargs
 
-        if labels is not None:
-            warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
-                                   "with the 'labels' key instead. Support ",
-                                   "for `labels` will be removed in v3.2.0+"]),
-                          DeprecationWarning, stacklevel=2)
-            self.meta_kwargs["labels"] = labels
         self.meta = pysat.Meta(**self.meta_kwargs)
         self.meta.mutable = False
 
@@ -1984,30 +1974,6 @@ class Instrument(object):
     # Define all accessible methods
 
     @property
-    def meta_labels(self):
-        """Provide Meta input for labels kwarg, deprecated.
-
-        Returns
-        -------
-        dict
-            Either Meta default provided locally or custom value provided
-            by user and stored in `meta_kwargs['labels']`
-
-        """
-        warnings.warn("".join(["Deprecated attribute, returns `meta_kwargs",
-                               "['labels']` or Meta defaults if not set. Will",
-                               " be removed in pysat 3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        if 'labels' in self.meta_kwargs.keys():
-            return self.meta_kwargs['labels']
-        else:
-            return {'units': ('units', str), 'name': ('long_name', str),
-                    'notes': ('notes', str), 'desc': ('desc', str),
-                    'min_val': ('value_min', (float, int)),
-                    'max_val': ('value_max', (float, int)),
-                    'fill_val': ('fill', (float, int, str))}
-
-    @property
     def bounds(self):
         """Boundaries for iterating over instrument object by date or file.
 
@@ -2947,43 +2913,6 @@ class Instrument(object):
         self.meta.rename(mapper)
 
         return
-
-    def generic_meta_translator(self, input_meta):
-        """Convert the `input_meta` metadata into a dictionary.
-
-        .. deprecated:: 3.0.2
-           `generic_meta_translator` will be removed in the 3.2.0+ release.
-
-        Parameters
-        ----------
-        input_meta : pysat.Meta
-            The metadata object to translate
-
-        Returns
-        -------
-        export_dict : dict
-            A dictionary of the metadata for each variable of an output file
-
-        Note
-        ----
-        Uses the translation dict, if present, at `self._meta_translation_table`
-        to map existing metadata labels to a list of labels used in the
-        returned dict.
-
-        """
-
-        dstr = ''.join(['This function has been deprecated. Please see ',
-                        '`pysat.utils.io.apply_table_translation_to_file` and ',
-                        '`self.meta.to_dict` to get equivalent functionality.'])
-        warnings.warn(dstr, DeprecationWarning, stacklevel=2)
-
-        meta_dict = input_meta.to_dict()
-        trans_table = self._meta_translation_table
-        exp_dict = pysat.utils.io.apply_table_translation_to_file(self,
-                                                                  meta_dict,
-                                                                  trans_table)
-
-        return exp_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
