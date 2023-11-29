@@ -208,6 +208,8 @@ class InstLibTests(object):
 
         if hasattr(self, "test_inst"):
             del self.test_inst
+        if hasattr(self, "date"):
+            del self.date
 
         return
 
@@ -379,7 +381,7 @@ class InstLibTests(object):
 
         """
 
-        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
 
         # Check for username.
         if 'user_info' in inst_dict.keys():
@@ -387,7 +389,7 @@ class InstLibTests(object):
         else:
             dl_dict = {}
         # Note this will download two consecutive days
-        self.test_inst.download(date, **dl_dict)
+        self.test_inst.download(self.date, **dl_dict)
         assert len(self.test_inst.files.files) > 0
         return
 
@@ -408,7 +410,7 @@ class InstLibTests(object):
 
         """
 
-        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
         if len(self.test_inst.files.files) > 0:
             # Set the clean level
             self.test_inst.clean_level = clean_level
@@ -417,7 +419,7 @@ class InstLibTests(object):
 
             # Make sure the strict time flag doesn't interfere with
             # the load tests, and re-run with desired clean level
-            load_and_set_strict_time_flag(self.test_inst, date,
+            load_and_set_strict_time_flag(self.test_inst, self.date,
                                           raise_error=True, clean_off=False)
 
             # Make sure fake data is cleared
@@ -447,11 +449,12 @@ class InstLibTests(object):
         """
 
         # Get the instrument information and update the date to be in the future
-        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
-        date = dt.datetime(dt.datetime.utcnow().year + 100, 1, 1)
+        self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
+        self.date = dt.datetime(dt.datetime.utcnow().year + 100, 1, 1)
 
         # Make sure the strict time flag doesn't interfere with the load test
-        load_and_set_strict_time_flag(self.test_inst, date, raise_error=True)
+        load_and_set_strict_time_flag(self.test_inst, self.date,
+                                      raise_error=True)
 
         # Check the empty status
         assert self.test_inst.empty, "Data was loaded for a far-future time"
@@ -480,12 +483,12 @@ class InstLibTests(object):
 
         """
 
-        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
         if len(self.test_inst.files.files) > 0:
 
             # Make sure the strict time flag doesn't interfere with
             # the load tests, and re-run with desired clean level
-            load_and_set_strict_time_flag(self.test_inst, date,
+            load_and_set_strict_time_flag(self.test_inst, self.date,
                                           raise_error=True,
                                           clean_off=False, set_end_date=True)
 
@@ -522,12 +525,13 @@ class InstLibTests(object):
             # messages at the current clean level, specified by `clean_level`
             if clean_level in clean_warn.keys():
                 # Only need to test if there are clean warnings for this level
-                self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+                self.test_inst, self.date = initialize_test_inst_and_date(
+                    inst_dict)
                 clean_warnings = clean_warn[clean_level]
 
                 # Make sure the strict time flag doesn't interfere with
                 # the cleaning tests
-                load_and_set_strict_time_flag(self.test_inst, date)
+                load_and_set_strict_time_flag(self.test_inst, self.date)
 
                 # Cycle through each of the potential cleaning messages
                 # for this Instrument module, inst ID, tag, and clean level
@@ -544,7 +548,7 @@ class InstLibTests(object):
                             with caplog.at_level(
                                     getattr(logging, clean_method_level),
                                     logger='pysat'):
-                                self.test_inst.load(date=date)
+                                self.test_inst.load(date=self.date)
 
                             # Test the returned message
                             out_msg = caplog.text
@@ -554,7 +558,7 @@ class InstLibTests(object):
                         elif clean_method == 'warning':
                             # A warning message is expected
                             with warnings.catch_warnings(record=True) as war:
-                                self.test_inst.load(date=date)
+                                self.test_inst.load(date=self.date)
 
                             # Test the warning output
                             testing.eval_warnings(war, [clean_method_msg],
@@ -564,7 +568,8 @@ class InstLibTests(object):
                             # and the error message
                             testing.eval_bad_input(
                                 self.test_inst.load, clean_method_level,
-                                clean_method_msg, input_kwargs={'date': date})
+                                clean_method_msg,
+                                input_kwargs={'date': self.date})
                         else:
                             raise AttributeError(
                                 'unknown type of warning: {:}'.format(
@@ -634,21 +639,22 @@ class InstLibTests(object):
         else:
             pad_repr = repr(pad)
 
-        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
         if len(self.test_inst.files.files) > 0:
             # Make sure the strict time flag doesn't interfere with
             # the load tests
-            load_and_set_strict_time_flag(self.test_inst, date,
+            load_and_set_strict_time_flag(self.test_inst, self.date,
                                           raise_error=True, clean_off=False)
 
             if self.test_inst.empty:
                 # This will be empty if this is a forecast file that doesn't
                 # include the load date
                 self.test_inst.pad = None
-                load_and_set_strict_time_flag(self.test_inst, date,
+                load_and_set_strict_time_flag(self.test_inst, self.date,
                                               raise_error=True, clean_off=False)
-                assert not self.test_inst.empty, "No data on {:}".format(date)
-                assert self.test_inst.index.max() < date, \
+                assert not self.test_inst.empty, \
+                    "No data on {:}".format(self.date)
+                assert self.test_inst.index.max() < self.date, \
                     "Padding should have left data and didn't"
             else:
                 # Padding was successful, evaluate the data index length
@@ -678,7 +684,7 @@ class InstLibTests(object):
 
         """
 
-        self.test_inst, date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
         name = '_'.join((self.test_inst.platform, self.test_inst.name))
 
         if hasattr(getattr(self.inst_loc, name), 'list_remote_files'):
@@ -690,8 +696,8 @@ class InstLibTests(object):
             else:
                 dl_dict = {}
 
-            files = self.test_inst.remote_file_list(start=date, stop=date,
-                                                    **dl_dict)
+            files = self.test_inst.remote_file_list(start=self.date,
+                                                    stop=self.date, **dl_dict)
 
             # If test date is correctly chosen, files should exist
             assert len(files) > 0
@@ -713,10 +719,10 @@ class InstLibTests(object):
 
         """
 
-        test_inst, date = initialize_test_inst_and_date(inst_dict)
+        test_inst, self.date = initialize_test_inst_and_date(inst_dict)
 
         with warnings.catch_warnings(record=True) as war:
-            test_inst.download(date, date)
+            test_inst.download(self.date, self.date)
 
         assert len(war) >= 1
         categories = [war[j].category for j in range(0, len(war))]
