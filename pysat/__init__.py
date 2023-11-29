@@ -34,7 +34,12 @@ Main Features
 
 """
 
-import importlib
+try:
+    from importlib import metadata
+    from importlib import resources
+except ImportError:
+    import importlib_metadata as metadata
+    resources = None
 
 import logging
 import os
@@ -50,12 +55,7 @@ logger.setLevel(logging.WARNING)
 from pysat import _params
 
 # Set version
-try:
-    __version__ = importlib.metadata.version('pysat')
-except AttributeError:
-    # Python 3.6 requires a different version
-    import importlib_metadata
-    __version__ = importlib_metadata.version('pysat')
+__version__ = metadata.version('pysat')
 
 # Get home directory
 home_dir = os.path.expanduser('~')
@@ -64,15 +64,22 @@ home_dir = os.path.expanduser('~')
 pysat_dir = os.path.join(home_dir, '.pysat')
 
 # Set directory for test data
-here = os.path.abspath(os.path.dirname(__file__))
-test_data_path = os.path.join(here, 'tests', 'test_data')
+if resources is None:
+    test_data_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                                  'tests', 'test_data')
+    citation = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                            'citation.txt')
+else:
+    test_data_path = str(resources.files(__package__).joinpath('tests',
+                                                               'test_data'))
+    citation = str(resources.files(__package__).joinpath('citation.txt'))
 
 # Create a .pysat directory or parameters file if one doesn't exist.
 # pysat_settings did not exist pre v3 thus this provides a check against
 # v2 users that are upgrading. Those users need the settings file plus
 # new internal directories.
-if not os.path.isdir(pysat_dir) or \
-        (not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json'))):
+settings_file = os.path.join(pysat_dir, 'pysat_settings.json')
+if not os.path.isdir(pysat_dir) or not os.path.isfile(settings_file):
 
     # Make a .pysat directory if not already present
     if not os.path.isdir(pysat_dir):
@@ -89,7 +96,7 @@ if not os.path.isdir(pysat_dir) or \
         os.mkdir(os.path.join(pysat_dir, 'instruments', 'archive'))
 
     # Create parameters file
-    if not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json')):
+    if not os.path.isfile(settings_file):
         params = _params.Parameters(path=pysat_dir, create_new=True)
 
     print(''.join(("\nHi there!  pysat will nominally store data in a ",
@@ -116,5 +123,5 @@ from pysat import utils
 from pysat._constellation import Constellation
 __all__ = ['instruments', 'utils']
 
-# Cleanup
-del here
+# Clean up
+del settings_file, resources

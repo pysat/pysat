@@ -23,7 +23,8 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 [Citation Info](https://pysat.readthedocs.io/en/latest/citing.html)
 
 Come join us on Slack! An invitation to the pysat workspace is available
-in the 'About' section of the [pysat GitHub Repository.](https://github.com/pysat/pysat)
+in the 'About' section of the
+[pysat GitHub Repository.](https://github.com/pysat/pysat)
 Development meetings are generally held fortnightly.
 
 # Main Features
@@ -49,47 +50,54 @@ Development meetings are generally held fortnightly.
   instruments to pysat
 
 # Installation
-## Starting from scratch
-* Python and associated packages for science are freely available. Convenient
-  science python package setups are available from https://www.python.org/,
-  [Anaconda](https://www.anaconda.com/distribution/), and other locations
-  (some platform specific). Anaconda also includes a developer environment that
-  works well with pysat. Core science packages such as numpy, scipy, matplotlib,
-  pandas and many others may also be installed directly via pip or your
-  favorite package manager.
 
-* Installation through pip
+The following instructions provide a guide for installing pysat and give some
+examples on how to use the routines.
+
+## Prerequisites
+
+pysat uses common Python modules, as well as modules developed by and for the
+Space Physics community.  This module officially supports Python 3.X+.
+
+| Common modules | Community modules |
+| -------------- | ----------------- |
+| dask           | netCDF4           |
+| numpy >= 1.12  |                   |
+| pandas < 2.1.1 |                   |
+| portalocker    |                   |
+| pytest         |                   |
+| scipy          |                   |
+| toolz          |                   |
+| xarray         |                   |
+
+
+## PyPi Installation
 ```
 pip install pysat
 ```
-* Installation through github
+
+## GitHub Installation
 ```
 git clone https://github.com/pysat/pysat.git
-cd pysat
+```
+
+Change directories into the repository folder and run the pyproject.toml or
+setup.py file.  For a local install use the "--user" flag after "install".
+
+```
+cd pysat/
+python -m build .
 pip install .
 ```
-An advantage to installing through github is access to the development branches.
-The latest bugfixes can be found in the `develop` branch.  However, this branch
-is not stable (as the name implies).  We recommend using this branch in a
-virtual environment or using `python setup.py develop`.
-```
-git clone https://github.com/pysat/pysat.git
-cd pysat
-git checkout develop
-pip install -e .
-```
-* Note that pysat requires a number of packages for the install.  
-  * dask
-  * netCDF4
-  * numpy
-  * pandas
-  * portalocker
-  * scipy
-  * toolz
-  * xarray
-* The first time the package is run, you will need to specify a directory to
-  store data. In python, run:
+
+# Using pysat
+
+* The first time pysat is run, you will need to specify a directory to store
+  the data. In Python, run:
 ```
 pysat.params['data_dirs'] = 'path/to/directory/that/may/or/may/not/exist'
 ```
   * Nominal organization of data is top_dir/platform/name/tag/inst_id/files
+
+Detailed examples and tutorials for using pysat are available in the
+[documentation](http://pysat.readthedocs.io/en/latest/index.html).

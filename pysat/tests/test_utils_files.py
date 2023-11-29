@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------
 """Tests the `pysat.utils.files` functions."""
 
+from collections import OrderedDict
 import datetime as dt
 from importlib import reload
 import numpy as np
@@ -19,6 +20,130 @@ import pysat.instruments.methods.testing as pimtesting
 from pysat.tests.classes.cls_ci import CICleanSetup
 from pysat.utils import files as futils
 from pysat.utils import testing
+
+
+class TestConstructSearchstring(object):
+    """Unit tests for the `construct_searchstring_from_format` function."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+        self.out_dict = {}
+        self.num_fmt = None
+        self.str_len = None
+        self.fill_len = None
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment after each method."""
+
+        del self.out_dict, self.num_fmt, self.str_len, self.fill_len
+        return
+
+    def eval_output(self):
+        """Evaluate the output dictionary."""
+
+        testing.assert_lists_equal(['search_string', 'keys', 'lengths',
+                                    'string_blocks'],
+                                   list(self.out_dict.keys()))
+
+        assert len(self.out_dict['keys']) == self.num_fmt
+        assert len(''.join(self.out_dict['string_blocks'])) == self.str_len
+        assert sum(self.out_dict['lengths']) == self.fill_len
+
+        if self.out_dict['search_string'].find('*') < 0:
+            assert len(
+                self.out_dict['search_string']) == self.fill_len + self.str_len
+        else:
+            assert len(
+                self.out_dict['search_string']) <= self.fill_len + self.str_len
+        return
+
+    @pytest.mark.parametrize("format_str,nfmt,slen,flen", [
+        ("", 0, 0, 0), ("test", 0, 4, 0), ("{year:02d}{month:02d}", 2, 0, 4),
+        ("test_{year:04d}.ext", 1, 9, 4)])
+    def test_searchstring_success(self, format_str, nfmt, slen, flen):
+        """Test successful construction of a searchable string.
+
+        Parameters
+        ----------
+        format_str : str
+            The naming pattern of the instrument files and the locations of
+            date/version/revision/cycle information needed to create an ordered
+            list.
+        nfmt : int
+            Number of formatting options included in the format string
+        slen : int
+            Length of non-formatted string segments
+        flen : int
+            Length of formatted segments
+
+        """
+        # Set the evaluation criteria
+        self.num_fmt = nfmt
+        self.str_len = slen
+        self.fill_len = flen
+
+        # Get the streachstring dictionary
+        self.out_dict = futils.construct_searchstring_from_format(format_str)
+
+        # Evaluate the output
+        self.eval_output()
+        return
+
+    @pytest.mark.parametrize("format_str,nfmt,slen,flen, nwc", [
+        ("", 0, 0, 0, 0), ("test", 0, 4, 0, 0),
+        ("{year:02d}{month:02d}", 2, 0, 4, 2),
+        ("test_{year:04d}_{month:02d}.ext", 2, 10, 6, 2)])
+    def test_searchstring_w_wildcard(self, format_str, nfmt, slen, flen, nwc):
+        """Test successful construction of a searchable string with wildcards.
+
+        Parameters
+        ----------
+        format_str : str
+            The naming pattern of the instrument files and the locations of
+            date/version/revision/cycle information needed to create an ordered
+            list.
+        nfmt : int
+            Number of formatting options included in the format string
+        slen : int
+            Length of non-formatted string segments
+        flen : int
+            Length of formatted segments
+        nwc : int
+            Number of wildcard (*) symbols
+
+        """
+        # Set the evaluation criteria
+        self.num_fmt = nfmt
+        self.str_len = slen
+        self.fill_len = flen
+
+        # Get the streachstring dictionary
+        self.out_dict = futils.construct_searchstring_from_format(format_str,
+                                                                  True)
+
+        # Evaluate the output
+        self.eval_output()
+        assert len(self.out_dict['search_string'].split('*')) == nwc + 1
+        return
+
+    def test_searchstring_noformat(self):
+        """Test failure if the input argument is NoneType."""
+
+        testing.eval_bad_input(futils.construct_searchstring_from_format,
+                               ValueError,
+                               'Must supply a filename template (format_str).',
+                               input_args=[None])
+        return
+
+    def test_searchstring_bad_wildcard(self):
+        """Test failure if unsupported wildcard use is encountered."""
+
+        testing.eval_bad_input(futils.construct_searchstring_from_format,
+                               ValueError,
+                               "Couldn't determine formatting width, check",
+                               input_args=["test{year:02d}{month:d}.txt"])
+        return
 
 
 class TestParseFilenames(object):
@@ -47,17 +172,9 @@ class TestParseFilenames(object):
         del self.temporary_file_list
 
     def eval_parsed_filenames(self):
-        """Evaluate the output of a `parse_delimited_filename` unit test.
-
-        Returns
-        -------
-        bool
-            True if there is data to evalute, False if data dict is empty
-
-        """
+        """Evaluate the output of a `parse_delimited_filename` unit test."""
         # Evaluate the returned data dict
-        if len(self.file_dict.keys()) < 2:
-            return False
+        assert len(self.file_dict.keys()) >= 2, "insufficient keys in file dict"
 
         # Extract the test lists
         if len(self.fkwargs) > 0:
@@ -78,7 +195,7 @@ class TestParseFilenames(object):
                 assert self.file_dict[fkey] is None, \
                     "unused format key has a value"
 
-        return True
+        return
 
     @pytest.mark.parametrize("sep_char,flead,good_kwargs", [
         ("_", "test_", ['year', 'month', 'day', 'hour', 'minute', 'version']),
@@ -117,7 +234,7 @@ class TestParseFilenames(object):
                                                           sep_char)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     def test_parse_delimited_filename_empty(self):
@@ -132,7 +249,7 @@ class TestParseFilenames(object):
         self.file_dict = futils.parse_delimited_filenames([], fname, sep_char)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     @pytest.mark.parametrize("sep_char,flead,good_kwargs", [
@@ -171,7 +288,7 @@ class TestParseFilenames(object):
         self.file_dict = futils.parse_fixed_width_filenames(file_list, fname)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     def test_parse_fixed_width_filename_empty(self):
@@ -185,7 +302,7 @@ class TestParseFilenames(object):
         self.file_dict = futils.parse_fixed_width_filenames([], fname)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         return
 
     def test_init_parse_filename_empty(self):
@@ -199,7 +316,7 @@ class TestParseFilenames(object):
         self.file_dict, sdict = futils._init_parse_filenames([], fname)
 
         # Test each of the return values
-        assert self.eval_parsed_filenames()
+        self.eval_parsed_filenames()
         assert len(sdict.keys()) == 0, "Search dict was defined unnecessarily"
         return
 
@@ -260,6 +377,123 @@ class TestParseFilenames(object):
                     testing.assert_isinstance(self.file_dict[fkey][0], str)
                 else:
                     testing.assert_isinstance(self.file_dict[fkey][0], np.int64)
+        return
+
+
+class TestProcessParsedFilenames(object):
+    """Unit tests for `process_parsed_filenames` function."""
+
+    def setup_method(self):
+        """Set up the unit test environment for each method."""
+        self.stored = OrderedDict({'year': np.full(shape=3, fill_value=2001),
+                                   'month': np.full(shape=3, fill_value=2),
+                                   'day': np.ones(shape=3, dtype=np.int64),
+                                   'hour': np.zeros(shape=3, dtype=np.int64),
+                                   'minute': np.zeros(shape=3, dtype=np.int64),
+                                   'second': np.arange(0, 3, 1),
+                                   'version': np.arange(0, 3, 1),
+                                   'revision': np.arange(3, 0, -1),
+                                   'cycle': np.array([1, 3, 2])})
+        self.format_str = "_".join(["test", "{year:04d}", "{month:02d}",
+                                    "{day:02d}", "{hour:02d}", "{minute:02d}",
+                                    "{second:02d}", "v{version:02d}",
+                                    "r{revision:02d}", "c{cycle:02d}.cdf"])
+
+        return
+
+    def teardown_method(self):
+        """Clean up the unit test environment for each method."""
+
+        del self.stored, self.format_str
+        return
+
+    def complete_stored(self):
+        """Add the 'files' and 'format_str' kwargs to the `stored` dict."""
+
+        file_list = []
+        for ind in range(len(self.stored['year'])):
+            ind_dict = {skey: self.stored[skey][ind]
+                        for skey in self.stored.keys()}
+            file_list.append(self.format_str.format(**ind_dict))
+
+        self.stored['files'] = file_list
+        self.stored['format_str'] = self.format_str
+        return
+
+    @pytest.mark.parametrize("year_break", [0, 50])
+    def test_two_digit_years(self, year_break):
+        """Test the results of using different year breaks for YY formats."""
+        # Complete the ordered dict of file information
+        self.stored['year'] -= 2000
+        self.format_str = self.format_str.replace('year:04', 'year:02')
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(
+            self.stored, two_digit_year_break=year_break)
+
+        # Test the series year
+        test_year = series.index.max().year
+        century = 1900 if year_break == 0 else 2000
+        assert test_year - century < 100, "year break caused wrong century"
+
+        # Test that the series length is correct and all filenames are unique
+        assert series.shape == self.stored['year'].shape
+        assert np.unique(series.values).shape == self.stored['year'].shape
+        return
+
+    def test_version_selection(self):
+        """Test version selection dominates when time is the same."""
+        # Complete the ordered dict of file information
+        self.stored['second'] = np.zeros(shape=self.stored['year'].shape,
+                                         dtype=np.int64)
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(self.stored)
+
+        # Ensure there is only one file and that it has the highest version
+        ver_num = "v{:02d}".format(self.stored['version'].max())
+        assert series.shape == (1, )
+        assert series.values[0].find(ver_num) > 0
+        return
+
+    def test_revision_selection(self):
+        """Test revision selection dominates after time and version."""
+        # Complete the ordered dict of file information
+        self.stored['second'] = np.zeros(shape=self.stored['year'].shape,
+                                         dtype=np.int64)
+        self.stored['version'] = np.zeros(shape=self.stored['year'].shape,
+                                          dtype=np.int64)
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(self.stored)
+
+        # Ensure there is only one file and that it has the highest version
+        rev_num = "r{:02d}".format(self.stored['revision'].max())
+        assert series.shape == (1, )
+        assert series.values[0].find(rev_num) > 0
+        return
+
+    def test_cycle_selection(self):
+        """Test cycle selection dominates after time, version, and revision."""
+        # Complete the ordered dict of file information
+        self.stored['second'] = np.zeros(shape=self.stored['year'].shape,
+                                         dtype=np.int64)
+        self.stored['version'] = np.zeros(shape=self.stored['year'].shape,
+                                          dtype=np.int64)
+        self.stored['revision'] = np.zeros(shape=self.stored['year'].shape,
+                                           dtype=np.int64)
+        self.complete_stored()
+
+        # Get the file series
+        series = futils.process_parsed_filenames(self.stored)
+
+        # Ensure there is only one file and that it has the highest version
+        cyc_num = "c{:02d}".format(self.stored['cycle'].max())
+        assert series.shape == (1, )
+        assert series.values[0].find(cyc_num) > 0
         return
 
 
@@ -473,6 +707,39 @@ class TestFileUtils(CICleanSetup):
         pysat.params['data_dirs'] = self.data_paths
         self.tempdir.cleanup()
         del self.testInst, self.out, self.tempdir, self.start, self.stop
+        return
+
+    @pytest.mark.skipif(os.environ.get('CI') != 'true', reason="CI test only")
+    def test_updating_directories_no_registration(self, capsys):
+        """Test directory structure update method without registered insts."""
+        # Convert directories to simpler platform structure, to get output
+        templ = '{platform}'
+        futils.update_data_directory_structure(new_template=templ,
+                                               full_breakdown=True)
+
+        # Capture printouts and test the results
+        captured = capsys.readouterr()
+        captxt = captured.out
+        assert captxt.find("No registered instruments detected.") >= 0, \
+            "Expected output not captured in STDOUT: {:}".format(captxt)
+        return
+
+    def test_search_local_system_formatted_filename(self):
+        """Test `search_local_system_formatted_filename` success."""
+        # Create a temporary file with a unique, searchable name
+        prefix = "test_me"
+        suffix = "tstfile"
+        searchstr = "*".join([prefix, suffix])
+        with tempfile.NamedTemporaryFile(dir=self.testInst.files.data_path,
+                                         prefix=prefix, suffix=suffix):
+            files = futils.search_local_system_formatted_filename(
+                self.testInst.files.data_path, searchstr)
+
+        assert len(files) == 1, "unexpected number of files in search results"
+        assert files[0].find(
+            prefix) >= 0, "unexpected file prefix in search results"
+        assert files[0].find(
+            suffix) > 0, "unexpected file extension in search results"
         return
 
     def test_get_file_information(self):

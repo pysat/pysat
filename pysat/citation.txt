@@ -1,1 +1,1 @@
-Stoneback, Russell, et al. (2021). pysat/pysat v3.0 (Version v3.0). Zenodo. http://doi.org/10.5281/zenodo.1199703
+Stoneback, Russell, et al. (2023). pysat/pysat v3.1 (Version v3.1). Zenodo. http://doi.org/10.5281/zenodo.1199703

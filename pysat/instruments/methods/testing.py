@@ -17,8 +17,7 @@ ackn_str = ' '.join(("Test instruments provided through the pysat project.",
                      "https://www.github.com/pysat/pysat"))
 
 # Load up citation information
-with pysat.utils.NetworkLock(os.path.join(pysat.here, 'citation.txt'), 'r') as \
-        locked_file:
+with pysat.utils.NetworkLock(pysat.citation, 'r') as locked_file:
     refs = locked_file.read()
 
 
