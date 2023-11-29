@@ -2,7 +2,13 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# This work was supported by the Office of Naval Research.
 # ----------------------------------------------------------------------------
+"""Class for single instruments."""
+
 import copy
 import datetime as dt
 import errno
