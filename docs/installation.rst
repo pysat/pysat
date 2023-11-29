@@ -57,6 +57,7 @@ pysat may also be installed directly from the source repository on github::
 
    git clone https://github.com/pysat/pysat.git
    cd pysat
+   python -m build .
    pip install --user .
 
 An advantage to installing through github is access to the development branches.
@@ -67,6 +68,7 @@ virtual environment and using::
    git clone https://github.com/pysat/pysat.git
    cd pysat
    git checkout develop
+   python -m build .
    pip install -e .
 
 The use of `-e` in the setup command installs the code 'in-place', so any

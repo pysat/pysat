@@ -60,7 +60,6 @@ test = [
   "flake8-docstrings",
   "hacking >= 1.0",
   "pysatSpaceWeather",
-  "pytest",
   "pytest-cov",
   "pytest-ordering"
 ]
