@@ -252,17 +252,9 @@ class Instrument(object):
                  custom=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
-        # Check for deprecated usage of None
-        if None in [tag, inst_id]:
-            warnings.warn(" ".join(["The usage of None in `tag` and `inst_id`",
-                                    "has been deprecated and will be removed",
-                                    "in 3.2.0+. Please use '' instead of",
-                                    "None."]),
-                          DeprecationWarning, stacklevel=2)
-
         # Set default tag, inst_id, and Instrument module
-        self.tag = '' if tag is None else tag.lower()
-        self.inst_id = '' if inst_id is None else inst_id.lower()
+        self.tag = tag.lower()
+        self.inst_id = inst_id.lower()
 
         self.inst_module = inst_module
 
@@ -1911,64 +1903,6 @@ class Instrument(object):
             datetime_flag = False
 
         return data, data_type, datetime_flag
-
-    def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False,
-                                 export_nan=None):
-        """Filter metadata properties to be consistent with netCDF4.
-
-        .. deprecated:: 3.0.2
-            Moved to `pysat.utils.io.filter_netcdf4_metadata. This wrapper
-            will be removed in 3.2.0+.
-
-        Parameters
-        ----------
-        mdata_dict : dict
-            Dictionary equivalent to Meta object info
-        coltype : type
-            Data type provided by `pysat.Instrument._get_data_info`
-        remove : bool
-            Removes FillValue and associated parameters disallowed for strings
-            (default=False)
-        export_nan : list or NoneType
-            Metadata parameters allowed to be NaN (default=None)
-
-        Returns
-        -------
-        dict
-            Modified as needed for netCDf4
-
-        Warnings
-        --------
-        UserWarning
-            When data removed due to conflict between value and type
-
-        Note
-        ----
-        Remove forced to True if coltype consistent with a string type
-
-        Metadata values that are NaN and not listed in export_nan are removed.
-
-        See Also
-        --------
-        pysat.utils.io.filter_netcdf4_metadata
-
-        """
-        warnings.warn("".join(["`pysat.Instrument._filter_netcdf4_metadata` ",
-                               "has been deprecated and will be removed ",
-                               "in pysat 3.2.0+. Use `pysat.utils.io.",
-                               "filter_netcdf4_metadata` instead."]),
-                      DeprecationWarning, stacklevel=2)
-
-        if remove:
-            check_type = [self.meta.labels.fill_val, self.meta.labels.max_val,
-                          self.meta.labels.min_val]
-        else:
-            check_type = None
-
-        return pysat.utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
-                                                      remove=remove,
-                                                      check_type=check_type,
-                                                      export_nan=export_nan)
 
     # -----------------------------------------------------------------------
     # Define all accessible methods
@@ -3738,20 +3672,16 @@ class Instrument(object):
 
         return
 
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name=None,
+    def to_netcdf4(self, fname, base_instrument=None, epoch_name=None,
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
                    export_pysat_info=True, unlimited_time=True, modify=False):
         """Store loaded data into a netCDF4 file.
 
-        .. deprecated:: 3.0.2
-            Changed `fname` from a kwarg to an arg of type str in the 3.2.0+
-            release.
-
         Parameters
         ----------
-        fname : str or NoneType
-            Full path to save instrument object to (default=None)
+        fname : str
+            Full path to save instrument object to netCDF
         base_instrument : pysat.Instrument or NoneType
             Class used as a comparison, only attributes that are present with
             self and not on base_instrument are written to netCDF. Using None
@@ -3805,11 +3735,6 @@ class Instrument(object):
         pysat.utils.io.to_netcdf
 
         """
-        if fname is None:
-            warnings.warn("".join(["`fname` as a kwarg has been deprecated, ",
-                                   "must supply a filename 3.2.0+"]),
-                          DeprecationWarning, stacklevel=2)
-            raise ValueError("Must supply an output filename")
 
         # Prepare the instrument object used to create the output file
         inst = self if modify else self.copy()
