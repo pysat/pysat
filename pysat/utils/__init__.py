@@ -12,7 +12,6 @@ from pysat.utils._core import display_instrument_stats
 from pysat.utils._core import generate_instrument_list
 from pysat.utils._core import get_mapped_value
 from pysat.utils._core import listify
-from pysat.utils._core import load_netcdf4
 from pysat.utils._core import NetworkLock
 from pysat.utils._core import scale_units
 from pysat.utils._core import stringify
