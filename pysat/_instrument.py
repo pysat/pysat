@@ -90,10 +90,6 @@ class Instrument(object):
         of files found will be checked to ensure the filesizes are greater than
         zero. Empty files are removed from the stored list of files.
         (default=False)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order. If None uses
-        the Meta defaults. Deprecated, use `meta_kwargs` (default=None)
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization (default=None)
     custom : list or NoneType
@@ -252,21 +248,13 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, data_dir='',
                  directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
-                 ignore_empty_files=False, labels=None, meta_kwargs=None,
+                 ignore_empty_files=False, meta_kwargs=None,
                  custom=None, **kwargs):
         """Initialize `pysat.Instrument` object."""
 
-        # Check for deprecated usage of None
-        if None in [tag, inst_id]:
-            warnings.warn(" ".join(["The usage of None in `tag` and `inst_id`",
-                                    "has been deprecated and will be removed",
-                                    "in 3.2.0+. Please use '' instead of",
-                                    "None."]),
-                          DeprecationWarning, stacklevel=2)
-
         # Set default tag, inst_id, and Instrument module
-        self.tag = '' if tag is None else tag.lower()
-        self.inst_id = '' if inst_id is None else inst_id.lower()
+        self.tag = tag.lower()
+        self.inst_id = inst_id.lower()
 
         self.inst_module = inst_module
 
@@ -429,12 +417,6 @@ class Instrument(object):
         # use Instrument definition of MetaLabels over the Metadata declaration.
         self.meta_kwargs = {} if meta_kwargs is None else meta_kwargs
 
-        if labels is not None:
-            warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
-                                   "with the 'labels' key instead. Support ",
-                                   "for `labels` will be removed in v3.2.0+"]),
-                          DeprecationWarning, stacklevel=2)
-            self.meta_kwargs["labels"] = labels
         self.meta = pysat.Meta(**self.meta_kwargs)
         self.meta.mutable = False
 
@@ -1922,90 +1904,8 @@ class Instrument(object):
 
         return data, data_type, datetime_flag
 
-    def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False,
-                                 export_nan=None):
-        """Filter metadata properties to be consistent with netCDF4.
-
-        .. deprecated:: 3.0.2
-            Moved to `pysat.utils.io.filter_netcdf4_metadata. This wrapper
-            will be removed in 3.2.0+.
-
-        Parameters
-        ----------
-        mdata_dict : dict
-            Dictionary equivalent to Meta object info
-        coltype : type
-            Data type provided by `pysat.Instrument._get_data_info`
-        remove : bool
-            Removes FillValue and associated parameters disallowed for strings
-            (default=False)
-        export_nan : list or NoneType
-            Metadata parameters allowed to be NaN (default=None)
-
-        Returns
-        -------
-        dict
-            Modified as needed for netCDf4
-
-        Warnings
-        --------
-        UserWarning
-            When data removed due to conflict between value and type
-
-        Note
-        ----
-        Remove forced to True if coltype consistent with a string type
-
-        Metadata values that are NaN and not listed in export_nan are removed.
-
-        See Also
-        --------
-        pysat.utils.io.filter_netcdf4_metadata
-
-        """
-        warnings.warn("".join(["`pysat.Instrument._filter_netcdf4_metadata` ",
-                               "has been deprecated and will be removed ",
-                               "in pysat 3.2.0+. Use `pysat.utils.io.",
-                               "filter_netcdf4_metadata` instead."]),
-                      DeprecationWarning, stacklevel=2)
-
-        if remove:
-            check_type = [self.meta.labels.fill_val, self.meta.labels.max_val,
-                          self.meta.labels.min_val]
-        else:
-            check_type = None
-
-        return pysat.utils.io.filter_netcdf4_metadata(self, mdata_dict, coltype,
-                                                      remove=remove,
-                                                      check_type=check_type,
-                                                      export_nan=export_nan)
-
     # -----------------------------------------------------------------------
     # Define all accessible methods
-
-    @property
-    def meta_labels(self):
-        """Provide Meta input for labels kwarg, deprecated.
-
-        Returns
-        -------
-        dict
-            Either Meta default provided locally or custom value provided
-            by user and stored in `meta_kwargs['labels']`
-
-        """
-        warnings.warn("".join(["Deprecated attribute, returns `meta_kwargs",
-                               "['labels']` or Meta defaults if not set. Will",
-                               " be removed in pysat 3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        if 'labels' in self.meta_kwargs.keys():
-            return self.meta_kwargs['labels']
-        else:
-            return {'units': ('units', str), 'name': ('long_name', str),
-                    'notes': ('notes', str), 'desc': ('desc', str),
-                    'min_val': ('value_min', (float, int)),
-                    'max_val': ('value_max', (float, int)),
-                    'fill_val': ('fill', (float, int, str))}
 
     @property
     def bounds(self):
@@ -2948,43 +2848,6 @@ class Instrument(object):
 
         return
 
-    def generic_meta_translator(self, input_meta):
-        """Convert the `input_meta` metadata into a dictionary.
-
-        .. deprecated:: 3.0.2
-           `generic_meta_translator` will be removed in the 3.2.0+ release.
-
-        Parameters
-        ----------
-        input_meta : pysat.Meta
-            The metadata object to translate
-
-        Returns
-        -------
-        export_dict : dict
-            A dictionary of the metadata for each variable of an output file
-
-        Note
-        ----
-        Uses the translation dict, if present, at `self._meta_translation_table`
-        to map existing metadata labels to a list of labels used in the
-        returned dict.
-
-        """
-
-        dstr = ''.join(['This function has been deprecated. Please see ',
-                        '`pysat.utils.io.apply_table_translation_to_file` and ',
-                        '`self.meta.to_dict` to get equivalent functionality.'])
-        warnings.warn(dstr, DeprecationWarning, stacklevel=2)
-
-        meta_dict = input_meta.to_dict()
-        trans_table = self._meta_translation_table
-        exp_dict = pysat.utils.io.apply_table_translation_to_file(self,
-                                                                  meta_dict,
-                                                                  trans_table)
-
-        return exp_dict
-
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False,
              **kwargs):
@@ -3809,20 +3672,16 @@ class Instrument(object):
 
         return
 
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name=None,
+    def to_netcdf4(self, fname, base_instrument=None, epoch_name=None,
                    zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, export_nan=None,
                    export_pysat_info=True, unlimited_time=True, modify=False):
         """Store loaded data into a netCDF4 file.
 
-        .. deprecated:: 3.0.2
-            Changed `fname` from a kwarg to an arg of type str in the 3.2.0+
-            release.
-
         Parameters
         ----------
-        fname : str or NoneType
-            Full path to save instrument object to (default=None)
+        fname : str
+            Full path to save instrument object to netCDF
         base_instrument : pysat.Instrument or NoneType
             Class used as a comparison, only attributes that are present with
             self and not on base_instrument are written to netCDF. Using None
@@ -3876,11 +3735,6 @@ class Instrument(object):
         pysat.utils.io.to_netcdf
 
         """
-        if fname is None:
-            warnings.warn("".join(["`fname` as a kwarg has been deprecated, ",
-                                   "must supply a filename 3.2.0+"]),
-                          DeprecationWarning, stacklevel=2)
-            raise ValueError("Must supply an output filename")
 
         # Prepare the instrument object used to create the output file
         inst = self if modify else self.copy()

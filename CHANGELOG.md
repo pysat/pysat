@@ -54,6 +54,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed deprecated `use_header` kwarg from `load` and changed default
     behaviour to `use_header=True`
   * Use temporary directories for files created during test_utils.py
+  * Removed deprecated `labels` kwarg for `pysat.Instrument()`
+  * Removed deprecated `utils.load_netcdf4` method
+  * Removed deprecated `_filter_netcdf4_metadata` method
+  * Removed deprecated usage of None for tag and inst_id
+  * Removed deprecated kwarg behaviour for 'fname' in `to_netCDF4`
   * Added verion cap for sphinx_rtd_theme
 
 [3.1.0] - 2023-05-31
