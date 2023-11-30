@@ -200,16 +200,15 @@ class InstLibTests(object):
 
     def setup_method(self):
         """Initialize parameters before each method."""
+        self.test_inst = None
+        self.date = None
 
         return
 
     def teardown_method(self):
         """Clean up any instruments that were initialized."""
 
-        if hasattr(self, "test_inst"):
-            del self.test_inst
-        if hasattr(self, "date"):
-            del self.date
+        del self.test_inst, self.date
 
         return
 
