@@ -54,6 +54,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed deprecated `use_header` kwarg from `load` and changed default
     behaviour to `use_header=True`
   * Use temporary directories for files created during test_utils.py
+  * Added verion cap for sphinx_rtd_theme
 
 [3.1.0] - 2023-05-31
 --------------------
