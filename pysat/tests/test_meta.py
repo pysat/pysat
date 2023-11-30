@@ -247,7 +247,8 @@ class TestMeta(object):
             self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing',
                                        'tag': 'default_meta',
                                        'clean_level': 'clean',
-                                       'labels': self.meta_labels})
+                                       'meta_kwargs':
+                                       {'labels': self.meta_labels}})
 
         # Test the warning
         default_str = ''.join(['Metadata set to defaults, as they were',
@@ -828,7 +829,7 @@ class TestMeta(object):
 
         # Assign meta data with non-standard labels
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': inst_name,
-                                   'labels': self.meta_labels})
+                                   'meta_kwargs': {'labels': self.meta_labels}})
 
         # Test that standard attributes are missing and non-standard
         # attributes are present
@@ -1174,7 +1175,7 @@ class TestMeta(object):
 
         # Set the meta object
         self.set_meta(inst_kwargs={'platform': 'pysat', 'name': 'testing',
-                                   'labels': self.meta_labels})
+                                   'meta_kwargs': {'labels': self.meta_labels}})
 
         # Set data using lower case labels
         dvals = self.testInst.vars_no_time[:num_dvals]
