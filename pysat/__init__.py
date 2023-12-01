@@ -37,6 +37,10 @@ Main Features
 try:
     from importlib import metadata
     from importlib import resources
+
+    if not hasattr(resources, 'files'):
+        # The `files` object was introduced in Python 3.9
+        resources = None
 except ImportError:
     import importlib_metadata as metadata
     resources = None
