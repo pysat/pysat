@@ -1,9 +1,6 @@
 """Unit tests for the `pysat.Instrument.index` attribute."""
 
-import datetime as dt
 from importlib import reload
-import numpy as np
-import warnings
 
 import pytest
 

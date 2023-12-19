@@ -5,7 +5,6 @@
 # ----------------------------------------------------------------------------
 """Tests the pysat utils core functions."""
 
-import contextlib
 from importlib import reload
 import inspect
 import numpy as np
@@ -14,7 +13,6 @@ import portalocker
 import pytest
 import shutil
 import tempfile
-import warnings
 
 import pysat
 from pysat.tests.classes.cls_registration import TestWithRegistration
