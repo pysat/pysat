@@ -48,6 +48,7 @@ except ImportError:
 import logging
 import os
 
+# Logger needs to be initialized before other modules are imported.
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
@@ -55,8 +56,10 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
+# Import statements after this point require a noqa statement for flake8
+
 # Import and set user and pysat parameters object
-from pysat import _params
+from pysat import _params  # noqa: E402 F401
 
 # Set version
 __version__ = metadata.version('pysat')
@@ -113,18 +116,18 @@ else:
     # Load up existing parameters file
     params = _params.Parameters()
 
+# utils used by other imports, needs to be imported first.
+from pysat import utils  # noqa: E402 F401
 
-from pysat._files import Files
-from pysat._instrument import Instrument
-from pysat._meta import Meta
-from pysat._meta import MetaHeader
-from pysat._meta import MetaLabels
-from pysat._orbits import Orbits
-from pysat import instruments
-from pysat import utils
+from pysat._constellation import Constellation  # noqa: E402 F401
+from pysat._files import Files  # noqa: E402 F401
+from pysat._instrument import Instrument  # noqa: E402 F401
+from pysat._meta import Meta  # noqa: E402 F401
+from pysat._meta import MetaHeader  # noqa: E402 F401
+from pysat._meta import MetaLabels  # noqa: E402 F401
+from pysat._orbits import Orbits  # noqa: E402 F401
+from pysat import instruments  # noqa: E402 F401
 
-# Import constellation separately
-from pysat._constellation import Constellation
 __all__ = ['instruments', 'utils']
 
 # Clean up
