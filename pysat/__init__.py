@@ -119,6 +119,7 @@ else:
 # utils used by other imports, needs to be imported first.
 from pysat import utils  # noqa: E402 F401
 
+# Import the remainder of the modules.
 from pysat._constellation import Constellation  # noqa: E402 F401
 from pysat._files import Files  # noqa: E402 F401
 from pysat._instrument import Instrument  # noqa: E402 F401
