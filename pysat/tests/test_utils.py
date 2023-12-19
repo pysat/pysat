@@ -410,9 +410,8 @@ class TestIfyFunctions(object):
 
         """
 
-        target = type(astrlike)
         output = pysat.utils.stringify(astrlike)
-        assert type(output) == target
+        assert type(output) is type(astrlike)
         return
 
 
