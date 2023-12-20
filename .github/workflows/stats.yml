@@ -26,7 +26,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install .test
+        pip install .[test]
         pip install `awk '{print $1}' ecosystem.txt`
 
     - name: Set up pysat

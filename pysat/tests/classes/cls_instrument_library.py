@@ -484,15 +484,21 @@ class InstLibTests(object):
 
         self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
         if len(self.test_inst.files.files) > 0:
+            if self.date < self.test_inst.today():
+                # Make sure the strict time flag doesn't interfere with
+                # the load tests, and re-run with desired clean level
+                load_and_set_strict_time_flag(self.test_inst, self.date,
+                                              raise_error=True, clean_off=False,
+                                              set_end_date=True)
 
-            # Make sure the strict time flag doesn't interfere with
-            # the load tests, and re-run with desired clean level
-            load_and_set_strict_time_flag(self.test_inst, self.date,
-                                          raise_error=True,
-                                          clean_off=False, set_end_date=True)
-
-            # Make sure more than one day has been loaded
-            assert len(np.unique(self.test_inst.index.day)) > 1
+                # Make sure more than one day has been loaded
+                assert hasattr(self.test_inst.index, 'day'), \
+                    "No data to load for {:}-{:}".format(
+                        self.date, self.date + dt.timedelta(days=2))
+                assert len(np.unique(self.test_inst.index.day)) > 1
+            else:
+                pytest.skip("".join(["Can't download multiple days of real-",
+                                     "time or forecast data"]))
         else:
             pytest.skip("Download data not available")
 

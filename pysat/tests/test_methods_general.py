@@ -4,7 +4,6 @@ import datetime as dt
 from os import path
 import pandas as pds
 import pytest
-import warnings
 
 import pysat
 from pysat.instruments.methods import general as gen

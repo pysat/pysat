@@ -44,7 +44,6 @@ Examples
 
 import datetime as dt
 import functools
-import numpy as np
 import warnings
 
 import pysat

@@ -9,14 +9,12 @@ Imports test methods from pysat.tests.instrument_test_class
 import datetime as dt
 import numpy as np
 import pandas as pds
-import warnings
 
 import pytest
 
 import pysat
 import pysat.tests.classes.cls_instrument_library as cls_inst_lib
 from pysat.tests.classes.cls_instrument_library import InstLibTests
-from pysat.utils import testing
 
 # Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords

@@ -49,7 +49,6 @@ A full suite of instrument support modules may be registered at once using
 """
 
 import importlib
-import logging
 
 import pysat
 import pysat.tests.classes.cls_instrument_library as itc
