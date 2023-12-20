@@ -86,6 +86,7 @@ markers = [
   "download",
   "no_download",
   "load_options",
+  "new_tests",
   "first",
   "second"
 ]
