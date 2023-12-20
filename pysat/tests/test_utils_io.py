@@ -10,7 +10,6 @@ import functools
 import logging
 import numpy as np
 import os
-import shutil
 import sys
 import tempfile
 import warnings
@@ -1658,6 +1657,14 @@ class TestMetaTranslation(object):
         # the standard name as long_name when loading, and while that would
         # pass the tests here as written, it would be brittle. Check everything
         # else.
+
+        def assert_meta_unchanged(old_meta, filt_meta, var, key):
+            """Check that filtered meta value is unchanged."""
+
+            assert old_meta[var][key] == filt_meta[var][key], \
+                'Value changed for {}, {}'.format(var, key)
+            return
+
         for var in self.meta_dict.keys():
             assert var in filt_meta, 'Lost metadata variable {}'.format(var)
 
@@ -1667,12 +1674,11 @@ class TestMetaTranslation(object):
                 if key not in ['fill', 'value_min', 'value_max']:
                     assert key in filt_meta[var], \
                         'Lost metadata label {} for {}'.format(key, var)
-                    assert self.meta_dict[var][key] == filt_meta[var][key],\
-                        'Value changed for {}, {}'.format(var, key)
+                    assert_meta_unchanged(self.meta_dict, filt_meta, var, key)
                 else:
                     if key in filt_meta:
-                        assert self.meta_dict[var][key] == filt_meta[var][key],\
-                            'Value changed for {}, {}'.format(var, key)
+                        assert_meta_unchanged(self.meta_dict, filt_meta, var,
+                                              key)
 
         return
 

@@ -18,7 +18,6 @@ from pysat.tests.classes.cls_instrument_integration import InstIntegrationTests
 from pysat.tests.classes.cls_instrument_iteration import InstIterationTests
 from pysat.tests.classes.cls_instrument_property import InstPropertyTests
 from pysat.utils import testing
-from pysat.utils.time import filter_datetime_input
 
 
 class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,

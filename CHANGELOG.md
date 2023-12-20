@@ -60,6 +60,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed deprecated usage of None for tag and inst_id
   * Removed deprecated kwarg behaviour for 'fname' in `to_netCDF4`
   * Added verion cap for sphinx_rtd_theme
+  * Used line specific noqa statements for imports 
 
 [3.1.0] - 2023-05-31
 --------------------
