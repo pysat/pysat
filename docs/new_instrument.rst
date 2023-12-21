@@ -914,7 +914,7 @@ but should not undergo automated download tests because it would require
 the  user to save a password in a potentially public location.  The
 :py:attr:`_password_req` flag is used to skip both the download tests and the
 download warning message tests, since a functional download routine is
-present. This flag is defaults to False if not specified.
+present. This flag is defaults to :py:val:`False` if not specified.
 
 .. code:: python
 
