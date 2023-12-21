@@ -387,8 +387,11 @@ class InstLibTests(object):
             dl_dict = inst_dict['user_info']
         else:
             dl_dict = {}
-        # Note this will download two consecutive days
-        self.test_inst.download(self.date, **dl_dict)
+
+        # Ask to download two consecutive days
+        self.test_inst.download(start=self.date,
+                                stop=self.date + dt.timedelta(days=2),
+                                **dl_dict)
         assert len(self.test_inst.files.files) > 0
         return
 
