@@ -23,3 +23,9 @@ Welcome to pysat's documentation!
    roadmap.rst
    faq.rst
    release_notes.rst
+
+
+.. admonition:: DISTRIBUTION STATEMENT A: Approved for public release.
+		Distribution is unlimited.
+
+    This work was supported by the Office of Naval Research.
