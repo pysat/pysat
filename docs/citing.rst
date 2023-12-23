@@ -6,7 +6,7 @@ Stoneback et al [2018] `<https://ntrs.nasa.gov/citations/20190002337>`_
 as well as the package `<https://doi.org/10.5281/zenodo.1199703>`_. Note that
 this DOI will always point to the latest version of the code.  A list of DOIs
 for all versions can be found at the Zenodo page above. Depending on
-usage, citation of the full ecosystem paper by Stoneback et al [2023] 
+usage, citation of the full ecosystem paper by Stoneback et al [2023]
 `<https://www.frontiersin.org/articles/10.3389/fspas.2023.1119775/full>`_
 may also be appropriate.
 
@@ -37,7 +37,7 @@ A simplified implementation of the citation.
 .. include:: ../pysat/citation.txt
    :literal:
 
-Citing the publication:
+Citing the publications:
 
 .. code::
 
@@ -55,6 +55,19 @@ Citing the publication:
     volume    = {123},
     year      = {2018}
   }
+
+  @article{Stoneback2023,
+    author    = {Stoneback, R. A. and
+                 Burrell, A. G. and
+                 Klenzing, J. and
+                 Smith, J.},
+    doi       = {10.3389/fspas.2023.1119775},
+    journal   = {Frontiers in Astronomy and Space Science},
+    title     = {The pysat ecosystem},
+    volume    = {10},
+    year      = {2023}
+  }
+
 
 To aid in scientific reproducibility, please include the version number in
 publications that use this code.  This can be found by invoking
