@@ -17,7 +17,6 @@ import numpy as np
 import os
 import pandas as pds
 import tempfile
-import time
 
 import pytest
 

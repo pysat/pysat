@@ -9,7 +9,6 @@
 # ----------------------------------------------------------------------------
 """Tests the pysat utils core functions."""
 
-import contextlib
 from importlib import reload
 import inspect
 import numpy as np
@@ -18,7 +17,6 @@ import portalocker
 import pytest
 import shutil
 import tempfile
-import warnings
 
 import pysat
 from pysat.tests.classes.cls_registration import TestWithRegistration
@@ -416,9 +414,8 @@ class TestIfyFunctions(object):
 
         """
 
-        target = type(astrlike)
         output = pysat.utils.stringify(astrlike)
-        assert type(output) == target
+        assert type(output) is type(astrlike)
         return
 
 
@@ -779,50 +776,6 @@ class TestGenerateInstList(object):
                     # combination.
                     pass
 
-        return
-
-
-class TestDeprecation(object):
-    """Unit test for deprecation warnings."""
-
-    @pytest.mark.parametrize("kwargs,msg_inds",
-                             [({'fnames': None}, [0, 1]),
-                              ({'fnames': 'no_file', 'file_format': None},
-                               [0, 2])])
-    def test_load_netcdf4(self, kwargs, msg_inds):
-        """Test deprecation warnings from load_netcdf4.
-
-        Parameters
-        ----------
-        kwargs : dict
-            Keyword arguments passed to `load_netcdf4`
-        msg_inds : list
-            List of indices indicating which warning message is expected
-
-        """
-        with warnings.catch_warnings(record=True) as war:
-            try:
-                # Generate relocation warning and file_format warning
-                utils.load_netcdf4(**kwargs)
-            except (FileNotFoundError, ValueError):
-                pass
-
-        warn_msgs = ["".join(["function moved to `pysat.utils.io`, ",
-                              "deprecated wrapper will be removed in ",
-                              "pysat 3.2.0+"]),
-                     "".join(["`fnames` as a kwarg has been deprecated, ",
-                              "must supply a string or list of strings",
-                              " in 3.2.0+"]),
-                     "".join(["`file_format` must be a string value in ",
-                              "3.2.0+, instead of None use 'NETCDF4' ",
-                              "for same behavior."])]
-
-        warn_msgs = [warn_msgs[ind] for ind in msg_inds]
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        utils.testing.eval_warnings(war, warn_msgs)
         return
 
 

@@ -1017,28 +1017,3 @@ class InstAccessTests(object):
             assert key not in self.testInst.variables
             assert key not in self.testInst.meta.keys()
         return
-
-    def test_generic_meta_translator(self):
-        """Test `generic_meta_translator`."""
-
-        # Get default meta translation table
-        trans_table = pysat.utils.io.default_to_netcdf_translation_table(
-            self.testInst)
-
-        # Load data
-        self.testInst.load(date=self.ref_time)
-
-        # Assign table
-        self.testInst._meta_translation_table = trans_table
-
-        # Apply translation
-        trans_meta = self.testInst.generic_meta_translator(self.testInst.meta)
-
-        # Perform equivalent via replacement functions
-        meta_dict = self.testInst.meta.to_dict()
-        truth_meta = pysat.utils.io.apply_table_translation_to_file(
-            self.testInst, meta_dict, trans_table=trans_table)
-
-        assert np.all(truth_meta == trans_meta)
-
-        return

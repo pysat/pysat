@@ -10,8 +10,6 @@
 """Tests the `pysat.instruments.methods.testing` methods."""
 
 import datetime as dt
-from os import path
-import pandas as pds
 import pytest
 
 import pysat

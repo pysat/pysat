@@ -14,7 +14,6 @@ import functools
 import logging
 import numpy as np
 import os
-import shutil
 import sys
 import tempfile
 import warnings
@@ -1662,6 +1661,14 @@ class TestMetaTranslation(object):
         # the standard name as long_name when loading, and while that would
         # pass the tests here as written, it would be brittle. Check everything
         # else.
+
+        def assert_meta_unchanged(old_meta, filt_meta, var, key):
+            """Check that filtered meta value is unchanged."""
+
+            assert old_meta[var][key] == filt_meta[var][key], \
+                'Value changed for {}, {}'.format(var, key)
+            return
+
         for var in self.meta_dict.keys():
             assert var in filt_meta, 'Lost metadata variable {}'.format(var)
 
@@ -1671,12 +1678,11 @@ class TestMetaTranslation(object):
                 if key not in ['fill', 'value_min', 'value_max']:
                     assert key in filt_meta[var], \
                         'Lost metadata label {} for {}'.format(key, var)
-                    assert self.meta_dict[var][key] == filt_meta[var][key],\
-                        'Value changed for {}, {}'.format(var, key)
+                    assert_meta_unchanged(self.meta_dict, filt_meta, var, key)
                 else:
                     if key in filt_meta:
-                        assert self.meta_dict[var][key] == filt_meta[var][key],\
-                            'Value changed for {}, {}'.format(var, key)
+                        assert_meta_unchanged(self.meta_dict, filt_meta, var,
+                                              key)
 
         return
 
@@ -1723,68 +1729,4 @@ class TestMetaTranslationModel(TestMetaTranslation):
 
         del self.test_inst, self.test_date, self.out, self.meta_dict
 
-        return
-
-
-class TestIODeprecation(object):
-    """Unit tests for deprecation warnings in `utils.io`."""
-
-    def setup_method(self):
-        """Set up the test environment."""
-
-        # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
-        self.saved_path = pysat.params['data_dirs']
-        pysat.params['data_dirs'] = self.tempdir.name
-
-        self.outfile = os.path.join(self.tempdir.name, 'pysat_test_ncdf.nc')
-        self.in_kwargs = {'labels': {
-            'units': ('units', str), 'name': ('long_name', str),
-            'notes': ('notes', str), 'desc': ('desc', str),
-            'min_val': ('value_min', float), 'max_val': ('value_max', float),
-            'fill_val': ('fill', float)}}
-
-        return
-
-    def teardown_method(self):
-        """Clean up the test environment."""
-
-        pysat.params['data_dirs'] = self.saved_path
-
-        # Remove the temporary directory
-        self.tempdir.cleanup()
-
-        # Clear the attributes
-        del self.tempdir, self.saved_path, self.outfile, self.in_kwargs
-        return
-
-    @pytest.mark.parametrize("inst_name,load_func", [
-        ("testing", io.load_netcdf_pandas),
-        ("ndtesting", io.load_netcdf_xarray)])
-    def test_load_netcdf_labels(self, inst_name, load_func):
-        """Test deprecation of `labels` kwarg in different load functions.
-
-        Parameters
-        ----------
-        inst_name : str
-            Instrument name for test Instrument
-        load_func : function
-            NetCDF load method with deprecation warning
-
-        """
-
-        # Create a test file
-        testInst = pysat.Instrument(platform='pysat', name=inst_name,
-                                    num_samples=100, update_files=True)
-        testInst.load(date=testInst.inst_module._test_dates[''][''])
-        io.inst_to_netcdf(testInst, fname=self.outfile)
-
-        # Catch the warnings
-        with warnings.catch_warnings(record=True) as war:
-            load_func(self.outfile, **self.in_kwargs)
-
-        # Test the warnings
-        assert len(war) >= 1
-        testing.eval_warnings(war,
-                              ["`labels` is deprecated, use `meta_kwargs`"])
         return

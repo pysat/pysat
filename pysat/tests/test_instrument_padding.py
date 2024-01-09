@@ -20,7 +20,6 @@ import pysat
 import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing
 from pysat.utils import testing
-from pysat.utils.time import filter_datetime_input
 
 
 class TestDataPaddingbyFile(object):

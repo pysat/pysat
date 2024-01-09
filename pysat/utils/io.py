@@ -569,7 +569,7 @@ def meta_array_expander(meta_dict):
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 epoch_name=None, epoch_unit='ms', epoch_origin='unix',
                 pandas_format=True, decode_timedelta=False,
-                combine_by_coords=True, meta_kwargs=None, labels=None,
+                combine_by_coords=True, meta_kwargs=None,
                 meta_processor=None, meta_translation=None,
                 drop_meta_labels=None, decode_times=None,
                 strict_dim_check=True):
@@ -620,10 +620,6 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order. None to use
-        meta defaults.  Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -682,7 +678,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_name=epoch_name,
                                         epoch_unit=epoch_unit,
                                         epoch_origin=epoch_origin,
-                                        meta_kwargs=meta_kwargs, labels=labels,
+                                        meta_kwargs=meta_kwargs,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels)
@@ -694,7 +690,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_origin=epoch_origin,
                                         decode_timedelta=decode_timedelta,
                                         combine_by_coords=combine_by_coords,
-                                        meta_kwargs=meta_kwargs, labels=labels,
+                                        meta_kwargs=meta_kwargs,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels,
@@ -706,7 +702,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
 
 def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                        epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
-                       meta_kwargs=None, labels=None, meta_processor=None,
+                       meta_kwargs=None, meta_processor=None,
                        meta_translation=None, drop_meta_labels=None):
     """Load netCDF-3/4 file produced by pysat in a pandas format.
 
@@ -742,10 +738,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order or None to use
-        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -803,13 +795,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
     if meta_kwargs is None:
         meta_kwargs = {}
-
-    if labels is not None:
-        warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
-                               "with the 'labels' key instead. Support ",
-                               "for `labels` will be removed in v3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        meta_kwargs['labels'] = labels
 
     meta = pysat.Meta(**meta_kwargs)
 
@@ -913,7 +898,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                        epoch_name='time', epoch_unit='ms', epoch_origin='unix',
                        decode_timedelta=False, combine_by_coords=True,
-                       meta_kwargs=None, labels=None, meta_processor=None,
+                       meta_kwargs=None, meta_processor=None,
                        meta_translation=None, drop_meta_labels=None,
                        decode_times=False, strict_dim_check=True):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
@@ -957,10 +942,6 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order or None to use
-        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -1018,13 +999,6 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # Initialize local variables
     if meta_kwargs is None:
         meta_kwargs = {}
-
-    if labels is not None:
-        warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
-                               "with the 'labels' key instead. Support ",
-                               "for `labels` will be removed in v3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        meta_kwargs['labels'] = labels
 
     meta = pysat.Meta(**meta_kwargs)
 

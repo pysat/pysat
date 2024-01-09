@@ -48,7 +48,6 @@ Examples
 
 import datetime as dt
 import functools
-import numpy as np
 import warnings
 
 import pysat
@@ -137,7 +136,7 @@ def download(date_array, tag, inst_id, data_path=None):
 def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
          epoch_name=None, epoch_unit='ms', epoch_origin='unix',
          pandas_format=True, decode_timedelta=False, meta_kwargs=None,
-         load_labels=None, meta_processor=None, meta_translation=None,
+         meta_processor=None, meta_translation=None,
          drop_meta_labels=None, decode_times=None):
     """Load pysat-created NetCDF data and meta data.
 
@@ -187,10 +186,6 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
-    load_labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order or None to use
-        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -232,7 +227,6 @@ def load(fnames, tag='', inst_id='', strict_meta=False, file_format='NETCDF4',
                                              pandas_format=pandas_format,
                                              decode_timedelta=decode_timedelta,
                                              meta_kwargs=meta_kwargs,
-                                             labels=load_labels,
                                              meta_processor=meta_processor,
                                              meta_translation=meta_translation,
                                              drop_meta_labels=drop_meta_labels,

@@ -10,9 +10,7 @@
 """Tests the pysat utility testing routines."""
 
 import numpy as np
-import os
 import pytest
-import tempfile
 import warnings
 
 from pysat.utils import testing

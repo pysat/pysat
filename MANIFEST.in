@@ -3,7 +3,6 @@ include *.md
 include *.txt
 include LICENSE
 include pysat/citation.txt
-prune pysat/tests
 prune docs
 global-exclude *.pdf
 global-exclude *.png

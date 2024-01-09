@@ -15,18 +15,13 @@ Base class stored here, but tests inherited by test_instrument.py
 
 """
 
-import datetime as dt
 import logging
-import numpy as np
 import os
 import tempfile
 
-import pandas as pds
 import pytest
-import xarray as xr
 
 import pysat
-from pysat.utils import testing
 
 
 class InstIntegrationTests(object):

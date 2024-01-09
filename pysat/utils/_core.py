@@ -10,13 +10,9 @@
 
 import datetime as dt
 import importlib
-import netCDF4
 import numpy as np
 import os
-import pandas as pds
 from portalocker import Lock
-import warnings
-import xarray as xr
 
 import pysat
 
@@ -192,109 +188,6 @@ def stringify(strlike):
     if isinstance(strlike, bytes):
         return strlike.decode('utf-8')
     return strlike
-
-
-def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
-                 epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
-                 pandas_format=True, decode_timedelta=False,
-                 labels={'units': ('units', str), 'name': ('long_name', str),
-                         'notes': ('notes', str), 'desc': ('desc', str),
-                         'min_val': ('value_min', np.float64),
-                         'max_val': ('value_max', np.float64),
-                         'fill_val': ('fill', np.float64)}):
-    """Load netCDF-3/4 file produced by pysat.
-
-    .. deprecated:: 3.0.2
-       Function moved to `pysat.utils.io.load_netcdf`, this wrapper will be
-       removed in the 3.2.0+ release.
-       No longer allow non-string file formats in the 3.2.0+ release.
-
-    Parameters
-    ----------
-    fnames : str, array_like, or NoneType
-        Filename(s) to load, will fail if None (default=None)
-    strict_meta : bool
-        Flag that checks if metadata across fnames is the same if True
-        (default=False)
-    file_format : str
-        file_format keyword passed to netCDF4 routine.  Expects one of
-        'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
-        (default='NETCDF4')
-    epoch_name : str
-        Data key for epoch variable.  The epoch variable is expected to be an
-        array of integer or float values denoting time elapsed from an origin
-        specified by `epoch_origin` with units specified by `epoch_unit`. This
-        epoch variable will be converted to a `DatetimeIndex` for consistency
-        across pysat instruments.  (default='Epoch')
-    epoch_unit : str
-        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
-        'ns'). (default='ms')
-    epoch_origin : str or timestamp-convertable
-        Origin of epoch calculation, following convention for
-        `pandas.to_datetime`.  Accepts timestamp-convertable objects, as well as
-        two specific strings for commonly used calendars.  These conversions are
-        handled by `pandas.to_datetime`.
-        If ‘unix’ (or POSIX) time; origin is set to 1970-01-01.
-        If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
-        Julian Calendar. Julian day number 0 is assigned to the day starting at
-        noon on January 1, 4713 BC. (default='unix')
-    pandas_format : bool
-        Flag specifying if data is stored in a pandas DataFrame (True) or
-        xarray Dataset (False). (default=False)
-    decode_timedelta : bool
-        Used for xarray datasets.  If True, variables with unit attributes that
-        are 'timelike' ('hours', 'minutes', etc) are converted to
-        `np.timedelta64`. (default=False)
-    labels : dict
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order.
-        (default={'units': ('units', str), 'name': ('long_name', str),
-        'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', np.float64),
-        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
-
-    Returns
-    -------
-    data : pandas.DataFrame or xarray.Dataset
-        Class holding file data
-    meta : pysat.Meta
-        Class holding file meta data
-
-    Raises
-    ------
-    ValueError
-        If kwargs that should be args are not set on instantiation.
-    KeyError
-        If epoch/time dimension could not be identified.
-
-    """
-    warnings.warn("".join(["function moved to `pysat.utils.io`, deprecated ",
-                           "wrapper will be removed in pysat 3.2.0+"]),
-                  DeprecationWarning, stacklevel=2)
-
-    if fnames is None:
-        warnings.warn("".join(["`fnames` as a kwarg has been deprecated, must ",
-                               "supply a string or list of strings in 3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        raise ValueError("Must supply a filename/list of filenames")
-
-    if file_format is None:
-        warnings.warn("".join(["`file_format` must be a string value in ",
-                               "3.2.0+, instead of None use 'NETCDF4' for ",
-                               "same behavior."]),
-                      DeprecationWarning, stacklevel=2)
-        file_format = 'NETCDF4'
-
-    data, meta = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
-                                            file_format=file_format,
-                                            epoch_name=epoch_name,
-                                            epoch_unit=epoch_unit,
-                                            epoch_origin=epoch_origin,
-                                            pandas_format=pandas_format,
-                                            decode_timedelta=decode_timedelta,
-                                            labels=labels)
-
-    return data, meta
 
 
 def get_mapped_value(value, mapper):
