@@ -29,4 +29,4 @@ Welcome to pysat's documentation!
 		Distribution is unlimited.
 
     This work was supported by Cosmic Studio, the Office of Naval Research,
-		and the National Aeronautics and Space Administration.
+    and the National Aeronautics and Space Administration.
