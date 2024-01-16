@@ -661,14 +661,14 @@ class InstLibTests(object):
             # Make sure the strict time flag doesn't interfere with
             # the load tests
             load_and_set_strict_time_flag(self.test_inst, self.date,
-                                          raise_error=True, clean_off=False)
+                                          raise_error=True, clean_off=True)
 
             if self.test_inst.empty:
                 # This will be empty if this is a forecast file that doesn't
                 # include the load date
                 self.test_inst.pad = None
                 load_and_set_strict_time_flag(self.test_inst, self.date,
-                                              raise_error=True, clean_off=False)
+                                              raise_error=True, clean_off=True)
                 assert not self.test_inst.empty, \
                     "No data on {:}".format(self.date)
                 assert self.test_inst.index.max() < self.date, \
