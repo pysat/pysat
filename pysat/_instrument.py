@@ -1372,8 +1372,7 @@ class Instrument(object):
             directory_format, file_format, multi_file_day, orbit_info, and
             pandas_format
         test attributes
-            _test_download, _test_download_ci, _test_new_tests, and
-            _password_req
+            _test_download, _test_download_ci, _new_tests, and _password_req
 
         """
         # Declare the standard Instrument methods and attributes
@@ -1385,7 +1384,7 @@ class Instrument(object):
                       'multi_file_day': False, 'orbit_info': None,
                       'pandas_format': True}
         test_attrs = {'_test_download': True, '_test_download_ci': True,
-                      '_test_new_tests': True, '_password_req': False}
+                      '_new_tests': True, '_password_req': False}
 
         # Set method defaults
         for mname in [mm for val in inst_methods.values() for mm in val]:

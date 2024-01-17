@@ -379,7 +379,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                         # Check if instrument is configured for download tests.
                         if inst._test_download:
                             instrument_download.append(in_dict.copy())
-                            if inst._test_new_tests:
+                            if inst._new_tests:
                                 instrument_new_tests.append(in_dict.copy())
                             if hasattr(module, '_test_load_opt'):
                                 # Add optional load tests
@@ -392,7 +392,7 @@ def generate_instrument_list(inst_loc, user_info=None):
                                         # Append as copy so kwargs are unique.
                                         instrument_optional_load.append(
                                             in_dict.copy())
-                                        if inst._test_new_tests:
+                                        if inst._new_tests:
                                             instrument_new_tests.append(
                                                 in_dict.copy())
 
