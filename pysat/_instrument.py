@@ -1372,7 +1372,8 @@ class Instrument(object):
             directory_format, file_format, multi_file_day, orbit_info, and
             pandas_format
         test attributes
-            _test_download, _test_download_ci, _test_new_tests, and _password_req
+            _test_download, _test_download_ci, _test_new_tests, and
+            _password_req
 
         """
         # Declare the standard Instrument methods and attributes
