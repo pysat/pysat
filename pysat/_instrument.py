@@ -736,7 +736,7 @@ class Instrument(object):
         return output_str
 
     def __getitem__(self, key, data=None):
-        """Access data in `pysat.Instrument` object.
+        """Access data in `pysat.Instrument` or provided data object.
 
         Parameters
         ----------
