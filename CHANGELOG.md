@@ -54,6 +54,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed deprecated `use_header` kwarg from `load` and changed default
     behaviour to `use_header=True`
   * Use temporary directories for files created during test_utils.py
+  * Updated code file headers to be consistent and include NRL pub release
   * Removed deprecated `labels` kwarg for `pysat.Instrument()`
   * Removed deprecated `utils.load_netcdf4` method
   * Removed deprecated `_filter_netcdf4_metadata` method

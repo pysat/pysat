@@ -8,5 +8,6 @@ numpydoc
 pysatSpaceWeather
 pytest-cov
 pytest-ordering
+readthedocs-sphinx-search==0.3.2
 sphinx
 sphinx_rtd_theme>=1.2.2,<2.0.0

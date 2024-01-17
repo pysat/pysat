@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# This work was supported by the Office of Naval Research.
+# ----------------------------------------------------------------------------
 """Standardized class and functions to test instruments for pysat libraries.
 
 Note
@@ -392,8 +401,11 @@ class InstLibTests(object):
             dl_dict = inst_dict['user_info']
         else:
             dl_dict = {}
-        # Note this will download two consecutive days
-        self.test_inst.download(self.date, **dl_dict)
+
+        # Ask to download two consecutive days
+        self.test_inst.download(start=self.date,
+                                stop=self.date + dt.timedelta(days=2),
+                                **dl_dict)
         assert len(self.test_inst.files.files) > 0
         return
 
@@ -660,14 +672,14 @@ class InstLibTests(object):
             # Make sure the strict time flag doesn't interfere with
             # the load tests
             load_and_set_strict_time_flag(self.test_inst, self.date,
-                                          raise_error=True, clean_off=False)
+                                          raise_error=True, clean_off=True)
 
             if self.test_inst.empty:
                 # This will be empty if this is a forecast file that doesn't
                 # include the load date
                 self.test_inst.pad = None
                 load_and_set_strict_time_flag(self.test_inst, self.date,
-                                              raise_error=True, clean_off=False)
+                                              raise_error=True, clean_off=True)
                 assert not self.test_inst.empty, \
                     "No data on {:}".format(self.date)
                 assert self.test_inst.index.max() < self.date, \
