@@ -485,8 +485,7 @@ class InstLibTests(object):
 
         return
 
-    # TODO(v3.3.0): remove mark.new_tests when ecosystem is fully compliant
-    # for this test
+    # TODO(#1172): remove mark.new_tests
     @pytest.mark.second
     @pytest.mark.load_options
     @pytest.mark.new_tests
@@ -624,8 +623,7 @@ class InstLibTests(object):
 
         return
 
-    # TODO(v3.3.0): remove mark.new_tests when ecosystem is fully compliant
-    # for this test
+    # TODO(#1172): remove mark.new_tests at v3.3.0
     @pytest.mark.second
     @pytest.mark.load_options
     @pytest.mark.new_tests
