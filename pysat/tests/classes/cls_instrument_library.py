@@ -485,7 +485,7 @@ class InstLibTests(object):
 
         return
 
-    # TODO(#1172): remove mark.new_tests
+    # TODO(#1172): remove mark.new_tests at v3.3.0
     @pytest.mark.second
     @pytest.mark.load_options
     @pytest.mark.new_tests
