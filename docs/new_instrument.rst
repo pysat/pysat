@@ -930,13 +930,13 @@ present. This flag is defaults to :py:val:`False` if not specified.
 Updates to Instrument Suite Tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sometimes new standard tests are added to pysat that ensure all data handling features
-work as expected throughout the ecosystem. For example, pysat 3.2.0 adds new tests
-for loading multiple days at a time or using a data pad. When these tests
-require significant updates, an additional flag may be used to suppress these
-tests temporarily for specific instruments while updates are made to that
-instrument. These new tests are run by default unless specified using the
-:py:attr:`_new_tests` flag.
+Sometimes new standard tests are added to pysat that ensure all data handling
+features work as expected throughout the ecosystem. For example, pysat 3.2.0
+adds new tests for loading multiple days at a time or using a data pad. When
+these tests require significant updates, an additional flag may be used to
+suppress these tests temporarily for specific instruments while updates are
+made to that instrument. These new tests are run by default unless specified
+using the :py:attr:`_new_tests` flag.
 
 .. code:: python
 
