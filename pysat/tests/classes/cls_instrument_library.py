@@ -269,6 +269,11 @@ class InstLibTests(object):
                     mark = pytest.mark.parametrize("inst_name",
                                                    instruments['names'])
                     getattr(self, method).pytestmark.append(mark)
+                elif 'new_tests' in mark_names:
+                    # Prioritize new test marks if present
+                    mark = pytest.mark.parametrize("inst_dict",
+                                                   instruments['new_tests'])
+                    getattr(self, method).pytestmark.append(mark)
                 elif 'load_options' in mark_names:
                     # Prioritize load_options mark if present
                     mark = pytest.mark.parametrize("inst_dict",
@@ -480,8 +485,10 @@ class InstLibTests(object):
 
         return
 
+    # TODO(#1172): remove mark.new_tests at v3.3.0
     @pytest.mark.second
     @pytest.mark.load_options
+    @pytest.mark.new_tests
     def test_load_multiple_days(self, inst_dict):
         """Test that instruments load at each cleaning level.
 
@@ -616,8 +623,10 @@ class InstLibTests(object):
 
         return
 
+    # TODO(#1172): remove mark.new_tests at v3.3.0
     @pytest.mark.second
     @pytest.mark.load_options
+    @pytest.mark.new_tests
     @pytest.mark.parametrize('pad', [{'days': 1}, dt.timedelta(days=1)])
     def test_load_w_pad(self, pad, inst_dict):
         """Test that instruments load at each cleaning level.

@@ -330,6 +330,7 @@ def generate_instrument_list(inst_loc, user_info=None):
     instrument_download = []
     instrument_optional_load = []
     instrument_no_download = []
+    instrument_new_tests = []
 
     # Look through list of available instrument modules in the given location
     for inst_module in instrument_names:
@@ -378,6 +379,8 @@ def generate_instrument_list(inst_loc, user_info=None):
                         # Check if instrument is configured for download tests.
                         if inst._test_download:
                             instrument_download.append(in_dict.copy())
+                            if inst._new_tests:
+                                instrument_new_tests.append(in_dict.copy())
                             if hasattr(module, '_test_load_opt'):
                                 # Add optional load tests
                                 try:
@@ -389,6 +392,10 @@ def generate_instrument_list(inst_loc, user_info=None):
                                         # Append as copy so kwargs are unique.
                                         instrument_optional_load.append(
                                             in_dict.copy())
+                                        if inst._new_tests:
+                                            instrument_new_tests.append(
+                                                in_dict.copy())
+
                                 except KeyError:
                                     # Option does not exist for tag/inst_id
                                     # combo
@@ -404,7 +411,8 @@ def generate_instrument_list(inst_loc, user_info=None):
     output = {'names': instrument_names,
               'download': instrument_download,
               'load_options': instrument_download + instrument_optional_load,
-              'no_download': instrument_no_download}
+              'no_download': instrument_no_download,
+              'new_tests': instrument_new_tests}
 
     return output
 
