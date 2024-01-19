@@ -5,6 +5,8 @@
 #
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
+# This work was supported by the institutions, missions, and programs listed in
+# acknowledgements.txt.
 # ----------------------------------------------------------------------------
 
 import datetime as dt
