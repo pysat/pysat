@@ -28,5 +28,6 @@ Welcome to pysat's documentation!
 .. admonition:: DISTRIBUTION STATEMENT A: Approved for public release.
 		Distribution is unlimited.
 
-    This work was supported by Cosmic Studio, the Office of Naval Research,
-    and the National Aeronautics and Space Administration.
+Funding
+=======
+.. include:: ../acknowledgements.txt
