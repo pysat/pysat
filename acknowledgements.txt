@@ -1,10 +1,10 @@
-The following institutions, programs, and missions have provided funding
+The following institutions, missions, and programs have provided funding
 for pysat development.
 
 Institutions
 ------------
  - Cosmic Studio
- - DARPA Defense Sciences Office
+ - Defense Advanced Research Projects Agency (DARPA) Defense Sciences Office
  - Office of Naval Research (ONR)
  - National Aeronautics and Space Administration (NASA)
  - National Oceanic and Atmospheric Administration (NOAA)
