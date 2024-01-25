@@ -54,6 +54,7 @@ def _init_parse_filenames(files, format_str):
         An output dict with the following keys:
         - 'search_string' (format_str with data to be parsed replaced with ?)
         - 'keys' (keys for data to be parsed)
+        - 'type' (type of data expected for each key to be parsed)
         - 'lengths' (string length for data to be parsed)
         - 'string_blocks' (the filenames are broken into fixed width segments).
 
@@ -320,11 +321,17 @@ def parse_fixed_width_filenames(files, format_str):
             else:
                 val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
 
+            # Cast the data value, if possible
+            if search_dict['type'][j] is not None:
+                val = search_dict['type'][j](val)
+
             # Save the parsed variable for this key and file
             if stored[key] is None:
                 stored[key] = [val]
             else:
                 stored[key].append(val)
+
+    raise RuntimeError('hi')
 
     # Convert to numpy arrays and add additional information to output
     stored = _finish_parse_filenames(stored, files, format_str)
@@ -476,6 +483,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         An output dict with the following keys:
         - 'search_string' (format_str with data to be parsed replaced with ?)
         - 'keys' (keys for data to be parsed)
+        - 'type' (type of data expected for each key to be parsed)
         - 'lengths' (string length for data to be parsed)
         - 'string_blocks' (the filenames are broken into fixed width segments).
 
@@ -498,8 +506,12 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     """
 
-    out_dict = {'search_string': '', 'keys': [], 'lengths': [],
+    out_dict = {'search_string': '', 'keys': [], 'type': [], 'lengths': [],
                 'string_blocks': []}
+    type_dict = {'s': str, 'b': np.int64, 'c': np.int64, 'd': np.int64,
+                 'o': np.int64, 'e': np.float64, 'E': np.float64,
+                 'f': np.float64, 'F': np.float64, 'g': np.float64,
+                 'G': np.float64}
 
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
@@ -517,6 +529,15 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
         if snip[1] is not None:
             out_dict['keys'].append(snip[1])
+
+            if snip[2] is None:
+                out_dict['type'].append(snip[2])
+            else:
+                snip_type = snip[2][-1]
+                if snip_type in type_dict.keys():
+                    out_dict['type'].append(type_dict[snip_type])
+                else:
+                    out_dict['type'].append(None)
 
             # Try and determine formatting width
             fwidths = re.findall(r'\d+', snip[2])
