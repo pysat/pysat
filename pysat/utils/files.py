@@ -90,7 +90,7 @@ def _init_parse_filenames(files, format_str):
     return stored, search_dict
 
 
-def _finish_parse_filenames(stored, files, format_str):
+def _finish_parse_filenames(stored, files, format_str, bad_files):
     """Reshape and finalize the output for the file parsing functions.
 
     Parameters
@@ -110,6 +110,9 @@ def _finish_parse_filenames(stored, files, format_str):
         and 'cycle' will be used for time and sorting information. For example,
         `instrument-{year:4d}_{month:02d}-{day:02d}_v{version:02d}.cdf`, or
         `*-{year:4d}_{month:02d}hithere{day:02d}_v{version:02d}.cdf`
+    bad_files : list
+        List of indices for files with names that do not fit the requested
+        format, or an empty list if all are good.
 
     Returns
     -------
@@ -125,20 +128,25 @@ def _finish_parse_filenames(stored, files, format_str):
     pysat.utils.files.parse_delimited_filenames
 
     """
-
+    # Change the bad file index list to a good file index list
+    good_files = [i for i in range(len(files)) if i not in bad_files]
+    
     # Convert to numpy arrays
     for key in stored.keys():
         if stored[key] is not None:
-            try:
-                # Assume key value is numeric integer
-                stored[key] = np.array(stored[key]).astype(np.int64)
-            except ValueError:
-                # Store key value as string
-                stored[key] = np.array(stored[key])
+            # Get the data type
+            dtype = type(stored[key][0])
+
+            # Cast the good data as an array of the desired type and select
+            # only the values with good files
+            stored[key] = np.array(stored[key])[good_files].astype(dtype)
 
     # Include files and file format in output
-    stored['files'] = files
     stored['format_str'] = format_str
+    if len(bad_files) == 0:
+        stored['files'] = files
+    else:
+        stored['files'] = list(np.array(files)[good_files])
 
     return stored
 
@@ -313,6 +321,7 @@ def parse_fixed_width_filenames(files, format_str):
                    np.array(end_key, dtype=np.int64) - max_len]
 
     # Need to parse out dates for datetime index
+    bad_files = []
     for i, temp in enumerate(files):
         for j, key in enumerate(search_dict['keys']):
             if key_str_idx[1][j] == 0:
@@ -323,7 +332,11 @@ def parse_fixed_width_filenames(files, format_str):
 
             # Cast the data value, if possible
             if search_dict['type'][j] is not None:
-                val = search_dict['type'][j](val)
+                try:
+                    val = search_dict['type'][j](val)
+                except ValueError:
+                    # The type is wrong, exclude this file
+                    bad_files.append(i)
 
             # Save the parsed variable for this key and file
             if stored[key] is None:
@@ -331,10 +344,8 @@ def parse_fixed_width_filenames(files, format_str):
             else:
                 stored[key].append(val)
 
-    raise RuntimeError('hi')
-
     # Convert to numpy arrays and add additional information to output
-    stored = _finish_parse_filenames(stored, files, format_str)
+    stored = _finish_parse_filenames(stored, files, format_str, bad_files)
 
     return stored
 
@@ -433,6 +444,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
         if stored[key] is None:
             stored[key] = []
 
+    bad_files = list()
     for temp in files:
         split_name = temp.split(delimiter)
         idx = 0
@@ -445,6 +457,15 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     val = loop_sname[sidx:sidx + search_dict['lengths'][idx]]
                     loop_sname = loop_sname[sidx + search_dict['lengths'][idx]:]
 
+                    # Cast the value as the desired data type, if not possible
+                    # identify a bad file
+                    if search_dict['type'][j] is not None:
+                        try:
+                            val = search_dict['type'][j](val)
+                        except ValueError:
+                            # The type is wrong, exclude this file
+                            bad_files.append(i)
+
                     # Store parsed info and increment key index
                     stored[search_dict['keys'][idx]].append(val)
                     idx += 1
@@ -455,7 +476,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     break
 
     # Convert to numpy arrays and add additional information to output
-    stored = _finish_parse_filenames(stored, files, format_str)
+    stored = _finish_parse_filenames(stored, files, format_str, bad_files)
 
     return stored
 
