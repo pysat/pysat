@@ -1,0 +1,3 @@
+Funding
+=======
+.. include:: ../acknowledgements.txt
