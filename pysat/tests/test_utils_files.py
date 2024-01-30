@@ -241,6 +241,40 @@ class TestParseFilenames(object):
         self.eval_parsed_filenames()
         return
 
+    @pytest.mark.parametrize("is_fixed", [True, False])
+    def test_parse_filenames_all_bad(self, is_fixed):
+        """Test files with a bad format are removed from consideration.
+
+        Parameters
+        ----------
+        is_fixed : bool
+            True for the fixed-width function, false for delimted.
+
+        """
+
+        # Format the test input
+        format_str = 'bad_test_{:s}.cdf'.format("_".join(
+            [self.kw_format[fkey] for fkey in self.fkwargs[0].keys()]))
+        bad_format = format_str.replace('revision:02d', 'revision:2s')
+        
+        # Create the input file list
+        file_list = []
+        for kwargs in self.fkwargs:
+            kwargs['revision'] = 'aa'
+            file_list.append(bad_format.format(**kwargs))
+
+        # Get the test results
+        if is_fixed:
+            self.file_dict = futils.parse_fixed_width_filenames(file_list,
+                                                                format_str)
+        else:
+            self.file_dict = futils.parse_delimited_filenames(file_list,
+                                                              format_str, "_")
+
+        # Test that all files were removed
+        assert len(self.file_dict['files']) == 0
+        return
+
     def test_parse_delimited_filename_empty(self):
         """Check ability to parse list of delimited files with no files."""
         # Format the test input
