@@ -525,6 +525,8 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     This is the first function employed by `pysat.Files.from_os`.
 
+    If no type is supplied for datetime parameters, int will be used.
+
     """
 
     out_dict = {'search_string': '', 'keys': [], 'type': [], 'lengths': [],
@@ -533,6 +535,8 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                  'o': np.int64, 'e': np.float64, 'E': np.float64,
                  'f': np.float64, 'F': np.float64, 'g': np.float64,
                  'G': np.float64}
+    int_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
+                'microsecond']
 
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
@@ -557,6 +561,8 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                 snip_type = snip[2][-1]
                 if snip_type in type_dict.keys():
                     out_dict['type'].append(type_dict[snip_type])
+                elif snip[1] in int_keys:
+                    out_dict['type'].append(np.int64)
                 else:
                     out_dict['type'].append(None)
 
