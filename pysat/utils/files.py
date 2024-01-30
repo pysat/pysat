@@ -459,7 +459,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
                     # Cast the value as the desired data type, if not possible
                     # identify a bad file
-                    if search_dict['type'][j] is not None:
+                    if search_dict['type'][idx] is not None:
                         try:
                             val = search_dict['type'][idx](val)
                         except ValueError:
