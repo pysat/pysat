@@ -130,7 +130,7 @@ def _finish_parse_filenames(stored, files, format_str, bad_files):
     """
     # Change the bad file index list to a good file index list
     good_files = [i for i in range(len(files)) if i not in bad_files]
-    
+
     # Convert to numpy arrays
     for key in stored.keys():
         if stored[key] is not None:

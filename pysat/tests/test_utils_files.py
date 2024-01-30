@@ -256,7 +256,7 @@ class TestParseFilenames(object):
         format_str = 'bad_test_{:s}.cdf'.format("_".join(
             [self.kw_format[fkey] for fkey in self.fkwargs[0].keys()]))
         bad_format = format_str.replace('revision:02d', 'revision:2s')
-        
+
         # Create the input file list
         file_list = []
         for kwargs in self.fkwargs:
