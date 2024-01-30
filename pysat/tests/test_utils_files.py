@@ -46,7 +46,7 @@ class TestConstructSearchstring(object):
     def eval_output(self):
         """Evaluate the output dictionary."""
 
-        testing.assert_lists_equal(['search_string', 'keys', 'lengths',
+        testing.assert_lists_equal(['search_string', 'keys', 'type', 'lengths',
                                     'string_blocks'],
                                    list(self.out_dict.keys()))
 
@@ -337,7 +337,7 @@ class TestParseFilenames(object):
         self.file_dict, sdict = futils._init_parse_filenames(file_list, fname)
 
         # Test the initalized dictionaries
-        testing.assert_lists_equal(['search_string', 'keys', 'lengths',
+        testing.assert_lists_equal(['search_string', 'keys', 'type', 'lengths',
                                     'string_blocks'], list(sdict.keys()))
 
         for skey in sdict['keys']:
@@ -351,20 +351,35 @@ class TestParseFilenames(object):
             "'format_str' key set early"
         return
 
-    def test_finish_parsed_filenames(self):
-        """Test output restucturing for `_finish_parsed_filenames`."""
+    @pytest.mark.parametrize("bad_files", [[], [0]])
+    def test_finish_parsed_filenames(self, bad_files):
+        """Test output restucturing for `_finish_parsed_filenames`.
+
+        Parameters
+        ----------
+        bad_files : list
+            List of bad file indices
+
+        """
         # Format the test input
         fname = ''.join(('test*', '{year:04d}', '{day:03d}', '{hour:02d}',
                          '{minute:02d}', '{second:02d}', '{cycle:2s}.txt'))
 
         # Create the input file list and dict
         file_list = [fname.format(**kwargs) for kwargs in self.fkwargs]
-        self.file_dict = {'int': [1], 'none': None, 'float': [1.0],
-                          'str': ['hi']}
+        self.file_dict = {'int': [1 for fname in file_list], 'none': None,
+                          'float': [1.0 for fname in file_list],
+                          'str': ['hi' for fname in file_list]}
 
         # Get the test results
         self.file_dict = futils._finish_parse_filenames(self.file_dict,
-                                                        file_list, fname)
+                                                        file_list, fname,
+                                                        bad_files)
+
+        # Adjust the expected file output
+        if len(bad_files) > 0:
+            file_list = [fname for i, fname in enumerate(file_list)
+                         if i not in bad_files]
 
         # Test the output
         for fkey in self.file_dict:
@@ -376,11 +391,7 @@ class TestParseFilenames(object):
                 assert fname == self.file_dict[fkey]
             else:
                 testing.assert_isinstance(self.file_dict[fkey], np.ndarray)
-
-                if fkey == 'str':
-                    testing.assert_isinstance(self.file_dict[fkey][0], str)
-                else:
-                    testing.assert_isinstance(self.file_dict[fkey][0], np.int64)
+                assert len(self.file_dict[fkey]) == len(file_list)
         return
 
 
