@@ -445,7 +445,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
             stored[key] = []
 
     bad_files = list()
-    for temp in files:
+    for ifile, temp in enumerate(files):
         split_name = temp.split(delimiter)
         idx = 0
         loop_split_idx = split_idx
@@ -461,10 +461,10 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     # identify a bad file
                     if search_dict['type'][j] is not None:
                         try:
-                            val = search_dict['type'][j](val)
+                            val = search_dict['type'][idx](val)
                         except ValueError:
                             # The type is wrong, exclude this file
-                            bad_files.append(i)
+                            bad_files.append(ifile)
 
                     # Store parsed info and increment key index
                     stored[search_dict['keys'][idx]].append(val)
