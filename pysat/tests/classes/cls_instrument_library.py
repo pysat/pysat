@@ -507,7 +507,7 @@ class InstLibTests(object):
                 # Make sure the strict time flag doesn't interfere with
                 # the load tests, and re-run with desired clean level
                 load_and_set_strict_time_flag(self.test_inst, self.date,
-                                              raise_error=True, clean_off=False,
+                                              raise_error=True, clean_off=True,
                                               set_end_date=True)
 
                 # Make sure more than one day has been loaded
