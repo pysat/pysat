@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.2.0] - 2023-xx-xx
+[3.2.0] - 2024-02-xx
 --------------------
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
@@ -39,7 +39,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Implement pyproject to manage metadata
   * Updated docstring references to `pysat.utils.files` in other modules.
   * Remove Sphinx cap
-  * Add pandas cap
   * Update usage of whitespace and if statements (E275)
   * Remove hacking cap
   * Removed deprecated `pysat_testing2d` instrument
