@@ -63,6 +63,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added verion cap for sphinx_rtd_theme
   * Used line specific noqa statements for imports
   * Add `_new_tests` flag for packages to ignore select new tests
+  * Add CI testing for python 3.12
 
 [3.1.0] - 2023-05-31
 --------------------
