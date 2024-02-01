@@ -481,7 +481,7 @@ class TestFmtCols(object):
                              [("ncols", 0, ZeroDivisionError,
                                "integer division or modulo by zero"),
                               ("max_num", -10, ValueError,
-                               "max() arg is an empty sequence")])
+                               "empty")])
     def test_fmt_raises(self, key, val, raise_type, err_msg):
         """Test raises appropriate Errors for bad input values.
 
