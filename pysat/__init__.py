@@ -116,7 +116,7 @@ else:
     # Load up existing parameters file
     params = _params.Parameters()
 
-# utils used by other imports, needs to be imported first.
+# Modules used by other imports needs to be imported here first.
 from pysat import utils  # noqa: E402 F401
 
 # Import the remainder of the modules.
