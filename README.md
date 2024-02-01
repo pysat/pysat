@@ -67,7 +67,7 @@ Space Physics community.  This module officially supports Python 3.X+.
 | -------------- | ----------------- |
 | dask           | netCDF4           |
 | numpy >= 1.12  |                   |
-| pandas < 2.1.1 |                   |
+| pandas         |                   |
 | portalocker    |                   |
 | pytest         |                   |
 | scipy          |                   |
