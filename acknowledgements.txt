@@ -21,5 +21,5 @@ Programs
 --------
  - NSF 125908, AGS-1651393
  - NASA NNX10AT02G, NNH20ZDA001N-LWS, 80NSSC18K120, and 80NSSC21M0180
- - NASA Space Precipitation Impacts (SPI) project
+ - NASA Space Precipitation Impacts (SPI) project at Goddard Space Flight Center through the Heliophysics Internal Science Funding Model.
  - Naval Research Laboratory N00173191G016 and N0017322P0744
