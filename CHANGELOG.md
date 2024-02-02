@@ -31,6 +31,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added test for loading multiple days of data.
 * Bug Fix
   * Fixed `utils.files.parse_fixed_width_filenames` output for empty file list
+  * Updated the parsing functions in `utils.files` to consider type specifiers
+    when identifying appropriate files in a directory
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
