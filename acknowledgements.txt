@@ -3,7 +3,8 @@ for pysat development.
 
 Institutions
 ------------
- - Cosmic Studio
+  - The Catholic University of America (CUA)
+  - Cosmic Studio
  - Defense Advanced Research Projects Agency (DARPA) Defense Sciences Office
  - Office of Naval Research (ONR)
  - National Aeronautics and Space Administration (NASA)
@@ -23,3 +24,7 @@ Programs
  - NASA NNX10AT02G, NNH20ZDA001N-LWS, 80NSSC18K120, and 80NSSC21M0180
  - NASA Space Precipitation Impacts (SPI) project at Goddard Space Flight Center through the Heliophysics Internal Science Funding Model.
  - Naval Research Laboratory N00173191G016 and N0017322P0744
+ 
+Disclaimers
+===========
+Any opinions or actions taken by the listed funding institutions are those of the institutions and do not necessarily reflect the views of the pysat development team or individual authors. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the funding agencies.
