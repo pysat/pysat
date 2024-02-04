@@ -1,10 +1,12 @@
+Funding
+=======
 The following institutions, missions, and programs have provided funding
 for pysat development.
 
 Institutions
 ------------
-  - The Catholic University of America (CUA)
-  - Cosmic Studio
+ - The Catholic University of America (CUA)
+ - Cosmic Studio
  - Defense Advanced Research Projects Agency (DARPA) Defense Sciences Office
  - Office of Naval Research (ONR)
  - National Aeronautics and Space Administration (NASA)
