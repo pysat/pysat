@@ -55,7 +55,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
     behaviour to `use_header=True`
   * Use temporary directories for files created during test_utils.py
   * Updated code file headers to be consistent and include NRL pub release
-  * Added acknowledgements.rst which includes full institutional funding list
+  * Added acknowledgements.md which includes full institutional funding list
   * Removed deprecated `labels` kwarg for `pysat.Instrument()`
   * Removed deprecated `utils.load_netcdf4` method
   * Removed deprecated `_filter_netcdf4_metadata` method

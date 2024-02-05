@@ -1,1 +1,1 @@
-.. include:: ../acknowledgements.txt
+.. include:: ../acknowledgements.md
