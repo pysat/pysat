@@ -5,7 +5,6 @@
 #
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
-# This work was supported by the Office of Naval Research.
 # ----------------------------------------------------------------------------
 """Create a constellation where not all instruments have loadable data.
 

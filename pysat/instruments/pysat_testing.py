@@ -5,7 +5,6 @@
 #
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
-# This work was supported by the Office of Naval Research.
 # ----------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 """Produces fake instrument data for testing."""
