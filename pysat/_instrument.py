@@ -2965,6 +2965,13 @@ class Instrument(object):
         else:
             use_header = True
 
+        # Provide user friendly error if there is no data
+        if len(self.files.files) == 0:
+            estr = ''.join(('No files found for Instrument. Please confirm ',
+                            'that data is present on the system and that ',
+                            "pysat.params['data_dirs'] is set correctly."))
+            raise OSError(estr)
+
         # Add the load kwargs from initialization those provided on input
         for lkey in self.kwargs['load'].keys():
             # Only use the initialized kwargs if a request hasn't been
