@@ -464,6 +464,13 @@ class TestInstGeneral(object):
         assert isinstance(self.empty_inst, pysat.Instrument)
         return
 
+    def test_load_empty_instrument_no_files_error(self):
+        """Ensure error loading Instrument with no files."""
+        estr = 'No files found for Instrument'
+        testing.eval_bad_input(self.empty_inst.load, OSError, estr)
+        return
+
+
     def test_empty_repr_eval(self):
         """Test that repr functions on empty `Instrument`."""
 
