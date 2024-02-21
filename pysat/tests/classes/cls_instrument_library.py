@@ -489,7 +489,7 @@ class InstLibTests(object):
     @pytest.mark.load_options
     @pytest.mark.new_tests
     def test_load_multiple_days(self, inst_dict):
-        """Test that instruments load at each cleaning level.
+        """Test that instruments load multiple days when requested.
 
         Parameters
         ----------
@@ -505,6 +505,7 @@ class InstLibTests(object):
             if self.date < self.test_inst.today():
                 # Make sure the strict time flag doesn't interfere with
                 # the load tests, and re-run with desired clean level
+                self.test_inst.clean_level = 'none'
                 load_and_set_strict_time_flag(self.test_inst, self.date,
                                               raise_error=True, clean_off=True,
                                               set_end_date=True)
@@ -628,7 +629,7 @@ class InstLibTests(object):
     @pytest.mark.new_tests
     @pytest.mark.parametrize('pad', [{'days': 1}, dt.timedelta(days=1)])
     def test_load_w_pad(self, pad, inst_dict):
-        """Test that instruments load at each cleaning level.
+        """Test that instruments load with a pad specified different ways.
 
         Parameters
         ----------
@@ -668,6 +669,7 @@ class InstLibTests(object):
         if len(self.test_inst.files.files) > 0:
             # Make sure the strict time flag doesn't interfere with
             # the load tests
+            self.test_inst.clean = 'none'
             load_and_set_strict_time_flag(self.test_inst, self.date,
                                           raise_error=True, clean_off=True)
 
