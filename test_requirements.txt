@@ -5,7 +5,7 @@ hacking>=1.0
 ipython
 m2r2
 numpydoc
-pysatSpaceWeather
+pysatSpaceWeather<0.1.0
 pytest-cov
 pytest-ordering
 readthedocs-sphinx-search==0.3.2
