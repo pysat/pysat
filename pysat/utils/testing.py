@@ -199,8 +199,8 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
         simple_out = True
 
     # Test the warning messages, ensuring each attribute is present
-    for iwar, iwartype in zip(warns, warn_types):
-        for i, msg in enumerate(check_msgs):
+    for iwar in warns:
+        for i, (msg, iwartype) in enumerate(zip(check_msgs, warn_types)):
             if str(iwar.message).find(msg) >= 0:
                 assert iwar.category == iwartype, \
                     "bad warning type for message: {:}".format(msg)
