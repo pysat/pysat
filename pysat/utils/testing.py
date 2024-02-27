@@ -195,7 +195,7 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
     # number of messages
     simple_out = False
     if len(warn_types) == 1:
-        warn_types = warn_types*len(check_msgs)
+        warn_types = warn_types * len(check_msgs)
         simple_out = True
 
     # Test the warning messages, ensuring each attribute is present
