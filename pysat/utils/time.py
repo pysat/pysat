@@ -224,7 +224,6 @@ def freq_to_res(freq):
     """
     # Separate the alpha and numeric portions of the string as described in:
     # https://stackoverflow.com/a/12409995
-
     regex = re.compile(r'(\d+|\s+)')
     out_str = [sval for sval in regex.split(freq) if len(sval) > 0]
 
