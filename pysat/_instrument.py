@@ -2967,9 +2967,10 @@ class Instrument(object):
 
         # Provide user friendly error if there is no data
         if len(self.files.files) == 0:
+            # TODO(#1182) - Update with pysat 3.3.0+ per directions below
             # In pysat 3.3, modify this section to leave function early
             # to prevent a downstream IndexError. Remove Deprecation portion
-            # of message above and leave as a UserWarning.
+            # of message below and leave as a UserWarning.
             estr = ''.join(('No files found for Instrument. If files are ',
                             'expected, please confirm that data is present ',
                             'on the system and that ',
