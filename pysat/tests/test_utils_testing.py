@@ -157,50 +157,130 @@ class TestTestingUtils(object):
         UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
         FutureWarning, PendingDeprecationWarning, ImportWarning,
         UnicodeWarning, BytesWarning, ResourceWarning])
-    def test_good_eval_warnings(self, warn_type):
-        """Test warning evaluation function success.
+    @pytest.mark.parametrize("second_type", [
+        None, UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
+        FutureWarning, PendingDeprecationWarning, ImportWarning,
+        UnicodeWarning, BytesWarning, ResourceWarning])
+    def test_good_eval_warnings(self, warn_type, second_type):
+        """Test warning evaluation function success including multiple types.
 
         Parameters
         ----------
         warn_type : Warning
             Warning class to be raised
-
+        second_type : Warning or None
+            Optional warning class to be raised
         """
-        warn_msg = 'test warning'
+        if second_type is not None:
+            warn_msgs = ['test warning1', 'test_warning2']
+            warn_types = [warn_type, second_type]
+        else:
+            # Only test a single msg/type
+            warn_msgs = ['test warning']
+            warn_types = [warn_type]
 
         # Raise the desired warning
         with warnings.catch_warnings(record=True) as war:
-            warnings.warn(warn_msg, warn_type)
+            for warn_msg, loop_warn_type in zip(warn_msgs, warn_types):
+                warnings.warn(warn_msg, loop_warn_type)
 
         # Evaluate the warning output
-        testing.eval_warnings(war, [warn_msg], warn_type)
+        testing.eval_warnings(war, warn_msgs, warn_types)
         return
 
     @pytest.mark.parametrize("warn_type", [
         UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
         FutureWarning, PendingDeprecationWarning, ImportWarning,
         UnicodeWarning, BytesWarning, ResourceWarning])
-    def test_eval_warnings_bad_type(self, warn_type):
+    @pytest.mark.parametrize("second_type", [
+        None, UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
+        FutureWarning, PendingDeprecationWarning, ImportWarning,
+        UnicodeWarning, BytesWarning, ResourceWarning])
+    def test_eval_warnings_bad_types(self, warn_type, second_type):
         """Test warning evaluation function failure for mismatched type.
 
         Parameters
         ----------
         warn_type : Warning
             Warning class to be raised
+        second_type : Warning or None
+            Optional warning class to be raised
 
         """
         warn_msg = 'test warning'
         bad_type = UserWarning if warn_type != UserWarning else BytesWarning
+        sbad_type = UserWarning if second_type != UserWarning else BytesWarning
+
+        if second_type is not None:
+            warn_msgs = [warn_msg, 'test_warning2']
+            warn_types = [warn_type, second_type]
+            bad_types = [bad_type, sbad_type]
+        else:
+            # Only test a single msg/type
+            warn_msgs = [warn_msg]
+            warn_types = [warn_type]
+            bad_types = [bad_type]
 
         # Raise the desired warning
         with warnings.catch_warnings(record=True) as war:
-            warnings.warn(warn_msg, warn_type)
+            for loop_warn_msg, loop_warn_type in zip(warn_msgs, warn_types):
+                warnings.warn(loop_warn_msg, loop_warn_type)
 
         # Catch and evaluate the expected error
         with pytest.raises(AssertionError) as aerr:
-            testing.eval_warnings(war, [warn_msg], bad_type)
+            testing.eval_warnings(war, warn_msgs, bad_types)
 
-        assert str(aerr).find('bad warning type for message') >= 0
+        assert str(aerr).find('bad warning type for message:') >= 0
+
+        return
+
+    @pytest.mark.parametrize("warn_type", [
+        UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
+        FutureWarning, PendingDeprecationWarning, ImportWarning,
+        UnicodeWarning, BytesWarning, ResourceWarning])
+    @pytest.mark.parametrize("second_type", [
+        None, UserWarning, DeprecationWarning, SyntaxWarning, RuntimeWarning,
+        FutureWarning, PendingDeprecationWarning, ImportWarning,
+        UnicodeWarning, BytesWarning, ResourceWarning])
+    def test_eval_warnings_bad_msgs(self, warn_type, second_type):
+        """Test warning evaluation function failure for mismatched message.
+
+        Parameters
+        ----------
+        warn_type : Warning
+            Warning class to be raised
+        second_type : Warning or None
+            Optional warning class to be raised
+
+        """
+        warn_msg = 'test warning'
+        bad_msg = 'not correct'
+
+        if second_type is not None:
+            warn_msgs = [warn_msg, 'test_warning2']
+            warn_types = [warn_type, second_type]
+            bad_msgs = [bad_msg, 'not_correct2']
+        else:
+            # Only test a single msg/type
+            warn_msgs = [warn_msg]
+            warn_types = [warn_type]
+            bad_msgs = [bad_msg]
+
+        # Raise the desired warning
+        with warnings.catch_warnings(record=True) as war:
+            for loop_warn_msg, loop_warn_type in zip(warn_msgs, warn_types):
+                warnings.warn(loop_warn_msg, loop_warn_type)
+
+        # Catch and evaluate the expected error
+        with pytest.raises(AssertionError) as aerr:
+            testing.eval_warnings(war, bad_msgs, warn_types)
+
+        assert str(aerr).find('did not find') >= 0
+
+        # Check for warning types in message
+        for loop_warn_type in warn_types:
+            assert str(aerr).find(repr(loop_warn_type)) >= 0
+
         return
 
     @pytest.mark.parametrize("warn_type", [

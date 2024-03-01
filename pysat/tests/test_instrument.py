@@ -464,6 +464,19 @@ class TestInstGeneral(object):
         assert isinstance(self.empty_inst, pysat.Instrument)
         return
 
+    def test_load_empty_instrument_no_files_error(self):
+        """Ensure error loading Instrument with no files."""
+
+        # Trying to load when there are no files produces multiple warnings
+        # and one Error.
+        with warnings.catch_warnings(record=True) as self.war:
+            testing.eval_bad_input(self.empty_inst.load, IndexError,
+                                   'index 0 is out of bounds')
+        estr = ['No files found for Instrument', 'IndexError will not be']
+        testing.eval_warnings(self.war, estr, warn_type=[UserWarning,
+                                                         DeprecationWarning])
+        return
+
     def test_empty_repr_eval(self):
         """Test that repr functions on empty `Instrument`."""
 

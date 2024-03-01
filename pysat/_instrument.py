@@ -2965,6 +2965,23 @@ class Instrument(object):
         else:
             use_header = True
 
+        # Provide user friendly error if there is no data
+        if len(self.files.files) == 0:
+            # TODO(#1182) - Update with pysat 3.3.0+ per directions below
+            # In pysat 3.3, modify this section to leave function early
+            # to prevent a downstream IndexError. Remove Deprecation portion
+            # of message below and leave as a UserWarning.
+            estr = ''.join(('No files found for Instrument. If files are ',
+                            'expected, please confirm that data is present ',
+                            'on the system and that ',
+                            "pysat.params['data_dirs'] is set correctly."))
+            warnings.warn(estr, UserWarning, stacklevel=2)
+            estr = ''.join(("In pysat version 3.3.0+ the subsequent ",
+                            'IndexError will not be raised.'))
+            warnings.warn(estr, DeprecationWarning, stacklevel=2)
+            # Uncomment line below, pysat 3.3.0+
+            # return
+
         # Add the load kwargs from initialization those provided on input
         for lkey in self.kwargs['load'].keys():
             # Only use the initialized kwargs if a request hasn't been
