@@ -185,6 +185,7 @@ class TestInstruments(InstLibTests):
         # Construct the expected warnings
         if warn_type == 'mult':
             # Note that we cannot test errors along with other warnings
+            # TODO(#1184) test for both warnings and errors
             inst_dict['inst_module']._clean_warn = {
                 inst_dict['inst_id']: {inst_dict['tag']: {clean_level: [
                     ('warning', warn_level['warning'], warn_msg, final_level),
