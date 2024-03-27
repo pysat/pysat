@@ -2,17 +2,16 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 
 import datetime as dt
 import importlib
-import netCDF4
 import numpy as np
 import os
-import pandas as pds
 from portalocker import Lock
-import warnings
-import xarray as xr
 
 import pysat
 
@@ -190,109 +189,6 @@ def stringify(strlike):
     return strlike
 
 
-def load_netcdf4(fnames=None, strict_meta=False, file_format='NETCDF4',
-                 epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
-                 pandas_format=True, decode_timedelta=False,
-                 labels={'units': ('units', str), 'name': ('long_name', str),
-                         'notes': ('notes', str), 'desc': ('desc', str),
-                         'min_val': ('value_min', np.float64),
-                         'max_val': ('value_max', np.float64),
-                         'fill_val': ('fill', np.float64)}):
-    """Load netCDF-3/4 file produced by pysat.
-
-    .. deprecated:: 3.0.2
-       Function moved to `pysat.utils.io.load_netcdf`, this wrapper will be
-       removed in the 3.2.0+ release.
-       No longer allow non-string file formats in the 3.2.0+ release.
-
-    Parameters
-    ----------
-    fnames : str, array_like, or NoneType
-        Filename(s) to load, will fail if None (default=None)
-    strict_meta : bool
-        Flag that checks if metadata across fnames is the same if True
-        (default=False)
-    file_format : str
-        file_format keyword passed to netCDF4 routine.  Expects one of
-        'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'NETCDF4_CLASSIC', or 'NETCDF4'.
-        (default='NETCDF4')
-    epoch_name : str
-        Data key for epoch variable.  The epoch variable is expected to be an
-        array of integer or float values denoting time elapsed from an origin
-        specified by `epoch_origin` with units specified by `epoch_unit`. This
-        epoch variable will be converted to a `DatetimeIndex` for consistency
-        across pysat instruments.  (default='Epoch')
-    epoch_unit : str
-        The pandas-defined unit of the epoch variable ('D', 's', 'ms', 'us',
-        'ns'). (default='ms')
-    epoch_origin : str or timestamp-convertable
-        Origin of epoch calculation, following convention for
-        `pandas.to_datetime`.  Accepts timestamp-convertable objects, as well as
-        two specific strings for commonly used calendars.  These conversions are
-        handled by `pandas.to_datetime`.
-        If ‘unix’ (or POSIX) time; origin is set to 1970-01-01.
-        If ‘julian’, `epoch_unit` must be ‘D’, and origin is set to beginning of
-        Julian Calendar. Julian day number 0 is assigned to the day starting at
-        noon on January 1, 4713 BC. (default='unix')
-    pandas_format : bool
-        Flag specifying if data is stored in a pandas DataFrame (True) or
-        xarray Dataset (False). (default=False)
-    decode_timedelta : bool
-        Used for xarray datasets.  If True, variables with unit attributes that
-        are 'timelike' ('hours', 'minutes', etc) are converted to
-        `np.timedelta64`. (default=False)
-    labels : dict
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order.
-        (default={'units': ('units', str), 'name': ('long_name', str),
-        'notes': ('notes', str), 'desc': ('desc', str),
-        'min_val': ('value_min', np.float64),
-        'max_val': ('value_max', np.float64), 'fill_val': ('fill', np.float64)})
-
-    Returns
-    -------
-    data : pandas.DataFrame or xarray.Dataset
-        Class holding file data
-    meta : pysat.Meta
-        Class holding file meta data
-
-    Raises
-    ------
-    ValueError
-        If kwargs that should be args are not set on instantiation.
-    KeyError
-        If epoch/time dimension could not be identified.
-
-    """
-    warnings.warn("".join(["function moved to `pysat.utils.io`, deprecated ",
-                           "wrapper will be removed in pysat 3.2.0+"]),
-                  DeprecationWarning, stacklevel=2)
-
-    if fnames is None:
-        warnings.warn("".join(["`fnames` as a kwarg has been deprecated, must ",
-                               "supply a string or list of strings in 3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        raise ValueError("Must supply a filename/list of filenames")
-
-    if file_format is None:
-        warnings.warn("".join(["`file_format` must be a string value in ",
-                               "3.2.0+, instead of None use 'NETCDF4' for ",
-                               "same behavior."]),
-                      DeprecationWarning, stacklevel=2)
-        file_format = 'NETCDF4'
-
-    data, meta = pysat.utils.io.load_netcdf(fnames, strict_meta=strict_meta,
-                                            file_format=file_format,
-                                            epoch_name=epoch_name,
-                                            epoch_unit=epoch_unit,
-                                            epoch_origin=epoch_origin,
-                                            pandas_format=pandas_format,
-                                            decode_timedelta=decode_timedelta,
-                                            labels=labels)
-
-    return data, meta
-
-
 def get_mapped_value(value, mapper):
     """Adjust value using mapping dict or function.
 
@@ -433,6 +329,7 @@ def generate_instrument_list(inst_loc, user_info=None):
     instrument_download = []
     instrument_optional_load = []
     instrument_no_download = []
+    instrument_new_tests = []
 
     # Look through list of available instrument modules in the given location
     for inst_module in instrument_names:
@@ -443,7 +340,7 @@ def generate_instrument_list(inst_loc, user_info=None):
             # If this can't be imported, we can't pull out the info for the
             # download / no_download tests.  Leaving in basic tests for all
             # instruments, but skipping the rest.  The import error will be
-            # caught as part of the pytest.mark.all_inst tests in InstTestClass
+            # caught as part of the pytest.mark.all_inst tests in InstLibTests
             pass
         else:
             # try to grab basic information about the module so we
@@ -453,7 +350,7 @@ def generate_instrument_list(inst_loc, user_info=None):
             except AttributeError:
                 # If a module does not have a test date, add it anyway for
                 # other tests.  This will be caught later by
-                # InstTestClass.test_instrument_test_dates
+                # InstLibTests.test_instrument_test_dates
                 info = {}
                 info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
@@ -481,6 +378,8 @@ def generate_instrument_list(inst_loc, user_info=None):
                         # Check if instrument is configured for download tests.
                         if inst._test_download:
                             instrument_download.append(in_dict.copy())
+                            if inst._new_tests:
+                                instrument_new_tests.append(in_dict.copy())
                             if hasattr(module, '_test_load_opt'):
                                 # Add optional load tests
                                 try:
@@ -492,6 +391,10 @@ def generate_instrument_list(inst_loc, user_info=None):
                                         # Append as copy so kwargs are unique.
                                         instrument_optional_load.append(
                                             in_dict.copy())
+                                        if inst._new_tests:
+                                            instrument_new_tests.append(
+                                                in_dict.copy())
+
                                 except KeyError:
                                     # Option does not exist for tag/inst_id
                                     # combo
@@ -507,7 +410,8 @@ def generate_instrument_list(inst_loc, user_info=None):
     output = {'names': instrument_names,
               'download': instrument_download,
               'load_options': instrument_download + instrument_optional_load,
-              'no_download': instrument_no_download}
+              'no_download': instrument_no_download,
+              'new_tests': instrument_new_tests}
 
     return output
 

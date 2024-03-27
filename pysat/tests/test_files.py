@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Test pysat Files object and code."""
 
 import datetime as dt
@@ -8,7 +16,6 @@ import numpy as np
 import os
 import pandas as pds
 import tempfile
-import time
 
 import pytest
 
@@ -148,8 +155,7 @@ class TestBasics(object):
 
         self.testInst = pysat.Instrument(
             inst_module=pysat.instruments.pysat_testing, clean_level='clean',
-            temporary_file_list=self.temporary_file_list, update_files=True,
-            use_header=True)
+            temporary_file_list=self.temporary_file_list, update_files=True)
 
         # Create instrument directories in tempdir
         create_dir(self.testInst)
@@ -215,7 +221,7 @@ class TestBasics(object):
     def test_equality_with_copy_with_data(self):
         """Test that copy is the same as original, loaded `inst.data`."""
         # Load data
-        self.testInst.load(date=self.start, use_header=True)
+        self.testInst.load(date=self.start)
 
         # Make copy
         self.out = self.testInst.files.copy()
@@ -586,7 +592,8 @@ class TestBasics(object):
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
         reload(pysat.instruments.pysat_testing)
-        assert(inst.files.files.empty)
+        assert inst.files.files.empty
+
         return
 
     def test_instrument_has_files(self):
@@ -1086,7 +1093,7 @@ class TestInstWithFilesNonStandard(object):
                      'temporary_file_list': self.temporary_file_list}
 
         testing.eval_bad_input(pysat.Instrument, ValueError,
-                               'file format set to default',
+                               'Supplied format string',
                                input_kwargs=in_kwargs)
         return
 
@@ -1295,8 +1302,6 @@ class TestFilesRaceCondition(object):
                          temporary_file_list=self.temporary_file_list)
         pysat.params['data_dirs'] = self.data_paths
 
-    # TODO(#871): This needs to be replaced or expanded based on the tests that
-    # portalocker uses
     def test_race_condition(self):
         """Test that multiple instances of pysat instrument creation run."""
         processes = 5

@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 """Produces fake instrument data for testing."""
 
@@ -5,6 +13,7 @@ import datetime as dt
 import functools
 import numpy as np
 
+import pandas as pds
 import xarray as xr
 
 import pysat
@@ -15,8 +24,10 @@ name = 'ndtesting'
 
 pandas_format = False
 tags = {'': 'Regular testing data set'}
-inst_ids = {'': ['']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+inst_ids = {'': [tag for tag in tags.keys()]}
+_test_dates = {'': {tag: dt.datetime(2009, 1, 1) for tag in tags.keys()}}
+_test_load_opt = {'': {'': [{'num_extra_time_coords': 0},
+                            {'num_extra_time_coords': 1}]}}
 
 epoch_name = u'time'
 
@@ -26,13 +37,16 @@ init = mm_test.init
 # Clean method
 clean = mm_test.clean
 
-# Optional method, preprocess
+# Optional methods
+concat_data = mm_test.concat_data
 preprocess = mm_test.preprocess
 
 
-def load(fnames, tag='', inst_id='', non_monotonic_index=False,
-         non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=864, test_load_kwarg=None, max_latitude=90.):
+def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
+         sim_multi_file_left=False, root_date=None, non_monotonic_index=False,
+         non_unique_index=False, start_time=None, num_samples=864,
+         sample_rate='100S', test_load_kwarg=None, max_latitude=90.0,
+         num_extra_time_coords=0):
     """Load the test files.
 
     Parameters
@@ -45,27 +59,36 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     inst_id : str
         Instrument ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
+    sim_multi_file_right : bool
+        Adjusts date range to be 12 hours in the future or twelve hours beyond
+        `root_date`. (default=False)
+    sim_multi_file_left : bool
+        Adjusts date range to be 12 hours in the past or twelve hours before
+        `root_date`. (default=False)
+    root_date : NoneType
+        Optional central date, uses _test_dates if not specified.
+        (default=None)
     non_monotonic_index : bool
         If True, time index will be non-monotonic (default=False)
     non_unique_index : bool
         If True, time index will be non-unique (default=False)
-    malformed_index : bool
-        If True, the time index will be non-unique and non-monotonic. Deprecated
-        and scheduled for removal in pysat 3.2.0.
-        (default=False)
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
         will begin at midnight. (default=None)
     num_samples : int
         Maximum number of times to generate.  Data points will not go beyond the
         current day. (default=864)
+    sample_rate : str
+        Frequency of data points, using pandas conventions. (default='100s')
     test_load_kwarg : any
         Keyword used for pysat unit testing to ensure that functionality for
         custom keywords defined in instrument support functions is working
         correctly. (default=None)
     max_latitude : float
         Latitude simulated as `max_latitude` * cos(theta(t))`, where
-        theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.).
+        theta is a linear periodic signal bounded by [0, 2 * pi) (default=90.0)
+    num_extra_time_coords : int
+        Number of extra time coordinates to include. (default=0)
 
     Returns
     -------
@@ -84,14 +107,18 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     drange = mm_test.define_range()
 
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='100S',
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
+                                               freq=sample_rate,
                                                start_time=start_time)
-    # TODO(#1094): Remove in pysat 3.2.0
-    if malformed_index:
-        # Warn that kwarg is deprecated and set new kwargs.
-        mm_test._warn_malformed_kwarg()
-        non_monotonic_index = True
-        non_unique_index = True
+
+    # Specify the date tag locally and determine the desired date range
+    pds_offset = dt.timedelta(hours=12)
+    if sim_multi_file_right:
+        root_date = root_date or _test_dates[''][''] + pds_offset
+    elif sim_multi_file_left:
+        root_date = root_date or _test_dates[''][''] - pds_offset
+    else:
+        root_date = root_date or _test_dates['']['']
 
     if non_monotonic_index:
         index = mm_test.non_monotonic_index(index)
@@ -106,7 +133,7 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     # the root start a measurement is and use that info to create a signal
     # that is continuous from that start. Going to presume there are 5820
     # seconds per orbit (97 minute period).
-    time_delta = dates[0] - dt.datetime(2009, 1, 1)
+    time_delta = dates[0] - root_date
 
     # MLT runs 0-24 each orbit
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
@@ -141,6 +168,13 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
     altitude = alt0 * np.ones(data['latitude'].shape)
     data['altitude'] = ((epoch_name), altitude)
 
+    # Fake orbit number
+    fake_delta = dates[0] - (_test_dates[''][''] - pds.DateOffset(years=1))
+    data['orbit_num'] = ((epoch_name),
+                         mm_test.generate_fake_data(fake_delta.total_seconds(),
+                                                    uts, period=iperiod['lt'],
+                                                    cyclic=False))
+
     # Create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int).data
     long_int = (data['longitude'] / 15.).astype(int).data
@@ -165,37 +199,60 @@ def load(fnames, tag='', inst_id='', non_monotonic_index=False,
                                    dtype=np.int64))
 
     # Add dummy coords
-    data.coords['x'] = (('x'), np.arange(17))
-    data.coords['y'] = (('y'), np.arange(17))
-    data.coords['z'] = (('z'), np.arange(15))
+    data.coords['x'] = (('x'), np.arange(7))
+    data.coords['y'] = (('y'), np.arange(7))
+    data.coords['z'] = (('z'), np.arange(5))
+
+    # Add extra time coords
+    for i in range(num_extra_time_coords):
+        ckey = 'time{:d}'.format(i)
+        tindex = data.indexes[epoch_name][:-1 * (i + 1)]
+        data.coords[ckey] = (
+            (ckey), [itime + dt.timedelta(microseconds=1 + i)
+                     for i, itime in enumerate(tindex)])
 
     # Create altitude 'profile' at each location to simulate remote data
     num = len(data['uts'])
     data['profiles'] = (
         (epoch_name, 'profile_height'),
-        data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['profile_height'] = ('profile_height', np.arange(15))
+        data['dummy3'].values[:, np.newaxis] * np.ones(
+            (num, data.coords['z'].shape[0])))
+    data.coords['profile_height'] = ('profile_height',
+                                     np.arange(len(data.coords['z'])))
 
     # Profiles that could have different altitude values
     data['variable_profiles'] = (
         (epoch_name, 'z'), data['dummy3'].values[:, np.newaxis]
-        * np.ones((num, 15)))
+        * np.ones((num, data.coords['z'].shape[0])))
     data.coords['variable_profile_height'] = (
-        (epoch_name, 'z'), np.arange(15)[np.newaxis, :] * np.ones((num, 15)))
+        (epoch_name, 'z'), np.arange(data.coords['z'].shape[0])[np.newaxis, :]
+        * np.ones((num, data.coords['z'].shape[0])))
 
     # Create fake image type data, projected to lat / lon at some location
     # from satellite.
     data['images'] = ((epoch_name, 'x', 'y'),
                       data['dummy3'].values[
-                          :, np.newaxis, np.newaxis] * np.ones((num, 17, 17)))
-    data.coords['image_lat'] = \
-        ((epoch_name, 'x', 'y'),
-         np.arange(17)[np.newaxis,
-                       np.newaxis,
-                       :] * np.ones((num, 17, 17)))
+                          :, np.newaxis, np.newaxis]
+                      * np.ones((num, data.coords['x'].shape[0],
+                                 data.coords['y'].shape[0])))
+    data.coords['image_lat'] = ((epoch_name, 'x', 'y'),
+                                np.arange(data.coords['x'].shape[0])[
+                                    np.newaxis, np.newaxis, :]
+                                * np.ones((num, data.coords['x'].shape[0],
+                                           data.coords['y'].shape[0])))
     data.coords['image_lon'] = ((epoch_name, 'x', 'y'),
-                                np.arange(17)[np.newaxis, np.newaxis,
-                                              :] * np.ones((num, 17, 17)))
+                                np.arange(data.coords['x'].shape[0])[
+                                    np.newaxis, np.newaxis, :]
+                                * np.ones((num, data.coords['x'].shape[0],
+                                           data.coords['y'].shape[0])))
+
+    # There may be data that depends on alternate time indices
+    for i in range(num_extra_time_coords):
+        alt_epoch = 'time{:d}'.format(i)
+        data['variable_profiles{:d}'.format(i)] = (
+            (alt_epoch, 'z'), np.full(shape=(data.coords[alt_epoch].shape[0],
+                                             data.coords['z'].shape[0]),
+                                      fill_value=100.0 + i))
 
     meta = mm_test.initialize_test_meta(epoch_name, data.keys())
     return data, meta

@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools", "pip >= 10"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pysat"
+version = "3.2.0"
+description = "Supports science analysis across disparate data platforms"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Russell Stoneback, et al.", email = "pysat.developers@gmail.com"},
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Scientific/Engineering :: Atmospheric Science",
+  "License :: OSI Approved :: BSD License",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: Microsoft :: Windows"
+]
+keywords = [
+  "pysat",
+  "ionosphere",
+  "atmosphere",
+  "thermosphere",
+  "magnetosphere",
+  "heliosphere",
+  "observations",
+  "models",
+  "space",
+  "satellites",
+  "analysis"
+]
+dependencies = [
+  "dask",
+  "netCDF4",
+  "numpy >= 1.12",
+  "pandas",
+  "portalocker",
+  "pytest",
+  "scipy",
+  "toolz",
+  "xarray"
+]
+
+[project.optional-dependencies]
+test = [
+  "coveralls",
+  "flake8",
+  "flake8-docstrings",
+  "hacking >= 1.0",
+  "pysatSpaceWeather<0.1.0",
+  "pytest-cov",
+  "pytest-ordering"
+]
+doc = [
+  "extras_require",
+  "ipython",
+  "m2r2",
+  "numpydoc",
+  "readthedocs-sphinx-search==0.3.2",
+  "sphinx",
+  "sphinx_rtd_theme >= 1.2.2, < 2.0.0"
+]
+
+[project.urls]
+Documentation = "https://pysat.readthedocs.io/en/latest/"
+Source = "https://github.com/pysat/pysat"
+
+[tool.coverage.report]
+omit = ["*/instruments/templates/*"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=pysat"
+markers = [
+  "all_inst",
+  "download",
+  "no_download",
+  "load_options",
+  "new_tests",
+  "first",
+  "second"
+]

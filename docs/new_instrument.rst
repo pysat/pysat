@@ -414,6 +414,9 @@ The load module method signature should appear as:
   commmonly specify the data set to be loaded
 - The :py:func:`load` routine should return a tuple with :py:attr:`data` as the
   first element and a :py:class:`pysat.Meta` object as the second element.
+  If there is no data to load, :py:attr:`data` should return an empty
+  :py:class:`pandas.DataFrame` or :py:class:`xarray.Dataset` and :py:attr:`meta`
+  should return an empty :py:class:`pysat.Meta` object.
 - For simple time-series data sets, :py:attr:`data` is a
   :py:class:`pandas.DataFrame`, column names are the data labels, rows are
   indexed by :py:class:`datetime.datetime` objects.
@@ -546,10 +549,11 @@ If provided, :py:mod:`pysat` supports the definition and use of keywords for an
 instrument module so that users may define their preferred default values. A
 custom keyword for an instrument module must be defined in each function that
 will receive that keyword argument if provided by the user. All instrument
-functions, :py:func:`init`, :py:func:`preprocess`, :py:func:`load`,
-:py:func:`clean`, :py:func:`list_files`, :py:func:`list_remote_files`, and
-:py:func:`download` support custom keywords. The same keyword may be used in
-more than one function but the same value will be passed to each.
+functions, :py:func:`init`, :py:func:`preprocess`, :py:func:`concat_data`,
+:py:func:`load`, :py:func:`clean`, :py:func:`list_files`,
+:py:func:`list_remote_files`, and :py:func:`download` support custom keywords.
+The same keyword may be used in more than one function but the same value will
+be passed to each.
 
 An example :py:func:`load` function definition with two custom keyword
 arguments.
@@ -619,6 +623,13 @@ Cleans instrument for levels supplied in inst.clean_level.
 
 ``self`` is a :py:class:`pysat.Instrument` object. :py:func:`clean` should
 modify ``self`` in-place as needed; equivalent to a custom routine.
+:py:func:`clean` is allowed to raise logger messages, warnings, and errors. If
+the routine does this, be sure to test them by assigning the necessary
+information to the :py:attr:`_clean_warn` attribute, described in
+:ref:`rst_test-clean`. :py:func:`clean` may also
+re-assign the cleaning level if appropriate. If you do this, be sure to raise a
+logging warning, so that users are aware that this change is happening and why
+the clean level they requested is not appropriate.
 
 list_remote_files
 ^^^^^^^^^^^^^^^^^
@@ -642,6 +653,25 @@ The user can search for subsets of files through optional keywords, such as:
 
     inst.remote_file_list(year=2019)
     inst.remote_file_list(year=2019, month=1, day=1)
+
+concat_data
+^^^^^^^^^^^
+
+Combines data from multiple Instruments of the same type, used internally to
+combine data from different load periods.  The default method concatonates data
+using the :py:attr:`inst.index` name.  However, some data sets have multiple
+different time indices along which data should be concatonated.  In such cases
+(e.g., TIMED-GUVI SDR-Imaging data from :py:mod:`pysatNASA`), a custom
+:py:meth:`concat_data` method must be supplied.  If available, this method
+will be used instead of the default
+:py:meth:`~pysat._instrument.Instrument.concat_data`, after the default
+method handles the prepending of the data that needs to be combined.
+
+.. code:: python
+
+   def concat_data(self, new_data, **kwargs):
+       # Perform custom concatonation here, updating self.data
+       return
 
 
 Logging
@@ -725,7 +755,7 @@ will not be present in Input/Output operations.
 The standardized :py:mod:`pysat` tests are available in
 :py:mod:`pysat.tests.instrument_test_class`. The test collection in
 test_instruments.py imports this class, collects a list of all available
-instruments (including potential :py:data:`tag`/:py:data:`inst_id`
+instruments (including potential :py:attr:`tag`/:py:attr:`inst_id`
 combinations), and runs the tests using pytestmark.  By default,
 :py:mod:`pysat` assumes that your instrument has a fully functional download
 routine, and will run an end-to-end test.  If this is not the case, see the next
@@ -736,6 +766,44 @@ section.
 
 Special Test Configurations
 ---------------------------
+
+The following test attributes may or may not be necessary for your new
+:py:class:`~pysat._instrument.Instrument`. The descriptions should provide
+insight into when and how they should be used.
+
+
+.. _rst_test-clean:
+
+Warnings in the Clean method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another important test is for warnings and the re-setting of clean levels that
+may come up when cleaning data. These may be specified using the
+:py:attr:`_clean_warn` attribute, which should point to a dictionary that has a
+list with tuples of four elements as the value. The first tuple element should
+be 'logger', 'warning', or 'error', specifying the method through which the
+warning is being reported. The second tuple element specifies either the logging
+level (as a string) or the warning/error type (e.g., ``ValueError``). The third
+tuple element provides the warning message as a string and the final element
+provides the expected clean level after running the clean routine. The list
+allows multiple types of warning messages to be tested for a given
+:py:attr:`inst_id`, :py:attr:`tag`, and :py:attr:`clean_level` combination.
+
+.. code:: python
+
+   # ------------------------------------------
+   # Instrument test attributes
+
+   _clean_warn = {inst_id: {tag: {'dusty': [
+                                ('logger', 'WARN', "I am a warning!", 'clean'),
+                                ('warning', UserWarning,
+				 'I am a serious warning!', 'dusty'),
+                                ('error', ValueError, "I'm an error", 'dusty')]}
+	                    for tag in inst_ids[inst_id]}
+	          for inst_id in inst_ids.keys()}
+
+
+.. _rst_test-nodownload:
 
 No Download Available
 ^^^^^^^^^^^^^^^^^^^^^
@@ -846,7 +914,7 @@ but should not undergo automated download tests because it would require
 the  user to save a password in a potentially public location.  The
 :py:attr:`_password_req` flag is used to skip both the download tests and the
 download warning message tests, since a functional download routine is
-present.
+present. This flag is defaults to :py:val:`False` if not specified.
 
 .. code:: python
 
@@ -857,4 +925,29 @@ present.
    inst_ids = {'': ['Level_1', 'Level_2']}
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
-   _password_req = {'': {'Level_1': False}}
+   _password_req = {'': {'Level_1': True}}
+
+Updates to Instrument Suite Tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes new standard tests are added to pysat that ensure all data handling
+features work as expected throughout the ecosystem. For example, pysat 3.2.0
+adds new tests for loading multiple days at a time or using a data pad. When
+these tests require significant updates, an additional flag may be used to
+suppress these tests temporarily for specific instruments while updates are
+made to that instrument. These new tests are run by default unless specified
+using the :py:attr:`_new_tests` flag.
+
+.. code:: python
+
+   platform = 'newsat'
+   name = 'data'
+   tags = {'Level_1': 'Level 1 data, fully compliant',
+           'Level_2': 'Level 2 data, needs updates for padding'}
+   inst_ids = {'': ['Level_1', 'Level_2']}
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _new_tests = {'': {'Level_2': False}}
+
+The new tests are marked with a `@pytest.mark.new_tests` statement, and will be
+re-evaluated at each minor version release.

@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Test for instrument properties in the pysat Instrument object and methods.
 
 Note
@@ -378,7 +386,7 @@ class InstPropertyTests(object):
 
         greeting = '... listen!'
         self.testInst.hei = greeting
-        self.testInst.load(date=self.ref_time, use_header=True)
+        self.testInst.load(date=self.ref_time)
         assert self.testInst.hei == greeting
         return
 
@@ -416,15 +424,11 @@ class InstPropertyTests(object):
         """Test string output with Orbit data."""
 
         reload(pysat.instruments.pysat_testing)
-        orbit_info = {'index': 'mlt',
-                      'kind': 'local time',
+        orbit_info = {'index': 'mlt', 'kind': 'local time',
                       'period': np.timedelta64(97, 'm')}
         testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    num_samples=10,
-                                    clean_level='clean',
-                                    update_files=True,
-                                    orbit_info=orbit_info,
-                                    use_header=True)
+                                    num_samples=10, clean_level='clean',
+                                    update_files=True, orbit_info=orbit_info)
 
         self.out = testInst.__str__()
 
@@ -434,7 +438,7 @@ class InstPropertyTests(object):
         assert self.out.find('Loaded Orbit Number: 0') > 0
 
         # Activate orbits, check that message has changed
-        testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        testInst.load(self.ref_time.year, self.ref_doy)
         testInst.orbits.next()
         self.out = testInst.__str__()
         assert self.out.find('Loaded Orbit Number: 1') > 0
@@ -462,7 +466,7 @@ class InstPropertyTests(object):
     def test_str_w_load_lots_data(self):
         """Test string output with loaded data with many variables."""
 
-        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.__str__()
         assert self.out.find('Number of variables:') > 0
         assert self.out.find('...') > 0
@@ -472,7 +476,7 @@ class InstPropertyTests(object):
         """Test string output with loaded data with few (4) variables."""
 
         # Load the test data
-        self.testInst.load(self.ref_time.year, self.ref_doy, use_header=True)
+        self.testInst.load(self.ref_time.year, self.ref_doy)
 
         # Ensure the desired data variable is present and delete all others
         # 4-6 variables are needed to test all lines; choose the lesser limit
@@ -548,7 +552,7 @@ class InstPropertyTests(object):
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             # Trigger load functions
-            self.testInst.load(date=self.ref_time, use_header=True)
+            self.testInst.load(date=self.ref_time)
 
             # Refresh files to trigger other functions
             self.testInst.files.refresh()
@@ -607,7 +611,7 @@ class InstPropertyTests(object):
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             # Trigger load functions
-            self.testInst.load(date=self.ref_time, use_header=True)
+            self.testInst.load(date=self.ref_time)
 
             # Refresh files to trigger other functions
             self.testInst.files.refresh()
@@ -693,7 +697,7 @@ class InstPropertyTests(object):
         [({'inst_id': 'invalid_inst_id'},
           "'invalid_inst_id' is not one of the supported inst_ids."),
          ({'inst_id': '', 'tag': 'bad_tag'},
-          "'bad_tag' is not one of the supported tags.")])
+          "'bad_tag' is not one of the supported tags")])
     def test_error_bad_instrument_object(self, kwargs, estr):
         """Ensure instantiation with invalid inst_id or tag errors.
 

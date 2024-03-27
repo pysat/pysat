@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Unit tests for the `custom_attach` methods for `pysat.Instrument`."""
 
 import copy
@@ -43,7 +51,7 @@ class TestLogging(object):
 
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
                                          clean_level='clean',
-                                         update_files=False, use_header=True)
+                                         update_files=False)
         self.out = ''
         return
 
@@ -73,9 +81,7 @@ class TestBasics(object):
         """Set up the unit test environment for each method."""
 
         self.testInst = pysat.Instrument('pysat', 'testing', num_samples=10,
-                                         clean_level='clean',
-                                         update_files=True,
-                                         use_header=True)
+                                         clean_level='clean', update_files=True)
         self.load_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.testInst.load(date=self.load_date)
         self.custom_args = [2]
@@ -235,10 +241,9 @@ class TestBasicsXarray(TestBasics):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
-                                         num_samples=10, clean_level='clean',
-                                         use_header=True)
-        self.load_date = pysat.instruments.pysat_testing_xarray._test_dates
+        self.testInst = pysat.Instrument('pysat', 'ndtesting',
+                                         num_samples=10, clean_level='clean')
+        self.load_date = pysat.instruments.pysat_ndtesting._test_dates
         self.load_date = self.load_date['']['']
         self.testInst.load(date=self.load_date)
         self.custom_args = [2]
@@ -259,8 +264,7 @@ class TestConstellationBasics(object):
 
         self.testConst = pysat.Constellation(instruments=[
             pysat.Instrument('pysat', 'testing', num_samples=10,
-                             clean_level='clean', update_files=True,
-                             use_header=True)
+                             clean_level='clean', update_files=True)
             for i in range(5)])
         self.load_date = pysat.instruments.pysat_testing._test_dates['']['']
         self.testConst.load(date=self.load_date)
@@ -371,8 +375,7 @@ class TestConstellationBasics(object):
                   {'function': mult_data, 'args': self.custom_args}]
         testConst2 = pysat.Constellation(instruments=[
             pysat.Instrument('pysat', 'testing', num_samples=10,
-                             clean_level='clean', custom=custom,
-                             use_header=True)
+                             clean_level='clean', custom=custom)
             for i in range(5)])
 
         # Ensure all instruments within both constellations have the same
@@ -400,7 +403,7 @@ class TestConstellationBasics(object):
                    'apply_inst': False}]
         testConst2 = pysat.Constellation(
             instruments=[pysat.Instrument('pysat', 'testing', num_samples=10,
-                                          clean_level='clean', use_header=True)
+                                          clean_level='clean')
                          for i in range(5)], custom=custom)
 
         # Ensure both constellations have the same custom_* attributes

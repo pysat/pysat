@@ -1,6 +1,6 @@
 # Description
 
-Addresses # (issue)
+Addresses #(issue)
 
 Please include a summary of the change and which issue is fixed. Please also
 include relevant motivation and context. List any dependencies that are required
@@ -23,7 +23,10 @@ instructions so we can reproduce. Please also list any relevant details for
 your test configuration
 
 - Test A
-- Test B
+
+```
+Test B
+```
 
 **Test Configuration**:
 * Operating system: Hal
@@ -35,6 +38,7 @@ your test configuration
 - [ ] Make sure you are merging into the ``develop`` (not ``main``) branch
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my own code
+- [ ] I have linted the files updated in this pull request
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
@@ -42,6 +46,8 @@ your test configuration
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
 - [ ] Add a note to ``CHANGELOG.md``, summarizing the changes
+- [ ] Update zenodo.json file for new code contributors
 
-If this is a release PR, replace the first item of the above checklist with the release
-checklist on the wiki: https://github.com/pysat/pysat/wiki/Checklist-for-Release
+If this is a release PR, replace the first item of the above checklist with the
+release checklist on the wiki:
+https://github.com/pysat/pysat/wiki/Checklist-for-Release

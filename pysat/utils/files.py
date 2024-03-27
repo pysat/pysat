@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Utilities for file management and parsing file names."""
 
@@ -19,6 +22,135 @@ from pysat.utils._core import available_instruments
 from pysat.utils._core import listify
 from pysat.utils.time import create_datetime_index
 
+
+# Define hidden support functions
+
+def _init_parse_filenames(files, format_str):
+    """Set the initial output for the file parsing functions.
+
+    Parameters
+    ----------
+    files : list
+        List of files, typically provided by
+        `pysat.utils.files.search_local_system_formatted_filename`.
+    format_str : str
+        Provides the naming pattern of the instrument files and the
+        locations of date information so an ordered list may be produced.
+        Supports all provided string formatting codes though only 'year',
+        'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
+        and 'cycle' will be used for time and sorting information. For example,
+        `instrument-{year:4d}_{month:02d}-{day:02d}_v{version:02d}.cdf`, or
+        `*-{year:4d}_{month:02d}hithere{day:02d}_v{version:02d}.cdf`
+
+    Returns
+    -------
+    stored : collections.OrderedDict
+        Information parsed from filenames that includes: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
+        well as any other user provided template variables. Also
+        includes `files`, an input list of files, and `format_str`.
+    search_dict : dict
+        An output dict with the following keys:
+        - 'search_string' (format_str with data to be parsed replaced with ?)
+        - 'keys' (keys for data to be parsed)
+        - 'type' (type of data expected for each key to be parsed)
+        - 'lengths' (string length for data to be parsed)
+        - 'string_blocks' (the filenames are broken into fixed width segments).
+
+    See Also
+    --------
+    pysat.utils.files.parse_fixed_width_filenames
+    pysat.utils.files.parse_delimited_filenames
+    pysat.utils.files.construct_searchstring_from_format
+
+    """
+    # Create storage for data to be parsed from filenames
+    ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
+                    'version', 'revision', 'cycle']
+    stored = collections.OrderedDict({kk: None for kk in ordered_keys})
+
+    # Only define search dictionary if there are files to search
+    if len(files) == 0:
+        # Include keys that should only be added at the end, if there are no
+        # files to process
+        stored['format_str'] = format_str
+        stored['files'] = []
+        search_dict = dict()
+    else:
+        # Parse format string to get information needed to parse filenames
+        search_dict = construct_searchstring_from_format(format_str,
+                                                         wildcard=False)
+
+        # Add non-standard keys
+        for key in search_dict['keys']:
+            if key not in stored:
+                stored[key] = None
+
+    return stored, search_dict
+
+
+def _finish_parse_filenames(stored, files, format_str, bad_files):
+    """Reshape and finalize the output for the file parsing functions.
+
+    Parameters
+    ----------
+    stored : collections.OrderedDict
+        Information parsed from filenames that includes: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
+        well as any other user provided template variables.
+    files : list
+        List of files, typically provided by
+        `pysat.utils.files.search_local_system_formatted_filename`.
+    format_str : str
+        Provides the naming pattern of the instrument files and the
+        locations of date information so an ordered list may be produced.
+        Supports all provided string formatting codes though only 'year',
+        'month', 'day', 'hour', 'minute', 'second', 'version', 'revision',
+        and 'cycle' will be used for time and sorting information. For example,
+        `instrument-{year:4d}_{month:02d}-{day:02d}_v{version:02d}.cdf`, or
+        `*-{year:4d}_{month:02d}hithere{day:02d}_v{version:02d}.cdf`
+    bad_files : list
+        List of indices for files with names that do not fit the requested
+        format, or an empty list if all are good.
+
+    Returns
+    -------
+    stored : collections.OrderedDict
+        Information parsed from filenames that includes: 'year', 'month', 'day',
+        'hour', 'minute', 'second', 'version', 'revision', and 'cycle', as
+        well as any other user provided template variables. Also
+        includes `files`, an input list of files, and `format_str`.
+
+    See Also
+    --------
+    pysat.utils.files.parse_fixed_width_filenames
+    pysat.utils.files.parse_delimited_filenames
+
+    """
+    # Change the bad file index list to a good file index list
+    good_files = [i for i in range(len(files)) if i not in bad_files]
+
+    # Convert to numpy arrays
+    for key in stored.keys():
+        if stored[key] is not None:
+            # Get the data type
+            dtype = type(stored[key][0])
+
+            # Cast the good data as an array of the desired type and select
+            # only the values with good files
+            stored[key] = np.array(stored[key])[good_files].astype(dtype)
+
+    # Include files and file format in output
+    stored['format_str'] = format_str
+    if len(bad_files) == 0:
+        stored['files'] = files
+    else:
+        stored['files'] = list(np.array(files)[good_files])
+
+    return stored
+
+
+# Define file utility functions
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
     """Create a Files pandas Series of filenames from a formatted dict.
@@ -165,23 +297,10 @@ def parse_fixed_width_filenames(files, format_str):
     """
 
     # Create storage for data to be parsed from filenames
-    ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
-                    'version', 'revision', 'cycle']
-    stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
+    stored, search_dict = _init_parse_filenames(files, format_str)
 
     if len(files) == 0:
-        stored['files'] = []
-        # Include format string as convenience for later functions
-        stored['format_str'] = format_str
         return stored
-
-    # Parse format string to get information needed to parse filenames
-    search_dict = construct_searchstring_from_format(format_str)
-
-    # Add non-standard keys
-    for key in search_dict['keys']:
-        if key not in stored:
-            stored[key] = []
 
     # Determine the locations the date/version information in a filename is
     # stored and use these indices to slice out date from filenames.
@@ -201,6 +320,7 @@ def parse_fixed_width_filenames(files, format_str):
                    np.array(end_key, dtype=np.int64) - max_len]
 
     # Need to parse out dates for datetime index
+    bad_files = []
     for i, temp in enumerate(files):
         for j, key in enumerate(search_dict['keys']):
             if key_str_idx[1][j] == 0:
@@ -208,25 +328,23 @@ def parse_fixed_width_filenames(files, format_str):
                 val = temp[key_str_idx[0][j]:]
             else:
                 val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
-            stored[key].append(val)
 
-    # Convert to numpy arrays
-    for key in stored.keys():
-        if len(stored[key]) == 0:
-            stored[key] = None
-        else:
-            try:
-                # Assume key value is numeric integer
-                stored[key] = np.array(stored[key]).astype(np.int64)
-            except ValueError:
-                # Store key value as string
-                stored[key] = np.array(stored[key])
+            # Cast the data value, if possible
+            if search_dict['type'][j] is not None:
+                try:
+                    val = search_dict['type'][j](val)
+                except ValueError:
+                    # The type is wrong, exclude this file
+                    bad_files.append(i)
 
-    # Include files in output
-    stored['files'] = files
+            # Save the parsed variable for this key and file
+            if stored[key] is None:
+                stored[key] = [val]
+            else:
+                stored[key].append(val)
 
-    # Include format string as convenience for later functions
-    stored['format_str'] = format_str
+    # Convert to numpy arrays and add additional information to output
+    stored = _finish_parse_filenames(stored, files, format_str, bad_files)
 
     return stored
 
@@ -281,25 +399,10 @@ def parse_delimited_filenames(files, format_str, delimiter):
     """
 
     # Create storage for data to be parsed from filenames
-    ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
-                    'version', 'revision', 'cycle']
-    stored = collections.OrderedDict({kk: None for kk in ordered_keys})
+    stored, search_dict = _init_parse_filenames(files, format_str)
 
-    # Exit early if there are no files
     if len(files) == 0:
-        stored['files'] = []
-
-        # Include format string as convenience for later functions
-        stored['format_str'] = format_str
         return stored
-
-    # Parse format string to get information needed to parse filenames
-    search_dict = construct_searchstring_from_format(format_str, wildcard=False)
-
-    # Add non-standard keys
-    for key in search_dict['keys']:
-        if key not in stored:
-            stored[key] = None
 
     # Going to parse the string on the delimiter. It is possible that other
     # regions have the delimiter but aren't going to be parsed out.
@@ -340,7 +443,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
         if stored[key] is None:
             stored[key] = []
 
-    for temp in files:
+    bad_files = list()
+    for ifile, temp in enumerate(files):
         split_name = temp.split(delimiter)
         idx = 0
         loop_split_idx = split_idx
@@ -352,6 +456,15 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     val = loop_sname[sidx:sidx + search_dict['lengths'][idx]]
                     loop_sname = loop_sname[sidx + search_dict['lengths'][idx]:]
 
+                    # Cast the value as the desired data type, if not possible
+                    # identify a bad file
+                    if search_dict['type'][idx] is not None:
+                        try:
+                            val = search_dict['type'][idx](val)
+                        except ValueError:
+                            # The type is wrong, exclude this file
+                            bad_files.append(ifile)
+
                     # Store parsed info and increment key index
                     stored[search_dict['keys'][idx]].append(val)
                     idx += 1
@@ -361,21 +474,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
                     loop_split_idx = loop_split_idx[j + 1:]
                     break
 
-    # Convert to numpy arrays
-    for key in stored.keys():
-        if stored[key] is not None:
-            try:
-                # Assume key value is numeric integer
-                stored[key] = np.array(stored[key]).astype(np.int64)
-            except ValueError:
-                # Store key value as string
-                stored[key] = np.array(stored[key])
-
-    # Include files in output
-    stored['files'] = files
-
-    # Include format string as convenience for later functions
-    stored['format_str'] = format_str
+    # Convert to numpy arrays and add additional information to output
+    stored = _finish_parse_filenames(stored, files, format_str, bad_files)
 
     return stored
 
@@ -395,7 +495,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         `instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf`
     wildcard : bool
         If True, replaces each '?' sequence that would normally
-        be returned with a single '*'.
+        be returned with a single '*'. (default=False)
 
     Returns
     -------
@@ -403,6 +503,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         An output dict with the following keys:
         - 'search_string' (format_str with data to be parsed replaced with ?)
         - 'keys' (keys for data to be parsed)
+        - 'type' (type of data expected for each key to be parsed)
         - 'lengths' (string length for data to be parsed)
         - 'string_blocks' (the filenames are broken into fixed width segments).
 
@@ -423,10 +524,18 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     This is the first function employed by `pysat.Files.from_os`.
 
+    If no type is supplied for datetime parameters, int will be used.
+
     """
 
-    out_dict = {'search_string': '', 'keys': [], 'lengths': [],
+    out_dict = {'search_string': '', 'keys': [], 'type': [], 'lengths': [],
                 'string_blocks': []}
+    type_dict = {'s': str, 'b': np.int64, 'c': np.int64, 'd': np.int64,
+                 'o': np.int64, 'e': np.float64, 'E': np.float64,
+                 'f': np.float64, 'F': np.float64, 'g': np.float64,
+                 'G': np.float64}
+    int_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
+                'microsecond']
 
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
@@ -445,6 +554,17 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         if snip[1] is not None:
             out_dict['keys'].append(snip[1])
 
+            if snip[2] is None:
+                out_dict['type'].append(snip[2])
+            else:
+                snip_type = snip[2][-1]
+                if snip_type in type_dict.keys():
+                    out_dict['type'].append(type_dict[snip_type])
+                elif snip[1] in int_keys:
+                    out_dict['type'].append(np.int64)
+                else:
+                    out_dict['type'].append(None)
+
             # Try and determine formatting width
             fwidths = re.findall(r'\d+', snip[2])
 
@@ -462,10 +582,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                             out_dict['search_string'] += '*'
                         break
             else:
-                estr = ''.join(["Couldn't determine formatting width. ",
-                                "This may be due to the use of unsupported ",
-                                "wildcard characters."])
-                raise ValueError(estr)
+                raise ValueError(
+                    ''.join(["Couldn't determine formatting width, check ",
+                             "formatting length specification (e.g., ",
+                             "{day:03d} for day of year)."]))
 
     return out_dict
 

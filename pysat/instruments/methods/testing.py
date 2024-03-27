@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Standard functions for the test instruments."""
 
 import datetime as dt
@@ -7,6 +15,7 @@ import numpy as np
 import pandas as pds
 import time
 import warnings
+import xarray as xr
 
 import pysat
 from pysat.utils import NetworkLock
@@ -16,8 +25,7 @@ ackn_str = ' '.join(("Test instruments provided through the pysat project.",
                      "https://www.github.com/pysat/pysat"))
 
 # Load up citation information
-with pysat.utils.NetworkLock(os.path.join(pysat.here, 'citation.txt'), 'r') as \
-        locked_file:
+with pysat.utils.NetworkLock(pysat.citation, 'r') as locked_file:
     refs = locked_file.read()
 
 
@@ -56,16 +64,99 @@ def clean(self, test_clean_kwarg=None):
     Parameters
     ----------
     test_clean_kwarg : any
-        Testing keyword (default=None)
+        Testing keyword. If these keywords contain 'logger', 'warning', or
+        'error', the message entered as the value to that key will be returned
+        as a logging.WARNING, UserWarning, or ValueError, respectively. If the
+        'change' kwarg is set, the clean level will be changed to the specified
+        value. (default=None)
 
     """
 
     self.test_clean_kwarg = test_clean_kwarg
 
+    if isinstance(test_clean_kwarg, dict):
+        if 'change' in test_clean_kwarg.keys():
+            self.clean_level = test_clean_kwarg['change']
+
+        if 'logger' in test_clean_kwarg.keys():
+            pysat.logger.warning(test_clean_kwarg['logger'])
+
+        if 'warning' in test_clean_kwarg.keys():
+            warnings.warn(test_clean_kwarg['warning'], UserWarning)
+
+        if 'error' in test_clean_kwarg.keys():
+            raise ValueError(test_clean_kwarg['error'])
+
     return
 
 
-# Optional method
+# Optional methods
+def concat_data(self, new_data, **kwargs):
+    """Concatonate data to self.data for extra time dimensions.
+
+    Parameters
+    ----------
+    new_data : xarray.Dataset or list of such objects
+        New data objects to be concatonated
+    **kwargs : dict
+        Optional keyword arguments passed to xr.concat
+
+    Note
+    ----
+    Expects the extra time dimensions to have a variable name that starts
+    with 'time', and no other dimensions to have a name that fits this format.
+
+    """
+    # Establish the time dimensions, ensuring the standard variable is included
+    # whether or not it is treated as a variable
+    time_dims = [self.index.name]
+    time_dims.extend([var for var in self.variables if var.find('time') == 0
+                      and var != self.index.name])
+
+    # Concatonate using the appropriate method for the number of time
+    # dimensions
+    if len(time_dims) == 1:
+        # There is only one time dimensions, but other dimensions may
+        # need to be adjusted
+        new_data = pysat.utils.coords.expand_xarray_dims(
+            new_data, self.meta, exclude_dims=time_dims)
+
+        # Specify the dimension, if not otherwise specified
+        if 'dim' not in kwargs:
+            kwargs['dim'] = self.index.name
+
+        self.data = xr.concat(new_data, **kwargs)
+    else:
+        inners = None
+        for ndata in new_data:
+            # Separate into inner datasets
+            inner_keys = {dim: [key for key in ndata.keys()
+                                if dim in ndata[key].dims] for dim in time_dims}
+            inner_dat = {dim: ndata.get(inner_keys[dim]) for dim in time_dims}
+
+            # Add 'single_var's into 'time' dataset to keep track
+            sv_keys = [val.name for val in ndata.values()
+                       if 'single_var' in val.dims]
+            singlevar_set = ndata.get(sv_keys)
+            inner_dat[self.index.name] = xr.merge([inner_dat[self.index.name],
+                                                   singlevar_set])
+
+            # Concatenate along desired dimension with previous data
+            if inners is None:
+                # No previous data, assign the data separated by dimension
+                inners = dict(inner_dat)
+            else:
+                # Concatenate with existing data
+                inners = {dim: xr.concat([inners[dim], inner_dat[dim]],
+                                         dim=dim) for dim in time_dims}
+
+        # Combine all time dimensions
+        if inners is not None:
+            data_list = [inners[dim] for dim in time_dims]
+            self.data = xr.merge(data_list)
+    return
+
+
 def preprocess(self, test_preprocess_kwarg=None):
     """Perform standard preprocessing.
 
@@ -79,12 +170,12 @@ def preprocess(self, test_preprocess_kwarg=None):
         Testing keyword (default=None)
 
     """
-
     self.test_preprocess_kwarg = test_preprocess_kwarg
 
     return
 
 
+# Utility functions
 def initialize_test_meta(epoch_name, data_keys):
     """Initialize meta data for test instruments.
 
@@ -163,41 +254,16 @@ def initialize_test_meta(epoch_name, data_keys):
                             'Note the value_max is largest netCDF4 supports, ',
                             'but is lower than actual 64-bit int limit.'])}
 
-    # Children metadata required for 2D pandas.
-    # TODO(#789): Delete after removal of Meta children.
-    series_profile_meta = pysat.Meta()
-    series_profile_meta['series_profiles'] = {'desc': 'Testing series data.',
-                                              'value_min': 0,
-                                              'value_max': np.inf,
-                                              'units': 'm/s'}
-    meta['series_profiles'] = {'meta': series_profile_meta,
-                               'value_min': 0., 'value_max': 25., 'units': 'km',
-                               'fill': np.nan,
-                               'desc': ''.join(['Testing series profiles ',
-                                                'indexed by float.'])}
+    # Optional and standard metadata for xarray
+    for var in data_keys:
+        if var.find('variable_profiles') == 0:
+            meta[var] = {'desc': 'Profiles with variable altitude.'}
 
-    # Children metadata required for 2D pandas.
-    # TODO(#789): Delete after removal of Meta children.
-    data_types = {'density': float, 'fraction': float, 'alt_profiles': float,
-                  'variable_profiles': float, 'profile_height': int,
-                  'variable_profile_height': int, 'images': int, 'x': int,
-                  'y': int, 'z': int, 'image_lat': float, 'image_lon': float}
-    alt_profile_meta = pysat.Meta()
-    alt_profile_meta['density'] = {'desc': 'Simulated density values.',
-                                   'units': 'Log N/cc',
-                                   'value_min': 0, 'value_max': np.inf}
-    alt_profile_meta['fraction'] = {'value_min': 0., 'value_max': 1.,
-                                    'desc': ''.join(['Simulated fractional O+ ',
-                                                     'composition.'])}
-    meta['alt_profiles'] = {'value_min': 0., 'value_max': 25., 'fill': np.nan,
-                            'desc': ''.join([
-                                'Testing profile multi-dimensional data ',
-                                'indexed by float.']),
-                            'units': 'km',
-                            'meta': alt_profile_meta}
+            if len(var) > 17:
+                tvar = 'time{:s}'.format(var[17:])
+                meta[tvar] = {'desc': 'Additional time variable.'}
 
     # Standard metadata required for xarray.
-    meta['variable_profiles'] = {'desc': 'Profiles with variable altitude.'}
     meta['profile_height'] = {'value_min': 0, 'value_max': 14, 'fill': -1,
                               'desc': 'Altitude of profile data.'}
     meta['variable_profile_height'] = {'long_name': 'Variable Profile Height'}
@@ -207,13 +273,13 @@ def initialize_test_meta(epoch_name, data_keys):
                       'notes': 'function of image_lat and image_lon'}
     meta['x'] = {'desc': 'x-value of image pixel',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 17, 'fill': -1}
+                 'value_min': 0, 'value_max': 7, 'fill': -1}
     meta['y'] = {'desc': 'y-value of image pixel',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 17, 'fill': -1}
+                 'value_min': 0, 'value_max': 7, 'fill': -1}
     meta['z'] = {'desc': 'z-value of profile height',
                  'notes': 'Dummy Variable',
-                 'value_min': 0, 'value_max': 15, 'fill': -1}
+                 'value_min': 0, 'value_max': 5, 'fill': -1}
     meta['image_lat'] = {'desc': 'Latitude of image pixel',
                          'notes': 'Dummy Variable',
                          'value_min': -90., 'value_max': 90.}
@@ -225,8 +291,6 @@ def initialize_test_meta(epoch_name, data_keys):
     for var in meta.keys():
         if var not in data_keys:
             meta.drop(var)
-            if var in meta.keys_nD():
-                meta.ho_data.pop(var)
 
     return meta
 
@@ -713,13 +777,3 @@ def non_unique_index(index):
     new_index = pds.to_datetime(new_index)
 
     return new_index
-
-
-def _warn_malformed_kwarg():
-    """Warn user that kwarg has been deprecated."""
-
-    dstr = ' '.join(['The kwarg malformed_index has been deprecated and',
-                     'will be removed in pysat 3.2.0+. Please use',
-                     'non_monotonic_index or non_unique_index to specify',
-                     'desired behaviour.'])
-    warnings.warn(dstr, DeprecationWarning, stacklevel=2)

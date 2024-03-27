@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Unit tests for the Constellation class."""
 
@@ -43,8 +46,7 @@ class TestConstellationInitReg(TestWithRegistration):
 
         # Initialize the Constellation using the desired kwargs
         const = pysat.Constellation(
-            **{ikey: ivals[i] for i, ikey in enumerate(ikeys)},
-            use_header=True)
+            **{ikey: ivals[i] for i, ikey in enumerate(ikeys)})
 
         # Test that the appropriate number of Instruments were loaded. Each
         # fake Instrument has 5 tags and 1 inst_id.
@@ -72,7 +74,7 @@ class TestConstellationInitReg(TestWithRegistration):
         # Load the Constellation and capture log output
         with caplog.at_level(logging.WARNING, logger='pysat'):
             const = pysat.Constellation(platforms=['Executor', 'platname1'],
-                                        tags=[''], use_header=True)
+                                        tags=[''])
 
         # Test the partial Constellation initialization
         assert len(const.instruments) == 2
@@ -164,7 +166,7 @@ class TestConstellationInit(object):
         """Test Constellation iteration through instruments attribute."""
 
         self.in_kwargs['const_module'] = None
-        self.const = pysat.Constellation(**self.in_kwargs, use_header=True)
+        self.const = pysat.Constellation(**self.in_kwargs)
         tst_get_inst = self.const[:]
         pysat.utils.testing.assert_lists_equal(self.instruments, tst_get_inst)
         return
@@ -173,7 +175,7 @@ class TestConstellationInit(object):
         """Test Constellation string output with instruments loaded."""
 
         self.in_kwargs['const_module'] = None
-        self.const = pysat.Constellation(**self.in_kwargs, use_header=True)
+        self.const = pysat.Constellation(**self.in_kwargs)
         out_str = self.const.__repr__()
 
         assert out_str.find("Constellation(instruments") >= 0
@@ -183,7 +185,7 @@ class TestConstellationInit(object):
         """Test Constellation string output with instruments loaded."""
 
         self.in_kwargs['const_module'] = None
-        self.const = pysat.Constellation(**self.in_kwargs, use_header=True)
+        self.const = pysat.Constellation(**self.in_kwargs)
         out_str = self.const.__str__()
 
         assert out_str.find("pysat Constellation ") >= 0
@@ -216,7 +218,7 @@ class TestConstellationInit(object):
 
         self.in_kwargs["common_index"] = common_index
         self.const = pysat.Constellation(**self.in_kwargs)
-        self.const.load(date=self.ref_time, use_header=True)
+        self.const.load(date=self.ref_time)
         out_str = self.const.__str__()
 
         assert out_str.find("pysat Constellation ") >= 0
@@ -239,7 +241,7 @@ class TestConstellationInit(object):
 
         # Add the custom function
         self.const.custom_attach(double_mlt, at_pos='end')
-        self.const.load(date=self.ref_time, use_header=True)
+        self.const.load(date=self.ref_time)
 
         # Test the added value
         for inst in self.const:
@@ -255,7 +257,7 @@ class TestConstellationFunc(object):
         """Set up the unit test environment for each method."""
 
         self.inst = list(constellations.testing.instruments)
-        self.const = pysat.Constellation(instruments=self.inst, use_header=True)
+        self.const = pysat.Constellation(instruments=self.inst)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
         self.attrs = ["platforms", "names", "tags", "inst_ids", "instruments",
                       "bounds", "empty", "empty_partial", "index_res",
@@ -342,7 +344,7 @@ class TestConstellationFunc(object):
         """Test the status of the empty flag for partially loaded data."""
 
         self.const = pysat.Constellation(
-            const_module=constellations.testing_partial, use_header=True)
+            const_module=constellations.testing_partial)
         self.const.load(date=self.ref_time)
         assert self.const.empty_partial
         assert not self.const.empty
@@ -352,7 +354,7 @@ class TestConstellationFunc(object):
         """Test the alt status of the empty flag for partially loaded data."""
 
         self.const = pysat.Constellation(
-            const_module=constellations.testing_partial, use_header=True)
+            const_module=constellations.testing_partial)
         self.const.load(date=self.ref_time)
         assert not self.const._empty(all_inst=False)
         return
@@ -361,7 +363,7 @@ class TestConstellationFunc(object):
         """Test the status of the empty flag for loaded data."""
 
         # Load data and test the status flag
-        self.const.load(date=self.ref_time, use_header=True)
+        self.const.load(date=self.ref_time)
         assert not self.const.empty
         return
 
@@ -372,7 +374,7 @@ class TestConstellationFunc(object):
 
         # Test the attribute with loaded data
         self.const = pysat.Constellation(instruments=self.inst, **ikwarg)
-        self.const.load(date=self.ref_time, use_header=True)
+        self.const.load(date=self.ref_time)
         assert isinstance(self.const.index, pds.Index)
         assert self.const.index[0] == self.ref_time
 
@@ -394,7 +396,7 @@ class TestConstellationFunc(object):
         """Test the date property when no data is loaded."""
 
         # Test the attribute with loaded data
-        self.const.load(date=self.ref_time, use_header=True)
+        self.const.load(date=self.ref_time)
 
         assert self.const.date == self.ref_time
         return
@@ -403,7 +405,7 @@ class TestConstellationFunc(object):
         """Test the variables property when no data is loaded."""
 
         # Test the attribute with loaded data
-        self.const.load(date=self.ref_time, use_header=True)
+        self.const.load(date=self.ref_time)
 
         assert len(self.const.variables) > 0
         assert 'uts_pysat_testing' in self.const.variables
@@ -478,9 +480,6 @@ class TestConstellationFunc(object):
         testing.assert_lists_equal(self.dims, list(out_inst.data.dims.keys()))
         testing.assert_list_contains(self.dims,
                                      list(out_inst.data.coords.keys()))
-        testing.assert_list_contains(['variable_profile_height', 'image_lon',
-                                      'image_lat'],
-                                     list(out_inst.data.coords.keys()))
 
         for cinst in self.const.instruments:
             for var in cinst.variables:
@@ -504,10 +503,9 @@ class TestConstellationFunc(object):
         """
         # Redefine the Instrument and constellation
         self.inst = pysat.Instrument(
-            inst_module=pysat.instruments.pysat_testing, use_header=True,
-            pad=pds.DateOffset(hours=1), num_samples=10)
-        self.const = pysat.Constellation(instruments=[self.inst],
-                                         use_header=True)
+            inst_module=pysat.instruments.pysat_testing, num_samples=10,
+            pad=pds.DateOffset(hours=1))
+        self.const = pysat.Constellation(instruments=[self.inst])
 
         # Load the data
         self.inst.load(date=self.ref_time)
@@ -542,11 +540,11 @@ class TestConstellationFunc(object):
         pad = pds.DateOffset(hours=1)
         self.inst = [
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             use_header=True, pad=pad, num_samples=10),
+                             pad=pad, num_samples=10),
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             use_header=True, pad=2 * pad,
-                             clean_level=clean_level, num_samples=10)]
-        self.const = pysat.Constellation(instruments=self.inst, use_header=True)
+                             pad=2 * pad, clean_level=clean_level,
+                             num_samples=10)]
+        self.const = pysat.Constellation(instruments=self.inst)
 
         # Load the Instrument and Constellation data
         self.inst[-1].load(date=self.ref_time)
@@ -576,4 +574,92 @@ class TestConstellationFunc(object):
         testing.assert_lists_equal(list(out_inst.index),
                                    list(self.inst[1].index))
 
+        return
+
+    @pytest.mark.parametrize("method", ["del", "drop"])
+    def test_delitem_all_inst(self, method):
+        """Test Constellation deletion of data variables from all instruments.
+
+        Parameters
+        ----------
+        method : str
+            String specifying the deletion method
+
+        """
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        # Delete the UTS data from all instruments
+        dvar = "uts"
+        if method == "del":
+            del self.const[dvar]
+        else:
+            self.const.drop(dvar)
+
+        # Test that this variable is gone from all Instruments
+        for inst in self.const.instruments:
+            assert dvar not in inst.variables
+
+        # Test that the constellation variable list has been updated
+        for var in self.const.variables:
+            assert var.find(dvar) != 0
+
+        return
+
+    @pytest.mark.parametrize("method", ["del", "drop"])
+    def test_delitem_one_inst(self, method):
+        """Test Constellation deletion of data variables from one instrument.
+
+        Parameters
+        ----------
+        method : str
+            String specifying the deletion method
+
+        """
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        # Delete the UTS data from the pysat testing instrument
+        dvar = "uts_pysat_testing"
+        if method == "del":
+            del self.const[dvar]
+        else:
+            self.const.drop(dvar)
+
+        # Test that this variable is gone from only the desired Instrument
+        for inst in self.const.instruments:
+            if inst.platform == "pysat" and inst.name == "testing":
+                assert "uts" not in inst.variables
+            else:
+                assert "uts" in inst.variables
+
+        # Test that the constellation variable list has been updated
+        assert dvar not in self.const.variables
+
+        return
+
+    def test_bad_var_drop(self):
+        """Check for error when deleting absent data variable."""
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        # Test that the correct error is raised
+        testing.eval_bad_input(self.const.drop, KeyError,
+                               "not found in Constellation",
+                               input_args=["not_a_data_variable"])
+        return
+
+    def test_partial_bad_var_drop(self, caplog):
+        """Check for log warning when deleting present and absent variables."""
+        # Load the Constellation data
+        self.const.load(date=self.ref_time)
+
+        dvars = [self.const.variables[0], "not_a_data_var"]
+
+        # Test that the correct warning is raised
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.const.drop(dvars)
+
+        captured = caplog.text
+        assert captured.find("not found in Constellation") > 0
         return

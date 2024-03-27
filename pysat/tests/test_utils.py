@@ -2,10 +2,12 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Tests the pysat utils core functions."""
 
-import contextlib
 from importlib import reload
 import inspect
 import numpy as np
@@ -14,7 +16,6 @@ import portalocker
 import pytest
 import shutil
 import tempfile
-import warnings
 
 import pysat
 from pysat.tests.classes.cls_registration import TestWithRegistration
@@ -50,7 +51,7 @@ class TestUpdateFill(object):
         """
 
         # Initalize the instrument
-        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst = pysat.Instrument('pysat', name)
         inst.load(date=self.ref_time)
 
         # Ensure there are fill values to check
@@ -82,7 +83,7 @@ class TestUpdateFill(object):
         """
 
         # Initalize the instrument
-        inst = pysat.Instrument('pysat', name, use_header=True)
+        inst = pysat.Instrument('pysat', name)
         inst.load(date=self.ref_time)
 
         # Ensure there are fill values to check
@@ -412,9 +413,8 @@ class TestIfyFunctions(object):
 
         """
 
-        target = type(astrlike)
         output = pysat.utils.stringify(astrlike)
-        assert type(output) == target
+        assert type(output) is type(astrlike)
         return
 
 
@@ -480,7 +480,7 @@ class TestFmtCols(object):
                              [("ncols", 0, ZeroDivisionError,
                                "integer division or modulo by zero"),
                               ("max_num", -10, ValueError,
-                               "max() arg is an empty sequence")])
+                               "empty")])
     def test_fmt_raises(self, key, val, raise_type, err_msg):
         """Test raises appropriate Errors for bad input values.
 
@@ -624,19 +624,22 @@ class TestNetworkLock(object):
 
     def setup_method(self):
         """Set up the unit test environment."""
+        # Use a temporary directory so that the user's setup is not altered.
+        self.temp_dir = tempfile.TemporaryDirectory()
+
         # Create and write a temporary file
-        self.fname = 'temp_lock_file.txt'
+        self.fname = os.path.join(self.temp_dir.name, 'temp_lock_file.txt')
         with open(self.fname, 'w') as fh:
             fh.write('spam and eggs')
         return
 
     def teardown_method(self):
         """Clean up the unit test environment."""
-        # Remove the temporary file
-        os.remove(self.fname)
+        # Remove the temporary directory.
+        self.temp_dir.cleanup()
 
         # Delete the test class attributes
-        del self.fname
+        del self.fname, self.temp_dir
         return
 
     def test_with_timeout(self):
@@ -772,50 +775,6 @@ class TestGenerateInstList(object):
                     # combination.
                     pass
 
-        return
-
-
-class TestDeprecation(object):
-    """Unit test for deprecation warnings."""
-
-    @pytest.mark.parametrize("kwargs,msg_inds",
-                             [({'fnames': None}, [0, 1]),
-                              ({'fnames': 'no_file', 'file_format': None},
-                               [0, 2])])
-    def test_load_netcdf4(self, kwargs, msg_inds):
-        """Test deprecation warnings from load_netcdf4.
-
-        Parameters
-        ----------
-        kwargs : dict
-            Keyword arguments passed to `load_netcdf4`
-        msg_inds : list
-            List of indices indicating which warning message is expected
-
-        """
-        with warnings.catch_warnings(record=True) as war:
-            try:
-                # Generate relocation warning and file_format warning
-                utils.load_netcdf4(**kwargs)
-            except (FileNotFoundError, ValueError):
-                pass
-
-        warn_msgs = ["".join(["function moved to `pysat.utils.io`, ",
-                              "deprecated wrapper will be removed in ",
-                              "pysat 3.2.0+"]),
-                     "".join(["`fnames` as a kwarg has been deprecated, ",
-                              "must supply a string or list of strings",
-                              " in 3.2.0+"]),
-                     "".join(["`file_format` must be a string value in ",
-                              "3.2.0+, instead of None use 'NETCDF4' ",
-                              "for same behavior."])]
-
-        warn_msgs = [warn_msgs[ind] for ind in msg_inds]
-        # Ensure the minimum number of warnings were raised
-        assert len(war) >= len(warn_msgs)
-
-        # Test the warning messages, ensuring each attribute is present
-        utils.testing.eval_warnings(war, warn_msgs)
         return
 
 

@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Input/Output utilities for pysat data."""
 import copy
@@ -235,142 +238,28 @@ def add_netcdf4_standards_to_metadict(inst, in_meta_dict, epoch_name,
 
             meta_dict.update(time_meta)
 
-        if inst[var].dtype == np.dtype('O') and coltype != str:
-            # This is a Series or DataFrame, possibly with more dimensions.
-            # Series and DataFrame data must be treated differently.
-            try:
-                # Assume it is a DataFrame and get a list of subvariables
-                subvars = inst[0, var].columns
-                is_frame = True
-            except AttributeError:
-                # Data is Series of Series, which doesn't have columns.
-                subvars = [inst[0, var].name]
-                is_frame = False
+        meta_dict['Format'] = inst._get_var_type_code(coltype)
 
-            # Get the dimensions and their names
-            dims = np.shape(inst[0, var])
-            obj_dim_names = []
-            if len(dims) == 1:
-                # Pad the dimensions so that the rest of the code works
-                # for either a Series or a DataFrame.
-                dims = (dims[0], 0)
+        if not inst.pandas_format:
+            for i, dim in enumerate(list(inst[var].dims)):
+                meta_dict['Depend_{:1d}'.format(i)] = dim
+            num_dims = len(inst[var].dims)
+            if num_dims >= 2:
+                meta_dict['Display_Type'] = 'Multidimensional'
 
-            for dim in dims[:-1]:
-                # Don't need to go over last dimension value,
-                # it covers number of columns (if a DataFrame).
-                obj_dim_names.append(var)
-
-            # Set the base-level meta data.
-            meta_dict['Depend_1'] = obj_dim_names[-1]
-
-            # Cycle through each of the sub-variable, updating metadata.
-            for svar in subvars:
-                # Find the subvariable data within the main variable,
-                # checking that this is not an empty DataFrame or
-                # Series. Determine the underlying data types.
-                good_data_loc = 0
-                for idat in np.arange(len(inst.data)):
-                    if len(inst[idat, var]) > 0:
-                        good_data_loc = idat
-                        break
-
-                # Get the correct location of the sub-variable based on
-                # the object type.
-                if is_frame:
-                    good_data = inst[good_data_loc, var][svar]
-                else:
-                    good_data = inst[good_data_loc, var]
-
-                # Get subvariable information
-                _, sctype, sdflag = inst._get_data_info(good_data)
-
-                if not sdflag:
-                    # Not a datetime index
-                    smeta_dict = {'Depend_0': epoch_name,
-                                  'Depend_1': obj_dim_names[-1],
-                                  'Display_Type': 'Multidimensional',
-                                  'Format': inst._get_var_type_code(sctype),
-                                  'Var_Type': 'data'}
-                else:
-                    # Attach datetime index metadata
-                    smeta_dict = return_epoch_metadata(inst, epoch_name)
-                    smeta_dict.pop('MonoTon')
-
-                # Construct name, variable_subvariable, and store.
-                sname = '_'.join([lower_var, svar.lower()])
-                if sname in out_meta_dict:
-                    out_meta_dict[sname].update(smeta_dict)
-                else:
-                    warnings.warn(''.join(['Unable to find MetaData for ',
-                                           svar, ' subvariable of ', var]))
-                    out_meta_dict[sname] = smeta_dict
-
-                # Filter metadata
-                remove = True if sctype == str else False
-                out_meta_dict[sname] = filter_netcdf4_metadata(
-                    inst, out_meta_dict[sname], sctype, remove=remove,
-                    check_type=check_type, export_nan=export_nan, varname=sname)
-
-            # Get information on the subvar index. This information
-            # stored under primary variable name.
-            sub_index = inst[good_data_loc, var].index
-            _, coltype, datetime_flag = inst._get_data_info(sub_index)
-            meta_dict['Format'] = inst._get_var_type_code(coltype)
-
-            # Deal with index information for holding variable
-            _, index_type, index_flag = inst._get_data_info(
-                inst[good_data_loc, var].index)
-
-            # Update metadata when a datetime index found
-            if index_flag:
-                update_dict = return_epoch_metadata(inst, epoch_name)
-                update_dict.pop('MonoTon')
-                update_dict.update(meta_dict)
-            else:
-                if inst[good_data_loc, var].index.name is not None:
-                    name = inst[good_data_loc, var].index.name
-                else:
-                    name = var
-                update_dict = {inst.meta.labels.name: name}
-                update_dict.update(meta_dict)
-
-            if lower_var in out_meta_dict:
-                out_meta_dict[lower_var].update(update_dict)
-            else:
-                warnings.warn(''.join(['Unable to find MetaData for ',
-                                       var]))
-                out_meta_dict[lower_var] = update_dict
-
-            # Filter metdata for other netCDF4 requirements
-            remove = True if index_type == str else False
-            out_meta_dict[lower_var] = filter_netcdf4_metadata(
-                inst, out_meta_dict[lower_var], index_type, remove=remove,
-                check_type=check_type, export_nan=export_nan, varname=lower_var)
-
+        # Update the meta data
+        if lower_var in out_meta_dict:
+            out_meta_dict[lower_var].update(meta_dict)
         else:
-            # Dealing with 1D data or xarray format
-            meta_dict['Format'] = inst._get_var_type_code(coltype)
+            warnings.warn(''.join(['Unable to find MetaData for ',
+                                   var]))
+            out_meta_dict[lower_var] = meta_dict
 
-            if not inst.pandas_format:
-                for i, dim in enumerate(list(inst[var].dims)):
-                    meta_dict['Depend_{:1d}'.format(i)] = dim
-                num_dims = len(inst[var].dims)
-                if num_dims >= 2:
-                    meta_dict['Display_Type'] = 'Multidimensional'
-
-            # Update the meta data
-            if lower_var in out_meta_dict:
-                out_meta_dict[lower_var].update(meta_dict)
-            else:
-                warnings.warn(''.join(['Unable to find MetaData for ',
-                                       var]))
-                out_meta_dict[lower_var] = meta_dict
-
-            # Filter metdata for other netCDF4 requirements
-            remove = True if coltype == str else False
-            out_meta_dict[lower_var] = filter_netcdf4_metadata(
-                inst, out_meta_dict[lower_var], coltype, remove=remove,
-                check_type=check_type, export_nan=export_nan, varname=lower_var)
+        # Filter metdata for other netCDF4 requirements
+        remove = True if coltype == str else False
+        out_meta_dict[lower_var] = filter_netcdf4_metadata(
+            inst, out_meta_dict[lower_var], coltype, remove=remove,
+            check_type=check_type, export_nan=export_nan, varname=lower_var)
 
     return out_meta_dict
 
@@ -417,11 +306,6 @@ def remove_netcdf4_standards_from_meta(mdict, epoch_name, labels):
     for key in mdict.keys():
         lower_sub_keys = [ckey.lower() for ckey in mdict[key].keys()]
         sub_keys = list(mdict[key].keys())
-
-        if 'meta' in lower_sub_keys:
-            # Higher dimensional data, recursive treatment.
-            mdict[key]['meta'] = remove_netcdf4_standards_from_meta(
-                mdict[key]['meta'], '', labels)
 
         # Check for presence of time information
         for lval in lower_sub_keys:
@@ -631,13 +515,6 @@ def apply_table_translation_from_file(trans_table, meta_dict):
                 wstr = 'Translation label "{}" not found for variable "{}".'
                 pysat.logger.debug(wstr.format(trans_key, var_key))
 
-        # Check for higher order metadata
-        if 'meta' in meta_dict[var_key].keys():
-            # Recursive call to process metadata
-            ldict = meta_dict[var_key]['meta']
-            filt_dict[var_key]['meta'] = \
-                apply_table_translation_from_file(trans_table, ldict)
-
     return filt_dict
 
 
@@ -673,12 +550,6 @@ def meta_array_expander(meta_dict):
     for key in meta_dict.keys():
         loop_dict = {}
         for meta_key in meta_dict[key].keys():
-            # Check for higher order data from 2D pandas support
-            if meta_key == 'meta':
-                loop_dict[meta_key] = meta_array_expander(
-                    meta_dict[key][meta_key])
-                continue
-
             tst_array = np.asarray(meta_dict[key][meta_key])
             if tst_array.shape == ():
                 loop_dict[meta_key] = meta_dict[key][meta_key]
@@ -697,7 +568,7 @@ def meta_array_expander(meta_dict):
 def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 epoch_name=None, epoch_unit='ms', epoch_origin='unix',
                 pandas_format=True, decode_timedelta=False,
-                combine_by_coords=True, meta_kwargs=None, labels=None,
+                combine_by_coords=True, meta_kwargs=None,
                 meta_processor=None, meta_translation=None,
                 drop_meta_labels=None, decode_times=None,
                 strict_dim_check=True):
@@ -748,10 +619,6 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order. None to use
-        meta defaults.  Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -810,7 +677,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_name=epoch_name,
                                         epoch_unit=epoch_unit,
                                         epoch_origin=epoch_origin,
-                                        meta_kwargs=meta_kwargs, labels=labels,
+                                        meta_kwargs=meta_kwargs,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels)
@@ -822,7 +689,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         epoch_origin=epoch_origin,
                                         decode_timedelta=decode_timedelta,
                                         combine_by_coords=combine_by_coords,
-                                        meta_kwargs=meta_kwargs, labels=labels,
+                                        meta_kwargs=meta_kwargs,
                                         meta_processor=meta_processor,
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels,
@@ -834,7 +701,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
 
 def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                        epoch_name='Epoch', epoch_unit='ms', epoch_origin='unix',
-                       meta_kwargs=None, labels=None, meta_processor=None,
+                       meta_kwargs=None, meta_processor=None,
                        meta_translation=None, drop_meta_labels=None):
     """Load netCDF-3/4 file produced by pysat in a pandas format.
 
@@ -870,10 +737,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order or None to use
-        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -928,18 +791,9 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
     saved_meta = None
     running_idx = 0
     running_store = []
-    two_d_keys = []
-    two_d_dims = []
 
     if meta_kwargs is None:
         meta_kwargs = {}
-
-    if labels is not None:
-        warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
-                               "with the 'labels' key instead. Support ",
-                               "for `labels` will be removed in v3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        meta_kwargs['labels'] = labels
 
     meta = pysat.Meta(**meta_kwargs)
 
@@ -956,12 +810,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         drop_meta_labels = []
     else:
         drop_meta_labels = pysat.utils.listify(drop_meta_labels)
-
-    # Need to use name label later to identify variables with long_name 'Epoch'
-    name_label = meta.labels.name
-    for key in meta_translation.keys():
-        if meta.labels.name in meta_translation[key]:
-            name_label = key
 
     # Load data for each file
     for fname in fnames:
@@ -986,151 +834,10 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
                             nc_key)
                     full_mdict[key] = meta_dict
 
-                # TODO(#913): Remove 2D support
-                if len(data.variables[key].dimensions) == 2:
-                    # Part of a DataFrame to store within the main DataFrame
-                    two_d_keys.append(key)
-                    two_d_dims.append(data.variables[key].dimensions)
-
-                if len(data.variables[key].dimensions) >= 3:
-                    raise ValueError(' '.join(('pysat only supports 1D and 2D',
+                if len(data.variables[key].dimensions) >= 2:
+                    raise ValueError(' '.join(('pysat only supports 1D',
                                                'data in pandas. Please use',
                                                'xarray for this file.')))
-
-            # TODO(#913): Remove 2D support
-            # We now have a list of keys that need to go into a dataframe,
-            # could be more than one, collect unique dimensions for 2D keys.
-            for dim in set(two_d_dims):
-                # First or second dimension could be epoch. Use other
-                # dimension name as variable name.
-                if dim[0] == epoch_name:
-                    obj_key = dim[1]
-                elif dim[1] == epoch_name:
-                    obj_key = dim[0]
-                else:
-                    estr = ''.join(['Epoch label: "', epoch_name, '"',
-                                    ' was not found in loaded dimensions [',
-                                    ', '.join(dim), ']'])
-                    raise KeyError(estr)
-
-                # Collect variable names associated with dimension
-                idx_bool = [dim == i for i in two_d_dims]
-                idx, = np.where(np.array(idx_bool))
-                obj_var_keys = []
-                clean_var_keys = []
-                for i in idx:
-                    obj_var_keys.append(two_d_keys[i])
-                    clean_var_keys.append(
-                        two_d_keys[i].split(obj_key + '_')[-1])
-
-                # Figure out how to index this data, it could provide its
-                # own index - or we may have to create simple integer based
-                # DataFrame access. If the dimension is stored as its own
-                # variable then use that info for index.
-                if obj_key in obj_var_keys:
-                    # String used to indentify dimension also in
-                    # data.variables will be used as an index.
-                    index_key_name = obj_key
-
-                    # If the object index uses UNIX time, process into
-                    # datetime index.
-                    if data.variables[obj_key].getncattr(
-                            name_label) == epoch_name:
-                        # Found the name to be used in DataFrame index
-                        index_name = epoch_name
-                        time_index_flag = True
-                    else:
-                        time_index_flag = False
-
-                        # Label to be used in DataFrame index
-                        index_name = data.variables[obj_key].getncattr(
-                            name_label)
-                else:
-                    # Dimension is not itself a variable
-                    index_key_name = None
-
-                # Iterate over the variables and grab metadata
-                dim_meta_data = {}
-
-                # Store attributes in metadata, except for the dimension name.
-                for key, clean_key in zip(obj_var_keys, clean_var_keys):
-                    meta_dict = {}
-                    for nc_key in data.variables[key].ncattrs():
-                        meta_dict[nc_key] = data.variables[key].getncattr(
-                            nc_key)
-
-                    dim_meta_data[clean_key] = meta_dict
-
-                dim_meta_dict = {'meta': dim_meta_data}
-
-                # Add top level meta
-                if index_key_name is not None:
-                    for nc_key in data.variables[obj_key].ncattrs():
-                        dim_meta_dict[nc_key] = data.variables[
-                            obj_key].getncattr(nc_key)
-                    full_mdict[obj_key] = dim_meta_dict
-
-                # Iterate over all variables with this dimension
-                # data storage, whole shebang.
-                loop_dict = {}
-
-                # List holds a series of slices, parsed from dict above.
-                loop_list = []
-                for key, clean_key in zip(obj_var_keys, clean_var_keys):
-                    loop_dict[clean_key] = data.variables[
-                        key][:, :].flatten(order='C')
-
-                # Find the number of time values
-                loop_lim = data.variables[obj_var_keys[0]].shape[0]
-
-                # Find the number of values per time
-                step = len(data.variables[obj_var_keys[0]][0, :])
-
-                # Check if there is an index we should use
-                if not (index_key_name is None):
-                    time_var = loop_dict.pop(index_key_name)
-                    if time_index_flag:
-                        # Create datetime index from data
-                        time_var = pds.to_datetime(time_var, unit=epoch_unit,
-                                                   origin=epoch_origin)
-                    new_index = time_var
-                    new_index_name = index_name
-                else:
-                    # Using integer indexing if no index identified
-                    new_index = np.arange((loop_lim * step),
-                                          dtype=np.int64) % step
-                    new_index_name = 'index'
-
-                # Load all data into frame
-                if len(loop_dict.keys()) > 1:
-                    loop_frame = pds.DataFrame(loop_dict,
-                                               columns=clean_var_keys)
-                    if obj_key in loop_frame:
-                        del loop_frame[obj_key]
-
-                    # Break massive frame into bunch of smaller frames
-                    for i in np.arange(loop_lim, dtype=np.int64):
-                        loop_list.append(loop_frame.iloc[(step * i):
-                                                         (step * (i + 1)), :])
-                        loop_list[-1].index = new_index[(step * i):
-                                                        (step * (i + 1))]
-                        loop_list[-1].index.name = new_index_name
-                else:
-                    loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
-                                            name=obj_var_keys[0])
-
-                    # Break massive series into bunch of smaller series
-                    for i in np.arange(loop_lim, dtype=np.int64):
-                        loop_list.append(loop_frame.iloc[(step * i):
-                                                         (step * (i + 1))])
-                        loop_list[-1].index = new_index[(step * i):
-                                                        (step * (i + 1))]
-                        loop_list[-1].index.name = new_index_name
-
-                # Add 2D object data, all based on a unique dimension within
-                # netCDF, to loaded data dictionary.
-                loaded_vars[obj_key] = loop_list
-                del loop_list
 
             # Prepare dataframe index for this netcdf file
             if epoch_name not in loaded_vars.keys():
@@ -1163,10 +870,6 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
         for label in drop_meta_labels:
             if label in full_mdict[var]:
                 full_mdict[var].pop(label)
-            if 'meta' in full_mdict[var]:
-                for var2 in full_mdict[var]['meta'].keys():
-                    if label in full_mdict[var]['meta'][var2]:
-                        full_mdict[var]['meta'][var2].pop(label)
 
     # Second, remove some items pysat added for netcdf compatibility.
     filt_mdict = remove_netcdf4_standards_from_meta(full_mdict, epoch_name,
@@ -1186,23 +889,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Assign filtered metadata to pysat.Meta instance
     for key in filt_mdict:
-        if 'meta' in filt_mdict[key].keys():
-            # Higher order metadata
-            dim_meta = pysat.Meta(**meta_kwargs)
-            for skey in filt_mdict[key]['meta'].keys():
-                dim_meta[skey] = filt_mdict[key]['meta'][skey]
-
-            # Remove HO metdata that was just transfered elsewhere
-            filt_mdict[key].pop('meta')
-
-            # Assign standard metdata
-            meta[key] = filt_mdict[key]
-
-            # Assign HO metadata
-            meta[key] = {'meta': dim_meta}
-        else:
-            # Standard metadata
-            meta[key] = filt_mdict[key]
+        meta[key] = filt_mdict[key]
 
     return data, meta
 
@@ -1210,7 +897,7 @@ def load_netcdf_pandas(fnames, strict_meta=False, file_format='NETCDF4',
 def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                        epoch_name='time', epoch_unit='ms', epoch_origin='unix',
                        decode_timedelta=False, combine_by_coords=True,
-                       meta_kwargs=None, labels=None, meta_processor=None,
+                       meta_kwargs=None, meta_processor=None,
                        meta_translation=None, drop_meta_labels=None,
                        decode_times=False, strict_dim_check=True):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
@@ -1254,10 +941,6 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     meta_kwargs : dict or NoneType
         Dict to specify custom Meta initialization or None to use Meta
         defaults (default=None)
-    labels : dict or NoneType
-        Dict where keys are the label attribute names and the values are tuples
-        that have the label values and value types in that order or None to use
-        Meta defaults. Deprecated, use `meta_kwargs` instead. (default=None)
     meta_processor : function or NoneType
         If not None, a dict containing all of the loaded metadata will be
         passed to `meta_processor` which should return a filtered version
@@ -1315,13 +998,6 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # Initialize local variables
     if meta_kwargs is None:
         meta_kwargs = {}
-
-    if labels is not None:
-        warnings.warn("".join(["`labels` is deprecated, use `meta_kwargs`",
-                               "with the 'labels' key instead. Support ",
-                               "for `labels` will be removed in v3.2.0+"]),
-                      DeprecationWarning, stacklevel=2)
-        meta_kwargs['labels'] = labels
 
     meta = pysat.Meta(**meta_kwargs)
 
@@ -1638,8 +1314,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
 
     Stores 1-D data along dimension 'Epoch' - the date time index.
 
-    Stores higher order data (e.g. dataframes within series) separately
-
     - The name of the main variable column is used to prepend subvariable
       names within netCDF, var_subvar_sub
     - A netCDF4 dimension is created for each main variable column
@@ -1789,7 +1463,6 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     meta_translation = copy.deepcopy(meta_translation)
 
     # Ensure `meta_translation` has default values for items not assigned.
-    # This is needed for the higher order pandas support and may be removed.
     def_meta_trans = default_to_netcdf_translation_table(inst)
     for key in def_meta_trans.keys():
         if key not in meta_translation:
@@ -1892,180 +1565,24 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         # Not datetime data, just store as is.
                         cdfkey[:] = data.values.astype(coltype)
                 else:
-                    # It is a Series of objects.  First, figure out what the
-                    # individual object types are.  Then, act as needed.
-
-                    # Use info in coltype to get real datatype of object
-                    if coltype == str:
-                        if '_FillValue' in export_meta[lower_key].keys():
-                            str_fill = export_meta[lower_key]['_FillValue']
-                            del export_meta[lower_key]['_FillValue']
-                        else:
-                            str_fill = ''
-
-                        cdfkey = out_data.createVariable(case_key, coltype,
-                                                         dimensions=epoch_name,
-                                                         complevel=complevel,
-                                                         shuffle=shuffle,
-                                                         fill_value=str_fill)
-
-                        # Set metadata
-                        cdfkey.setncatts(export_meta[lower_key])
-
-                        # Time to actually write the data now
-                        cdfkey[:] = data.values
-
+                    if '_FillValue' in export_meta[lower_key].keys():
+                        str_fill = export_meta[lower_key]['_FillValue']
+                        del export_meta[lower_key]['_FillValue']
                     else:
-                        # Still dealing with an object, not just a Series of
-                        # strings. Maps to `if` check on coltypes, being
-                        # string-based. Presuming a Series with a DataFrame or
-                        # Series in each location. Start by collecting some
-                        # basic info on dimensions sizes, names, then create
-                        # corresponding netCDF4 dimensions total dimensions
-                        # stored for object are epoch plus ones created below
-                        dims = np.shape(inst[key].iloc[0])
-                        obj_dim_names = []
+                        str_fill = ''
 
-                        # Pad dimensions so that the rest of the code works
-                        # for either a Series or a DataFrame.
-                        if len(dims) == 1:
-                            dims = (dims[0], 0)
+                    cdfkey = out_data.createVariable(case_key, coltype,
+                                                     dimensions=epoch_name,
+                                                     complevel=complevel,
+                                                     shuffle=shuffle,
+                                                     fill_value=str_fill)
 
-                        # Don't need to go over last dimension value,
-                        # it covers number of columns (if a frame).
-                        for i, dim in enumerate(dims[:-1]):
-                            obj_dim_names.append(case_key)
-                            out_data.createDimension(obj_dim_names[-1], dim)
+                    # Set metadata
+                    cdfkey.setncatts(export_meta[lower_key])
 
-                        # Create simple tuple with information needed to create
-                        # the right dimensions for variables that will
-                        # be written to file.
-                        var_dim = tuple([epoch_name] + obj_dim_names)
+                    # Time to actually write the data now
+                    cdfkey[:] = data.values
 
-                        # Determine whether data is in a DataFrame or Series
-                        try:
-                            # Start by assuming it is a DataFrame
-                            iterable = inst[key].iloc[0].columns
-                            is_frame = True
-                        except AttributeError:
-                            # Otherwise get sub-variables for a Series
-                            iterable = [inst[key].iloc[0].name]
-                            is_frame = False
-
-                        # Find the subvariable data within the main variable,
-                        # checking that this is not an empty DataFrame or
-                        # Series. Determine the underlying data types.
-                        good_data_loc = 0
-                        for idat in np.arange(len(inst.data)):
-                            if len(inst.data[key].iloc[0]) > 0:
-                                good_data_loc = idat
-                                break
-
-                        # Found a place with data, if there is one
-                        # now iterate over the subvariables, get data info
-                        # create netCDF4 variables and store the data
-                        # stored name is variable_subvariable.
-                        for col in iterable:
-                            if is_frame:
-                                # We are working with a DataFrame, so
-                                # multiple subvariables stored under a single
-                                # main variable heading.
-                                idx = inst[key].iloc[good_data_loc][col]
-                                data, coltype, _ = inst._get_data_info(idx)
-
-                                # netCDF4 doesn't support string compression
-                                if coltype == str:
-                                    lzlib = False
-                                else:
-                                    lzlib = zlib
-
-                                cdfkey = out_data.createVariable(
-                                    '_'.join((case_key, col)), coltype,
-                                    dimensions=var_dim, zlib=lzlib,
-                                    complevel=complevel, shuffle=shuffle)
-
-                                # Set metadata
-                                lkey = '_'.join((lower_key, col.lower()))
-                                cdfkey.setncatts(export_meta[lkey])
-
-                                # Attach data.  It may be slow to repeatedly
-                                # call the store method as well astype method
-                                # below collect data into a numpy array, then
-                                # write the full array in one go.
-                                temp_cdf_data = np.zeros(
-                                    (num, dims[0])).astype(coltype)
-                                for i in range(num):
-                                    temp_cdf_data[i, :] = inst[
-                                        key].iloc[i][col].values
-
-                                # Write data
-                                cdfkey[:, :] = temp_cdf_data
-                            else:
-                                # We are dealing with a Series.  Get
-                                # information from within the series.
-                                idx = inst[key].iloc[good_data_loc]
-                                data, coltype, _ = inst._get_data_info(idx)
-
-                                # netCDF4 doesn't support string compression
-                                if coltype == str:
-                                    lzlib = False
-                                else:
-                                    lzlib = zlib
-
-                                cdfkey = out_data.createVariable(
-                                    case_key + '_data', coltype,
-                                    dimensions=var_dim, zlib=lzlib,
-                                    complevel=complevel, shuffle=shuffle)
-
-                                # Set metadata
-                                tempk = '_'.join([lower_key, lower_key])
-                                cdfkey.setncatts(export_meta[tempk])
-
-                                # Attach data
-                                temp_cdf_data = np.zeros(
-                                    (num, dims[0]), dtype=coltype)
-                                for i in range(num):
-                                    temp_cdf_data[i, :] = inst[i, key].values
-
-                                # Write data
-                                cdfkey[:, :] = temp_cdf_data
-
-                        # We are done storing the actual data for the given
-                        # higher order variable. Now we need to store the index
-                        # for all of that fancy data.
-
-                        # Get index information
-                        data, coltype, datetime_flag = inst._get_data_info(
-                            inst[key].iloc[good_data_loc].index)
-
-                        # Create dimension variable to store index in netCDF4
-                        cdfkey = out_data.createVariable(case_key, coltype,
-                                                         dimensions=var_dim,
-                                                         zlib=zlib,
-                                                         complevel=complevel,
-                                                         shuffle=shuffle)
-                        # Set meta data
-                        cdfkey.setncatts(export_meta[lower_key])
-
-                        # Treat time and non-time data differently
-                        if datetime_flag:
-                            # Set data
-                            temp_cdf_data = np.zeros((num, dims[0]),
-                                                     dtype=coltype)
-                            for i in range(num):
-                                temp_cdf_data[i, :] = inst[i, key].index.values
-                            cdfkey[:, :] = (temp_cdf_data * 1.0E-6).astype(
-                                coltype)
-
-                        else:
-                            # Set data
-                            temp_cdf_data = np.zeros((num, dims[0]),
-                                                     dtype=coltype)
-
-                            for i in range(num):
-                                temp_cdf_data[i, :] = inst[
-                                    key].iloc[i].index.astype(coltype)
-                            cdfkey[:, :] = temp_cdf_data
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
         # the Instrument data object is unchanged.

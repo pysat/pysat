@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Create a constellation where not all instruments have loadable data.
 
 Attributes
@@ -9,6 +17,6 @@ instruments : list
 import pysat
 
 instruments = [pysat.Instrument('pysat', 'testing', clean_level='clean',
-                                num_samples=10, use_header=True),
+                                num_samples=10),
                pysat.Instrument('pysat', 'testing', tag='no_download',
-                                clean_level='clean', use_header=True)]
+                                clean_level='clean')]

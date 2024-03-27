@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Date and time handling utilities."""
 
@@ -218,13 +221,9 @@ def freq_to_res(freq):
     --------
     pds.offsets.DateOffset
 
-    References
-    ----------
-    Separating alpha and numeric portions of strings, as described in:
-    https://stackoverflow.com/a/12409995
-
     """
-    # Separate the alpha and numeric portions of the string
+    # Separate the alpha and numeric portions of the string as described in:
+    # https://stackoverflow.com/a/12409995
     regex = re.compile(r'(\d+|\s+)')
     out_str = [sval for sval in regex.split(freq) if len(sval) > 0]
 
@@ -364,8 +363,8 @@ def filter_datetime_input(date):
         if hasattr(date, '__iter__'):
             out_date = []
             for in_date in date:
-                if(in_date.tzinfo is not None
-                   and in_date.utcoffset() is not None):
+                if all([in_date.tzinfo is not None,
+                        in_date.utcoffset() is not None]):
                     in_date = in_date.astimezone(tz=dt.timezone.utc)
 
                 out_date.append(dt.datetime(in_date.year, in_date.month,

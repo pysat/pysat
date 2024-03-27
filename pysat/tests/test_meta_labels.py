@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Tests the pysat MetaLabels object."""
 
@@ -11,6 +14,7 @@ import numpy as np
 import pytest
 
 import pysat
+from pysat.utils import listify
 from pysat.utils import testing
 
 
@@ -185,6 +189,24 @@ class TestMetaLabels(object):
 
         return
 
+    @pytest.mark.parametrize("drop_labels", [["units", "fill_val"], "units"])
+    def test_drop(self, drop_labels):
+        """Test successful drop from MetaLabels.
+
+        Parameters
+        ----------
+        drop_labels : str or list-like
+            Label or labels to drop
+
+        """
+        # Drop the desired label(s)
+        self.meta_labels.drop(drop_labels)
+
+        # Ensure the labels are missing
+        for dlabel in listify(drop_labels):
+            assert not hasattr(self.meta_labels, dlabel)
+        return
+
     def test_update(self):
         """Test successful update of MetaLabels."""
         self.meta_labels.update('new_label', 'new_name', int)
@@ -196,6 +218,17 @@ class TestMetaLabels(object):
 
     # ----------------------------------------
     # Test the integration with the Meta class
+
+    def test_drop_from_meta(self):
+        """Test successful deletion of MetaLabels attribute from Meta."""
+        # Delete the desired label
+        del_label = list(self.meta_labels.label_type.keys())[0]
+        self.meta.drop(del_label)
+
+        # Ensure the label is missing
+        assert not hasattr(self.meta.labels, del_label)
+        assert del_label not in self.meta.data.columns
+        return
 
     def test_change_case_of_meta_labels(self):
         """Test changing case of meta labels after initialization."""
@@ -210,30 +243,4 @@ class TestMetaLabels(object):
         assert (self.meta['new'].Long_Name == 'boo')
         assert (self.meta['new2'].Units == 'hey2')
         assert (self.meta['new2'].Long_Name == 'boo2')
-        return
-
-    def test_case_change_of_meta_labels_w_ho(self):
-        """Test change case of meta labels after initialization with HO data."""
-
-        # Set the initial labels
-        self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
-        self.meta = pysat.Meta(labels=self.meta_labels)
-        meta2 = pysat.Meta(labels=self.meta_labels)
-
-        # Set meta data values
-        meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
-        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.meta['new2'] = meta2
-
-        # Change the label name
-        self.meta.labels.units = 'Units'
-        self.meta.labels.name = 'Long_Name'
-
-        # Evaluate the results in the main data
-        assert (self.meta['new'].Units == 'hey')
-        assert (self.meta['new'].Long_Name == 'boo')
-
-        # Evaluate the results in the higher order data
-        assert (self.meta['new2'].children['new21'].Units == 'hey2')
-        assert (self.meta['new2'].children['new21'].Long_Name == 'boo2')
         return

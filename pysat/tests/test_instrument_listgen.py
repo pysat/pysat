@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Unit tests for the list generation methods in `pysat.Instrument`."""
 
 from importlib import reload
@@ -45,7 +53,7 @@ class TestInstListGeneration(object):
 
         # If an instrument does not have the _test_dates attribute, it should
         # still be added to the list for other checks to be run.
-        # This will be caught later by InstTestClass.test_instrument_test_dates.
+        # This will be caught later by InstLibTests.test_instrument_test_dates.
         assert not hasattr(self.test_library.pysat_testing, '_test_dates')
         inst_list = generate_instrument_list(self.test_library)
         assert 'pysat_testing' in inst_list['names']

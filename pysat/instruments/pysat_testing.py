@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 """Produces fake instrument data for testing."""
 
@@ -40,8 +48,8 @@ preprocess = mm_test.preprocess
 
 def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, non_monotonic_index=False,
-         non_unique_index=False, malformed_index=False, start_time=None,
-         num_samples=86400, test_load_kwarg=None, max_latitude=90.):
+         non_unique_index=False, start_time=None, num_samples=86400,
+         test_load_kwarg=None, max_latitude=90.):
     """Load the test files.
 
     Parameters
@@ -67,9 +75,6 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
         If True, time index will be non-monotonic (default=False)
     non_unique_index : bool
         If True, time index will be non-unique (default=False)
-    malformed_index : bool
-        If True, the time index will be non-unique and non-monotonic. Deprecated
-        and scheduled for removal in pysat 3.2.0. (default=False)
     start_time : dt.timedelta or NoneType
         Offset time of start time since midnight UT. If None, instrument data
         will begin at midnight. (default=None)
@@ -95,6 +100,10 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
 
     # Support keyword testing
     pysat.logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
+
+    # If no download should be simulated, return empty `data` and `meta` objects
+    if tag == 'no_download':
+        return pds.DataFrame(), pysat.Meta()
 
     # Create an artificial satellite data set
     iperiod = mm_test.define_period()
@@ -164,13 +173,6 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
-    # TODO(#1094): Remove in pysat 3.2.0
-    if malformed_index:
-        # Warn that kwarg is deprecated and set new kwargs.
-        mm_test._warn_malformed_kwarg()
-        non_monotonic_index = True
-        non_unique_index = True
-
     # Activate if non-monotonic index is needed.
     if np.any([non_monotonic_index, (tag == 'non_strict')]):
         index = mm_test.non_monotonic_index(index)
@@ -182,16 +184,14 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     data.index = index
     data.index.name = 'Epoch'
 
+    # If we only want data and not metadata stop now
+    if tag == 'default_meta':
+        return data, pysat.Meta()
+
     # Set the meta data
     meta = mm_test.initialize_test_meta('Epoch', data.keys())
 
-    # TODO(#1120): Move logic up so that empty data is returned first.
-    if tag == 'default_meta':
-        return data, pysat.Meta()
-    elif tag == 'no_download':
-        return pds.DataFrame(), pysat.Meta()
-    else:
-        return data, meta
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)

@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 
 import copy
@@ -465,7 +468,8 @@ class Orbits(object):
             # values
             new_ind = []
             for idx in ind:
-                tidx, = np.where(lt_diff[(idx - 5):(idx + 6)]
+                sub_idx = slice((idx - 5), (idx + 6))
+                tidx, = np.where(lt_diff[sub_idx]
                                  > 10 * typical_lt_diff)
 
                 if len(tidx) != 0:
@@ -473,9 +477,11 @@ class Orbits(object):
                     # Iterate over samples and check.
                     for sub_tidx in tidx:
                         # Look at time change vs local time change
-                        if(ut_diff[idx - 5:idx + 6].iloc[sub_tidx]
-                           < lt_diff[idx - 5:idx + 6].iloc[sub_tidx]
-                           / orbit_index_period * self.orbit_period):
+                        false_alarm = (
+                            ut_diff[sub_idx].iloc[sub_tidx] * orbit_index_period
+                            < lt_diff[sub_idx].iloc[sub_tidx]
+                            * self.orbit_period)
+                        if false_alarm:
 
                             # The change in UT is small compared to the change
                             # in the orbit index this is flagged as a false

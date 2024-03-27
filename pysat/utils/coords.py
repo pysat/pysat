@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Coordinate transformation functions for pysat."""
 
@@ -66,12 +69,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
         raise ValueError('unknown longitude variable name')
 
     new_lon = adjust_cyclic_data(inst[lon_name], high=high, low=low)
-
-    # TODO(#988): Remove pandas/xarray logic after fixing issue in Instrument
-    if inst.pandas_format:
-        inst[lon_name] = new_lon
-    else:
-        inst.data = inst.data.update({lon_name: (inst[lon_name].dims, new_lon)})
+    inst[lon_name] = new_lon
 
     return
 

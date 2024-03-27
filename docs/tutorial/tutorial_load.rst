@@ -67,7 +67,7 @@ pysat supports the use of two different data structures. You can either use a
 pandas
 `DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_,
 a highly capable class with labeled rows and columns, or an xarray
-`DataSet <http://xarray.pydata.org/en/stable/generated/xarray.Dataset.html>`_
+`DataSet <https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html>`_
 for data sets with more dimensions. The type of data class is flagged using
 the attribute :py:attr:`pysat.Instrument.pandas_format`. This is set to
 ``True`` if a :py:class:`pandas.DataFrame` is returned by the corresponding

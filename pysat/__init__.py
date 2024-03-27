@@ -34,10 +34,21 @@ Main Features
 
 """
 
+try:
+    from importlib import metadata
+    from importlib import resources
+
+    if not hasattr(resources, 'files'):
+        # The `files` object was introduced in Python 3.9
+        resources = None
+except ImportError:
+    import importlib_metadata as metadata
+    resources = None
+
 import logging
 import os
-from portalocker import Lock
 
+# Logger needs to be initialized before other modules are imported.
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
@@ -45,12 +56,13 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
-# Import and set user and pysat parameters object
-from pysat import _params
+# Import statements after this point require a noqa statement for flake8
 
-# set version
-here = os.path.abspath(os.path.dirname(__file__))
-version_filename = os.path.join(here, 'version.txt')
+# Import and set user and pysat parameters object
+from pysat import _params  # noqa: E402 F401
+
+# Set version
+__version__ = metadata.version('pysat')
 
 # Get home directory
 home_dir = os.path.expanduser('~')
@@ -59,14 +71,22 @@ home_dir = os.path.expanduser('~')
 pysat_dir = os.path.join(home_dir, '.pysat')
 
 # Set directory for test data
-test_data_path = os.path.join(here, 'tests', 'test_data')
+if resources is None:
+    test_data_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                                  'tests', 'test_data')
+    citation = os.path.join(os.path.realpath(os.path.dirname(__file__)),
+                            'citation.txt')
+else:
+    test_data_path = str(resources.files(__package__).joinpath('tests',
+                                                               'test_data'))
+    citation = str(resources.files(__package__).joinpath('citation.txt'))
 
 # Create a .pysat directory or parameters file if one doesn't exist.
 # pysat_settings did not exist pre v3 thus this provides a check against
 # v2 users that are upgrading. Those users need the settings file plus
 # new internal directories.
-if not os.path.isdir(pysat_dir) or \
-        (not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json'))):
+settings_file = os.path.join(pysat_dir, 'pysat_settings.json')
+if not os.path.isdir(pysat_dir) or not os.path.isfile(settings_file):
 
     # Make a .pysat directory if not already present
     if not os.path.isdir(pysat_dir):
@@ -83,7 +103,7 @@ if not os.path.isdir(pysat_dir) or \
         os.mkdir(os.path.join(pysat_dir, 'instruments', 'archive'))
 
     # Create parameters file
-    if not os.path.isfile(os.path.join(pysat_dir, 'pysat_settings.json')):
+    if not os.path.isfile(settings_file):
         params = _params.Parameters(path=pysat_dir, create_new=True)
 
     print(''.join(("\nHi there!  pysat will nominally store data in a ",
@@ -96,22 +116,20 @@ else:
     # Load up existing parameters file
     params = _params.Parameters()
 
-# Load up version information
-with Lock(version_filename, 'r', params['file_timeout']) as version_file:
-    __version__ = version_file.read().strip()
+# Modules used by other imports needs to be imported here first.
+from pysat import utils  # noqa: E402 F401
 
-from pysat._files import Files
-from pysat._instrument import Instrument
-from pysat._meta import Meta
-from pysat._meta import MetaHeader
-from pysat._meta import MetaLabels
-from pysat._orbits import Orbits
-from pysat import instruments
-from pysat import utils
+# Import the remainder of the modules.
+from pysat._constellation import Constellation  # noqa: E402 F401
+from pysat._files import Files  # noqa: E402 F401
+from pysat._instrument import Instrument  # noqa: E402 F401
+from pysat._meta import Meta  # noqa: E402 F401
+from pysat._meta import MetaHeader  # noqa: E402 F401
+from pysat._meta import MetaLabels  # noqa: E402 F401
+from pysat._orbits import Orbits  # noqa: E402 F401
+from pysat import instruments  # noqa: E402 F401
 
-# Import constellation separately
-from pysat._constellation import Constellation
 __all__ = ['instruments', 'utils']
 
-# Cleanup
-del here
+# Clean up
+del settings_file, resources

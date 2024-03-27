@@ -17,7 +17,7 @@
     ],
     "creators": [
       {
-        "affiliation": "Stoneris LLC",
+        "affiliation": "Cosmic Studio",
         "name": "Stoneback, Russell",
         "orcid": "0000-0001-7216-4336"
       },
@@ -66,6 +66,11 @@
         "affiliation": "@olist",
         "name": "Leite, Silvio",
         "orcid": "0000-0003-1707-7963"
+      },
+	    {
+        "affiliation": "NASA NPP",
+        "name": "Esman, Teresa",
+        "orcid": "0000-0003-0382-6281"
       }
     ]
 }

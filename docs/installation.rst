@@ -6,7 +6,7 @@ Installation
 
 Python and associated packages for science are freely available. Convenient
 science python package setups are available from `<https://www.python.org/>`_,
-`Anaconda <https://www.anaconda.com/products/individual/>`_, and other locations
+`Anaconda <https://www.anaconda.com/download/>`_, and other locations
 (some platform specific). Anaconda also includes a developer environment
 that works well with pysat. Core science packages such as numpy, scipy,
 matplotlib, pandas and many others may also be installed directly via the
@@ -26,7 +26,7 @@ To use Anaconda's tools for creating a suitable virtual environment,
 
 
 .. _inst-standard:
-    
+
 Standard installation
 ---------------------
 
@@ -57,7 +57,8 @@ pysat may also be installed directly from the source repository on github::
 
    git clone https://github.com/pysat/pysat.git
    cd pysat
-   python setup.py install --user
+   python -m build .
+   pip install --user .
 
 An advantage to installing through github is access to the development branches.
 The latest bugfixes can be found in the ``develop`` branch. However, this
@@ -67,9 +68,10 @@ virtual environment and using::
    git clone https://github.com/pysat/pysat.git
    cd pysat
    git checkout develop
-   python setup.py develop
+   python -m build .
+   pip install -e .
 
-The use of `develop` rather than `install` in the setup command installs the
-code 'in-place', so any changes to the software do not have to be reinstalled
-to take effect. It is not related to changing the pysat working branch from
-``main`` to ``develop`` in the preceeding line.
+The use of `-e` in the setup command installs the code 'in-place', so any
+changes to the software do not have to be reinstalled to take effect. It is not
+related to changing the pysat working branch from ``main`` to ``develop`` in the
+preceeding line.

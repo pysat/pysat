@@ -1,8 +1,14 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Tests the `pysat.instruments.methods.testing` methods."""
 
 import datetime as dt
-from os import path
-import pandas as pds
 import pytest
 
 import pysat
@@ -16,7 +22,7 @@ class TestMethodsTesting(object):
     def setup_method(self):
         """Set up the unit test environment for each method."""
 
-        self.test_inst = pysat.Instrument('pysat', 'testing', use_header=True)
+        self.test_inst = pysat.Instrument('pysat', 'testing')
 
         # Get list of filenames.
         self.fnames = [self.test_inst.files.files.values[0]]

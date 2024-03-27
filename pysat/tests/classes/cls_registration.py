@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Standardized class and functions to test registration for pysat libraries.
 
@@ -12,7 +15,6 @@ Not directly called by pytest, but imported as part of test_registry.py.
 """
 
 import importlib
-import pytest
 import sys
 
 import pysat
