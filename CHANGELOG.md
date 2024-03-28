@@ -3,6 +3,11 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.2.1] - 2024-XX-XX
+--------------------
+* Maintenance
+  * Update pip rc install workflow to test against multiple python versions
+
 [3.2.0] - 2024-03-27
 --------------------
 * New Features
