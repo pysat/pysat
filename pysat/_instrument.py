@@ -2,7 +2,12 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
+"""Class for single instruments."""
+
 import copy
 import datetime as dt
 import errno
@@ -730,7 +735,7 @@ class Instrument(object):
         return output_str
 
     def __getitem__(self, key, data=None):
-        """Access data in `pysat.Instrument` object.
+        """Access data in `pysat.Instrument` or provided data object.
 
         Parameters
         ----------
@@ -1366,7 +1371,7 @@ class Instrument(object):
             directory_format, file_format, multi_file_day, orbit_info, and
             pandas_format
         test attributes
-            _test_download, _test_download_ci, and _password_req
+            _test_download, _test_download_ci, _new_tests, and _password_req
 
         """
         # Declare the standard Instrument methods and attributes
@@ -1378,7 +1383,7 @@ class Instrument(object):
                       'multi_file_day': False, 'orbit_info': None,
                       'pandas_format': True}
         test_attrs = {'_test_download': True, '_test_download_ci': True,
-                      '_password_req': False}
+                      '_new_tests': True, '_password_req': False}
 
         # Set method defaults
         for mname in [mm for val in inst_methods.values() for mm in val]:
@@ -2959,6 +2964,23 @@ class Instrument(object):
                           DeprecationWarning, stacklevel=2)
         else:
             use_header = True
+
+        # Provide user friendly error if there is no data
+        if len(self.files.files) == 0:
+            # TODO(#1182) - Update with pysat 3.3.0+ per directions below
+            # In pysat 3.3, modify this section to leave function early
+            # to prevent a downstream IndexError. Remove Deprecation portion
+            # of message below and leave as a UserWarning.
+            estr = ''.join(('No files found for Instrument. If files are ',
+                            'expected, please confirm that data is present ',
+                            'on the system and that ',
+                            "pysat.params['data_dirs'] is set correctly."))
+            warnings.warn(estr, UserWarning, stacklevel=2)
+            estr = ''.join(("In pysat version 3.3.0+ the subsequent ",
+                            'IndexError will not be raised.'))
+            warnings.warn(estr, DeprecationWarning, stacklevel=2)
+            # Uncomment line below, pysat 3.3.0+
+            # return
 
         # Add the load kwargs from initialization those provided on input
         for lkey in self.kwargs['load'].keys():

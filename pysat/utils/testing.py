@@ -2,10 +2,14 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Utilities to perform common evaluations."""
 
 import numpy as np
+import pysat.utils
 
 
 def assert_list_contains(small_list, big_list, test_nan=False, test_case=True):
@@ -170,8 +174,8 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
         List of warnings.WarningMessage objects
     check_msgs : list
         List of strings containing the expected warning messages
-    warn_type : type
-        Type for the warning messages (default=DeprecationWarning)
+    warn_type : type or list-like
+        Type or list-like for the warning messages (default=DeprecationWarning)
 
     Raises
     ------
@@ -180,19 +184,38 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
 
     """
 
+    # Ensure inputs are list-like
+    warn_types = pysat.utils.listify(warn_type)
+    check_msgs = pysat.utils.listify(check_msgs)
+
     # Initialize the output
     found_msgs = [False for msg in check_msgs]
 
+    # If only one warning type provided then expand to match
+    # number of messages
+    simple_out = False
+    if len(warn_types) == 1:
+        warn_types = warn_types * len(check_msgs)
+        simple_out = True
+
     # Test the warning messages, ensuring each attribute is present
     for iwar in warns:
-        for i, msg in enumerate(check_msgs):
+        for i, (msg, iwartype) in enumerate(zip(check_msgs, warn_types)):
             if str(iwar.message).find(msg) >= 0:
-                assert iwar.category == warn_type, \
+                assert iwar.category == iwartype, \
                     "bad warning type for message: {:}".format(msg)
                 found_msgs[i] = True
 
+    # If all warnings are of the same kind, we don't need to repeat the
+    # same type in the output string.
+    if simple_out:
+        warn_repr_str = repr(warn_type)
+    else:
+        not_found_msgs = [not msg for msg in found_msgs]
+        warn_repr_str = repr((np.array(warn_types)[not_found_msgs]))
+
     assert np.all(found_msgs), "did not find {:d} expected {:}".format(
-        len(found_msgs) - np.sum(found_msgs), repr(warn_type))
+        len(found_msgs) - np.sum(found_msgs), warn_repr_str)
 
     return
 

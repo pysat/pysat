@@ -914,7 +914,7 @@ but should not undergo automated download tests because it would require
 the  user to save a password in a potentially public location.  The
 :py:attr:`_password_req` flag is used to skip both the download tests and the
 download warning message tests, since a functional download routine is
-present.
+present. This flag is defaults to :py:val:`False` if not specified.
 
 .. code:: python
 
@@ -925,4 +925,29 @@ present.
    inst_ids = {'': ['Level_1', 'Level_2']}
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
-   _password_req = {'': {'Level_1': False}}
+   _password_req = {'': {'Level_1': True}}
+
+Updates to Instrument Suite Tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes new standard tests are added to pysat that ensure all data handling
+features work as expected throughout the ecosystem. For example, pysat 3.2.0
+adds new tests for loading multiple days at a time or using a data pad. When
+these tests require significant updates, an additional flag may be used to
+suppress these tests temporarily for specific instruments while updates are
+made to that instrument. These new tests are run by default unless specified
+using the :py:attr:`_new_tests` flag.
+
+.. code:: python
+
+   platform = 'newsat'
+   name = 'data'
+   tags = {'Level_1': 'Level 1 data, fully compliant',
+           'Level_2': 'Level 2 data, needs updates for padding'}
+   inst_ids = {'': ['Level_1', 'Level_2']}
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _new_tests = {'': {'Level_2': False}}
+
+The new tests are marked with a `@pytest.mark.new_tests` statement, and will be
+re-evaluated at each minor version release.

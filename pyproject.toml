@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysat"
-version = "3.1.0"
+version = "3.2.0"
 description = "Supports science analysis across disparate data platforms"
 readme = "README.md"
 requires-python = ">=3.6"
@@ -21,9 +21,10 @@ classifiers = [
   "License :: OSI Approved :: BSD License",
   "Natural Language :: English",
   "Programming Language :: Python :: 3.6",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: POSIX :: Linux",
   "Operating System :: Microsoft :: Windows"
@@ -45,7 +46,7 @@ dependencies = [
   "dask",
   "netCDF4",
   "numpy >= 1.12",
-  "pandas < 2.1.1",
+  "pandas",
   "portalocker",
   "pytest",
   "scipy",
@@ -55,11 +56,11 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-  "coveralls < 3.3",
+  "coveralls",
   "flake8",
   "flake8-docstrings",
   "hacking >= 1.0",
-  "pysatSpaceWeather",
+  "pysatSpaceWeather<0.1.0",
   "pytest-cov",
   "pytest-ordering"
 ]
@@ -68,6 +69,7 @@ doc = [
   "ipython",
   "m2r2",
   "numpydoc",
+  "readthedocs-sphinx-search==0.3.2",
   "sphinx",
   "sphinx_rtd_theme >= 1.2.2, < 2.0.0"
 ]
@@ -86,6 +88,7 @@ markers = [
   "download",
   "no_download",
   "load_options",
+  "new_tests",
   "first",
   "second"
 ]

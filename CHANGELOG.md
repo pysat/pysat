@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.2.0] - 2023-xx-xx
+[3.2.0] - 2024-03-27
 --------------------
 * New Features
   * Added tests for warnings, logging messages, and errors in the Instrument
@@ -29,8 +29,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Added ability to set Meta data using `meta['data_var', 'label'] = value`
     structure.
   * Added test for loading multiple days of data.
+  * Added user-friendly warning when trying to load data when there are
+    no files at all to load. Situation currently raises an IndexError.
+  * Expanded `eval_warnings` to support testing against multiple warning types.
 * Bug Fix
   * Fixed `utils.files.parse_fixed_width_filenames` output for empty file list
+  * Updated the parsing functions in `utils.files` to consider type specifiers
+    when identifying appropriate files in a directory
 * Maintenance
   * Update link redirects in docs.
   * Improved Instrument ValueError messages.
@@ -39,7 +44,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Implement pyproject to manage metadata
   * Updated docstring references to `pysat.utils.files` in other modules.
   * Remove Sphinx cap
-  * Add pandas cap
   * Update usage of whitespace and if statements (E275)
   * Remove hacking cap
   * Removed deprecated `pysat_testing2d` instrument
@@ -54,12 +58,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Removed deprecated `use_header` kwarg from `load` and changed default
     behaviour to `use_header=True`
   * Use temporary directories for files created during test_utils.py
+  * Updated code file headers to be consistent and include NRL pub release
+  * Added acknowledgements.md which includes full institutional funding list
   * Removed deprecated `labels` kwarg for `pysat.Instrument()`
   * Removed deprecated `utils.load_netcdf4` method
   * Removed deprecated `_filter_netcdf4_metadata` method
   * Removed deprecated usage of None for tag and inst_id
   * Removed deprecated kwarg behaviour for 'fname' in `to_netCDF4`
   * Added verion cap for sphinx_rtd_theme
+  * Used line specific noqa statements for imports
+  * Add `_new_tests` flag for packages to ignore select new tests
+  * Add CI testing for python 3.12
 
 [3.1.0] - 2023-05-31
 --------------------

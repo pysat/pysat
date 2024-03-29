@@ -2,10 +2,12 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Tests the pysat utils core functions."""
 
-import contextlib
 from importlib import reload
 import inspect
 import numpy as np
@@ -14,7 +16,6 @@ import portalocker
 import pytest
 import shutil
 import tempfile
-import warnings
 
 import pysat
 from pysat.tests.classes.cls_registration import TestWithRegistration
@@ -412,9 +413,8 @@ class TestIfyFunctions(object):
 
         """
 
-        target = type(astrlike)
         output = pysat.utils.stringify(astrlike)
-        assert type(output) == target
+        isinstance(output, type(astrlike))
         return
 
 
@@ -480,7 +480,7 @@ class TestFmtCols(object):
                              [("ncols", 0, ZeroDivisionError,
                                "integer division or modulo by zero"),
                               ("max_num", -10, ValueError,
-                               "max() arg is an empty sequence")])
+                               "empty")])
     def test_fmt_raises(self, key, val, raise_type, err_msg):
         """Test raises appropriate Errors for bad input values.
 

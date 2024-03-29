@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Standardized class and functions to test instruments for pysat libraries.
 
 Note
@@ -202,13 +210,14 @@ class InstLibTests(object):
         """Initialize parameters before each method."""
         self.test_inst = None
         self.date = None
+        self.module = None
 
         return
 
     def teardown_method(self):
         """Clean up any instruments that were initialized."""
 
-        del self.test_inst, self.date
+        del self.test_inst, self.date, self.module
 
         return
 
@@ -260,6 +269,11 @@ class InstLibTests(object):
                     mark = pytest.mark.parametrize("inst_name",
                                                    instruments['names'])
                     getattr(self, method).pytestmark.append(mark)
+                elif 'new_tests' in mark_names:
+                    # Prioritize new test marks if present
+                    mark = pytest.mark.parametrize("inst_dict",
+                                                   instruments['new_tests'])
+                    getattr(self, method).pytestmark.append(mark)
                 elif 'load_options' in mark_names:
                     # Prioritize load_options mark if present
                     mark = pytest.mark.parametrize("inst_dict",
@@ -289,35 +303,36 @@ class InstLibTests(object):
         """
 
         # Ensure that each module is at minimum importable
-        module = import_module(''.join(('.', inst_name)),
-                               package=self.inst_loc.__name__)
+        self.module = import_module(''.join(('.', inst_name)),
+                                    package=self.inst_loc.__name__)
 
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
-            testing.assert_hasattr(module, mattr)
+            testing.assert_hasattr(self.module, mattr)
             if mattr in self.attr_types.keys():
-                testing.assert_isinstance(getattr(module, mattr),
+                testing.assert_isinstance(getattr(self.module, mattr),
                                           self.attr_types[mattr])
 
         # Check for presence of required instrument attributes
-        for inst_id in module.inst_ids.keys():
-            for tag in module.inst_ids[inst_id]:
-                inst = pysat.Instrument(inst_module=module, tag=tag,
-                                        inst_id=inst_id)
+        for inst_id in self.module.inst_ids.keys():
+            for tag in self.module.inst_ids[inst_id]:
+                self.test_inst = pysat.Instrument(inst_module=self.module,
+                                                  tag=tag, inst_id=inst_id)
 
                 # Test to see that the class parameters were passed in
-                testing.assert_isinstance(inst, pysat.Instrument)
-                assert inst.platform == module.platform
-                assert inst.name == module.name
-                assert inst.inst_id == inst_id
-                assert inst.tag == tag
-                assert inst.inst_module is not None
+                testing.assert_isinstance(self.test_inst, pysat.Instrument)
+                assert self.test_inst.platform == self.module.platform
+                assert self.test_inst.name == self.module.name
+                assert self.test_inst.inst_id == inst_id
+                assert self.test_inst.tag == tag
+                assert self.test_inst.inst_module is not None
 
                 # Test the required class attributes
                 for iattr in self.inst_attrs:
-                    testing.assert_hasattr(inst, iattr)
+                    testing.assert_hasattr(self.test_inst, iattr)
                     if iattr in self.attr_types:
-                        testing.assert_isinstance(getattr(inst, iattr),
+                        testing.assert_isinstance(getattr(self.test_inst,
+                                                          iattr),
                                                   self.attr_types[iattr])
         return
 
@@ -333,14 +348,14 @@ class InstLibTests(object):
 
         """
 
-        module = import_module(''.join(('.', inst_name)),
-                               package=self.inst_loc.__name__)
+        self.module = import_module(''.join(('.', inst_name)),
+                                    package=self.inst_loc.__name__)
 
         # Test for presence of all standard module functions
         for mcall in self.inst_callable:
-            if hasattr(module, mcall):
+            if hasattr(self.module, mcall):
                 # If present, must be a callable function
-                assert callable(getattr(module, mcall))
+                assert callable(getattr(self.module, mcall))
             else:
                 # If absent, must not be a required function
                 assert mcall not in self.module_attrs
@@ -358,9 +373,9 @@ class InstLibTests(object):
 
         """
 
-        module = import_module(''.join(('.', inst_name)),
-                               package=self.inst_loc.__name__)
-        info = module._test_dates
+        self.module = import_module(''.join(('.', inst_name)),
+                                    package=self.inst_loc.__name__)
+        info = self.module._test_dates
         for inst_id in info.keys():
             for tag in info[inst_id].keys():
                 testing.assert_isinstance(info[inst_id][tag], dt.datetime)
@@ -387,8 +402,11 @@ class InstLibTests(object):
             dl_dict = inst_dict['user_info']
         else:
             dl_dict = {}
-        # Note this will download two consecutive days
-        self.test_inst.download(self.date, **dl_dict)
+
+        # Ask to download two consecutive days
+        self.test_inst.download(start=self.date,
+                                stop=self.date + dt.timedelta(days=2),
+                                **dl_dict)
         assert len(self.test_inst.files.files) > 0
         return
 
@@ -468,10 +486,12 @@ class InstLibTests(object):
 
         return
 
+    # TODO(#1172): remove mark.new_tests at v3.3.0
     @pytest.mark.second
     @pytest.mark.load_options
+    @pytest.mark.new_tests
     def test_load_multiple_days(self, inst_dict):
-        """Test that instruments load at each cleaning level.
+        """Test that instruments load multiple days when requested.
 
         Parameters
         ----------
@@ -484,15 +504,22 @@ class InstLibTests(object):
 
         self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
         if len(self.test_inst.files.files) > 0:
+            if self.date < self.test_inst.today():
+                # Make sure the strict time flag doesn't interfere with
+                # the load tests, and re-run with desired clean level
+                self.test_inst.clean_level = 'none'
+                load_and_set_strict_time_flag(self.test_inst, self.date,
+                                              raise_error=True, clean_off=True,
+                                              set_end_date=True)
 
-            # Make sure the strict time flag doesn't interfere with
-            # the load tests, and re-run with desired clean level
-            load_and_set_strict_time_flag(self.test_inst, self.date,
-                                          raise_error=True,
-                                          clean_off=False, set_end_date=True)
-
-            # Make sure more than one day has been loaded
-            assert len(np.unique(self.test_inst.index.day)) > 1
+                # Make sure more than one day has been loaded
+                assert hasattr(self.test_inst.index, 'day'), \
+                    "No data to load for {:}-{:}".format(
+                        self.date, self.date + dt.timedelta(days=2))
+                assert len(np.unique(self.test_inst.index.day)) > 1
+            else:
+                pytest.skip("".join(["Can't download multiple days of real-",
+                                     "time or forecast data"]))
         else:
             pytest.skip("Download data not available")
 
@@ -598,11 +625,13 @@ class InstLibTests(object):
 
         return
 
+    # TODO(#1172): remove mark.new_tests at v3.3.0
     @pytest.mark.second
     @pytest.mark.load_options
+    @pytest.mark.new_tests
     @pytest.mark.parametrize('pad', [{'days': 1}, dt.timedelta(days=1)])
     def test_load_w_pad(self, pad, inst_dict):
-        """Test that instruments load at each cleaning level.
+        """Test that instruments load with a pad specified different ways.
 
         Parameters
         ----------
@@ -642,15 +671,16 @@ class InstLibTests(object):
         if len(self.test_inst.files.files) > 0:
             # Make sure the strict time flag doesn't interfere with
             # the load tests
+            self.test_inst.clean = 'none'
             load_and_set_strict_time_flag(self.test_inst, self.date,
-                                          raise_error=True, clean_off=False)
+                                          raise_error=True, clean_off=True)
 
             if self.test_inst.empty:
                 # This will be empty if this is a forecast file that doesn't
                 # include the load date
                 self.test_inst.pad = None
                 load_and_set_strict_time_flag(self.test_inst, self.date,
-                                              raise_error=True, clean_off=False)
+                                              raise_error=True, clean_off=True)
                 assert not self.test_inst.empty, \
                     "No data on {:}".format(self.date)
                 assert self.test_inst.index.max() < self.date, \
@@ -718,10 +748,10 @@ class InstLibTests(object):
 
         """
 
-        test_inst, self.date = initialize_test_inst_and_date(inst_dict)
+        self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
 
         with warnings.catch_warnings(record=True) as war:
-            test_inst.download(self.date, self.date)
+            self.test_inst.download(self.date, self.date)
 
         assert len(war) >= 1
         categories = [war[j].category for j in range(0, len(war))]

@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 """Tests the pysat Instrument object and methods."""
 
@@ -18,7 +26,6 @@ from pysat.tests.classes.cls_instrument_integration import InstIntegrationTests
 from pysat.tests.classes.cls_instrument_iteration import InstIterationTests
 from pysat.tests.classes.cls_instrument_property import InstPropertyTests
 from pysat.utils import testing
-from pysat.utils.time import filter_datetime_input
 
 
 class TestBasics(InstAccessTests, InstIntegrationTests, InstIterationTests,
@@ -455,6 +462,19 @@ class TestInstGeneral(object):
         """Ensure empty Instrument instantiation runs."""
 
         assert isinstance(self.empty_inst, pysat.Instrument)
+        return
+
+    def test_load_empty_instrument_no_files_error(self):
+        """Ensure error loading Instrument with no files."""
+
+        # Trying to load when there are no files produces multiple warnings
+        # and one Error.
+        with warnings.catch_warnings(record=True) as self.war:
+            testing.eval_bad_input(self.empty_inst.load, IndexError,
+                                   'index 0 is out of bounds')
+        estr = ['No files found for Instrument', 'IndexError will not be']
+        testing.eval_warnings(self.war, estr, warn_type=[UserWarning,
+                                                         DeprecationWarning])
         return
 
     def test_empty_repr_eval(self):

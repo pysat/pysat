@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Unit tests for the padding methods in `pysat.Instrument`."""
 
 import datetime as dt
@@ -11,7 +19,6 @@ import pysat
 import pysat.instruments.pysat_ndtesting
 import pysat.instruments.pysat_testing
 from pysat.utils import testing
-from pysat.utils.time import filter_datetime_input
 
 
 class TestDataPaddingbyFile(object):

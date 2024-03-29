@@ -1,10 +1,17 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Unit tests for the general instrument methods."""
 
 import datetime as dt
 from os import path
 import pandas as pds
 import pytest
-import warnings
 
 import pysat
 from pysat.instruments.methods import general as gen

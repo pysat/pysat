@@ -1,9 +1,14 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Unit tests for the `pysat.Instrument.index` attribute."""
 
-import datetime as dt
 from importlib import reload
-import numpy as np
-import warnings
 
 import pytest
 

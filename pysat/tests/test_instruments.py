@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Unit and Integration Tests for each instrument module.
 
 Note
@@ -9,14 +17,12 @@ Imports test methods from pysat.tests.instrument_test_class
 import datetime as dt
 import numpy as np
 import pandas as pds
-import warnings
 
 import pytest
 
 import pysat
 import pysat.tests.classes.cls_instrument_library as cls_inst_lib
 from pysat.tests.classes.cls_instrument_library import InstLibTests
-from pysat.utils import testing
 
 # Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords
@@ -179,6 +185,7 @@ class TestInstruments(InstLibTests):
         # Construct the expected warnings
         if warn_type == 'mult':
             # Note that we cannot test errors along with other warnings
+            # TODO(#1184) test for both warnings and errors
             inst_dict['inst_module']._clean_warn = {
                 inst_dict['inst_id']: {inst_dict['tag']: {clean_level: [
                     ('warning', warn_level['warning'], warn_msg, final_level),

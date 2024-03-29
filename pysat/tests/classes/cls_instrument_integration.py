@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Integration tests for pysat.Instrument.
 
 Note
@@ -6,18 +14,13 @@ Base class stored here, but tests inherited by test_instrument.py
 
 """
 
-import datetime as dt
 import logging
-import numpy as np
 import os
 import tempfile
 
-import pandas as pds
 import pytest
-import xarray as xr
 
 import pysat
-from pysat.utils import testing
 
 
 class InstIntegrationTests(object):

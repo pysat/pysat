@@ -2,6 +2,9 @@
 # Full license can be found in License.md
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
 # ----------------------------------------------------------------------------
 """Unit tests for the Constellation class."""
 
@@ -616,7 +619,7 @@ class TestConstellationFunc(object):
         # Load the Constellation data
         self.const.load(date=self.ref_time)
 
-        # Delete the UTS data from all instruments
+        # Delete the UTS data from the pysat testing instrument
         dvar = "uts_pysat_testing"
         if method == "del":
             del self.const[dvar]

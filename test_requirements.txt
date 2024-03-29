@@ -5,8 +5,9 @@ hacking>=1.0
 ipython
 m2r2
 numpydoc
-pysatSpaceWeather
+pysatSpaceWeather<0.1.0
 pytest-cov
 pytest-ordering
+readthedocs-sphinx-search==0.3.2
 sphinx
 sphinx_rtd_theme>=1.2.2,<2.0.0

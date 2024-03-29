@@ -1,10 +1,17 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 """Provides generalized routines for integrating instruments into pysat."""
 
 import datetime as dt
 import numpy as np
 import pandas as pds
-import warnings
 
 import pysat
 

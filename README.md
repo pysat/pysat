@@ -10,15 +10,19 @@
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysat/badge.svg?branch=main)](https://coveralls.io/github/pysat/pysat?branch=main)
 [![DOI](https://zenodo.org/badge/33449914.svg)](https://zenodo.org/badge/latestdoi/33449914)
 
-The Python Satellite Data Analysis Toolkit (pysat) is a package providing a
-simple and flexible interface for downloading, loading, cleaning, managing,
-processing, and analyzing scientific measurements. Although pysat was initially
-designed for in situ satellite observations, it now supports many different
-types of ground- and space-based measurements.
+The Python Satellite Data Analysis Toolkit (pysat) provides a simple and
+flexible interface for robust data analysis from beginning to end - including
+downloading, loading, cleaning, managing, processing, and analyzing data.
+Pysat's plug-in design allows analysis support for any data, including user
+provided data sets. The pysat team provides a variety of plug-ins to support
+public scientific data sets in packages such as pysatNASA, pysatMadrigal, and
+more, available as part of the general [pysat ecosystem](https://github.com/pysat).
 
 Full [Documentation](http://pysat.readthedocs.io/en/latest/index.html)
 
 JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
+
+Pysat Ecosystem [Publication](https://www.frontiersin.org/articles/10.3389/fspas.2023.1119775/full)
 
 [Citation Info](https://pysat.readthedocs.io/en/latest/citing.html)
 
@@ -63,7 +67,7 @@ Space Physics community.  This module officially supports Python 3.X+.
 | -------------- | ----------------- |
 | dask           | netCDF4           |
 | numpy >= 1.12  |                   |
-| pandas < 2.1.1 |                   |
+| pandas         |                   |
 | portalocker    |                   |
 | pytest         |                   |
 | scipy          |                   |

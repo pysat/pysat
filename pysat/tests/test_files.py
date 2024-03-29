@@ -1,3 +1,11 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+#
+# DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
+# unlimited.
+# ----------------------------------------------------------------------------
 """Test pysat Files object and code."""
 
 import datetime as dt
@@ -8,7 +16,6 @@ import numpy as np
 import os
 import pandas as pds
 import tempfile
-import time
 
 import pytest
 

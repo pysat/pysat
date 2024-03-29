@@ -12,6 +12,7 @@ Welcome to pysat's documentation!
    introduction.rst
    ecosystem.rst
    citing.rst
+   funding.rst
    installation.rst
    quickstart.rst
    tutorial.rst
@@ -23,3 +24,7 @@ Welcome to pysat's documentation!
    roadmap.rst
    faq.rst
    release_notes.rst
+
+
+.. admonition:: DISTRIBUTION STATEMENT A: Approved for public release.
+		Distribution is unlimited.
