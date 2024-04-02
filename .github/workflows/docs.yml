@@ -25,7 +25,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install with dependencies
-      run: pip install .[doc]
+      run: python setup.py install
 
     - name: Set up pysat
       run: |
