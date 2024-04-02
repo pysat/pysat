@@ -5,7 +5,7 @@
 name: Documentation Check
 
 # Uncomment the "on" statement to activate on Github Actions
-# on: [push, pull_request]
+on: [push, pull_request]
 
 jobs:
   build:
