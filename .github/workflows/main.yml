@@ -1,0 +1,78 @@
+# This workflow will install Python dependencies, run tests and lint with a
+# variety of Python versions. For more information see:
+# https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Pytest with Flake8
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        python-version: ["3.11", "3.12"]
+        numpy_ver: ["latest"]
+        test_config: ["latest"]
+        include:
+          # NEP29 compliance settings
+          - python-version: "3.10"
+            numpy_ver: "1.23"
+            os: ubuntu-latest
+            test_config: "NEP29"
+          # Operational compliance settings
+          - python-version: "3.6.8"
+            numpy_ver: "1.19.5"
+            os: "ubuntu-20.04"
+            test_config: "Ops"
+
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install with older numpy
+      if: ${{ matrix.test_config != 'latest'}}
+      run: |
+        pip install numpy==${{ matrix.numpy_ver }}
+        pip install -r requirements.txt
+        pip install -r test_requirements.txt
+        pip install .
+
+    - name: Install with standard dependencies
+      if: ${{ matrix.test_config == 'latest'}}
+      run: |
+        pip install -r requirements.txt
+        pip install -r test_requirements.txt
+        pip install .
+
+    - name: Set up pysat
+      run: |
+        mkdir pysatData
+        python -c "import pysat; pysat.params['data_dirs'] = 'pysatData'"
+
+    - name: Test with pytest
+      run: pytest
+
+    - name: Publish results to coveralls
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_PARALLEL: true
+      run: coveralls --rcfile=setup.cfg --service=github
+
+  finish:
+    name: Finish Coverage Analysis
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        pip install --upgrade coveralls
+        coveralls --service=github --finish
