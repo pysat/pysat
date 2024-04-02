@@ -1,0 +1,7 @@
+coveralls
+kiwisolver < 1.2
+madrigalWeb
+pandas >= 0.23, <0.25
+pysatCDF
+PyForecastTools
+xarray < 0.15

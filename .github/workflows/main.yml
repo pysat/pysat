@@ -40,11 +40,14 @@ jobs:
       if: ${{ matrix.test_config != 'latest'}}
       run: |
         pip install numpy==${{ matrix.numpy_ver }}
+        pip install -r requirements.txt
         python setup.py install
 
     - name: Install with standard dependencies
       if: ${{ matrix.test_config == 'latest'}}
-      run: python setup.py install
+      run: |
+        pip install -r requirements.txt
+        python setup.py install
 
     - name: Set up pysat
       run: |
