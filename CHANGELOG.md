@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.3.1] - 2024-04-31
+- Final maintenance release
+- Replace travis CI with GitHub Actions
+
 ## [2.3.0] - 2021-04-01
 - Allow use of new Instrument kwarg, `inst_id` (replaces `sat_id`)
 - Allow limited use of new list_files kwarg, `file_cadance`
