@@ -77,7 +77,10 @@ class TestInstruments(InstLibTests):
 
         self.test_inst.load(date=date)
 
-        assert self.test_inst['uts'].iloc[0] == output
+        if self.test_inst.pandas_format:
+            assert self.test_inst['uts'].iloc[0] == output
+        else:
+            assert self.test_inst['uts'][0] == output
         return
 
     @pytest.mark.parametrize("inst_dict", instruments['download'])
