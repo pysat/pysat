@@ -148,7 +148,7 @@ class TestInstYearlyCadence(TestInstCadence):
 
         reload(pysat.instruments.pysat_testing)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
-        self.freq = 'AS'
+        self.freq = 'YS'
 
         # Since these are yearly files, use a longer date range
         date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
