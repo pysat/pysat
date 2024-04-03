@@ -533,7 +533,8 @@ class Orbits(object):
         # the time difference between orbits (not individual orbits)
         orbit_ut_diff = ut_vals[ind].diff()
         if not self.inst.pandas_format:
-            orbit_lt_diff = self.inst[self.orbit_index].to_pandas().iloc[ind].diff()
+            orbit_lt_diff = self.inst[
+                self.orbit_index].to_pandas().iloc[ind].diff()
         else:
             orbit_lt_diff = self.inst[self.orbit_index].iloc[ind].diff()
 
