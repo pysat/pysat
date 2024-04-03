@@ -55,7 +55,7 @@ the pysat repository at ``demo/cnofs_vefi_dc_b_orbit_plots.py``.
        # pandas documentation for more information about the `resample` mtehod.
        # The 1-s cadence was chosen because it is the nominal cadence for this
        # instrument.
-       vefi.data = vefi.data.resample('1S', label='left').ffill(limit=1)
+       vefi.data = vefi.data.resample('1s', label='left').ffill(limit=1)
 
        # Create a figure with seven subplots
        fig, ax = plt.subplots(7, sharex=True, figsize=(8.5, 11))

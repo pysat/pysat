@@ -253,7 +253,7 @@ def create_date_range(start, stop, freq='D'):
         stop dates.
     freq : str
         The frequency of the desired output.  Codes correspond to pandas
-        date_range codes: 'D' daily, 'M' monthly, 'S' secondly
+        date_range codes: 'D' daily, 'M' monthly, 's' secondly
 
     Returns
     -------

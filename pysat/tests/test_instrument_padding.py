@@ -126,7 +126,7 @@ class TestDataPaddingbyFile(object):
 
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.delta = pds.date_range(self.testInst.index[0],
-                                    self.testInst.index[-1], freq='S')
+                                    self.testInst.index[-1], freq='s')
         assert np.all(self.testInst.index == self.delta)
         return
 
@@ -441,7 +441,7 @@ class TestDataPadding(object):
         self.ref_doy = 1
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         test_index = pds.date_range(self.testInst.index[0],
-                                    self.testInst.index[-1], freq='S')
+                                    self.testInst.index[-1], freq='s')
         assert (np.all(self.testInst.index == test_index))
         return
 

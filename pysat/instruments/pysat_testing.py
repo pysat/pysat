@@ -109,7 +109,7 @@ def load(fnames, tag='', inst_id='', sim_multi_file_right=False,
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='1S',
+    uts, index, dates = mm_test.generate_times(fnames, num_samples, freq='1s',
                                                start_time=start_time)
 
     # Specify the date tag locally and determine the desired date range

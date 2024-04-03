@@ -75,7 +75,7 @@ def load(fnames, tag='', inst_id='', start_time=None, num_samples=96,
     pysat.logger.info(''.join(('test_load_kwarg = ', str(test_load_kwarg))))
 
     # Create an artificial model data set
-    freq_str = '900S' if tag == '' else '1H'
+    freq_str = '900s' if tag == '' else '1h'
     uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq=freq_str,
                                                start_time=start_time)
