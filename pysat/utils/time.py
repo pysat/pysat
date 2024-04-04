@@ -387,6 +387,6 @@ def today():
         Today's date in UTC
 
     """
-    today_utc = filter_datetime_input(dt.datetime.utcnow())
+    today_utc = filter_datetime_input(dt.datetime.now(dt.UTC))
 
     return today_utc

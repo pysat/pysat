@@ -467,7 +467,7 @@ class InstLibTests(object):
 
         # Get the instrument information and update the date to be in the future
         self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
-        self.date = dt.datetime(dt.datetime.utcnow().year + 100, 1, 1)
+        self.date = dt.datetime(dt.datetime.now(dt.UTC).year + 100, 1, 1)
 
         # Make sure the strict time flag doesn't interfere with the load test
         load_and_set_strict_time_flag(self.test_inst, self.date,
