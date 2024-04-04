@@ -2385,7 +2385,7 @@ class Instrument(object):
                 equal_dims = True
                 idat = 0
                 while idat < len(new_data) - 1 and equal_dims:
-                    if new_data[idat].dims != new_data[idat + 1].dims:
+                    if new_data[idat].sizes != new_data[idat + 1].sizes:
                         equal_dims = False
                     idat += 1
 

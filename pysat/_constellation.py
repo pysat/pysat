@@ -745,7 +745,7 @@ class Constellation(object):
             # Get the common coordinates needed for all data
             for cinst in self.instruments:
                 if not cinst.pandas_format:
-                    for new_coord in cinst.data.dims.keys():
+                    for new_coord in cinst.data.sizes.keys():
                         if new_coord in cinst.data.coords.keys():
                             if new_coord not in coords.keys():
                                 coords[new_coord] = cinst.data.coords[new_coord]
