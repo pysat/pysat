@@ -3,6 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.2.1] - 2024-XX-XX
+--------------------
+* Maintenance
+  * Update usage of `dims` to be consistent with future versions of `xarray`
+  * Update frequency strings for pandas
+  * Updates usage of `dt.datetime.utcnow()` to `dt.datetime.now(dt.UTC)`
+
 [3.2.0] - 2024-03-27
 --------------------
 * New Features
