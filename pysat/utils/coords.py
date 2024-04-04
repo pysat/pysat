@@ -300,7 +300,7 @@ def expand_xarray_dims(data_list, meta, dims_equal=False, exclude_dims=None):
     # Get a list of all the dimensions
     if dims_equal:
         if len(data_list) > 0:
-            dims = [dim_key for dim_key in list(data_list[0].dims.keys())
+            dims = [dim_key for dim_key in data_list[0].dims
                     if dim_key not in exclude_dims]
         else:
             dims = []
@@ -308,10 +308,10 @@ def expand_xarray_dims(data_list, meta, dims_equal=False, exclude_dims=None):
         dims = list()
         for sdata in data_list:
             if len(dims) == 0:
-                dims = [dim_key for dim_key in list(sdata.dims.keys())
+                dims = [dim_key for dim_key in sdata.dims
                         if dim_key not in exclude_dims]
             else:
-                for dim in list(sdata.dims.keys()):
+                for dim in sdata.dims:
                     if dim not in dims and dim not in exclude_dims:
                         dims.append(dim)
 
@@ -324,8 +324,8 @@ def expand_xarray_dims(data_list, meta, dims_equal=False, exclude_dims=None):
     out_list = list()
     for i, sdata in enumerate(data_list):
         # Determine which dimensions need to be updated
-        fix_dims = [dim for dim in sdata.dims.keys() if dim in combo_dims.keys()
-                    and sdata.dims[dim] < combo_dims[dim]]
+        fix_dims = [dim for dim in sdata.dims if dim in combo_dims.keys()
+                    and sdata.sizes[dim] < combo_dims[dim]]
 
         new_data = {}
         update_new = False

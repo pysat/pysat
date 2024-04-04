@@ -241,7 +241,7 @@ class TestBasicsNDXarray(TestBasics):
                                            self.ref_time + dt.timedelta(days=2)]
         assert not self.testInst.empty
         assert len(self.testInst.index) == 0
-        for dim in self.testInst.data.dims.keys():
+        for dim in self.testInst.data.dims:
             if dim != 'time':
                 assert len(self.testInst[dim]) > 0
         return
