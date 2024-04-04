@@ -1429,7 +1429,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     attrb_dict['File_Date'] = inst.index[-1].strftime(
         '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
     attrb_dict['File_Date'] = attrb_dict['File_Date'][:-3] + ' UTC'
-    attrb_dict['Generation_Date'] = dt.datetime.now(dt.UTC).strftime('%Y%m%d')
+    utcnow = dt.datetime.now(dt.timezone.utc)
+    attrb_dict['Generation_Date'] = utcnow.strftime('%Y%m%d')
     attrb_dict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
 
     # Check for binary types, convert to string or int when found

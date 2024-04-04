@@ -9,7 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Update usage of `dims` to be consistent with future versions of `xarray`
   * Update frequency strings for `pandas`
   * Update usage of getitem for `pds.Series`
-  * Updates usage of `dt.datetime.utcnow()` to `dt.datetime.now(dt.UTC)`
+  * Updates usage of `dt.datetime.utcnow()` to `dt.datetime.now(dt.timezone.utc)`
 
 [3.2.0] - 2024-03-27
 --------------------

@@ -298,7 +298,7 @@ class TestFilterDatetimeInput(object):
         return
 
     @pytest.mark.parametrize("in_time, islist",
-                             [(dt.datetime.now(dt.UTC), False),
+                             [(dt.datetime.now(dt.timezone.utc), False),
                               (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
                                   dt.timedelta(seconds=14400))), False),
                               ([dt.datetime(2010, 1, 1, 12, i,

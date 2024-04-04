@@ -315,7 +315,7 @@ class InstPropertyTests(object):
     def test_today_yesterday_and_tomorrow(self):
         """Test the correct instantiation of yesterday/today/tomorrow dates."""
 
-        self.ref_time = dt.datetime.now(dt.UTC)
+        self.ref_time = dt.datetime.now(dt.timezone.utc)
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         assert self.out == self.testInst.today()
@@ -326,7 +326,7 @@ class InstPropertyTests(object):
     def test_filtered_date_attribute(self):
         """Test use of filter during date assignment."""
 
-        self.ref_time = dt.datetime.now(dt.UTC)
+        self.ref_time = dt.datetime.now(dt.timezone.utc)
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         self.testInst.date = self.ref_time
