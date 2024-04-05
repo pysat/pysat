@@ -1378,15 +1378,15 @@ class TestXarrayIO(object):
         vars = io.xarray_all_vars(self.testInst.data)
 
         # Get data variables
-        xvars = self.testInst.data.data_vars.keys()
+        xvars = list(self.testInst.data.data_vars.keys())
         testing.assert_list_contains(xvars, vars)
 
         # Get/test coordinate variables
-        xcoords = self.testInst.data.coords.keys()
+        xcoords = list(self.testInst.data.coords.keys())
         testing.assert_list_contains(xcoords, vars)
 
         # Get/test dimension variables
-        xdims = self.testInst.data.dims.keys()
+        xdims = list(self.testInst.data.sizes.keys())
         testing.assert_list_contains(xdims, vars)
 
         # Test uniqueness

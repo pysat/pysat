@@ -477,7 +477,7 @@ class TestConstellationFunc(object):
                        for iname in self.const.names])
 
         # Test the output instrument data
-        testing.assert_lists_equal(self.dims, list(out_inst.data.dims.keys()))
+        testing.assert_lists_equal(self.dims, list(out_inst.data.sizes.keys()))
         testing.assert_list_contains(self.dims,
                                      list(out_inst.data.coords.keys()))
 

@@ -1696,9 +1696,9 @@ class Instrument(object):
                                        date.strftime('%d %B %Y')))
             else:
                 output_str = ' '.join(('Returning', output_str, 'data from',
-                                       fname[0]))
+                                       fname.iloc[0]))
                 if len(fname) > 1:
-                    output_str = ' '.join((output_str, '::', fname[-1]))
+                    output_str = ' '.join((output_str, '::', fname.iloc[-1]))
         else:
             # There was no data signal
             if date is not None:
@@ -2385,7 +2385,7 @@ class Instrument(object):
                 equal_dims = True
                 idat = 0
                 while idat < len(new_data) - 1 and equal_dims:
-                    if new_data[idat].dims != new_data[idat + 1].dims:
+                    if new_data[idat].sizes != new_data[idat + 1].sizes:
                         equal_dims = False
                     idat += 1
 
@@ -3675,8 +3675,8 @@ class Instrument(object):
                     dsel2 = slice(last_date, last_date
                                   + dt.timedelta(hours=23, minutes=59,
                                                  seconds=59))
-                    if all([curr_bound[0][0] == self.files[dsel1][0],
-                            curr_bound[1][0] == self.files[dsel2][-1]]):
+                    if all([curr_bound[0][0] == self.files[dsel1].iloc[0],
+                            curr_bound[1][0] == self.files[dsel2].iloc[-1]]):
                         pysat.logger.info(' '.join(('Updating instrument',
                                                     'object bounds by file')))
                         dsel1 = slice(self.files.start_date,
@@ -3686,8 +3686,8 @@ class Instrument(object):
                         dsel2 = slice(self.files.stop_date, self.files.stop_date
                                       + dt.timedelta(hours=23, minutes=59,
                                                      seconds=59))
-                        self.bounds = (self.files[dsel1][0],
-                                       self.files[dsel2][-1],
+                        self.bounds = (self.files[dsel1].iloc[0],
+                                       self.files[dsel2].iloc[-1],
                                        curr_bound[2], curr_bound[3])
         else:
             pysat.logger.warning('Requested download over an empty date range.')

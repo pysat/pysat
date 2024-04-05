@@ -776,8 +776,12 @@ class InstAccessTests(object):
         """
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[index, 'mlt']
-                      == self.testInst.data['mlt'][index])
+        if self.testInst.pandas_format:
+            assert np.all(self.testInst[index, 'mlt']
+                          == self.testInst.data['mlt'].iloc[index])
+        else:
+            assert np.all(self.testInst[index, 'mlt']
+                          == self.testInst.data['mlt'][index])
         return
 
     def test_data_access_by_row_slicing(self):

@@ -425,11 +425,11 @@ class TestExpandXarrayDims(object):
             exclude_dims = []
 
         # Define the reference Dataset
-        ref_dims = list(self.out[0].dims.keys())
+        ref_dims = list(self.out[0].sizes.keys())
 
         # Cycle through the remaining Datasets
         for i, xdata in enumerate(self.out[1:]):
-            test_dims = list(xdata.dims.keys())
+            test_dims = list(xdata.sizes.keys())
 
             # Test that the expected dimension names overlap between datasets
             if dims_equal:

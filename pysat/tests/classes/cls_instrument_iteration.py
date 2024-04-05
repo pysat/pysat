@@ -79,7 +79,7 @@ class InstIterationTests(object):
 
         if inds is not None:
             for i in inds:
-                fnames.append(self.testInst.files.files[i])
+                fnames.append(self.testInst.files.files.iloc[i])
                 ftimes.append(filter_datetime_input(pds.to_datetime(
                     self.testInst.files.files.index[i]).to_pydatetime()))
 

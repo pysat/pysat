@@ -525,7 +525,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, num, freq='1S', start_time=None):
+def generate_times(fnames, num, freq='1s', start_time=None):
     """Construct list of times for simulated instruments.
 
     Parameters
@@ -537,7 +537,7 @@ def generate_times(fnames, num, freq='1S', start_time=None):
         current day.
     freq : str
         Frequency of temporal output, compatible with pandas.date_range
-        [default : '1S']
+        (default='1s')
     start_time : dt.timedelta or NoneType
         Offset time of start time in fractional hours since midnight UT.
         If None, set to 0.
