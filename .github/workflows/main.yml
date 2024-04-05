@@ -12,12 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12"]
         numpy_ver: ["latest"]
         test_config: ["latest"]
         include:
           # NEP29 compliance settings
-          - python-version: "3.9"
+          - python-version: "3.10"
             numpy_ver: "1.23"
             os: ubuntu-latest
             test_config: "NEP29"
