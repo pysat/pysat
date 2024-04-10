@@ -125,8 +125,8 @@ class TestCalcFreqRes(object):
         return
 
     @pytest.mark.parametrize('trange,freq_out',
-                             [(np.arange(0.0, 4.0, 1.0), '1S'),
-                              (np.arange(0.0, 0.04, .01), '10000000N')])
+                             [(np.arange(0.0, 4.0, 1.0), '1s'),
+                              (np.arange(0.0, 0.04, .01), '10000000ns')])
     def test_calc_freq(self, trange, freq_out):
         """Test index frequency calculation."""
 
@@ -138,8 +138,8 @@ class TestCalcFreqRes(object):
         return
 
     @pytest.mark.parametrize('freq_in,res_out',
-                             [('S', 1.0), ('2D', 172800.0),
-                              ('10000000N', 0.01)])
+                             [('s', 1.0), ('2D', 172800.0),
+                              ('10000000ns', 0.01)])
     def test_freq_to_res(self, freq_in, res_out):
         """Test index frequency to resolution calculation."""
         res = pytime.freq_to_res(freq_in)
@@ -298,7 +298,7 @@ class TestFilterDatetimeInput(object):
         return
 
     @pytest.mark.parametrize("in_time, islist",
-                             [(dt.datetime.utcnow(), False),
+                             [(dt.datetime.now(dt.timezone.utc), False),
                               (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
                                   dt.timedelta(seconds=14400))), False),
                               ([dt.datetime(2010, 1, 1, 12, i,

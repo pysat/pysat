@@ -353,7 +353,7 @@ class TestIfyFunctions(object):
 
         new_iterable = utils.listify(iterable)
         tst_iterable = [np.nan
-                        for i in range(int(np.product(np.shape(iterable))))]
+                        for i in range(int(np.prod(np.shape(iterable))))]
         utils.testing.assert_lists_equal(new_iterable, tst_iterable,
                                          test_nan=True)
         return
@@ -365,7 +365,7 @@ class TestIfyFunctions(object):
         """Test listify with various np.arrays of integers."""
 
         new_iterable = utils.listify(iterable)
-        tst_iterable = [1 for i in range(int(np.product(np.shape(iterable))))]
+        tst_iterable = [1 for i in range(int(np.prod(np.shape(iterable))))]
         utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
@@ -394,7 +394,7 @@ class TestIfyFunctions(object):
 
         new_iterable = utils.listify(iterable)
         tst_iterable = [np.timedelta64(1)
-                        for i in range(int(np.product(np.shape(iterable))))]
+                        for i in range(int(np.prod(np.shape(iterable))))]
         utils.testing.assert_lists_equal(new_iterable, tst_iterable)
         return
 
@@ -414,7 +414,7 @@ class TestIfyFunctions(object):
         """
 
         output = pysat.utils.stringify(astrlike)
-        assert type(output) is type(astrlike)
+        isinstance(output, type(astrlike))
         return
 
 

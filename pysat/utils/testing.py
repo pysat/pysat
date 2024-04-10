@@ -174,7 +174,7 @@ def eval_warnings(warns, check_msgs, warn_type=DeprecationWarning):
         List of warnings.WarningMessage objects
     check_msgs : list
         List of strings containing the expected warning messages
-    warn_type : type
+    warn_type : type or list-like
         Type or list-like for the warning messages (default=DeprecationWarning)
 
     Raises

@@ -148,7 +148,7 @@ class TestInstYearlyCadence(TestInstCadence):
 
         reload(pysat.instruments.pysat_testing)
         self.ref_time = pysat.instruments.pysat_testing._test_dates['']['']
-        self.freq = 'AS'
+        self.freq = 'YS'
 
         # Since these are yearly files, use a longer date range
         date_range = pds.date_range(self.ref_time - pds.DateOffset(years=1),
@@ -241,7 +241,7 @@ class TestBasicsNDXarray(TestBasics):
                                            self.ref_time + dt.timedelta(days=2)]
         assert not self.testInst.empty
         assert len(self.testInst.index) == 0
-        for dim in self.testInst.data.dims.keys():
+        for dim in self.testInst.data.dims:
             if dim != 'time':
                 assert len(self.testInst[dim]) > 0
         return
