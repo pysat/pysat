@@ -63,6 +63,5 @@ jobs:
 
     - name: Check that install imports correctly
       run: |
-# Needs to be in another directory
         cd pysatData
         python -c "import pysat; print(pysat.__version__)"
