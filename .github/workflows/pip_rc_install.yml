@@ -57,7 +57,7 @@ jobs:
       run: |
         pip -V
         python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
-        pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
+        python -m pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
 
     - name: Set up pysat
       run: |
