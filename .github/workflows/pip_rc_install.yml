@@ -44,6 +44,7 @@ jobs:
     - name: Install Operational dependencies
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
+      pip install "pip<19.0"
         pip install numpy==${{ matrix.numpy_ver }}
         pip install -r requirements.txt
 
