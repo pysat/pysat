@@ -12,8 +12,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.11"]  # Keep this version at the highest supported Python version
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        python-version: ["3.11", "3.12"]
+        numpy_ver: ["latest"]
+        test_config: ["latest"]
+        include:
+          # NEP29 compliance settings
+          - python-version: "3.10"
+            numpy_ver: "1.23"
+            os: ubuntu-latest
+            test_config: "NEP29"
+          # Operational compliance settings
+          - python-version: "3.6.8"
+            numpy_ver: "1.19.5"
+            os: "ubuntu-20.04"
+            test_config: "Ops"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -25,10 +38,27 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install standard dependencies
+      if: ${{ matrix.test_config == 'latest'}}
       run: pip install -r requirements.txt
 
+    - name: Install Operational dependencies
+      if: ${{ matrix.test_config == 'Ops'}}
+      run: |
+        pip install numpy==${{ matrix.numpy_ver }}
+        pip install -r requirements.txt
+        pip install "pip<19.0"
+
+    - name: Install NEP29 dependencies
+      if: ${{ matrix.test_config == 'NEP29'}}
+      run: |
+        pip install numpy==${{ matrix.numpy_ver }}
+        pip install --upgrade-strategy only-if-needed -r requirements.txt
+
     - name: Install pysat RC
-      run: pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
+      run: |
+        pip -V
+        python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
+        python -m pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
 
     - name: Set up pysat
       run: |
@@ -37,5 +67,6 @@ jobs:
 
     - name: Check that install imports correctly
       run: |
-        cd ..
+        cd pysatData
+        python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
         python -c "import pysat; print(pysat.__version__)"
