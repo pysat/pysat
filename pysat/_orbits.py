@@ -379,7 +379,7 @@ class Orbits(object):
             # Iterating by date.  We need to check step (frequency string)
             # against width (timedelta)
             step = pds.tseries.frequencies.to_offset(self.inst._iter_step)
-            step = dt.timedelta(seconds=step.delta.total_seconds())
+            step = dt.timedelta(seconds=pds.Timedelta(step).total_seconds())
             root = dt.datetime(2001, 1, 1)
             if root + step < root + self.inst._iter_width:
                 raise ValueError(estr)
