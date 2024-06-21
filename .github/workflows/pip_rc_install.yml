@@ -60,7 +60,7 @@ jobs:
         pip -V
         python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
         if [[ "${{ matrix.os }}" == "ubuntu-20.04" && "${{ matrix.python-version }}" == "3.6.8" ]]; then
-          wget https://test.pypi.org/project/pysat/3.2.1rc1/#files
+          wget https://test-files.pythonhosted.org/packages/3a/67/6f0bcba1a9937ce4615e4c87cd69acf69c7ab8032c83f90cfebf8b425611/pysat-3.2.1rc1.tar.gz
           tar -xzf pysat-3.2.1rc1.tar.gz
           cd pysat-3.2.1rc1
           python setup.py install
