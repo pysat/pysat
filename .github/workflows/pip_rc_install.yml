@@ -58,7 +58,14 @@ jobs:
       run: |
         pip -V
         python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
-        python -m pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
+        if [[ "${{ matrix.os }}" == "ubuntu-20.04" && "${{ matrix.python-version }}" == "3.6.8" ]]; then
+          wget https://test.pypi.org/project/pysat/3.2.1rc1/#files
+          tar -xzf pysat-3.2.1rc1.tar.gz
+          cd pysat-3.2.1rc1
+          python setup.py install
+        else
+          python -m pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
+        fi
 
     - name: Set up pysat
       run: |
