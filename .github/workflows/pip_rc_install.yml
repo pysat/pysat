@@ -55,6 +55,7 @@ jobs:
         pip install --upgrade-strategy only-if-needed -r requirements.txt
 
     - name: Install pysat RC
+      shell: bash
       run: |
         pip -V
         python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
