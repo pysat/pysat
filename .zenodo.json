@@ -67,10 +67,15 @@
         "name": "Leite, Silvio",
         "orcid": "0000-0003-1707-7963"
       },
-	{
+	    {
         "affiliation": "NASA NPP",
         "name": "Esman, Teresa",
         "orcid": "0000-0003-0382-6281"
+      },
+      {
+        "affiliation": "Universities Space Research Association, Goddard Space Flight Center",
+        "name": "Govada, Aadarsh",
+        "orcid": "0009-0004-7873-5899"
       }
     ]
 }
