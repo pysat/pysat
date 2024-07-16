@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.2.1] - 2024-XX-XX
 --------------------
+* Bug Fix
+  * Fixed a bug for identifying clean warnings to test
 * Maintenance
   * Update usage of `dims` to be consistent with future versions of `xarray`
   * Update frequency strings for `pandas`
