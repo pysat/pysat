@@ -2027,6 +2027,13 @@ class Instrument(object):
         else:
             file_freq = '1D'  # This is the pysat default
 
+        # Force minimum file frequency to be 1D
+        common_dt = pds.to_datetime("2000-01-01")
+        min_freq_dt = common_dt + pds.tseries.frequencies.to_offset('1D')
+        file_freq_dt = common_dt + pds.tseries.frequencies.to_offset(file_freq)
+        if file_freq_dt < min_freq_dt:
+            file_freq = '1D'
+
         # Pull out start and stop times now that other optional items have
         # been checked out.
         start = value[0]
