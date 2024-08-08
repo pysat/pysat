@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 [3.2.1] - 2024-XX-XX
 --------------------
+* Bug Fix
+  * Fixed a bug for identifying clean warnings to test
 * Maintenance
   * Update usage of `dims` to be consistent with future versions of `xarray`
   * Update frequency strings for `pandas`
@@ -12,6 +14,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updates usage of `dt.datetime.utcnow()` to `dt.datetime.now(dt.timezone.utc)`
   * Drop testing for python 3.9 following NEP29.
   * Update pip rc install workflow to test against multiple python versions
+* Bug Fix
+  * Imposed minimum frequency of `1D` on `Instrument.bounds` to enable data loading for instruments with inter-file time intervals of less than one day
 
 [3.2.0] - 2024-03-27
 --------------------
