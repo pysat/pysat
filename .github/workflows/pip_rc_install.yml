@@ -60,7 +60,6 @@ jobs:
     - name: Install pysat RC
       run: |
         pip -V
-        python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
         python -m pip install --no-deps --pre -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pysat
 
     - name: Set up pysat
@@ -71,5 +70,4 @@ jobs:
     - name: Check that install imports correctly
       run: |
         cd pysatData
-        python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
         python -c "import pysat; print(pysat.__version__)"
