@@ -545,8 +545,14 @@ class InstLibTests(object):
         # Not all Instruments have warning messages to test, only run tests
         # when the desired test attribute is defined
         if hasattr(inst_dict['inst_module'], '_clean_warn'):
-            clean_warn = inst_dict['inst_module']._clean_warn[
-                inst_dict['inst_id']][inst_dict['tag']]
+            try:
+                clean_warn = inst_dict['inst_module']._clean_warn[
+                    inst_dict['inst_id']][inst_dict['tag']]
+            except KeyError:
+                # Combo does not exist for this instrument, skip test.
+                pytest.skip("".join(["No clean warnings for Instrument ",
+                                     repr(inst_dict['inst_module']), " level ",
+                                     clean_level]))
 
             # Cleaning warnings may vary by clean level, test the warning
             # messages at the current clean level, specified by `clean_level`
