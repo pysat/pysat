@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Update usage of getitem for `pds.Series`
   * Updates usage of `dt.datetime.utcnow()` to `dt.datetime.now(dt.timezone.utc)`
   * Drop testing for python 3.9 following NEP29.
+  * Update pip rc install workflow to test against multiple python versions
 * Bug Fix
   * Imposed minimum frequency of `1D` on `Instrument.bounds` to enable data loading for instruments with inter-file time intervals of less than one day
 
