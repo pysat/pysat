@@ -4,6 +4,7 @@
 </div>
 
 # pysat: Python Satellite Data Analysis Toolkit
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pysat)
 [![PyPI Package latest release](https://img.shields.io/pypi/v/pysat.svg)](https://pypi.python.org/pypi/pysat)
 [![Build Status](https://github.com/pysat/pysat/actions/workflows/main.yml/badge.svg)](https://github.com/pysat/pysat/actions/workflows/main.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
@@ -79,6 +80,9 @@ Space Physics community.  This module officially supports Python 3.X+.
 ```
 pip install pysat
 ```
+Note that while support for python 3.6 is maintained for opertional purposes, there 
+have been issues with installing through PyPi on older systems. Installation through 
+GitHub is recommended for older systems.
 
 ## GitHub Installation
 ```
