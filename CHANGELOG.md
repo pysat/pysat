@@ -14,7 +14,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Update usage of getitem for `pds.Series`
   * Updates usage of `dt.datetime.utcnow()` to `dt.datetime.now(dt.timezone.utc)`
   * Drop testing for python 3.9 following NEP29.
-  * Update useage of `step.delta` to `pds.Timedelta(step)`
   * Update pip rc install workflow to test against multiple python versions
   * Updated deprecated useage of `step.delta` to `pds.Timedelta(step)`
 
