@@ -55,7 +55,6 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-  "coveralls",
   "flake8",
   "flake8-docstrings",
   "hacking >= 1.0",
