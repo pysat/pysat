@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Drop testing for python 3.9 following NEP29.
   * Update pip rc install workflow to test against multiple python versions
   * Implement coveralls app in GitHub Actions
+  * Updated deprecated useage of `step.delta` to `pds.Timedelta(step)`
 
 [3.2.0] - 2024-03-27
 --------------------
