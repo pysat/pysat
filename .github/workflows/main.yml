@@ -18,7 +18,7 @@ jobs:
         include:
           # NEP29 compliance settings
           - python-version: "3.10"
-            numpy_ver: "1.23"
+            numpy_ver: "1.24"
             os: ubuntu-latest
             test_config: "NEP29"
           # Operational compliance settings
