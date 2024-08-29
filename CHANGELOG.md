@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Update pip rc install workflow to test against multiple python versions
   * Implement coveralls app in GitHub Actions
   * Updated deprecated useage of `step.delta` to `pds.Timedelta(step)`
+  * Updated rationale and usage for `export_pysat_info` in docstrings.
 
 [3.2.0] - 2024-03-27
 --------------------

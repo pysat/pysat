@@ -3743,8 +3743,11 @@ class Instrument(object):
              and a value is NaN then that attribute simply won't be included in
              the netCDF4 file. (default=None)
         export_pysat_info : bool
-            If True, platform, name, tag, and inst_id will be appended to the
-            metadata.  (default=True)
+            If True, platform, name, tag, inst_id, acknowledgements, and
+            references will be appended to the metadata.  For some operational
+            uses (e.g., conversion of Level 1 to Level 2 data), it may be
+            desirable to set this to false to avoid conflicting versions of
+            these parameters. (default=True)
         unlimited_time : bool
              Flag specifying whether or not the epoch/time dimension should be
              unlimited; it is when the flag is True. (default=True)
