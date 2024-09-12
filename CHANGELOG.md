@@ -13,11 +13,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Update frequency strings for `pandas`
   * Update usage of getitem for `pds.Series`
   * Updates usage of `dt.datetime.utcnow()` to `dt.datetime.now(dt.timezone.utc)`
-  * Drop testing for python 3.9 following NEP29.
+  * Implement SPEC0000 testing limits for pandas, scipy, xarray.
   * Update pip rc install workflow to test against multiple python versions
   * Implement coveralls app in GitHub Actions
   * Updated deprecated useage of `step.delta` to `pds.Timedelta(step)`
   * Updated rationale and usage for `export_pysat_info` in docstrings.
+  * Update lower limits of core dependencies based on operational tests
 
 [3.2.0] - 2024-03-27
 --------------------
