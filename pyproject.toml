@@ -7,7 +7,7 @@ name = "pysat"
 version = "3.2.1"
 description = "Supports science analysis across disparate data platforms"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.9"
 license = {file = "LICENSE"}
 authors = [
     {name = "Russell Stoneback, et al.", email = "pysat.developers@gmail.com"},
@@ -20,7 +20,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Atmospheric Science",
   "License :: OSI Approved :: BSD License",
   "Natural Language :: English",
-  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
