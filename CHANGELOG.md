@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.2.1] - 2024-09-30
+[3.2.1] - 2024-10-03
 --------------------
 * Bug Fix
   * Fixed a bug for identifying clean warnings to test
