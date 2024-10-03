@@ -467,7 +467,8 @@ class InstLibTests(object):
 
         # Get the instrument information and update the date to be in the future
         self.test_inst, self.date = initialize_test_inst_and_date(inst_dict)
-        self.date = dt.datetime(dt.datetime.utcnow().year + 100, 1, 1)
+        self.date = dt.datetime(dt.datetime.now(dt.timezone.utc).year + 100,
+                                1, 1)
 
         # Make sure the strict time flag doesn't interfere with the load test
         load_and_set_strict_time_flag(self.test_inst, self.date,
@@ -544,8 +545,14 @@ class InstLibTests(object):
         # Not all Instruments have warning messages to test, only run tests
         # when the desired test attribute is defined
         if hasattr(inst_dict['inst_module'], '_clean_warn'):
-            clean_warn = inst_dict['inst_module']._clean_warn[
-                inst_dict['inst_id']][inst_dict['tag']]
+            try:
+                clean_warn = inst_dict['inst_module']._clean_warn[
+                    inst_dict['inst_id']][inst_dict['tag']]
+            except KeyError:
+                # Combo does not exist for this instrument, skip test.
+                pytest.skip("".join(["No clean warnings for Instrument ",
+                                     repr(inst_dict['inst_module']), " level ",
+                                     clean_level]))
 
             # Cleaning warnings may vary by clean level, test the warning
             # messages at the current clean level, specified by `clean_level`

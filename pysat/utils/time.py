@@ -196,10 +196,10 @@ def calc_freq(index):
     # Format output frequency
     if np.floor(freq_sec) == freq_sec:
         # The frequency is on the order of seconds or greater
-        freq = "{:.0f}S".format(freq_sec)
+        freq = "{:.0f}s".format(freq_sec)
     else:
         # There are sub-seconds.  Go straigt to nanosec for best resoution
-        freq = "{:.0f}N".format(freq_sec * 1.0e9)
+        freq = "{:.0f}ns".format(freq_sec * 1.0e9)
 
     return freq
 
@@ -253,7 +253,7 @@ def create_date_range(start, stop, freq='D'):
         stop dates.
     freq : str
         The frequency of the desired output.  Codes correspond to pandas
-        date_range codes: 'D' daily, 'M' monthly, 'S' secondly
+        date_range codes: 'D' daily, 'M' monthly, 's' secondly
 
     Returns
     -------
@@ -387,6 +387,6 @@ def today():
         Today's date in UTC
 
     """
-    today_utc = filter_datetime_input(dt.datetime.utcnow())
+    today_utc = filter_datetime_input(dt.datetime.now(dt.timezone.utc))
 
     return today_utc

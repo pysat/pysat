@@ -12,15 +12,18 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12"]
         numpy_ver: ["latest"]
         test_config: ["latest"]
         include:
-          # NEP29 compliance settings
-          - python-version: "3.9"
-            numpy_ver: "1.23"
+          # SPEC0000 compliance settings
+          - python-version: "3.10"
+            numpy_ver: "1.24"
+            pandas_ver: "1.5.0"
+            scipy_ver: "1.10.0"
+            xarray_ver: "2022.9.0"
             os: ubuntu-latest
-            test_config: "NEP29"
+            test_config: "SPEC0000"
           # Operational compliance settings
           - python-version: "3.6.8"
             numpy_ver: "1.19.5"
@@ -42,12 +45,15 @@ jobs:
         pip install numpy==${{ matrix.numpy_ver }}
         pip install -r requirements.txt
         pip install -r test_requirements.txt
-        pip install .
+        python setup.py install
 
-    - name: Install NEP29 dependencies
-      if: ${{ matrix.test_config == 'NEP29'}}
+    - name: Install SPEC0000 dependencies
+      if: ${{ matrix.test_config == 'SPEC0000'}}
       run: |
         pip install numpy==${{ matrix.numpy_ver }}
+        pip install pandas==${{ matrix.pandas_ver }}
+        pip install scipy==${{ matrix.scipy_ver }}
+        pip install xarray==${{ matrix.xarray_ver }}
         pip install --upgrade-strategy only-if-needed .[test]
 
     - name: Install standard dependencies
@@ -66,22 +72,25 @@ jobs:
       run: flake8 . --count --exit-zero --max-complexity=10 --statistics
 
     - name: Test with pytest
-      run: pytest
+      run: pytest --cov-report xml
 
-    - name: Publish results to coveralls
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COVERALLS_PARALLEL: true
-      run: coveralls --rcfile=pyproject.toml --service=github
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: run=${{ join(matrix.*, '-') }}
+        parallel: true
+        format: cobertura
+        debug: true
 
   finish:
     name: Finish Coverage Analysis
     needs: build
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        pip install --upgrade coveralls
-        coveralls --service=github --finish
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel-finished: true

@@ -1696,9 +1696,9 @@ class Instrument(object):
                                        date.strftime('%d %B %Y')))
             else:
                 output_str = ' '.join(('Returning', output_str, 'data from',
-                                       fname[0]))
+                                       fname.iloc[0]))
                 if len(fname) > 1:
-                    output_str = ' '.join((output_str, '::', fname[-1]))
+                    output_str = ' '.join((output_str, '::', fname.iloc[-1]))
         else:
             # There was no data signal
             if date is not None:
@@ -2026,6 +2026,13 @@ class Instrument(object):
                     file_freq = '1D'  # This is the pysat default
         else:
             file_freq = '1D'  # This is the pysat default
+
+        # Force minimum file frequency to be 1D
+        common_dt = pds.to_datetime("2000-01-01")
+        min_freq_dt = common_dt + pds.tseries.frequencies.to_offset('1D')
+        file_freq_dt = common_dt + pds.tseries.frequencies.to_offset(file_freq)
+        if file_freq_dt < min_freq_dt:
+            file_freq = '1D'
 
         # Pull out start and stop times now that other optional items have
         # been checked out.
@@ -2385,7 +2392,7 @@ class Instrument(object):
                 equal_dims = True
                 idat = 0
                 while idat < len(new_data) - 1 and equal_dims:
-                    if new_data[idat].dims != new_data[idat + 1].dims:
+                    if new_data[idat].sizes != new_data[idat + 1].sizes:
                         equal_dims = False
                     idat += 1
 
@@ -3675,8 +3682,8 @@ class Instrument(object):
                     dsel2 = slice(last_date, last_date
                                   + dt.timedelta(hours=23, minutes=59,
                                                  seconds=59))
-                    if all([curr_bound[0][0] == self.files[dsel1][0],
-                            curr_bound[1][0] == self.files[dsel2][-1]]):
+                    if all([curr_bound[0][0] == self.files[dsel1].iloc[0],
+                            curr_bound[1][0] == self.files[dsel2].iloc[-1]]):
                         pysat.logger.info(' '.join(('Updating instrument',
                                                     'object bounds by file')))
                         dsel1 = slice(self.files.start_date,
@@ -3686,8 +3693,8 @@ class Instrument(object):
                         dsel2 = slice(self.files.stop_date, self.files.stop_date
                                       + dt.timedelta(hours=23, minutes=59,
                                                      seconds=59))
-                        self.bounds = (self.files[dsel1][0],
-                                       self.files[dsel2][-1],
+                        self.bounds = (self.files[dsel1].iloc[0],
+                                       self.files[dsel2].iloc[-1],
                                        curr_bound[2], curr_bound[3])
         else:
             pysat.logger.warning('Requested download over an empty date range.')
@@ -3736,8 +3743,11 @@ class Instrument(object):
              and a value is NaN then that attribute simply won't be included in
              the netCDF4 file. (default=None)
         export_pysat_info : bool
-            If True, platform, name, tag, and inst_id will be appended to the
-            metadata.  (default=True)
+            If True, platform, name, tag, inst_id, acknowledgements, and
+            references will be appended to the metadata.  For some operational
+            uses (e.g., conversion of Level 1 to Level 2 data), it may be
+            desirable to set this to false to avoid conflicting versions of
+            these parameters. (default=True)
         unlimited_time : bool
              Flag specifying whether or not the epoch/time dimension should be
              unlimited; it is when the flag is True. (default=True)

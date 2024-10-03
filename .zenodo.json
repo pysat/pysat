@@ -39,11 +39,6 @@
         "name": "Spence, Carey",
         "orcid": "0000-0001-8340-5625"
       },
-
-      {
-        "affiliation": "The University of Texas at Dallas",
-        "name": "Depew, Matthew"
-      },
       {
         "affiliation": "Catholic University of America, Goddard Space Flight Center",
         "name": "Smith, Jonathon M.",
@@ -51,7 +46,21 @@
       },
       {
         "affiliation": "The University of Texas at Dallas",
+        "name": "Depew, Matthew"
+      },
+      {
+        "affiliation": "Universities Space Research Association, Goddard Space Flight Center",
+        "name": "Govada, Aadarsh",
+        "orcid": "0009-0004-7873-5899"
+      },
+      {
+        "affiliation": "The University of Texas at Dallas",
         "name": "Fuller, Ryan"
+      },
+      {
+        "affiliation": "NASA NPP",
+        "name": "Esman, Teresa",
+        "orcid": "0000-0003-0382-6281"
       },
       {
         "name": "Von Bose, Veronica"
@@ -66,11 +75,6 @@
         "affiliation": "@olist",
         "name": "Leite, Silvio",
         "orcid": "0000-0003-1707-7963"
-      },
-	    {
-        "affiliation": "NASA NPP",
-        "name": "Esman, Teresa",
-        "orcid": "0000-0003-0382-6281"
       }
     ]
 }
