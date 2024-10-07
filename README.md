@@ -62,7 +62,7 @@ examples on how to use the routines.
 ## Prerequisites
 
 pysat uses common Python modules, as well as modules developed by and for the
-Space Physics community.  This module officially supports Python 3.X+.
+Space Physics community.  This module officially supports Python 3.9+.
 
 | Common modules | Community modules |
 | -------------- | ----------------- |
@@ -80,9 +80,7 @@ Space Physics community.  This module officially supports Python 3.X+.
 ```
 pip install pysat
 ```
-Note that while support for python 3.6 is maintained for opertional purposes, there 
-have been issues with installing through PyPi on older systems. Installation through 
-GitHub is recommended for older systems.
+
 
 ## GitHub Installation
 ```
