@@ -17,11 +17,14 @@ jobs:
         numpy_ver: ["latest"]
         test_config: ["latest"]
         include:
-          # NEP29 compliance settings
+          # SPEC0000 compliance settings
           - python-version: "3.10"
-            numpy_ver: "1.23"
+            numpy_ver: "1.24"
+            pandas_ver: "1.5.0"
+            scipy_ver: "1.10.0"
+            xarray_ver: "2022.9.0"
             os: ubuntu-latest
-            test_config: "NEP29"
+            test_config: "SPEC0000"
           # Operational compliance settings
           - python-version: "3.6.8"
             numpy_ver: "1.19.5"
@@ -51,10 +54,13 @@ jobs:
         pip install -r requirements.txt
         pip install "pip<19.0"
 
-    - name: Install NEP29 dependencies
-      if: ${{ matrix.test_config == 'NEP29'}}
+    - name: Install SPEC0000 dependencies
+      if: ${{ matrix.test_config == 'SPEC0000'}}
       run: |
         pip install numpy==${{ matrix.numpy_ver }}
+        pip install pandas==${{ matrix.pandas_ver }}
+        pip install scipy==${{ matrix.scipy_ver }}
+        pip install xarray==${{ matrix.xarray_ver }}
         pip install --upgrade-strategy only-if-needed -r requirements.txt
 
     - name: Install pysat RC

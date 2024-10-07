@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysat"
-version = "3.2.0"
+version = "3.2.1"
 description = "Supports science analysis across disparate data platforms"
 readme = "README.md"
 requires-python = ">=3.6"
@@ -44,13 +44,13 @@ keywords = [
 dependencies = [
   "dask",
   "netCDF4",
-  "numpy >= 1.12",
-  "pandas",
+  "numpy >= 1.19",
+  "pandas >= 1.1.5",
   "portalocker",
   "pytest",
-  "scipy",
+  "scipy >= 1.5.4",
   "toolz",
-  "xarray"
+  "xarray >= 0.16.2"
 ]
 
 [project.optional-dependencies]
