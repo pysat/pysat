@@ -3,6 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.3] - 2025-XX-XX
+--------------------
+* Bug Fix
+  * Clarified controlled information distribution statement
+* Maintenance
+  * 
+
 [3.2.1] - 2024-10-03
 --------------------
 * Bug Fix
