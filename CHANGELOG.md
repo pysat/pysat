@@ -3,12 +3,13 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.3] - 2025-XX-XX
+[3.2.2] - 2025-XX-XX
 --------------------
 * Bug Fix
-  * Clarified controlled information distribution statement
+  * Include test data in tar.gz so unit test suite can be run from a pip-install
 * Maintenance
-  * 
+  * Update .gitignore
+  * Clarified controlled information distribution statement
 
 [3.2.1] - 2024-10-03
 --------------------
