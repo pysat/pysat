@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Include test data in tar.gz so unit test suite can be run from a pip-install
 * Maintenance
   * Update .gitignore
+  * Update zenodo affiliations and references
   * Clarified controlled information distribution statement
 
 [3.2.1] - 2024-10-03
