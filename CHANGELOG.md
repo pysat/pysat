@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Update .gitignore
   * Update zenodo affiliations and references
   * Clarified controlled information distribution statement
+  * Updated Ops tests to new lower limit of Python 3.9 and removed 3.6 support
 
 [3.2.1] - 2024-10-03
 --------------------
@@ -28,7 +29,6 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated deprecated useage of `step.delta` to `pds.Timedelta(step)`
   * Updated rationale and usage for `export_pysat_info` in docstrings.
   * Update lower limits of core dependencies based on operational tests
-  * Updated Ops tests to new lower limit of Python 3.9 and removed 3.6 support
 
 [3.2.0] - 2024-03-27
 --------------------
