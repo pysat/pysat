@@ -1,8 +1,8 @@
 recursive-include pysat *.py
 include *.md
-include *.txt
+recursive-include pysat *.txt
+recursive-include pysat *.tab
 include LICENSE
-include pysat/citation.txt
 prune docs
 global-exclude *.pdf
 global-exclude *.png

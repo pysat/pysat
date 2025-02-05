@@ -1,6 +1,7 @@
 {
     "references": [
-	"Stoneback, R. A. et al. (2018), PYSAT: Python Satellite Data Analysis Toolkit. Journal of Geophysical Research: Space Physics, 123, 5271– 5283. https://doi.org/10.1029/2018JA025297"
+	"Stoneback, R. A. et al. (2018), PYSAT: Python Satellite Data Analysis Toolkit. Journal of Geophysical Research: Space Physics, 123, 5271– 5283. https://doi.org/10.1029/2018JA025297",
+  "Stoneback RA, Burrell AG, Klenzing J and Smith J (2023), The pysat ecosystem. Front. Astron. Space Sci. 10:1119775. doi: 10.3389/fspas.2023.1119775"
     ],
     "keywords": [
 	"pysat",
@@ -36,13 +37,9 @@
         "name": "Pembroke, Asher"
       },
       {
+        "affiliation": "The University of Texas at Dallas",
         "name": "Spence, Carey",
         "orcid": "0000-0001-8340-5625"
-      },
-
-      {
-        "affiliation": "The University of Texas at Dallas",
-        "name": "Depew, Matthew"
       },
       {
         "affiliation": "Catholic University of America, Goddard Space Flight Center",
@@ -51,31 +48,38 @@
       },
       {
         "affiliation": "The University of Texas at Dallas",
+        "name": "Depew, Matthew"
+      },
+      {
+        "affiliation": "Universities Space Research Association, Goddard Space Flight Center",
+        "name": "Govada, Aadarsh",
+        "orcid": "0009-0004-7873-5899"
+      },
+      {
+        "affiliation": "The University of Texas at Dallas",
         "name": "Fuller, Ryan"
       },
       {
+        "affiliation": "NASA NPP",
+        "name": "Esman, Teresa",
+        "orcid": "0000-0003-0382-6281"
+      },
+      {
+        "affiliation": "The University of Texas at Dallas",
         "name": "Von Bose, Veronica"
       },
       {
+        "affiliation": "The University of Texas at Dallas",
         "name": "Hargrave, Nathaniel"
       },
       {
+        "affiliation": "The University of Texas at Dallas",
         "name": "Iyer, Gayatri"
       },
       {
         "affiliation": "@olist",
         "name": "Leite, Silvio",
         "orcid": "0000-0003-1707-7963"
-      },
-	{
-        "affiliation": "NASA NPP",
-        "name": "Esman, Teresa",
-        "orcid": "0000-0003-0382-6281"
-      },
-      {
-        "affiliation": "Universities Space Research Association, Goddard Space Flight Center",
-        "name": "Govada, Aadarsh",
-        "orcid": "0009-0004-7873-5899"
       }
     ]
 }
