@@ -153,12 +153,7 @@ def listify(iterable):
     """
 
     # Cast as an array-like object
-    try:
-        arr_iter = np.asarray(iterable)
-    except ValueError:
-        # This is necessary for Python 3.6 compatibility when using listify
-        # on slices
-        arr_iter = np.asarray([iterable])
+    arr_iter = np.asarray(iterable)
 
     # Treat output differently based on the array shape
     if arr_iter.shape == ():

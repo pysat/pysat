@@ -652,15 +652,6 @@ class InstLibTests(object):
             `initialize_test_package` is run.
 
         """
-        # Skip for Python 3.6, keeping information that will allow adding
-        # or skipping particular instruments.
-        # TODO(#1136): Remove skip once memory management is improved
-        if sys.version_info.minor < 7:
-            pytest.skip("skipping 3.6 for {:} ({:} =? {:})".format(
-                inst_dict, inst_dict['inst_module'].__name__.find(
-                    'pysat_testing'), len(inst_dict['inst_module'].__name__)
-                - len('pysat_testing')))
-            return
 
         # Update the Instrument dict with the desired pad
         if 'kwargs' in inst_dict.keys():
