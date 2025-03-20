@@ -25,9 +25,9 @@ jobs:
             os: ubuntu-latest
             test_config: "SPEC0000"
           # Operational compliance settings
-          - python-version: "3.6.8"
-            numpy_ver: "1.19.5"
-            os: "ubuntu-20.04"
+          - python-version: "3.9"
+            numpy_ver: "1.23.5"
+            os: "ubuntu-22.04"
             test_config: "Ops"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
@@ -43,9 +43,7 @@ jobs:
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
         pip install numpy==${{ matrix.numpy_ver }}
-        pip install -r requirements.txt
-        pip install -r test_requirements.txt
-        python setup.py install
+        pip install --upgrade-strategy only-if-needed .[test]
 
     - name: Install SPEC0000 dependencies
       if: ${{ matrix.test_config == 'SPEC0000'}}

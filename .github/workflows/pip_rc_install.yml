@@ -26,9 +26,9 @@ jobs:
             os: ubuntu-latest
             test_config: "SPEC0000"
           # Operational compliance settings
-          - python-version: "3.6.8"
-            numpy_ver: "1.19.5"
-            os: "ubuntu-20.04"
+          - python-version: "3.9"
+            numpy_ver: "1.23.5"
+            os: "ubuntu-22.04"
             test_config: "Ops"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }}

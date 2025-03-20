@@ -3,6 +3,8 @@
 # Full author list can be found in .zenodo.json file
 # DOI:10.5281/zenodo.1199703
 #
+# Review Status for Classified or Controlled Information by NRL
+# -------------------------------------------------------------
 # DISTRIBUTION STATEMENT A: Approved for public release. Distribution is
 # unlimited.
 # ----------------------------------------------------------------------------
@@ -151,12 +153,7 @@ def listify(iterable):
     """
 
     # Cast as an array-like object
-    try:
-        arr_iter = np.asarray(iterable)
-    except ValueError:
-        # This is necessary for Python 3.6 compatibility when using listify
-        # on slices
-        arr_iter = np.asarray([iterable])
+    arr_iter = np.asarray(iterable)
 
     # Treat output differently based on the array shape
     if arr_iter.shape == ():

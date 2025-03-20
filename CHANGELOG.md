@@ -3,6 +3,16 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.2.2] - 2025-03-20
+--------------------
+* Bug Fix
+  * Include test data in tar.gz so unit test suite can be run from a pip-install
+* Maintenance
+  * Update .gitignore
+  * Update zenodo affiliations and references
+  * Clarified controlled information distribution statement
+  * Updated Ops tests to new lower limit of Python 3.9 and Ubuntu 22.04
+
 [3.2.1] - 2024-10-03
 --------------------
 * Bug Fix
