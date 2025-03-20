@@ -27,7 +27,7 @@ jobs:
           # Operational compliance settings
           - python-version: "3.9"
             numpy_ver: "1.23.5"
-            os: "ubuntu-20.04"
+            os: "ubuntu-22.04"
             test_config: "Ops"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
