@@ -3,6 +3,12 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+Unreleased changes
+------------------
+
+* Maintenance
+  * Established minimum allowed versions of all dependencies.
+
 [3.2.2] - 2025-03-20
 --------------------
 * Bug Fix
