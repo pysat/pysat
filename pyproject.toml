@@ -46,7 +46,7 @@ dependencies = [
   "netCDF4 >= 1.5.5.1",
   "numpy >= 1.19",
   "pandas >= 1.1.5",
-  "portalocker >= 2.1",
+  "portalocker >= 2.0",
   "pytest >= 6.2",
   "scipy >= 1.5.4",
   "toolz >= 0.11.1",
@@ -55,20 +55,20 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-  "flake8",
-  "flake8-docstrings",
+  "flake8 >= 3.8.4",
+  "flake8-docstrings >= 1.5",
   "hacking >= 1.0",
   "pysatSpaceWeather<0.1.0",
-  "pytest-cov",
-  "pytest-ordering"
+  "pytest-cov >= 2.10.1",
+  "pytest-ordering >= 0.6"
 ]
 doc = [
-  "extras_require",
-  "ipython",
-  "m2r2",
-  "numpydoc",
+  "extras_require >= 0.2.3",
+  "ipython >= 7.11",
+  "m2r2 >= 0.2.7",
+  "numpydoc >= 1.1",
   "readthedocs-sphinx-search==0.3.2",
-  "sphinx",
+  "sphinx >= 3.4.1",
   "sphinx_rtd_theme >= 1.2.2, < 2.0.0"
 ]
 
