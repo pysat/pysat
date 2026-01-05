@@ -8,6 +8,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Bug Fix
   * Ensure `utils.coords.adjust_cyclic_data` will adjust data more than one
     cycle outside of the desired range
+* Maintenance
+  * Established minimum allowed versions of all dependencies.
 
 [3.2.2] - 2025-03-20
 --------------------
