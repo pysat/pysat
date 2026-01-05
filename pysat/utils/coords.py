@@ -42,8 +42,12 @@ def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
 
     out_samples = np.asarray(samples)
     sample_range = high - low
-    out_samples[out_samples >= high] -= sample_range
-    out_samples[out_samples < low] += sample_range
+
+    while np.any(out_samples >= high):
+        out_samples[out_samples >= high] -= sample_range
+
+    while np.any(out_samples < low):
+        out_samples[out_samples < low] += sample_range
 
     return out_samples
 
