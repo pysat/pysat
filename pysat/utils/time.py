@@ -160,7 +160,9 @@ def calc_res(index, use_mean=False):
     except AttributeError as aerr:
         # Now try as numpy.timedelta64
         if isinstance(del_time, np.timedelta64):
-            res_sec = np.float64(del_time) * 1.0e-9
+            # Convert based on explicit units (e.g., ns/us/ms/s), rather than
+            # assuming nanoseconds.
+            res_sec = np.float64(del_time / np.timedelta64(1, 's'))
         else:
             raise AttributeError("Input should be times: {:}".format(aerr))
 
