@@ -12,6 +12,7 @@
 
 import datetime as dt
 import numpy as np
+import pandas as pds
 
 import pytest
 
@@ -161,6 +162,28 @@ class TestCalcFreqRes(object):
         # Get and test the output resolution
         res = pytime.calc_res(tind, use_mean=use_mean)
         assert res == out_res
+        return
+
+    @pytest.mark.parametrize('unit', ['ns', 'us', 'ms'])
+    def test_calc_res_numpy_datetime_units(self, unit):
+        """Test `calc_res` across numpy datetime units."""
+
+        base = np.datetime64('2001-01-01T00:00:00', unit)
+        tind = np.array([base + i * np.timedelta64(1, 's') for i in range(4)],
+                        dtype=f'datetime64[{unit}]')
+
+        assert pytime.calc_res(tind) == 1.0
+        return
+
+    def test_calc_res_pandas_datetimeindex_microseconds(self):
+        """Test `calc_res` for a pandas DatetimeIndex backed by microseconds."""
+
+        base = np.datetime64('2001-01-01T00:00:00', 'us')
+        ntime = np.array([base + i * np.timedelta64(1, 's') for i in range(4)],
+                         dtype='datetime64[us]')
+        tind = pds.DatetimeIndex(ntime)
+
+        assert pytime.calc_res(tind) == 1.0
         return
 
     @pytest.mark.parametrize('func_name', ['calc_freq', 'calc_res'])
