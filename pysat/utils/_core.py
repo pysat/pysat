@@ -153,7 +153,7 @@ def listify(iterable):
     """
 
     # Cast as an array-like object
-    arr_iter = np.asarray(iterable)
+    arr_iter = np.array(iterable)
 
     # Treat output differently based on the array shape
     if arr_iter.shape == ():
@@ -239,7 +239,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
     output = ""
 
     # Ensure output strings are array-like
-    out_strs = np.asarray(out_strs)
+    out_strs = np.array(out_strs)
     if out_strs.shape == ():
         out_strs = np.array([out_strs])
 
@@ -615,17 +615,21 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                 # Update the Meta data
                 inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
 
-                # Update the variable data
+                # Update the variable data, masking is much faster than
+                # indexing
                 try:
                     if np.isnan(old_fill_val):
-                        ifill = np.where(np.isnan(inst[var].values))
+                        # Needed for NaNs
+                        fill_mask = np.isnan(inst[var].values)
                     else:
-                        ifill = np.where(inst[var].values == old_fill_val)
+                        # Catches numbers that fail gracefully from NaN check
+                        fill_mask = inst[var].values == old_fill_val
                 except TypeError:
-                    ifill = np.where(inst[var].values == old_fill_val)
+                    # This catches strings and objects
+                    fill_mask = inst[var].values == old_fill_val
 
-                if len(ifill[0]) > 0:
-                    inst[var].values[ifill] = new_fill_val
+                if fill_mask.any():
+                    inst[fill_mask, var] = new_fill_val
 
     return
 
