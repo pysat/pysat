@@ -883,17 +883,25 @@ class Instrument(object):
 
         if isinstance(key, tuple):
             if len(key) == 2:
-                # Support slicing time, variable name
+                # Support slicing, first extract just the desired variable(s)
                 if isinstance(key[1], slice):
-                    # Extract subset of variables before epoch selection.
                     data_subset = data[self.variables[key[1]]]
                 else:
-                    # Extract single variable before epoch selection.
                     data_subset = data[key[1]]
 
-                # If the input is a tuple, `key[0]` must be linked to the epoch.
-                key_dict = {'indexers': {epoch_name: key[0]
-                                         for epoch_name in epoch_names}}
+                # Build the key indexers, only allowing coordinates to be
+                # treated independently
+                if np.any([ename in data_subset.dims for ename in epoch_names]):
+                    # `key[0]` must be linked to the epoch.
+                    key_dict = {'indexers': {epoch_name: key[0]
+                                             for epoch_name in epoch_names}}
+                elif len(data_subset.dims) == 1:
+                    # `key[0]` must be linked to the coordinate dimension
+                    key_dict = {'indexers': {dname: key[0]
+                                             for dname in data_subset.dims}}
+                else:
+                    raise KeyError('Unable to slice data as requested')
+
                 try:
                     # Assume key[0] is an integer
                     return data_subset.isel(**key_dict)
@@ -1023,15 +1031,12 @@ class Instrument(object):
         # slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                try:
-                    # Pass directly through to loc. This line raises a
-                    # FutureWarning if key[0] is a slice. The future behavior
-                    # is TypeError, which is already handled correctly below.
+                # Check and see if the first key is a valid instance of the
+                # existing index, otherwise assume it is an integer, list, or
+                # slice
+                if isinstance(type(key[0]), type(self.data.index.dtype)):
                     self.data.loc[key[0], key[1]] = new
-                except (KeyError, TypeError):
-                    # TypeError for single integer, slice (pandas 2.0). KeyError
-                    # for list, array. Assume key[0] is integer
-                    # (including list or slice).
+                else:
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
                 self._update_data_types(key[1])
@@ -1073,20 +1078,39 @@ class Instrument(object):
                 # something like, index integers and a variable name,
                 # self[idx, 'variable'] = stuff
                 # or, self[idx1, idx2, idx3, 'variable'] = stuff.
+                var_key = key[-1]
+                ind_keys = key[:-1]
+
                 # Construct dictionary of dimensions and locations for
                 # xarray standards.
                 indict = {}
-                for i, dim in enumerate(self[key[-1]].dims):
-                    indict[dim] = key[i]
+                for i, dim in enumerate(self[var_key].dims):
+                    if i < len(ind_keys):
+                        indict[dim] = ind_keys[i]
+
+                # Try loading using two different methods, using a catch
                 try:
                     # Try loading as values
-                    self.data[key[-1]].loc[indict] = in_data
-                except (TypeError, KeyError):
+                    self.data[var_key].loc[indict] = in_data
+                except (TypeError, KeyError, IndexError):
                     # Try loading indexed as integers
-                    self.data[key[-1]][indict] = in_data
+                    try:
+                        self.data[var_key][indict] = in_data
+                    except IndexError as ierr:
+                        if self.data[var_key].shape == key[0].shape and len(
+                                ind_keys) == 1 and type(key[0].dtype) in [
+                                    bool, np.dtypes.BoolDType]:
+                            # This is a mask, using where does the opposite of
+                            # what is expected by assigning a mask so do the
+                            # inverse
+                            self.data[var_key] = self.data[var_key].where(
+                                ~key[0], in_data)
+                        else:
+                            raise ierr
 
-                self._update_data_types(key[-1])
-                self.meta[key[-1]] = new
+                # Finish updating
+                self._update_data_types(var_key)
+                self.meta[var_key] = new
                 return
             elif isinstance(key, str):
                 # Assigning basic variables
@@ -1848,10 +1872,13 @@ class Instrument(object):
         str subclasses
 
         """
+        # Define the type information
         var_types = {np.int64: 'i8', np.int32: 'i4', np.int16: 'i2',
                      np.int8: 'i1', np.uint64: 'u8', np.uint32: 'u4',
                      np.uint16: 'u2', np.uint8: 'u1', np.float64: 'f8',
                      np.float32: 'f4', np.datetime64: 'i8'}
+        str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
+                     np.dtypes.StringDType, np.dtypes.BytesDType]
 
         if isinstance(coltype, np.dtype):
             var_type = coltype.kind + str(coltype.itemsize)
@@ -1859,10 +1886,14 @@ class Instrument(object):
         else:
             if coltype in var_types.keys():
                 return var_types[coltype]
+            elif coltype in str_types or (hasattr(coltype, 'type') and
+                                          coltype.type in str_types):
+                return 'S1'
             elif issubclass(coltype, str):
                 return 'S1'
             else:
-                raise TypeError('Unknown Variable Type' + str(coltype))
+                raise TypeError('Unknown Variable Type {:}'.format(
+                    repr(coltype)))
 
     def _get_data_info(self, data):
         """Support file writing by determining data type and other options.
@@ -1893,6 +1924,9 @@ class Instrument(object):
                 datetime_flag = True
             elif data_type == np.dtype('<U4'):
                 data_type = str
+                datetime_flag = False
+            elif hasattr(data_type, 'type'):
+                data_type = data_type.type
                 datetime_flag = False
             else:
                 datetime_flag = False
@@ -2180,9 +2214,9 @@ class Instrument(object):
                 if len(good_bounds) > 0:
                     # Create list-like of dates for iteration
                     starts = list(pysat.utils.time.filter_datetime_input(
-                        np.asarray(starts)[good_bounds]))
+                        np.array(starts)[good_bounds]))
                     stops = list(pysat.utils.time.filter_datetime_input(
-                        np.asarray(stops)[good_bounds]))
+                        np.array(stops)[good_bounds]))
                     file_inc = pds.tseries.frequencies.to_offset(file_freq)
 
                     # Ensure inputs are in reasonable date order
@@ -2562,7 +2596,6 @@ class Instrument(object):
 
     def today(self):
         """Get today's date (UTC), with no hour, minute, second, etc.
-
         Returns
         -------
         today_utc: datetime
