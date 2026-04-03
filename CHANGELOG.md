@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Ensure `utils.coords.adjust_cyclic_data` will adjust data more than one
     cycle outside of the desired range
   * Fixed existing compilation warnings in the documentation
+  * Fixed Instrument data setting
+  * Expanded Instrument typing to account for new numpy and pandas dtyps
+  * Fixed Meta label setting to consider both keys and values
+  * Fixed numpy array casting to ensure data is writable
 * Maintenance
   * Established minimum allowed versions of all dependencies.
   * Cycle Python support to 3.10-3.14
