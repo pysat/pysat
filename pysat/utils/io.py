@@ -552,7 +552,7 @@ def meta_array_expander(meta_dict):
     for key in meta_dict.keys():
         loop_dict = {}
         for meta_key in meta_dict[key].keys():
-            tst_array = np.asarray(meta_dict[key][meta_key])
+            tst_array = np.array(meta_dict[key][meta_key])
             if tst_array.shape == ():
                 loop_dict[meta_key] = meta_dict[key][meta_key]
             elif tst_array.shape == (1, ):

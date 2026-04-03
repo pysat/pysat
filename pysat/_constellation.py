@@ -235,7 +235,7 @@ class Constellation(object):
 
         # Add any Instruments provided in the list
         if instruments is not None:
-            test_instruments = np.asarray(instruments)
+            test_instruments = np.array(instruments)
             if test_instruments.shape == ():
                 raise ValueError('instruments argument must be list-like')
 
@@ -524,7 +524,7 @@ class Constellation(object):
             raise AttributeError('Constellation does not have attribute')
 
         # Test to see if attribute is list-like
-        attr_array = np.asarray(getattr(self, attr))
+        attr_array = np.array(getattr(self, attr))
         if attr_array.shape == ():
             raise TypeError('Constellation attribute is not list-like')
 

@@ -233,9 +233,9 @@ def establish_common_coord(coord_vals, common=True):
 
     for coord_spec in coord_vals:
         # Ensure the coordinate specification is array-like
-        coord_spec = np.asarray(coord_spec)
+        coord_spec = np.array(coord_spec)
         if coord_spec.shape == ():
-            coord_spec = np.asarray([coord_spec])
+            coord_spec = np.array([coord_spec])
 
         if start_val is None:
             # Initialize the start and stop values
