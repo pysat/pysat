@@ -59,7 +59,7 @@ class TestUpdateFill(object):
         # Ensure there are fill values to check
         test_vars = pysat.utils.listify(variables)
         for var in test_vars:
-            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+            inst[0, var] = inst.meta[var, inst.meta.labels.fill_val]
 
         # Update the fill values
         pysat.utils.update_fill_values(inst, variables, self.new_fill_val)
@@ -69,7 +69,7 @@ class TestUpdateFill(object):
             assert inst.meta[var,
                              inst.meta.labels.fill_val] == self.new_fill_val, \
                 "meta fill value not updated for {:}".format(var)
-            assert np.all(inst[var].values[0] == self.new_fill_val), \
+            assert np.all(inst[0, var] == self.new_fill_val), \
                 "filled data values not updated for {:}".format(var)
         return
 
@@ -88,10 +88,13 @@ class TestUpdateFill(object):
         inst = pysat.Instrument('pysat', name)
         inst.load(date=self.ref_time)
 
-        # Ensure there are fill values to check
+        # Ensure there are fill values to check for strings and numbers
+        str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
+                     np.dtypes.StringDType, np.dtypes.BytesDType]
         str_vars = [var for var in inst.variables if var in inst.meta.keys()
-                    and isinstance(inst[var].values[0], str)
+                    and type(inst[var].dtype) in str_types
                     and inst.meta[var, inst.meta.labels.fill_val] is not None]
+
         num_types = [int, float, np.float64, np.int64]
         if inst.pandas_format:
             num_vars = [var for var in inst.variables if var in inst.meta.keys()
@@ -106,10 +109,10 @@ class TestUpdateFill(object):
                         is not None]
 
         for var in num_vars:
-            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+            inst[0, var] = inst.meta[var, inst.meta.labels.fill_val]
 
         for var in str_vars:
-            inst[var].values[0] = str(inst.meta[var, inst.meta.labels.fill_val])
+            inst[0, var] = str(inst.meta[var, inst.meta.labels.fill_val])
 
         # Update and check the numeric fill values
         pysat.utils.update_fill_values(inst, num_vars, self.new_fill_val)
