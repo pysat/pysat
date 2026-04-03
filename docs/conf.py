@@ -45,7 +45,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'numpydoc',
     'IPython.sphinxext.ipython_console_highlighting',
-    'm2r2'
+    'myst_parser'
 ]
 
 # added by RS
