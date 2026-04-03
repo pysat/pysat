@@ -8,8 +8,13 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 * Bug Fix
   * Ensure `utils.coords.adjust_cyclic_data` will adjust data more than one
     cycle outside of the desired range
+  * Fixed existing compilation warnings in the documentation
 * Maintenance
   * Established minimum allowed versions of all dependencies.
+  * Cycle Python support to 3.10-3.14
+  * Replaced `m2r2` with `myst_parser`
+  * Updated testing yamls to use up-to-date Actions
+  * Updated Operational and SPEC 0 testing
 
 [3.2.2] - 2025-03-20
 --------------------
