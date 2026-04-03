@@ -40,7 +40,7 @@ def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
 
     """
 
-    out_samples = np.asarray(samples)
+    out_samples = np.array(samples)
     sample_range = high - low
 
     while np.any(out_samples >= high):
@@ -125,10 +125,9 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
     ut_hr = list()
-    for nptime in inst.index.values.astype(np.int64):
-        # Numpy times come out in nanoseconds and timestamp converts
-        # from seconds
-        dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
+    for nptime in inst.index.values:
+        # Use pandas to convert from numpy to Python daetime
+        dtime = pds.to_datetime(nptime).to_pydatetime()
         ut_hr.append((dtime.hour * 3600.0 + dtime.minute * 60.0
                       + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
 
