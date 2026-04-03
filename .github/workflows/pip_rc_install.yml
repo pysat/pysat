@@ -13,30 +13,30 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.13", "3.14"]
         numpy_ver: ["latest"]
         test_config: ["latest"]
         include:
           # SPEC0000 compliance settings
-          - python-version: "3.10"
-            numpy_ver: "1.24"
-            pandas_ver: "1.5.0"
-            scipy_ver: "1.10.0"
-            xarray_ver: "2022.9.0"
+          - python-version: "3.12"
+            numpy_ver: "2.0.0"
+            pandas_ver: "2.3.0"
+            scipy_ver: "1.14.0"
+            xarray_ver: "2024.5.0"
             os: ubuntu-latest
             test_config: "SPEC0000"
           # Operational compliance settings
-          - python-version: "3.9"
-            numpy_ver: "1.23.5"
+          - python-version: "3.12"
+            numpy_ver: "2.0.0"
             os: "ubuntu-22.04"
             test_config: "Ops"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
