@@ -15,12 +15,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Fixed numpy array casting to ensure data is writable
   * Fixed pandas offsets casting to use object attributes
   * Improved some Instrument error messages to be more informative
+  * Updated broken links in the documentation
 * Maintenance
   * Established minimum allowed versions of all dependencies.
   * Cycle Python support to 3.10-3.14
   * Replaced `m2r2` with `myst_parser`
   * Updated testing yamls to use up-to-date Actions
   * Updated Operational and SPEC 0 testing
+  * Updated redirecting links in documentation
+  * Added a list of links to ignore in testing, currently just zenodo.org
 
 [3.2.2] - 2025-03-20
 --------------------
