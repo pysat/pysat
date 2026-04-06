@@ -888,17 +888,30 @@ class InstAccessTests(object):
         return
 
     def test_setting_partial_data(self):
-        """Test setting partial data by index."""
+        """Test setting partial data by index and key."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = self.testInst
-        if self.testInst.pandas_format:
-            self.testInst[0:3] = 0
 
-            # First three values should be changed.
-            assert np.all(self.testInst[0:3] == 0)
+        if self.testInst.pandas_format:
+            # Save the original data for comparison
+            self.out = self.testInst
+
+            # Get the numeric variable keys
+            num_vars = [var for var in self.testInst.variables if
+                        self.testInst._get_var_type_code(
+                            self.testInst[var].dtype)[0] in ['i', 'u', 'f']]
+            str_vars = [var for var in self.testInst.variables
+                        if var not in num_vars]
+
+            # Set a subset of the data
+            self.testInst[0:3, num_vars] = 0
+
+            # First three values for numeric variables should be changed.
+            assert np.all(self.testInst[0:3, num_vars] == 0)
 
             # Other data should be unchanged.
+            assert np.all(self.testInst[0:3, str_vars]
+                          == self.out[0:3, str_vars])
             assert np.all(self.testInst[3:] == self.out[3:])
         else:
             pytest.skip("This notation does not make sense for xarray")
