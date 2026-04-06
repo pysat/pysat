@@ -1037,7 +1037,7 @@ class Instrument(object):
                 # slice
                 try:
                     self.data.loc[key[0], key[1]] = new
-                except KeyError:
+                except (KeyError, TypeError):
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
                 self._update_data_types(key[1])
