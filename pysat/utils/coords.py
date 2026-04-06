@@ -10,7 +10,6 @@
 # ----------------------------------------------------------------------------
 """Coordinate transformation functions for pysat."""
 
-import datetime as dt
 import numpy as np
 import pandas as pds
 import xarray as xr

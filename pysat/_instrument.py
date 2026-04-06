@@ -1887,8 +1887,8 @@ class Instrument(object):
         else:
             if coltype in var_types.keys():
                 return var_types[coltype]
-            elif coltype in str_types or (hasattr(coltype, 'type') and
-                                          coltype.type in str_types):
+            elif coltype in str_types or (hasattr(coltype, 'type')
+                                          and coltype.type in str_types):
                 return 'S1'
             elif issubclass(coltype, str):
                 return 'S1'
