@@ -803,9 +803,10 @@ class Instrument(object):
                     except IndexError as err2:
                         err_message = '\n'.join(("original messages:",
                                                  str(err1), str(err2)))
-                        raise ValueError(' '.join(("Check requested indexes,",
-                                                   "data may not exist.",
-                                                   err_message)))
+                        raise ValueError(''.join((
+                            "Check requested indexes, data may not exist. ",
+                            "Requested variable: ", repr(key[1]), ", requested",
+                            " indexes: ", repr(key[0]), ". ", err_message)))
             else:
                 try:
                     # Integer based indexing
