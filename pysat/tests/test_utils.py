@@ -14,6 +14,7 @@ from importlib import reload
 import inspect
 import numpy as np
 import os
+import pandas as pds
 import portalocker
 import pytest
 import shutil
@@ -90,21 +91,23 @@ class TestUpdateFill(object):
 
         # Ensure there are fill values to check for strings and numbers
         str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
-                     np.dtypes.StringDType, np.dtypes.BytesDType]
+                     np.dtypes.StringDType, np.dtypes.BytesDType,
+                     pds.StringDtype]
         str_vars = [var for var in inst.variables if var in inst.meta.keys()
                     and type(inst[var].dtype) in str_types
                     and inst.meta[var, inst.meta.labels.fill_val] is not None]
 
-        num_types = [int, float, np.float64, np.int64]
         if inst.pandas_format:
             num_vars = [var for var in inst.variables if var in inst.meta.keys()
-                        and inst[var].dtype.type in num_types
+                        and inst._get_var_type_code(inst[var].dtype)[0]
+                        in ['i', 'u', 'f']
                         and inst.meta[var, inst.meta.labels.fill_val]
                         is not None]
         else:
             num_vars = [var for var in inst.variables if var in inst.meta.keys()
                         and var not in inst.data.coords.keys()
-                        and inst[var].dtype.type in num_types
+                        and inst._get_var_type_code(inst[var].dtype)[0]
+                        in ['i', 'u', 'f']
                         and inst.meta[var, inst.meta.labels.fill_val]
                         is not None]
 
