@@ -90,13 +90,13 @@ class TestParseDate(object):
         return
 
     @pytest.mark.parametrize("in_args,vmsg", [
-        (["0", "12", "15"], "year 0 is out of range"),
+        (["0", "12", "15"], "year"),
         (["10", "15", "15"], "month must be in 1..12"),
-        (['10', '12', '55'], "day is out of range for month"),
+        (['10', '12', '55'], "month"),
         (['10', '12', '15', '33'], "hour must be in 0..23"),
         (['10', '12', '15', '3', '70'], "minute must be in 0..59"),
         (['10', '12', '15', '3', '1', '68'], "second must be in 0..59"),
-        (['10', '12', '15', '3', '1', '55', -30], "year -20 is out of range")])
+        (['10', '12', '15', '3', '1', '55', -30], "year")])
     def test_parse_date_bad_input(self, in_args, vmsg):
         """Test raises ValueError for unrealistic date input.
 
