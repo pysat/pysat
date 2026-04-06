@@ -3,16 +3,18 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.X.X] - 2026-XX-XX
+[3.2.3] - 2026-XX-XX
 --------------------
 * Bug Fix
   * Ensure `utils.coords.adjust_cyclic_data` will adjust data more than one
     cycle outside of the desired range
   * Fixed existing compilation warnings in the documentation
-  * Fixed Instrument data setting
+  * Fixed Instrument data setting introduced by updates to xarray and pandas
   * Expanded Instrument typing to account for new numpy and pandas dtyps
   * Fixed Meta label setting to consider both keys and values
   * Fixed numpy array casting to ensure data is writable
+  * Fixed pandas offsets casting to use object attributes
+  * Improved some Instrument error messages to be more informative
 * Maintenance
   * Established minimum allowed versions of all dependencies.
   * Cycle Python support to 3.10-3.14
