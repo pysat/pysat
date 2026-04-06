@@ -1035,9 +1035,9 @@ class Instrument(object):
                 # Check and see if the first key is a valid instance of the
                 # existing index, otherwise assume it is an integer, list, or
                 # slice
-                if isinstance(type(key[0]), type(self.data.index.dtype)):
+                try:
                     self.data.loc[key[0], key[1]] = new
-                else:
+                except KeyError:
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
                 self._update_data_types(key[1])
