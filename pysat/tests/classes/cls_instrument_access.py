@@ -925,7 +925,7 @@ class InstAccessTests(object):
                               (dt.datetime(2009, 1, 1), slice(1, None)),
                               (slice(dt.datetime(2009, 1, 1),
                                      dt.datetime(2009, 1, 1, 0, 1)),
-                               slice(dt.datetime(2009, 1, 1, 0, 1), None))])
+                               slice(dt.datetime(2009, 1, 1, 0, 1, 1), None))])
     def test_setting_partial_data_by_inputs(self, changed, fixed):
         """Check that data can be set using each supported index type.
 
@@ -940,10 +940,10 @@ class InstAccessTests(object):
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[changed, 'doubleMLT'] = 0
+        self.testInst[changed, 'doubleMLT'] = -1
         assert (self.testInst[fixed, 'doubleMLT']
                 == 2. * self.testInst[fixed, 'mlt']).all
-        assert (self.testInst[changed, 'doubleMLT'] == 0).all
+        assert (self.testInst[changed, 'doubleMLT'] == -1).all
         return
 
     def test_modifying_data_inplace(self):
