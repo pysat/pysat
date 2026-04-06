@@ -2597,6 +2597,7 @@ class Instrument(object):
 
     def today(self):
         """Get today's date (UTC), with no hour, minute, second, etc.
+
         Returns
         -------
         today_utc: datetime
