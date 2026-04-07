@@ -44,7 +44,6 @@ import datetime as dt
 from importlib import import_module
 import logging
 import numpy as np
-import sys
 import tempfile
 import warnings
 
