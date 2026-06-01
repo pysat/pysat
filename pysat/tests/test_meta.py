@@ -645,6 +645,39 @@ class TestMeta(object):
 
     @pytest.mark.parametrize("custom_attr", [None, 'custom_meta'])
     @pytest.mark.parametrize("assign_type", [dict, pds.Series])
+    def test_meta_assignment_by_values(self, custom_attr, assign_type):
+        """Test basic assignment of metadata using values instead of keys.
+
+        Parameters
+        ----------
+        custom_attr : str or NoneType
+            Custom meta attribute label or None to use only defaults.
+        assign_type : type
+            Data types that may be used to set metadata for a data variable.
+
+        """
+
+        # Set the desired values
+        self.dval = 'test_meta_dict_assignment'
+        self.default_val = {
+            mattr: ' '.join(['test', mattr])
+            if str in pysat.utils.listify(self.meta.labels.label_type[mattr])
+            else -47 for mattr in self.meta.labels.label_type.keys()}
+        self.default_name = []
+        self.default_nan = []
+
+        if custom_attr is not None:
+            self.default_val[custom_attr] = 'Custom Attribute Value'
+
+        # Assign the meta data using a dictionary
+        self.meta[self.dval] = assign_type(self.default_val)
+
+        # Evaluate the meta data
+        self.eval_meta_settings()
+        return
+
+    @pytest.mark.parametrize("custom_attr", [None, 'custom_meta'])
+    @pytest.mark.parametrize("assign_type", [dict, pds.Series])
     def test_multiple_meta_assignment(self, custom_attr, assign_type):
         """Test assignment of multiple metadata.
 
