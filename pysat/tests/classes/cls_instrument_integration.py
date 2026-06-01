@@ -81,4 +81,6 @@ class InstIntegrationTests(object):
                == os.path.normpath(tempdir.name)
         assert len(self.testInst.files.files) > 0
 
+        tempdir.cleanup()
+
         return
