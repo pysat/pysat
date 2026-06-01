@@ -59,7 +59,7 @@ class TestLoadNetCDF(object):
         """Set up the test environment."""
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.saved_path = pysat.params['data_dirs']
         pysat.params['data_dirs'] = self.tempdir.name
 
@@ -770,7 +770,7 @@ class TestNetCDF4Integration(object):
         """Initialize the testing setup once before all tests are run."""
 
         # Use a temporary directory so that the user's setup is not altered.
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         return
 
     def teardown_class(self):

@@ -1592,7 +1592,9 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
 
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
-        # the Instrument data object is unchanged.
+        # the Instrument data object is unchanged. The downside is additional
+        # memory use which will impact extremely large data files or memory
+        # constrained environments.
         xr_data = inst.data.copy()
 
         # Convert datetime values into integers as done for pandas

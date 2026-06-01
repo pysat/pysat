@@ -152,7 +152,7 @@ class TestBasics(object):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(
@@ -717,7 +717,7 @@ class TestInstWithFiles(object):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         # Create the testing directory
@@ -950,7 +950,7 @@ class TestInstWithFilesNonStandard(object):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.start = dt.datetime(2008, 1, 11)
@@ -1252,7 +1252,7 @@ class TestFilesRaceCondition(object):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         # Create testing directory

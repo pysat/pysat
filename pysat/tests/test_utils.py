@@ -632,7 +632,7 @@ class TestNetworkLock(object):
     def setup_method(self):
         """Set up the unit test environment."""
         # Use a temporary directory so that the user's setup is not altered.
-        self.temp_dir = tempfile.TemporaryDirectory()
+        self.temp_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
 
         # Create and write a temporary file
         self.fname = os.path.join(self.temp_dir.name, 'temp_lock_file.txt')
