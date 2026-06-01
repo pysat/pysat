@@ -70,7 +70,7 @@ class Meta(object):
     receives the data. Subsequent calls to set new metadata with the same
     variable or attribute will use case of first call. Accessing or setting
     data thereafter is case insensitive. In practice, use is case insensitive
-    but the original case is preserved. Case preseveration is built in to
+    but the original case is preserved. Case preservation is built in to
     support writing files with a desired case to meet standards.
 
     Supports any custom metadata values in addition to the expected metadata
