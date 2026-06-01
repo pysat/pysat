@@ -302,6 +302,9 @@ class TestLoadNetCDF(object):
 
         del netcdf_inst.data, netcdf_inst
 
+        # debug check to confirm when an xarray issue is sorted
+        os.remove(outfile)
+
         return
 
     def test_write_netcdf4_duplicate_variable_names(self):
