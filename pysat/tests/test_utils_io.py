@@ -15,6 +15,7 @@ import functools
 import logging
 import numpy as np
 import os
+import platform
 import tempfile
 import warnings
 
@@ -302,8 +303,17 @@ class TestLoadNetCDF(object):
 
         del netcdf_inst.data, netcdf_inst
 
-        # debug check to confirm when an xarray issue is sorted
-        os.remove(outfile)
+        # Debug check to confirm when a windows file issue is sorted
+        try:
+            os.remove(outfile)
+        except Exception as err:
+            # Problems expected in windows
+            if platform.system() != 'Windows':
+                raise err
+        else:
+            # When problem is fixed in windows
+            if platform.system() == 'Windows':
+                raise OSError("Windows can correctly manage files! See #974")
 
         return
 
