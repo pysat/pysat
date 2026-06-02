@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Improved some Instrument error messages to be more informative
   * Updated broken links in the documentation
   * Improved test reliability on windows
+  * Improved pysat.Instrument's robustness against race conditions
 * Maintenance
   * Established minimum allowed versions of all dependencies.
   * Cycle Python support to 3.10-3.14
