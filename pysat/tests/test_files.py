@@ -1209,27 +1209,11 @@ def create_instrument(j):
     update_files should update the file list in .pysat
 
     """
-    # root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
-    #                       '_{day:03d}{hour:02d}{minute:02d}',
-    #                       '{second:02d}_stuff_{version:02d}_',
-    #                       '{revision:03d}_{cycle:02d}.pysat_testing_file'))
-    #
-    # testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-    #                             clean_level='clean',
-    #                             update_files=True,
-    #                             temporary_file_list=False)
-    #
-    # start = dt.datetime(2007, 12, 30)
-    # stop = dt.datetime(2007, 12, 31)
-    # create_files(testInst, start, stop, freq='1D', use_doy=False,
-    #              root_fname=root_fname, timeout=0.5, version=True)
 
     testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                                 clean_level='clean',
                                 update_files=True,
                                 temporary_file_list=False)
-
-    print('initial files created in {}:'.format(testInst.files.data_path))
 
     return 'instrument {}'.format(j)
 
