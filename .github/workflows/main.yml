@@ -42,7 +42,7 @@ jobs:
     - name: Install Operational dependencies
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
-        pip install "setuptools <65"
+        pip install setuptools
         pip install numpy==${{ matrix.numpy_ver }}
         pip install --upgrade-strategy only-if-needed .[test]
 
