@@ -619,13 +619,13 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                 try:
                     if np.isnan(old_fill_val):
                         # Needed for NaNs
-                        ifill = np.where(np.isnan(inst[var].values))
+                        ifill, = np.where(np.isnan(inst[var].values))
                     else:
                         # Catches numbers that fail gracefully from NaN check
-                        ifill = np.where(inst[var].values == old_fill_val)
+                        ifill, = np.where(inst[var].values == old_fill_val)
                 except TypeError:
                     # This catches strings and objects
-                    ifill = np.where(inst[var].values == old_fill_val)
+                    ifill, = np.where(inst[var].values == old_fill_val)
 
                 if len(ifill) > 0:
                     inst[ifill, var] = new_fill_val
