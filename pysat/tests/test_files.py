@@ -1210,10 +1210,10 @@ def create_instrument(j):
 
     """
 
-    testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                                clean_level='clean',
-                                update_files=True,
-                                temporary_file_list=False)
+    pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                     clean_level='clean',
+                     update_files=True,
+                     temporary_file_list=False)
 
     return 'instrument {}'.format(j)
 
