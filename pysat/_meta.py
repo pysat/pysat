@@ -398,16 +398,9 @@ class Meta(object):
                     good_set = True
 
                     # See if this meta data key has already been defined
-                    # in MetaLabels, either as the label or the label value
-                    iattr = None
+                    # in MetaLabels
                     if ikey in self.labels.label_attrs.keys():
                         iattr = self.labels.label_attrs[ikey]
-                    elif ikey in self.labels.label_attrs.values():
-                        iattr = ikey
-                        ikey = list(self.labels.label_attrs.keys())[list(
-                            self.labels.label_attrs.values()).index(iattr)]
-
-                    if iattr is not None:
                         if not isinstance(
                                 to_be_set, self.labels.label_type[iattr]):
                             # If this is a disagreement between byte data
