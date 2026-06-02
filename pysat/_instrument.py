@@ -1892,8 +1892,14 @@ class Instrument(object):
                      np.int8: 'i1', np.uint64: 'u8', np.uint32: 'u4',
                      np.uint16: 'u2', np.uint8: 'u1', np.float64: 'f8',
                      np.float32: 'f4', np.datetime64: 'i8'}
-        str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
-                     np.dtypes.StringDType, np.dtypes.BytesDType]
+
+        try:
+            str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
+                         np.dtypes.StringDType, np.dtypes.BytesDType,
+                         pds.StringDtype]
+        except AttributeError:
+            str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
+                         np.dtypes.BytesDType]
 
         if isinstance(coltype, np.dtype):
             var_type = coltype.kind + str(coltype.itemsize)
