@@ -26,7 +26,7 @@ jobs:
             test_config: "SPEC0000"
           # Operational compliance settings
           - python-version: "3.12"
-            numpy_ver: "1.19"
+            numpy_ver: "1.23.5"
             os: "ubuntu-22.04"
             test_config: "Ops"
 
@@ -42,8 +42,7 @@ jobs:
     - name: Install Operational dependencies
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
-        pip install "setuptools<74"
-        conda install -c conda-forge numpy==${{ matrix.numpy_ver }}
+        pip install numpy==${{ matrix.numpy_ver }}
         pip install --upgrade-strategy only-if-needed .[test]
 
     - name: Install SPEC0000 dependencies
