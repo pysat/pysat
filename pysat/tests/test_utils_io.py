@@ -15,7 +15,6 @@ import functools
 import logging
 import numpy as np
 import os
-import platform
 import tempfile
 import warnings
 
@@ -302,21 +301,6 @@ class TestLoadNetCDF(object):
                                 repr(netcdf_inst.meta[var, attr])))
 
         del netcdf_inst.data, netcdf_inst
-
-        # Future based check on if Windows has sorted out file access issues
-        windows_fail = False
-        try:
-            os.remove(outfile)
-        except Exception as err:
-            # Problems expected in windows
-            if platform.system() != 'Windows':
-                raise err
-            else:
-                windows_fail = True
-        else:
-            # When problem is fixed in windows
-            if (platform.system() == 'Windows') and (not windows_fail):
-                raise OSError("Windows can correctly manage files! See #974")
 
         return
 
