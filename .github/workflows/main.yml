@@ -43,7 +43,7 @@ jobs:
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
         pip install "setuptools<74"
-        pip install numpy==${{ matrix.numpy_ver }}
+        conda install numpy==${{ matrix.numpy_ver }}
         pip install --upgrade-strategy only-if-needed .[test]
 
     - name: Install SPEC0000 dependencies
