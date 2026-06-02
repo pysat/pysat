@@ -90,9 +90,14 @@ class TestUpdateFill(object):
         inst.load(date=self.ref_time)
 
         # Ensure there are fill values to check for strings and numbers
-        str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
-                     np.dtypes.StringDType, np.dtypes.BytesDType,
-                     pds.StringDtype]
+        try:
+            str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
+                         np.dtypes.StringDType, np.dtypes.BytesDType,
+                         pds.StringDtype]
+        except AttributeError:
+            str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
+                         np.dtypes.BytesDType]
+
         str_vars = [var for var in inst.variables if var in inst.meta.keys()
                     and type(inst[var].dtype) in str_types
                     and inst.meta[var, inst.meta.labels.fill_val] is not None]
