@@ -615,20 +615,21 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                 # Update the Meta data
                 inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
 
-                # Update the variable data
+                # Update the variable data, masking is much faster than
+                # indexing *requires source*
                 try:
                     if np.isnan(old_fill_val):
                         # Needed for NaNs
-                        ifill = np.where(np.isnan(inst[var].values))
+                        fill_mask = np.isnan(inst[var].values)
                     else:
                         # Catches numbers that fail gracefully from NaN check
-                        ifill = np.where(inst[var].values == old_fill_val)
+                        fill_mask = inst[var].values == old_fill_val
                 except TypeError:
                     # This catches strings and objects
-                    ifill = np.where(inst[var].values == old_fill_val)
+                    fill_mask = inst[var].values == old_fill_val
 
-                if len(ifill) > 0:
-                    inst[var].values[ifill] = new_fill_val
+                if fill_mask.any():
+                    inst[fill_mask, var] = new_fill_val
 
     return
 
