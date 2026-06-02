@@ -20,8 +20,9 @@ import pandas as pds
 import pysat  # Needed to access pysat.params across reimports
 from pysat.instruments.methods import general
 from pysat.utils import files as futils
+from pysat.utils import NetworkLock
 from pysat.utils.time import filter_datetime_input
-from pysat.utils._core import NetworkLock
+
 
 
 class Files(object):
