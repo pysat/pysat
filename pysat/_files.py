@@ -24,7 +24,6 @@ from pysat.utils import NetworkLock
 from pysat.utils.time import filter_datetime_input
 
 
-
 class Files(object):
     """Maintain collection of files and associated methods.
 
@@ -579,7 +578,7 @@ class Files(object):
             if self.write_to_disk:
                 # Save the previous data in a backup file
                 prev_name = os.path.join(self.home_path, 'archive', stored_name)
-                with NetworkLock(stored_name, mode='w') as fout:
+                with NetworkLock(prev_name, mode='w') as fout:
                     stored_files.to_csv(fout,
                                         date_format='%Y-%m-%d %H:%M:%S.%f',
                                         header=[self.data_path])
