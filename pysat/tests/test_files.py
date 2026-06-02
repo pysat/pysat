@@ -18,6 +18,7 @@ import numpy as np
 import os
 import pandas as pds
 import tempfile
+import time
 
 import pytest
 
@@ -1311,6 +1312,9 @@ class TestFilesRaceCondition(object):
         pysat.file_timeout = 1
 
         proc_pool.map(create_instrument, range(processes))
+
+        time.sleep(5)
+
         return
 
 
