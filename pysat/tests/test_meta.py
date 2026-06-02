@@ -441,13 +441,13 @@ class TestMeta(object):
         cmeta = pysat.Meta()
 
         for mobj in [self.meta, cmeta]:
-            mobj['test_var'] = {'units': 'testU',
-                                'name': 'test variable',
-                                'notes': 'test notes',
-                                'desc': 'test description',
-                                'min_val': 0.0,
-                                'max_val': 10.0,
-                                'fill_val': -1.0}
+            mobj['test_var'] = {self.labels.units: 'testU',
+                                self.labels.name: 'test variable',
+                                self.labels.notes: 'test notes',
+                                self.labels.desc: 'test description',
+                                self.labels.min_val: 0.0,
+                                self.labels.max_val: 10.0,
+                                self.labels.fill_val: -1.0}
 
         # Test the equality
         assert cmeta == self.meta, "identical meta objects differ"
@@ -504,13 +504,13 @@ class TestMeta(object):
         """
 
         # Add different data to the test and comparison meta objects
-        meta_dict = {'units': 'testU',
-                     'name': 'test variable',
-                     'notes': "test notes",
-                     'desc': "test description",
-                     "min_val": 0.0,
-                     "max_val": 10.0,
-                     "fill_val": -1.0}
+        meta_dict = {self.labels.units: 'testU',
+                     self.labels.name: 'test variable',
+                     self.labels.notes: "test notes",
+                     self.labels.desc: "test description",
+                     self.labels.min_val: 0.0,
+                     self.labels.max_val: 10.0,
+                     self.labels.fill_val: -1.0}
 
         self.meta['test_var'] = meta_dict
 
