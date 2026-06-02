@@ -491,13 +491,8 @@ class TestMeta(object):
         assert emeta != self.meta, "meta equality not detectinng differences"
         return
 
-    @pytest.mark.parametrize("label_key", ["self.meta.labels.units",
-                                           "self.meta.labels.name",
-                                           "self.meta.labels.notes",
-                                           "self.meta.labels.desc",
-                                           "self.meta.labels.min_val",
-                                           "self.meta.labels.max_val",
-                                           "self.meta.labels.fill_val"])
+    @pytest.mark.parametrize("label_key", ["units", "name", "notes", "desc",
+                                           "min_val", "max_val", "fill_val"])
     def test_value_inequality(self, label_key):
         """Test that meta equality works without copy.
 
@@ -519,10 +514,11 @@ class TestMeta(object):
 
         self.meta['test_var'] = meta_dict
 
-        if isinstance(meta_dict[label_key], str):
-            meta_dict[label_key] = "different"
+        meta_label_key = getattr(self.meta.labels, label_key)
+        if isinstance(meta_dict[meta_label_key], str):
+            meta_dict[meta_label_key] = "different"
         else:
-            meta_dict[label_key] = 99.0
+            meta_dict[meta_label_key] = 99.0
 
         cmeta = pysat.Meta()
         cmeta['test_var'] = meta_dict
