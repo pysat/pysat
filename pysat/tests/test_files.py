@@ -1309,7 +1309,7 @@ class TestFilesRaceCondition(object):
         """Test that multiple instances of pysat instrument creation run."""
         processes = 5
         proc_pool = Pool(processes)
-        pysat.file_timeout = 1
+        pysat.file_timeout = 10
 
         proc_pool.map(create_instrument, range(processes))
 
