@@ -441,13 +441,13 @@ class TestMeta(object):
         cmeta = pysat.Meta()
 
         for mobj in [self.meta, cmeta]:
-            mobj['test_var'] = {self.labels.units: 'testU',
-                                self.labels.name: 'test variable',
-                                self.labels.notes: 'test notes',
-                                self.labels.desc: 'test description',
-                                self.labels.min_val: 0.0,
-                                self.labels.max_val: 10.0,
-                                self.labels.fill_val: -1.0}
+            mobj['test_var'] = {mobj.labels.units: 'testU',
+                                mobj.labels.name: 'test variable',
+                                mobj.labels.notes: 'test notes',
+                                mobj.labels.desc: 'test description',
+                                mobj.labels.min_val: 0.0,
+                                mobj.labels.max_val: 10.0,
+                                mobj.labels.fill_val: -1.0}
 
         # Test the equality
         assert cmeta == self.meta, "identical meta objects differ"
@@ -504,13 +504,13 @@ class TestMeta(object):
         """
 
         # Add different data to the test and comparison meta objects
-        meta_dict = {self.labels.units: 'testU',
-                     self.labels.name: 'test variable',
-                     self.labels.notes: "test notes",
-                     self.labels.desc: "test description",
-                     self.labels.min_val: 0.0,
-                     self.labels.max_val: 10.0,
-                     self.labels.fill_val: -1.0}
+        meta_dict = {self.meta.labels.units: 'testU',
+                     self.meta.labels.name: 'test variable',
+                     self.meta.labels.notes: "test notes",
+                     self.meta.labels.desc: "test description",
+                     self.meta.labels.min_val: 0.0,
+                     self.meta.labels.max_val: 10.0,
+                     self.meta.labels.fill_val: -1.0}
 
         self.meta['test_var'] = meta_dict
 
