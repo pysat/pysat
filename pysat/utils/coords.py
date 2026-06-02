@@ -42,11 +42,16 @@ def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
     out_samples = np.array(samples)
     sample_range = high - low
 
-    while np.any(out_samples >= high):
-        out_samples[out_samples >= high] -= sample_range
+    # Update data to work with modulus
+    out_samples -= low
 
-    while np.any(out_samples < low):
-        out_samples[out_samples < low] += sample_range
+    # Find and fix locations too large or too small
+    idx, = np.where((out_samples >= sample_range) | (out_samples < 0))
+    if len(idx) > 0:
+        out_samples[idx] = np.mod(out_samples[idx], sample_range)
+
+    # Restore original baseline
+    out_samples += low
 
     return out_samples
 
