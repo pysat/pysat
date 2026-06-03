@@ -95,8 +95,7 @@ class TestUpdateFill(object):
                          np.dtypes.StringDType, np.dtypes.BytesDType,
                          pds.StringDtype]
         except AttributeError:
-            str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
-                         np.dtypes.BytesDType]
+            str_types = [str, np.str_, np.bytes_, pds.StringDtype]
 
         str_vars = [var for var in inst.variables if var in inst.meta.keys()
                     and type(inst[var].dtype) in str_types
