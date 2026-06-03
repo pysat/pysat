@@ -30,8 +30,8 @@ jobs:
             os: "ubuntu-22.04"
             test_config: "Ops"
           # Minimum version settings
-          - python-version: "3.9"
-            numpy_ver: "1.19.5"
+          - python-version: "3.10"
+            numpy_ver: "1.21.6"
             pandas_ver: "1.1.5"
             scipy_ver: "1.5.4"
             xarray_ver: "0.16.2"
