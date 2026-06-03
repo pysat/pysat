@@ -637,6 +637,11 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                         inst[ifill, var] = new_fill_val
                     else:
                         # Multidimensional xarray
+                        # I think the most correct solution would be to use
+                        # inst[*ifill, var] = new_fill_val
+                        # which works, but takes forever for some reason on
+                        # at least one test
+                        # (test_update_fill_values_by_type[testmodel]).
                         inst[var].values[ifill] = new_fill_val
 
     return
