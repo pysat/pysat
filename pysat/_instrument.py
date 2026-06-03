@@ -1112,7 +1112,7 @@ class Instrument(object):
                     try:
                         self.data[var_key][indict] = in_data
                     except IndexError as ierr:
-                        # TODO : dtypes supported as of numpy 1.25 or so
+                        # TODO(#TBD) : dtypes supported as of numpy 1.25 or so
                         try:
                             str_type = np.dtypes.BoolDType
                         except AttributeError:
@@ -1904,7 +1904,7 @@ class Instrument(object):
                          np.dtypes.StringDType, np.dtypes.BytesDType,
                          pds.StringDtype]
         except AttributeError:
-            # TODO np.dtypes not introduced until somewhere around 1.25
+            # TODO(#TBD) np.dtypes not introduced until somewhere around 1.25
             str_types = [str, np.str_, np.bytes_, pds.StringDtype]
 
         if isinstance(coltype, np.dtype):
