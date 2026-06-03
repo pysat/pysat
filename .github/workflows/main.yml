@@ -57,7 +57,6 @@ jobs:
       if: ${{ matrix.test_config == 'Min'}}
       run: |
         pip install "setuptools<65"
-#        conda install --no-pin -c conda-forge numpy==${{ matrix.numpy_ver }}
         pip install numpy==${{ matrix.numpy_ver }}
         pip install pandas==${{ matrix.pandas_ver }}
         pip install scipy==${{ matrix.scipy_ver }}
