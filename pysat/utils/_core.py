@@ -607,63 +607,37 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
         else:
             variables = listify(variables)
 
-        if inst.pandas_format:
-            for var in variables:
-                if var in inst.meta.keys():
-                    # Get the old fill value
-                    old_fill_val = inst.meta[var, inst.meta.labels.fill_val]
+        for var in variables:
+            if var in inst.meta.keys():
+                # Get the old fill value
+                old_fill_val = inst.meta[var, inst.meta.labels.fill_val]
 
-                    # Update the Meta data
-                    inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
+                # Update the Meta data
+                inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
 
-                    # Update the variable data
-                    try:
-                        if np.isnan(old_fill_val):
-                            # Needed for NaNs
-                            ifill, = np.where(np.isnan(inst[var].values))
-                        else:
-                            # Catches numbers that fail gracefully from NaN check
-                            ifill, = np.where(inst[var].values == old_fill_val)
-                    except TypeError:
-                        # This catches strings and objects
-                        ifill, = np.where(inst[var].values == old_fill_val)
+                try:
+                    if np.isnan(old_fill_val):
+                        # Needed for NaNs
+                        ifill = np.where(np.isnan(inst[var].values))
+                    else:
+                        # Catches numbers that fail gracefully from NaN check
+                        ifill = np.where(
+                                inst[var].values == old_fill_val)
+                except TypeError:
+                    # This catches strings and objects
+                    ifill = np.where(inst[var].values == old_fill_val)
 
-                    if len(ifill) > 0:
+                # Update the variable data
+                # Depends upon data dimensionality
+                if len(ifill) > 0:
+                    if inst.pandas_format:
+                        ifill = ifill[0]
                         inst[ifill, var] = new_fill_val
-        else:
-            for var in variables:
-                if var in inst.meta.keys():
-                    # Get the old fill value
-                    old_fill_val = inst.meta[var, inst.meta.labels.fill_val]
-
-                    # Update the Meta data
-                    inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
-
-
-                    try:
-                        if np.isnan(old_fill_val):
-                            # Needed for NaNs
-                            if len(inst[var].dims) > 1:
-                                ifill = np.where(np.isnan(inst[var].values))
-                            else:
-                                ifill, = np.where(np.isnan(inst[var].values))
-                        else:
-                            # Catches numbers that fail gracefully from NaN check
-                            if len(inst[var].dims) > 1:
-                                ifill = np.where(
-                                    inst[var].values == old_fill_val)
-                            else:
-                                ifill, = np.where(
-                                    inst[var].values == old_fill_val)
-                    except TypeError:
-                        # This catches strings and objects
-                        if len(inst[var].dims) > 1:
-                            ifill = np.where(inst[var].values == old_fill_val)
-                        else:
-                            ifill, = np.where(inst[var].values == old_fill_val)
-                    # Update the variable data
-                    # Depends upon data dimensionality
-                    if len(ifill) > 0:
+                    elif len(inst[var].dims) == 1:
+                        ifill = ifill[0]
+                        inst[var].values[ifill] = new_fill_val
+                    else:
+                        # multidimensional xarray
                         inst[var].values[ifill] = new_fill_val
 
     return
