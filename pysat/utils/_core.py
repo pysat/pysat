@@ -621,8 +621,7 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                         ifill = np.where(np.isnan(inst[var].values))
                     else:
                         # Catches numbers that fail gracefully from NaN check
-                        ifill = np.where(
-                                inst[var].values == old_fill_val)
+                        ifill = np.where(inst[var].values == old_fill_val)
                 except TypeError:
                     # This catches strings and objects
                     ifill = np.where(inst[var].values == old_fill_val)
@@ -635,9 +634,9 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                         inst[ifill, var] = new_fill_val
                     elif len(inst[var].dims) == 1:
                         ifill = ifill[0]
-                        inst[var].values[ifill] = new_fill_val
+                        inst[ifill, var] = new_fill_val
                     else:
-                        # multidimensional xarray
+                        # Multidimensional xarray
                         inst[var].values[ifill] = new_fill_val
 
     return
