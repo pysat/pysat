@@ -32,9 +32,9 @@ jobs:
           # Minimum version settings
           - python-version: "3.10"
             numpy_ver: "1.21.6"
-            pandas_ver: "1.1.5"
-            scipy_ver: "1.5.4"
-            xarray_ver: "0.16.2"
+            pandas_ver: "1.4.2"
+            scipy_ver: "1.8.1"
+            xarray_ver: "2022.12.0"
             os: "ubuntu-22.04"
             test_config: "Min"
 
