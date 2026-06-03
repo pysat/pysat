@@ -26,9 +26,17 @@ jobs:
             test_config: "SPEC0000"
           # Operational compliance settings
           - python-version: "3.12"
-            numpy_ver: "1.23.5"
+            numpy_ver: "2.0.0"
             os: "ubuntu-22.04"
             test_config: "Ops"
+          # Minimum version settings
+          - python-version: "3.10"
+            numpy_ver: "1.19"
+            pandas_ver: "1.1.5"
+            scipy_ver: "1.5.4"
+            xarray_ver: "0.16.2"
+            os: "ubuntu-22.04"
+            test_config: "Min"
 
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
     runs-on: ${{ matrix.os }}
@@ -43,6 +51,15 @@ jobs:
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
         pip install numpy==${{ matrix.numpy_ver }}
+        pip install --upgrade-strategy only-if-needed .[test]
+
+    - name: Install Minimum dependencies
+      if: ${{ matrix.test_config == 'Min'}}
+      run: |
+        pip install numpy==${{ matrix.numpy_ver }}
+        pip install pandas==${{ matrix.pandas_ver }}
+        pip install scipy==${{ matrix.scipy_ver }}
+        pip install xarray==${{ matrix.xarray_ver }}
         pip install --upgrade-strategy only-if-needed .[test]
 
     - name: Install SPEC0000 dependencies
