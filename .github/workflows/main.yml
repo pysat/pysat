@@ -56,6 +56,7 @@ jobs:
     - name: Install Minimum dependencies
       if: ${{ matrix.test_config == 'Min'}}
       run: |
+        pip install "setuptools<65"
         pip install numpy==${{ matrix.numpy_ver }}
         pip install pandas==${{ matrix.pandas_ver }}
         pip install scipy==${{ matrix.scipy_ver }}
