@@ -63,7 +63,7 @@ jobs:
         pip install "setuptools<65"
         pip install numpy==${{ matrix.numpy_ver }}
         pip install scipy==${{ matrix.scipy_ver }}
-        pip install netCDF==${{ matrix.netcdf_ver }}
+        pip install netCDF4==${{ matrix.netcdf_ver }}
         pip install pandas==${{ matrix.pandas_ver }}
         pip install xarray==${{ matrix.xarray_ver }}
         pip install dask==${{ matrix.dask_ver }}
