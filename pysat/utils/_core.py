@@ -642,7 +642,7 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                         # which works, but takes forever for some reason on
                         # at least one test
                         # (test_update_fill_values_by_type[testmodel]).
-                        # TODO (#TBD) Sort out why *ifill is lacing performance
+                        # TODO(#TBD) Sort out why *ifill is lacing performance
                         inst[var].values[ifill] = new_fill_val
 
     return
