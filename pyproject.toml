@@ -43,15 +43,15 @@ keywords = [
   "analysis"
 ]
 dependencies = [
-  "dask >= 2020.12.0",
+  "dask >= 2022.12.1",
   "netCDF4 >= 1.5.5.1",
-  "numpy >= 1.19",
-  "pandas >= 1.1.5",
+  "numpy >= 1.21.6",
+  "pandas >= 1.4.2",
   "portalocker >= 2.0",
-  "pytest >= 6.2",
-  "scipy >= 1.5.4",
+  "pytest >= 7.1.3",
+  "scipy >= 1.8.1",
   "toolz >= 0.11.1",
-  "xarray >= 0.16.2"
+  "xarray >= 2022.12.0"
 ]
 
 [project.optional-dependencies]
