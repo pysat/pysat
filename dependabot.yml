@@ -1,0 +1,15 @@
+# Dependabot creates pull requests to update versions of dependencies,
+# including in the GitHub Actions ecosystem.
+
+# Documentation: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+
+updates:
+
+- package-ecosystem: github-actions
+  directory: /.github/workflows
+  schedule:
+    interval: monthly
+  cooldown:
+    default-days: 14
