@@ -7,7 +7,7 @@ name = "pysat"
 version = "3.2.2"
 description = "Supports science analysis across disparate data platforms"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
     {name = "Russell Stoneback, et al.", email = "pysat.developers@gmail.com"},
