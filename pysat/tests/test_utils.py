@@ -85,11 +85,12 @@ class TestUpdateFill(object):
 
         """
 
-        # Initalize the instrument
+        # Initialize the instrument
         inst = pysat.Instrument('pysat', name)
         inst.load(date=self.ref_time)
 
         # Ensure there are fill values to check for strings and numbers
+        # TODO(#1227) Remove try/except after numpy >= 1.25
         try:
             str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
                          np.dtypes.StringDType, np.dtypes.BytesDType,
