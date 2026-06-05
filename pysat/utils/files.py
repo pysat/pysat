@@ -826,10 +826,6 @@ def update_data_directory_structure(new_template, test_run=True,
                         nold = len(inst.files.files)
                         if not test_run:
                             if nnew != nold:
-                                print('New files')
-                                print(new_inst.files.files)
-                                print('Old file')
-                                print(inst.files.files)
                                 estr = ' '.join(('Number of files before',
                                                  nold, 'and',
                                                  'after', nnew, 'not the same.',
