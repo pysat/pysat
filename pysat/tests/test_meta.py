@@ -443,13 +443,19 @@ class TestMeta(object):
         for mobj in [self.meta, cmeta]:
             # Ensure that meta is defined using string.
             # Using the default values from the Labels class.
+            # Plus add custom strings, including confusing ones
             mobj['test_var'] = {"units": 'testU',
                                 "long_name": 'test variable',
                                 "notes": 'test notes',
                                 "desc": 'test description',
                                 "value_min": 0.0,
                                 "value_max": 10.0,
-                                "fill": -1.0}
+                                "fill": -1.0,
+                                "custom_value": 'testing_custom_string',
+                                "name": -999.0,
+                                "fill_value": -9999.0,
+                                "min_value": -10.0,
+                                "max_value": 100.0}
 
         # Test the equality
         assert cmeta == self.meta, "identical meta objects differ"
