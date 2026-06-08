@@ -827,9 +827,9 @@ def update_data_directory_structure(new_template, test_run=True,
                         if not test_run:
                             if nnew != nold:
                                 estr = ' '.join(('Number of files before',
-                                                 nold, 'and',
-                                                 'after', nnew, 'not the same.',
-                                                 'Something has gone wrong for',
+                                                 repr(nold), 'and',
+                                                 'after', repr(nnew), 'not the same.',
+'Something has gone wrong for',
                                                  platform, name, tag, inst_id))
                                 raise ValueError(estr)
 
