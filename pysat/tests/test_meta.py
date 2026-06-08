@@ -512,13 +512,15 @@ class TestMeta(object):
         """
 
         # Add different data to the test and comparison meta objects
-        meta_dict = {self.meta.labels.units: 'testU',
-                     self.meta.labels.name: 'test variable',
-                     self.meta.labels.notes: "test notes",
-                     self.meta.labels.desc: "test description",
-                     self.meta.labels.min_val: 0.0,
-                     self.meta.labels.max_val: 10.0,
-                     self.meta.labels.fill_val: -1.0}
+        # Specifically include strings that aren't the default labels
+        meta_dict = {"units": 'testU',
+                     "name": 'test variable',
+                     "notes": "test notes",
+                     "desc": "test description",
+                     "min_val": 0.0,
+                     "max_val": 10.0,
+                     "fill_val": -1.0,
+                     "value_min": -999.0}
 
         self.meta['test_var'] = meta_dict
 
