@@ -455,7 +455,7 @@ class Meta(object):
                         # metadata to ensure all data have all labels
                         self.labels.update(iattr, ikey, itype)
                         print('assigning type ', type(to_be_set), ' for var ',
-                               var, ' ikey: ', ikey)
+                              var, ' ikey: ', ikey)
                         self._label_setter(ikey, ikey, type(to_be_set))
 
                     # Set the data
