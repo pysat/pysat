@@ -788,7 +788,7 @@ class Meta(object):
                               " with type: ", default_type)
                         self.data[new_label] = np.array(
                             [default_val] * len(self.data.index),
-                            type=default_type)
+                            dtype=default_type)
                         if default_val is None:
                             mstr = ' '.join(('A problem may have been',
                                              'encountered with the user',
