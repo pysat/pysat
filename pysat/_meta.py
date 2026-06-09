@@ -466,8 +466,10 @@ class Meta(object):
                         if ikey in self._data.columns:
                             self._data.loc[var, ikey] = to_be_set
                         else:
-                            self._data.loc[[var], ikey] = np.array(to_be_set,
-                                                                   dtype=itype)
+                            self._data.loc[:, ikey] = np.array(
+                                [np.nan]*len(self._data.index), dtype=object)
+                            self._data.loc[var, ikey] = to_be_set
+
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict.
