@@ -457,16 +457,18 @@ class Meta(object):
                         print('assigning type ', type(to_be_set), ' for var ',
                               var, ' ikey: ', ikey)
                         self._label_setter(ikey, ikey, type(to_be_set))
+                        self._data.loc[:, ikey] = np.array([], dtype=itype)
 
                     # Set the data
                     if good_set:
                         print('good set, var, ikey, to_be_set: ',
                               var, ikey, to_be_set)
+                        print('Columns Check: ', ikey in self._data.columns)
                         try:
                             self._data.loc[var, ikey] = to_be_set
                         except TypeError:
-                            self._data.loc[var, ikey] = np.array(to_be_set,
-                                                                 dtype=object)
+                            self._data.loc[[var], ikey] = np.array(to_be_set,
+                                                                   dtype=object)
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict.
