@@ -466,8 +466,9 @@ class Meta(object):
                         if ikey in self._data.columns:
                             self._data.loc[var, ikey] = to_be_set
                         else:
+                            default = self.labels.default_values_from_attr(var)
                             self._data.loc[:, ikey] = np.array(
-                                [np.nan]*len(self._data.index), dtype=object)
+                                [default]*len(self._data.index), dtype=itype)
                             self._data.loc[var, ikey] = to_be_set
 
         elif isinstance(input_data, pds.Series):
