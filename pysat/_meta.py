@@ -456,13 +456,16 @@ class Meta(object):
                         self.labels.update(iattr, ikey, itype)
                         print('assigning type ', type(to_be_set), ' for var ',
                               var, ' ikey: ', ikey)
+                        # Call below adds ikey to self._data
                         self._label_setter(ikey, ikey, type(to_be_set))
+                        print("New column: ", self._data.loc[:, ikey])
 
                     # Set the data
                     if good_set:
                         print('good set, var, ikey, to_be_set: ',
                               var, ikey, to_be_set)
                         print('Columns Check: ', ikey in self._data.columns)
+                        print(self._data.columns)
                         if ikey in self._data.columns:
                             self._data.loc[var, ikey] = to_be_set
                         else:
