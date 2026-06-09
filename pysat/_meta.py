@@ -783,7 +783,12 @@ class Meta(object):
                     else:
                         default_val = self.labels.default_values_from_type(
                             default_type)
-                        self.data[new_label] = default_val
+                        print('Assigning new column ', new_label,
+                              " default val: ", default_val,
+                              " with type: ", default_type)
+                        self.data[new_label] = np.array(
+                            [default_val] * len(self.data.index),
+                            type=default_type)
                         if default_val is None:
                             mstr = ' '.join(('A problem may have been',
                                              'encountered with the user',
