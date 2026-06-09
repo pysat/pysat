@@ -457,7 +457,7 @@ class Meta(object):
                         print('assigning type ', type(to_be_set), ' for var ',
                               var, ' ikey: ', ikey)
                         self._label_setter(ikey, ikey, type(to_be_set))
-                        self._data.loc[:, ikey] = np.array([], dtype=itype)
+                        self._data.loc[[], ikey] = np.array([], dtype=itype)
 
                     # Set the data
                     if good_set:
