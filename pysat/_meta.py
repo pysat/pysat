@@ -458,59 +458,60 @@ class Meta(object):
                         if itype == bytes:
                             itype = str
 
-                        # Ensure new label doesn't conflict with an
-                        # existing meta.labels attribute.
-                        if iattr.lower() in self.labels.label_attrs.values():
+                        # # Ensure new label doesn't conflict with an
+                        # # existing meta.labels attribute.
+                        # if iattr.lower() in self.labels.label_attrs.values():
+                        #
+                        #     print("NAME COLLISION")
+                        #     j = list(self.labels.label_attrs.values()).index(
+                        #         iattr)
+                        #     jattr = list(self.labels.label_attrs.keys())[j]
+                        #
+                        #     # Create new column in metadata with default values
+                        #     # for the new collision attribute
+                        #     fill = self.labels.default_values_from_type(itype)
+                        #     self._data.loc[:, ikey] = np.array(
+                        #         [fill] * len(self._data.index), dtype=itype)
+                        #     self._data.loc[var, jattr] = to_be_set
+                        #
+                        #     # Raise a warning
+                        #     estr = ' '.join(["The supplied metadata label",
+                        #                      iattr, "conflicts with a label",
+                        #                      "already present. This warning",
+                        #                      "will be an error in v3.3.",
+                        #                      "Continued use now may result in",
+                        #                      "unexpected behaviors. You may",
+                        #                      "use a custom labels class to",
+                        #                      "achieve what you want instead."])
+                        #     warnings.warn(estr,
+                        #                   DeprecationWarning, stacklevel=2)
+                        #
+                        # else:
+                        #     # Update the MetaLabels object and the existing
+                        #     # metadata to ensure all data have all labels
+                        #     print("Starting Update cycle")
 
-                            print("NAME COLLISION")
-                            j = list(self.labels.label_attrs.values()).index(
-                                iattr)
-                            jattr = list(self.labels.label_attrs.keys())[j]
-
-                            # Create new column in metadata with default values
-                            # for the new collision attribute
-                            # fill = self.labels.default_values_from_type(itype)
-                            # self._data.loc[:, ikey] = np.array(
-                            #     [fill] * len(self._data.index), dtype=itype)
-                            self._data.loc[var, jattr] = to_be_set
-
-                            # Raise a warning
-                            estr = ' '.join(["The supplied metadata label",
-                                             iattr, "conflicts with a label",
-                                             "already present. This warning",
-                                             "will be an error in v3.3.",
-                                             "Continued use now may result in",
-                                             "unexpected behaviors. You may",
-                                             "use a custom labels class to",
-                                             "achieve what you want instead."])
-                            warnings.warn(estr,
-                                          DeprecationWarning, stacklevel=2)
-
-                        else:
-                            # Update the MetaLabels object and the existing
-                            # metadata to ensure all data have all labels
-                            # print("Starting Update cycle")
-                            self.labels.update(iattr, ikey, itype)
+                        self.labels.update(iattr, ikey, itype)
                             # print("Finished with update cycle")
                             # print('assigning type ', type(to_be_set),
                             #       ' for var ',
                             #       var, ' ikey: ', ikey)
                             # Call below adds ikey to self._data
-                            self._label_setter(iattr, iattr, type(to_be_set),
-                                               False)
+                        self._label_setter(iattr, iattr, type(to_be_set),
+                                           False)
                             # print("New column: ")
                             # print(self._data.loc[:, ikey])
 
                     # Set the data
                     if good_set:
-                        print('good set, var, ikey, to_be_set: ',
-                              var, ikey, to_be_set)
-                        print('Columns Check: ', ikey in self._data.columns)
+                        # print('good set, var, ikey, to_be_set: ',
+                        #       var, ikey, to_be_set)
+                        # print('Columns Check: ', ikey in self._data.columns)
                         # print(self._data.columns)
                         if ikey in self._data.columns:
                             self._data.loc[var, ikey] = to_be_set
 
-                        print("Good set complete.")
+                        # print("Good set complete.")
 
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
