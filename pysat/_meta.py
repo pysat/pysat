@@ -492,7 +492,8 @@ class Meta(object):
                             # print("Starting Update cycle")
                             self.labels.update(iattr, ikey, itype)
                             # print("Finished with update cycle")
-                            # print('assigning type ', type(to_be_set), ' for var ',
+                            # print('assigning type ', type(to_be_set),
+                            #       ' for var ',
                             #       var, ' ikey: ', ikey)
                             # Call below adds ikey to self._data
                             self._label_setter(iattr, iattr, type(to_be_set), False)
@@ -507,11 +508,7 @@ class Meta(object):
                         # print(self._data.columns)
                         if ikey in self._data.columns:
                             self._data.loc[var, ikey] = to_be_set
-                        # else:
-                        #     default = self.labels.default_values_from_attr(var)
-                        #     self._data.loc[:, ikey] = np.array(
-                        #         [default] * len(self._data.index), dtype=itype)
-                        #     self._data.loc[var, ikey] = to_be_set
+
                         print("Good set complete.")
 
         elif isinstance(input_data, pds.Series):
