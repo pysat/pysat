@@ -335,6 +335,7 @@ class Meta(object):
 
         """
         input_data = deepcopy(input_dat)
+        print("Starting setitem")
 
         if isinstance(input_data, dict):
             # If not passed an iterable, make it one
@@ -393,13 +394,18 @@ class Meta(object):
 
             # Time to actually add the metadata
             for ikey in input_data:
+                print()
+                print("Starting loop with ikey: ", ikey)
                 for i, var in enumerate(data_vars):
                     to_be_set = input_data[ikey][i]
                     good_set = True
 
                     # See if this meta data key has already been defined
                     # in MetaLabels
+                    print("Checking against keys: ",
+                          self.labels.label_attrs.keys())
                     if ikey in self.labels.label_attrs.keys():
+                        # print("Label already defined")
                         iattr = self.labels.label_attrs[ikey]
                         if not isinstance(
                                 to_be_set, self.labels.label_type[iattr]):
@@ -446,33 +452,67 @@ class Meta(object):
                         # Extend the meta labels. Ensure the attribute
                         # name has no spaces and that bytes are used instead
                         # of strings.
+                        print("Starting else section, label not in metadata")
                         iattr = ikey.replace(" ", "_")
                         itype = type(to_be_set)
                         if itype == bytes:
                             itype = str
 
-                        # Update the MetaLabels object and the existing
-                        # metadata to ensure all data have all labels
-                        self.labels.update(iattr, ikey, itype)
-                        print('assigning type ', type(to_be_set), ' for var ',
-                              var, ' ikey: ', ikey)
-                        # Call below adds ikey to self._data
-                        self._label_setter(ikey, ikey, type(to_be_set))
-                        print("New column: ", self._data.loc[:, ikey])
+                        # Ensure new label doesn't conflict with an
+                        # existing meta.labels attribute.
+                        if iattr.lower() in self.labels.label_attrs.values():
+
+                            print("NAME COLLISION")
+                            j = list(self.labels.label_attrs.values()).index(
+                                iattr)
+                            jattr = list(self.labels.label_attrs.keys())[j]
+
+                            # Create new column in metadata with default values
+                            # for the new collision attribute
+                            # fill = self.labels.default_values_from_type(itype)
+                            # self._data.loc[:, ikey] = np.array(
+                            #     [fill] * len(self._data.index), dtype=itype)
+                            self._data.loc[var, jattr] = to_be_set
+
+                            # Raise a warning
+                            estr = ' '.join(["The supplied metadata label",
+                                             iattr, "conflicts with a label",
+                                             "already present. This warning",
+                                             "will be an error in v3.3.",
+                                             "Continued use now may result in",
+                                             "unexpected behaviors. You may",
+                                             "use a custom labels class to",
+                                             "achieve what you want instead."])
+                            warnings.warn(estr,
+                                          DeprecationWarning, stacklevel=2)
+
+                        else:
+                            # Update the MetaLabels object and the existing
+                            # metadata to ensure all data have all labels
+                            # print("Starting Update cycle")
+                            self.labels.update(iattr, ikey, itype)
+                            # print("Finished with update cycle")
+                            # print('assigning type ', type(to_be_set), ' for var ',
+                            #       var, ' ikey: ', ikey)
+                            # Call below adds ikey to self._data
+                            self._label_setter(iattr, iattr, type(to_be_set), False)
+                            # print("New column: ")
+                            # print(self._data.loc[:, ikey])
 
                     # Set the data
                     if good_set:
                         print('good set, var, ikey, to_be_set: ',
                               var, ikey, to_be_set)
                         print('Columns Check: ', ikey in self._data.columns)
-                        print(self._data.columns)
+                        # print(self._data.columns)
                         if ikey in self._data.columns:
                             self._data.loc[var, ikey] = to_be_set
-                        else:
-                            default = self.labels.default_values_from_attr(var)
-                            self._data.loc[:, ikey] = np.array(
-                                [default] * len(self._data.index), dtype=itype)
-                            self._data.loc[var, ikey] = to_be_set
+                        # else:
+                        #     default = self.labels.default_values_from_attr(var)
+                        #     self._data.loc[:, ikey] = np.array(
+                        #         [default] * len(self._data.index), dtype=itype)
+                        #     self._data.loc[var, ikey] = to_be_set
+                        print("Good set complete.")
 
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
@@ -486,7 +526,7 @@ class Meta(object):
             else:
                 raise ValueError(
                     "unexpected input combination, can't set metadata")
-
+        print("Leaving setitem")
         return
 
     def __getitem__(self, key):
@@ -762,15 +802,20 @@ class Meta(object):
         Not intended for end user
 
         """
+        print("In label setter")
         self_attrs = list(self.attrs())
         if new_label not in self_attrs:
             # New label not in metadata
+            print("New label not in metadata: ", new_label)
+            print("Existing attrs: ", self_attrs)
             if current_label in self_attrs:
                 # Current label exists and has expected case
+                print("Current label exists")
                 self.data.loc[:, new_label] = self.data.loc[:, current_label]
                 self.data = self.data.drop(current_label, axis=1)
             else:
                 if self.hasattr_case_neutral(current_label):
+                    print("Case Neutral")
                     # There is a similar label with different capitalization
                     current_label = self.attr_case_name(current_label)
                     self.data.loc[:, new_label] = self.data.loc[:,
@@ -779,6 +824,7 @@ class Meta(object):
                 else:
                     # There is no existing label, setting for the first time
                     if use_names_default:
+                        print("Use names default")
                         self.data[new_label] = self.data.index
                     else:
                         default_val = self.labels.default_values_from_type(
@@ -964,6 +1010,7 @@ class Meta(object):
             Meta object to take default labels from
 
         """
+        print("Accept default labels")
         # Update labels in metadata
         for key in other_meta.labels.label_type.keys():
             new_name = getattr(other_meta.labels, key)
@@ -1619,15 +1666,23 @@ class MetaLabels(object):
         # Get old attribute value for reference
         if hasattr(self, name):
             old_value = getattr(self, name)
+            print("Assigning old value: ", old_value)
         else:
+            print("Setting old value to None")
             old_value = None
 
         # Use Object to avoid recursion
         super(MetaLabels, self).__setattr__(name, value)
+        print("Labels setattr")
 
         # Before setting the attribute, see if upstream changes are needed
+        print(old_value is not None)
+        print(name not in ['label_type', 'meta'])
+        print(hasattr(self, 'meta'))
+        print(hasattr(self.meta, 'data'))
         if old_value is not None and name not in ['label_type', 'meta']:
             if hasattr(self, 'meta') and hasattr(self.meta, 'data'):
+                print("setattr is invoking the label setter")
                 self.meta._label_setter(value, getattr(self, name),
                                         self.label_type[name],
                                         use_names_default=True)
@@ -1899,6 +1954,7 @@ class MetaLabels(object):
         """
 
         if self._eval_label_type(ltype):
+            print("update True: ", lattr, lname)
             # This is a valid meta data type, update the class attributes
             setattr(self, lattr, lname)
             self.label_type[lattr] = ltype
