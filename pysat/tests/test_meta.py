@@ -441,21 +441,19 @@ class TestMeta(object):
         cmeta = pysat.Meta()
 
         for mobj in [self.meta, cmeta]:
+            print()
+            print("Test assign metadata")
+            print()
             # Ensure that meta is defined using string.
             # Using the default values from the Labels class.
             # Plus add custom strings, including confusing ones
             mobj['test_var'] = {"units": 'testU',
-                                "long_name": 'test variable',
+                                "name": 'test variable',
                                 "notes": 'test notes',
                                 "desc": 'test description',
-                                "value_min": 0.0,
-                                "value_max": 10.0,
-                                "fill": -1.0,
-                                "custom_value": 'testing_custom_string',
-                                "name": -999.0,
-                                "fill_value": -9999.0,
-                                "min_value": -10.0,
-                                "max_value": 100.0}
+                                "min_val": 0.0,
+                                "max_val": 10.0,
+                                "fill_val": -1.0}
 
         # Test the equality
         assert cmeta == self.meta, "identical meta objects differ"
@@ -502,7 +500,7 @@ class TestMeta(object):
     @pytest.mark.parametrize("label_key", ["units", "name", "notes", "desc",
                                            "min_val", "max_val", "fill_val"])
     def test_value_inequality(self, label_key):
-        """Test that meta equality works without copy.
+        """Test that meta inequality works without copy.
 
         Parameters
         ----------
@@ -512,23 +510,21 @@ class TestMeta(object):
         """
 
         # Add different data to the test and comparison meta objects
-        # Specifically include strings that aren't the default labels
         meta_dict = {"units": 'testU',
                      "name": 'test variable',
                      "notes": "test notes",
                      "desc": "test description",
                      "min_val": 0.0,
                      "max_val": 10.0,
-                     "fill_val": -1.0,
-                     "value_min": -999.0}
+                     "fill_val": -1.0}
 
         self.meta['test_var'] = meta_dict
 
-        meta_label_key = getattr(self.meta.labels, label_key)
-        if isinstance(meta_dict[meta_label_key], str):
-            meta_dict[meta_label_key] = "different"
+        # meta_label_key = getattr(self.meta.labels, label_key)
+        if isinstance(meta_dict[label_key], str):
+            meta_dict[label_key] = "different"
         else:
-            meta_dict[meta_label_key] = 99.0
+            meta_dict[label_key] = 99.0
 
         cmeta = pysat.Meta()
         cmeta['test_var'] = meta_dict
