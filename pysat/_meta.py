@@ -496,7 +496,8 @@ class Meta(object):
                             #       ' for var ',
                             #       var, ' ikey: ', ikey)
                             # Call below adds ikey to self._data
-                            self._label_setter(iattr, iattr, type(to_be_set), False)
+                            self._label_setter(iattr, iattr, type(to_be_set),
+                                               False)
                             # print("New column: ")
                             # print(self._data.loc[:, ikey])
 
