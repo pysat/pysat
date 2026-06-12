@@ -495,15 +495,15 @@ class Meta(object):
                         #     print("Starting Update cycle")
 
                         self.labels.update(iattr, ikey, itype)
-                            # print("Finished with update cycle")
-                            # print('assigning type ', type(to_be_set),
-                            #       ' for var ',
-                            #       var, ' ikey: ', ikey)
-                            # Call below adds ikey to self._data
+                        # print("Finished with update cycle")
+                        # print('assigning type ', type(to_be_set),
+                        #       ' for var ',
+                        #       var, ' ikey: ', ikey)
+                        # Call below adds ikey to self._data
                         self._label_setter(iattr, iattr, type(to_be_set),
                                            False)
-                            # print("New column: ")
-                            # print(self._data.loc[:, ikey])
+                        # print("New column: ")
+                        # print(self._data.loc[:, ikey])
 
                     # Set the data
                     if good_set:
