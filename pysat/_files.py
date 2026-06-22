@@ -240,8 +240,8 @@ class Files(object):
         self.write_to_disk = write_to_disk
         if not self.write_to_disk:
             # Use blank memory rather than loading from disk
-            self._previous_file_list = pds.Series([], dtype='a')
-            self._current_file_list = pds.Series([], dtype='a')
+            self._previous_file_list = pds.Series([], dtype='string')
+            self._current_file_list = pds.Series([], dtype='string')
 
         # Set the preference to ignore or include empty files
         self.ignore_empty_files = ignore_empty_files
@@ -428,7 +428,7 @@ class Files(object):
                         out = out[:-1]
                 elif len(out) == 1:
                     if out.index[0] >= key.stop:
-                        out = pds.Series([], dtype='a')
+                        out = pds.Series([], dtype='string')
         else:
             try:
                 # Assume key is integer (including list or slice)
@@ -644,7 +644,7 @@ class Files(object):
                                          'Ignoring stored path:', loaded.name,
                                          'Clearing out stored files as well.'])
                         pysat.logger.debug(dstr)
-                        loaded = pds.Series([], dtype='a')
+                        loaded = pds.Series([], dtype='string')
 
                 # Ensure the name of returned Series is None for consistency
                 loaded.name = None
@@ -658,7 +658,7 @@ class Files(object):
                     return self._current_file_list
         else:
             # Storage file not present
-            return pds.Series([], dtype='a')
+            return pds.Series([], dtype='string')
 
         return
 
