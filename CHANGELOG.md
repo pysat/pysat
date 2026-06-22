@@ -25,6 +25,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
   * Updated Operational and SPEC 0 testing
   * Updated redirecting links in documentation
   * Added a list of links to ignore in testing, currently just zenodo.org
+  * Updated Pandas' dtypes within the File class to latest 'string' type
 
 [3.2.2] - 2025-03-20
 --------------------
