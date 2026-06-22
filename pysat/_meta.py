@@ -479,14 +479,14 @@ class Meta(object):
 
                             # Raise a warning
                             estr = ''.join(["The supplied metadata label '",
-                                             iattr, "' conflicts with a label ",
-                                             "already present. This warning ",
-                                             "will be an error in v3.3. ",
-                                             "Continued use now may result in ",
-                                             "unexpected behaviors. You may ",
-                                             "use a custom labels class to ",
-                                             "achieve what you want instead."
-                            ])
+                                            iattr, "' conflicts with a label ",
+                                            "already present. This warning ",
+                                            "will be an error in v3.3. ",
+                                            "Continued use now may result in ",
+                                            "unexpected behaviors. You may ",
+                                            "use a custom labels class to ",
+                                            "achieve what you want instead."
+                                            ])
                             warnings.warn(estr,
                                           DeprecationWarning, stacklevel=2)
 
@@ -512,7 +512,6 @@ class Meta(object):
                         #     self._label_setter(iattr, iattr, type(to_be_set),
                         #                        False)
                         #     #
-
 
                         # print("Starting Update cycle")
 
@@ -802,7 +801,6 @@ class Meta(object):
             if name_idx is not None:
                 # print("Name added by default.")
                 data_default[name_idx] = var
-
 
             # Update the meta data to the desired defaults
             self._data.loc[var, labels] = data_default
