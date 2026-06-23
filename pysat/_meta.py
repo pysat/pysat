@@ -482,8 +482,7 @@ class Meta(object):
 
                     # Set the data
                     if good_set:
-                        if ikey in self._data.columns:
-                            self._data.loc[var, ikey] = to_be_set
+                        self._data.loc[var, ikey] = to_be_set
 
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
