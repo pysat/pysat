@@ -572,6 +572,7 @@ class TestMeta(object):
 
         """
 
+        # TODO(#1230): Update test
         # Add different data to the test and comparison meta objects
         meta_dict = {"custom_units": 'testU',
                      "custom_name": 'test variable',
