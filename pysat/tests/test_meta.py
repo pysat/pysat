@@ -434,29 +434,49 @@ class TestMeta(object):
         assert self.meta == self.meta
         return
 
-    def test_equality(self):
+    def test_equality_deprecated(self):
         """Test that meta equality works with identically set objects."""
 
         # Add identical data to the test and comparison meta objects
         cmeta = pysat.Meta()
 
         for mobj in [self.meta, cmeta]:
-            print()
-            print("Test assign metadata")
-            print()
             # Ensure that meta is defined using string.
-            # Using the default values from the Labels class.
-            # Plus add custom strings, including confusing ones
-            mobj['test_var'] = {"units": 'testU',
-                                "name": 'test variable',
-                                "notes": 'test notes',
-                                "desc": 'test description',
-                                "min_val": 0.0,
-                                "max_val": 10.0,
-                                "fill_val": -1.0}
+            # Confirm Deprecation when using conflicting names
+            with pytest.deprecated_call():
+                mobj['test_var'] = {"units": 'testU',
+                                    "name": 'test variable',
+                                    "notes": 'test notes',
+                                    "desc": 'test description',
+                                    "min_val": 0.0,
+                                    "max_val": 10.0,
+                                    "fill_val": -1.0}
 
         # Test the equality
         assert cmeta == self.meta, "identical meta objects differ"
+
+        return
+
+    def test_equality_future(self):
+        """Test that meta equality works with identically set objects."""
+
+        # Add identical data to the test and comparison meta objects
+        cmeta = pysat.Meta()
+
+        # Ensure there is no warning
+        for mobj in [self.meta, cmeta]:
+            with warnings.catch_warnings():
+                mobj['test_var'] = {"custom_units": 'testU',
+                                    "custom_name": 'test variable',
+                                    "custom_notes": 'test notes',
+                                    "custom_desc": 'test description',
+                                    "custom_min_val": 0.0,
+                                    "custom_max_val": 10.0,
+                                    "custom_fill_val": -1.0}
+
+        # Test the equality
+        assert cmeta == self.meta, "identical meta objects differ"
+
         return
 
     @pytest.mark.parametrize("inst_name", ["testing", "ndtesting", "testmodel"])
@@ -499,7 +519,7 @@ class TestMeta(object):
 
     @pytest.mark.parametrize("label_key", ["units", "name", "notes", "desc",
                                            "min_val", "max_val", "fill_val"])
-    def test_value_inequality(self, label_key):
+    def test_value_inequality_deprecated(self, label_key):
         """Test that meta inequality works without copy.
 
         Parameters
@@ -518,9 +538,50 @@ class TestMeta(object):
                      "max_val": 10.0,
                      "fill_val": -1.0}
 
-        self.meta['test_var'] = meta_dict
+        # Ensure these strings raise a deprecation error
+        with pytest.deprecated_call():
+            self.meta['test_var'] = meta_dict
 
-        # meta_label_key = getattr(self.meta.labels, label_key)
+        if isinstance(meta_dict[label_key], str):
+            meta_dict[label_key] = "different"
+        else:
+            meta_dict[label_key] = 99.0
+
+        cmeta = pysat.Meta()
+        cmeta['test_var'] = meta_dict
+
+        # Test the equality
+        assert cmeta != self.meta, \
+            "differences not detected in label {:s}".format(label_key)
+        return
+
+    @pytest.mark.parametrize("label_key", ["custom_units", "custom_name",
+                                           "custom_notes", "custom_desc",
+                                           "custom_min_val", "custom_max_val",
+                                           "custom_fill_val"])
+    def test_value_inequality_future(self, label_key):
+        """Test that meta inequality works without copy.
+
+        Parameters
+        ----------
+        label_key : str
+            metadata key being tested
+
+        """
+
+        # Add different data to the test and comparison meta objects
+        meta_dict = {"custom_units": 'testU',
+                     "custom_name": 'test variable',
+                     "custom_notes": "test notes",
+                     "custom_desc": "test description",
+                     "custom_min_val": 0.0,
+                     "custom_max_val": 10.0,
+                     "custom_fill_val": -1.0}
+
+        # Ensure these strings raise a deprecation error
+        with warnings.catch_warnings():
+            self.meta['test_var'] = meta_dict
+
         if isinstance(meta_dict[label_key], str):
             meta_dict[label_key] = "different"
         else:
