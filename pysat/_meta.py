@@ -477,7 +477,7 @@ class Meta(object):
                         self.labels.update(iattr, ikey, itype)
 
                         # Call below adds ikey to self._data
-                        self._label_setter(iattr, iattr, type(to_be_set),
+                        self._label_setter(ikey, ikey, type(to_be_set),
                                            False)
 
                     # Set the data
