@@ -437,6 +437,7 @@ class TestMeta(object):
     def test_equality_deprecated(self):
         """Test that meta equality works with identically set objects."""
 
+        # TODO(#1230): Update test
         # Add identical data to the test and comparison meta objects
         cmeta = pysat.Meta()
 
@@ -460,6 +461,7 @@ class TestMeta(object):
     def test_equality_future(self):
         """Test that meta equality works with identically set objects."""
 
+        # TODO(#1230): Update test
         # Add identical data to the test and comparison meta objects
         cmeta = pysat.Meta()
 
@@ -529,6 +531,7 @@ class TestMeta(object):
 
         """
 
+        # TODO(#1230): Update test
         # Add different data to the test and comparison meta objects
         meta_dict = {"units": 'testU',
                      "name": 'test variable',

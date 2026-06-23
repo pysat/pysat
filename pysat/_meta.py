@@ -456,6 +456,7 @@ class Meta(object):
                         if iattr.lower() in self.labels.label_attrs.values():
                             # Create new column in metadata with default values
                             # for the new collision attribute
+                            # TODO(#1230): Replace Deprecation with an Error
                             fill = self.labels.default_values_from_type(itype)
                             self._data.loc[:, ikey] = np.array(
                                 [fill] * len(self._data.index), dtype=itype)
