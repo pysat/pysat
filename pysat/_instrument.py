@@ -1113,8 +1113,8 @@ class Instrument(object):
                 # xarray standards.
                 indict = {}
                 for i, dim in enumerate(self[var_key].dims):
-                    # if i < len(ind_keys):
-                    indict[dim] = ind_keys[i]
+                    if i < len(ind_keys):
+                        indict[dim] = ind_keys[i]
 
                 # Try loading using two different methods, using a catch
                 try:
