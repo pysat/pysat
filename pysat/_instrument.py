@@ -892,16 +892,21 @@ class Instrument(object):
 
                 # Build the key indexers, only allowing coordinates to be
                 # treated independently
-                if np.any([ename in data_subset.dims for ename in epoch_names]):
-                    # `key[0]` must be linked to the epoch.
-                    key_dict = {'indexers': {epoch_name: key[0]
-                                             for epoch_name in epoch_names}}
-                elif len(data_subset.dims) == 1:
-                    # `key[0]` must be linked to the coordinate dimension
-                    key_dict = {'indexers': {dname: key[0]
-                                             for dname in data_subset.dims}}
-                else:
-                    raise KeyError('Unable to slice data as requested')
+                # Establish testing baseline, line below is original code
+                # Commented code further down was added
+                key_dict = {'indexers': {epoch_name: key[0]
+                                         for epoch_name in epoch_names}}
+
+                # if np.any([ename in data_subset.dims for ename in epoch_names]):
+                #     # `key[0]` must be linked to the epoch.
+                #     key_dict = {'indexers': {epoch_name: key[0]
+                #                              for epoch_name in epoch_names}}
+                # elif len(data_subset.dims) == 1:
+                #     # `key[0]` must be linked to the coordinate dimension
+                #     key_dict = {'indexers': {dname: key[0]
+                #                              for dname in data_subset.dims}}
+                # else:
+                #     raise KeyError('Unable to slice data as requested')
 
                 try:
                     # Assume key[0] is an integer
@@ -1032,26 +1037,33 @@ class Instrument(object):
         # slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                # Evaluate the data type used for indexing
-                if issubclass(type(key[0]), slice):
-                    if key[0].start is None:
-                        eval_type = type(key[0].stop)
-                    else:
-                        eval_type = type(key[0].start)
-                elif type(key[0]) in [list, np.ndarray]:
-                    if len(key[0]) > 0:
-                        eval_type = type(key[0][0])
-                    else:
-                        eval_type = type(key[0])
-                else:
-                    eval_type = type(key[0])
+                # # Evaluate the data type used for indexing
+                # if issubclass(type(key[0]), slice):
+                #     if key[0].start is None:
+                #         eval_type = type(key[0].stop)
+                #     else:
+                #         eval_type = type(key[0].start)
+                # elif type(key[0]) in [list, np.ndarray]:
+                #     if len(key[0]) > 0:
+                #         eval_type = type(key[0][0])
+                #     else:
+                #         eval_type = type(key[0])
+                # else:
+                #     eval_type = type(key[0])
+                #
+                # # Check and see if the first key is a valid instance of the
+                # # existing index
+                # if np.all(['datetime' in str(etype).lower() for etype in [
+                #         eval_type, type(self.data.index.dtype)]]):
+                #     self.data.loc[key[0], key[1]] = new
+                # else:
+                #     self.data.loc[self.data.index[key[0]], key[1]] = new
 
-                # Check and see if the first key is a valid instance of the
-                # existing index
-                if np.all(['datetime' in str(etype).lower() for etype in [
-                        eval_type, type(self.data.index.dtype)]]):
+                # Code below was original code. Using to establish baseline.
+                # New code is commented above.
+                try:
                     self.data.loc[key[0], key[1]] = new
-                else:
+                except (KeyError, TypeError):
                     self.data.loc[self.data.index[key[0]], key[1]] = new
 
                 self._update_data_types(key[1])
@@ -1100,34 +1112,40 @@ class Instrument(object):
                 # xarray standards.
                 indict = {}
                 for i, dim in enumerate(self[var_key].dims):
-                    if i < len(ind_keys):
-                        indict[dim] = ind_keys[i]
-
+                    # if i < len(ind_keys):
+                    indict[dim] = ind_keys[i]
+                    
                 # Try loading using two different methods, using a catch
                 try:
                     # Try loading as values
                     self.data[var_key].loc[indict] = in_data
                 except (TypeError, KeyError, IndexError):
+                    # Original code
                     # Try loading indexed as integers
-                    try:
-                        self.data[var_key][indict] = in_data
-                    except IndexError as ierr:
-                        # TODO(#1227) : dtypes supported as of numpy 1.25 or so
-                        try:
-                            str_type = np.dtypes.BoolDType
-                        except AttributeError:
-                            str_type = np.bool_
+                    self.data[key[-1]][indict] = in_data
 
-                        if self.data[var_key].shape == key[0].shape and len(
-                                ind_keys) == 1 and type(key[0].dtype) in [
-                                    bool, str_type]:
-                            # This is a mask, using where does the opposite of
-                            # what is expected by assigning a mask so do the
-                            # inverse
-                            self.data[var_key] = self.data[var_key].where(
-                                ~key[0], in_data)
-                        else:
-                            raise ierr
+                    # New code commented below.
+                    # # Try loading indexed as integers
+                    # try:
+                    #     self.data[var_key][indict] = in_data
+                    # except IndexError as ierr:
+                    #     # TODO(#1227) : dtypes supported as of numpy 1.25 or
+                    #      # so
+                    #     try:
+                    #         str_type = np.dtypes.BoolDType
+                    #     except AttributeError:
+                    #         str_type = np.bool_
+                    #
+                    #     if self.data[var_key].shape == key[0].shape and len(
+                    #             ind_keys) == 1 and type(key[0].dtype) in [
+                    #                 bool, str_type]:
+                    #         # This is a mask, using where does the opposite of
+                    #         # what is expected by assigning a mask so do the
+                    #         # inverse
+                    #         self.data[var_key] = self.data[var_key].where(
+                    #             ~key[0], in_data)
+                    #     else:
+                    #         raise ierr
 
                 # Finish updating
                 self._update_data_types(var_key)
