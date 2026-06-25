@@ -897,7 +897,8 @@ class Instrument(object):
                 key_dict = {'indexers': {epoch_name: key[0]
                                          for epoch_name in epoch_names}}
 
-                # if np.any([ename in data_subset.dims for ename in epoch_names]):
+                # if np.any([ename in data_subset.dims for ename in
+                # epoch_names]):
                 #     # `key[0]` must be linked to the epoch.
                 #     key_dict = {'indexers': {epoch_name: key[0]
                 #                              for epoch_name in epoch_names}}
@@ -1114,7 +1115,7 @@ class Instrument(object):
                 for i, dim in enumerate(self[var_key].dims):
                     # if i < len(ind_keys):
                     indict[dim] = ind_keys[i]
-                    
+
                 # Try loading using two different methods, using a catch
                 try:
                     # Try loading as values
