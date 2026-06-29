@@ -792,6 +792,7 @@ class Instrument(object):
                 return data[key]
             elif isinstance(key, tuple):
                 try:
+                    # print("getitem try direct: ", key)
                     # Pass keys directly through
                     return data.loc[key[0], key[1]]
                 except (KeyError, TypeError) as err1:
@@ -799,6 +800,8 @@ class Instrument(object):
                     # slice of integers. Assume key[0] is integer
                     # (including list or slice).
                     try:
+                        # print("Failed. Exception Trying ", key[0], key[1],
+                        #       data.index[key[0]])
                         return data.loc[data.index[key[0]], key[1]]
                     except IndexError as err2:
                         err_message = '\n'.join(("original messages:",
@@ -1034,38 +1037,42 @@ class Instrument(object):
             self.meta._data_types = {}
             self.meta.mutable = mutable
 
+        # print("Inside set item. key: ", key, " new data: ", new_data)
+
         # Add data to main pandas.DataFrame, depending upon the input
         # slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                # # Evaluate the data type used for indexing
-                # if issubclass(type(key[0]), slice):
-                #     if key[0].start is None:
-                #         eval_type = type(key[0].stop)
-                #     else:
-                #         eval_type = type(key[0].start)
-                # elif type(key[0]) in [list, np.ndarray]:
-                #     if len(key[0]) > 0:
-                #         eval_type = type(key[0][0])
-                #     else:
-                #         eval_type = type(key[0])
-                # else:
-                #     eval_type = type(key[0])
-                #
-                # # Check and see if the first key is a valid instance of the
-                # # existing index
-                # if np.all(['datetime' in str(etype).lower() for etype in [
-                #         eval_type, type(self.data.index.dtype)]]):
-                #     self.data.loc[key[0], key[1]] = new
-                # else:
-                #     self.data.loc[self.data.index[key[0]], key[1]] = new
+                # Evaluate the data type used for indexing
+                if issubclass(type(key[0]), slice):
+                    if key[0].start is None:
+                        eval_type = type(key[0].stop)
+                    else:
+                        eval_type = type(key[0].start)
+                elif type(key[0]) in [list, np.ndarray]:
+                    if len(key[0]) > 0:
+                        eval_type = type(key[0][0])
+                    else:
+                        eval_type = type(key[0])
+                else:
+                    eval_type = type(key[0])
 
-                # Code below was original code. Using to establish baseline.
-                # New code is commented above.
-                try:
+                # Check and see if the first key is a valid instance of the
+                # existing index
+                if np.all(['datetime' in str(etype).lower() for etype in [
+                        eval_type, type(self.data.index.dtype)]]):
                     self.data.loc[key[0], key[1]] = new
-                except (KeyError, TypeError):
+                else:
                     self.data.loc[self.data.index[key[0]], key[1]] = new
+
+                # # Code below was original code. Using to establish baseline.
+                # # New code is commented above.
+                # try:
+                #     print("setitem try location assignment: ")
+                #     self.data.loc[key[0], key[1]] = new
+                # except (KeyError, TypeError):
+                #     print("setitem exception: ")
+                #     self.data.loc[self.data.index[key[0]], key[1]] = new
 
                 self._update_data_types(key[1])
                 self.meta[key[1]] = {}
