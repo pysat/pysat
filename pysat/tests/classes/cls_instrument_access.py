@@ -887,7 +887,11 @@ class InstAccessTests(object):
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
         return
 
-    def test_setting_partial_data(self):
+    @pytest.mark.parametrize("selection, unchanged",
+                             [(slice(0, 3), slice(3, None)),
+                              ([0, 1, 2], slice(3, None)),
+                              (0, slice(1, None))])
+    def test_setting_partial_data(self, selection, unchanged):
         """Test setting partial data by index and key."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -904,15 +908,18 @@ class InstAccessTests(object):
                         if var not in num_vars]
 
             # Set a subset of the data
-            self.testInst[0:3, num_vars] = 0
+            self.testInst[selection, num_vars] = 0
 
-            # First three values for numeric variables should be changed.
-            assert np.all(self.testInst[0:3, num_vars] == 0)
+            # Selection of numeric variables should be changed
+            assert np.all(self.testInst[num_vars].values[selection] == 0)
 
-            # Other data should be unchanged.
-            assert np.all(self.testInst[0:3, str_vars]
-                          == self.out[0:3, str_vars])
-            assert np.all(self.testInst[3:] == self.out[3:])
+            # String data should remain unchanged
+            assert np.all(self.testInst[str_vars].values[selection]
+                          == self.out[str_vars].values[selection])
+
+            # Other data should be unchanged
+            assert np.all(self.testInst[unchanged] == self.out[unchanged])
+
         else:
             pytest.skip("This notation does not make sense for xarray")
         return
