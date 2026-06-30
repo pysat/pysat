@@ -451,7 +451,7 @@ Explorer `(ICON) <https://icon.ssl.berkeley.edu>`_.
 
 The string values used within :py:class:`pysat.Meta` to identify the parameters
 above are all attached to the :py:class:`pysat.Instrument` object through a
-label assigned by the :ref:`api-metalabels` class.  They can be acceess as
+label assigned by the :ref:`api-metalabels` class.  They can be accessed as
 :py:attr:`dmsp.meta.labels.*` (:py:attr:`labels.units`,
 :py:attr:`labels.min_val`, :py:attr:`labels.notes`, etc).
 
