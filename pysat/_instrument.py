@@ -792,7 +792,6 @@ class Instrument(object):
                 return data[key]
             elif isinstance(key, tuple):
                 try:
-                    # print("getitem try direct: ", key)
                     # Pass keys directly through
                     return data.loc[key[0], key[1]]
                 except (KeyError, TypeError) as err1:
@@ -800,8 +799,6 @@ class Instrument(object):
                     # slice of integers. Assume key[0] is integer
                     # (including list or slice).
                     try:
-                        # print("Failed. Exception Trying ", key[0], key[1],
-                        #       data.index[key[0]])
                         return data.loc[data.index[key[0]], key[1]]
                     except IndexError as err2:
                         err_message = '\n'.join(("original messages:",
@@ -894,12 +891,13 @@ class Instrument(object):
                     data_subset = data[key[1]]
 
                 # Build the key indexers, only allowing coordinates to be
-                # treated independently
+                # treated independently.
                 # Establish testing baseline, line below is original code
-                # Commented code further down was added
+                # Commented code further down was added as 1D boolean support.
                 key_dict = {'indexers': {epoch_name: key[0]
                                          for epoch_name in epoch_names}}
 
+                # Initial support for masking below.
                 # if np.any([ename in data_subset.dims for ename in
                 # epoch_names]):
                 #     # `key[0]` must be linked to the epoch.
@@ -1037,8 +1035,6 @@ class Instrument(object):
             self.meta._data_types = {}
             self.meta.mutable = mutable
 
-        # print("Inside set item. key: ", key, " new data: ", new_data)
-
         # Add data to main pandas.DataFrame, depending upon the input
         # slice, and a name
         if self.pandas_format:
@@ -1064,15 +1060,6 @@ class Instrument(object):
                     self.data.loc[key[0], key[1]] = new
                 else:
                     self.data.loc[self.data.index[key[0]], key[1]] = new
-
-                # # Code below was original code. Using to establish baseline.
-                # # New code is commented above.
-                # try:
-                #     print("setitem try location assignment: ")
-                #     self.data.loc[key[0], key[1]] = new
-                # except (KeyError, TypeError):
-                #     print("setitem exception: ")
-                #     self.data.loc[self.data.index[key[0]], key[1]] = new
 
                 self._update_data_types(key[1])
                 self.meta[key[1]] = {}
@@ -1132,7 +1119,7 @@ class Instrument(object):
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
 
-                    # New code commented below.
+                    # New initial code for masking support is commented below.
                     # # Try loading indexed as integers
                     # try:
                     #     self.data[var_key][indict] = in_data
