@@ -897,19 +897,6 @@ class Instrument(object):
                 key_dict = {'indexers': {epoch_name: key[0]
                                          for epoch_name in epoch_names}}
 
-                # Initial support for masking below.
-                # if np.any([ename in data_subset.dims for ename in
-                # epoch_names]):
-                #     # `key[0]` must be linked to the epoch.
-                #     key_dict = {'indexers': {epoch_name: key[0]
-                #                              for epoch_name in epoch_names}}
-                # elif len(data_subset.dims) == 1:
-                #     # `key[0]` must be linked to the coordinate dimension
-                #     key_dict = {'indexers': {dname: key[0]
-                #                              for dname in data_subset.dims}}
-                # else:
-                #     raise KeyError('Unable to slice data as requested')
-
                 try:
                     # Assume key[0] is an integer
                     return data_subset.isel(**key_dict)
@@ -1118,29 +1105,6 @@ class Instrument(object):
                     # Original code
                     # Try loading indexed as integers
                     self.data[key[-1]][indict] = in_data
-
-                    # New initial code for masking support is commented below.
-                    # # Try loading indexed as integers
-                    # try:
-                    #     self.data[var_key][indict] = in_data
-                    # except IndexError as ierr:
-                    #     # TODO(#1227) : dtypes supported as of numpy 1.25 or
-                    #      # so
-                    #     try:
-                    #         str_type = np.dtypes.BoolDType
-                    #     except AttributeError:
-                    #         str_type = np.bool_
-                    #
-                    #     if self.data[var_key].shape == key[0].shape and len(
-                    #             ind_keys) == 1 and type(key[0].dtype) in [
-                    #                 bool, str_type]:
-                    #         # This is a mask, using where does the opposite of
-                    #         # what is expected by assigning a mask so do the
-                    #         # inverse
-                    #         self.data[var_key] = self.data[var_key].where(
-                    #             ~key[0], in_data)
-                    #     else:
-                    #         raise ierr
 
                 # Finish updating
                 self._update_data_types(var_key)
