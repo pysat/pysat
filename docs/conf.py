@@ -184,4 +184,4 @@ intersphinx_mapping = {'portalocker':
                        ('https://portalocker.readthedocs.io/en/latest',
                         None)}
 # Links to ignore when checking for stability
-linkcheck_ignore = ['https://zenodo.org']
+linkcheck_ignore = ['https://zenodo.org', 'https://pysat.slack.com']
