@@ -884,7 +884,9 @@ class Instrument(object):
 
         if isinstance(key, tuple):
             if len(key) == 2:
-                # Support slicing, first extract just the desired variable(s)
+                # Support slicing time, variable name.
+                # First, extract just the desired variable(s) before epoch
+                # selection.
                 if isinstance(key[1], slice):
                     data_subset = data[self.variables[key[1]]]
                 else:
@@ -892,8 +894,7 @@ class Instrument(object):
 
                 # Build the key indexers, only allowing coordinates to be
                 # treated independently.
-                # Establish testing baseline, line below is original code
-                # Commented code further down was added as 1D boolean support.
+                # If the input is a tuple, `key[0]` must be linked to the epoch.
                 key_dict = {'indexers': {epoch_name: key[0]
                                          for epoch_name in epoch_names}}
 
