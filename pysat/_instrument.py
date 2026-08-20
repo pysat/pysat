@@ -1881,7 +1881,7 @@ class Instrument(object):
                          np.dtypes.StringDType, np.dtypes.BytesDType,
                          pds.StringDtype]
         except AttributeError:
-            # TODO(#1227) np.dtypes not introduced until somewhere around np1.25
+            # TODO(#1227) np.dtypes not introduced until somewhere around numpy version 1.25
             str_types = [str, np.str_, np.bytes_, pds.StringDtype]
 
         if isinstance(coltype, np.dtype):
