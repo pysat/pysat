@@ -3,7 +3,7 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-[3.2.3] - 2026-06-XX
+[3.2.3] - 2026-09-07
 --------------------
 * Bug Fix
   * Ensure `utils.coords.adjust_cyclic_data` will adjust data more than one
