@@ -183,7 +183,7 @@ and :py:data:`name` keywords.
 
 You can also specify the specific keyword arguements needed for the standard
 pysat methods.  DMSP data is hosted by the `Madrigal database
-<http://cedar.openmadrigal.org/index.html>`_, a community resource for
+<https://cedar.openmadrigal.org/index.html>`_, a community resource for
 geospace data. The proper process for downloading DMSP and other Madrigal data
 is built into the open source tool
 `madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_,
@@ -451,7 +451,7 @@ Explorer `(ICON) <https://icon.ssl.berkeley.edu>`_.
 
 The string values used within :py:class:`pysat.Meta` to identify the parameters
 above are all attached to the :py:class:`pysat.Instrument` object through a
-label assigned by the :ref:`api-metalabels` class.  They can be acceess as
+label assigned by the :ref:`api-metalabels` class.  They can be accessed as
 :py:attr:`dmsp.meta.labels.*` (:py:attr:`labels.units`,
 :py:attr:`labels.min_val`, :py:attr:`labels.notes`, etc).
 

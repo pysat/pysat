@@ -14,6 +14,7 @@ from importlib import reload
 import inspect
 import numpy as np
 import os
+import pandas as pds
 import portalocker
 import pytest
 import shutil
@@ -59,7 +60,7 @@ class TestUpdateFill(object):
         # Ensure there are fill values to check
         test_vars = pysat.utils.listify(variables)
         for var in test_vars:
-            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+            inst[0, var] = inst.meta[var, inst.meta.labels.fill_val]
 
         # Update the fill values
         pysat.utils.update_fill_values(inst, variables, self.new_fill_val)
@@ -69,7 +70,7 @@ class TestUpdateFill(object):
             assert inst.meta[var,
                              inst.meta.labels.fill_val] == self.new_fill_val, \
                 "meta fill value not updated for {:}".format(var)
-            assert np.all(inst[var].values[0] == self.new_fill_val), \
+            assert np.all(inst[0, var] == self.new_fill_val), \
                 "filled data values not updated for {:}".format(var)
         return
 
@@ -84,32 +85,42 @@ class TestUpdateFill(object):
 
         """
 
-        # Initalize the instrument
+        # Initialize the instrument
         inst = pysat.Instrument('pysat', name)
         inst.load(date=self.ref_time)
 
-        # Ensure there are fill values to check
+        # Ensure there are fill values to check for strings and numbers
+        # TODO(#1227) Remove try/except after numpy >= 1.25
+        try:
+            str_types = [str, np.str_, np.bytes_, np.dtypes.StrDType,
+                         np.dtypes.StringDType, np.dtypes.BytesDType,
+                         pds.StringDtype]
+        except AttributeError:
+            str_types = [str, np.str_, np.bytes_, pds.StringDtype]
+
         str_vars = [var for var in inst.variables if var in inst.meta.keys()
-                    and isinstance(inst[var].values[0], str)
+                    and type(inst[var].dtype) in str_types
                     and inst.meta[var, inst.meta.labels.fill_val] is not None]
-        num_types = [int, float, np.float64, np.int64]
+
         if inst.pandas_format:
             num_vars = [var for var in inst.variables if var in inst.meta.keys()
-                        and inst[var].dtype.type in num_types
+                        and inst._get_var_type_code(inst[var].dtype)[0]
+                        in ['i', 'u', 'f']
                         and inst.meta[var, inst.meta.labels.fill_val]
                         is not None]
         else:
             num_vars = [var for var in inst.variables if var in inst.meta.keys()
                         and var not in inst.data.coords.keys()
-                        and inst[var].dtype.type in num_types
+                        and inst._get_var_type_code(inst[var].dtype)[0]
+                        in ['i', 'u', 'f']
                         and inst.meta[var, inst.meta.labels.fill_val]
                         is not None]
 
         for var in num_vars:
-            inst[var].values[0] = inst.meta[var, inst.meta.labels.fill_val]
+            inst[0, var] = inst.meta[var, inst.meta.labels.fill_val]
 
         for var in str_vars:
-            inst[var].values[0] = str(inst.meta[var, inst.meta.labels.fill_val])
+            inst[0, var] = str(inst.meta[var, inst.meta.labels.fill_val])
 
         # Update and check the numeric fill values
         pysat.utils.update_fill_values(inst, num_vars, self.new_fill_val)
@@ -479,8 +490,7 @@ class TestFmtCols(object):
         return
 
     @pytest.mark.parametrize("key,val,raise_type,err_msg",
-                             [("ncols", 0, ZeroDivisionError,
-                               "integer division or modulo by zero"),
+                             [("ncols", 0, ZeroDivisionError, "zero"),
                               ("max_num", -10, ValueError,
                                "empty")])
     def test_fmt_raises(self, key, val, raise_type, err_msg):
@@ -627,7 +637,7 @@ class TestNetworkLock(object):
     def setup_method(self):
         """Set up the unit test environment."""
         # Use a temporary directory so that the user's setup is not altered.
-        self.temp_dir = tempfile.TemporaryDirectory()
+        self.temp_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
 
         # Create and write a temporary file
         self.fname = os.path.join(self.temp_dir.name, 'temp_lock_file.txt')
