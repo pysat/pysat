@@ -3,6 +3,30 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+[3.2.3] - 2026-06-XX
+--------------------
+* Bug Fix
+  * Ensure `utils.coords.adjust_cyclic_data` will adjust data more than one
+    cycle outside of the desired range
+  * Fixed existing compilation warnings in the documentation
+  * Fixed Instrument data setting introduced by updates to xarray and pandas
+  * Expanded Instrument typing to account for new numpy and pandas dtypes
+  * Fixed numpy array casting to ensure data is writable
+  * Fixed pandas offsets casting to use object attributes
+  * Improved some Instrument error messages to be more informative
+  * Updated broken links in the documentation
+  * Improved test reliability on windows
+  * Improved pysat.Instrument's robustness against race conditions
+* Maintenance
+  * Established minimum allowed versions of all dependencies.
+  * Cycle Python support to 3.10-3.14
+  * Replaced `m2r2` with `myst_parser`
+  * Updated testing yamls to use up-to-date Actions
+  * Updated Operational and SPEC 0 testing
+  * Updated redirecting links in documentation
+  * Added a list of links to ignore in testing, currently just zenodo.org
+  * Updated Pandas' dtypes within the File class to latest 'string' type
+
 [3.2.2] - 2025-03-20
 --------------------
 * Bug Fix

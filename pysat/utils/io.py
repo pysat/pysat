@@ -552,7 +552,7 @@ def meta_array_expander(meta_dict):
     for key in meta_dict.keys():
         loop_dict = {}
         for meta_key in meta_dict[key].keys():
-            tst_array = np.asarray(meta_dict[key][meta_key])
+            tst_array = np.array(meta_dict[key][meta_key])
             if tst_array.shape == ():
                 loop_dict[meta_key] = meta_dict[key][meta_key]
             elif tst_array.shape == (1, ):
@@ -1410,6 +1410,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                 pitem))
             attrb_dict.pop(pitem)
 
+    # Convert the time index to Unix time in ms
+    unix_time = np.array([(val - dt.datetime(1970, 1, 1)).total_seconds()
+                          * 1.0e3 for val in inst.index.to_pydatetime()])
+
     # Set the general file information
     if export_pysat_info:
         # For operational instruments, these should be set separately.
@@ -1528,8 +1532,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
             cdfkey.setncatts(export_meta[epoch_name])
 
             # Attach the time index to the data
-            cdfkey[:] = (inst.index.values.astype(np.int64)
-                         * 1.0E-6).astype(np.int64)
+            cdfkey[:] = unix_time.astype(np.int64)
 
             # Iterate over all of the columns in the Instrument dataframe
             # check what kind of data we are dealing with, then store
@@ -1549,7 +1552,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                 data, coltype, datetime_flag = inst._get_data_info(inst[key])
 
                 # Operate on data based upon type
-                if inst[key].dtype != np.dtype('O'):
+                if type(inst[key].dtype) not in [type(np.dtype('O')),
+                                                 pds.StringDtype]:
                     # Not an object, normal basic 1D data.
                     cdfkey = out_data.createVariable(case_key, coltype,
                                                      dimensions=(epoch_name),
@@ -1584,16 +1588,17 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                     cdfkey.setncatts(export_meta[lower_key])
 
                     # Time to actually write the data now
-                    cdfkey[:] = data.values
+                    cdfkey[:] = np.array(data.values)
 
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
-        # the Instrument data object is unchanged.
-        xr_data = xr.Dataset(inst.data)
+        # the Instrument data object is unchanged. The downside is additional
+        # memory use which will impact extremely large data files or memory
+        # constrained environments.
+        xr_data = inst.data.copy()
 
         # Convert datetime values into integers as done for pandas
-        xr_data['time'] = (inst['time'].values.astype(np.int64)
-                           * 1.0E-6).astype(np.int64)
+        xr_data['time'] = unix_time.astype(np.int64)
 
         # Update 'time' dimension to `epoch_name`
         if epoch_name != 'time':

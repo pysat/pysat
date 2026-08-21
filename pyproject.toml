@@ -7,7 +7,7 @@ name = "pysat"
 version = "3.2.2"
 description = "Supports science analysis across disparate data platforms"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
     {name = "Russell Stoneback, et al.", email = "pysat.developers@gmail.com"},
@@ -20,10 +20,11 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Atmospheric Science",
   "License :: OSI Approved :: BSD License",
   "Natural Language :: English",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Operating System :: MacOS :: MacOS X",
   "Operating System :: POSIX :: Linux",
   "Operating System :: Microsoft :: Windows"
@@ -42,34 +43,34 @@ keywords = [
   "analysis"
 ]
 dependencies = [
-  "dask",
-  "netCDF4",
-  "numpy >= 1.19",
-  "pandas >= 1.1.5",
-  "portalocker",
-  "pytest",
-  "scipy >= 1.5.4",
-  "toolz",
-  "xarray >= 0.16.2"
+  "dask >= 2022.12.1",
+  "netCDF4 >= 1.5.6",
+  "numpy >= 1.21.6",
+  "pandas >= 1.4.2",
+  "portalocker >= 2.0",
+  "pytest >= 7.1.3",
+  "scipy >= 1.8.1",
+  "toolz >= 0.11.1",
+  "xarray >= 2022.12.0"
 ]
 
 [project.optional-dependencies]
 test = [
-  "flake8",
-  "flake8-docstrings",
+  "flake8 >= 3.8.4",
+  "flake8-docstrings >= 1.5",
   "hacking >= 1.0",
   "pysatSpaceWeather<0.1.0",
-  "pytest-cov",
-  "pytest-ordering"
+  "pytest-cov >= 2.10.1",
+  "pytest-ordering >= 0.6"
 ]
 doc = [
-  "extras_require",
-  "ipython",
-  "m2r2",
-  "numpydoc",
+  "extras_require >= 0.2.3",
+  "ipython >= 7.11",
+  "myst_parser >= 4.0.0",
+  "numpydoc >= 1.1",
   "readthedocs-sphinx-search==0.3.2",
-  "sphinx",
-  "sphinx_rtd_theme >= 1.2.2, < 2.0.0"
+  "sphinx >= 3.4.1",
+  "sphinx_rtd_theme >= 1.2.2"
 ]
 
 [project.urls]

@@ -153,7 +153,7 @@ def listify(iterable):
     """
 
     # Cast as an array-like object
-    arr_iter = np.asarray(iterable)
+    arr_iter = np.array(iterable)
 
     # Treat output differently based on the array shape
     if arr_iter.shape == ():
@@ -239,7 +239,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
     output = ""
 
     # Ensure output strings are array-like
-    out_strs = np.asarray(out_strs)
+    out_strs = np.array(out_strs)
     if out_strs.shape == ():
         out_strs = np.array([out_strs])
 
@@ -615,17 +615,35 @@ def update_fill_values(inst, variables=None, new_fill_val=np.nan):
                 # Update the Meta data
                 inst.meta[var] = {inst.meta.labels.fill_val: new_fill_val}
 
-                # Update the variable data
                 try:
                     if np.isnan(old_fill_val):
+                        # Needed for NaNs
                         ifill = np.where(np.isnan(inst[var].values))
                     else:
+                        # Catches numbers that fail gracefully from NaN check
                         ifill = np.where(inst[var].values == old_fill_val)
                 except TypeError:
+                    # This catches strings and objects
                     ifill = np.where(inst[var].values == old_fill_val)
 
-                if len(ifill[0]) > 0:
-                    inst[var].values[ifill] = new_fill_val
+                # Update the variable data
+                # Depends upon data dimensionality
+                if len(ifill) > 0:
+                    if inst.pandas_format:
+                        ifill = ifill[0]
+                        inst[ifill, var] = new_fill_val
+                    elif len(inst[var].dims) == 1:
+                        ifill = ifill[0]
+                        inst[ifill, var] = new_fill_val
+                    else:
+                        # Multidimensional xarray
+                        # I think the most correct solution would be to use
+                        # inst[*ifill, var] = new_fill_val
+                        # which works, but takes forever for some reason on
+                        # at least one test
+                        # (test_update_fill_values_by_type[testmodel]).
+                        # TODO(#1226) Sort out why *ifill is lacking performance
+                        inst[var].values[ifill] = new_fill_val
 
     return
 

@@ -15,7 +15,6 @@ import functools
 import logging
 import numpy as np
 import os
-import sys
 import tempfile
 import warnings
 
@@ -60,7 +59,7 @@ class TestLoadNetCDF(object):
         """Set up the test environment."""
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.saved_path = pysat.params['data_dirs']
         pysat.params['data_dirs'] = self.tempdir.name
 
@@ -302,15 +301,6 @@ class TestLoadNetCDF(object):
                                 repr(netcdf_inst.meta[var, attr])))
 
         del netcdf_inst.data, netcdf_inst
-
-        # TODO(#974) It appears the source of the open references is related
-        # to xarray itself. Code below is debugging code that may be used
-        # to identify when and if the problem within xarray is sorted out.
-        # Debug process - delete the file we've created. This doesn't work on
-        # Windows due to open references despite our .close() statement in
-        # writing code. The debugging check below can be removed if tests
-        # continue to pass after the debug statement is uncommented.
-        # os.remove(outfile) # This is the debug check
 
         return
 
@@ -678,12 +668,7 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         """Set up the test environment."""
 
         # Create temporary directory
-        # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
-        if sys.version_info.minor >= 10:
-            self.tempdir = tempfile.TemporaryDirectory(
-                ignore_cleanup_errors=True)
-        else:
-            self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
 
         self.saved_path = pysat.params['data_dirs']
         pysat.params['data_dirs'] = self.tempdir.name
@@ -707,14 +692,8 @@ class TestLoadNetCDFXArray(TestLoadNetCDF):
         # Clear the attributes with data in them
         del self.loaded_inst, self.testInst, self.stime, self.epoch_name
 
-        # Remove the temporary directory. In Windows, this occasionally fails
-        # by raising a wide variety of different error messages. Python 3.10+
-        # can handle this, but lower Python versions cannot.
-        # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
-        try:
-            self.tempdir.cleanup()
-        except Exception:
-            pass
+        # Remove the temporary directory.
+        self.tempdir.cleanup()
 
         # Clear the directory attributes
         del self.tempdir, self.saved_path
@@ -788,7 +767,7 @@ class TestNetCDF4Integration(object):
         """Initialize the testing setup once before all tests are run."""
 
         # Use a temporary directory so that the user's setup is not altered.
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         return
 
     def teardown_class(self):

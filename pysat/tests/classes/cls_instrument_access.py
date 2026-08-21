@@ -887,19 +887,39 @@ class InstAccessTests(object):
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
         return
 
-    def test_setting_partial_data(self):
-        """Test setting partial data by index."""
+    @pytest.mark.parametrize("selection, unchanged",
+                             [(slice(0, 3), slice(3, None)),
+                              ([0, 1, 2], slice(3, None)),
+                              (0, slice(1, None))])
+    def test_setting_partial_data(self, selection, unchanged):
+        """Test setting partial data by index and key."""
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = self.testInst
+
         if self.testInst.pandas_format:
-            self.testInst[0:3] = 0
+            # Save the original data for comparison
+            self.out = self.testInst
 
-            # First three values should be changed.
-            assert np.all(self.testInst[0:3] == 0)
+            # Get the numeric variable keys
+            num_vars = [var for var in self.testInst.variables if
+                        self.testInst._get_var_type_code(
+                            self.testInst[var].dtype)[0] in ['i', 'u', 'f']]
+            str_vars = [var for var in self.testInst.variables
+                        if var not in num_vars]
 
-            # Other data should be unchanged.
-            assert np.all(self.testInst[3:] == self.out[3:])
+            # Set a subset of the data
+            self.testInst[selection, num_vars] = 0
+
+            # Selection of numeric variables should be changed
+            assert np.all(self.testInst[num_vars].values[selection] == 0)
+
+            # String data should remain unchanged
+            assert np.all(self.testInst[str_vars].values[selection]
+                          == self.out[str_vars].values[selection])
+
+            # Other data should be unchanged
+            assert np.all(self.testInst[unchanged] == self.out[unchanged])
+
         else:
             pytest.skip("This notation does not make sense for xarray")
         return
@@ -912,7 +932,7 @@ class InstAccessTests(object):
                               (dt.datetime(2009, 1, 1), slice(1, None)),
                               (slice(dt.datetime(2009, 1, 1),
                                      dt.datetime(2009, 1, 1, 0, 1)),
-                               slice(dt.datetime(2009, 1, 1, 0, 1), None))])
+                               slice(dt.datetime(2009, 1, 1, 0, 1, 1), None))])
     def test_setting_partial_data_by_inputs(self, changed, fixed):
         """Check that data can be set using each supported index type.
 
@@ -927,10 +947,10 @@ class InstAccessTests(object):
 
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[changed, 'doubleMLT'] = 0
+        self.testInst[changed, 'doubleMLT'] = -1
         assert (self.testInst[fixed, 'doubleMLT']
                 == 2. * self.testInst[fixed, 'mlt']).all
-        assert (self.testInst[changed, 'doubleMLT'] == 0).all
+        assert (self.testInst[changed, 'doubleMLT'] == -1).all
         return
 
     def test_modifying_data_inplace(self):

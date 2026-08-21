@@ -43,6 +43,16 @@ class TestCyclicData(object):
         assert ref_angles.min() >= 0.0
         return
 
+    def test_adjust_cyclic_data_extended_range(self):
+        """Test adjust_cyclic_data that deviate by more than one range."""
+
+        ref_rad = np.radians(self.ref_angles) - 9.0 * np.pi
+        ref_angles = coords.adjust_cyclic_data(ref_rad)
+
+        assert ref_angles.max() < 2.0 * np.pi
+        assert ref_angles.min() >= 0.0
+        return
+
     def test_adjust_cyclic_data_custom(self):
         """Test adjust_cyclic_data with a custom range."""
 
@@ -275,8 +285,10 @@ class TestCalcSLT(object):
         lon_name = 'lon2'
 
         # Create a second longitude with a single value
-        self.py_inst.data = self.py_inst.data.update({lon_name: (lon_name,
-                                                                 [10.0])})
+        out = self.py_inst.data.update({lon_name: (lon_name, [10.0])})
+        if out is not None:
+            self.py_inst.data = out
+
         self.py_inst.data = self.py_inst.data.squeeze(dim=lon_name)
 
         # Calculate and test the SLT
