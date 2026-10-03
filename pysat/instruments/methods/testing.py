@@ -12,6 +12,7 @@
 
 import datetime as dt
 import os
+import packaging
 
 import numpy as np
 import pandas as pds
