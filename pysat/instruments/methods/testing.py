@@ -12,6 +12,7 @@
 
 import datetime as dt
 import os
+import unicodedata
 
 import numpy as np
 import pandas as pds
@@ -20,7 +21,7 @@ import warnings
 import xarray as xr
 
 import pysat
-from pysat.utils import NetworkLock
+from pysat.utils import NetworkLock, stringify
 from pysat.utils import time as putime
 
 ackn_str = ' '.join(("Test instruments provided through the pysat project.",
@@ -567,9 +568,12 @@ def generate_times(fnames, num, freq='1s', start_time=None):
 
     # Ensure some frequency strings are lower case. Pandas 2.2 deprecated and
     # then removed some offset strings. Our current minimum pandas is below 2.2.
-    lower_offsets = ['s', 'ms', 'us', 'ns']
+    lower_offsets = ['h','bh', 'cbh', 'min', 's', 'ms', 'us', 'ns']
+
+    # First, extract only the letter portion of the frequency string
+    alphaf = ''.join(c for c in freq if unicodedata.category(c).startswith('L'))
     if int(pds.__version__[0]) >= 3:
-        if (freq.lower() != freq) and (freq.lower() in lower_offsets):
+        if (alphaf.lower() != freq) and (alphaf.lower() in lower_offsets):
             freq = freq.lower()
             warnings.warn('"freq" keyword has been replaced with lower case.')
     elif int(pds.__version__[0]) < 2:
