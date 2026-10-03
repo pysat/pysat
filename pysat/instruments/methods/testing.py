@@ -12,7 +12,6 @@
 
 import datetime as dt
 import os
-import packaging
 
 import numpy as np
 import pandas as pds
@@ -568,7 +567,7 @@ def generate_times(fnames, num, freq='1s', start_time=None):
 
     # Ensure some frequency strings are lower case. Pandas 2.2 deprecated and
     # then removed some offset strings. Our current minimum pandas is below 2.2.
-    if packaging.version(pds.__version__) >= packaging.version('3.0'):
+    if pds.__version__[0] == '3':
         lower_offsets = ['s', 'ms', 'us', 'ns']
         if freq.lower() != freq & (freq.lower() in lower_offsets):
             freq = freq.lower()
