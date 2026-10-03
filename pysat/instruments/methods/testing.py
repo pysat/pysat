@@ -21,7 +21,7 @@ import warnings
 import xarray as xr
 
 import pysat
-from pysat.utils import NetworkLock, stringify
+from pysat.utils import NetworkLock
 from pysat.utils import time as putime
 
 ackn_str = ' '.join(("Test instruments provided through the pysat project.",
