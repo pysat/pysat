@@ -569,7 +569,7 @@ def generate_times(fnames, num, freq='1s', start_time=None):
     # then removed some offset strings. Our current minimum pandas is below 2.2.
     if pds.__version__[0] == '3':
         lower_offsets = ['s', 'ms', 'us', 'ns']
-        if freq.lower() != freq & (freq.lower() in lower_offsets):
+        if (freq.lower() != freq) and (freq.lower() in lower_offsets):
             freq = freq.lower()
             warnings.warn('"freq" keyword has been replaced with lower case.')
 
