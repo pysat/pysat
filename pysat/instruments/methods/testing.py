@@ -565,6 +565,14 @@ def generate_times(fnames, num, freq='1s', start_time=None):
     if start_time is not None and not isinstance(start_time, dt.timedelta):
         raise ValueError('start_time must be a dt.timedelta object')
 
+    # Ensure some frequency strings are lower case. Pandas 2.2 deprecated and
+    # then removed some offset strings. Our current minimum pandas is below 2.2.
+    if packaging.version(pds.__version__) >= packaging.version('3.0'):
+        lower_offsets = ['s', 'ms', 'us', 'ns']
+        if freq.lower() != freq & (freq.lower() in lower_offsets):
+            freq = freq.lower()
+            warnings.warn('"freq" keyword has been replaced with lower case.')
+
     uts = []
     indices = []
     dates = []
