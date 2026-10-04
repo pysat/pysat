@@ -10,7 +10,6 @@
 # ----------------------------------------------------------------------------
 """Coordinate transformation functions for pysat."""
 
-import datetime as dt
 import numpy as np
 import pandas as pds
 import xarray as xr
@@ -40,10 +39,19 @@ def adjust_cyclic_data(samples, high=2.0 * np.pi, low=0.0):
 
     """
 
-    out_samples = np.asarray(samples)
+    out_samples = np.array(samples)
     sample_range = high - low
-    out_samples[out_samples >= high] -= sample_range
-    out_samples[out_samples < low] += sample_range
+
+    # Update data to work with modulus
+    out_samples -= low
+
+    # Find and fix locations too large or too small
+    idx, = np.where((out_samples >= sample_range) | (out_samples < 0))
+    if len(idx) > 0:
+        out_samples[idx] = np.mod(out_samples[idx], sample_range)
+
+    # Restore original baseline
+    out_samples += low
 
     return out_samples
 
@@ -121,10 +129,9 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt',
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
     ut_hr = list()
-    for nptime in inst.index.values.astype(np.int64):
-        # Numpy times come out in nanoseconds and timestamp converts
-        # from seconds
-        dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
+    for nptime in inst.index.values:
+        # Use pandas to convert from numpy to Python daetime
+        dtime = pds.to_datetime(nptime).to_pydatetime()
         ut_hr.append((dtime.hour * 3600.0 + dtime.minute * 60.0
                       + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
 
@@ -230,9 +237,9 @@ def establish_common_coord(coord_vals, common=True):
 
     for coord_spec in coord_vals:
         # Ensure the coordinate specification is array-like
-        coord_spec = np.asarray(coord_spec)
+        coord_spec = np.array(coord_spec)
         if coord_spec.shape == ():
-            coord_spec = np.asarray([coord_spec])
+            coord_spec = np.array([coord_spec])
 
         if start_val is None:
             # Initialize the start and stop values

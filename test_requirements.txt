@@ -2,7 +2,7 @@ flake8
 flake8-docstrings
 hacking>=1.0
 ipython
-m2r2
+myst_parser
 numpydoc
 pysatSpaceWeather<0.1.0
 pytest-cov

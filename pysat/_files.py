@@ -20,6 +20,7 @@ import pandas as pds
 import pysat  # Needed to access pysat.params across reimports
 from pysat.instruments.methods import general
 from pysat.utils import files as futils
+from pysat.utils import NetworkLock
 from pysat.utils.time import filter_datetime_input
 
 
@@ -239,8 +240,8 @@ class Files(object):
         self.write_to_disk = write_to_disk
         if not self.write_to_disk:
             # Use blank memory rather than loading from disk
-            self._previous_file_list = pds.Series([], dtype='a')
-            self._current_file_list = pds.Series([], dtype='a')
+            self._previous_file_list = pds.Series([], dtype='string')
+            self._current_file_list = pds.Series([], dtype='string')
 
         # Set the preference to ignore or include empty files
         self.ignore_empty_files = ignore_empty_files
@@ -427,7 +428,7 @@ class Files(object):
                         out = out[:-1]
                 elif len(out) == 1:
                     if out.index[0] >= key.stop:
-                        out = pds.Series([], dtype='a')
+                        out = pds.Series([], dtype='string')
         else:
             try:
                 # Assume key is integer (including list or slice)
@@ -577,14 +578,17 @@ class Files(object):
             if self.write_to_disk:
                 # Save the previous data in a backup file
                 prev_name = os.path.join(self.home_path, 'archive', stored_name)
-                stored_files.to_csv(prev_name,
-                                    date_format='%Y-%m-%d %H:%M:%S.%f',
-                                    header=[self.data_path])
+                with NetworkLock(prev_name, mode='w') as fout:
+                    stored_files.to_csv(fout,
+                                        date_format='%Y-%m-%d %H:%M:%S.%f',
+                                        header=[self.data_path])
 
                 # Overwrite the old reference file with the new file info
-                self.files.to_csv(os.path.join(self.home_path, stored_name),
-                                  date_format='%Y-%m-%d %H:%M:%S.%f',
-                                  header=[self.data_path])
+                temp_name = os.path.join(self.home_path, stored_name)
+                with NetworkLock(temp_name, mode='w') as fout:
+                    self.files.to_csv(fout,
+                                      date_format='%Y-%m-%d %H:%M:%S.%f',
+                                      header=[self.data_path])
             else:
                 # Update the hidden `File` attributes
                 self._previous_file_list = stored_files
@@ -622,8 +626,9 @@ class Files(object):
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
                 # Load data stored on the local drive
-                loaded = pds.read_csv(fname, index_col=0, parse_dates=True,
-                                      header=0).squeeze("columns")
+                with NetworkLock(fname, mode='r') as fin:
+                    loaded = pds.read_csv(fin, index_col=0, parse_dates=True,
+                                          header=0).squeeze("columns")
                 if update_path:
                     # Store the data_path from the .csv onto Files
                     if loaded.name in self.data_paths:
@@ -639,7 +644,7 @@ class Files(object):
                                          'Ignoring stored path:', loaded.name,
                                          'Clearing out stored files as well.'])
                         pysat.logger.debug(dstr)
-                        loaded = pds.Series([], dtype='a')
+                        loaded = pds.Series([], dtype='string')
 
                 # Ensure the name of returned Series is None for consistency
                 loaded.name = None
@@ -653,7 +658,7 @@ class Files(object):
                     return self._current_file_list
         else:
             # Storage file not present
-            return pds.Series([], dtype='a')
+            return pds.Series([], dtype='string')
 
         return
 

@@ -6,36 +6,51 @@ name: Pytest with Flake8
 
 on: [push, pull_request]
 
+env:
+  COVERALLS_SERVICE_NUMBER: ${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.13", "3.14"]
         numpy_ver: ["latest"]
         test_config: ["latest"]
         include:
           # SPEC0000 compliance settings
-          - python-version: "3.10"
-            numpy_ver: "1.24"
-            pandas_ver: "1.5.0"
-            scipy_ver: "1.10.0"
-            xarray_ver: "2022.9.0"
+          - python-version: "3.12"
+            numpy_ver: "2.0.0"
+            pandas_ver: "2.3.0"
+            scipy_ver: "1.14.0"
+            xarray_ver: "2024.5.0"
             os: ubuntu-latest
             test_config: "SPEC0000"
           # Operational compliance settings
-          - python-version: "3.9"
-            numpy_ver: "1.23.5"
+          - python-version: "3.12"
+            numpy_ver: "2.0.0"
             os: "ubuntu-22.04"
             test_config: "Ops"
-
+          # Minimum version settings
+          - python-version: "3.10"
+            dask_ver: "2022.12.1"
+            netcdf_ver: "1.5.6"
+            numpy_ver: "1.21.6"
+            pandas_ver: "1.4.2"
+            portalocker_ver: "2.0"
+            pytest_ver: "7.1.3"
+            scipy_ver: "1.8.1"
+            toolz_ver: "0.12.0"
+            xarray_ver: "2022.12.0"
+            os: "ubuntu-22.04"
+            test_config: "Min"
     name: Python ${{ matrix.python-version }} on ${{ matrix.os }} with numpy ${{ matrix.numpy_ver }}
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -43,6 +58,20 @@ jobs:
       if: ${{ matrix.test_config == 'Ops'}}
       run: |
         pip install numpy==${{ matrix.numpy_ver }}
+        pip install --upgrade-strategy only-if-needed .[test]
+
+    - name: Install Minimum dependencies
+      if: ${{ matrix.test_config == 'Min'}}
+      run: |
+        pip install "setuptools<65"
+        pip install numpy==${{ matrix.numpy_ver }}
+        pip install scipy==${{ matrix.scipy_ver }}
+        pip install pandas==${{ matrix.pandas_ver }}
+        pip install xarray==${{ matrix.xarray_ver }}
+        pip install dask==${{ matrix.dask_ver }}
+        pip install portalocker==${{ matrix.portalocker_ver }}
+        pip install pytest==${{ matrix.pytest_ver }}
+        pip install toolz==${{ matrix.toolz_ver }}
         pip install --upgrade-strategy only-if-needed .[test]
 
     - name: Install SPEC0000 dependencies
@@ -71,6 +100,10 @@ jobs:
 
     - name: Test with pytest
       run: pytest --cov-report xml
+
+    - name: Trust Coveralls Homebrew tap (Homebrew 6 requirement)
+      if: runner.os == 'macOS'
+      run: brew trust coverallsapp/coveralls
 
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@v2

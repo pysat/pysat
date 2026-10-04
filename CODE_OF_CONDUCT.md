@@ -77,6 +77,6 @@ version 1.4, available at
 For answers to common questions about this code of conduct, see
 [https://www.contributor-covenant.org/faq][faq]
 
-[homepage]: https://contributor-covenant.org
-[version]: https://contributor-covenant.org/version/1/4/
+[homepage]: https://www.contributor-covenant.org
+[version]: https://www.contributor-covenant.org/version/1/4/
 [faq]: https://www.contributor-covenant.org/faq

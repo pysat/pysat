@@ -53,7 +53,7 @@ class InstIntegrationTests(object):
         assert len(self.testInst.files.files) > 0
 
         # Change pysat directory to temporary directory
-        tempdir = tempfile.TemporaryDirectory()
+        tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         saved_dir = pysat.params['data_dirs']
         pysat.params['data_dirs'] = tempdir.name
 
@@ -80,5 +80,7 @@ class InstIntegrationTests(object):
         assert os.path.normpath(self.testInst.files.data_path)[:lim] \
                == os.path.normpath(tempdir.name)
         assert len(self.testInst.files.files) > 0
+
+        tempdir.cleanup()
 
         return

@@ -35,7 +35,7 @@ class TestBasics(object):
         pysat.params.restore_defaults()
 
         # Get a temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.wd = os.getcwd()
 
     def teardown_method(self):

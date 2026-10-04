@@ -64,7 +64,7 @@ Development
 
 To set up `pysat` for local development:
 
-1. [Fork pysat on GitHub](https://github.com/pysat/pysat/fork).
+1. [Fork pysat on GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
 
 2. Clone your fork locally:
 

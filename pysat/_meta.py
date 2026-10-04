@@ -70,7 +70,7 @@ class Meta(object):
     receives the data. Subsequent calls to set new metadata with the same
     variable or attribute will use case of first call. Accessing or setting
     data thereafter is case insensitive. In practice, use is case insensitive
-    but the original case is preserved. Case preseveration is built in to
+    but the original case is preserved. Case preservation is built in to
     support writing files with a desired case to meet standards.
 
     Supports any custom metadata values in addition to the expected metadata
@@ -451,14 +451,39 @@ class Meta(object):
                         if itype == bytes:
                             itype = str
 
-                        # Update the MetaLabels object and the existing
-                        # metadata to ensure all data have all labels
+                        # Ensure new label doesn't conflict with an
+                        # existing meta.labels attribute.
+                        if iattr.lower() in self.labels.label_attrs.values():
+                            # Create new column in metadata with default values
+                            # for the new collision attribute
+                            # TODO(#1230): Replace Deprecation with an Error
+                            fill = self.labels.default_values_from_type(itype)
+                            self._data.loc[:, ikey] = np.array(
+                                [fill] * len(self._data.index), dtype=itype)
+
+                            # Raise a warning
+                            estr = ''.join(["The supplied metadata label '",
+                                            iattr, "' conflicts with a label ",
+                                            "already present. This warning ",
+                                            "will be an error in v3.3. ",
+                                            "Continued use now may result in ",
+                                            "unexpected behaviors. You may ",
+                                            "use a custom labels class to ",
+                                            "achieve what you want instead."
+                                            ])
+                            warnings.warn(estr,
+                                          DeprecationWarning, stacklevel=2)
+
                         self.labels.update(iattr, ikey, itype)
-                        self._label_setter(ikey, ikey, type(to_be_set))
+
+                        # Call below adds ikey to self._data
+                        self._label_setter(ikey, ikey, type(to_be_set),
+                                           False)
 
                     # Set the data
                     if good_set:
                         self._data.loc[var, ikey] = to_be_set
+
         elif isinstance(input_data, pds.Series):
             # Outputs from Meta object are a Series. Thus, this takes in input
             # from a Meta object. Set data using standard assignment via a dict.
@@ -768,7 +793,9 @@ class Meta(object):
                     else:
                         default_val = self.labels.default_values_from_type(
                             default_type)
-                        self.data[new_label] = default_val
+                        self.data[new_label] = np.array(
+                            [default_val] * len(self.data.index),
+                            dtype=default_type)
                         if default_val is None:
                             mstr = ' '.join(('A problem may have been',
                                              'encountered with the user',

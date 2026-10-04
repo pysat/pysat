@@ -70,4 +70,5 @@ well as including support for both the old and new methods for storing the
 pysat data directory, namely :py:attr:`pysat.data_dir` and
 :py:attr:`pysat.params['data_dirs']`.
 
-.. mdinclude:: ../CHANGELOG.md
+.. include:: ../CHANGELOG.md
+   :parser: myst_parser.sphinx_

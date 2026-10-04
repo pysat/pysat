@@ -18,6 +18,7 @@ import numpy as np
 import os
 import pandas as pds
 import tempfile
+import time
 
 import pytest
 
@@ -152,7 +153,7 @@ class TestBasics(object):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(
@@ -717,7 +718,7 @@ class TestInstWithFiles(object):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         # Create the testing directory
@@ -950,7 +951,7 @@ class TestInstWithFilesNonStandard(object):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.start = dt.datetime(2008, 1, 11)
@@ -1208,27 +1209,11 @@ def create_instrument(j):
     update_files should update the file list in .pysat
 
     """
-    root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
-                          '_{day:03d}{hour:02d}{minute:02d}',
-                          '{second:02d}_stuff_{version:02d}_',
-                          '{revision:03d}_{cycle:02d}.pysat_testing_file'))
 
-    testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                                clean_level='clean',
-                                update_files=True,
-                                temporary_file_list=False)
-
-    start = dt.datetime(2007, 12, 30)
-    stop = dt.datetime(2007, 12, 31)
-    create_files(testInst, start, stop, freq='1D', use_doy=False,
-                 root_fname=root_fname, timeout=0.5, version=True)
-
-    testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                                clean_level='clean',
-                                update_files=True,
-                                temporary_file_list=False)
-
-    print('initial files created in {}:'.format(testInst.files.data_path))
+    pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                     clean_level='clean',
+                     update_files=True,
+                     temporary_file_list=False)
 
     return 'instrument {}'.format(j)
 
@@ -1306,11 +1291,14 @@ class TestFilesRaceCondition(object):
 
     def test_race_condition(self):
         """Test that multiple instances of pysat instrument creation run."""
-        processes = 5
+        processes = 50
         proc_pool = Pool(processes)
-        pysat.file_timeout = 1
+        pysat.file_timeout = 10
 
         proc_pool.map(create_instrument, range(processes))
+
+        time.sleep(5)
+
         return
 
 
