@@ -571,11 +571,17 @@ def generate_times(fnames, num, freq='1s', start_time=None):
     lower_offsets = ['h', 'bh', 'cbh', 'min', 's', 'us', 'ns']
 
     # First, extract only the letter portion of the frequency string
+    # TODO(#1234): remove this logic when pandas 2.2 no longer supported
     alphaf = ''.join(c for c in freq if unicodedata.category(c).startswith('L'))
     if int(pds.__version__[0]) >= 3:
         if (alphaf.lower() != alphaf) and (alphaf.lower() in lower_offsets):
             freq = freq.lower()
-            warnings.warn('"freq" keyword has been replaced with lower case.')
+            warnings.warn(''.join(['"freq" keyword has been replaced with a ',
+                                   'lower case version. This support will be ',
+                                   'removed when pandas v2.2 no longer ,'
+                                   'supported. Update "freq" string to remove',
+                                   'warning.']),
+                          DeprecationWarning, stacklevel=2)
 
     uts = []
     indices = []
