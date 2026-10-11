@@ -17,7 +17,7 @@ import pandas as pds
 import warnings
 import xarray as xr
 
-import h5netcdf # noqa: F401
+import h5netcdf  # noqa: F401
 import netCDF4
 
 import pysat
@@ -1359,7 +1359,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
             warnings.warn(dstr, DeprecationWarning, stacklevel=2)
             epoch_name = 'Epoch'
             if engine == 'h5netcdf':
-                import h5netcdf.legacyapi as netCDF4 # noqa: F811
+                import h5netcdf.legacyapi as netCDF4  # noqa: F811
             else:
                 import netCDF4 as netCDF4
         else:
