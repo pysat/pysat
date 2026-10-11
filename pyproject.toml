@@ -52,7 +52,8 @@ dependencies = [
   "scipy >= 1.8.1",
   "toolz >= 0.11.1",
   "xarray >= 2022.12.0",
-  "h5netcdf"
+  "h5netcdf",
+  "h5py"
 ]
 
 [project.optional-dependencies]
