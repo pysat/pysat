@@ -45,7 +45,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'numpydoc',
     'IPython.sphinxext.ipython_console_highlighting',
-    'm2r2'
+    'myst_parser'
 ]
 
 # added by RS
@@ -183,3 +183,5 @@ epub_copyright = copyright
 intersphinx_mapping = {'portalocker':
                        ('https://portalocker.readthedocs.io/en/latest',
                         None)}
+# Links to ignore when checking for stability
+linkcheck_ignore = ['https://zenodo.org', 'https://pysat.slack.com']

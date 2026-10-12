@@ -44,7 +44,6 @@ import datetime as dt
 from importlib import import_module
 import logging
 import numpy as np
-import sys
 import tempfile
 import warnings
 
@@ -182,12 +181,8 @@ class InstLibTests(object):
         """Initialize the testing setup once before all tests are run."""
 
         # Use a temporary directory so that the user's setup is not altered.
-        # TODO(#974): Remove if/else when support for Python 3.9 is dropped.
-        if sys.version_info.minor >= 10:
-            self.tempdir = tempfile.TemporaryDirectory(
-                ignore_cleanup_errors=True)
-        else:
-            self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(
+            ignore_cleanup_errors=True)
         self.saved_path = pysat.params['data_dirs']
         pysat.params._set_data_dirs(path=self.tempdir.name, store=False)
         return
@@ -199,11 +194,7 @@ class InstLibTests(object):
         # Remove the temporary directory. In Windows, this occasionally fails
         # by raising a wide variety of different error messages. Python 3.10+
         # can handle this, but lower Python versions cannot.
-        # TODO(#974): Remove try/except when support for Python 3.9 is dropped.
-        try:
-            self.tempdir.cleanup()
-        except Exception:
-            pass
+        self.tempdir.cleanup()
 
         del self.saved_path, self.tempdir
         return

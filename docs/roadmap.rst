@@ -11,8 +11,7 @@ quality unit tests and documentation.
 
 This document provides a broad and long term vision of :py:mod:`pysat`. Specific
 tasks associated with this roadmap may be found within the posted
-`Issues <https://github.com/pysat/pysat/issues>`_ and
-`Projects <https://github.com/pysat/pysat/projects>`_.
+`Issues <https://github.com/pysat/pysat/issues>`_.
 
 An item being on the roadmap does not necessarily mean that it will happen.
 During the implementation or testing periods we may discover issues that limit

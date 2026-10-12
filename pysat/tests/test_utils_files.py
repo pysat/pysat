@@ -561,7 +561,7 @@ class TestFileDirectoryTranslations(CICleanSetup):
         reload(pysat)
 
         # create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         # Create several pysat.SpaceWeather instruments and download data.
@@ -741,7 +741,7 @@ class TestFileUtils(CICleanSetup):
         self.data_paths = pysat.params['data_dirs']
 
         # Create temporary directory
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         pysat.params['data_dirs'] = [self.tempdir.name]
 
         self.testInst = pysat.Instrument(
@@ -841,7 +841,7 @@ class TestFileUtils(CICleanSetup):
             dir_name = ""
         else:
             # Create a temporary directory
-            tempdir = tempfile.TemporaryDirectory()
+            tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
             dir_name = tempdir.name
             assert os.path.isdir(tempdir.name)
 
@@ -862,7 +862,7 @@ class TestFileUtils(CICleanSetup):
         """Test successful pass at creating existing directory."""
 
         # Create a temporary directory and get its name
-        tempdir = tempfile.TemporaryDirectory()
+        tempdir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         new_dir = tempdir.name
 
         if trailer is not None:

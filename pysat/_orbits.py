@@ -380,10 +380,10 @@ class Orbits(object):
         else:
             # Iterating by date.  We need to check step (frequency string)
             # against width (timedelta)
-            step = pds.tseries.frequencies.to_offset(self.inst._iter_step)
-            step = dt.timedelta(seconds=pds.Timedelta(step).total_seconds())
-            root = dt.datetime(2001, 1, 1)
-            if root + step < root + self.inst._iter_width:
+            istep = pds.tseries.frequencies.to_offset(self.inst._iter_step)
+            istep = dt.timedelta(seconds=int(istep.nanos * 1.0e-9))
+            root = dt.datetime(2001, 1, 1)  # A random, reference date
+            if root + istep < root + self.inst._iter_width:
                 raise ValueError(estr)
 
         # If the breaks between orbit have not been defined, define them here.

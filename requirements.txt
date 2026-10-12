@@ -1,4 +1,6 @@
 dask
+h5netcdf
+h5py
 netCDF4
 numpy>=1.12
 pandas

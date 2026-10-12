@@ -11,12 +11,14 @@
 """Input/Output utilities for pysat data."""
 import copy
 import datetime as dt
-import netCDF4
 import numpy as np
 import os
 import pandas as pds
 import warnings
 import xarray as xr
+
+import h5netcdf  # noqa: F401
+import netCDF4
 
 import pysat
 
@@ -552,7 +554,7 @@ def meta_array_expander(meta_dict):
     for key in meta_dict.keys():
         loop_dict = {}
         for meta_key in meta_dict[key].keys():
-            tst_array = np.asarray(meta_dict[key][meta_key])
+            tst_array = np.array(meta_dict[key][meta_key])
             if tst_array.shape == ():
                 loop_dict[meta_key] = meta_dict[key][meta_key]
             elif tst_array.shape == (1, ):
@@ -573,7 +575,7 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                 combine_by_coords=True, meta_kwargs=None,
                 meta_processor=None, meta_translation=None,
                 drop_meta_labels=None, decode_times=None,
-                strict_dim_check=True):
+                strict_dim_check=True, engine='h5netcdf'):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -647,6 +649,9 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
         Used for xarray data (`pandas_format` is False). If True, warn the user
         that the desired epoch is not present in `xarray.dims`.  If False,
         no warning is raised. (default=True)
+    engine : str
+        Engine to use when loading netCDF files using xarray
+        (default='h5netcdf')
 
     Returns
     -------
@@ -696,7 +701,8 @@ def load_netcdf(fnames, strict_meta=False, file_format='NETCDF4',
                                         meta_translation=meta_translation,
                                         drop_meta_labels=drop_meta_labels,
                                         decode_times=decode_times,
-                                        strict_dim_check=strict_dim_check)
+                                        strict_dim_check=strict_dim_check,
+                                        engine=engine)
 
     return data, meta
 
@@ -901,7 +907,8 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
                        decode_timedelta=False, combine_by_coords=True,
                        meta_kwargs=None, meta_processor=None,
                        meta_translation=None, drop_meta_labels=None,
-                       decode_times=False, strict_dim_check=True):
+                       decode_times=False, strict_dim_check=True,
+                       engine='h5netcdf'):
     """Load netCDF-3/4 file produced by pysat into an xarray Dataset.
 
     Parameters
@@ -969,6 +976,9 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
         Used for xarray data (`pandas_format` is False). If True, warn the user
         that the desired epoch is not present in `xarray.dims`.  If False,
         no warning is raised. (default=True)
+    engine : str
+        Engine to use when loading netCDF files using xarray
+        (default='h5netcdf')
 
     Returns
     -------
@@ -1024,11 +1034,14 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
-        data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta,
-                               decode_times=decode_times)
+        with xr.open_dataset(fnames[0], decode_times=False,
+                             decode_timedelta=False, engine=engine) as ds:
+            data = ds.load()
     else:
-        data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
-                                 decode_times=decode_times, **combine_kw)
+        with xr.open_mfdataset(fnames, decode_times=False,
+                               decode_timedelta=False, engine=engine,
+                               **combine_kw) as ds:
+            data = ds.load()
 
     # Need to get a list of all variables, dimensions, and coordinates.
     all_vars = xarray_all_vars(data)
@@ -1240,7 +1253,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                    mode='w', zlib=False, complevel=4, shuffle=True,
                    preserve_meta_case=False, check_type=None, export_nan=None,
                    export_pysat_info=True, unlimited_time=True,
-                   meta_translation=None, meta_processor=None):
+                   meta_translation=None, meta_processor=None,
+                   engine='h5netcdf'):
     """Store pysat data in a netCDF4 file.
 
     Parameters
@@ -1308,6 +1322,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         of the input dict. If None and `inst` has a valid
         `inst._export_meta_post_processing` function then that
         function is used for `meta_processor`. (default=None)
+    engine : str
+        Engine to use when writing netCDF files. Supports one of
+        ['h5netcdf', 'netcdf4']. (default='h5netcdf')
+
 
     Note
     ----
@@ -1333,6 +1351,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
     'Text_Supplement' are given default values if not present.
 
     """
+    import h5netcdf.legacyapi as netCDF4
     # Check epoch name information
     if epoch_name is None:
         if inst.pandas_format:
@@ -1341,9 +1360,14 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                             'be updated to "time."'])
             warnings.warn(dstr, DeprecationWarning, stacklevel=2)
             epoch_name = 'Epoch'
+            if engine == 'h5netcdf':
+                import h5netcdf.legacyapi as netCDF4  # noqa: F811
+            else:
+                import netCDF4 as netCDF4
         else:
             pysat.logger.debug('Assigning "time" for time index.')
             epoch_name = 'time'
+            import netCDF4 as netCDF4
 
     # Ensure there is data to write
     if inst.empty:
@@ -1409,6 +1433,10 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
             pysat.logger.debug('Removing {} attribute and replacing.'.format(
                 pitem))
             attrb_dict.pop(pitem)
+
+    # Convert the time index to Unix time in ms
+    unix_time = np.array([(val - dt.datetime(1970, 1, 1)).total_seconds()
+                          * 1.0e3 for val in inst.index.to_pydatetime()])
 
     # Set the general file information
     if export_pysat_info:
@@ -1508,7 +1536,8 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         #    string variables can't have a fill value
         with netCDF4.Dataset(fname, mode=mode, format='NETCDF4') as out_data:
             # Attach the global attributes
-            out_data.setncatts(attrb_dict)
+            for key in attrb_dict.keys():
+                out_data.setncattr(key, attrb_dict[key])
 
             # Specify the number of items, to reduce function calls.
             num = len(inst.index)
@@ -1518,18 +1547,19 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                 out_data.createDimension(epoch_name, None)
             else:
                 out_data.createDimension(epoch_name, num)
+
             cdfkey = out_data.createVariable(epoch_name, 'i8',
-                                             dimensions=(epoch_name),
+                                             dimensions=(epoch_name,),
                                              zlib=zlib,
                                              complevel=complevel,
                                              shuffle=shuffle)
 
             # Attach epoch metadata
-            cdfkey.setncatts(export_meta[epoch_name])
+            for key in export_meta[epoch_name].keys():
+                cdfkey.setncattr(key, export_meta[epoch_name][key])
 
             # Attach the time index to the data
-            cdfkey[:] = (inst.index.values.astype(np.int64)
-                         * 1.0E-6).astype(np.int64)
+            cdfkey[:] = unix_time.astype(np.int64)
 
             # Iterate over all of the columns in the Instrument dataframe
             # check what kind of data we are dealing with, then store
@@ -1549,15 +1579,17 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                 data, coltype, datetime_flag = inst._get_data_info(inst[key])
 
                 # Operate on data based upon type
-                if inst[key].dtype != np.dtype('O'):
+                if type(inst[key].dtype) not in [type(np.dtype('O')),
+                                                 pds.StringDtype]:
                     # Not an object, normal basic 1D data.
                     cdfkey = out_data.createVariable(case_key, coltype,
-                                                     dimensions=(epoch_name),
+                                                     dimensions=(epoch_name,),
                                                      zlib=zlib,
                                                      complevel=complevel,
                                                      shuffle=shuffle)
                     # Set metadata
-                    cdfkey.setncatts(export_meta[lower_key])
+                    for key in export_meta[lower_key].keys():
+                        cdfkey.setncattr(key, export_meta[lower_key][key])
 
                     # Assign data
                     if datetime_flag:
@@ -1575,25 +1607,27 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                         str_fill = ''
 
                     cdfkey = out_data.createVariable(case_key, coltype,
-                                                     dimensions=epoch_name,
+                                                     dimensions=(epoch_name,),
                                                      complevel=complevel,
                                                      shuffle=shuffle,
                                                      fill_value=str_fill)
 
                     # Set metadata
-                    cdfkey.setncatts(export_meta[lower_key])
+                    for key in export_meta[lower_key].keys():
+                        cdfkey.setncattr(key, export_meta[lower_key][key])
 
                     # Time to actually write the data now
-                    cdfkey[:] = data.values
+                    cdfkey[:] = np.array(data.values)
 
     else:
         # Attach the metadata to a separate xarray.Dataset object, ensuring
-        # the Instrument data object is unchanged.
-        xr_data = xr.Dataset(inst.data)
+        # the Instrument data object is unchanged. The downside is additional
+        # memory use which will impact extremely large data files or memory
+        # constrained environments.
+        xr_data = inst.data.copy()
 
         # Convert datetime values into integers as done for pandas
-        xr_data['time'] = (inst['time'].values.astype(np.int64)
-                           * 1.0E-6).astype(np.int64)
+        xr_data['time'] = unix_time.astype(np.int64)
 
         # Update 'time' dimension to `epoch_name`
         if epoch_name != 'time':
@@ -1612,8 +1646,16 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
                     xr_data = xr_data.rename({var: case_var})
 
         # Set the standard encoding values
-        encoding = {var: {'zlib': zlib, 'complevel': complevel,
-                          'shuffle': shuffle} for var in xr_data.keys()}
+        encoding = {}
+        if engine == 'h5netcdf':
+            for var in xr_data.keys():
+                encoding[var] = {'compression': 'zlib',
+                                 'compression_opts': int(zlib) * complevel,
+                                 'shuffle': shuffle}
+        else:
+            for var in xr_data.keys():
+                encoding[var] = {'zlib': zlib, 'complevel': complevel,
+                                 'shuffle': shuffle}
 
         # netCDF4 doesn't support compression for string data. Reset values
         # in `encoding` for data found to be string type.
@@ -1640,7 +1682,7 @@ def inst_to_netcdf(inst, fname, base_instrument=None, epoch_name=None,
         xr_data.attrs = attrb_dict
 
         # Write the netCDF4 file
-        xr_data.to_netcdf(fname, mode=mode, encoding=encoding)
+        xr_data.to_netcdf(fname, mode=mode, encoding=encoding, engine=engine)
 
         # Close for safety
         xr_data.close()
