@@ -1034,12 +1034,14 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
 
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
-        data = xr.open_dataset(fnames[0], decode_timedelta=decode_timedelta,
-                               decode_times=decode_times, engine=engine)
+        with xr.open_dataset(fnames[0], decode_times=False,
+                              decode_timedelta=False, engine=engine) as ds:
+            data = ds.load()
     else:
-        data = xr.open_mfdataset(fnames, decode_timedelta=decode_timedelta,
-                                 decode_times=decode_times, engine=engine,
-                                 **combine_kw)
+        with xr.open_mfdataset(fnames, decode_times=False,
+                               decode_timedelta=False, engine=engine,
+                               **combine_kw) as ds:
+            data = ds.load()
 
     # Need to get a list of all variables, dimensions, and coordinates.
     all_vars = xarray_all_vars(data)
