@@ -1035,7 +1035,7 @@ def load_netcdf_xarray(fnames, strict_meta=False, file_format='NETCDF4',
     # Load the data differently for single or multiple files
     if len(fnames) == 1:
         with xr.open_dataset(fnames[0], decode_times=False,
-                              decode_timedelta=False, engine=engine) as ds:
+                             decode_timedelta=False, engine=engine) as ds:
             data = ds.load()
     else:
         with xr.open_mfdataset(fnames, decode_times=False,
